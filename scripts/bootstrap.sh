@@ -107,7 +107,63 @@ else
 fi
 
 # ---------------------------------------------------------------
-# 7. Done
+# 7. Install must-use plugin: enable Application Passwords over HTTP
+# ---------------------------------------------------------------
+MU_PLUGIN_DIR="/var/www/html/wp-content/mu-plugins"
+MU_PLUGIN_FILE="$MU_PLUGIN_DIR/enable-app-passwords.php"
+docker compose exec -T wordpress bash -c "mkdir -p $MU_PLUGIN_DIR"
+MU_EXISTS=$(docker compose exec -T wordpress bash -c "test -f $MU_PLUGIN_FILE && echo yes || echo no")
+if [ "$MU_EXISTS" = "yes" ]; then
+    echo "[bootstrap] enable-app-passwords mu-plugin already present ✓"
+else
+    docker compose exec -T wordpress bash -c "cat > $MU_PLUGIN_FILE << 'EOF'
+<?php
+// Force-enable Application Passwords on non-HTTPS local environments.
+add_filter(\"wp_is_application_passwords_available\", \"__return_true\");
+EOF"
+    echo "[bootstrap] enable-app-passwords mu-plugin installed ✓"
+fi
+
+# ---------------------------------------------------------------
+# 8. Activate the Divi 5 Validator REST plugin (idempotent)
+# ---------------------------------------------------------------
+PLUGIN_STATUS=$(docker compose exec -T wpcli wp plugin status divi5-validator 2>&1 || echo "not-found")
+if echo "$PLUGIN_STATUS" | grep -q "Active"; then
+    echo "[bootstrap] divi5-validator plugin already active ✓"
+else
+    echo "[bootstrap] Activating divi5-validator plugin..."
+    docker compose exec -T wpcli wp plugin activate divi5-validator
+    echo "[bootstrap] divi5-validator plugin activated ✓"
+fi
+
+# ---------------------------------------------------------------
+# 9. Write .htaccess with mod_rewrite + Authorization passthrough (idempotent)
+# ---------------------------------------------------------------
+HTACCESS_OK=$(docker compose exec -T wordpress bash -c 'grep -q "HTTP_AUTHORIZATION" /var/www/html/.htaccess && echo yes || echo no')
+if [ "$HTACCESS_OK" = "yes" ]; then
+    echo "[bootstrap] .htaccess already configured ✓"
+else
+    docker compose exec -T wordpress bash -c 'cat > /var/www/html/.htaccess << '"'"'EOF'"'"'
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress
+EOF'
+    docker compose exec -T wpcli wp rewrite structure '/%postname%/' --hard 2>&1 | grep -v Warning || true
+    docker compose exec -T wpcli wp rewrite flush --hard 2>&1 | grep -v Warning || true
+    echo "[bootstrap] .htaccess + permalinks configured ✓"
+fi
+
+# ---------------------------------------------------------------
+# 10. Done
 # ---------------------------------------------------------------
 echo ""
 echo "================================================================"
@@ -118,6 +174,6 @@ echo "  Admin:      http://localhost:${WP_PORT}/wp-admin/"
 echo "  User:       ${WP_ADMIN_USER:-admin}"
 echo "  Password:   ${WP_ADMIN_PASSWORD:-admin}"
 echo ""
-echo "  Next step: make export-layouts"
+echo "  Next step: make export-layouts (or make app-password to create MCP credentials)"
 echo "================================================================"
 echo ""

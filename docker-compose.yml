@@ -37,6 +37,8 @@ services:
     volumes:
       - divi5val_wp:/var/www/html
       - ./divi:/divi-install:ro
+      - ./wp-plugin:/var/www/html/wp-content/plugins/divi5-validator:ro
+      - ./src:/validator-src:ro
 
   wpcli:
     image: wordpress:cli-php8.3
@@ -57,6 +59,8 @@ services:
       - ./divi:/divi-install:ro
       - ./scripts:/scripts:ro
       - ./fixtures:/fixtures
+      - ./wp-plugin:/var/www/html/wp-content/plugins/divi5-validator:ro
+      - ./src:/validator-src:ro
     user: "33:33"
     entrypoint: ["tail", "-f", "/dev/null"]
 

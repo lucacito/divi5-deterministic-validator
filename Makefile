@@ -56,6 +56,32 @@ export-layouts:
 	@bash scripts/export-layouts.sh
 
 # ---------------------------------------------------------------
+# app-password — create a WordPress Application Password for the MCP server
+# Prints the credentials to copy into your MCP config / .env
+# ---------------------------------------------------------------
+app-password:
+	@bash scripts/create-app-password.sh
+
+# ---------------------------------------------------------------
+# mcp-server — build and print Claude Desktop config snippet
+# ---------------------------------------------------------------
+mcp-server:
+	cd mcp-server && npm install && npm run build
+	@echo ""
+	@echo "MCP server built. Add this to your Claude Desktop config:"
+	@echo "  (claude_desktop_config.json → mcpServers)"
+	@echo ""
+	@echo '  "divi5-validator": {'
+	@echo '    "command": "node",'
+	@echo '    "args": ["$(shell pwd)/mcp-server/dist/index.js"],'
+	@echo '    "env": {'
+	@echo '      "WP_URL": "http://localhost:8181",'
+	@echo '      "WP_USER": "admin",'
+	@echo '      "WP_APP_PASSWORD": "<from make app-password>"'
+	@echo '    }'
+	@echo '  }'
+
+# ---------------------------------------------------------------
 # shell helpers
 # ---------------------------------------------------------------
 shell-wp:

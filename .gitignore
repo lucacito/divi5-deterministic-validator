@@ -16,6 +16,10 @@ vendor/
 .phpunit.result.cache
 coverage/
 
+# MCP server build artifacts
+mcp-server/node_modules/
+mcp-server/dist/
+
 # OS
 .DS_Store
 Thumbs.db
