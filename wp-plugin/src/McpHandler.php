@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\WP;
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 use Divi5Validator\Validator;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -37,7 +39,8 @@ final class McpHandler
             return true;
         }
 
-        $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+        $header = sanitize_text_field( wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '' ) );
         if (str_starts_with(strtolower($header), 'bearer ')) {
             return new WP_Error('forbidden', 'Invalid API key.', ['status' => 403]);
         }
@@ -144,7 +147,7 @@ final class McpHandler
             'post_type'      => 'page',
             'post_status'    => 'any',
             'posts_per_page' => 100,
-            'meta_query'     => [['key' => '_et_pb_use_divi_5', 'value' => 'on']],
+            'meta_query'     => [['key' => '_et_pb_use_divi_5', 'value' => 'on']], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
         ]);
 
         $pages = array_map(fn(\WP_Post $p) => [

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\WP;
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 use Divi5Validator\Validator;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -65,6 +67,7 @@ final class RestController
             'post_type'      => 'page',
             'post_status'    => 'any',
             'posts_per_page' => 100,
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
             'meta_query'     => [
                 [
                     'key'   => '_et_pb_use_divi_5',
@@ -198,7 +201,7 @@ final class RestController
                 '_et_pb_use_divi_5'  => get_post_meta($post->ID, '_et_pb_use_divi_5', true),
                 '_et_pb_use_builder' => get_post_meta($post->ID, '_et_pb_use_builder', true),
             ],
-            'exported_at'  => date('c'),
+            'exported_at'  => gmdate('c'),
         ];
     }
 

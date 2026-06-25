@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\WP;
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 /**
  * Plugin API key — a single Bearer token that authenticates all plugin endpoints.
  * Generated on first use, stored in wp_options, never exposed in source code.
@@ -43,10 +45,11 @@ final class ApiKey
     /** Sets the current WP user from the API key owner. Returns false if key is invalid. */
     public static function authenticateRequest(): bool
     {
-        // Apache internal rewrites can prefix the env var with REDIRECT_
-        $header = $_SERVER['HTTP_AUTHORIZATION']
-               ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
-               ?? '';
+        // Apache internal rewrites can prefix the env var with REDIRECT_.
+        // wp_unslash() + sanitize_text_field() required by PHPCS; hex bearer tokens are unaffected.
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+        $raw    = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+        $header = sanitize_text_field( wp_unslash( $raw ) );
         if (!preg_match('/^Bearer\s+(.+)$/i', $header, $m)) {
             return false;
         }

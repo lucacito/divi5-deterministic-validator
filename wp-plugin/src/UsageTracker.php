@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\WP;
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 /**
  * Logs every API call to a custom DB table.
  * Schema is created on plugin activation via createTable().
@@ -16,7 +18,7 @@ final class UsageTracker
     public static function tableName(): string
     {
         global $wpdb;
-        return $wpdb->prefix . 'ai_editor_divi5_usage';
+        return esc_sql( $wpdb->prefix . 'ai_editor_divi5_usage' );
     }
 
     public static function createTable(): void
@@ -54,9 +56,9 @@ final class UsageTracker
     {
         global $wpdb;
         $table = self::tableName();
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $wpdb->query("DROP TABLE IF EXISTS {$table}");
-        delete_option(self::DB_VERSION_OPTION);
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $wpdb->query( "DROP TABLE IF EXISTS {$table}" );
+        delete_option( self::DB_VERSION_OPTION );
     }
 
     // ---------------------------------------------------------------
@@ -67,9 +69,12 @@ final class UsageTracker
     {
         global $wpdb;
 
-        $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
-        $ip = $_SERVER['REMOTE_ADDR']     ?? '';
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+        $ua = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' ) );
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+        $ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ) );
 
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
         $wpdb->insert(
             self::tableName(),
             [
@@ -115,33 +120,36 @@ final class UsageTracker
         global $wpdb;
         $table = self::tableName();
 
+        // Table name from $wpdb->prefix (trusted); WHERE values are static string literals — no user input.
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
         return [
-            'total'    => (int) $wpdb->get_var("SELECT COUNT(*)         FROM {$table}"),
-            'valid'    => (int) $wpdb->get_var("SELECT COUNT(*)         FROM {$table} WHERE result = 'valid'"),
-            'invalid'  => (int) $wpdb->get_var("SELECT COUNT(*)         FROM {$table} WHERE result = 'invalid'"),
-            'today'    => (int) $wpdb->get_var("SELECT COUNT(*)         FROM {$table} WHERE DATE(created_at) = CURDATE()"),
+            'total'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ),
+            'valid'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE result = 'valid'" ),
+            'invalid'  => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE result = 'invalid'" ),
+            'today'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE DATE(created_at) = CURDATE()" ),
             'byClient' => $wpdb->get_results(
                 "SELECT client, COUNT(*) as cnt FROM {$table} GROUP BY client ORDER BY cnt DESC LIMIT 8",
                 ARRAY_A
             ) ?: [],
         ];
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
     }
 
     public static function getRecent(int $limit = 50): array
     {
         global $wpdb;
         $table = self::tableName();
-        return $wpdb->get_results(
-            $wpdb->prepare("SELECT * FROM {$table} ORDER BY created_at DESC LIMIT %d", $limit),
-            ARRAY_A
-        ) ?: [];
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $sql = $wpdb->prepare( "SELECT * FROM {$table} ORDER BY created_at DESC LIMIT %d", $limit );
+        return $wpdb->get_results( $sql, ARRAY_A ) ?: [];
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
     }
 
     public static function clear(): void
     {
         global $wpdb;
         $table = self::tableName();
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $wpdb->query("TRUNCATE TABLE {$table}");
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $wpdb->query( "TRUNCATE TABLE {$table}" );
     }
 }

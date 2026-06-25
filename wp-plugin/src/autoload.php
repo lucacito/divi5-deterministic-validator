@@ -2,11 +2,15 @@
 
 declare(strict_types=1);
 
-// Load the standalone validator library (mounted at /validator-src in the container)
-$validatorSrc = '/validator-src';
-foreach (['Violation', 'ValidationResult', 'SchemaRules', 'Block', 'ParseResult', 'BlockParser', 'Validator'] as $class) {
-    require_once $validatorSrc . '/' . $class . '.php';
-}
+if ( ! defined( 'ABSPATH' ) ) exit;
+
+// Wrap in a closure to avoid polluting global scope with loader variables.
+(function () {
+    $validator_src = __DIR__ . '/../validator';
+    foreach ( ['Violation', 'ValidationResult', 'SchemaRules', 'Block', 'ParseResult', 'BlockParser', 'Validator'] as $cls ) {
+        require_once $validator_src . '/' . $cls . '.php';
+    }
+})();
 
 // Load plugin classes
 require_once __DIR__ . '/ApiKey.php';

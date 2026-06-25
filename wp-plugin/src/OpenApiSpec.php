@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\WP;
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 use WP_REST_Request;
 use WP_REST_Response;
 
