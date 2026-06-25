@@ -71,7 +71,7 @@ mcp-server:
 	@echo "MCP server built. Add this to your Claude Desktop config:"
 	@echo "  (claude_desktop_config.json → mcpServers)"
 	@echo ""
-	@echo '  "divi5-validator": {'
+	@echo '  "ai-editor-divi5": {'
 	@echo '    "command": "node",'
 	@echo '    "args": ["$(shell pwd)/mcp-server/dist/index.js"],'
 	@echo '    "env": {'

@@ -1,4 +1,4 @@
-/* Divi 5 Validator — Admin JS */
+/* AI Editor for Divi 5 — Admin JS */
 (function () {
     'use strict';
 
@@ -23,7 +23,7 @@
     });
 
     // Buttons with data-target pointing to a <pre> element
-    document.querySelectorAll('.divi5-copy-btn[data-target]').forEach(function (btn) {
+    document.querySelectorAll('.aied-copy-btn[data-target]').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var el = document.getElementById(btn.dataset.target);
             if (el) copyText(el.textContent, btn);
@@ -32,8 +32,8 @@
 
     // ── Show / hide API key ────────────────────────────────────────────
 
-    var toggleBtn = document.getElementById('divi5-toggle-key');
-    var keyEl     = document.getElementById('divi5-api-key');
+    var toggleBtn = document.getElementById('aied-toggle-key');
+    var keyEl     = document.getElementById('aied-api-key');
 
     if (toggleBtn && keyEl) {
         var revealed = false;
@@ -47,18 +47,18 @@
 
     // ── LLM sub-tabs ──────────────────────────────────────────────────
 
-    var llmTabs = document.querySelectorAll('.divi5-llm-tab');
+    var llmTabs = document.querySelectorAll('.aied-llm-tab');
     llmTabs.forEach(function (tab) {
         tab.addEventListener('click', function () {
             var target = tab.dataset.target;
 
             // Update tab active state
-            llmTabs.forEach(function (t) { t.classList.remove('divi5-llm-tab--active'); });
-            tab.classList.add('divi5-llm-tab--active');
+            llmTabs.forEach(function (t) { t.classList.remove('aied-llm-tab--active'); });
+            tab.classList.add('aied-llm-tab--active');
 
             // Show/hide panels
-            document.querySelectorAll('.divi5-llm-panel').forEach(function (panel) {
-                panel.hidden = panel.id !== 'divi5-panel-' + target;
+            document.querySelectorAll('.aied-llm-panel').forEach(function (panel) {
+                panel.hidden = panel.id !== 'aied-panel-' + target;
             });
         });
     });

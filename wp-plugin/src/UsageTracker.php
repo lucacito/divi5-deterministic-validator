@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Divi5Validator\WP;
+namespace AiEditorDivi5\WP;
 
 /**
- * Logs every validator API call to a custom DB table.
+ * Logs every API call to a custom DB table.
  * Schema is created on plugin activation via createTable().
  */
 final class UsageTracker
 {
-    private const DB_VERSION_OPTION = 'divi5_validator_db_version';
+    private const DB_VERSION_OPTION = 'ai_editor_divi5_db_version';
     private const DB_VERSION        = 1;
 
     public static function tableName(): string
     {
         global $wpdb;
-        return $wpdb->prefix . 'divi5_validator_usage';
+        return $wpdb->prefix . 'ai_editor_divi5_usage';
     }
 
     public static function createTable(): void
@@ -67,8 +67,8 @@ final class UsageTracker
     {
         global $wpdb;
 
-        $ua     = $_SERVER['HTTP_USER_AGENT'] ?? '';
-        $ip     = $_SERVER['REMOTE_ADDR']     ?? '';
+        $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        $ip = $_SERVER['REMOTE_ADDR']     ?? '';
 
         $wpdb->insert(
             self::tableName(),

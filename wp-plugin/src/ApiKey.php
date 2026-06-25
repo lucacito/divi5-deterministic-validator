@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Divi5Validator\WP;
+namespace AiEditorDivi5\WP;
 
 /**
  * Plugin API key — a single Bearer token that authenticates all plugin endpoints.
@@ -10,8 +10,8 @@ namespace Divi5Validator\WP;
  */
 final class ApiKey
 {
-    private const OPTION_KEY  = 'divi5_validator_api_key';
-    private const OPTION_USER = 'divi5_validator_api_user_id';
+    private const OPTION_KEY  = 'ai_editor_divi5_api_key';
+    private const OPTION_USER = 'ai_editor_divi5_api_user_id';
 
     public static function get(): string
     {

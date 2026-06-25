@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Divi5Validator\WP;
+namespace AiEditorDivi5\WP;
 
 use WP_REST_Request;
 use WP_REST_Response;
 
 /**
- * Serves an OpenAPI 3.1 spec for the validator REST endpoints.
+ * Serves an OpenAPI 3.1 spec for the plugin REST endpoints.
  *
  * Used by ChatGPT Actions and any OpenAPI-compatible client.
- * Endpoint: GET /wp-json/divi5-validator/v1/openapi.json
+ * Endpoint: GET /wp-json/ai-editor-divi5/v1/openapi.json
  */
 final class OpenApiSpec
 {
     public function register_routes(): void
     {
-        register_rest_route('divi5-validator/v1', '/openapi.json', [
+        register_rest_route('ai-editor-divi5/v1', '/openapi.json', [
             'methods'             => 'GET',
             'callback'            => [$this, 'serve'],
             'permission_callback' => '__return_true',
@@ -26,14 +26,14 @@ final class OpenApiSpec
 
     public function serve(WP_REST_Request $request): WP_REST_Response
     {
-        $base = rtrim(get_site_url(), '/') . '/wp-json/divi5-validator/v1';
+        $base = rtrim(get_site_url(), '/') . '/wp-json/ai-editor-divi5/v1';
 
         $spec = [
             'openapi' => '3.1.0',
             'info'    => [
-                'title'       => 'Divi 5 Deterministic Validator',
-                'description' => 'Validates Divi 5 layouts and safely updates WordPress pages. Prevents AI agents from saving broken layouts.',
-                'version'     => DIVI5_VALIDATOR_VERSION,
+                'title'       => 'AI Editor for Divi 5',
+                'description' => 'Let your AI assistant read and edit Divi 5 pages with natural language. Every change is validated before saving — broken pages become impossible.',
+                'version'     => AI_EDITOR_DIVI5_VERSION,
             ],
             'servers'    => [['url' => $base]],
             'security'   => [['ApiKey' => []]],
@@ -42,7 +42,7 @@ final class OpenApiSpec
                     'ApiKey' => [
                         'type'        => 'http',
                         'scheme'      => 'bearer',
-                        'description' => 'Plugin API key from Settings → Divi 5 Validator',
+                        'description' => 'Plugin API key from Settings → AI Editor for Divi 5',
                     ],
                 ],
                 'schemas' => [

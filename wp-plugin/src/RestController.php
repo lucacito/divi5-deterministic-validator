@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Divi5Validator\WP;
+namespace AiEditorDivi5\WP;
 
 use Divi5Validator\Validator;
 use WP_REST_Request;
@@ -20,7 +20,7 @@ use WP_Error;
  */
 final class RestController
 {
-    private const NS = 'divi5-validator/v1';
+    private const NS = 'ai-editor-divi5/v1';
 
     public function register_routes(): void
     {

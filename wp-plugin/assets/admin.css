@@ -1,19 +1,19 @@
-/* Divi 5 Validator — Admin styles */
+/* AI Editor for Divi 5 — Admin styles */
 
-.divi5-admin { max-width: 1280px; }
+.aied-admin { max-width: 1280px; }
 
 /* ── Two-column layout ── */
-.divi5-layout {
+.aied-layout {
     display: grid;
     grid-template-columns: 1fr 300px;
     gap: 24px;
     align-items: start;
 }
-.divi5-main    { min-width: 0; }
-.divi5-sidebar { min-width: 0; }
+.aied-main    { min-width: 0; }
+.aied-sidebar { min-width: 0; }
 
 /* ── Sidebar cards ── */
-.divi5-sidebar-card {
+.aied-sidebar-card {
     background: #fff;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
@@ -23,7 +23,7 @@
     line-height: 1.6;
     color: #3c434a;
 }
-.divi5-sidebar-card h3 {
+.aied-sidebar-card h3 {
     margin: 0 0 12px;
     font-size: 11px;
     font-weight: 700;
@@ -31,12 +31,12 @@
     letter-spacing: .06em;
     color: #6c5ce7;
 }
-.divi5-sidebar-card p           { margin: 0 0 10px; }
-.divi5-sidebar-card p:last-child { margin-bottom: 0; }
-.divi5-sidebar-card--tip        { background: #faf9ff; border-color: #d4cefe; }
+.aied-sidebar-card p           { margin: 0 0 10px; }
+.aied-sidebar-card p:last-child { margin-bottom: 0; }
+.aied-sidebar-card--tip        { background: #faf9ff; border-color: #d4cefe; }
 
 /* How it works steps */
-.divi5-sidebar-steps {
+.aied-sidebar-steps {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -44,12 +44,12 @@
     flex-direction: column;
     gap: 14px;
 }
-.divi5-sidebar-steps li {
+.aied-sidebar-steps li {
     display: flex;
     gap: 10px;
     align-items: flex-start;
 }
-.divi5-sidebar-step__num {
+.aied-sidebar-step__num {
     flex-shrink: 0;
     width: 22px;
     height: 22px;
@@ -63,13 +63,13 @@
     justify-content: center;
     margin-top: 1px;
 }
-.divi5-sidebar-steps li div { display: flex; flex-direction: column; gap: 2px; }
-.divi5-sidebar-steps strong  { font-size: 13px; color: #1d2327; }
-.divi5-sidebar-steps span    { font-size: 12px; color: #757575; }
-.divi5-sidebar-steps code    { background: #f0f0f1; padding: 1px 4px; border-radius: 3px; font-size: 11px; }
+.aied-sidebar-steps li div { display: flex; flex-direction: column; gap: 2px; }
+.aied-sidebar-steps strong  { font-size: 13px; color: #1d2327; }
+.aied-sidebar-steps span    { font-size: 12px; color: #757575; }
+.aied-sidebar-steps code    { background: #f0f0f1; padding: 1px 4px; border-radius: 3px; font-size: 11px; }
 
 /* Tool list */
-.divi5-tool-list {
+.aied-tool-list {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -77,8 +77,8 @@
     flex-direction: column;
     gap: 10px;
 }
-.divi5-tool-list li   { display: flex; flex-direction: column; gap: 3px; }
-.divi5-tool-list code {
+.aied-tool-list li   { display: flex; flex-direction: column; gap: 3px; }
+.aied-tool-list code {
     background: #1e1e2e;
     color: #cdd6f4;
     padding: 3px 7px;
@@ -86,10 +86,10 @@
     font-size: 11px;
     display: inline-block;
 }
-.divi5-tool-list span { font-size: 12px; color: #757575; padding-left: 2px; }
+.aied-tool-list span { font-size: 12px; color: #757575; padding-left: 2px; }
 
 /* Prompt list */
-.divi5-prompt-list {
+.aied-prompt-list {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -97,7 +97,7 @@
     flex-direction: column;
     gap: 6px;
 }
-.divi5-prompt-list li {
+.aied-prompt-list li {
     background: #f8f8f8;
     border: 1px solid #e8e8e8;
     border-radius: 6px;
@@ -106,11 +106,11 @@
     color: #3c434a;
     font-style: italic;
 }
-.divi5-prompt-list li::before { content: '"'; color: #6c5ce7; font-style: normal; font-weight: 700; }
-.divi5-prompt-list li::after  { content: '"'; color: #6c5ce7; font-style: normal; font-weight: 700; }
+.aied-prompt-list li::before { content: '"'; color: #6c5ce7; font-style: normal; font-weight: 700; }
+.aied-prompt-list li::after  { content: '"'; color: #6c5ce7; font-style: normal; font-weight: 700; }
 
 /* ── Header ── */
-.divi5-header {
+.aied-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -118,26 +118,26 @@
     border-bottom: 1px solid #e0e0e0;
     margin-bottom: 24px;
 }
-.divi5-header__brand { display: flex; align-items: center; gap: 14px; }
-.divi5-header__logo  { font-size: 28px; line-height: 1; color: #6c5ce7; }
-.divi5-header h1     { margin: 0; padding: 0; font-size: 20px; line-height: 1.2; }
-.divi5-header p      { margin: 2px 0 0; color: #757575; font-size: 13px; }
-.divi5-header__version { background: #f0f0f1; color: #666; border-radius: 4px; padding: 3px 8px; font-size: 12px; }
+.aied-header__brand { display: flex; align-items: center; gap: 14px; }
+.aied-header__logo  { font-size: 28px; line-height: 1; color: #6c5ce7; }
+.aied-header h1     { margin: 0; padding: 0; font-size: 20px; line-height: 1.2; }
+.aied-header p      { margin: 2px 0 0; color: #757575; font-size: 13px; }
+.aied-header__version { background: #f0f0f1; color: #666; border-radius: 4px; padding: 3px 8px; font-size: 12px; }
 
 /* ── Card ── */
-.divi5-card {
+.aied-card {
     background: #fff;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 24px;
     margin-bottom: 20px;
 }
-.divi5-card h2 { margin: 0 0 6px; font-size: 15px; }
-.divi5-card__desc { margin: 0 0 16px; color: #757575; font-size: 13px; }
+.aied-card h2 { margin: 0 0 6px; font-size: 15px; }
+.aied-card__desc { margin: 0 0 16px; color: #757575; font-size: 13px; }
 
 /* ── API Key row ── */
-.divi5-key-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.divi5-key {
+.aied-key-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.aied-key {
     flex: 1;
     min-width: 200px;
     background: #f8f8f8;
@@ -149,18 +149,18 @@
     color: #555;
     word-break: break-all;
 }
-.divi5-btn-danger { color: #b91c1c !important; border-color: #fca5a5 !important; }
-.divi5-btn-danger:hover { background: #fef2f2 !important; }
+.aied-btn-danger { color: #b91c1c !important; border-color: #fca5a5 !important; }
+.aied-btn-danger:hover { background: #fef2f2 !important; }
 
 /* ── Main tabs (Connect / Usage) ── */
-.divi5-tabs {
+.aied-tabs {
     display: flex;
     gap: 4px;
     margin-bottom: -1px;
     position: relative;
     z-index: 1;
 }
-.divi5-tab {
+.aied-tab {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -175,9 +175,9 @@
     font-weight: 500;
     transition: background .15s;
 }
-.divi5-tab:hover { background: #e8e8e8; color: #333; }
-.divi5-tab--active { background: #fff; color: #1d2327; border-bottom: 1px solid #fff; }
-.divi5-badge {
+.aied-tab:hover { background: #e8e8e8; color: #333; }
+.aied-tab--active { background: #fff; color: #1d2327; border-bottom: 1px solid #fff; }
+.aied-badge {
     background: #6c5ce7;
     color: #fff;
     border-radius: 10px;
@@ -187,13 +187,13 @@
 }
 
 /* ── LLM sub-tabs ── */
-.divi5-llm-tabs {
+.aied-llm-tabs {
     display: flex;
     gap: 4px;
     margin-bottom: 20px;
     flex-wrap: wrap;
 }
-.divi5-llm-tab {
+.aied-llm-tab {
     padding: 6px 14px;
     border: 1px solid #e0e0e0;
     border-radius: 20px;
@@ -203,17 +203,17 @@
     cursor: pointer;
     transition: all .15s;
 }
-.divi5-llm-tab:hover { background: #e0e0e0; }
-.divi5-llm-tab--active { background: #6c5ce7; color: #fff; border-color: #6c5ce7; }
+.aied-llm-tab:hover { background: #e0e0e0; }
+.aied-llm-tab--active { background: #6c5ce7; color: #fff; border-color: #6c5ce7; }
 
 /* ── Steps list ── */
-.divi5-steps { margin: 0 0 16px 18px; padding: 0; }
-.divi5-steps li { margin-bottom: 6px; font-size: 13px; line-height: 1.6; color: #3c434a; }
-.divi5-steps code { background: #f0f0f1; padding: 2px 5px; border-radius: 3px; font-size: 12px; }
+.aied-steps { margin: 0 0 16px 18px; padding: 0; }
+.aied-steps li { margin-bottom: 6px; font-size: 13px; line-height: 1.6; color: #3c434a; }
+.aied-steps code { background: #f0f0f1; padding: 2px 5px; border-radius: 3px; font-size: 12px; }
 
 /* ── Code snippet ── */
-.divi5-snippet-wrap { position: relative; margin-bottom: 16px; }
-.divi5-snippet {
+.aied-snippet-wrap { position: relative; margin-bottom: 16px; }
+.aied-snippet {
     background: #1e1e2e;
     color: #cdd6f4;
     border: 1px solid #333;
@@ -226,55 +226,55 @@
     margin: 0;
     padding-bottom: 44px;
 }
-.divi5-copy-btn {
+.aied-copy-btn {
     position: absolute !important;
     bottom: 10px;
     right: 10px;
 }
-.divi5-note { font-size: 12px; color: #757575; margin-top: 12px; }
-.divi5-note a { color: #6c5ce7; }
+.aied-note { font-size: 12px; color: #757575; margin-top: 12px; }
+.aied-note a { color: #6c5ce7; }
 
 /* ── Usage stats ── */
-.divi5-stats {
+.aied-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 12px;
     margin-bottom: 24px;
 }
-.divi5-stat {
+.aied-stat {
     background: #f8f8f8;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 16px;
     text-align: center;
 }
-.divi5-stat--valid   { border-color: #86efac; background: #f0fdf4; }
-.divi5-stat--invalid { border-color: #fca5a5; background: #fef2f2; }
-.divi5-stat__num   { display: block; font-size: 28px; font-weight: 700; color: #1d2327; line-height: 1; }
-.divi5-stat__label { display: block; font-size: 12px; color: #757575; margin-top: 4px; }
+.aied-stat--valid   { border-color: #86efac; background: #f0fdf4; }
+.aied-stat--invalid { border-color: #fca5a5; background: #fef2f2; }
+.aied-stat__num   { display: block; font-size: 28px; font-weight: 700; color: #1d2327; line-height: 1; }
+.aied-stat__label { display: block; font-size: 12px; color: #757575; margin-top: 4px; }
 
 /* ── Client bars ── */
-.divi5-by-client { margin-bottom: 24px; }
-.divi5-by-client h3 { font-size: 14px; margin: 0 0 12px; }
-.divi5-client-bars { display: flex; flex-direction: column; gap: 8px; }
-.divi5-client-bar  { display: flex; align-items: center; gap: 10px; }
-.divi5-client-bar__label { width: 160px; font-size: 13px; color: #3c434a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.divi5-client-bar__track { flex: 1; height: 8px; background: #f0f0f1; border-radius: 4px; overflow: hidden; }
-.divi5-client-bar__fill  { height: 100%; background: #6c5ce7; border-radius: 4px; transition: width .3s; }
-.divi5-client-bar__count { width: 36px; text-align: right; font-size: 13px; font-weight: 600; color: #3c434a; }
+.aied-by-client { margin-bottom: 24px; }
+.aied-by-client h3 { font-size: 14px; margin: 0 0 12px; }
+.aied-client-bars { display: flex; flex-direction: column; gap: 8px; }
+.aied-client-bar  { display: flex; align-items: center; gap: 10px; }
+.aied-client-bar__label { width: 160px; font-size: 13px; color: #3c434a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.aied-client-bar__track { flex: 1; height: 8px; background: #f0f0f1; border-radius: 4px; overflow: hidden; }
+.aied-client-bar__fill  { height: 100%; background: #6c5ce7; border-radius: 4px; transition: width .3s; }
+.aied-client-bar__count { width: 36px; text-align: right; font-size: 13px; font-weight: 600; color: #3c434a; }
 
 /* ── Table ── */
-.divi5-table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.divi5-table-header h3 { margin: 0; font-size: 14px; }
-.divi5-usage-table { font-size: 13px; }
-.divi5-usage-table code { font-size: 12px; background: #f0f0f1; padding: 1px 4px; border-radius: 3px; }
+.aied-table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.aied-table-header h3 { margin: 0; font-size: 14px; }
+.aied-usage-table { font-size: 13px; }
+.aied-usage-table code { font-size: 12px; background: #f0f0f1; padding: 1px 4px; border-radius: 3px; }
 
-.divi5-result { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }
-.divi5-result--valid   { background: #dcfce7; color: #166534; }
-.divi5-result--invalid { background: #fee2e2; color: #991b1b; }
-.divi5-result--error   { background: #fef3c7; color: #92400e; }
+.aied-result { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+.aied-result--valid   { background: #dcfce7; color: #166534; }
+.aied-result--invalid { background: #fee2e2; color: #991b1b; }
+.aied-result--error   { background: #fef3c7; color: #92400e; }
 
-.divi5-empty { color: #757575; font-style: italic; text-align: center; padding: 32px 0; }
+.aied-empty { color: #757575; font-style: italic; text-align: center; padding: 32px 0; }
 
 kbd {
     background: #f0f0f1;
