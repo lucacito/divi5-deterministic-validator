@@ -9,4 +9,9 @@ foreach (['Violation', 'ValidationResult', 'SchemaRules', 'Block', 'ParseResult'
 }
 
 // Load plugin classes
+require_once __DIR__ . '/ApiKey.php';
+require_once __DIR__ . '/UsageTracker.php';
 require_once __DIR__ . '/RestController.php';
+require_once __DIR__ . '/McpHandler.php';
+require_once __DIR__ . '/OpenApiSpec.php';
+require_once __DIR__ . '/AdminPage.php';

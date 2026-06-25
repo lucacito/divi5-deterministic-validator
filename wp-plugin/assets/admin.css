@@ -1,0 +1,179 @@
+/* Divi 5 Validator — Admin styles */
+
+.divi5-admin { max-width: 900px; }
+
+/* ── Header ── */
+.divi5-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0 16px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 24px;
+}
+.divi5-header__brand { display: flex; align-items: center; gap: 14px; }
+.divi5-header__logo  { font-size: 28px; line-height: 1; color: #6c5ce7; }
+.divi5-header h1     { margin: 0; padding: 0; font-size: 20px; line-height: 1.2; }
+.divi5-header p      { margin: 2px 0 0; color: #757575; font-size: 13px; }
+.divi5-header__version { background: #f0f0f1; color: #666; border-radius: 4px; padding: 3px 8px; font-size: 12px; }
+
+/* ── Card ── */
+.divi5-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+.divi5-card h2 { margin: 0 0 6px; font-size: 15px; }
+.divi5-card__desc { margin: 0 0 16px; color: #757575; font-size: 13px; }
+
+/* ── API Key row ── */
+.divi5-key-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.divi5-key {
+    flex: 1;
+    min-width: 200px;
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: #555;
+    word-break: break-all;
+}
+.divi5-btn-danger { color: #b91c1c !important; border-color: #fca5a5 !important; }
+.divi5-btn-danger:hover { background: #fef2f2 !important; }
+
+/* ── Main tabs (Connect / Usage) ── */
+.divi5-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: -1px;
+    position: relative;
+    z-index: 1;
+}
+.divi5-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background: #f0f0f1;
+    border: 1px solid #e0e0e0;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    color: #555;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background .15s;
+}
+.divi5-tab:hover { background: #e8e8e8; color: #333; }
+.divi5-tab--active { background: #fff; color: #1d2327; border-bottom: 1px solid #fff; }
+.divi5-badge {
+    background: #6c5ce7;
+    color: #fff;
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ── LLM sub-tabs ── */
+.divi5-llm-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.divi5-llm-tab {
+    padding: 6px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    background: #f0f0f1;
+    color: #555;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .15s;
+}
+.divi5-llm-tab:hover { background: #e0e0e0; }
+.divi5-llm-tab--active { background: #6c5ce7; color: #fff; border-color: #6c5ce7; }
+
+/* ── Steps list ── */
+.divi5-steps { margin: 0 0 16px 18px; padding: 0; }
+.divi5-steps li { margin-bottom: 6px; font-size: 13px; line-height: 1.6; color: #3c434a; }
+.divi5-steps code { background: #f0f0f1; padding: 2px 5px; border-radius: 3px; font-size: 12px; }
+
+/* ── Code snippet ── */
+.divi5-snippet-wrap { position: relative; margin-bottom: 16px; }
+.divi5-snippet {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 16px;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+    margin: 0;
+    padding-bottom: 44px;
+}
+.divi5-copy-btn {
+    position: absolute !important;
+    bottom: 10px;
+    right: 10px;
+}
+.divi5-note { font-size: 12px; color: #757575; margin-top: 12px; }
+.divi5-note a { color: #6c5ce7; }
+
+/* ── Usage stats ── */
+.divi5-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.divi5-stat {
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+}
+.divi5-stat--valid   { border-color: #86efac; background: #f0fdf4; }
+.divi5-stat--invalid { border-color: #fca5a5; background: #fef2f2; }
+.divi5-stat__num   { display: block; font-size: 28px; font-weight: 700; color: #1d2327; line-height: 1; }
+.divi5-stat__label { display: block; font-size: 12px; color: #757575; margin-top: 4px; }
+
+/* ── Client bars ── */
+.divi5-by-client { margin-bottom: 24px; }
+.divi5-by-client h3 { font-size: 14px; margin: 0 0 12px; }
+.divi5-client-bars { display: flex; flex-direction: column; gap: 8px; }
+.divi5-client-bar  { display: flex; align-items: center; gap: 10px; }
+.divi5-client-bar__label { width: 160px; font-size: 13px; color: #3c434a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.divi5-client-bar__track { flex: 1; height: 8px; background: #f0f0f1; border-radius: 4px; overflow: hidden; }
+.divi5-client-bar__fill  { height: 100%; background: #6c5ce7; border-radius: 4px; transition: width .3s; }
+.divi5-client-bar__count { width: 36px; text-align: right; font-size: 13px; font-weight: 600; color: #3c434a; }
+
+/* ── Table ── */
+.divi5-table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.divi5-table-header h3 { margin: 0; font-size: 14px; }
+.divi5-usage-table { font-size: 13px; }
+.divi5-usage-table code { font-size: 12px; background: #f0f0f1; padding: 1px 4px; border-radius: 3px; }
+
+.divi5-result { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+.divi5-result--valid   { background: #dcfce7; color: #166534; }
+.divi5-result--invalid { background: #fee2e2; color: #991b1b; }
+.divi5-result--error   { background: #fef3c7; color: #92400e; }
+
+.divi5-empty { color: #757575; font-style: italic; text-align: center; padding: 32px 0; }
+
+kbd {
+    background: #f0f0f1;
+    border: 1px solid #c8c8c8;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 12px;
+    font-family: monospace;
+}

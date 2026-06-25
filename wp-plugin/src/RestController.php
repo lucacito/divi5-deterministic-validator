@@ -101,6 +101,8 @@ final class RestController
             return new WP_Error('forbidden', "You do not have permission to read page $id.", ['status' => 403]);
         }
 
+        UsageTracker::log('get_page', $id, 'valid');
+
         $layout = $this->build_layout_envelope($post);
 
         return new WP_REST_Response($layout, 200);
@@ -129,6 +131,7 @@ final class RestController
         $result   = (new Validator())->validate($envelope);
 
         if (!$result->isValid()) {
+            UsageTracker::log('update_page', $id, 'invalid', count($result->violations()));
             return new WP_REST_Response([
                 'saved'      => false,
                 'valid'      => false,
@@ -146,6 +149,8 @@ final class RestController
         if (is_wp_error($updated)) {
             return new WP_Error('update_failed', $updated->get_error_message(), ['status' => 500]);
         }
+
+        UsageTracker::log('update_page', $id, 'valid');
 
         return new WP_REST_Response([
             'saved'      => true,
@@ -169,6 +174,8 @@ final class RestController
             : json_encode($body);
 
         $result = (new Validator())->validate($json);
+
+        UsageTracker::log('validate', null, $result->isValid() ? 'valid' : 'invalid', count($result->violations()));
 
         return new WP_REST_Response($result->toArray(), $result->isValid() ? 200 : 422);
     }
@@ -197,8 +204,14 @@ final class RestController
 
     public function require_edit_posts(): bool|WP_Error
     {
+        // Accept plugin API key (Bearer token) — simpler than Application Passwords
+        if (ApiKey::authenticateRequest()) {
+            return true;
+        }
+
+        // Also accept WordPress Application Passwords (Basic auth, handled by WP core)
         if (!is_user_logged_in()) {
-            return new WP_Error('unauthorized', 'Authentication required. Use an Application Password.', ['status' => 401]);
+            return new WP_Error('unauthorized', 'Authentication required. Use an Application Password or the plugin API key.', ['status' => 401]);
         }
 
         if (!current_user_can('edit_posts')) {
