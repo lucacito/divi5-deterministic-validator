@@ -97,6 +97,10 @@ final class RestController
             return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
         }
 
+        if (!current_user_can('edit_post', $id)) {
+            return new WP_Error('forbidden', "You do not have permission to read page $id.", ['status' => 403]);
+        }
+
         $layout = $this->build_layout_envelope($post);
 
         return new WP_REST_Response($layout, 200);
@@ -111,9 +115,13 @@ final class RestController
             return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
         }
 
+        if (!current_user_can('edit_post', $id)) {
+            return new WP_Error('forbidden', "You do not have permission to edit page $id.", ['status' => 403]);
+        }
+
         $body = $request->get_json_params();
-        if (empty($body['post_content'])) {
-            return new WP_Error('missing_field', 'Request body must include "post_content".', ['status' => 400]);
+        if (!isset($body['post_content']) || !is_string($body['post_content']) || trim($body['post_content']) === '') {
+            return new WP_Error('missing_field', 'Request body must include a non-empty string "post_content".', ['status' => 400]);
         }
 
         // Validate before saving — this is the safety gate
@@ -189,9 +197,14 @@ final class RestController
 
     public function require_edit_posts(): bool|WP_Error
     {
-        if (!current_user_can('edit_posts')) {
-            return new WP_Error('forbidden', 'You must be authenticated to use this endpoint.', ['status' => 401]);
+        if (!is_user_logged_in()) {
+            return new WP_Error('unauthorized', 'Authentication required. Use an Application Password.', ['status' => 401]);
         }
+
+        if (!current_user_can('edit_posts')) {
+            return new WP_Error('forbidden', 'Your account does not have permission to use this endpoint.', ['status' => 403]);
+        }
+
         return true;
     }
 }

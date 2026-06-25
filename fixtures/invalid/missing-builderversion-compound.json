@@ -1,0 +1,5 @@
+{
+    "source": "divi5-invalid-fixture",
+    "_comment": "divi/slider missing builderVersion — required on all blocks except divi/placeholder",
+    "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/row {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/column {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/slider {} --><!-- wp:divi/slide {\"builderVersion\":\"5.8.0\"} /--><!-- /wp:divi/slider --><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+}

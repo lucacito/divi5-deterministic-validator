@@ -1,0 +1,5 @@
+{
+    "source": "divi5-invalid-fixture",
+    "_comment": "divi/slider placed directly inside divi/section — must be inside column",
+    "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/slider {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/slide {\"builderVersion\":\"5.8.0\"} /--><!-- /wp:divi/slider --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+}

@@ -1,0 +1,5 @@
+{
+    "source": "divi5-invalid-fixture",
+    "_comment": "divi/video with video.innerContent.desktop.value as a string URL instead of object — causes PHP fatal on render",
+    "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/row {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/column {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/video {\"video\":{\"innerContent\":{\"desktop\":{\"value\":\"https://example.com/video.mp4\"}}},\"builderVersion\":\"5.8.0\"} /--><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+}

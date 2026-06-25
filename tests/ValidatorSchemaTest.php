@@ -72,12 +72,20 @@ class ValidatorSchemaTest extends TestCase
     {
         $dir = dirname(__DIR__) . '/fixtures/invalid';
         return [
-            'truncated-json'         => [$dir . '/truncated.json',              Validator::E_INVALID_JSON],
-            'unknown-module-type'    => [$dir . '/unknown-module-type.json',    Validator::E_UNKNOWN_MODULE_TYPE],
-            'missing-required-field' => [$dir . '/missing-required-field.json', Validator::E_MISSING_REQUIRED_FIELD],
-            'wrong-nesting'          => [$dir . '/wrong-nesting.json',          Validator::E_UNEXPECTED_CHILD_TYPE],
-            'scalar-where-object'    => [$dir . '/scalar-where-object.json',    Validator::E_SCALAR_WHERE_OBJECT],
-            'missing-post-content'   => [$dir . '/missing-post-content.json',   Validator::E_MISSING_POST_CONTENT],
+            // Pass 1 — envelope
+            'truncated-json'                  => [$dir . '/truncated.json',                       Validator::E_INVALID_JSON],
+            'missing-post-content'            => [$dir . '/missing-post-content.json',            Validator::E_MISSING_POST_CONTENT],
+            // Pass 3 — schema
+            'unknown-module-type'             => [$dir . '/unknown-module-type.json',             Validator::E_UNKNOWN_MODULE_TYPE],
+            'missing-required-field'          => [$dir . '/missing-required-field.json',          Validator::E_MISSING_REQUIRED_FIELD],
+            'missing-builderversion-compound' => [$dir . '/missing-builderversion-compound.json', Validator::E_MISSING_REQUIRED_FIELD],
+            // Pass 4 — hierarchy
+            'wrong-nesting'                   => [$dir . '/wrong-nesting.json',                   Validator::E_UNEXPECTED_CHILD_TYPE],
+            'wrong-nesting-compound'          => [$dir . '/wrong-nesting-compound.json',          Validator::E_UNEXPECTED_CHILD_TYPE],
+            'orphaned-compound-child'         => [$dir . '/orphaned-compound-child.json',         Validator::E_UNEXPECTED_CHILD_TYPE],
+            // Pass 5 — render-critical
+            'scalar-where-object'             => [$dir . '/scalar-where-object.json',             Validator::E_SCALAR_WHERE_OBJECT],
+            'scalar-where-object-video'       => [$dir . '/scalar-where-object-video.json',       Validator::E_SCALAR_WHERE_OBJECT],
         ];
     }
 }

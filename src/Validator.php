@@ -271,45 +271,48 @@ final class Validator
     private function passRenderCritical(Block $root, array &$violations): void
     {
         $root->walk(function (Block $block, string $path) use (&$violations): void {
-            $rules = $this->schema->contentKeyRules();
-            $type  = $block->name();
+            $allRules = $this->schema->contentKeyRules();
+            $type     = $block->name();
 
-            if (!isset($rules[$type])) {
+            if (!isset($allRules[$type])) {
                 return;
             }
 
-            [$contentKey, $mustBeObject] = $rules[$type];
+            foreach ($allRules[$type] as [$contentKey, $required, $mustBeObject]) {
+                $innerContent = $block->attr("$contentKey.innerContent");
 
-            // Content key must be present
-            $innerContent = $block->attr("$contentKey.innerContent");
-            if ($innerContent === null) {
-                $violations[] = new Violation(
-                    self::E_RENDER_CRITICAL_MISSING,
-                    "Block '$type' is missing render-critical attribute '$contentKey.innerContent'.",
-                    "$path.$contentKey.innerContent"
-                );
-                return;
-            }
+                if ($innerContent === null) {
+                    if ($required) {
+                        $violations[] = new Violation(
+                            self::E_RENDER_CRITICAL_MISSING,
+                            "Block '$type' is missing render-critical attribute '$contentKey.innerContent'.",
+                            "$path.$contentKey.innerContent"
+                        );
+                    }
+                    continue;
+                }
 
-            // desktop.value must be present
-            $value = $block->attr("$contentKey.innerContent.desktop.value");
-            if ($value === null) {
-                $violations[] = new Violation(
-                    self::E_RENDER_CRITICAL_MISSING,
-                    "Block '$type' is missing render-critical attribute '$contentKey.innerContent.desktop.value'.",
-                    "$path.$contentKey.innerContent.desktop.value"
-                );
-                return;
-            }
+                $value = $block->attr("$contentKey.innerContent.desktop.value");
 
-            // For image/button: value must be an object, not a scalar (deep-merge fatal)
-            if ($mustBeObject && !is_array($value)) {
-                $violations[] = new Violation(
-                    self::E_SCALAR_WHERE_OBJECT,
-                    "Block '$type': '$contentKey.innerContent.desktop.value' must be an object, got "
-                        . gettype($value) . '. This causes a PHP fatal on render.',
-                    "$path.$contentKey.innerContent.desktop.value"
-                );
+                if ($value === null) {
+                    if ($required) {
+                        $violations[] = new Violation(
+                            self::E_RENDER_CRITICAL_MISSING,
+                            "Block '$type' is missing render-critical attribute '$contentKey.innerContent.desktop.value'.",
+                            "$path.$contentKey.innerContent.desktop.value"
+                        );
+                    }
+                    continue;
+                }
+
+                if ($mustBeObject && !is_array($value)) {
+                    $violations[] = new Violation(
+                        self::E_SCALAR_WHERE_OBJECT,
+                        "Block '$type': '$contentKey.innerContent.desktop.value' must be an object, got "
+                            . gettype($value) . '. This causes a PHP fatal on render.',
+                        "$path.$contentKey.innerContent.desktop.value"
+                    );
+                }
             }
         });
     }

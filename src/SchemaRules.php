@@ -165,22 +165,47 @@ class SchemaRules
     ];
 
     /**
-     * The content key and whether its innerContent value must be an object (not scalar).
+     * Render-critical content field rules.
      *
-     * Key   = block type
-     * Value = [content_key, value_must_be_object]
+     * Each entry: [ key, required, mustBeObject ]
+     *   key           — top-level attr key whose innerContent.desktop.value is checked
+     *   required      — true: missing key is a violation; false: only checked when present
+     *   mustBeObject  — true: value must be a JSON object (scalar causes PHP fatal on render)
      *
-     * Scalar-where-object is the deep-merge fatal case documented in SCHEMA.md §7.
-     *
-     * @return array<string, array{string, bool}>
+     * @return array<string, list<array{string, bool, bool}>>
      */
     public function contentKeyRules(): array
     {
         return [
-            'divi/heading' => ['title',   false],   // value is a string
-            'divi/text'    => ['content', false],   // value is an HTML string
-            'divi/image'   => ['image',   true],    // value must be an object {src: ...}
-            'divi/button'  => ['button',  true],    // value must be an object {text: ...}
+            // Basic modules — key required, type must match
+            'divi/heading'           => [['title',   true,  false]],
+            'divi/text'              => [['content', true,  false]],
+            'divi/image'             => [['image',   true,  true]],
+            'divi/button'            => [['button',  true,  true]],
+
+            // Media — key required, value must be object
+            'divi/video'             => [['video',       true,  true]],
+            'divi/before-after-image'=> [
+                ['beforeImage', true,  true],
+                ['afterImage',  true,  true],
+            ],
+
+            // Content — object fields optional but must be object when present
+            'divi/blurb'             => [
+                ['title',     false, true],
+                ['imageIcon', false, true],
+            ],
+            'divi/cta'               => [['button', true, true]],
+            'divi/team-member'       => [['image',  false, true]],
+            'divi/breadcrumbs'       => [
+                ['home',      false, true],
+                ['separator', false, true],
+            ],
+
+            // Compound children — object fields must be object when present
+            'divi/slide'             => [['button', false, true]],
+            'divi/icon-list-item'    => [['icon',   true,  true]],
+            'divi/pricing-table'     => [['currencyFrequency', false, true]],
         ];
     }
 
