@@ -1,0 +1,21 @@
+# Divi zip — commercial, never commit
+divi/
+
+# WordPress data & DB volume
+wp-data/
+db-data/
+
+# Composer
+vendor/
+
+# Environment
+.env
+
+# PHPUnit cache/coverage
+.phpunit.cache/
+.phpunit.result.cache
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
