@@ -119,6 +119,39 @@ scripts/
 
 ---
 
+## Layout file format
+
+Divi 5 stores layouts as **WordPress Gutenberg block HTML** in `post_content`
+(not a JSON blob — see `docs/SCHEMA.md` for the full discovery).
+
+The canonical "layout file" is a JSON envelope:
+
+```json
+{
+  "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section ... -->..."
+}
+```
+
+`make export-layouts` produces files in this format.
+`make validate FILE=fixtures/valid/page-7-homepage.json` validates one.
+
+## Violation codes
+
+| Code | Meaning |
+|---|---|
+| `INVALID_JSON` | File is not valid JSON |
+| `WRONG_ROOT_TYPE` | Root is not a JSON object |
+| `EMPTY_DOCUMENT` | File is empty |
+| `MISSING_POST_CONTENT` | `post_content` field missing |
+| `BLOCK_PARSE_ERROR` | Malformed block HTML (unclosed tag, bad JSON attrs) |
+| `NO_BLOCKS_FOUND` | `post_content` contains no Divi blocks |
+| `UNKNOWN_MODULE_TYPE` | Unrecognised `divi/*` block type |
+| `MISSING_REQUIRED_FIELD` | `builderVersion` absent from a block |
+| `UNEXPECTED_CHILD_TYPE` | Block placed in wrong parent |
+| `WRONG_NESTING` | Nesting violates section→row→column→module hierarchy |
+| `RENDER_CRITICAL_MISSING` | Content key (`title`, `content`, etc.) missing |
+| `SCALAR_WHERE_OBJECT` | `image` or `button` value is scalar — causes PHP fatal on render |
+
 ## The verdict
 
 `make test` exits 0 if every valid fixture passes and every invalid fixture

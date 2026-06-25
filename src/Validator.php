@@ -7,102 +7,102 @@ namespace Divi5Validator;
 /**
  * Deterministic Divi 5 layout validator.
  *
- * Validation happens in five ordered passes. Each pass returns early if it
- * discovers a violation that makes subsequent passes meaningless (e.g. we
- * cannot check schema conformance on unparseable JSON).
+ * Input: a JSON envelope file produced by `make export-layouts`, containing
+ * a `post_content` field with Gutenberg block HTML (see docs/SCHEMA.md §8).
  *
- * Schema-specific rules (passes 2–5) are stubs until real Divi 5 layout data
- * has been captured via `make export-layouts` and documented in docs/SCHEMA.md.
- * See SchemaRules.php for the constants and Rules\* classes for implementations.
+ * Validation runs in five ordered passes:
+ *   1. Well-formedness  — valid JSON envelope, post_content present
+ *   2. Block parsing    — valid Gutenberg block HTML, balanced tags, valid attrs JSON
+ *   3. Schema           — known block types, builderVersion present
+ *   4. Hierarchy        — nesting follows section→row→column→module rules
+ *   5. Render-critical  — content-key innerContent shapes for leaf modules
  */
 final class Validator
 {
     // ---------------------------------------------------------------
-    // Violation codes — never rename these once tests depend on them
+    // Violation codes — never rename these; tests depend on them
     // ---------------------------------------------------------------
 
-    // Pass 1 — well-formedness
-    public const E_INVALID_JSON            = 'INVALID_JSON';
-    public const E_WRONG_ROOT_TYPE         = 'WRONG_ROOT_TYPE';
-    public const E_EMPTY_DOCUMENT          = 'EMPTY_DOCUMENT';
+    // Pass 1 — envelope well-formedness
+    public const E_INVALID_JSON           = 'INVALID_JSON';
+    public const E_WRONG_ROOT_TYPE        = 'WRONG_ROOT_TYPE';
+    public const E_EMPTY_DOCUMENT         = 'EMPTY_DOCUMENT';
+    public const E_MISSING_POST_CONTENT   = 'MISSING_POST_CONTENT';
 
-    // Pass 2 — schema conformance (populated after Phase 3)
-    public const E_MISSING_REQUIRED_FIELD  = 'MISSING_REQUIRED_FIELD';
-    public const E_WRONG_FIELD_TYPE        = 'WRONG_FIELD_TYPE';
-    public const E_UNKNOWN_MODULE_TYPE     = 'UNKNOWN_MODULE_TYPE';
+    // Pass 2 — block parsing
+    public const E_BLOCK_PARSE_ERROR      = 'BLOCK_PARSE_ERROR';
+    public const E_NO_BLOCKS_FOUND        = 'NO_BLOCKS_FOUND';
 
-    // Pass 3 — hierarchy integrity (populated after Phase 3)
-    public const E_WRONG_NESTING           = 'WRONG_NESTING';
-    public const E_UNEXPECTED_CHILD_TYPE   = 'UNEXPECTED_CHILD_TYPE';
+    // Pass 3 — schema conformance
+    public const E_UNKNOWN_MODULE_TYPE    = 'UNKNOWN_MODULE_TYPE';
+    public const E_MISSING_REQUIRED_FIELD = 'MISSING_REQUIRED_FIELD';
+    public const E_WRONG_FIELD_TYPE       = 'WRONG_FIELD_TYPE';
 
-    // Pass 4 — referential integrity (populated after Phase 3)
-    public const E_ORPHANED_REFERENCE      = 'ORPHANED_REFERENCE';
+    // Pass 4 — hierarchy integrity
+    public const E_WRONG_NESTING          = 'WRONG_NESTING';
+    public const E_UNEXPECTED_CHILD_TYPE  = 'UNEXPECTED_CHILD_TYPE';
 
-    // Pass 5 — render-critical attributes (populated after Phase 3)
+    // Pass 5 — render-critical attributes
     public const E_RENDER_CRITICAL_MISSING = 'RENDER_CRITICAL_MISSING';
     public const E_SCALAR_WHERE_OBJECT     = 'SCALAR_WHERE_OBJECT';
+    public const E_ORPHANED_REFERENCE      = 'ORPHANED_REFERENCE';
 
     private SchemaRules $schema;
+    private BlockParser $parser;
 
-    public function __construct(?SchemaRules $schema = null)
+    public function __construct(?SchemaRules $schema = null, ?BlockParser $parser = null)
     {
         $this->schema = $schema ?? new SchemaRules();
+        $this->parser = $parser ?? new BlockParser();
     }
 
-    /**
-     * Validate a Divi 5 layout JSON string.
-     *
-     * @param string $json Raw JSON as exported from Divi 5.
-     */
     public function validate(string $json): ValidationResult
     {
         $violations = [];
 
-        // Pass 1 — well-formedness
-        $decoded = $this->passWellFormedness($json, $violations);
+        // Pass 1 — envelope well-formedness
+        $envelope = $this->passEnvelopeWellFormedness($json, $violations);
         if ($violations !== []) {
             return new ValidationResult($violations);
         }
 
-        // Pass 2 — schema conformance
-        $this->passSchemaConformance($decoded, $violations);
+        $postContent = $envelope['post_content'];
 
-        // Pass 3 — hierarchy integrity
-        $this->passHierarchyIntegrity($decoded, $violations);
+        // Pass 2 — block parsing
+        $tree = $this->passBlockParsing($postContent, $violations);
+        if ($violations !== []) {
+            return new ValidationResult($violations);
+        }
 
-        // Pass 4 — referential integrity
-        $this->passReferentialIntegrity($decoded, $violations);
+        // Pass 3 — schema conformance
+        $this->passSchemaConformance($tree, $violations);
+
+        // Pass 4 — hierarchy integrity
+        $this->passHierarchyIntegrity($tree, $violations);
 
         // Pass 5 — render-critical attributes
-        $this->passRenderCritical($decoded, $violations);
+        $this->passRenderCritical($tree, $violations);
 
         return new ValidationResult($violations);
     }
 
     // ---------------------------------------------------------------
-    // Pass 1 — Well-formedness
+    // Pass 1 — Envelope well-formedness
     // ---------------------------------------------------------------
 
-    private function passWellFormedness(string $json, array &$violations): mixed
+    /** @param Violation[] $violations */
+    private function passEnvelopeWellFormedness(string $json, array &$violations): ?array
     {
         if (trim($json) === '') {
-            $violations[] = new Violation(
-                self::E_EMPTY_DOCUMENT,
-                'The layout JSON is empty.',
-                '$'
-            );
+            $violations[] = new Violation(self::E_EMPTY_DOCUMENT, 'The layout file is empty.', '$');
             return null;
         }
 
-        // Decode without associative flag first to distinguish {} from [] reliably.
-        // In PHP, json_decode('{}', true) returns [] which is indistinguishable
-        // from json_decode('[]', true) when using array_is_list().
         $root = json_decode($json);
-
         if (json_last_error() !== JSON_ERROR_NONE) {
             $violations[] = new Violation(
                 self::E_INVALID_JSON,
-                'The layout is not valid JSON: ' . json_last_error_msg(),
+                'The layout file is not valid JSON: ' . json_last_error_msg(),
                 '$'
             );
             return null;
@@ -111,65 +111,152 @@ final class Validator
         if (!($root instanceof \stdClass)) {
             $violations[] = new Violation(
                 self::E_WRONG_ROOT_TYPE,
-                sprintf(
-                    'The layout root must be a JSON object, got %s.',
-                    is_array($root) ? 'array' : gettype($root)
-                ),
+                sprintf('The layout root must be a JSON object, got %s.', is_array($root) ? 'array' : gettype($root)),
                 '$'
             );
             return null;
         }
 
-        // Re-decode as associative array for uniform processing.
-        return json_decode($json, associative: true);
+        $envelope = json_decode($json, associative: true);
+
+        if (!array_key_exists('post_content', $envelope)) {
+            $violations[] = new Violation(
+                self::E_MISSING_POST_CONTENT,
+                'Required field "post_content" is missing from the layout envelope.',
+                '$.post_content'
+            );
+            return null;
+        }
+
+        if (!is_string($envelope['post_content'])) {
+            $violations[] = new Violation(
+                self::E_WRONG_FIELD_TYPE,
+                '"post_content" must be a string.',
+                '$.post_content'
+            );
+            return null;
+        }
+
+        return $envelope;
     }
 
     // ---------------------------------------------------------------
-    // Pass 2 — Schema conformance
-    // NOTE: Rules are stubs until Phase 3 (schema discovery) completes.
-    //       Replace the body of this method once docs/SCHEMA.md is written.
+    // Pass 2 — Block parsing
     // ---------------------------------------------------------------
 
-    private function passSchemaConformance(mixed $decoded, array &$violations): void
+    /** @param Violation[] $violations */
+    private function passBlockParsing(string $postContent, array &$violations): ?Block
     {
-        if ($decoded === null) {
-            return;
+        $result = $this->parser->parse($postContent);
+
+        if (!$result->isOk()) {
+            foreach ($result->errors() as $msg) {
+                $violations[] = new Violation(self::E_BLOCK_PARSE_ERROR, $msg, '$.post_content');
+            }
+            return null;
         }
 
-        foreach ($this->schema->requiredTopLevelFields() as $field => $expectedType) {
-            if (!array_key_exists($field, $decoded)) {
-                $violations[] = new Violation(
-                    self::E_MISSING_REQUIRED_FIELD,
-                    "Required top-level field '$field' is missing.",
-                    "\$.$field"
-                );
-                continue;
-            }
-
-            $actual = $decoded[$field];
-            if (!$this->schema->typeMatches($actual, $expectedType)) {
-                $violations[] = new Violation(
-                    self::E_WRONG_FIELD_TYPE,
-                    "Field '$field' must be of type '$expectedType', got " . gettype($actual) . '.',
-                    "\$.$field"
-                );
-            }
+        $root = $result->root();
+        if ($root === null || $root->children() === []) {
+            $violations[] = new Violation(
+                self::E_NO_BLOCKS_FOUND,
+                'No Divi blocks found in post_content.',
+                '$.post_content'
+            );
+            return null;
         }
 
-        // Walk all nodes and check module types
-        $this->walkNodes($decoded, '$', function (mixed $node, string $path) use (&$violations): void {
-            if (!is_array($node) || array_is_list($node)) {
+        return $root;
+    }
+
+    // ---------------------------------------------------------------
+    // Pass 3 — Schema conformance
+    // ---------------------------------------------------------------
+
+    /** @param Violation[] $violations */
+    private function passSchemaConformance(Block $root, array &$violations): void
+    {
+        $root->walk(function (Block $block, string $path) use (&$violations): void {
+            if ($block->name() === '__root__') {
                 return;
             }
 
-            $typeKey = $this->schema->moduleTypeKey();
-            if ($typeKey !== null && isset($node[$typeKey])) {
-                $type = $node[$typeKey];
-                if (!$this->schema->isKnownModuleType($type)) {
+            // Unknown block type
+            if (!$this->schema->isKnownType($block->name())) {
+                $violations[] = new Violation(
+                    self::E_UNKNOWN_MODULE_TYPE,
+                    "Unknown block type '{$block->name()}'.",
+                    $path
+                );
+                return;
+            }
+
+            // builderVersion required on every Divi block except the root placeholder
+            // (real exports show divi/placeholder carries no attrs at all)
+            if ($block->name() === 'divi/placeholder') {
+                return;
+            }
+
+            if ($block->attr('builderVersion') === null) {
+                $violations[] = new Violation(
+                    self::E_MISSING_REQUIRED_FIELD,
+                    "Block '{$block->name()}' is missing required attribute 'builderVersion'.",
+                    $path . '.builderVersion'
+                );
+            } elseif (!is_string($block->attr('builderVersion'))) {
+                $violations[] = new Violation(
+                    self::E_WRONG_FIELD_TYPE,
+                    "Block '{$block->name()}' attribute 'builderVersion' must be a string.",
+                    $path . '.builderVersion'
+                );
+            }
+        });
+    }
+
+    // ---------------------------------------------------------------
+    // Pass 4 — Hierarchy integrity
+    // ---------------------------------------------------------------
+
+    /** @param Violation[] $violations */
+    private function passHierarchyIntegrity(Block $root, array &$violations): void
+    {
+        // Root's direct children must all be divi/placeholder
+        foreach ($root->children() as $i => $child) {
+            if ($child->name() !== 'divi/placeholder') {
+                $violations[] = new Violation(
+                    self::E_WRONG_NESTING,
+                    "Top-level block must be 'divi/placeholder', got '{$child->name()}'.",
+                    "__root__[$i]"
+                );
+            }
+        }
+
+        // Walk the block tree (skip __root__) and validate each structural block's children
+        $root->walk(function (Block $block, string $path) use (&$violations): void {
+            if ($block->name() === '__root__') {
+                return;
+            }
+
+            $allowed = $this->schema->allowedChildrenOf($block->name());
+
+            // Leaf modules must not have children
+            if ($this->schema->isLeafModule($block->name()) && $block->children() !== []) {
+                $violations[] = new Violation(
+                    self::E_WRONG_NESTING,
+                    "Leaf module '{$block->name()}' must not have children.",
+                    $path
+                );
+                return;
+            }
+
+            // Structural blocks: validate each child's type
+            foreach ($block->children() as $i => $child) {
+                if ($allowed !== [] && !in_array($child->name(), $allowed, true)) {
                     $violations[] = new Violation(
-                        self::E_UNKNOWN_MODULE_TYPE,
-                        "Unknown module type '$type'.",
-                        $path . '.' . $typeKey
+                        self::E_UNEXPECTED_CHILD_TYPE,
+                        "Block '{$child->name()}' is not a valid child of '{$block->name()}'. "
+                            . 'Allowed: [' . implode(', ', $allowed) . '].',
+                        $path . '[' . $i . ']'
                     );
                 }
             }
@@ -177,55 +264,53 @@ final class Validator
     }
 
     // ---------------------------------------------------------------
-    // Pass 3 — Hierarchy integrity
-    // NOTE: Stub until Phase 3 fills in hierarchy rules.
-    // ---------------------------------------------------------------
-
-    private function passHierarchyIntegrity(mixed $decoded, array &$violations): void
-    {
-        // Populated after docs/SCHEMA.md documents the real nesting rules.
-    }
-
-    // ---------------------------------------------------------------
-    // Pass 4 — Referential integrity
-    // NOTE: Stub until Phase 3 confirms whether Divi 5 uses internal IDs/refs.
-    // ---------------------------------------------------------------
-
-    private function passReferentialIntegrity(mixed $decoded, array &$violations): void
-    {
-        // Populated after docs/SCHEMA.md confirms ID/reference patterns.
-    }
-
-    // ---------------------------------------------------------------
     // Pass 5 — Render-critical attributes
-    // NOTE: Stub until Phase 3 identifies which attrs cause fatal renders.
     // ---------------------------------------------------------------
 
-    private function passRenderCritical(mixed $decoded, array &$violations): void
+    /** @param Violation[] $violations */
+    private function passRenderCritical(Block $root, array &$violations): void
     {
-        // Populated after Phase 3 identifies render-critical field requirements.
-    }
+        $root->walk(function (Block $block, string $path) use (&$violations): void {
+            $rules = $this->schema->contentKeyRules();
+            $type  = $block->name();
 
-    // ---------------------------------------------------------------
-    // Helpers
-    // ---------------------------------------------------------------
-
-    /**
-     * Depth-first walk of all nodes in a decoded JSON structure.
-     *
-     * @param callable(mixed, string): void $callback
-     */
-    private function walkNodes(mixed $node, string $path, callable $callback): void
-    {
-        $callback($node, $path);
-
-        if (is_array($node)) {
-            foreach ($node as $key => $child) {
-                $childPath = array_is_list($node)
-                    ? $path . '[' . $key . ']'
-                    : $path . '.' . $key;
-                $this->walkNodes($child, $childPath, $callback);
+            if (!isset($rules[$type])) {
+                return;
             }
-        }
+
+            [$contentKey, $mustBeObject] = $rules[$type];
+
+            // Content key must be present
+            $innerContent = $block->attr("$contentKey.innerContent");
+            if ($innerContent === null) {
+                $violations[] = new Violation(
+                    self::E_RENDER_CRITICAL_MISSING,
+                    "Block '$type' is missing render-critical attribute '$contentKey.innerContent'.",
+                    "$path.$contentKey.innerContent"
+                );
+                return;
+            }
+
+            // desktop.value must be present
+            $value = $block->attr("$contentKey.innerContent.desktop.value");
+            if ($value === null) {
+                $violations[] = new Violation(
+                    self::E_RENDER_CRITICAL_MISSING,
+                    "Block '$type' is missing render-critical attribute '$contentKey.innerContent.desktop.value'.",
+                    "$path.$contentKey.innerContent.desktop.value"
+                );
+                return;
+            }
+
+            // For image/button: value must be an object, not a scalar (deep-merge fatal)
+            if ($mustBeObject && !is_array($value)) {
+                $violations[] = new Violation(
+                    self::E_SCALAR_WHERE_OBJECT,
+                    "Block '$type': '$contentKey.innerContent.desktop.value' must be an object, got "
+                        . gettype($value) . '. This causes a PHP fatal on render.',
+                    "$path.$contentKey.innerContent.desktop.value"
+                );
+            }
+        });
     }
 }

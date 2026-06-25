@@ -1,0 +1,5 @@
+{
+    "source": "divi5-invalid-fixture",
+    "_comment": "image.innerContent.desktop.value is a scalar string — must be an object {src:...}",
+    "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/row {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/column {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/image {\"image\":{\"innerContent\":{\"desktop\":{\"value\":\"http://example.com/img.jpg\"}}},\"builderVersion\":\"5.8.0\"} /--><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+}

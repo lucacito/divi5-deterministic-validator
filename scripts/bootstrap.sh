@@ -54,8 +54,8 @@ docker compose up -d
 # ---------------------------------------------------------------
 # 4. Wait for WordPress container to be ready (HTTP check)
 # ---------------------------------------------------------------
-source "$ENV_FILE"
-WP_PORT="${WP_PORT:-8080}"
+set -a; source "$ENV_FILE"; set +a
+WP_PORT="${WP_PORT:-8181}"
 echo "[bootstrap] Waiting for WordPress to respond on port $WP_PORT..."
 MAX_WAIT=120
 ELAPSED=0
@@ -91,12 +91,18 @@ fi
 # ---------------------------------------------------------------
 # 6. Install & activate Divi 5 (idempotent)
 # ---------------------------------------------------------------
-DIVI_ACTIVE=$(docker compose exec -T wpcli wp theme status divi 2>&1 || echo "not-found")
-if echo "$DIVI_ACTIVE" | grep -q "Active"; then
+DIVI_STATUS=$(docker compose exec -T wpcli wp theme status Divi 2>&1 || echo "not-found")
+if echo "$DIVI_STATUS" | grep -q "Active"; then
     echo "[bootstrap] Divi theme already active ✓"
+elif echo "$DIVI_STATUS" | grep -qi "Inactive"; then
+    # Folder exists but not active — just activate
+    echo "[bootstrap] Divi installed but not active, activating..."
+    docker compose exec -T wpcli wp theme activate Divi
+    echo "[bootstrap] Divi theme activated ✓"
 else
+    # Not installed, or partial folder — force-install and activate
     echo "[bootstrap] Installing Divi from divi/Divi.zip..."
-    docker compose exec -T wpcli wp theme install /divi-install/Divi.zip --activate
+    docker compose exec -T wpcli wp theme install /divi-install/Divi.zip --activate --force
     echo "[bootstrap] Divi theme installed and activated ✓"
 fi
 

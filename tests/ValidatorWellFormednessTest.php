@@ -8,8 +8,8 @@ use Divi5Validator\Validator;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for Pass 1 — well-formedness.
- * These tests do not require Divi 5 schema knowledge and run immediately.
+ * Tests for Pass 1 — envelope well-formedness.
+ * These do not require Divi 5 schema knowledge.
  */
 class ValidatorWellFormednessTest extends TestCase
 {
@@ -23,81 +23,73 @@ class ValidatorWellFormednessTest extends TestCase
     public function testEmptyStringFails(): void
     {
         $result = $this->v->validate('');
-        $this->assertFalse($result->isValid());
-        $this->assertViolationCode(Validator::E_EMPTY_DOCUMENT, $result->violations());
+        $this->assertFails($result, Validator::E_EMPTY_DOCUMENT);
     }
 
     public function testWhitespaceOnlyFails(): void
     {
         $result = $this->v->validate("   \n\t  ");
-        $this->assertFalse($result->isValid());
-        $this->assertViolationCode(Validator::E_EMPTY_DOCUMENT, $result->violations());
+        $this->assertFails($result, Validator::E_EMPTY_DOCUMENT);
     }
 
     public function testInvalidJsonFails(): void
     {
         $result = $this->v->validate('{not valid json');
-        $this->assertFalse($result->isValid());
-        $this->assertViolationCode(Validator::E_INVALID_JSON, $result->violations());
+        $this->assertFails($result, Validator::E_INVALID_JSON);
     }
 
     public function testTruncatedJsonFails(): void
     {
-        $result = $this->v->validate('{"version":"1.0","layouts":[{"id":1');
-        $this->assertFalse($result->isValid());
-        $this->assertViolationCode(Validator::E_INVALID_JSON, $result->violations());
+        $result = $this->v->validate('{"post_content":"<!-- wp:divi/placeholder --><!-- wp:divi/section');
+        $this->assertFails($result, Validator::E_INVALID_JSON);
     }
 
     public function testJsonArrayRootFails(): void
     {
         $result = $this->v->validate('[1, 2, 3]');
-        $this->assertFalse($result->isValid());
-        $this->assertViolationCode(Validator::E_WRONG_ROOT_TYPE, $result->violations());
+        $this->assertFails($result, Validator::E_WRONG_ROOT_TYPE);
     }
 
     public function testJsonStringRootFails(): void
     {
         $result = $this->v->validate('"just a string"');
-        $this->assertFalse($result->isValid());
-        $this->assertViolationCode(Validator::E_WRONG_ROOT_TYPE, $result->violations());
+        $this->assertFails($result, Validator::E_WRONG_ROOT_TYPE);
     }
 
     public function testJsonNullRootFails(): void
     {
         $result = $this->v->validate('null');
+        $this->assertFails($result, Validator::E_WRONG_ROOT_TYPE);
+    }
+
+    public function testMissingPostContentFails(): void
+    {
+        $result = $this->v->validate('{"source":"test"}');
+        $this->assertFails($result, Validator::E_MISSING_POST_CONTENT);
+    }
+
+    public function testNonStringPostContentFails(): void
+    {
+        $result = $this->v->validate('{"post_content": 42}');
+        $this->assertFails($result, Validator::E_WRONG_FIELD_TYPE);
+    }
+
+    public function testEmptyPostContentProducesNoBlocskFound(): void
+    {
+        $result = $this->v->validate('{"post_content":""}');
         $this->assertFalse($result->isValid());
-        $this->assertViolationCode(Validator::E_WRONG_ROOT_TYPE, $result->violations());
-    }
-
-    public function testMinimalObjectPasses(): void
-    {
-        // An empty JSON object is well-formed; schema checks are stubs for now.
-        $result = $this->v->validate('{}');
-        // Well-formedness passes; result depends on schema stubs (currently no required fields).
-        $this->assertTrue($result->isValid(), 'Expected pass with stub schema, got: ' . $this->describeViolations($result->violations()));
     }
 
     // ---------------------------------------------------------------
-    // Helpers
-    // ---------------------------------------------------------------
 
-    /** @param \Divi5Validator\Violation[] $violations */
-    private function assertViolationCode(string $expectedCode, array $violations): void
+    private function assertFails(\Divi5Validator\ValidationResult $result, string $expectedCode): void
     {
-        $codes = array_map(fn($v) => $v->code(), $violations);
+        $this->assertFalse($result->isValid());
+        $codes = array_map(fn($v) => $v->code(), $result->violations());
         $this->assertContains(
             $expectedCode,
             $codes,
-            "Expected violation code '$expectedCode', got: [" . implode(', ', $codes) . ']'
+            "Expected violation '$expectedCode', got: [" . implode(', ', $codes) . ']'
         );
-    }
-
-    /** @param \Divi5Validator\Violation[] $violations */
-    private function describeViolations(array $violations): string
-    {
-        if ($violations === []) {
-            return '(none)';
-        }
-        return implode('; ', array_map(fn($v) => $v->code() . ': ' . $v->message(), $violations));
     }
 }

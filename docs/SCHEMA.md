@@ -1,70 +1,230 @@
-# Divi 5 Layout JSON — Schema Documentation
+# Divi 5 Layout — Empirical Schema Documentation
 
-> **Status: PENDING** — This document will be written after `make export-layouts`
-> produces real exports from a running Divi 5 instance.
-
-This document describes the actual observed structure of Divi 5 layout JSON,
-derived empirically from real exports. It is the single source of truth for
-the validator's rules. Nothing here is inferred from Divi 4, training data,
-or documentation — only from real Divi 5 output.
+> **Status: COMPLETE** — Written from real exports captured via `make export-layouts`.
+> All findings are from Divi 5.8.0 running on WordPress 6.7 / PHP 8.3.
+> Nothing here is inferred from Divi 4 or training data.
 
 ---
 
-## How this document will be built
+## Deviation from the original brief
 
-1. Run `make up` (requires `divi/Divi.zip`)
-2. Run `make export-layouts`
-3. Inspect `fixtures/valid/` — read the raw JSON
-4. Answer the questions in each section below
-5. Update `src/SchemaRules.php` to match
+The brief assumed Divi 5 uses a "JSON-based data structure". Reality: **Divi 5 stores layouts as WordPress Gutenberg block HTML** in `post_content`. The JSON is embedded inside block comment attributes, not the top-level format.
+
+The validator and fixtures follow reality. The canonical "layout file" format is a JSON envelope containing `post_content` (see below).
 
 ---
 
-## Questions to answer from real exports
+## 1. Storage location
 
-### Storage location
-- [ ] Is the layout in `post_content`, post meta, or a custom table?
-- [ ] If post meta, what is the key name?
-- [ ] If custom table, what is the table name and schema?
-
-### Top-level structure
-- [ ] What is the root object shape? (keys, types)
-- [ ] Is there a version field? What format?
-
-### Node / module structure
-- [ ] What is the structural hierarchy? (sections → rows → columns → modules, or different?)
-- [ ] What key identifies a node's type? (`type`, `name`, `blockType`, other?)
-- [ ] What are all the known module types?
-- [ ] What is the children/inner-content key name?
-
-### Attribute groups
-- [ ] What attribute groups exist on every module? (universal vs module-specific)
-- [ ] Where does text/rich-content live?
-- [ ] Are there responsive variants? How are they stored?
-
-### Required fields (render-critical)
-- [ ] Which fields, if missing, cause Divi to fatal or silently drop content?
-- [ ] Which fields must be objects (not scalars)? (the deep-merge fatal case)
-
-### Internal references
-- [ ] Does Divi 5 use internal IDs for cross-references?
-- [ ] Can a reference be orphaned? What does that look like?
+| Item | Value |
+|---|---|
+| Primary storage | `post_content` column (`wp_posts` table) |
+| Format | WordPress Gutenberg block HTML (comment-delimited) |
+| Key post meta | `_et_pb_use_divi_5 = on` — marks the page as Divi 5 |
+| Key post meta | `_et_pb_use_builder = on` — Divi builder is active |
+| Custom tables | None (no `wp_et_*` tables observed) |
+| Divi Library | Uses `divi/layout` block type; `ET_Builder_Layout` class not present in Divi 5 |
 
 ---
 
-## Observed structure (fill in after exports)
+## 2. Block format
+
+Divi 5 stores content as **WordPress Gutenberg blocks** using HTML comment syntax:
 
 ```
-(paste annotated JSON excerpts here)
+<!-- wp:divi/BLOCKTYPE {JSON_ATTRS} -->   ← opening block (has children)
+  ... child blocks ...
+<!-- /wp:divi/BLOCKTYPE -->               ← closing block
+
+<!-- wp:divi/BLOCKTYPE {JSON_ATTRS} /-->  ← self-closing block (leaf module)
+```
+
+The outer wrapper is always `divi/placeholder`.
+
+---
+
+## 3. Structural hierarchy
+
+```
+divi/placeholder              ← always the root wrapper
+  divi/section                ← layout section (can have multiple)
+    divi/row                  ← row within a section (can have multiple)
+      divi/column             ← column within a row (can have multiple)
+        [leaf modules]        ← content modules (self-closing)
+```
+
+**Known leaf module types** (observed in 5.8.0):
+- `divi/heading`
+- `divi/text`
+- `divi/image`
+- `divi/button`
+
+**Structural blocks** (have children, use open/close pairs):
+- `divi/placeholder` (root only)
+- `divi/section`
+- `divi/row`
+- `divi/column`
+
+**Also registered** (seen in block registry, not yet observed in page content):
+- `divi/shortcode-module`
+- `divi/layout`
+
+---
+
+## 4. Block attribute structure
+
+Every block carries a `builderVersion` attribute and optional `module` object:
+
+```json
+{
+  "builderVersion": "5.8.0",
+  "module": {
+    "advanced": { ... },
+    "decoration": { ... }
+  }
+}
+```
+
+### 4a. `module.advanced` — layout/structure attributes
+
+Observed on `divi/section`:
+```json
+"advanced": {}
+```
+
+Observed on `divi/row`:
+```json
+"advanced": {
+  "columnStructure": {
+    "desktop": { "value": "4_4" }
+  },
+  "flexColumnStructure": {
+    "desktop": { "value": "equal-columns_1" }
+  }
+}
+```
+
+Observed on `divi/column`:
+```json
+"advanced": {
+  "type": {
+    "desktop": { "value": "4_4" }
+  }
+}
+```
+
+### 4b. `module.decoration` — visual attributes
+
+Observed on `divi/row`:
+```json
+"decoration": {
+  "layout": {
+    "desktop": { "value": { "flexWrap": "nowrap" } }
+  }
+}
+```
+
+Observed on `divi/column`:
+```json
+"decoration": {
+  "sizing": {
+    "desktop": { "value": { "flexType": "24_24" } }
+  }
+}
 ```
 
 ---
 
-## Validator rules derived from this schema
+## 5. Module-specific content keys
 
-| Violation Code | Condition | Path |
-|---|---|---|
-| `INVALID_JSON` | JSON does not parse | `$` |
-| `WRONG_ROOT_TYPE` | Root is not an object | `$` |
-| `EMPTY_DOCUMENT` | Input is empty string | `$` |
-| *(TBD after Phase 3)* | | |
+Each leaf module has its own top-level content attribute with an `innerContent` structure:
+
+```json
+{
+  "CONTENT_KEY": {
+    "innerContent": {
+      "desktop": {
+        "value": VALUE
+      }
+    }
+  }
+}
+```
+
+| Module | Content key | Value type | Example value |
+|---|---|---|---|
+| `divi/heading` | `title` | string | `"Your Title Goes Here"` |
+| `divi/text` | `content` | string (HTML) | `"<p>Your content...</p>"` |
+| `divi/image` | `image` | object | `{"src": "data:image/..."}` |
+| `divi/button` | `button` | object | `{"text": "Click Here"}` |
+
+**Critical**: the `value` for `divi/image` and `divi/button` is an **object**, not a scalar. Passing a scalar string where an object is expected is the deep-merge fatal case.
+
+---
+
+## 6. Responsive attribute pattern
+
+All attribute values use a responsive wrapper:
+```json
+{
+  "desktop": { "value": ... }
+}
+```
+
+Additional breakpoints (`tablet`, `phone`) may exist but are not required.
+
+---
+
+## 7. Render-critical fields
+
+Fields whose absence or wrong type cause Divi to fail to render:
+
+| Field | Required on | Expected type | Fatal if wrong |
+|---|---|---|---|
+| `builderVersion` | Every block | string | Silent render fail |
+| `title.innerContent.desktop.value` | `divi/heading` | string | Module not rendered |
+| `content.innerContent.desktop.value` | `divi/text` | string | Module not rendered |
+| `image.innerContent.desktop.value` | `divi/image` | object | Deep-merge PHP fatal |
+| `button.innerContent.desktop.value` | `divi/button` | object | Deep-merge PHP fatal |
+
+---
+
+## 8. Fixture format (canonical "layout file")
+
+Since the format is Gutenberg block HTML (not raw JSON), the canonical "layout file" wraps `post_content` in a JSON envelope:
+
+```json
+{
+  "source": "divi5-real-export",
+  "format": "gutenberg-blocks",
+  "divi_version": "5.8.0",
+  "post_id": 7,
+  "post_content": "<!-- wp:divi/placeholder -->...",
+  "divi_meta": {
+    "_et_pb_use_divi_5": "on",
+    "_et_pb_use_builder": "on"
+  },
+  "exported_at": "2026-06-25T..."
+}
+```
+
+The validator reads the `post_content` field from this envelope and parses the block HTML.
+
+---
+
+## 9. Real export excerpt (page-7-homepage.json)
+
+```
+<!-- wp:divi/placeholder -->
+<!-- wp:divi/section {"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},...}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},...},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Your Title Goes Here"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>...</p>"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"data:image/..."}}}}, "builderVersion":"5.8.0"} /-->
+<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Click Here"}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- /wp:divi/placeholder -->
+```

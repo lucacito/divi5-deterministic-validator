@@ -21,7 +21,7 @@ WP_PORT="${WP_PORT:-8080}"
 echo "[export] Checking Divi 5 installation..."
 
 # Verify Divi is active
-DIVI_STATUS=$(docker compose exec -T wpcli wp theme status divi 2>&1 || echo "error")
+DIVI_STATUS=$(docker compose exec -T wpcli wp theme status Divi 2>&1 || echo "error")
 if ! echo "$DIVI_STATUS" | grep -qi "active"; then
     echo "[export] ERROR: Divi theme is not active. Run 'make up' first."
     exit 1
