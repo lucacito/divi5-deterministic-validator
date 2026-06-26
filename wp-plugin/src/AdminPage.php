@@ -90,7 +90,7 @@ final class AdminPage
         $summary   = UsageTracker::getSummary();
         $recent    = UsageTracker::getRecent(50);
 
-        $mcpConfig = json_encode([
+        $mcpConfig    = json_encode([
             'mcpServers' => [
                 'ai-editor-divi5' => [
                     'url'     => $mcpUrl,
@@ -98,15 +98,7 @@ final class AdminPage
                 ],
             ],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-        $cursorConfig = json_encode([
-            'mcpServers' => [
-                'ai-editor-divi5' => [
-                    'url'     => $mcpUrl,
-                    'headers' => ['Authorization' => "Bearer {$apiKey}"],
-                ],
-            ],
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $cursorConfig = $mcpConfig;
 
         ?>
         <div class="wrap aied-admin">
@@ -459,12 +451,13 @@ final class AdminPage
                     <h3><?php esc_html_e( 'Pro tip', 'ai-editor-divi5' ); ?></h3>
                     <p><?php esc_html_e( 'Name the page explicitly and your AI makes the edit in a single round-trip — no clarifying questions needed.', 'ai-editor-divi5' ); ?></p>
                     <p class="aied-note"><?php
-                        $count = count( get_posts( [
+                        $count = ( new \WP_Query( [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
                             'post_type'      => 'page',
                             'post_status'    => 'any',
-                            'posts_per_page' => -1,
-                            'meta_query'     => [ [ 'key' => '_et_pb_use_divi_5', 'value' => 'on' ] ], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-                        ] ) );
+                            'posts_per_page' => 1,
+                            'fields'         => 'ids',
+                            'meta_query'     => [ [ 'key' => '_et_pb_use_divi_5', 'value' => 'on' ] ],
+                        ] ) )->found_posts;
                         echo esc_html( sprintf(
                             /* translators: %d: number of Divi 5 pages */
                             _n( '%d Divi 5 page on this site is editable by AI.', '%d Divi 5 pages on this site are editable by AI.', $count, 'ai-editor-divi5' ),

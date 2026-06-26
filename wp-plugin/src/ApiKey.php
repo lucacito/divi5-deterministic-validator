@@ -39,7 +39,7 @@ final class ApiKey
 
     public static function getUserId(): int
     {
-        return (int) get_option(self::OPTION_USER, 1);
+        return (int) get_option(self::OPTION_USER, 0);
     }
 
     /** Sets the current WP user from the API key owner. Returns false if key is invalid. */

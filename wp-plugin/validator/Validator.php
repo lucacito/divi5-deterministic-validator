@@ -56,6 +56,19 @@ final class Validator
         $this->parser = $parser ?? new BlockParser();
     }
 
+    public function validateContent(string $postContent): ValidationResult
+    {
+        $json = json_encode(['post_content' => $postContent]);
+        if ($json === false) {
+            return new ValidationResult([new Violation(
+                self::E_INVALID_JSON,
+                'post_content contains unencodable bytes: ' . json_last_error_msg(),
+                '$.post_content'
+            )]);
+        }
+        return $this->validate($json);
+    }
+
     public function validate(string $json): ValidationResult
     {
         $violations = [];

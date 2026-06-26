@@ -63,56 +63,9 @@ class SchemaRules
         'divi/tab',
     ];
 
-    // All known block types
-    public const ALL_KNOWN_TYPES = [
-        // Page structure
-        'divi/placeholder',
-        'divi/section',
-        'divi/row',
-        'divi/column',
-        'divi/layout',
-        // Compound structural modules
-        'divi/accordion',
-        'divi/contact-form',
-        'divi/counters',
-        'divi/icon-list',
-        'divi/pricing-tables',
-        'divi/slider',
-        'divi/tabs',
-        // Basic leaf modules
-        'divi/heading',
-        'divi/text',
-        'divi/image',
-        'divi/button',
-        'divi/shortcode-module',
-        // Media
-        'divi/audio',
-        'divi/video',
-        'divi/before-after-image',
-        // Content
-        'divi/blurb',
-        'divi/cta',
-        'divi/icon',
-        'divi/team-member',
-        'divi/toggle',
-        'divi/search',
-        'divi/blog',
-        'divi/breadcrumbs',
-        'divi/map',
-        'divi/signup',
-        'divi/canvas-portal',
-        // Counters / timers
-        'divi/circle-counter',
-        'divi/countdown-timer',
-        // Compound module children
-        'divi/accordion-item',
-        'divi/contact-field',
-        'divi/counter',
-        'divi/icon-list-item',
-        'divi/pricing-table',
-        'divi/slide',
-        'divi/tab',
-    ];
+    // divi/layout appears in exports but carries no children or required attrs;
+    // it doesn't belong to either structural or leaf categories.
+    private const EXTRA_TYPES = ['divi/layout'];
 
     // Valid direct children for each structural block type
     public const ALLOWED_CHILDREN = [
@@ -211,7 +164,9 @@ class SchemaRules
 
     public function isKnownType(string $type): bool
     {
-        return in_array($type, self::ALL_KNOWN_TYPES, true);
+        return $this->isStructural($type)
+            || $this->isLeafModule($type)
+            || in_array($type, self::EXTRA_TYPES, true);
     }
 
     public function isLeafModule(string $type): bool

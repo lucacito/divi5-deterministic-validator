@@ -79,13 +79,13 @@ final class UsageTracker
             self::tableName(),
             [
                 'endpoint'   => substr($endpoint, 0, 50),
-                'page_id'    => $pageId ?: null,
+                'page_id'    => $pageId,
                 'result'     => substr($result, 0, 10),
                 'violations' => $violations,
                 'client'     => self::detectClient($ua),
                 'ip_hash'    => $ip ? hash('sha256', $ip) : null,
             ],
-            ['%s', '%d', '%s', '%d', '%s', '%s']
+            ['%s', $pageId !== null ? '%d' : '%s', '%s', '%d', '%s', '%s']
         );
     }
 
@@ -122,17 +122,29 @@ final class UsageTracker
 
         // Table name from $wpdb->prefix (trusted); WHERE values are static string literals — no user input.
         // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
-        return [
-            'total'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ),
-            'valid'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE result = 'valid'" ),
-            'invalid'  => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE result = 'invalid'" ),
-            'today'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE DATE(created_at) = CURDATE()" ),
-            'byClient' => $wpdb->get_results(
-                "SELECT client, COUNT(*) as cnt FROM {$table} GROUP BY client ORDER BY cnt DESC LIMIT 8",
-                ARRAY_A
-            ) ?: [],
-        ];
+        $counts = $wpdb->get_row(
+            "SELECT
+                COUNT(*) AS total,
+                SUM(result = 'valid') AS valid,
+                SUM(result = 'invalid') AS invalid,
+                SUM(DATE(created_at) = CURDATE()) AS today
+            FROM {$table}",
+            ARRAY_A
+        );
+
+        $byClient = $wpdb->get_results(
+            "SELECT client, COUNT(*) as cnt FROM {$table} GROUP BY client ORDER BY cnt DESC LIMIT 8",
+            ARRAY_A
+        ) ?: [];
         // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+        return [
+            'total'    => (int) ($counts['total']   ?? 0),
+            'valid'    => (int) ($counts['valid']    ?? 0),
+            'invalid'  => (int) ($counts['invalid']  ?? 0),
+            'today'    => (int) ($counts['today']    ?? 0),
+            'byClient' => $byClient,
+        ];
     }
 
     public static function getRecent(int $limit = 50): array

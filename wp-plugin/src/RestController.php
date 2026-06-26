@@ -130,8 +130,7 @@ final class RestController
         }
 
         // Validate before saving — this is the safety gate
-        $envelope = json_encode(['post_content' => $body['post_content']]);
-        $result   = (new Validator())->validate($envelope);
+        $result = (new Validator())->validateContent($body['post_content']);
 
         if (!$result->isValid()) {
             UsageTracker::log('update_page', $id, 'invalid', count($result->violations()));
@@ -155,11 +154,13 @@ final class RestController
 
         UsageTracker::log('update_page', $id, 'valid');
 
+        $post->post_content = $body['post_content'];
+
         return new WP_REST_Response([
             'saved'      => true,
             'valid'      => true,
             'violations' => [],
-            'page'       => $this->build_layout_envelope(get_post($id)),
+            'page'       => $this->build_layout_envelope($post),
         ], 200);
     }
 
@@ -172,11 +173,11 @@ final class RestController
         }
 
         // Accept either {post_content:...} or a full layout envelope
-        $json = isset($body['post_content'])
-            ? json_encode(['post_content' => $body['post_content']])
-            : json_encode($body);
-
-        $result = (new Validator())->validate($json);
+        if (isset($body['post_content'])) {
+            $result = (new Validator())->validateContent($body['post_content']);
+        } else {
+            $result = (new Validator())->validate((string) json_encode($body));
+        }
 
         UsageTracker::log('validate', null, $result->isValid() ? 'valid' : 'invalid', count($result->violations()));
 

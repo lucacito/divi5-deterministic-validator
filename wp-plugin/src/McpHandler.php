@@ -174,6 +174,11 @@ final class McpHandler
             return $this->rpcError($id, -32602, "Page {$pageId} not found.");
         }
 
+        if (!current_user_can('edit_post', $pageId)) {
+            UsageTracker::log('get_layout', $pageId, 'error');
+            return $this->rpcError($id, -32602, "You do not have permission to read page {$pageId}.");
+        }
+
         UsageTracker::log('get_layout', $pageId, 'valid');
 
         return $this->rpcResult($id, [
@@ -193,7 +198,7 @@ final class McpHandler
             return $this->rpcError($id, -32602, 'post_content is required.');
         }
 
-        $result = (new Validator())->validate(json_encode(['post_content' => $content]));
+        $result = (new Validator())->validateContent($content);
         UsageTracker::log('validate', null, $result->isValid() ? 'valid' : 'invalid', count($result->violations()));
 
         return $this->rpcResult($id, [
@@ -210,11 +215,16 @@ final class McpHandler
         if (!$post || $post->post_type !== 'page') {
             return $this->rpcError($id, -32602, "Page {$pageId} not found.");
         }
+
+        if (!current_user_can('edit_post', $pageId)) {
+            return $this->rpcError($id, -32602, "You do not have permission to edit page {$pageId}.");
+        }
+
         if ($content === '') {
             return $this->rpcError($id, -32602, 'post_content is required.');
         }
 
-        $result = (new Validator())->validate(json_encode(['post_content' => $content]));
+        $result = (new Validator())->validateContent($content);
 
         if (!$result->isValid()) {
             UsageTracker::log('update_layout', $pageId, 'invalid', count($result->violations()));
