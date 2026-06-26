@@ -18,6 +18,8 @@ final class AdminPage
         add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
         add_action('admin_post_ai_editor_divi5_regenerate_key', [$this, 'handleRegenerate']);
         add_action('admin_post_ai_editor_divi5_clear_usage',    [$this, 'handleClearUsage']);
+        add_action('admin_post_ai_editor_divi5_activate_license',   [$this, 'handleActivateLicense']);
+        add_action('admin_post_ai_editor_divi5_deactivate_license', [$this, 'handleDeactivateLicense']);
     }
 
     public function addMenu(): void
@@ -73,11 +75,40 @@ final class AdminPage
         exit;
     }
 
+    public function handleActivateLicense(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die( esc_html__( 'Unauthorized.', 'ai-editor-divi5' ) );
+        }
+        check_admin_referer('ai_editor_divi5_activate_license');
+
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- license keys are base64url (no slashes added by WP), trimmed below.
+        $key = sanitize_text_field( wp_unslash( $_POST['license_key'] ?? '' ) );
+        Licensing::setKey($key);
+
+        $notice = Licensing::isPremium() ? 'license_activated' : 'license_invalid';
+        wp_safe_redirect(add_query_arg(['page' => 'ai-editor-divi5', 'notice' => $notice], admin_url('options-general.php')));
+        exit;
+    }
+
+    public function handleDeactivateLicense(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die( esc_html__( 'Unauthorized.', 'ai-editor-divi5' ) );
+        }
+        check_admin_referer('ai_editor_divi5_deactivate_license');
+        Licensing::clear();
+        wp_safe_redirect(add_query_arg(['page' => 'ai-editor-divi5', 'notice' => 'license_deactivated'], admin_url('options-general.php')));
+        exit;
+    }
+
     public function render(): void
     {
         if (!current_user_can('manage_options')) {
             return;
         }
+
+        $license = Licensing::status();
 
         $apiKey    = ApiKey::get();
         $siteUrl   = rtrim(get_site_url(), '/');
@@ -118,6 +149,12 @@ final class AdminPage
                 <div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'API key regenerated. Update your AI assistant configuration.', 'ai-editor-divi5' ); ?></p></div>
             <?php elseif ( $notice === 'usage_cleared' ) : ?>
                 <div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Usage log cleared.', 'ai-editor-divi5' ); ?></p></div>
+            <?php elseif ( $notice === 'license_activated' ) : ?>
+                <div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'License activated. Premium features are now enabled.', 'ai-editor-divi5' ); ?></p></div>
+            <?php elseif ( $notice === 'license_invalid' ) : ?>
+                <div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'That license key is not valid for this site. Check the key and your domain, then try again.', 'ai-editor-divi5' ); ?></p></div>
+            <?php elseif ( $notice === 'license_deactivated' ) : ?>
+                <div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'License removed. Premium features are now disabled.', 'ai-editor-divi5' ); ?></p></div>
             <?php endif; ?>
 
             <div class="aied-layout">
@@ -142,6 +179,64 @@ final class AdminPage
                         </button>
                     </form>
                 </div>
+            </div>
+
+            <!-- License -->
+            <div class="aied-card">
+                <h2>
+                    <?php esc_html_e( 'License', 'ai-editor-divi5' ); ?>
+                    <?php if ( $license['valid'] ) : ?>
+                        <span class="aied-result aied-result--valid"><?php esc_html_e( 'PREMIUM', 'ai-editor-divi5' ); ?></span>
+                    <?php else : ?>
+                        <span class="aied-result aied-result--invalid"><?php esc_html_e( 'FREE', 'ai-editor-divi5' ); ?></span>
+                    <?php endif; ?>
+                </h2>
+
+                <?php if ( $license['valid'] ) : ?>
+                    <p class="aied-card__desc">
+                        <?php
+                        echo esc_html( sprintf(
+                            /* translators: %s: licensee email address */
+                            __( 'Premium features are unlocked for %s.', 'ai-editor-divi5' ),
+                            $license['email'] ?: __( 'this site', 'ai-editor-divi5' )
+                        ) );
+                        if ( $license['expires'] ) {
+                            echo ' ' . esc_html( sprintf(
+                                /* translators: %s: expiry date */
+                                __( 'Expires %s.', 'ai-editor-divi5' ),
+                                date_i18n( get_option( 'date_format' ), (int) $license['expires'] )
+                            ) );
+                        }
+                        ?>
+                    </p>
+                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                        <input type="hidden" name="action" value="ai_editor_divi5_deactivate_license">
+                        <?php wp_nonce_field( 'ai_editor_divi5_deactivate_license' ); ?>
+                        <button type="submit" class="button aied-btn-danger"
+                            onclick="return confirm( '<?php echo esc_js( __( 'Remove this license and disable premium features?', 'ai-editor-divi5' ) ); ?>' )">
+                            <?php esc_html_e( 'Deactivate license', 'ai-editor-divi5' ); ?>
+                        </button>
+                    </form>
+                <?php else : ?>
+                    <p class="aied-card__desc">
+                        <?php esc_html_e( 'Activate a license key to unlock premium features such as creating new pages from your AI assistant.', 'ai-editor-divi5' ); ?>
+                    </p>
+                    <?php if ( $license['reason'] === 'expired' ) : ?>
+                        <p class="aied-note"><?php esc_html_e( 'The stored key has expired. Enter a renewed key below.', 'ai-editor-divi5' ); ?></p>
+                    <?php elseif ( $license['reason'] === 'domain_mismatch' ) : ?>
+                        <p class="aied-note"><?php esc_html_e( 'The stored key is issued for a different domain than this site.', 'ai-editor-divi5' ); ?></p>
+                    <?php elseif ( $license['reason'] === 'invalid_signature' ) : ?>
+                        <p class="aied-note"><?php esc_html_e( 'The stored key could not be verified. Re-paste it below.', 'ai-editor-divi5' ); ?></p>
+                    <?php endif; ?>
+                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="aied-key-row">
+                        <input type="hidden" name="action" value="ai_editor_divi5_activate_license">
+                        <?php wp_nonce_field( 'ai_editor_divi5_activate_license' ); ?>
+                        <input type="text" name="license_key" class="regular-text" style="flex:1"
+                            placeholder="<?php esc_attr_e( 'Paste your license key', 'ai-editor-divi5' ); ?>"
+                            autocomplete="off" spellcheck="false">
+                        <button type="submit" class="button button-primary"><?php esc_html_e( 'Activate', 'ai-editor-divi5' ); ?></button>
+                    </form>
+                <?php endif; ?>
             </div>
 
             <!-- Tabs -->
@@ -414,7 +509,7 @@ final class AdminPage
                 </div>
 
                 <div class="aied-sidebar-card">
-                    <h3><?php esc_html_e( '4 tools your AI gets', 'ai-editor-divi5' ); ?></h3>
+                    <h3><?php esc_html_e( '5 tools your AI gets', 'ai-editor-divi5' ); ?></h3>
                     <ul class="aied-tool-list">
                         <li>
                             <code>list_divi_pages</code>
@@ -431,6 +526,11 @@ final class AdminPage
                         <li>
                             <code>update_page_layout</code>
                             <span><?php esc_html_e( 'Validate then save — the live edit tool', 'ai-editor-divi5' ); ?></span>
+                        </li>
+                        <li>
+                            <code>create_page</code>
+                            <span><?php esc_html_e( 'Build a brand-new page from scratch', 'ai-editor-divi5' ); ?>
+                                <strong>· <?php esc_html_e( 'Premium', 'ai-editor-divi5' ); ?></strong></span>
                         </li>
                     </ul>
                 </div>

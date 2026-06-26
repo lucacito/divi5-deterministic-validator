@@ -120,6 +120,18 @@ final class McpHandler
                     'required' => ['page_id', 'post_content'],
                 ],
             ],
+            [
+                'name'        => 'create_page',
+                'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'title'        => ['type' => 'string', 'description' => 'Page title'],
+                        'post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML'],
+                    ],
+                    'required' => ['title', 'post_content'],
+                ],
+            ],
         ]]);
     }
 
@@ -133,6 +145,7 @@ final class McpHandler
             'get_page_layout'    => $this->toolGetLayout($id, $arguments),
             'validate_layout'    => $this->toolValidate($id, $arguments),
             'update_page_layout' => $this->toolUpdate($id, $arguments),
+            'create_page'        => $this->toolCreatePage($id, $arguments),
             default              => $this->rpcError($id, -32602, "Unknown tool: {$name}"),
         };
     }
@@ -252,6 +265,79 @@ final class McpHandler
                 'saved' => true,
                 'valid' => true,
                 'page'  => ['id' => $pageId, 'title' => get_the_title($pageId)],
+            ])]],
+        ]);
+    }
+
+    private function toolCreatePage(mixed $id, array $args): WP_REST_Response
+    {
+        if (!Licensing::isPremium()) {
+            UsageTracker::log('create_page', null, 'error');
+            return $this->rpcResult($id, [
+                'content' => [['type' => 'text', 'text' => json_encode([
+                    'created'     => false,
+                    'premium'     => true,
+                    'message'     => 'create_page is a premium feature. Activate a license under Settings → AI Editor for Divi 5 to enable it.',
+                    'upgrade_url' => Licensing::UPGRADE_URL,
+                ])]],
+                'isError' => true,
+            ]);
+        }
+
+        if (!current_user_can('publish_pages')) {
+            UsageTracker::log('create_page', null, 'error');
+            return $this->rpcError($id, -32602, 'You do not have permission to create pages.');
+        }
+
+        $title   = trim((string) ($args['title'] ?? ''));
+        $content = (string) ($args['post_content'] ?? '');
+
+        if ($title === '') {
+            return $this->rpcError($id, -32602, 'title is required.');
+        }
+        if ($content === '') {
+            return $this->rpcError($id, -32602, 'post_content is required.');
+        }
+
+        $result = (new Validator())->validateContent($content);
+
+        if (!$result->isValid()) {
+            UsageTracker::log('create_page', null, 'invalid', count($result->violations()));
+            return $this->rpcResult($id, [
+                'content' => [['type' => 'text', 'text' => json_encode([
+                    'created'    => false,
+                    'valid'      => false,
+                    'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
+                ])]],
+                'isError' => true,
+            ]);
+        }
+
+        // Always a draft — the site owner reviews and publishes.
+        $pageId = wp_insert_post([
+            'post_type'    => 'page',
+            'post_title'   => $title,
+            'post_content' => $content,
+            'post_status'  => 'draft',
+        ], true);
+
+        if (is_wp_error($pageId)) {
+            UsageTracker::log('create_page', null, 'error');
+            return $this->rpcError($id, -32603, $pageId->get_error_message());
+        }
+
+        UsageTracker::log('create_page', (int) $pageId, 'valid');
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => json_encode([
+                'created' => true,
+                'valid'   => true,
+                'page'    => [
+                    'id'     => (int) $pageId,
+                    'title'  => $title,
+                    'status' => 'draft',
+                    'link'   => get_permalink((int) $pageId),
+                ],
             ])]],
         ]);
     }

@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.0.0
+Stable tag:        2.1.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -22,12 +22,13 @@ AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Curs
 4. The validator checks every Divi 5 block type, required attribute, and nesting rule deterministically — no AI involved.
 5. Valid layouts are saved instantly. Invalid layouts return exact violation messages so the AI self-corrects and retries.
 
-**Four tools your AI gets**
+**Five tools your AI gets**
 
 * `list_divi_pages` — list all pages built with Divi 5
 * `get_page_layout` — read the current layout of any page
 * `validate_layout` — dry-run a change without saving
 * `update_page_layout` — validate then save (the live edit tool)
+* `create_page` — build a brand-new page from scratch (premium — requires a license)
 
 **Compatible AI assistants**
 
@@ -89,6 +90,12 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 
 == Changelog ==
 
+= 2.1.0 =
+* Added premium `create_page` tool (MCP) and `POST /pages` REST endpoint — create brand-new pages, validated before they are written.
+* Added self-hosted license activation (offline Ed25519 key verification, no license server or phone-home) under Settings → License.
+* New pages are always created as drafts for the site owner to review and publish.
+* Premium calls without an active license are rejected with an upgrade message and create nothing.
+
 = 2.0.0 =
 * Renamed to AI Editor for Divi 5 to reflect the AI editing focus.
 * Added PHP MCP server (Streamable HTTP, protocol 2024-11-05) — no Node.js required.
@@ -102,6 +109,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 * Initial release.
 
 == Upgrade Notice ==
+
+= 2.1.0 =
+Adds the premium create_page feature and license activation. Existing free features are unchanged and no reconfiguration is needed.
 
 = 2.0.0 =
 Full rename and rewrite. Deactivate version 1.x before activating 2.0.0. Your API key will be regenerated on first activation.

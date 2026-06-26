@@ -94,6 +94,28 @@ final class OpenApiSpec
                             ],
                         ],
                     ],
+                    'post' => [
+                        'operationId' => 'createPage',
+                        'summary'     => 'Create a new page (premium)',
+                        'description' => 'PREMIUM: Validates the submitted layout and, if valid, creates a new page as a draft for the site owner to review and publish. Returns 402 if no active license, 422 with violations if the layout is invalid — no page is created in either case.',
+                        'requestBody' => [
+                            'required' => true,
+                            'content'  => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'required'   => ['title', 'post_content'],
+                                'properties' => [
+                                    'title'        => ['type' => 'string', 'description' => 'Page title'],
+                                    'post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML'],
+                                ],
+                            ]]],
+                        ],
+                        'responses'   => [
+                            '201' => ['description' => 'Page created'],
+                            '400' => ['description' => 'Missing title or post_content'],
+                            '402' => ['description' => 'Premium license required'],
+                            '422' => ['description' => 'Validation failed', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/ValidationResult']]]],
+                        ],
+                    ],
                 ],
                 '/pages/{id}' => [
                     'get' => [

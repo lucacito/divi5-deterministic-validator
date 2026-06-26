@@ -33,6 +33,13 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
+        // POST /pages — PREMIUM: validate + create a new page
+        register_rest_route(self::NS, '/pages', [
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'create_page'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
         // GET /pages/{id} — get a page's current Divi layout
         register_rest_route(self::NS, '/pages/(?P<id>\d+)', [
             'methods'             => WP_REST_Server::READABLE,
@@ -162,6 +169,65 @@ final class RestController
             'violations' => [],
             'page'       => $this->build_layout_envelope($post),
         ], 200);
+    }
+
+    public function create_page(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!Licensing::isPremium()) {
+            return new WP_REST_Response([
+                'created'     => false,
+                'premium'     => true,
+                'message'     => 'Creating pages is a premium feature. Activate a license to enable it.',
+                'upgrade_url' => Licensing::UPGRADE_URL,
+            ], 402);
+        }
+
+        if (!current_user_can('publish_pages')) {
+            return new WP_Error('forbidden', 'Your account does not have permission to create pages.', ['status' => 403]);
+        }
+
+        $body    = $request->get_json_params();
+        $title   = isset($body['title']) ? trim((string) $body['title']) : '';
+        $content = isset($body['post_content']) && is_string($body['post_content']) ? $body['post_content'] : '';
+
+        if ($title === '') {
+            return new WP_Error('missing_field', 'Request body must include a non-empty "title".', ['status' => 400]);
+        }
+        if (trim($content) === '') {
+            return new WP_Error('missing_field', 'Request body must include a non-empty string "post_content".', ['status' => 400]);
+        }
+
+        $result = (new Validator())->validateContent($content);
+
+        if (!$result->isValid()) {
+            UsageTracker::log('create_page', null, 'invalid', count($result->violations()));
+            return new WP_REST_Response([
+                'created'    => false,
+                'valid'      => false,
+                'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
+                'message'    => 'Layout failed validation. Page was NOT created.',
+            ], 422);
+        }
+
+        // Always a draft — the site owner reviews and publishes.
+        $pageId = wp_insert_post([
+            'post_type'    => 'page',
+            'post_title'   => $title,
+            'post_content' => $content,
+            'post_status'  => 'draft',
+        ], true);
+
+        if (is_wp_error($pageId)) {
+            return new WP_Error('create_failed', $pageId->get_error_message(), ['status' => 500]);
+        }
+
+        UsageTracker::log('create_page', (int) $pageId, 'valid');
+
+        return new WP_REST_Response([
+            'created' => true,
+            'valid'   => true,
+            'page'    => $this->build_layout_envelope(get_post((int) $pageId)),
+        ], 201);
     }
 
     public function validate(WP_REST_Request $request): WP_REST_Response|WP_Error

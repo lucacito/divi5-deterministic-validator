@@ -23,3 +23,6 @@ mcp-server/dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Vendor license signing key — NEVER commit
+license-signing-key.txt
