@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.5.0
+Stable tag:        2.6.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.6.0 =
+* Enriched the style guide with vocabulary mined from a real production site: font family/weight/style (serif headings + sans body, uppercase/italic, letter-spacing), flex layout for reliable multi-column (display:flex + columnGap/rowGap + flexType child sizing), width/centering, background-image positioning, gradient direction, and absolute positioning. The AI can now build richer, properly-laid-out, typographically-styled pages.
 
 = 2.5.0 =
 * Major validator robustness from a real 25-page production site: now supports divi/group + divi/group-carousel (flex containers), divi/global-layout (Theme Builder globals, no builderVersion), and divi/code / divi/sidebar / divi/testimonial modules. Also accepts top-level divi/section blocks (pages need not be wrapped in divi/placeholder) and a paired divi/text wrapping nested text. All 25 real pages validate.

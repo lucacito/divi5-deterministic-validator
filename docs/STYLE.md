@@ -166,6 +166,42 @@ of its background.
 - `divi/column → divi/row-inner → divi/column-inner → modules` (layout-4, the
   specialty-section form). A `divi/section` may also hold a `divi/column` directly.
 
+## Font family / weight / style (mined from the live site)
+On any font element (`title.decoration.font.font`, `content.decoration.bodyFont.body.font`,
+`button.decoration.font.font`):
+```
+…font.{bp}.value.family        = "Outfit"            # any Divi/Google font (serif vs sans)
+…font.{bp}.value.weight        = "700"
+…font.{bp}.value.letterSpacing = "2px"
+…font.{bp}.value.style         = ["uppercase"]       # array: uppercase, italic, underline
+content.decoration.headingFont.h2.font.{bp}.value.{color,lineHeight,style}   # H1–H6 inside a Text module
+```
+
+## Flex layout — reliable multi-column (mined from the live site)
+```
+module.decoration.layout.{bp}.value.display        = "flex"     # also "block","grid"
+module.decoration.layout.{bp}.value.flexDirection  = "row"      # "column" to stack on phone
+module.decoration.layout.{bp}.value.justifyContent = "center"
+module.decoration.layout.{bp}.value.alignItems     = "stretch"  # equal-height cards
+module.decoration.layout.{bp}.value.columnGap      = "32px"
+module.decoration.layout.{bp}.value.rowGap         = "24px"
+module.decoration.layout.{bp}.value.flexWrap       = "wrap"
+module.decoration.sizing.{bp}.value.flexType       = "8_24"     # child width: 8_24=1/3, 12_24=1/2, 6_24=1/4
+```
+
+## Sizing, centering, bg-image position, absolute position (live site)
+```
+module.decoration.sizing.{bp}.value.maxWidth   = "720px"
+module.decoration.sizing.{bp}.value.minHeight  = "100px"
+module.decoration.spacing.{bp}.value.margin.{left,right} = "auto"          # center a max-width box
+module.decoration.background.{bp}.value.image.size     = "cover"           # or "contain"
+module.decoration.background.{bp}.value.image.position = "right center"
+module.decoration.background.{bp}.value.gradient.direction = "90deg"
+module.decoration.position.{bp}.value.mode            = "absolute"
+module.decoration.position.{bp}.value.origin.absolute = "bottom center"
+module.decoration.position.{bp}.value.offset.vertical = "20px"
+```
+
 ---
 **Validator note:** none of these are required or type-checked by the validator —
 they pass through untouched. They affect *rendering only*. The validator still

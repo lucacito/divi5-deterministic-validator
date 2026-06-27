@@ -111,6 +111,60 @@ semi-transparent + border recipe for the glass look without custom CSS.
 
 **Divider** (`divi/divider`): `divider.advanced.line.{bp}.value.{color,weight}`
 
+## Font family, weight, style (serif headings + sans body)
+On any font element (`title.decoration.font.font`, `content.decoration.bodyFont.body.font`,
+`button.decoration.font.font`):
+```
+…font.{bp}.value.family        = "Playfair Display"   # any Google/Divi font; e.g. serif heading + sans body
+…font.{bp}.value.weight        = "700"
+…font.{bp}.value.letterSpacing = "2px"                # great for kickers
+…font.{bp}.value.style         = ["uppercase"]        # array: "uppercase","italic","underline"
+```
+Styled H1–H6 inside a Text module: `content.decoration.headingFont.h2.font.{bp}.value.{color,lineHeight,textAlign,style}`.
+
+## Flex layout — reliable multi-column (preferred over column-count)
+Put a flex layout on a container, size children with `flexType` (24-unit grid):
+```
+# container (section/row/column/group):
+module.decoration.layout.{bp}.value.display        = "flex"
+module.decoration.layout.{bp}.value.flexDirection  = "row"      # "column" to stack
+module.decoration.layout.{bp}.value.justifyContent = "center"
+module.decoration.layout.{bp}.value.alignItems     = "center"   # "stretch" for equal-height cards
+module.decoration.layout.{bp}.value.columnGap      = "32px"
+module.decoration.layout.{bp}.value.rowGap         = "24px"
+module.decoration.layout.{bp}.value.flexWrap       = "wrap"
+# each child:
+module.decoration.sizing.{bp}.value.flexType = "8_24"   # 8_24=1/3, 12_24=1/2, 6_24=1/4, 24_24=full
+```
+To stack on mobile: set the container's `layout.phone.value.flexDirection = "column"` and
+each child's `sizing.phone.value.flexType = "24_24"`.
+
+## Sizing & centering
+```
+module.decoration.sizing.{bp}.value.maxWidth  = "720px"   # constrain content width
+module.decoration.sizing.{bp}.value.minHeight = "100px"
+module.decoration.sizing.{bp}.value.alignment = "center"
+# center a max-width element (which otherwise aligns left):
+module.decoration.spacing.{bp}.value.margin.left  = "auto"
+module.decoration.spacing.{bp}.value.margin.right = "auto"
+```
+
+## Background image positioning & gradient direction
+```
+module.decoration.background.{bp}.value.image.size     = "cover"        # or "contain"
+module.decoration.background.{bp}.value.image.position = "right center"
+module.decoration.background.{bp}.value.gradient.direction = "90deg"    # linear angle
+module.decoration.background.{bp}.value.gradient.type      = "linear"   # linear|circular|elliptical|conic
+```
+
+## Absolute positioning & z-index (advanced)
+```
+module.decoration.position.{bp}.value.mode            = "absolute"
+module.decoration.position.{bp}.value.origin.absolute = "bottom center"
+module.decoration.position.{bp}.value.offset.vertical = "20px"
+module.decoration.zIndex.{bp}.value                   = 10
+```
+
 ## Design guidance
 Commit to ONE clear aesthetic direction per page (dark/moody, light/airy,
 editorial, glassmorphism, bold/vibrant) — don't default to the same dark theme
