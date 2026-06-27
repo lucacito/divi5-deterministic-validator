@@ -152,6 +152,18 @@ final class OpenApiSpec
                         ],
                     ],
                 ],
+                '/section-recipes' => [
+                    'get' => [
+                        'operationId' => 'getSectionRecipes',
+                        'summary'     => 'Get proven section recipes',
+                        'description' => 'Library of complete, validated Divi 5 section patterns (hero, feature grids, split, slider, CTA, footer). With no query, returns the catalog of recipe names; pass ?name=<recipe> to get that section\'s full block markup to copy and fill.',
+                        'parameters'  => [['name' => 'name', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Recipe name (omit to list all)']]],
+                        'responses'   => [
+                            '200' => ['description' => 'Catalog or a single recipe', 'content' => ['application/json' => ['schema' => ['type' => 'object']]]],
+                            '404' => ['description' => 'Unknown recipe name'],
+                        ],
+                    ],
+                ],
                 '/validate' => [
                     'post' => [
                         'operationId' => 'validateLayout',

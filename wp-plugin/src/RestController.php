@@ -69,11 +69,31 @@ final class RestController
             'callback'            => [$this, 'style_guide'],
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
+
+        // GET /section-recipes — library of proven section patterns (?name=<recipe> for one)
+        register_rest_route(self::NS, '/section-recipes', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'section_recipes'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
     }
 
     public function style_guide(WP_REST_Request $request): WP_REST_Response
     {
         return new WP_REST_Response(['guide' => StyleGuide::markdown()], 200);
+    }
+
+    public function section_recipes(WP_REST_Request $request): WP_REST_Response
+    {
+        $name = (string) $request->get_param('name');
+        if ($name !== '') {
+            $markup = SectionRecipes::recipe($name);
+            if ($markup === null) {
+                return new WP_REST_Response(['error' => "Unknown recipe '{$name}'", 'catalog' => SectionRecipes::catalog()], 404);
+            }
+            return new WP_REST_Response(['name' => $name, 'markup' => $markup], 200);
+        }
+        return new WP_REST_Response(['catalog' => SectionRecipes::catalog(), 'names' => SectionRecipes::names()], 200);
     }
 
     // ---------------------------------------------------------------

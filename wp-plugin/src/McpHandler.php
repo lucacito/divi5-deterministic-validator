@@ -105,6 +105,15 @@ final class McpHandler
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
             ],
             [
+                'name'        => 'get_section_recipes',
+                'description' => 'Get a library of complete, validated Divi 5 section recipes (hero, feature grids, split, slider, CTA, footer). With no arguments, returns the catalog of recipe names. Pass {"name":"<recipe>"} to get that section\'s full block markup to copy and fill with the user\'s content. Use these to assemble well-composed pages instead of building sections from scratch.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => ['name' => ['type' => 'string', 'description' => 'Recipe name from the catalog (omit to list all)']],
+                    'required'   => [],
+                ],
+            ],
+            [
                 'name'        => 'validate_layout',
                 'description' => 'Validate a Divi 5 post_content string against the schema without saving. Use this to check edits before calling update_page_layout.',
                 'inputSchema' => [
@@ -115,7 +124,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'update_page_layout',
-                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. Call get_style_guide first to learn the real styling attribute shapes so the result is styled, not plain. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
+                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. Call get_style_guide first to learn the real styling attribute shapes, and get_section_recipes to assemble the page from complete proven section patterns, so the result is styled and well-composed, not plain. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -127,7 +136,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'create_page',
-                'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing. Call get_style_guide first to learn the real styling attribute shapes so the page is styled, not plain. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
+                'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing. Call get_style_guide first to learn the real styling attribute shapes, and get_section_recipes to assemble the page from complete proven section patterns, so the page is styled and well-composed, not plain. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -148,6 +157,7 @@ final class McpHandler
         return match ($name) {
             'list_divi_pages'    => $this->toolListPages($id),
             'get_style_guide'    => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => StyleGuide::markdown()]]]),
+            'get_section_recipes' => $this->toolSectionRecipes($id, $arguments),
             'get_page_layout'    => $this->toolGetLayout($id, $arguments),
             'validate_layout'    => $this->toolValidate($id, $arguments),
             'update_page_layout' => $this->toolUpdate($id, $arguments),
@@ -159,6 +169,18 @@ final class McpHandler
     // ---------------------------------------------------------------
     // Tool implementations
     // ---------------------------------------------------------------
+
+    private function toolSectionRecipes(mixed $id, array $args): WP_REST_Response
+    {
+        $name = isset($args['name']) ? (string) $args['name'] : '';
+        if ($name !== '') {
+            $markup = SectionRecipes::recipe($name);
+            $text = $markup ?? ("Unknown recipe '{$name}'.\n\n" . SectionRecipes::catalog());
+        } else {
+            $text = SectionRecipes::catalog();
+        }
+        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => $text]]]);
+    }
 
     private function toolListPages(mixed $id): WP_REST_Response
     {

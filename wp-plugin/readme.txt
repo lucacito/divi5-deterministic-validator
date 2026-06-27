@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.3.1
+Stable tag:        2.4.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -22,10 +22,11 @@ AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Curs
 4. The validator checks every Divi 5 block type, required attribute, and nesting rule deterministically — no AI involved.
 5. Valid layouts are saved instantly. Invalid layouts return exact violation messages so the AI self-corrects and retries.
 
-**Six tools your AI gets**
+**Seven tools your AI gets**
 
 * `list_divi_pages` — list all pages built with Divi 5
 * `get_style_guide` — real Divi 5 structure + styling vocabulary so the AI builds styled, not plain, layouts
+* `get_section_recipes` — a library of complete, validated section patterns (hero, feature grid, split, slider, CTA, footer) the AI assembles pages from
 * `get_page_layout` — read the current layout of any page
 * `validate_layout` — dry-run a change without saving
 * `update_page_layout` — validate then save (the live edit tool)
@@ -90,6 +91,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.4.0 =
+* Added get_section_recipes tool (MCP) and GET /section-recipes endpoint (REST + OpenAPI): a library of complete, validated Divi 5 section patterns (hero, feature grids, split, slider, CTA, footer) derived from real exports. The AI assembles well-composed pages from proven sections instead of building from scratch. Each recipe is validated in the test suite.
 
 = 2.3.1 =
 * Style guide now covers the glassmorphism (glass-card) look using confirmed semi-transparent-background shapes, notes that true backdrop-blur needs custom CSS, and adds aesthetic-variety + contrast guidance.
