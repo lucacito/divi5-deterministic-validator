@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.6.1
+Stable tag:        2.7.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.7.0 =
+* Expanded the section recipe library from 7 to 13 genericized, validated patterns mined from real pages: hero/CTA, section intro, 3- and 4-column card grids, blurb features, icon features, split image+text, contact form, slider, image gallery, image carousel, testimonial, and newsletter+social. All example copy and media are genericized (no real content) and every recipe is validated in the test suite.
 
 = 2.6.1 =
 * Added 7 more modules from a 52-module coverage export: divi/fullwidth-header, divi/gallery, divi/login, divi/instagram-feed, divi/menu (leaf modules), and divi/timeline + divi/timeline-item. A page exercising all 52 Divi 5 module types now validates.
