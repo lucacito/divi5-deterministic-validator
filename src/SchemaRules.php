@@ -35,6 +35,7 @@ class SchemaRules
         'divi/image',
         'divi/button',
         'divi/shortcode-module',
+        'divi/divider',
         // Media
         'divi/audio',
         'divi/video',
@@ -81,6 +82,7 @@ class SchemaRules
             'divi/image',
             'divi/button',
             'divi/shortcode-module',
+            'divi/divider',
             // Media
             'divi/audio',
             'divi/video',

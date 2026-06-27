@@ -82,6 +82,49 @@ module.advanced.text.textShadow.{bp}.value.style  = "preset3"
 module.advanced.text.textShadow.{bp}.value.color  = "RGBA(255,255,255,0)"
 ```
 
+## Box shadow (mined from layouts 1–3)
+```
+module.decoration.boxShadow.{bp}.value.style      = "preset4"   # preset1..preset5
+module.decoration.boxShadow.{bp}.value.horizontal = "6px"
+module.decoration.boxShadow.{bp}.value.vertical   = "-2px"
+module.decoration.boxShadow.{bp}.value.blur       = "40px"
+module.decoration.boxShadow.{bp}.value.color      = "rgba(12,245,126,0.7)"
+```
+
+## Transform
+```
+module.decoration.transform.{bp}.value.translate.x      = "5%"
+module.decoration.transform.{bp}.value.translate.y      = "15%"
+module.decoration.transform.{bp}.value.translate.linked = "off"
+```
+
+## Hover states (`.hover.` replaces `.value.` on the same path)
+```
+button.decoration.background.{bp}.hover.color           = "#bf6631"
+button.decoration.border.{bp}.hover.styles.all.color    = "#333333"
+module.decoration.border.{bp}.hover.styles.all.color    = "#FFFFFF"
+```
+
+## z-index & overflow
+```
+module.decoration.zIndex.{bp}.value     = 10
+module.decoration.overflow.{bp}.value.x = "hidden"
+module.decoration.overflow.{bp}.value.y = "hidden"
+```
+
+## Scroll effects (fade on scroll)
+```
+module.decoration.scroll.{bp}.value.fade.enable           = "on"
+module.decoration.scroll.{bp}.value.fade.viewport.{top,bottom,start,end} = 100 / 0 / 40 / 40
+module.decoration.scroll.{bp}.value.fade.offset.{start,mid,end} = "100%" / 100 / "30%"
+```
+
+## Divider module (`divi/divider`)
+```
+divider.advanced.line.{bp}.value.color  = "rgba(255,255,255,0.25)"
+divider.advanced.line.{bp}.value.weight = "2px"
+```
+
 ---
 **Validator note:** none of these are required or type-checked by the validator —
 they pass through untouched. They affect *rendering only*. The validator still
