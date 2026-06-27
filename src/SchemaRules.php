@@ -28,6 +28,7 @@ class SchemaRules
         // Flex containers (confirmed on real site exports)
         'divi/group',
         'divi/group-carousel',
+        'divi/timeline',
         // Nested (inner) row/column — Divi 5's specialty nesting blocks
         'divi/row-inner',
         'divi/column-inner',
@@ -65,6 +66,13 @@ class SchemaRules
         'divi/code',
         'divi/sidebar',
         'divi/testimonial',
+        // Module-coverage export (newpage)
+        'divi/fullwidth-header',
+        'divi/gallery',
+        'divi/login',
+        'divi/instagram-feed',
+        'divi/menu',
+        'divi/timeline-item',
         // Compound module children (self-closing items inside structural parents)
         'divi/accordion-item',
         'divi/contact-field',
@@ -131,6 +139,12 @@ class SchemaRules
             'divi/code',
             'divi/sidebar',
             'divi/testimonial',
+            'divi/timeline',
+            'divi/fullwidth-header',
+            'divi/gallery',
+            'divi/login',
+            'divi/instagram-feed',
+            'divi/menu',
             // Nested rows — Divi 5 lets a column contain a row (alongside modules),
             // recursing to arbitrary depth. Confirmed via real exports
             // (page-23: divi/row; layout-4: divi/row-inner).
@@ -151,6 +165,7 @@ class SchemaRules
         'divi/row-inner'      => ['divi/column-inner'],
         // Carousel of groups (confirmed on real site exports).
         'divi/group-carousel' => ['divi/group'],
+        'divi/timeline'       => ['divi/timeline-item'],
     ];
 
     /**
