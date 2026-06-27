@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.4.0
+Stable tag:        2.5.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.5.0 =
+* Major validator robustness from a real 25-page production site: now supports divi/group + divi/group-carousel (flex containers), divi/global-layout (Theme Builder globals, no builderVersion), and divi/code / divi/sidebar / divi/testimonial modules. Also accepts top-level divi/section blocks (pages need not be wrapped in divi/placeholder) and a paired divi/text wrapping nested text. All 25 real pages validate.
 
 = 2.4.0 =
 * Added get_section_recipes tool (MCP) and GET /section-recipes endpoint (REST + OpenAPI): a library of complete, validated Divi 5 section patterns (hero, feature grids, split, slider, CTA, footer) derived from real exports. The AI assembles well-composed pages from proven sections instead of building from scratch. Each recipe is validated in the test suite.

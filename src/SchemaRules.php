@@ -25,6 +25,9 @@ class SchemaRules
         'divi/slider',
         'divi/tabs',
         'divi/social-media-follow',
+        // Flex containers (confirmed on real site exports)
+        'divi/group',
+        'divi/group-carousel',
         // Nested (inner) row/column — Divi 5's specialty nesting blocks
         'divi/row-inner',
         'divi/column-inner',
@@ -58,6 +61,10 @@ class SchemaRules
         // Counters / timers
         'divi/circle-counter',
         'divi/countdown-timer',
+        // Confirmed on real site exports
+        'divi/code',
+        'divi/sidebar',
+        'divi/testimonial',
         // Compound module children (self-closing items inside structural parents)
         'divi/accordion-item',
         'divi/contact-field',
@@ -69,13 +76,15 @@ class SchemaRules
         'divi/social-media-follow-network',
     ];
 
-    // divi/layout appears in exports but carries no children or required attrs;
-    // it doesn't belong to either structural or leaf categories.
-    private const EXTRA_TYPES = ['divi/layout'];
+    // Types that appear in exports but carry no children and no builderVersion;
+    // they belong to neither the structural nor leaf categories.
+    //   divi/layout        — layout reference
+    //   divi/global-layout — Theme Builder global reference (globalModule/localAttrs)
+    private const EXTRA_TYPES = ['divi/layout', 'divi/global-layout'];
 
     // Valid direct children for each structural block type
     public const ALLOWED_CHILDREN = [
-        'divi/placeholder'    => ['divi/section'],
+        'divi/placeholder'    => ['divi/section', 'divi/global-layout'],
         // A section usually holds rows, but real exports (layout-4) also place a
         // column directly in a section (full-width column section).
         'divi/section'        => ['divi/row', 'divi/column'],
@@ -116,6 +125,12 @@ class SchemaRules
             'divi/slider',
             'divi/tabs',
             'divi/social-media-follow',
+            // Flex containers + content modules (confirmed on real site exports)
+            'divi/group',
+            'divi/group-carousel',
+            'divi/code',
+            'divi/sidebar',
+            'divi/testimonial',
             // Nested rows — Divi 5 lets a column contain a row (alongside modules),
             // recursing to arbitrary depth. Confirmed via real exports
             // (page-23: divi/row; layout-4: divi/row-inner).
@@ -123,7 +138,7 @@ class SchemaRules
             'divi/row-inner',
         ],
         // Compound module children
-        'divi/accordion'      => ['divi/accordion-item'],
+        'divi/accordion'      => ['divi/accordion-item', 'divi/code'],
         'divi/contact-form'   => ['divi/contact-field'],
         'divi/counters'       => ['divi/counter'],
         'divi/icon-list'      => ['divi/icon-list-item'],
@@ -134,6 +149,8 @@ class SchemaRules
         // Inner row holds inner columns; inner columns accept the same children
         // as top-level columns (see allowedChildrenOf).
         'divi/row-inner'      => ['divi/column-inner'],
+        // Carousel of groups (confirmed on real site exports).
+        'divi/group-carousel' => ['divi/group'],
     ];
 
     /**
@@ -201,8 +218,9 @@ class SchemaRules
     /** @return string[] */
     public function allowedChildrenOf(string $parentType): array
     {
-        // Inner columns accept the same children as top-level columns.
-        if ($parentType === 'divi/column-inner') {
+        // Inner columns and groups (general flex containers) accept the same
+        // children as top-level columns.
+        if ($parentType === 'divi/column-inner' || $parentType === 'divi/group') {
             $parentType = 'divi/column';
         }
         return self::ALLOWED_CHILDREN[$parentType] ?? [];

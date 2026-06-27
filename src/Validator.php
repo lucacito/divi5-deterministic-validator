@@ -205,8 +205,9 @@ final class Validator
             }
 
             // builderVersion required on every Divi block except the root placeholder
-            // (real exports show divi/placeholder carries no attrs at all)
-            if ($block->name() === 'divi/placeholder') {
+            // and divi/global-layout — real exports show both carry no builderVersion
+            // (global-layout is a Theme Builder reference with globalModule/localAttrs).
+            if ($block->name() === 'divi/placeholder' || $block->name() === 'divi/global-layout') {
                 return;
             }
 
@@ -233,12 +234,16 @@ final class Validator
     /** @param Violation[] $violations */
     private function passHierarchyIntegrity(Block $root, array &$violations): void
     {
-        // Root's direct children must all be divi/placeholder
+        // Top-level blocks: real Divi 5 pages either wrap everything in a
+        // divi/placeholder, or place divi/section blocks directly at the top
+        // (optionally with divi/global-layout Theme Builder references). All
+        // three forms are valid roots — confirmed across real site exports.
+        $allowedTop = ['divi/placeholder', 'divi/section', 'divi/global-layout'];
         foreach ($root->children() as $i => $child) {
-            if ($child->name() !== 'divi/placeholder') {
+            if (!in_array($child->name(), $allowedTop, true)) {
                 $violations[] = new Violation(
                     self::E_WRONG_NESTING,
-                    "Top-level block must be 'divi/placeholder', got '{$child->name()}'.",
+                    "Top-level block must be one of [divi/placeholder, divi/section, divi/global-layout], got '{$child->name()}'.",
                     "__root__[$i]"
                 );
             }
@@ -252,8 +257,13 @@ final class Validator
 
             $allowed = $this->schema->allowedChildrenOf($block->name());
 
-            // Leaf modules must not have children
-            if ($this->schema->isLeafModule($block->name()) && $block->children() !== []) {
+            // Leaf modules must not have children — except divi/text, which real
+            // exports show can be saved as a paired block wrapping nested
+            // text/HTML (valid WordPress block grammar, renders fine in Divi).
+            if ($block->name() !== 'divi/text'
+                && $this->schema->isLeafModule($block->name())
+                && $block->children() !== []
+            ) {
                 $violations[] = new Violation(
                     self::E_WRONG_NESTING,
                     "Leaf module '{$block->name()}' must not have children.",

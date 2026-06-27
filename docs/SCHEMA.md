@@ -54,6 +54,19 @@ divi/placeholder              ← always the root wrapper
         divi/row              ← OR a nested row (see below)
 ```
 
+**Top-level forms** (confirmed across a real 25-page production site): a page's
+root children are not always `divi/placeholder`. Real pages also place
+`divi/section` blocks **directly** at the top level, and `divi/global-layout`
+(Theme Builder global references — these carry no `builderVersion`). All three
+are valid roots.
+
+**More real modules** (confirmed on the production site): `divi/group` and
+`divi/column-inner` act as general flex containers (same children as a column);
+`divi/group-carousel` contains `divi/group`; `divi/code`, `divi/sidebar`,
+`divi/testimonial` are leaf modules in a column; `divi/code` can also appear in
+`divi/accordion`. A `divi/text` may be saved as a paired block wrapping nested
+text/HTML (so text is the one leaf allowed to have children).
+
 **Nested rows** (confirmed in real export `page-23-page-nested-structure.json`):
 A `divi/column` may contain a `divi/row` — alongside leaf modules in the same
 column — and this nests to arbitrary depth (`column → row → column → row → …`).
