@@ -62,6 +62,18 @@ final class RestController
             'callback'            => [$this, 'validate'],
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
+
+        // GET /style-guide — Divi 5 authoring + styling vocabulary
+        register_rest_route(self::NS, '/style-guide', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'style_guide'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+    }
+
+    public function style_guide(WP_REST_Request $request): WP_REST_Response
+    {
+        return new WP_REST_Response(['guide' => StyleGuide::markdown()], 200);
     }
 
     // ---------------------------------------------------------------

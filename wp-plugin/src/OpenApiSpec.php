@@ -142,6 +142,16 @@ final class OpenApiSpec
                         ],
                     ],
                 ],
+                '/style-guide' => [
+                    'get' => [
+                        'operationId' => 'getStyleGuide',
+                        'summary'     => 'Get the Divi 5 authoring + styling guide',
+                        'description' => 'Returns real block structure rules, required content keys, and styling attribute shapes (backgrounds, gradients, spacing, typography, borders, shadows, transforms, hover, animation). Call before building or restyling a layout so the result is styled, not plain.',
+                        'responses'   => [
+                            '200' => ['description' => 'The guide (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]],
+                        ],
+                    ],
+                ],
                 '/validate' => [
                     'post' => [
                         'operationId' => 'validateLayout',

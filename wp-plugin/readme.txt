@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.2.3
+Stable tag:        2.3.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -22,9 +22,10 @@ AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Curs
 4. The validator checks every Divi 5 block type, required attribute, and nesting rule deterministically — no AI involved.
 5. Valid layouts are saved instantly. Invalid layouts return exact violation messages so the AI self-corrects and retries.
 
-**Five tools your AI gets**
+**Six tools your AI gets**
 
 * `list_divi_pages` — list all pages built with Divi 5
+* `get_style_guide` — real Divi 5 structure + styling vocabulary so the AI builds styled, not plain, layouts
 * `get_page_layout` — read the current layout of any page
 * `validate_layout` — dry-run a change without saving
 * `update_page_layout` — validate then save (the live edit tool)
@@ -89,6 +90,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.3.0 =
+* Added get_style_guide tool (MCP) and GET /style-guide endpoint (REST + OpenAPI): serves real Divi 5 structure rules and styling attribute shapes mined from real exports, so AI assistants produce styled, creative layouts instead of plain ones. create_page and update_page_layout now point the AI to it.
 
 = 2.2.3 =
 * Validator now supports Divi 5 specialty nesting: divi/row-inner and divi/column-inner, plus a divi/column placed directly in a section (confirmed via real exports). Documented CSS filter and entrance-animation attribute shapes in docs/STYLE.md.

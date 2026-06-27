@@ -100,6 +100,11 @@ final class McpHandler
                 ],
             ],
             [
+                'name'        => 'get_style_guide',
+                'description' => 'Get the Divi 5 authoring guide: real block structure/nesting rules, required content keys, and the exact styling attribute shapes (backgrounds, gradients, spacing, typography, borders, radius, box-shadow, transform, hover, filters, animation). Call this BEFORE building or restyling a layout so the result is styled and valid, not plain.',
+                'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
+            ],
+            [
                 'name'        => 'validate_layout',
                 'description' => 'Validate a Divi 5 post_content string against the schema without saving. Use this to check edits before calling update_page_layout.',
                 'inputSchema' => [
@@ -110,7 +115,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'update_page_layout',
-                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
+                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. Call get_style_guide first to learn the real styling attribute shapes so the result is styled, not plain. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -122,7 +127,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'create_page',
-                'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
+                'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing. Call get_style_guide first to learn the real styling attribute shapes so the page is styled, not plain. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -142,6 +147,7 @@ final class McpHandler
 
         return match ($name) {
             'list_divi_pages'    => $this->toolListPages($id),
+            'get_style_guide'    => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => StyleGuide::markdown()]]]),
             'get_page_layout'    => $this->toolGetLayout($id, $arguments),
             'validate_layout'    => $this->toolValidate($id, $arguments),
             'update_page_layout' => $this->toolUpdate($id, $arguments),
