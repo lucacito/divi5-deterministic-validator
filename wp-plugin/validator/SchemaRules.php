@@ -24,6 +24,7 @@ class SchemaRules
         'divi/pricing-tables',
         'divi/slider',
         'divi/tabs',
+        'divi/social-media-follow',
     ];
 
     // Leaf modules — self-closing, carry actual content
@@ -61,6 +62,7 @@ class SchemaRules
         'divi/pricing-table',
         'divi/slide',
         'divi/tab',
+        'divi/social-media-follow-network',
     ];
 
     // divi/layout appears in exports but carries no children or required attrs;
@@ -106,6 +108,7 @@ class SchemaRules
             'divi/pricing-tables',
             'divi/slider',
             'divi/tabs',
+            'divi/social-media-follow',
             // Nested rows — Divi 5 lets a column contain a row (alongside modules),
             // recursing to arbitrary depth. Confirmed via real export (page-23).
             'divi/row',
@@ -118,6 +121,7 @@ class SchemaRules
         'divi/pricing-tables' => ['divi/pricing-table'],
         'divi/slider'         => ['divi/slide'],
         'divi/tabs'           => ['divi/tab'],
+        'divi/social-media-follow' => ['divi/social-media-follow-network'],
     ];
 
     /**

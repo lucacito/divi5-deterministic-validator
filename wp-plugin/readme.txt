@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.2.0
+Stable tag:        2.2.1
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -89,6 +89,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.2.1 =
+* Validator now recognizes the divi/social-media-follow module and its divi/social-media-follow-network children (confirmed via real export). Pages using social-follow icons no longer fail validation.
 
 = 2.2.0 =
 * Validator now supports nested rows (a divi/row inside a divi/column, recursing to any depth) — confirmed against a real Divi 5 export. Previously these valid layouts were wrongly rejected.
