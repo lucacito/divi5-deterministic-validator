@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.2.2
+Stable tag:        2.2.3
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -89,6 +89,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.2.3 =
+* Validator now supports Divi 5 specialty nesting: divi/row-inner and divi/column-inner, plus a divi/column placed directly in a section (confirmed via real exports). Documented CSS filter and entrance-animation attribute shapes in docs/STYLE.md.
 
 = 2.2.2 =
 * Validator now recognizes the divi/divider module (confirmed via real export). Documented many real styling attribute shapes (box-shadow, transform, hover, z-index, overflow, scroll-fade, divider) in docs/STYLE.md.

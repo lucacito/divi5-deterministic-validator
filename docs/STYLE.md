@@ -125,6 +125,27 @@ divider.advanced.line.{bp}.value.color  = "rgba(255,255,255,0.25)"
 divider.advanced.line.{bp}.value.weight = "2px"
 ```
 
+## CSS filters (mined from layouts 4–5) — incl. hover
+```
+<element>.decoration.filters.{bp}.value.brightness = "200%"   # also contrast, saturate, blur, opacity, hue
+<element>.decoration.filters.{bp}.hover.brightness = "200%"   # .hover. for hover state
+```
+Observed on a blurb's `imageIcon`; the `<element>.decoration.filters` path also
+applies to `module` and other styled keys.
+
+## Entrance animation
+```
+<element>.decoration.animation.{bp}.value.style           = "slide"   # fade, slide, bounce, zoom, flip, roll, fold
+<element>.decoration.animation.{bp}.value.direction        = "top"
+<element>.decoration.animation.{bp}.value.duration         = "600ms"
+<element>.decoration.animation.{bp}.value.intensity.slide  = 2
+```
+
+## Nested rows — two real forms
+- `divi/column → divi/row → divi/column → …` (page-23)
+- `divi/column → divi/row-inner → divi/column-inner → modules` (layout-4, the
+  specialty-section form). A `divi/section` may also hold a `divi/column` directly.
+
 ---
 **Validator note:** none of these are required or type-checked by the validator —
 they pass through untouched. They affect *rendering only*. The validator still
