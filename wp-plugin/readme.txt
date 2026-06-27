@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.3.0
+Stable tag:        2.3.1
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -90,6 +90,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.3.1 =
+* Style guide now covers the glassmorphism (glass-card) look using confirmed semi-transparent-background shapes, notes that true backdrop-blur needs custom CSS, and adds aesthetic-variety + contrast guidance.
 
 = 2.3.0 =
 * Added get_style_guide tool (MCP) and GET /style-guide endpoint (REST + OpenAPI): serves real Divi 5 structure rules and styling attribute shapes mined from real exports, so AI assistants produce styled, creative layouts instead of plain ones. create_page and update_page_layout now point the AI to it.

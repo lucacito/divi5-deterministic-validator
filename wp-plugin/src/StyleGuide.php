@@ -82,6 +82,17 @@ hover: `button.decoration.background.{bp}.hover.color` = "#bf6631"
 `module.decoration.border.{bp}.value.radius.{sync,topLeft}` = "on","16px";
 `module.decoration.border.{bp}.value.styles.all.{width,color}` = "2px","#FFFFFF"
 
+**Glass card (glassmorphism look):** combine a semi-transparent background with a
+subtle light border and radius on a Group/column/row:
+`module.decoration.background.{bp}.value.color` = "rgba(18,18,18,0.75)" (or
+"rgba(255,255,255,0.06)" on dark);
+`module.decoration.border.{bp}.value.styles.all.{width,color}` = "1px","rgba(255,255,255,0.12)";
+`module.decoration.border.{bp}.value.radius.{sync,topLeft}` = "on","20px".
+True frosted-glass *backdrop-blur* (blurring what's behind the card) is NOT a
+standard Divi attribute — it needs custom CSS via the top-level `css` key
+(`css.desktop.value.mainElement` = "backdrop-filter:blur(12px);"). Use the
+semi-transparent + border recipe for the glass look without custom CSS.
+
 **Box shadow:**
 `module.decoration.boxShadow.{bp}.value.{style,horizontal,vertical,blur,color}`
 = "preset4","6px","-2px","40px","rgba(0,0,0,.5)"
@@ -101,10 +112,14 @@ hover: `button.decoration.background.{bp}.hover.color` = "#bf6631"
 **Divider** (`divi/divider`): `divider.advanced.line.{bp}.value.{color,weight}`
 
 ## Design guidance
-Pick one cohesive palette and reuse it (e.g. dark: bg #0a0a0a/#111114, card
-#17171c, accent #ff4d00, white headings, #c9c9c9 body). Give sections generous
-vertical padding (5–8vw), round cards (12–20px), keep one accent color. Use
-box-shadow + subtle transforms for depth; entrance animations sparingly.
+Commit to ONE clear aesthetic direction per page (dark/moody, light/airy,
+editorial, glassmorphism, bold/vibrant) — don't default to the same dark theme
+every time. Pick a dominant + accent color (not evenly distributed) and reuse it
+(e.g. dark: bg #0a0a0a/#111114, card #17171c, accent #ff4d00, white headings,
+#c9c9c9 body). Give sections generous vertical padding (5–8vw), round cards
+(12–20px), keep one accent color. Use box-shadow + subtle transforms for depth;
+entrance animations sparingly. Always check text contrast against the lightest
+part of its background (on gradients, the lightest stop).
 
 ## Worked example — one styled section
 ```

@@ -141,6 +141,26 @@ applies to `module` and other styled keys.
 <element>.decoration.animation.{bp}.value.intensity.slide  = 2
 ```
 
+## Glassmorphism / glass card
+Confirmed shape (page-44-layout-2 uses a semi-transparent row background):
+```
+module.decoration.background.{bp}.value.color = "rgba(18,18,18,0.75)"   # or rgba(255,255,255,0.06) on dark
+module.decoration.border.{bp}.value.styles.all.{width,color} = "1px","rgba(255,255,255,0.12)"
+module.decoration.border.{bp}.value.radius.{sync,topLeft}     = "on","20px"
+```
+This gives the glass *look* (translucent surface + hairline border + radius).
+True frosted-glass **backdrop-blur** is NOT a native Divi attribute and appears
+in no export — achieve it with custom CSS via the top-level `css` key:
+`css.{bp}.value.mainElement` = "backdrop-filter:blur(12px);". Document as an
+advanced option only; do not assert a decoration shape we have not observed.
+
+## Aesthetic variety (general design guidance)
+Don't default to the same dark theme every time. Commit to one clear direction
+per page (dark/moody, light/airy, editorial, glassmorphism, bold/vibrant) with a
+dominant + accent color (not evenly distributed), clear type hierarchy, and
+generous section rhythm. Always check text contrast against the *lightest* part
+of its background.
+
 ## Nested rows — two real forms
 - `divi/column → divi/row → divi/column → …` (page-23)
 - `divi/column → divi/row-inner → divi/column-inner → modules` (layout-4, the
