@@ -251,7 +251,9 @@ final class McpHandler
             ]);
         }
 
-        $updated = wp_update_post(['ID' => $pageId, 'post_content' => $content], true);
+        // wp_slash: wp_update_post runs wp_unslash internally, which would
+        // otherwise strip backslashes from escaped HTML (e.g. <) and corrupt content.
+        $updated = wp_update_post(wp_slash(['ID' => $pageId, 'post_content' => $content]), true);
 
         if (is_wp_error($updated)) {
             UsageTracker::log('update_layout', $pageId, 'error');
@@ -316,7 +318,9 @@ final class McpHandler
         // Always a draft — the site owner reviews and publishes. The Divi 5
         // builder meta flags make the page open in the Divi 5 editor and appear
         // in list_divi_pages (which filters on _et_pb_use_divi_5).
-        $pageId = wp_insert_post([
+        // wp_slash: wp_insert_post runs wp_unslash internally, which would
+        // otherwise strip backslashes from escaped HTML (e.g. <) and corrupt content.
+        $pageId = wp_insert_post(wp_slash([
             'post_type'    => 'page',
             'post_title'   => $title,
             'post_content' => $content,
@@ -325,7 +329,7 @@ final class McpHandler
                 '_et_pb_use_divi_5'  => 'on',
                 '_et_pb_use_builder' => 'on',
             ],
-        ], true);
+        ]), true);
 
         if (is_wp_error($pageId)) {
             UsageTracker::log('create_page', null, 'error');

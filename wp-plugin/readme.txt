@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.1.1
+Stable tag:        2.1.2
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -89,6 +89,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.1.2 =
+* Fixed content corruption on save: page content is now wp_slash()'d before wp_insert_post/wp_update_post, which run wp_unslash internally. Previously backslashes in escaped HTML (e.g. < for <) were stripped, breaking text modules. Affects create_page and update_page_layout (MCP + REST).
 
 = 2.1.1 =
 * create_page now sets the Divi 5 builder meta (_et_pb_use_divi_5, _et_pb_use_builder) so new pages open directly in the Divi 5 editor and appear in list_divi_pages.

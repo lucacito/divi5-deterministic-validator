@@ -149,11 +149,12 @@ final class RestController
             ], 422);
         }
 
-        // Validation passed — safe to save
-        $updated = wp_update_post([
+        // Validation passed — safe to save. wp_slash because wp_update_post runs
+        // wp_unslash internally and would otherwise strip backslashes from escaped HTML.
+        $updated = wp_update_post(wp_slash([
             'ID'           => $id,
             'post_content' => $body['post_content'],
-        ], true);
+        ]), true);
 
         if (is_wp_error($updated)) {
             return new WP_Error('update_failed', $updated->get_error_message(), ['status' => 500]);
@@ -212,7 +213,9 @@ final class RestController
         // Always a draft — the site owner reviews and publishes. The Divi 5
         // builder meta flags make the page open in the Divi 5 editor and appear
         // in list_divi_pages (which filters on _et_pb_use_divi_5).
-        $pageId = wp_insert_post([
+        // wp_slash because wp_insert_post runs wp_unslash internally and would
+        // otherwise strip backslashes from escaped HTML and corrupt content.
+        $pageId = wp_insert_post(wp_slash([
             'post_type'    => 'page',
             'post_title'   => $title,
             'post_content' => $content,
@@ -221,7 +224,7 @@ final class RestController
                 '_et_pb_use_divi_5'  => 'on',
                 '_et_pb_use_builder' => 'on',
             ],
-        ], true);
+        ]), true);
 
         if (is_wp_error($pageId)) {
             return new WP_Error('create_failed', $pageId->get_error_message(), ['status' => 500]);
