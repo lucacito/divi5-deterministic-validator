@@ -110,7 +110,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'update_page_layout',
-                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations.',
+                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -122,7 +122,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'create_page',
-                'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing.',
+                'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [

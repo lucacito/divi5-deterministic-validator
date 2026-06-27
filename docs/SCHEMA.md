@@ -51,7 +51,15 @@ divi/placeholder              ← always the root wrapper
     divi/row                  ← row within a section (can have multiple)
       divi/column             ← column within a row (can have multiple)
         [leaf modules]        ← content modules (self-closing)
+        divi/row              ← OR a nested row (see below)
 ```
+
+**Nested rows** (confirmed in real export `page-23-page-nested-structure.json`):
+A `divi/column` may contain a `divi/row` — alongside leaf modules in the same
+column — and this nests to arbitrary depth (`column → row → column → row → …`).
+Nested rows are structurally identical to top-level rows (same `columnStructure`
+attrs); there is no separate "specialty" block type. The validator allows
+`divi/row` as a child of `divi/column` and recurses with the same rules.
 
 **Known leaf module types** (observed in 5.8.0):
 - `divi/heading`

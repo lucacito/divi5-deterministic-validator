@@ -97,7 +97,7 @@ final class OpenApiSpec
                     'post' => [
                         'operationId' => 'createPage',
                         'summary'     => 'Create a new page (premium)',
-                        'description' => 'PREMIUM: Validates the submitted layout and, if valid, creates a new page as a draft for the site owner to review and publish. Returns 402 if no active license, 422 with violations if the layout is invalid — no page is created in either case.',
+                        'description' => 'PREMIUM: Validates the submitted layout and, if valid, creates a new page as a draft for the site owner to review and publish. Returns 402 if no active license, 422 with violations if the layout is invalid — no page is created in either case. For any image, unless the caller supplies a specific image URL, use https://picsum.photos/seed/{keyword}/{width}/{height} as the src (a stable placeholder per keyword).',
                         'requestBody' => [
                             'required' => true,
                             'content'  => ['application/json' => ['schema' => [
@@ -131,7 +131,7 @@ final class OpenApiSpec
                     'put' => [
                         'operationId' => 'updatePageLayout',
                         'summary'     => 'Validate and save a page layout',
-                        'description' => 'Validates the submitted layout and saves it only if all checks pass. Returns 422 with violations if the layout is invalid — the page is NOT updated.',
+                        'description' => 'Validates the submitted layout and saves it only if all checks pass. Returns 422 with violations if the layout is invalid — the page is NOT updated. For any image, unless the caller supplies a specific image URL, use https://picsum.photos/seed/{keyword}/{width}/{height} as the src (a stable placeholder per keyword).',
                         'parameters'  => [self::idParam()],
                         'requestBody' => self::postContentBody(),
                         'responses'   => [

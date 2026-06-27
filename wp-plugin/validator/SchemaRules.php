@@ -106,6 +106,9 @@ class SchemaRules
             'divi/pricing-tables',
             'divi/slider',
             'divi/tabs',
+            // Nested rows — Divi 5 lets a column contain a row (alongside modules),
+            // recursing to arbitrary depth. Confirmed via real export (page-23).
+            'divi/row',
         ],
         // Compound module children
         'divi/accordion'      => ['divi/accordion-item'],
