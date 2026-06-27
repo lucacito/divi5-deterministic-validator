@@ -209,12 +209,18 @@ final class RestController
             ], 422);
         }
 
-        // Always a draft — the site owner reviews and publishes.
+        // Always a draft — the site owner reviews and publishes. The Divi 5
+        // builder meta flags make the page open in the Divi 5 editor and appear
+        // in list_divi_pages (which filters on _et_pb_use_divi_5).
         $pageId = wp_insert_post([
             'post_type'    => 'page',
             'post_title'   => $title,
             'post_content' => $content,
             'post_status'  => 'draft',
+            'meta_input'   => [
+                '_et_pb_use_divi_5'  => 'on',
+                '_et_pb_use_builder' => 'on',
+            ],
         ], true);
 
         if (is_wp_error($pageId)) {
