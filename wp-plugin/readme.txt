@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.10.0
+Stable tag:        2.11.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.11.0 =
+* Safe AI-assisted PHP: new propose_php_snippet tool lets the AI draft PHP features (custom post types, hooks, form handlers, integrations) as REVIEWED PROPOSALS. Nothing is executed or written to the site — proposals appear under Settings â†’ Code Proposals for a human to review and apply manually, so the API key never becomes a code-execution credential.
 
 = 2.10.0 =
 * Full-site generation (phase 1): new get_site_guide blueprint tool, create_page now accepts a slug for predictable cross-linking, and premium set_front_page + set_primary_menu tools (MCP + REST) wire the homepage and theme navigation. The AI can now build an entire multi-page website from one brief.

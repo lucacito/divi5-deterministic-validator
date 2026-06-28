@@ -20,6 +20,19 @@ final class AdminPage
         add_action('admin_post_ai_editor_divi5_clear_usage',    [$this, 'handleClearUsage']);
         add_action('admin_post_ai_editor_divi5_activate_license',   [$this, 'handleActivateLicense']);
         add_action('admin_post_ai_editor_divi5_deactivate_license', [$this, 'handleDeactivateLicense']);
+        add_action('admin_post_ai_editor_divi5_delete_proposal',    [$this, 'handleDeleteProposal']);
+    }
+
+    public function handleDeleteProposal(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die( esc_html__( 'Unauthorized.', 'ai-editor-divi5' ) );
+        }
+        check_admin_referer('ai_editor_divi5_delete_proposal');
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+        PhpProposals::delete( sanitize_text_field( wp_unslash( $_POST['proposal_id'] ?? '' ) ) );
+        wp_safe_redirect(add_query_arg(['page' => 'ai-editor-divi5', 'tab' => 'code', 'notice' => 'proposal_deleted'], admin_url('options-general.php')));
+        exit;
     }
 
     public function addMenu(): void
@@ -155,6 +168,8 @@ final class AdminPage
                 <div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'That license key is not valid for this site. Check the key and your domain, then try again.', 'ai-editor-divi5' ); ?></p></div>
             <?php elseif ( $notice === 'license_deactivated' ) : ?>
                 <div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'License removed. Premium features are now disabled.', 'ai-editor-divi5' ); ?></p></div>
+            <?php elseif ( $notice === 'proposal_deleted' ) : ?>
+                <div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Code proposal deleted.', 'ai-editor-divi5' ); ?></p></div>
             <?php endif; ?>
 
             <div class="aied-layout">
@@ -245,6 +260,7 @@ final class AdminPage
                 $tabs = [
                     'connect' => __( 'Connect AI', 'ai-editor-divi5' ),
                     'usage'   => __( 'Usage', 'ai-editor-divi5' ),
+                    'code'    => __( 'Code Proposals', 'ai-editor-divi5' ),
                 ];
                 foreach ( $tabs as $slug => $label ) :
                 ?>
@@ -460,6 +476,39 @@ final class AdminPage
                     </tbody>
                 </table>
                 <?php endif; ?>
+            </div>
+            <?php endif; ?>
+
+            <!-- Code Proposals Tab -->
+            <?php if ( $activeTab === 'code' ) : ?>
+            <div class="aied-card">
+                <h2><?php esc_html_e( 'Code Proposals', 'ai-editor-divi5' ); ?></h2>
+                <p class="aied-card__desc">
+                    <?php esc_html_e( 'PHP snippets your AI assistant proposed. These are NOT executed or saved to your site — review each one, then apply it yourself (paste into a code-snippets plugin or your theme functions). Only apply code you understand and trust.', 'ai-editor-divi5' ); ?>
+                </p>
+                <?php $proposals = PhpProposals::all(); ?>
+                <?php if ( empty( $proposals ) ) : ?>
+                    <p class="aied-empty"><?php esc_html_e( 'No code proposals yet. Ask your AI assistant to build a PHP feature and it will appear here for review.', 'ai-editor-divi5' ); ?></p>
+                <?php else : foreach ( $proposals as $p ) : $pid = esc_attr( $p['id'] ); ?>
+                    <div class="aied-card" style="margin-top:16px">
+                        <h3 style="margin-top:0"><?php echo esc_html( $p['title'] ); ?></h3>
+                        <p class="aied-card__desc"><?php echo esc_html( $p['description'] ); ?></p>
+                        <p class="aied-note"><?php echo esc_html( date_i18n( 'M j, Y H:i', (int) $p['created'] ) ); ?></p>
+                        <div class="aied-snippet-wrap">
+                            <pre class="aied-snippet" id="proposal-<?php echo $pid; ?>"><?php echo esc_html( $p['code'] ); ?></pre>
+                            <button class="button button-primary aied-copy-btn" data-target="proposal-<?php echo $pid; ?>"><?php esc_html_e( 'Copy', 'ai-editor-divi5' ); ?></button>
+                        </div>
+                        <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top:10px">
+                            <input type="hidden" name="action" value="ai_editor_divi5_delete_proposal">
+                            <input type="hidden" name="proposal_id" value="<?php echo $pid; ?>">
+                            <?php wp_nonce_field( 'ai_editor_divi5_delete_proposal' ); ?>
+                            <button type="submit" class="button aied-btn-danger"
+                                onclick="return confirm( '<?php echo esc_js( __( 'Delete this proposal?', 'ai-editor-divi5' ) ); ?>' )">
+                                <?php esc_html_e( 'Delete', 'ai-editor-divi5' ); ?>
+                            </button>
+                        </form>
+                    </div>
+                <?php endforeach; endif; ?>
             </div>
             <?php endif; ?>
 

@@ -110,6 +110,19 @@ final class McpHandler
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
             ],
             [
+                'name'        => 'propose_php_snippet',
+                'description' => 'PREMIUM: Propose a PHP snippet (custom post type, hook, shortcode, form handler, integration, etc.) for the site owner to REVIEW and apply manually. This does NOT execute or save any code to the site — it stores a reviewed proposal that appears under Settings → AI Editor for Divi 5 → Code Proposals, where a human copies it into their snippets manager or functions.php. Always include a clear description of what the code does and any setup notes.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'title'       => ['type' => 'string', 'description' => 'Short name for the snippet'],
+                        'description' => ['type' => 'string', 'description' => 'What it does + where/how to apply it'],
+                        'code'        => ['type' => 'string', 'description' => 'The PHP code (include the <?php tag if a full file, or a function/hook snippet)'],
+                    ],
+                    'required'   => ['title', 'code'],
+                ],
+            ],
+            [
                 'name'        => 'set_front_page',
                 'description' => 'PREMIUM: Set a page as the site\'s static front page (homepage). Pass the page_id returned by create_page for the Home page.',
                 'inputSchema' => [
@@ -194,6 +207,7 @@ final class McpHandler
             'get_site_guide'     => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => SiteGuide::markdown()]]]),
             'set_front_page'     => $this->toolSetFrontPage($id, $arguments),
             'set_primary_menu'   => $this->toolSetPrimaryMenu($id, $arguments),
+            'propose_php_snippet' => $this->toolProposePhp($id, $arguments),
             'get_section_recipes' => $this->toolSectionRecipes($id, $arguments),
             'get_page_layout'    => $this->toolGetLayout($id, $arguments),
             'validate_layout'    => $this->toolValidate($id, $arguments),
@@ -457,6 +471,34 @@ final class McpHandler
         }
 
         return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => json_encode(MenuBuilder::build($items))]]]);
+    }
+
+    private function toolProposePhp(mixed $id, array $args): WP_REST_Response
+    {
+        if (!Licensing::isPremium()) {
+            return $this->premiumRequired($id);
+        }
+        // Only an admin-capable API user can file code proposals for review.
+        if (!current_user_can('manage_options')) {
+            return $this->rpcError($id, -32602, 'You do not have permission to propose code.');
+        }
+        $title = trim((string) ($args['title'] ?? ''));
+        $code  = (string) ($args['code'] ?? '');
+        $desc  = (string) ($args['description'] ?? '');
+        if (trim($code) === '') {
+            return $this->rpcError($id, -32602, 'code is required.');
+        }
+
+        // Stored inert for human review — never executed or written as runnable PHP.
+        $pid = PhpProposals::add(sanitize_text_field($title), wp_kses_post($desc), $code);
+
+        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => json_encode([
+            'proposed'   => true,
+            'executed'   => false,
+            'id'         => $pid,
+            'message'    => 'Snippet stored for review. It was NOT executed or saved to the site. Review and apply it under Settings → AI Editor for Divi 5 → Code Proposals.',
+            'review_url' => admin_url('options-general.php?page=ai-editor-divi5&tab=code'),
+        ])]]]);
     }
 
     private function premiumRequired(mixed $id): WP_REST_Response
