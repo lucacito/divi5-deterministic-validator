@@ -17,6 +17,8 @@ require_once __DIR__ . '/ApiKey.php';
 require_once __DIR__ . '/Licensing.php';
 require_once __DIR__ . '/StyleGuide.php';
 require_once __DIR__ . '/SectionRecipes.php';
+require_once __DIR__ . '/SiteGuide.php';
+require_once __DIR__ . '/MenuBuilder.php';
 require_once __DIR__ . '/UsageTracker.php';
 require_once __DIR__ . '/RestController.php';
 require_once __DIR__ . '/McpHandler.php';

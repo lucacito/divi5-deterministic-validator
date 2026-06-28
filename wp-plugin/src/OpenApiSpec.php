@@ -106,6 +106,7 @@ final class OpenApiSpec
                                 'properties' => [
                                     'title'        => ['type' => 'string', 'description' => 'Page title'],
                                     'post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML'],
+                                    'slug'         => ['type' => 'string', 'description' => 'Optional URL slug for cross-linking'],
                                 ],
                             ]]],
                         ],
@@ -150,6 +151,32 @@ final class OpenApiSpec
                         'responses'   => [
                             '200' => ['description' => 'The guide (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]],
                         ],
+                    ],
+                ],
+                '/site-guide' => [
+                    'get' => [
+                        'operationId' => 'getSiteGuide',
+                        'summary'     => 'Get the multi-page site blueprint',
+                        'description' => 'Blueprint for building an entire multi-page website from one brief: plan pages, lock one design system, build each page with a slug, cross-link, then set the front page and nav menu.',
+                        'responses'   => ['200' => ['description' => 'The blueprint (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
+                    ],
+                ],
+                '/front-page' => [
+                    'post' => [
+                        'operationId' => 'setFrontPage',
+                        'summary'     => 'Set the static front page (premium)',
+                        'description' => 'PREMIUM: Make a page the site front page.',
+                        'requestBody' => ['required' => true, 'content' => ['application/json' => ['schema' => ['type' => 'object', 'required' => ['page_id'], 'properties' => ['page_id' => ['type' => 'integer']]]]]],
+                        'responses'   => ['200' => ['description' => 'Front page set'], '402' => ['description' => 'Premium required'], '404' => ['description' => 'Page not found']],
+                    ],
+                ],
+                '/primary-menu' => [
+                    'post' => [
+                        'operationId' => 'setPrimaryMenu',
+                        'summary'     => 'Build + assign the primary nav menu (premium)',
+                        'description' => 'PREMIUM: Build the Main Menu from items and assign it to the theme primary location.',
+                        'requestBody' => ['required' => true, 'content' => ['application/json' => ['schema' => ['type' => 'object', 'required' => ['items'], 'properties' => ['items' => ['type' => 'array', 'items' => ['type' => 'object', 'properties' => ['title' => ['type' => 'string'], 'page_id' => ['type' => 'integer'], 'url' => ['type' => 'string']]]]]]]]],
+                        'responses'   => ['200' => ['description' => 'Menu built'], '402' => ['description' => 'Premium required']],
                     ],
                 ],
                 '/section-recipes' => [

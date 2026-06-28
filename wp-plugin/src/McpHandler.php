@@ -105,6 +105,39 @@ final class McpHandler
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
             ],
             [
+                'name'        => 'get_site_guide',
+                'description' => 'Get the blueprint for building an ENTIRE multi-page website from one brief: how to plan the page set, lock one shared design system across all pages, build each page with create_page (passing a slug), cross-link them, and wire the front page + nav menu. Call this when the user asks for a whole site, not a single page.',
+                'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
+            ],
+            [
+                'name'        => 'set_front_page',
+                'description' => 'PREMIUM: Set a page as the site\'s static front page (homepage). Pass the page_id returned by create_page for the Home page.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => ['page_id' => ['type' => 'integer', 'description' => 'Page ID to use as the front page']],
+                    'required'   => ['page_id'],
+                ],
+            ],
+            [
+                'name'        => 'set_primary_menu',
+                'description' => 'PREMIUM: Build the primary navigation menu (shown in the theme header) from a list of items, and assign it to the theme\'s primary menu location. Each item links to a page by id or to a custom url.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'items' => [
+                            'type'        => 'array',
+                            'description' => 'Ordered menu items',
+                            'items'       => ['type' => 'object', 'properties' => [
+                                'title'   => ['type' => 'string'],
+                                'page_id' => ['type' => 'integer', 'description' => 'Link to this page (preferred)'],
+                                'url'     => ['type' => 'string',  'description' => 'Or a custom URL'],
+                            ], 'required' => ['title']],
+                        ],
+                    ],
+                    'required' => ['items'],
+                ],
+            ],
+            [
                 'name'        => 'get_section_recipes',
                 'description' => 'Get a library of complete, validated Divi 5 section recipes (hero, feature grids, split, slider, CTA, footer). With no arguments, returns the catalog of recipe names. Pass {"name":"<recipe>"} to get that section\'s full block markup to copy and fill with the user\'s content. Use these to assemble well-composed pages instead of building sections from scratch.',
                 'inputSchema' => [
@@ -142,6 +175,7 @@ final class McpHandler
                     'properties' => [
                         'title'        => ['type' => 'string', 'description' => 'Page title'],
                         'post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML'],
+                        'slug'         => ['type' => 'string', 'description' => 'Optional URL slug (e.g. "about") for predictable cross-linking'],
                     ],
                     'required' => ['title', 'post_content'],
                 ],
@@ -157,6 +191,9 @@ final class McpHandler
         return match ($name) {
             'list_divi_pages'    => $this->toolListPages($id),
             'get_style_guide'    => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => StyleGuide::markdown()]]]),
+            'get_site_guide'     => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => SiteGuide::markdown()]]]),
+            'set_front_page'     => $this->toolSetFrontPage($id, $arguments),
+            'set_primary_menu'   => $this->toolSetPrimaryMenu($id, $arguments),
             'get_section_recipes' => $this->toolSectionRecipes($id, $arguments),
             'get_page_layout'    => $this->toolGetLayout($id, $arguments),
             'validate_layout'    => $this->toolValidate($id, $arguments),
@@ -321,6 +358,7 @@ final class McpHandler
 
         $title   = trim((string) ($args['title'] ?? ''));
         $content = (string) ($args['post_content'] ?? '');
+        $slug    = sanitize_title((string) ($args['slug'] ?? ''));
 
         if ($title === '') {
             return $this->rpcError($id, -32602, 'title is required.');
@@ -348,7 +386,7 @@ final class McpHandler
         // in list_divi_pages (which filters on _et_pb_use_divi_5).
         // wp_slash: wp_insert_post runs wp_unslash internally, which would
         // otherwise strip backslashes from escaped HTML (e.g. <) and corrupt content.
-        $pageId = wp_insert_post(wp_slash([
+        $postArr = [
             'post_type'    => 'page',
             'post_title'   => $title,
             'post_content' => $content,
@@ -357,7 +395,11 @@ final class McpHandler
                 '_et_pb_use_divi_5'  => 'on',
                 '_et_pb_use_builder' => 'on',
             ],
-        ]), true);
+        ];
+        if ($slug !== '') {
+            $postArr['post_name'] = $slug;
+        }
+        $pageId = wp_insert_post(wp_slash($postArr), true);
 
         if (is_wp_error($pageId)) {
             UsageTracker::log('create_page', null, 'error');
@@ -377,6 +419,55 @@ final class McpHandler
                     'link'   => get_permalink((int) $pageId),
                 ],
             ])]],
+        ]);
+    }
+
+    private function toolSetFrontPage(mixed $id, array $args): WP_REST_Response
+    {
+        if (!Licensing::isPremium()) {
+            return $this->premiumRequired($id);
+        }
+        if (!current_user_can('manage_options')) {
+            return $this->rpcError($id, -32602, 'You do not have permission to change site settings.');
+        }
+        $pageId = (int) ($args['page_id'] ?? 0);
+        $post   = $pageId ? get_post($pageId) : null;
+        if (!$post || $post->post_type !== 'page') {
+            return $this->rpcError($id, -32602, "Page {$pageId} not found.");
+        }
+        update_option('show_on_front', 'page');
+        update_option('page_on_front', $pageId);
+
+        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => json_encode([
+            'front_page' => ['id' => $pageId, 'title' => get_the_title($pageId)],
+        ])]]]);
+    }
+
+    private function toolSetPrimaryMenu(mixed $id, array $args): WP_REST_Response
+    {
+        if (!Licensing::isPremium()) {
+            return $this->premiumRequired($id);
+        }
+        if (!current_user_can('edit_theme_options')) {
+            return $this->rpcError($id, -32602, 'You do not have permission to manage menus.');
+        }
+        $items = is_array($args['items'] ?? null) ? $args['items'] : [];
+        if ($items === []) {
+            return $this->rpcError($id, -32602, 'items is required (a non-empty list of menu items).');
+        }
+
+        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => json_encode(MenuBuilder::build($items))]]]);
+    }
+
+    private function premiumRequired(mixed $id): WP_REST_Response
+    {
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => json_encode([
+                'premium'     => true,
+                'message'     => 'This is a premium feature. Activate a license under Settings → AI Editor for Divi 5.',
+                'upgrade_url' => Licensing::UPGRADE_URL,
+            ])]],
+            'isError' => true,
         ]);
     }
 

@@ -76,6 +76,62 @@ final class RestController
             'callback'            => [$this, 'section_recipes'],
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
+
+        // GET /site-guide — multi-page site blueprint
+        register_rest_route(self::NS, '/site-guide', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => fn() => new WP_REST_Response(['guide' => SiteGuide::markdown()], 200),
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
+        // POST /front-page — set the static front page (premium)
+        register_rest_route(self::NS, '/front-page', [
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'set_front_page'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
+        // POST /primary-menu — build + assign the primary nav menu (premium)
+        register_rest_route(self::NS, '/primary-menu', [
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'set_primary_menu'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+    }
+
+    public function set_front_page(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!Licensing::isPremium()) {
+            return new WP_REST_Response(['premium' => true, 'message' => 'Premium feature.', 'upgrade_url' => Licensing::UPGRADE_URL], 402);
+        }
+        if (!current_user_can('manage_options')) {
+            return new WP_Error('forbidden', 'Cannot change site settings.', ['status' => 403]);
+        }
+        $body   = $request->get_json_params();
+        $pageId = (int) ($body['page_id'] ?? 0);
+        $post   = $pageId ? get_post($pageId) : null;
+        if (!$post || $post->post_type !== 'page') {
+            return new WP_Error('not_found', "Page $pageId not found.", ['status' => 404]);
+        }
+        update_option('show_on_front', 'page');
+        update_option('page_on_front', $pageId);
+        return new WP_REST_Response(['front_page' => $pageId], 200);
+    }
+
+    public function set_primary_menu(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!Licensing::isPremium()) {
+            return new WP_REST_Response(['premium' => true, 'message' => 'Premium feature.', 'upgrade_url' => Licensing::UPGRADE_URL], 402);
+        }
+        if (!current_user_can('edit_theme_options')) {
+            return new WP_Error('forbidden', 'Cannot manage menus.', ['status' => 403]);
+        }
+        $body  = $request->get_json_params();
+        $items = is_array($body['items'] ?? null) ? $body['items'] : [];
+        if ($items === []) {
+            return new WP_Error('missing_field', 'items is required.', ['status' => 400]);
+        }
+        return new WP_REST_Response(MenuBuilder::build($items), 200);
     }
 
     public function style_guide(WP_REST_Request $request): WP_REST_Response
@@ -222,6 +278,7 @@ final class RestController
         $body    = $request->get_json_params();
         $title   = isset($body['title']) ? trim((string) $body['title']) : '';
         $content = isset($body['post_content']) && is_string($body['post_content']) ? $body['post_content'] : '';
+        $slug    = isset($body['slug']) ? sanitize_title((string) $body['slug']) : '';
 
         if ($title === '') {
             return new WP_Error('missing_field', 'Request body must include a non-empty "title".', ['status' => 400]);
@@ -247,7 +304,7 @@ final class RestController
         // in list_divi_pages (which filters on _et_pb_use_divi_5).
         // wp_slash because wp_insert_post runs wp_unslash internally and would
         // otherwise strip backslashes from escaped HTML and corrupt content.
-        $pageId = wp_insert_post(wp_slash([
+        $postArr = [
             'post_type'    => 'page',
             'post_title'   => $title,
             'post_content' => $content,
@@ -256,7 +313,11 @@ final class RestController
                 '_et_pb_use_divi_5'  => 'on',
                 '_et_pb_use_builder' => 'on',
             ],
-        ]), true);
+        ];
+        if ($slug !== '') {
+            $postArr['post_name'] = $slug;
+        }
+        $pageId = wp_insert_post(wp_slash($postArr), true);
 
         if (is_wp_error($pageId)) {
             return new WP_Error('create_failed', $pageId->get_error_message(), ['status' => 500]);
