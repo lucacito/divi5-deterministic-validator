@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.9.1
+Stable tag:        2.9.2
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.9.2 =
+* Expanded the section recipe library to 16 with genericized archetypes mined from the second site: animated number-counter stats, a blog/news feed, and an icon values row.
 
 = 2.9.1 =
 * Style guide gains vocabulary mined from the second site: the top-level css freeForm key for custom CSS (enables true backdrop-filter glassmorphism, keyframe animations, pseudo-elements), full-viewport section height (vh), and background-image blend modes.
