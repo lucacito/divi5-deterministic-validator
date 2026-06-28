@@ -156,6 +156,14 @@ module.decoration.sizing.{bp}.value.flexType = "8_24"   # 8_24=1/3, 12_24=1/2, 6
 To stack on mobile: set the container's `layout.phone.value.flexDirection = "column"` and
 each child's `sizing.phone.value.flexType = "24_24"`.
 
+## Mobile: collapse multi-column rows to one column
+On every row that has more than one column, add a phone layout that stacks the
+columns vertically so the page is one column on mobile:
+```
+module.decoration.layout.phone.value = {"display":"flex","flexDirection":"column","rowGap":"0px"}
+```
+(Set this on the divi/row alongside its desktop columnStructure.)
+
 ## Buttons side by side (horizontal CTAs)
 Two buttons placed directly in a column STACK vertically. To put a pair of CTAs
 on one line, wrap them in a NESTED row whose single column has a flex-row layout:
