@@ -146,7 +146,7 @@ Confirmed shape (page-44-layout-2 uses a semi-transparent row background):
 ```
 module.decoration.background.{bp}.value.color = "rgba(18,18,18,0.75)"   # or rgba(255,255,255,0.06) on dark
 module.decoration.border.{bp}.value.styles.all.{width,color} = "1px","rgba(255,255,255,0.12)"
-module.decoration.border.{bp}.value.radius.{sync,topLeft}     = "on","20px"
+module.decoration.border.{bp}.value.radius.{topLeft,topRight,bottomRight,bottomLeft} = "20px"  # set ALL four; sync alone does not propagate
 ```
 This gives the glass *look* (translucent surface + hairline border + radius).
 True frosted-glass **backdrop-blur** is NOT a native Divi attribute and appears

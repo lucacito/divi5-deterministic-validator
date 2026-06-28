@@ -62,6 +62,7 @@ class SchemaRules
         // Counters / timers
         'divi/circle-counter',
         'divi/countdown-timer',
+        'divi/number-counter',
         // Confirmed on real site exports
         'divi/code',
         'divi/sidebar',
@@ -124,6 +125,7 @@ class SchemaRules
             // Counters / timers
             'divi/circle-counter',
             'divi/countdown-timer',
+            'divi/number-counter',
             // Compound structural modules (live inside columns)
             'divi/accordion',
             'divi/contact-form',

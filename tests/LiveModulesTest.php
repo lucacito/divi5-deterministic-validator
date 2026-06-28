@@ -73,6 +73,30 @@ class LiveModulesTest extends TestCase
         $this->assertTrue($this->valid($this->inColumn($outer)));
     }
 
+    private function h(string $text, string $level): string
+    {
+        return '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"' . $text . '"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"' . $level . '"}}}}}},"builderVersion":"5.8.0"} /-->';
+    }
+
+    public function testNumberCounterValidates(): void
+    {
+        $nc = '<!-- wp:divi/number-counter {"title":{"innerContent":{"desktop":{"value":"Tasks Automated"}}},"number":{"innerContent":{"desktop":{"value":"250000"}}},"builderVersion":"5.8.0"} /-->';
+        $this->assertTrue($this->valid($this->inColumn($nc)));
+    }
+
+    public function testSingleH1IsAllowed(): void
+    {
+        $this->assertTrue($this->valid($this->inColumn($this->h('The One Headline', 'h1') . $this->h('A subheading', 'h2'))));
+    }
+
+    public function testMultipleH1IsRejected(): void
+    {
+        $result = (new Validator())->validateContent($this->inColumn($this->h('First', 'h1') . $this->h('Second', 'h1')));
+        $this->assertFalse($result->isValid());
+        $codes = array_map(fn($v) => $v->toArray()['code'], $result->violations());
+        $this->assertContains(Validator::E_MULTIPLE_H1, $codes);
+    }
+
     // --- negatives: we did not over-loosen -------------------------------
 
     public function testOtherLeafWithChildrenStillRejected(): void

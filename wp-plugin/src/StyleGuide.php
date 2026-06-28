@@ -51,6 +51,17 @@ Compound modules: `divi/accordion>divi/accordion-item`,
 Images: unless the user supplies a URL, use
 `https://picsum.photos/seed/{keyword}/{w}/{h}`.
 
+## Heading levels — exactly one H1
+Set a heading's level with `title.decoration.font.font.{bp}.value.headingLevel`
+= "h1".."h6". Use **exactly ONE h1 per page** (the main hero headline); make
+section titles h2 and card/sub titles h3–h4. More than one h1 is REJECTED
+(MULTIPLE_H1).
+
+## Animated stat counter (divi/number-counter)
+For metrics/stats that count up on scroll, prefer divi/number-counter over a
+plain heading number:
+`{"number":{"innerContent":{"desktop":{"value":"250000"}}},"title":{"innerContent":{"desktop":{"value":"Tasks Automated"}}},"builderVersion":"5.8.0"}`
+
 ## Styling attribute shapes
 Put these alongside `builderVersion` on the relevant block. `{bp}` = `desktop`.
 
@@ -75,11 +86,17 @@ Put these alongside `builderVersion` on the relevant block. `{bp}` = `desktop`.
 **Button** (`divi/button`):
 `button.decoration.background.{bp}.value.color` = "#ff4d00";
 `button.decoration.font.font.{bp}.value.color` = "#FFFFFF";
-`button.decoration.border.{bp}.value.radius.{sync,topLeft}` = "on","6px";
+`button.decoration.border.{bp}.value.radius.{topLeft,topRight,bottomRight,bottomLeft}` = "8px" (set ALL four);
 hover: `button.decoration.background.{bp}.hover.color` = "#bf6631"
 
-**Border & radius** (cards):
-`module.decoration.border.{bp}.value.radius.{sync,topLeft}` = "on","16px";
+**Border & radius** (cards): set ALL FOUR corners — `sync:"on"` does NOT
+propagate a single corner to the others at render, so setting only `topLeft`
+leaves the other three at 0 (one rounded corner, three square).
+`module.decoration.border.{bp}.value.radius.topLeft` = "16px";
+`module.decoration.border.{bp}.value.radius.topRight` = "16px";
+`module.decoration.border.{bp}.value.radius.bottomRight` = "16px";
+`module.decoration.border.{bp}.value.radius.bottomLeft` = "16px";
+`module.decoration.border.{bp}.value.radius.sync` = "on";
 `module.decoration.border.{bp}.value.styles.all.{width,color}` = "2px","#FFFFFF"
 
 **Glass card (glassmorphism look):** combine a semi-transparent background with a
@@ -87,7 +104,7 @@ subtle light border and radius on a Group/column/row:
 `module.decoration.background.{bp}.value.color` = "rgba(18,18,18,0.75)" (or
 "rgba(255,255,255,0.06)" on dark);
 `module.decoration.border.{bp}.value.styles.all.{width,color}` = "1px","rgba(255,255,255,0.12)";
-`module.decoration.border.{bp}.value.radius.{sync,topLeft}` = "on","20px".
+`module.decoration.border.{bp}.value.radius.{topLeft,topRight,bottomRight,bottomLeft}` = "20px" (all four).
 True frosted-glass *backdrop-blur* (blurring what's behind the card) is NOT a
 standard Divi attribute — it needs custom CSS via the top-level `css` key
 (`css.desktop.value.mainElement` = "backdrop-filter:blur(12px);"). Use the
@@ -180,8 +197,8 @@ part of its background (on gradients, the lightest stop).
 <!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#0a0a0a"}}},"spacing":{"desktop":{"value":{"padding":{"top":"6vw","bottom":"6vw"}}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Building Digital Experiences"}},"decoration":{"font":{"font":{"desktop":{"value":{"size":"5vw","color":"#FFFFFF","textAlign":"center"}}}}}},"builderVersion":"5.8.0"} /-->
-<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Start a Project"}}},"decoration":{"background":{"desktop":{"value":{"color":"#ff4d00"}}},"border":{"desktop":{"value":{"radius":{"sync":"on","topLeft":"6px"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Building Digital Experiences"}},"decoration":{"font":{"font":{"desktop":{"value":{"size":"5vw","color":"#FFFFFF","textAlign":"center","headingLevel":"h1"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Start a Project"}}},"decoration":{"background":{"desktop":{"value":{"color":"#ff4d00"}}},"border":{"desktop":{"value":{"radius":{"topLeft":"8px","topRight":"8px","bottomRight":"8px","bottomLeft":"8px","sync":"on"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/column -->
 <!-- /wp:divi/row -->
 <!-- /wp:divi/section -->

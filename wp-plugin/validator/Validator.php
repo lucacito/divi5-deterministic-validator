@@ -47,6 +47,9 @@ final class Validator
     public const E_SCALAR_WHERE_OBJECT     = 'SCALAR_WHERE_OBJECT';
     public const E_ORPHANED_REFERENCE      = 'ORPHANED_REFERENCE';
 
+    // Pass 6 — SEO / accessibility
+    public const E_MULTIPLE_H1             = 'MULTIPLE_H1';
+
     private SchemaRules $schema;
     private BlockParser $parser;
 
@@ -96,7 +99,42 @@ final class Validator
         // Pass 5 — render-critical attributes
         $this->passRenderCritical($tree, $violations);
 
+        // Pass 6 — SEO / accessibility (at most one h1 per page)
+        $this->passSingleH1($tree, $violations);
+
         return new ValidationResult($violations);
+    }
+
+    // ---------------------------------------------------------------
+    // Pass 6 — Single H1 (SEO / accessibility)
+    // ---------------------------------------------------------------
+
+    /**
+     * A page must have at most one <h1>. divi/heading blocks render at the level
+     * in title…headingLevel ("h1".."h6"); an omitted level is not h1. Each h1
+     * beyond the first is flagged.
+     *
+     * @param Violation[] $violations
+     */
+    private function passSingleH1(Block $root, array &$violations): void
+    {
+        $seen = 0;
+        $root->walk(function (Block $block, string $path) use (&$violations, &$seen): void {
+            if ($block->name() !== 'divi/heading') {
+                return;
+            }
+            if ($block->attr('title.decoration.font.font.desktop.value.headingLevel') !== 'h1') {
+                return;
+            }
+            $seen++;
+            if ($seen > 1) {
+                $violations[] = new Violation(
+                    self::E_MULTIPLE_H1,
+                    'A page must have only one <h1>. Use h2–h6 for additional headings (set title.decoration.font.font.desktop.value.headingLevel).',
+                    $path . '.headingLevel'
+                );
+            }
+        });
     }
 
     // ---------------------------------------------------------------

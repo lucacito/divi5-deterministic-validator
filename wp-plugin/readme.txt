@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.7.0
+Stable tag:        2.8.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,11 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.8.0 =
+* Added divi/number-counter (animated stat counter) to the schema and style guide.
+* New SEO rule: a page may have at most one h1 (MULTIPLE_H1) — additional headings must use h2-h6 via headingLevel.
+* Fixed border-radius guidance: set all four corners explicitly (sync:on does not propagate one corner to the others at render).
 
 = 2.7.0 =
 * Expanded the section recipe library from 7 to 13 genericized, validated patterns mined from real pages: hero/CTA, section intro, 3- and 4-column card grids, blurb features, icon features, split image+text, contact form, slider, image gallery, image carousel, testimonial, and newsletter+social. All example copy and media are genericized (no real content) and every recipe is validated in the test suite.
