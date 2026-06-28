@@ -204,6 +204,24 @@ module.decoration.position.{bp}.value.offset.vertical = "20px"
 module.decoration.zIndex.{bp}.value                   = 10
 ```
 
+## Custom CSS — top-level `css` key (mined from a 2nd production site)
+For anything decoration attributes can't express, use the TOP-LEVEL `css` key
+(a sibling of `module`/`builderVersion`, NOT under `module`). Use the literal
+token `selector` to target the module's main element:
+```
+css.{bp}.value.mainElement = "backdrop-filter: blur(12px);"
+css.{bp}.value.freeForm    = "selector { backdrop-filter: blur(12px); } selector:after { content:''; display:block; }"
+```
+This is how to do TRUE frosted-glass (backdrop-filter — no native Divi attr),
+keyframe `@keyframes` animations, and `::before`/`::after` pseudo-elements.
+
+## Full-viewport height & background blend
+```
+module.decoration.sizing.{bp}.value.height    = "85vh"        # full-screen hero
+module.decoration.background.{bp}.value.image.blend = "multiply"   # blend a bg image into the color/overlay
+module.decoration.position.{bp}.value.mode    = "relative"     # also "absolute"
+```
+
 ## Design guidance
 Commit to ONE clear aesthetic direction per page (dark/moody, light/airy,
 editorial, glassmorphism, bold/vibrant) — don't default to the same dark theme
