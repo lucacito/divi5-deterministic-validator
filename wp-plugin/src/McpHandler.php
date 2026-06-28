@@ -115,6 +115,11 @@ final class McpHandler
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
             ],
             [
+                'name'        => 'get_image_guide',
+                'description' => 'Get the IMAGE-INTELLIGENCE guide: how to assign the right visual to each section by role (not random images everywhere), using keyless, verified image sources — relevant photos (LoremFlickr), generic/abstract (Picsum), real avatars for testimonials/team (Random User, Pravatar), and descriptive labeled placeholders (Placehold.co). Covers per-section image rules, how to derive search keywords from the business type, stable image pinning, aspect-ratio sizing, and the fallback order. Call this BEFORE choosing any image src so generated pages look like finished premium demos, not empty templates.',
+                'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
+            ],
+            [
                 'name'        => 'set_custom_css',
                 'description' => 'PREMIUM: Add site-wide custom CSS (stored in WordPress Additional CSS, inside a managed block that preserves the user\'s own CSS). Use for effects decoration attributes cannot express — true frosted-glass (backdrop-filter), @keyframes animations, ::before/::after, and fine-tuning. CSS cannot execute code, so this is safe. Replaces the managed block on each call (idempotent).',
                 'inputSchema' => [
@@ -184,7 +189,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'update_page_layout',
-                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, and get_section_recipes to assemble the page from complete proven section patterns — so the result is strategically structured, styled, and well-composed, not plain. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
+                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src (see get_image_guide for the right keyless source per role; picsum /seed/ is the generic fallback).',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -196,7 +201,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'create_page',
-                'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, and get_section_recipes to assemble the page from complete proven section patterns — so the page is strategically structured, styled, and well-composed, not plain. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
+                'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the page is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src (see get_image_guide for the right keyless source per role; picsum /seed/ is the generic fallback).',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -220,6 +225,7 @@ final class McpHandler
             'get_style_guide'    => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => StyleGuide::markdown()]]]),
             'get_site_guide'     => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => SiteGuide::markdown()]]]),
             'get_landing_guide'  => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => LandingGuide::markdown()]]]),
+            'get_image_guide'    => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => ImageGuide::markdown()]]]),
             'set_front_page'     => $this->toolSetFrontPage($id, $arguments),
             'set_primary_menu'   => $this->toolSetPrimaryMenu($id, $arguments),
             'set_custom_css'      => $this->toolSetCustomCss($id, $arguments),

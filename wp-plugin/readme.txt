@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.14.1
+Stable tag:        2.15.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -27,6 +27,7 @@ AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Curs
 * `list_divi_pages` — list all pages built with Divi 5
 * `get_style_guide` — real Divi 5 structure + styling vocabulary so the AI builds styled, not plain, layouts
 * `get_landing_guide` — a conversion-focused blueprint (persuasion flow, copywriting rules, CTA strategy) so generated landing pages are strategically structured, not just pretty
+* `get_image_guide` — role-based image assignment with a keyless source toolkit (relevant photos, avatars, labeled placeholders) so pages look like finished demos, not empty templates
 * `get_section_recipes` — a library of complete, validated section patterns (hero, feature grid, split, slider, CTA, footer) the AI assembles pages from, each mapped to its persuasion stage
 * `get_page_layout` — read the current layout of any page
 * `validate_layout` — dry-run a change without saving
@@ -92,6 +93,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.15.0 =
+* Image intelligence: new get_image_guide tool (MCP + REST + OpenAPI) teaches the AI to assign the right visual to each section by role instead of dropping random placeholders everywhere. It documents a keyless, verified source toolkit — relevant keyword photos (LoremFlickr), generic/abstract (Picsum), real avatars for testimonials and team sections (Random User, Pravatar), and descriptive labeled placeholders (Placehold.co) — plus per-section rules, how to derive search keywords from the business type, stable image pinning so pages don't reshuffle, aspect-ratio sizing for even grids, and a clear fallback order. The style and landing guides and create_page / update_page_layout now point the AI to it, so generated pages look like finished premium demos rather than empty templates. (Curated API stock — Unsplash/Pexels/Pixabay — is noted as the premium, key-based find_image path.)
 
 = 2.14.1 =
 * Style guide now teaches the column-nesting rule explicitly: a divi/column can never directly contain another divi/column (rejected as UNEXPECTED_CHILD_TYPE) — to nest columns, go through a row (column → row-inner → column-inner), and use a divi/group for a single styled card container inside a column. Removes a common trial-and-error round-trip when AI assistants build grids inside columns.

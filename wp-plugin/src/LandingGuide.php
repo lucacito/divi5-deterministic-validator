@@ -25,8 +25,9 @@ final class LandingGuide
 A landing page is not a pretty brochure — it is a single argument that moves one
 visitor toward one action. Build every page as a persuasion flow: each section
 answers the next question in the visitor's head and removes one more reason to
-leave. Pair this with get_style_guide (how to style it) and get_section_recipes
-(proven section markup to fill). The goal: pages that look agency-built AND are
+leave. Pair this with get_style_guide (how to style it), get_section_recipes
+(proven section markup to fill), and get_image_guide (a relevant, role-appropriate
+image per section). The goal: pages that look agency-built AND are
 structured to convert.
 
 ## Step 0 — Decide before you build (template intelligence)

@@ -169,6 +169,14 @@ final class OpenApiSpec
                         'responses'   => ['200' => ['description' => 'The blueprint (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
                     ],
                 ],
+                '/image-guide' => [
+                    'get' => [
+                        'operationId' => 'getImageGuide',
+                        'summary'     => 'Get the image-intelligence guide',
+                        'description' => 'How to assign the right visual to each section by role using keyless, verified sources: relevant photos (LoremFlickr), generic/abstract (Picsum), avatars (Random User, Pravatar), and labeled placeholders (Placehold.co). Covers per-section rules, keyword derivation, stable pinning, aspect-ratio sizing, and the fallback order. Call before choosing any image src.',
+                        'responses'   => ['200' => ['description' => 'The guide (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
+                    ],
+                ],
                 '/front-page' => [
                     'post' => [
                         'operationId' => 'setFrontPage',

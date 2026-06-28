@@ -91,6 +91,13 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
+        // GET /image-guide — role-based image assignment + keyless source toolkit
+        register_rest_route(self::NS, '/image-guide', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => fn() => new WP_REST_Response(['guide' => ImageGuide::markdown()], 200),
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
         // POST /front-page — set the static front page (premium)
         register_rest_route(self::NS, '/front-page', [
             'methods'             => WP_REST_Server::CREATABLE,

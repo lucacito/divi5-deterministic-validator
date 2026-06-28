@@ -57,8 +57,10 @@ Compound modules: `divi/accordion>divi/accordion-item`,
 - `divi/text`: `content.innerContent.desktop.value` = "<p>HTML</p>"
 - `divi/image`: `image.innerContent.desktop.value` = `{ "src": "URL" }`
 - `divi/button`: `button.innerContent.desktop.value` = `{ "text": "Label" }`
-Images: unless the user supplies a URL, use
-`https://picsum.photos/seed/{keyword}/{w}/{h}`.
+Images: never leave a `src` blank. Call **get_image_guide** to pick a relevant,
+role-appropriate source per section (LoremFlickr for real photos, Random User /
+Pravatar for avatars, Placehold.co for labeled placeholders); picsum
+`https://picsum.photos/seed/{keyword}/{w}/{h}` is the generic fallback.
 
 ## Heading levels — exactly one H1
 Set a heading's level with `title.decoration.font.font.{bp}.value.headingLevel`

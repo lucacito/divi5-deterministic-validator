@@ -19,6 +19,7 @@ require_once __DIR__ . '/StyleGuide.php';
 require_once __DIR__ . '/SectionRecipes.php';
 require_once __DIR__ . '/SiteGuide.php';
 require_once __DIR__ . '/LandingGuide.php';
+require_once __DIR__ . '/ImageGuide.php';
 require_once __DIR__ . '/MenuBuilder.php';
 require_once __DIR__ . '/PhpProposals.php';
 require_once __DIR__ . '/CustomCss.php';
