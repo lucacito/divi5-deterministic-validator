@@ -270,6 +270,8 @@ final class AdminPage
                         <?php echo esc_html( $label ); ?>
                         <?php if ( $slug === 'usage' && $summary['today'] > 0 ) : ?>
                             <span class="aied-badge"><?php echo esc_html( $summary['today'] ); ?></span>
+                        <?php elseif ( $slug === 'code' && PhpProposals::count() > 0 ) : ?>
+                            <span class="aied-badge"><?php echo esc_html( PhpProposals::count() ); ?></span>
                         <?php endif; ?>
                     </a>
                 <?php endforeach; ?>
