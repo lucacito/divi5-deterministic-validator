@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.8.0
+Stable tag:        2.8.1
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.8.1 =
+* Style guide now teaches the side-by-side buttons pattern: wrap a CTA pair in a nested row whose single column is flex row-direction, so two buttons sit on one line (stacking on mobile) instead of stacking vertically.
 
 = 2.8.0 =
 * Added divi/number-counter (animated stat counter) to the schema and style guide.

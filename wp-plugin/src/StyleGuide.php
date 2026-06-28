@@ -156,6 +156,20 @@ module.decoration.sizing.{bp}.value.flexType = "8_24"   # 8_24=1/3, 12_24=1/2, 6
 To stack on mobile: set the container's `layout.phone.value.flexDirection = "column"` and
 each child's `sizing.phone.value.flexType = "24_24"`.
 
+## Buttons side by side (horizontal CTAs)
+Two buttons placed directly in a column STACK vertically. To put a pair of CTAs
+on one line, wrap them in a NESTED row whose single column has a flex-row layout:
+```
+divi/row -> divi/column with
+  module.decoration.layout.desktop.value = {"display":"flex","flexDirection":"row",
+    "justifyContent":"center","alignItems":"center","columnGap":"16px","rowGap":"12px","flexWrap":"wrap"}
+  module.decoration.layout.phone.value   = {"display":"flex","flexDirection":"column","rowGap":"12px"}
+-> [divi/button, divi/button]
+```
+So the hero/CTA structure is: section > row > column > [heading, text,
+row(nested) > column(flex-row) > button + button]. Never leave two bare buttons
+in a column expecting them side by side.
+
 ## Sizing & centering
 ```
 module.decoration.sizing.{bp}.value.maxWidth  = "720px"   # constrain content width

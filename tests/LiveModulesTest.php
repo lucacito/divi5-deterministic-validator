@@ -78,6 +78,15 @@ class LiveModulesTest extends TestCase
         return '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"' . $text . '"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"' . $level . '"}}}}}},"builderVersion":"5.8.0"} /-->';
     }
 
+    public function testSideBySideButtonsValidate(): void
+    {
+        // Hero CTA pattern: a nested row > flex-row column wrapping two buttons.
+        $b = fn(string $t) => '<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"' . $t . '"}}}},"builderVersion":"5.8.0"} /-->';
+        $flexCol = '<!-- wp:divi/column {"module":{"decoration":{"layout":{"desktop":{"value":{"display":"flex","flexDirection":"row"}}}}},"builderVersion":"5.8.0"} -->' . $b('A') . $b('B') . '<!-- /wp:divi/column -->';
+        $nestedRow = '<!-- wp:divi/row {"builderVersion":"5.8.0"} -->' . $flexCol . '<!-- /wp:divi/row -->';
+        $this->assertTrue($this->valid($this->inColumn($nestedRow)));
+    }
+
     public function testNumberCounterValidates(): void
     {
         $nc = '<!-- wp:divi/number-counter {"title":{"innerContent":{"desktop":{"value":"Tasks Automated"}}},"number":{"innerContent":{"desktop":{"value":"250000"}}},"builderVersion":"5.8.0"} /-->';
