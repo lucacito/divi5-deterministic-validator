@@ -74,6 +74,7 @@ class SchemaRules
         'divi/instagram-feed',
         'divi/menu',
         'divi/timeline-item',
+        'divi/post-nav',
         // Compound module children (self-closing items inside structural parents)
         'divi/accordion-item',
         'divi/contact-field',
@@ -94,9 +95,10 @@ class SchemaRules
     // Valid direct children for each structural block type
     public const ALLOWED_CHILDREN = [
         'divi/placeholder'    => ['divi/section', 'divi/global-layout'],
-        // A section usually holds rows, but real exports (layout-4) also place a
-        // column directly in a section (full-width column section).
-        'divi/section'        => ['divi/row', 'divi/column'],
+        // A section usually holds rows, but real exports also place a column
+        // directly in a section (layout-4), or a divi/global-layout Theme Builder
+        // reference inside a section (Site B).
+        'divi/section'        => ['divi/row', 'divi/column', 'divi/global-layout'],
         'divi/row'            => ['divi/column'],
         'divi/column'         => [
             // Basic leaf modules
@@ -147,6 +149,7 @@ class SchemaRules
             'divi/login',
             'divi/instagram-feed',
             'divi/menu',
+            'divi/post-nav',
             // Nested rows — Divi 5 lets a column contain a row (alongside modules),
             // recursing to arbitrary depth. Confirmed via real exports
             // (page-23: divi/row; layout-4: divi/row-inner).

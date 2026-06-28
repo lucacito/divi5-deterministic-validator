@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.8.2
+Stable tag:        2.9.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.9.0 =
+* Integrated a second production site (15 pages): added divi/post-nav, allowed divi/global-layout inside a section, and retired the over-strict "leaf module must not have children" rule (real Divi 5 saves text, number-counter, image, tab, contact-field and more as paired blocks). All pages from both sites now validate.
 
 = 2.8.2 =
 * Style guide now instructs the AI to collapse multi-column rows to a single column on mobile (row layout.phone.flexDirection=column), so generated pages stack cleanly on phones.

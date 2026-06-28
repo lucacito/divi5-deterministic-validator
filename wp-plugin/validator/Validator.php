@@ -295,20 +295,13 @@ final class Validator
 
             $allowed = $this->schema->allowedChildrenOf($block->name());
 
-            // Leaf modules must not have children — except divi/text, which real
-            // exports show can be saved as a paired block wrapping nested
-            // text/HTML (valid WordPress block grammar, renders fine in Divi).
-            if ($block->name() !== 'divi/text'
-                && $this->schema->isLeafModule($block->name())
-                && $block->children() !== []
-            ) {
-                $violations[] = new Violation(
-                    self::E_WRONG_NESTING,
-                    "Leaf module '{$block->name()}' must not have children.",
-                    $path
-                );
-                return;
-            }
+            // Note: we deliberately do NOT flag "leaf module has children". Real
+            // Divi 5 saves many modules as paired blocks wrapping inner content
+            // (text, number-counter, image, tab, contact-field, … — confirmed
+            // across two production sites). Children are still validated as blocks
+            // below and by the other passes; the important structural hierarchy
+            // (root forms, section/row/column, compound parent→child) is enforced
+            // via allowedChildrenOf, which is empty (no restriction) for leaves.
 
             // Structural blocks: validate each child's type
             foreach ($block->children() as $i => $child) {

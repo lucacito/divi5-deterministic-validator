@@ -108,15 +108,22 @@ class LiveModulesTest extends TestCase
 
     // --- negatives: we did not over-loosen -------------------------------
 
-    public function testOtherLeafWithChildrenStillRejected(): void
+    public function testModulesMayWrapChildren(): void
     {
-        // divi/image is still a strict leaf — children are invalid.
-        $img = '<!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"x"}}}},"builderVersion":"5.8.0"} --><!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>x</p>"}}},"builderVersion":"5.8.0"} /--><!-- /wp:divi/image -->';
-        $this->assertFalse($this->valid($this->inColumn($img)));
+        // Real Divi 5 saves modules as paired blocks wrapping content (confirmed
+        // across two production sites: text, number-counter, image, tab, ...).
+        $img = '<!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"https://picsum.photos/seed/x/8/8"}}}},"builderVersion":"5.8.0"} --><!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>caption</p>"}}},"builderVersion":"5.8.0"} /--><!-- /wp:divi/image -->';
+        $this->assertTrue($this->valid($this->inColumn($img)));
     }
 
     public function testUnknownTopLevelBlockStillRejected(): void
     {
         $this->assertFalse($this->valid('<!-- wp:divi/totally-made-up {"builderVersion":"5.8.0"} /-->'));
+    }
+
+    public function testBareRowAtTopLevelRejected(): void
+    {
+        // Top-level must be placeholder / section / global-layout, never a bare row.
+        $this->assertFalse($this->valid('<!-- wp:divi/row {"builderVersion":"5.8.0"} --><!-- wp:divi/column {"builderVersion":"5.8.0"} --><!-- /wp:divi/column --><!-- /wp:divi/row -->'));
     }
 }
