@@ -110,6 +110,11 @@ final class McpHandler
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
             ],
             [
+                'name'        => 'get_landing_guide',
+                'description' => 'Get the conversion-focused LANDING PAGE blueprint: how to structure a page that sells, not just looks good. Covers the persuasion flow (hero → problem → solution → benefits → social proof → how-it-works → features → FAQ → final CTA), how to adapt the structure to the business type/audience/goal, copywriting rules (benefit-driven headlines, banned generic phrases), and CTA placement strategy. Call this BEFORE building or restyling any single landing/marketing page so the result is strategically structured to convert — pair it with get_style_guide (styling) and get_section_recipes (section markup).',
+                'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
+            ],
+            [
                 'name'        => 'set_custom_css',
                 'description' => 'PREMIUM: Add site-wide custom CSS (stored in WordPress Additional CSS, inside a managed block that preserves the user\'s own CSS). Use for effects decoration attributes cannot express — true frosted-glass (backdrop-filter), @keyframes animations, ::before/::after, and fine-tuning. CSS cannot execute code, so this is safe. Replaces the managed block on each call (idempotent).',
                 'inputSchema' => [
@@ -179,7 +184,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'update_page_layout',
-                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. Call get_style_guide first to learn the real styling attribute shapes, and get_section_recipes to assemble the page from complete proven section patterns, so the result is styled and well-composed, not plain. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
+                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, and get_section_recipes to assemble the page from complete proven section patterns — so the result is strategically structured, styled, and well-composed, not plain. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -191,7 +196,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'create_page',
-                'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing. Call get_style_guide first to learn the real styling attribute shapes, and get_section_recipes to assemble the page from complete proven section patterns, so the page is styled and well-composed, not plain. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
+                'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, and get_section_recipes to assemble the page from complete proven section patterns — so the page is strategically structured, styled, and well-composed, not plain. For any image module, unless the user provides a specific image URL or media asset, set the src to https://picsum.photos/seed/{keyword}/{width}/{height} (a stable placeholder per keyword) — never leave an image without a src.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -214,6 +219,7 @@ final class McpHandler
             'list_divi_pages'    => $this->toolListPages($id),
             'get_style_guide'    => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => StyleGuide::markdown()]]]),
             'get_site_guide'     => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => SiteGuide::markdown()]]]),
+            'get_landing_guide'  => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => LandingGuide::markdown()]]]),
             'set_front_page'     => $this->toolSetFrontPage($id, $arguments),
             'set_primary_menu'   => $this->toolSetPrimaryMenu($id, $arguments),
             'set_custom_css'      => $this->toolSetCustomCss($id, $arguments),

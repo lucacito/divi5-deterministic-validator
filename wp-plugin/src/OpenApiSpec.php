@@ -161,6 +161,14 @@ final class OpenApiSpec
                         'responses'   => ['200' => ['description' => 'The blueprint (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
                     ],
                 ],
+                '/landing-guide' => [
+                    'get' => [
+                        'operationId' => 'getLandingGuide',
+                        'summary'     => 'Get the conversion-focused landing page blueprint',
+                        'description' => 'Strategic blueprint for a single landing page that converts: the persuasion flow (hero → problem → solution → benefits → social proof → how-it-works → features → FAQ → final CTA), how to adapt structure to the business type/audience/goal, copywriting rules, and CTA placement. Call before building or restyling a marketing page.',
+                        'responses'   => ['200' => ['description' => 'The blueprint (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
+                    ],
+                ],
                 '/front-page' => [
                     'post' => [
                         'operationId' => 'setFrontPage',

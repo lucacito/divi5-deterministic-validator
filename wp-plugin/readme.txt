@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.13.0
+Stable tag:        2.14.1
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -26,7 +26,8 @@ AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Curs
 
 * `list_divi_pages` — list all pages built with Divi 5
 * `get_style_guide` — real Divi 5 structure + styling vocabulary so the AI builds styled, not plain, layouts
-* `get_section_recipes` — a library of complete, validated section patterns (hero, feature grid, split, slider, CTA, footer) the AI assembles pages from
+* `get_landing_guide` — a conversion-focused blueprint (persuasion flow, copywriting rules, CTA strategy) so generated landing pages are strategically structured, not just pretty
+* `get_section_recipes` — a library of complete, validated section patterns (hero, feature grid, split, slider, CTA, footer) the AI assembles pages from, each mapped to its persuasion stage
 * `get_page_layout` — read the current layout of any page
 * `validate_layout` — dry-run a change without saving
 * `update_page_layout` — validate then save (the live edit tool)
@@ -92,6 +93,12 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 
 == Changelog ==
 
+= 2.14.1 =
+* Style guide now teaches the column-nesting rule explicitly: a divi/column can never directly contain another divi/column (rejected as UNEXPECTED_CHILD_TYPE) — to nest columns, go through a row (column → row-inner → column-inner), and use a divi/group for a single styled card container inside a column. Removes a common trial-and-error round-trip when AI assistants build grids inside columns.
+
+= 2.14.0 =
+* Conversion-focused page generation: new get_landing_guide blueprint tool (MCP + REST + OpenAPI) teaches the AI to build landing pages with a strategic persuasion structure — hero → problem → solution → benefits → social proof → how-it-works → features → FAQ → final CTA — adapted to the business type, audience and conversion goal, with copywriting rules (benefit-driven headlines, no generic filler) and a disciplined CTA placement strategy. Every section recipe is now mapped to the persuasion stage it serves, and create_page / update_page_layout point the AI to the landing guide so generated pages are agency-grade and built to convert, not just decorated.
+
 = 2.13.0 =
 * Redesigned admin into a guided, SaaS-style experience: a single top-level "AI Editor" menu with Dashboard, Features, Settings and Upgrade views. Dashboard shows a welcome, setup-progress checklist, one clear primary action, your results (edits processed / saved / blocked), and contextual recommendations. Features and Upgrade present Free vs Premium as benefit-framed value (locked-but-visible), not banners. Empty states throughout. Fully escaped, nonce + capability protected, i18n-ready.
 
@@ -100,7 +107,7 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 * Admin page: professional refresh with a clear Free vs Premium capabilities breakdown (live license badge), accurate module count, and broader feature copy.
 
 = 2.11.0 =
-* Safe AI-assisted PHP: new propose_php_snippet tool lets the AI draft PHP features (custom post types, hooks, form handlers, integrations) as REVIEWED PROPOSALS. Nothing is executed or written to the site � proposals appear under Settings → Code Proposals for a human to review and apply manually, so the API key never becomes a code-execution credential.
+* Safe AI-assisted PHP: new propose_php_snippet tool lets the AI draft PHP features (custom post types, hooks, form handlers, integrations) as REVIEWED PROPOSALS. Nothing is executed or written to the site � proposals appear under Settings → Code Proposals for a human to review and apply manually, so the API key never becomes a code-execution credential.
 
 = 2.10.0 =
 * Full-site generation (phase 1): new get_site_guide blueprint tool, create_page now accepts a slug for predictable cross-linking, and premium set_front_page + set_primary_menu tools (MCP + REST) wire the homepage and theme navigation. The AI can now build an entire multi-page website from one brief.

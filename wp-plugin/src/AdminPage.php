@@ -339,7 +339,7 @@ final class AdminPage
             [ __( 'Edit pages in plain English', 'ai-editor-divi5' ), __( 'Tell your AI what to change and it updates the live Divi 5 layout — no builder, no copy-paste.', 'ai-editor-divi5' ) ],
             [ __( 'Validated, safe saves', 'ai-editor-divi5' ), __( 'Every change is checked against 56+ Divi 5 module types before saving, so broken layouts never reach your site.', 'ai-editor-divi5' ) ],
             [ __( 'Read & understand any page', 'ai-editor-divi5' ), __( 'Your AI can list and read existing pages to make precise, context-aware edits.', 'ai-editor-divi5' ) ],
-            [ __( 'Style guide & section recipes', 'ai-editor-divi5' ), __( 'Built-in design vocabulary and proven section patterns help the AI produce polished, on-brand results.', 'ai-editor-divi5' ) ],
+            [ __( 'Conversion-focused page generation', 'ai-editor-divi5' ), __( 'A built-in landing-page blueprint, design vocabulary and proven section patterns guide the AI to produce polished, on-brand pages with a strategic structure built to convert.', 'ai-editor-divi5' ) ],
         ];
         $pro = [
             [ __( 'Create new pages', 'ai-editor-divi5' ), __( 'Generate brand-new pages from a prompt — drafted, validated, ready to review.', 'ai-editor-divi5' ) ],
@@ -546,7 +546,7 @@ final class AdminPage
                 <ul class="aied-ticklist">
                     <li>&#10003; <?php esc_html_e( 'AI editing of existing Divi 5 pages', 'ai-editor-divi5' ); ?></li>
                     <li>&#10003; <?php esc_html_e( 'Validated, never-break-the-site saves', 'ai-editor-divi5' ); ?></li>
-                    <li>&#10003; <?php esc_html_e( 'Style guide & section recipes', 'ai-editor-divi5' ); ?></li>
+                    <li>&#10003; <?php esc_html_e( 'Conversion-focused page generation (landing blueprint, style guide & section recipes)', 'ai-editor-divi5' ); ?></li>
                     <li>&#10003; <?php esc_html_e( 'Works with Claude, Cursor, VS Code & ChatGPT', 'ai-editor-divi5' ); ?></li>
                 </ul>
             </div>

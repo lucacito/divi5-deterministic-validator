@@ -38,6 +38,15 @@ divi/placeholder              (root wrapper, required)
           divi/column-inner   (same children as divi/column)
             [modules]
 ```
+**A `divi/column` can NEVER directly contain another `divi/column`** (doing so is
+rejected with UNEXPECTED_CHILD_TYPE). To nest columns inside a column, go through a
+row: **column → `divi/row-inner` → `divi/column-inner`** (or a plain `divi/row` →
+`divi/column`). That row-in-column pattern is the ONLY way to build a multi-column
+grid inside a column. When you just need ONE styled card container inside a column
+(not real columns), use a **`divi/group`** instead — it holds modules directly and
+takes the same `module.decoration` styling (background, border, radius, padding,
+flex layout) as a column.
+
 Compound modules: `divi/accordion>divi/accordion-item`,
 `divi/counters>divi/counter`, `divi/icon-list>divi/icon-list-item`,
 `divi/tabs>divi/tab`, `divi/slider>divi/slide`,

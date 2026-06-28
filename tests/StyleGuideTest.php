@@ -25,6 +25,8 @@ class StyleGuideTest extends TestCase
             'builderVersion', 'divi/placeholder', 'divi/section', 'divi/column-inner',
             'background', 'gradient', 'boxShadow', 'transform', 'animation',
             'picsum.photos', 'Worked example',
+            // The column-nesting rule the AI keeps re-deriving: must be taught explicitly.
+            'can NEVER directly contain another', 'divi/group',
         ] as $needle) {
             $this->assertStringContainsString($needle, $md, "guide should mention $needle");
         }

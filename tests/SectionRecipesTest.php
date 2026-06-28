@@ -43,6 +43,15 @@ class SectionRecipesTest extends TestCase
         }
     }
 
+    public function testCatalogMapsEveryRecipeToAPersuasionStage(): void
+    {
+        $catalog = SectionRecipes::catalog();
+        // The catalog tells the AI which conversion-flow stage each recipe serves.
+        $this->assertStringContainsString('_Stage:_', $catalog, 'catalog should surface the persuasion stage');
+        $this->assertStringContainsString('Hero', $catalog);
+        $this->assertStringContainsString('Social proof', $catalog);
+    }
+
     public function testUnknownRecipeReturnsNull(): void
     {
         $this->assertNull(SectionRecipes::recipe('does-not-exist'));

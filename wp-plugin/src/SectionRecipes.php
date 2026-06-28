@@ -19,7 +19,7 @@ final class SectionRecipes
 {
     private const DATA = __DIR__ . '/../data/section-recipes.json';
 
-    /** @return list<array{name:string,title:string,description:string,when:string,markup:string}> */
+    /** @return list<array{name:string,title:string,description:string,when:string,stage:string,markup:string}> */
     private static function all(): array
     {
         $raw = is_readable( self::DATA ) ? (string) file_get_contents( self::DATA ) : '';
@@ -38,9 +38,13 @@ final class SectionRecipes
             'text and image URLs with the user\'s content. Place sections between the root',
             '<!-- wp:divi/placeholder --> ... <!-- /wp:divi/placeholder --> wrapper.',
             '',
+            'Each recipe lists the persuasion _Stage_ it serves. Assemble a landing page by',
+            'following the conversion flow in get_landing_guide and picking a recipe per stage.',
+            '',
         ];
         foreach ( self::all() as $r ) {
-            $lines[] = sprintf( '- **%s** — %s _When:_ %s', $r['name'], $r['description'], $r['when'] );
+            $stage = isset( $r['stage'] ) ? (string) $r['stage'] : 'Supporting';
+            $lines[] = sprintf( '- **%s** — %s _Stage:_ %s. _When:_ %s', $r['name'], $r['description'], $stage, $r['when'] );
         }
         return implode( "\n", $lines );
     }
