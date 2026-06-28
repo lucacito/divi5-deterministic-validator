@@ -110,6 +110,15 @@ final class McpHandler
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
             ],
             [
+                'name'        => 'set_custom_css',
+                'description' => 'PREMIUM: Add site-wide custom CSS (stored in WordPress Additional CSS, inside a managed block that preserves the user\'s own CSS). Use for effects decoration attributes cannot express — true frosted-glass (backdrop-filter), @keyframes animations, ::before/::after, and fine-tuning. CSS cannot execute code, so this is safe. Replaces the managed block on each call (idempotent).',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => ['css' => ['type' => 'string', 'description' => 'The CSS to apply site-wide']],
+                    'required'   => ['css'],
+                ],
+            ],
+            [
                 'name'        => 'propose_php_snippet',
                 'description' => 'PREMIUM: Propose a PHP snippet (custom post type, hook, shortcode, form handler, integration, etc.) for the site owner to REVIEW and apply manually. This does NOT execute or save any code to the site — it stores a reviewed proposal that appears under Settings → AI Editor for Divi 5 → Code Proposals, where a human copies it into their snippets manager or functions.php. Always include a clear description of what the code does and any setup notes.',
                 'inputSchema' => [
@@ -207,6 +216,7 @@ final class McpHandler
             'get_site_guide'     => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => SiteGuide::markdown()]]]),
             'set_front_page'     => $this->toolSetFrontPage($id, $arguments),
             'set_primary_menu'   => $this->toolSetPrimaryMenu($id, $arguments),
+            'set_custom_css'      => $this->toolSetCustomCss($id, $arguments),
             'propose_php_snippet' => $this->toolProposePhp($id, $arguments),
             'get_section_recipes' => $this->toolSectionRecipes($id, $arguments),
             'get_page_layout'    => $this->toolGetLayout($id, $arguments),
@@ -471,6 +481,29 @@ final class McpHandler
         }
 
         return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => json_encode(MenuBuilder::build($items))]]]);
+    }
+
+    private function toolSetCustomCss(mixed $id, array $args): WP_REST_Response
+    {
+        if (!Licensing::isPremium()) {
+            return $this->premiumRequired($id);
+        }
+        if (!current_user_can('edit_theme_options')) {
+            return $this->rpcError($id, -32602, 'You do not have permission to edit site CSS.');
+        }
+        $css = (string) ($args['css'] ?? '');
+        if (trim($css) === '') {
+            return $this->rpcError($id, -32602, 'css is required.');
+        }
+        $result = CustomCss::set($css);
+        if (empty($result['updated'])) {
+            return $this->rpcError($id, -32603, (string) ($result['error'] ?? 'Failed to update custom CSS.'));
+        }
+        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => json_encode([
+            'updated' => true,
+            'bytes'   => $result['bytes'] ?? 0,
+            'message' => 'Custom CSS applied site-wide (WordPress → Appearance → Customize → Additional CSS).',
+        ])]]]);
     }
 
     private function toolProposePhp(mixed $id, array $args): WP_REST_Response

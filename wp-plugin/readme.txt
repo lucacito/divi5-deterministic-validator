@@ -92,6 +92,10 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 
 == Changelog ==
 
+= 2.12.0 =
+* Added safe site-wide custom CSS: the premium set_custom_css tool writes into a managed block in WordPress Additional CSS (preserving your own CSS), unlocking true backdrop-filter glassmorphism and keyframe animations. CSS cannot execute code.
+* Admin page: professional refresh with a clear Free vs Premium capabilities breakdown (live license badge), accurate module count, and broader feature copy.
+
 = 2.11.0 =
 * Safe AI-assisted PHP: new propose_php_snippet tool lets the AI draft PHP features (custom post types, hooks, form handlers, integrations) as REVIEWED PROPOSALS. Nothing is executed or written to the site — proposals appear under Settings â†’ Code Proposals for a human to review and apply manually, so the API key never becomes a code-execution credential.
 

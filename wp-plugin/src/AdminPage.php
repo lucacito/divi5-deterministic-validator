@@ -519,8 +519,9 @@ final class AdminPage
 
                 <div class="aied-sidebar-card">
                     <h3><?php esc_html_e( 'What you can do', 'ai-editor-divi5' ); ?></h3>
-                    <p><?php esc_html_e( 'Talk to your AI assistant in plain English and it will edit your Divi 5 pages directly — no Divi builder required, no copy-paste, no manual clicking.', 'ai-editor-divi5' ); ?></p>
-                    <p><?php esc_html_e( 'Ask it to change copy, swap buttons, update headings, restructure sections, or make the same change across multiple pages at once.', 'ai-editor-divi5' ); ?></p>
+                    <p><?php esc_html_e( 'Talk to your AI assistant in plain English and it edits your Divi 5 pages directly — no Divi builder, no copy-paste, no manual clicking.', 'ai-editor-divi5' ); ?></p>
+                    <p><?php esc_html_e( 'Free: change copy, swap buttons, update headings, and restructure sections on existing pages.', 'ai-editor-divi5' ); ?></p>
+                    <p><?php esc_html_e( 'Premium: create new pages, build entire multi-page sites, apply custom CSS, and get reviewed PHP snippets.', 'ai-editor-divi5' ); ?></p>
                 </div>
 
                 <div class="aied-sidebar-card">
@@ -544,7 +545,7 @@ final class AdminPage
                             <span class="aied-sidebar-step__num">3</span>
                             <div>
                                 <strong><?php esc_html_e( 'Validator checks the edit', 'ai-editor-divi5' ); ?></strong>
-                                <span><?php esc_html_e( '37 Divi 5 block types, required attributes, hierarchy — all checked before anything touches the database', 'ai-editor-divi5' ); ?></span>
+                                <span><?php esc_html_e( '56+ Divi 5 module types, required attributes, nesting, and a single H1 — all checked before anything touches the database', 'ai-editor-divi5' ); ?></span>
                             </div>
                         </li>
                         <li>
@@ -558,29 +559,39 @@ final class AdminPage
                 </div>
 
                 <div class="aied-sidebar-card">
-                    <h3><?php esc_html_e( '5 tools your AI gets', 'ai-editor-divi5' ); ?></h3>
+                    <h3><?php esc_html_e( 'Free capabilities', 'ai-editor-divi5' ); ?></h3>
+                    <p class="aied-card__desc"><?php esc_html_e( 'Always available — no license required. Read and safely edit your existing Divi 5 pages.', 'ai-editor-divi5' ); ?></p>
                     <ul class="aied-tool-list">
-                        <li>
-                            <code>list_divi_pages</code>
-                            <span><?php esc_html_e( 'See all pages built with Divi 5', 'ai-editor-divi5' ); ?></span>
-                        </li>
-                        <li>
-                            <code>get_page_layout</code>
-                            <span><?php esc_html_e( 'Read the current layout of any page', 'ai-editor-divi5' ); ?></span>
-                        </li>
-                        <li>
-                            <code>validate_layout</code>
-                            <span><?php esc_html_e( 'Dry-run a change without saving', 'ai-editor-divi5' ); ?></span>
-                        </li>
-                        <li>
-                            <code>update_page_layout</code>
-                            <span><?php esc_html_e( 'Validate then save — the live edit tool', 'ai-editor-divi5' ); ?></span>
-                        </li>
-                        <li>
-                            <code>create_page</code>
-                            <span><?php esc_html_e( 'Build a brand-new page from scratch', 'ai-editor-divi5' ); ?>
-                                <strong>· <?php esc_html_e( 'Premium', 'ai-editor-divi5' ); ?></strong></span>
-                        </li>
+                        <li><code>list_divi_pages</code><span><?php esc_html_e( 'List all Divi 5 pages', 'ai-editor-divi5' ); ?></span></li>
+                        <li><code>get_page_layout</code><span><?php esc_html_e( 'Read any page\'s layout', 'ai-editor-divi5' ); ?></span></li>
+                        <li><code>validate_layout</code><span><?php esc_html_e( 'Dry-run a change, no save', 'ai-editor-divi5' ); ?></span></li>
+                        <li><code>update_page_layout</code><span><?php esc_html_e( 'Validate then save an edit', 'ai-editor-divi5' ); ?></span></li>
+                        <li><code>get_style_guide</code><span><?php esc_html_e( 'Real Divi 5 styling vocabulary', 'ai-editor-divi5' ); ?></span></li>
+                        <li><code>get_section_recipes</code><span><?php esc_html_e( 'Proven section patterns', 'ai-editor-divi5' ); ?></span></li>
+                        <li><code>get_site_guide</code><span><?php esc_html_e( 'Multi-page site blueprint', 'ai-editor-divi5' ); ?></span></li>
+                    </ul>
+                </div>
+
+                <div class="aied-sidebar-card">
+                    <h3>
+                        <?php esc_html_e( 'Premium capabilities', 'ai-editor-divi5' ); ?>
+                        <?php if ( $license['valid'] ) : ?>
+                            <span class="aied-result aied-result--valid"><?php esc_html_e( 'ACTIVE', 'ai-editor-divi5' ); ?></span>
+                        <?php else : ?>
+                            <span class="aied-result aied-result--invalid"><?php esc_html_e( 'LOCKED', 'ai-editor-divi5' ); ?></span>
+                        <?php endif; ?>
+                    </h3>
+                    <p class="aied-card__desc">
+                        <?php echo $license['valid']
+                            ? esc_html__( 'Unlocked on this site — create pages, build whole sites, and style with custom CSS.', 'ai-editor-divi5' )
+                            : esc_html__( 'Activate a license (License section above) to unlock these.', 'ai-editor-divi5' ); ?>
+                    </p>
+                    <ul class="aied-tool-list">
+                        <li><code>create_page</code><span><?php esc_html_e( 'Build a brand-new page', 'ai-editor-divi5' ); ?></span></li>
+                        <li><code>set_front_page</code><span><?php esc_html_e( 'Set the site homepage', 'ai-editor-divi5' ); ?></span></li>
+                        <li><code>set_primary_menu</code><span><?php esc_html_e( 'Build the navigation menu', 'ai-editor-divi5' ); ?></span></li>
+                        <li><code>set_custom_css</code><span><?php esc_html_e( 'Apply site-wide custom CSS', 'ai-editor-divi5' ); ?></span></li>
+                        <li><code>propose_php_snippet</code><span><?php esc_html_e( 'Draft PHP for your review', 'ai-editor-divi5' ); ?></span></li>
                     </ul>
                 </div>
 
