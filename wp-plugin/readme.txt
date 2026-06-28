@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.12.0
+Stable tag:        2.13.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 2.13.0 =
+* Redesigned admin into a guided, SaaS-style experience: a single top-level "AI Editor" menu with Dashboard, Features, Settings and Upgrade views. Dashboard shows a welcome, setup-progress checklist, one clear primary action, your results (edits processed / saved / blocked), and contextual recommendations. Features and Upgrade present Free vs Premium as benefit-framed value (locked-but-visible), not banners. Empty states throughout. Fully escaped, nonce + capability protected, i18n-ready.
 
 = 2.12.0 =
 * Added safe site-wide custom CSS: the premium set_custom_css tool writes into a managed block in WordPress Additional CSS (preserving your own CSS), unlocking true backdrop-filter glassmorphism and keyframe animations. CSS cannot execute code.

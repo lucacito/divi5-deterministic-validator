@@ -529,8 +529,8 @@ final class McpHandler
             'proposed'   => true,
             'executed'   => false,
             'id'         => $pid,
-            'message'    => 'Snippet stored for review. It was NOT executed or saved to the site. Review and apply it under Settings → AI Editor for Divi 5 → Code Proposals.',
-            'review_url' => admin_url('options-general.php?page=ai-editor-divi5&tab=code'),
+            'message'    => 'Snippet stored for review. It was NOT executed or saved to the site. Review and apply it under AI Editor → Settings → Code Proposals.',
+            'review_url' => admin_url('admin.php?page=ai-editor-divi5&tab=settings#proposals'),
         ])]]]);
     }
 
