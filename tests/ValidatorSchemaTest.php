@@ -83,6 +83,7 @@ class ValidatorSchemaTest extends TestCase
             'wrong-nesting'                   => [$dir . '/wrong-nesting.json',                   Validator::E_UNEXPECTED_CHILD_TYPE],
             'wrong-nesting-compound'          => [$dir . '/wrong-nesting-compound.json',          Validator::E_UNEXPECTED_CHILD_TYPE],
             'orphaned-compound-child'         => [$dir . '/orphaned-compound-child.json',         Validator::E_UNEXPECTED_CHILD_TYPE],
+            'woo-shop-wrong-nesting'          => [$dir . '/woo-shop-wrong-nesting.json',          Validator::E_UNEXPECTED_CHILD_TYPE],
             // Pass 5 — render-critical
             'scalar-where-object'             => [$dir . '/scalar-where-object.json',             Validator::E_SCALAR_WHERE_OBJECT],
             'scalar-where-object-video'       => [$dir . '/scalar-where-object-video.json',       Validator::E_SCALAR_WHERE_OBJECT],

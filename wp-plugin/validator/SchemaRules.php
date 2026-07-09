@@ -75,6 +75,8 @@ class SchemaRules
         'divi/menu',
         'divi/timeline-item',
         'divi/post-nav',
+        // WooCommerce — the products grid (Shop module). Leaf; valid only inside a column.
+        'divi/shop',
         // Compound module children (self-closing items inside structural parents)
         'divi/accordion-item',
         'divi/contact-field',
@@ -150,6 +152,8 @@ class SchemaRules
             'divi/instagram-feed',
             'divi/menu',
             'divi/post-nav',
+            // WooCommerce products grid
+            'divi/shop',
             // Nested rows — Divi 5 lets a column contain a row (alongside modules),
             // recursing to arbitrary depth. Confirmed via real exports
             // (page-23: divi/row; layout-4: divi/row-inner).
