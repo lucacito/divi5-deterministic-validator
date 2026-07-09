@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install + activate WooCommerce and import the 16 sample products into the
+# Install + activate WooCommerce and import the sample products into the
 # render env, so the divi/shop grid renders populated screenshots. Idempotent.
 set -euo pipefail
 cd "$(dirname "$0")/.."
