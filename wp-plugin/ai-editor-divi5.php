@@ -25,6 +25,9 @@ define('AI_EDITOR_DIVI5_VERSION', '2.15.0');
 define('AI_EDITOR_DIVI5_MIN_PHP', '8.1');
 define('AI_EDITOR_DIVI5_MIN_WP',  '6.0');
 define('AI_EDITOR_DIVI5_FILE',    __FILE__);
+define('AI_EDITOR_DIVI5_PRODUCT', 'ai-editor-divi5-pro');
+// License/update server. Override in wp-config.php for dev:
+//   define('AIED_API_BASE', 'http://host.docker.internal:3100');
 
 // ---------------------------------------------------------------
 // Activation — check requirements, create DB table, generate API key
