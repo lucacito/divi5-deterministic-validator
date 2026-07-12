@@ -151,6 +151,8 @@ class LicensingTest extends TestCase
         Licensing::deactivate();
         $this->assertFalse( Licensing::isPremium() );
         $this->assertSame( 'no_key', Licensing::status()['reason'] );
+        // deactivate() must release the activation server-side (not just wipe locally, like clear()).
+        $this->assertStringContainsString( '/api/license/deactivate', $GLOBALS['__wp_http_log'][1]['url'] );
     }
 
     public function testStatusExposesUnixExpires(): void

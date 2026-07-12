@@ -96,7 +96,7 @@ final class AdminPage
     public function handleDeactivateLicense(): void
     {
         $this->guard('ai_editor_divi5_deactivate_license');
-        Licensing::clear();
+        Licensing::deactivate();
         $this->redirect('upgrade', 'license_deactivated');
     }
 
@@ -501,7 +501,14 @@ final class AdminPage
         <?php if ( $license['valid'] ) : ?>
             <p class="aied-muted">
                 <?php esc_html_e( 'Premium is active on this site.', 'ai-editor-divi5' ); ?>
-                <?php if ( $license['expires'] ) { echo ' ' . esc_html( sprintf( /* translators: %s date */ __( 'Renews %s.', 'ai-editor-divi5' ), date_i18n( get_option( 'date_format' ), (int) $license['expires'] ) ) ); } ?>
+                <?php if ( $license['expires'] ) {
+                    $aied_is_lapsed = in_array( $license['status'], [ 'expired', 'canceled' ], true );
+                    echo ' ' . esc_html( sprintf(
+                        /* translators: %s date */
+                        $aied_is_lapsed ? __( 'Expired %s.', 'ai-editor-divi5' ) : __( 'Renews %s.', 'ai-editor-divi5' ),
+                        date_i18n( get_option( 'date_format' ), (int) $license['expires'] )
+                    ) );
+                } ?>
             </p>
             <?php if ( in_array( $license['status'], [ 'expired', 'canceled' ], true ) ) : ?>
                 <p class="aied-muted">
