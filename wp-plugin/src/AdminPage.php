@@ -87,9 +87,10 @@ final class AdminPage
     public function handleActivateLicense(): void
     {
         $this->guard('ai_editor_divi5_activate_license');
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- base64url key, trimmed in Licensing.
-        Licensing::setKey( sanitize_text_field( wp_unslash( $_POST['license_key'] ?? '' ) ) );
-        $this->redirect('upgrade', Licensing::isPremium() ? 'license_activated' : 'license_invalid');
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- opaque key, trimmed in Licensing.
+        $key    = sanitize_text_field( wp_unslash( $_POST['license_key'] ?? '' ) );
+        $result = $key !== '' ? Licensing::activate( $key ) : [ 'ok' => false, 'error' => 'invalid_request' ];
+        $this->redirect('upgrade', $result['ok'] ? 'license_activated' : 'license_invalid');
     }
 
     public function handleDeactivateLicense(): void
@@ -499,9 +500,15 @@ final class AdminPage
         </h3>
         <?php if ( $license['valid'] ) : ?>
             <p class="aied-muted">
-                <?php echo esc_html( sprintf( /* translators: %s email */ __( 'Premium is active for %s.', 'ai-editor-divi5' ), $license['email'] ?: __( 'this site', 'ai-editor-divi5' ) ) ); ?>
-                <?php if ( $license['expires'] ) { echo ' ' . esc_html( sprintf( /* translators: %s date */ __( 'Expires %s.', 'ai-editor-divi5' ), date_i18n( get_option( 'date_format' ), (int) $license['expires'] ) ) ); } ?>
+                <?php esc_html_e( 'Premium is active on this site.', 'ai-editor-divi5' ); ?>
+                <?php if ( $license['expires'] ) { echo ' ' . esc_html( sprintf( /* translators: %s date */ __( 'Renews %s.', 'ai-editor-divi5' ), date_i18n( get_option( 'date_format' ), (int) $license['expires'] ) ) ); } ?>
             </p>
+            <?php if ( in_array( $license['status'], [ 'expired', 'canceled' ], true ) ) : ?>
+                <p class="aied-muted">
+                    <?php esc_html_e( 'Your license has lapsed: premium features stay unlocked here, but updates and support are paused.', 'ai-editor-divi5' ); ?>
+                    <a href="<?php echo esc_url( Licensing::UPGRADE_URL ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Renew', 'ai-editor-divi5' ); ?></a>
+                </p>
+            <?php endif; ?>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <input type="hidden" name="action" value="ai_editor_divi5_deactivate_license">
                 <?php wp_nonce_field( 'ai_editor_divi5_deactivate_license' ); ?>
@@ -512,7 +519,7 @@ final class AdminPage
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="aied-key-row">
                 <input type="hidden" name="action" value="ai_editor_divi5_activate_license">
                 <?php wp_nonce_field( 'ai_editor_divi5_activate_license' ); ?>
-                <input type="text" name="license_key" class="regular-text" style="flex:1" placeholder="<?php esc_attr_e( 'Paste your license key', 'ai-editor-divi5' ); ?>" autocomplete="off" spellcheck="false">
+                <input type="text" name="license_key" class="regular-text" style="flex:1" placeholder="<?php esc_attr_e( 'JHMG-XXXX-XXXX-XXXX-XXXX', 'ai-editor-divi5' ); ?>" autocomplete="off" spellcheck="false">
                 <button type="submit" class="button button-primary"><?php esc_html_e( 'Activate', 'ai-editor-divi5' ); ?></button>
             </form>
         <?php endif; ?>

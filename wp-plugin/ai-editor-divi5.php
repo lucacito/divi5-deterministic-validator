@@ -102,9 +102,19 @@ add_action('rest_api_init', function (): void {
 });
 
 // ---------------------------------------------------------------
-// Admin page
+// Licensing: WP-native update checks + periodic validation + notices
 // ---------------------------------------------------------------
+
+add_filter('pre_set_site_transient_update_plugins', static function ($transient) {
+    return AiEditorDivi5\WP\Licensing::client()->inject_update($transient);
+});
 
 if (is_admin()) {
     (new AiEditorDivi5\WP\AdminPage())->register();
+    add_action('admin_init', static function (): void {
+        AiEditorDivi5\WP\Licensing::refresh(); // daily-cached validate (24h + 72h offline grace)
+    });
+    add_action('admin_notices', static function (): void {
+        AiEditorDivi5\WP\Licensing::client()->status_notice();
+    });
 }

@@ -166,4 +166,14 @@ class LicensingTest extends TestCase
         $this->assertFalse( Licensing::isPremium() );
         $this->assertSame( [], array_filter( array_keys( $GLOBALS['__wp_options'] ), fn ( $k ) => str_starts_with( $k, 'aied_' ) ) );
     }
+
+    public function testInjectUpdateOffersPackageForUsableLicense(): void
+    {
+        $this->activatePremium();
+        $this->queue( 200, [ 'update' => true, 'version' => '3.1.0', 'package' => 'https://divi5lab.com/api/plugin/download?product=ai-editor-divi5-pro&key=' . self::KEY ] );
+        $transient = Licensing::client()->inject_update( (object) [ 'response' => [] ] );
+        $basename  = plugin_basename( AI_EDITOR_DIVI5_FILE );
+        $this->assertSame( '3.1.0', $transient->response[ $basename ]->new_version );
+        $this->assertSame( Licensing::UPGRADE_URL, $transient->response[ $basename ]->url );
+    }
 }
