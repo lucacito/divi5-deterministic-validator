@@ -115,6 +115,11 @@ if (is_admin()) {
         AiEditorDivi5\WP\Licensing::refresh(); // daily-cached validate (24h + 72h offline grace)
     });
     add_action('admin_notices', static function (): void {
-        AiEditorDivi5\WP\Licensing::client()->status_notice();
+        $has_key = AiEditorDivi5\WP\Licensing::client()->get_key() !== null;
+        $screen  = function_exists('get_current_screen') ? get_current_screen() : null;
+        $on_own  = $screen && $screen->id === 'toplevel_page_ai-editor-divi5';
+        if ($has_key || $on_own) {
+            AiEditorDivi5\WP\Licensing::client()->status_notice();
+        }
     });
 }

@@ -61,7 +61,7 @@ The plugin stores a single API key and an optional usage log in your WordPress d
 
 1. Upload the `ai-editor-divi5` folder to `/wp-content/plugins/`.
 2. Activate the plugin through the **Plugins** screen.
-3. Go to **Settings → AI Editor for Divi 5**.
+3. Go to the **AI Editor** menu in wp-admin.
 4. Copy the API key and follow the step-by-step instructions for your AI assistant.
 
 **Requirements**
