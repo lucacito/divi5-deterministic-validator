@@ -26,3 +26,5 @@ Thumbs.db
 
 # Vendor license signing key — NEVER commit
 license-signing-key.txt
+
+.superpowers/

@@ -380,7 +380,7 @@ final class McpHandler
                 'content' => [['type' => 'text', 'text' => json_encode([
                     'created'     => false,
                     'premium'     => true,
-                    'message'     => 'create_page is a premium feature. Activate a license under Settings → AI Editor for Divi 5 to enable it.',
+                    'message'     => 'create_page is a premium feature. Activate a license under the AI Editor menu in wp-admin to enable it.',
                     'upgrade_url' => Licensing::UPGRADE_URL,
                 ])]],
                 'isError' => true,
@@ -551,7 +551,7 @@ final class McpHandler
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => json_encode([
                 'premium'     => true,
-                'message'     => 'This is a premium feature. Activate a license under Settings → AI Editor for Divi 5.',
+                'message'     => 'This is a premium feature. Activate a license under the AI Editor menu in wp-admin.',
                 'upgrade_url' => Licensing::UPGRADE_URL,
             ])]],
             'isError' => true,

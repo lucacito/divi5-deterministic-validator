@@ -5,151 +5,177 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\Licensing;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+require_once __DIR__ . '/../wp-plugin/src/Licensing/LicenseClient.php';
 require_once __DIR__ . '/../wp-plugin/src/Licensing.php';
 
 /**
- * Tests the offline Ed25519 license verification and premium gating.
- *
- * Fixtures are real license tokens signed once with the vendor secret key; they
- * verify against the public key embedded in Licensing.php, so no secret is
- * needed at test time. Regenerate via scripts/make-license.php if the keypair
- * ever rotates.
+ * Sticky-unlock enforcement matrix: activation persists premium; ONLY an
+ * explicit server verdict of `revoked` or `invalid` re-locks; lapse and
+ * transient failures never do.
  */
 class LicensingTest extends TestCase
 {
-    // Signed premium, no domain claim, never expires.
-    private const PERPETUAL_ANY = 'eyJlbWFpbCI6ImFAeC5jb20iLCJwbGFuIjoicHJlbWl1bSIsImV4cCI6MH0.-0-FX3N2CiiLM9vvZo8-w67CMF3Ixp2Zc37J1PpUsFN9S3-YtKRXGrr3TnO23ly6pZqqjprBGqOcOlxrZFC6DA';
-    // Signed premium, bound to example.com.
-    private const DOMAIN_EXAMPLE = 'eyJlbWFpbCI6ImFAeC5jb20iLCJwbGFuIjoicHJlbWl1bSIsImRvbWFpbiI6ImV4YW1wbGUuY29tIiwiZXhwIjowfQ.64kF22x6H-miJgk4Xrn_G784P8f5pky7BNHjXrxGxa8is_itIg6MEdX_XbuUsur9G-2wGtcZbiKdyQuXwVt_Bw';
-    // Signed premium, bound to other.com.
-    private const DOMAIN_OTHER = 'eyJlbWFpbCI6ImFAeC5jb20iLCJwbGFuIjoicHJlbWl1bSIsImRvbWFpbiI6Im90aGVyLmNvbSIsImV4cCI6MH0.L2Z7WKbS6oIznCTvO4JO47znf5LOw6IEF4ah9NzJYsmjvlp1hOtzs3bzI1F_9-ySOuQpcEsPs8XBRGpboU2pBw';
-    // Signed premium, already expired.
-    private const EXPIRED = 'eyJlbWFpbCI6ImFAeC5jb20iLCJwbGFuIjoicHJlbWl1bSIsImV4cCI6MTc4MjUwNzM5M30.SMyc6jp7zI65r3VRf9tB7dOIpJMWiBYicFGuufOOJMpLBz-_I3hOR4yefrIv2RQuzn3aGZtepInt7qJeVIRGBQ';
-    // Signed premium, far-future expiry.
-    private const FUTURE = 'eyJlbWFpbCI6ImFAeC5jb20iLCJwbGFuIjoicHJlbWl1bSIsImV4cCI6MTgxNDA0MzQ5M30.aBX-08AowUf-g3BR_WqlCwutmCOfAoPtK5NvEOO_WIcCZeeqF_LcWMDgrRo7L6kAA20-C0zDjRVZioVExcvMBw';
-    // Signed but plan is not premium.
-    private const WRONG_PLAN = 'eyJlbWFpbCI6ImFAeC5jb20iLCJwbGFuIjoiYmFzaWMiLCJleHAiOjB9.HdWGBRM7NF9rm58AkBI7twkd4BeysaIJj3HfFxzhG_4wtfAibXK48suMN7UqQ9XC954bVnxK1BFlFwAGTmL9Bw';
+    private const KEY = 'JHMG-TEST-TEST-TEST-TEST';
 
     protected function setUp(): void
     {
-        $GLOBALS['__wp_options']  = [];
-        $GLOBALS['__wp_home_url'] = 'https://example.com';
+        $GLOBALS['__wp_options']    = [];
+        $GLOBALS['__wp_transients'] = [];
+        $GLOBALS['__wp_http_queue'] = [];
+        $GLOBALS['__wp_http_log']   = [];
+        $GLOBALS['__wp_home_url']   = 'https://example.com';
+        Licensing::resetForTests();
     }
 
-    // --- verify() ---------------------------------------------------
-
-    public function testVerifyReturnsPayloadForValidKey(): void
+    private function queue( int $code, array $body ): void
     {
-        $payload = Licensing::verify(self::PERPETUAL_ANY);
-        $this->assertIsArray($payload);
-        $this->assertSame('premium', $payload['plan']);
-        $this->assertSame('a@x.com', $payload['email']);
+        $GLOBALS['__wp_http_queue'][] = [ 'code' => $code, 'body' => $body ];
     }
 
-    public function testVerifyRejectsTamperedSignature(): void
+    /** Age the cached state so refresh() actually hits the network. */
+    private function ageState(): void
     {
-        // Decode the signature, flip one real byte, re-encode — guarantees a
-        // genuine 64-byte signature that no longer matches the payload.
-        [$payload, $sig] = explode('.', self::PERPETUAL_ANY);
-        $bytes    = base64_decode(strtr($sig, '-_', '+/'), true);
-        $bytes[0] = $bytes[0] ^ "\x01";
-        $tampered = $payload . '.' . rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
-
-        $this->assertNotSame(self::PERPETUAL_ANY, $tampered, 'tamper must change the key');
-        $this->assertNull(Licensing::verify($tampered));
+        $state = $GLOBALS['__wp_options']['aied_license_state'];
+        $state['checked_at'] = time() - 2 * DAY_IN_SECONDS;
+        $GLOBALS['__wp_options']['aied_license_state'] = $state;
     }
 
-    public function testVerifyRejectsTamperedPayload(): void
+    private function activatePremium(): void
     {
-        // Re-encode a different payload but keep the original signature.
-        [$_, $sig] = explode('.', self::PERPETUAL_ANY);
-        $forged = rtrim(strtr(base64_encode('{"email":"hacker@x.com","plan":"premium","exp":0}'), '+/', '-_'), '=') . '.' . $sig;
-        $this->assertNull(Licensing::verify($forged));
+        $this->queue( 200, [ 'status' => 'active', 'product' => 'ai-editor-divi5-pro', 'expires' => '2027-07-12T00:00:00.000Z' ] );
+        $res = Licensing::activate( self::KEY );
+        $this->assertTrue( $res['ok'] );
+        $this->assertTrue( Licensing::isPremium() );
     }
 
-    #[DataProvider('malformedKeys')]
-    public function testVerifyRejectsMalformedKeys(string $key): void
+    public function testFreshInstallIsNotPremium(): void
     {
-        $this->assertNull(Licensing::verify($key));
+        $this->assertFalse( Licensing::isPremium() );
+        $this->assertSame( 'no_key', Licensing::status()['reason'] );
     }
 
-    public static function malformedKeys(): array
+    public function testActivateSuccessUnlocksPremium(): void
     {
-        return [
-            'empty'        => [''],
-            'no dot'       => ['notadotseparatedstring'],
-            'three parts'  => ['a.b.c'],
-            'not base64'   => ['!!!.???'],
-            'short sig'    => [rtrim(strtr(base64_encode('{"plan":"premium"}'), '+/', '-_'), '=') . '.QUJD'],
-        ];
+        $this->activatePremium();
+        $this->assertSame( 'active', Licensing::status()['status'] );
+        // activate posted to /api/license/activate with snake_case params
+        $payload = json_decode( $GLOBALS['__wp_http_log'][0]['payload'], true );
+        $this->assertSame( 'ai-editor-divi5-pro', $payload['product'] );
+        $this->assertSame( self::KEY, $payload['key'] );
+        $this->assertArrayHasKey( 'site_url', $payload );
     }
 
-    // --- status() / isPremium() -------------------------------------
-
-    public function testNoKeyIsNotPremium(): void
+    public function testActivateInvalidKeyStaysLocked(): void
     {
-        $this->assertFalse(Licensing::isPremium());
-        $this->assertSame('no_key', Licensing::status()['reason']);
+        $this->queue( 404, [ 'error' => 'invalid_key' ] );
+        $res = Licensing::activate( self::KEY );
+        $this->assertFalse( $res['ok'] );
+        $this->assertSame( 'invalid_key', $res['error'] );
+        $this->assertFalse( Licensing::isPremium() );
     }
 
-    public function testPerpetualKeyWithoutDomainIsPremiumOnAnySite(): void
+    public function testExpiredVerdictKeepsPremium(): void
     {
-        $GLOBALS['__wp_home_url'] = 'https://anything-at-all.net';
-        Licensing::setKey(self::PERPETUAL_ANY);
-        $this->assertTrue(Licensing::isPremium());
+        $this->activatePremium();
+        $this->ageState();
+        $this->queue( 403, [ 'error' => 'license_not_usable', 'status' => 'expired' ] );
+        Licensing::refresh();
+        $this->assertTrue( Licensing::isPremium() );        // lapse never locks
+        $this->assertSame( 'expired', Licensing::status()['status'] ); // but status is honest
     }
 
-    public function testDomainBoundKeyMatchesItsSite(): void
+    public function testCanceledVerdictKeepsPremium(): void
     {
-        $GLOBALS['__wp_home_url'] = 'https://www.example.com';   // www stripped on compare
-        Licensing::setKey(self::DOMAIN_EXAMPLE);
-        $this->assertTrue(Licensing::isPremium());
+        $this->activatePremium();
+        $this->ageState();
+        $this->queue( 403, [ 'error' => 'license_not_usable', 'status' => 'canceled' ] );
+        Licensing::refresh();
+        $this->assertTrue( Licensing::isPremium() );
     }
 
-    public function testDomainBoundKeyRejectedOnDifferentSite(): void
+    public function testRevokedVerdictLocksPremium(): void
     {
-        Licensing::setKey(self::DOMAIN_OTHER);   // bound to other.com, site is example.com
-        $status = Licensing::status();
-        $this->assertFalse($status['valid']);
-        $this->assertSame('domain_mismatch', $status['reason']);
+        $this->activatePremium();
+        $this->ageState();
+        $this->queue( 403, [ 'error' => 'license_not_usable', 'status' => 'revoked' ] );
+        Licensing::refresh();
+        $this->assertFalse( Licensing::isPremium() );
     }
 
-    public function testExpiredKeyIsNotPremium(): void
+    public function testInvalidKeyVerdictLocksPremium(): void
     {
-        Licensing::setKey(self::EXPIRED);
-        $status = Licensing::status();
-        $this->assertFalse($status['valid']);
-        $this->assertSame('expired', $status['reason']);
+        $this->activatePremium();
+        $this->ageState();
+        $this->queue( 404, [ 'error' => 'invalid_key' ] );
+        Licensing::refresh();
+        $this->assertFalse( Licensing::isPremium() );
     }
 
-    public function testFutureExpiryIsPremium(): void
+    public function testNetworkErrorKeepsPremium(): void
     {
-        Licensing::setKey(self::FUTURE);
-        $this->assertTrue(Licensing::isPremium());
+        $this->activatePremium();
+        $this->ageState();
+        $GLOBALS['__wp_http_queue'][] = 'network_error';
+        Licensing::refresh();
+        $this->assertTrue( Licensing::isPremium() );
     }
 
-    public function testWrongPlanIsNotPremium(): void
+    public function testRateLimitAnd5xxKeepPremium(): void
     {
-        Licensing::setKey(self::WRONG_PLAN);
-        $status = Licensing::status();
-        $this->assertFalse($status['valid']);
-        $this->assertSame('wrong_plan', $status['reason']);
+        $this->activatePremium();
+        $this->ageState();
+        $this->queue( 429, [ 'error' => 'rate_limited' ] );
+        Licensing::refresh();
+        $this->assertTrue( Licensing::isPremium() );
+        $this->ageState();
+        $this->queue( 500, [] );
+        Licensing::refresh();
+        $this->assertTrue( Licensing::isPremium() );
     }
 
-    public function testGarbageStoredKeyIsInvalidSignature(): void
+    public function testReactivationAfterRevokeUnlocksAgain(): void
     {
-        Licensing::setKey('this-is-not-a-license');
-        $this->assertSame('invalid_signature', Licensing::status()['reason']);
+        $this->testRevokedVerdictLocksPremium();
+        $this->queue( 200, [ 'status' => 'active', 'product' => 'ai-editor-divi5-pro', 'expires' => null ] );
+        $res = Licensing::activate( 'JHMG-NEWK-NEWK-NEWK-NEWK' );
+        $this->assertTrue( $res['ok'] );
+        $this->assertTrue( Licensing::isPremium() );
     }
 
-    public function testClearRemovesPremium(): void
+    public function testDeactivateClearsPremium(): void
     {
-        Licensing::setKey(self::PERPETUAL_ANY);
-        $this->assertTrue(Licensing::isPremium());
-        Licensing::clear();
-        $this->assertFalse(Licensing::isPremium());
+        $this->activatePremium();
+        $this->queue( 200, [ 'ok' => true ] ); // server deactivate call
+        Licensing::deactivate();
+        $this->assertFalse( Licensing::isPremium() );
+        $this->assertSame( 'no_key', Licensing::status()['reason'] );
+        // deactivate() must release the activation server-side (not just wipe locally, like clear()).
+        $this->assertStringContainsString( '/api/license/deactivate', $GLOBALS['__wp_http_log'][1]['url'] );
+    }
+
+    public function testStatusExposesUnixExpires(): void
+    {
+        $this->activatePremium();
+        $this->assertSame( strtotime( '2027-07-12T00:00:00.000Z' ), Licensing::status()['expires'] );
+    }
+
+    public function testClearWipesLocalStateOnly(): void
+    {
+        $this->activatePremium();
+        Licensing::clear(); // uninstall path: no HTTP queued, must not error
+        $this->assertFalse( Licensing::isPremium() );
+        $this->assertSame( [], array_filter( array_keys( $GLOBALS['__wp_options'] ), fn ( $k ) => str_starts_with( $k, 'aied_' ) ) );
+    }
+
+    public function testInjectUpdateOffersPackageForUsableLicense(): void
+    {
+        $this->activatePremium();
+        $this->queue( 200, [ 'update' => true, 'version' => '3.1.0', 'package' => 'https://divi5lab.com/api/plugin/download?product=ai-editor-divi5-pro&key=' . self::KEY ] );
+        $transient = Licensing::client()->inject_update( (object) [ 'response' => [] ] );
+        $basename  = plugin_basename( AI_EDITOR_DIVI5_FILE );
+        $this->assertSame( '3.1.0', $transient->response[ $basename ]->new_version );
+        $this->assertSame( Licensing::UPGRADE_URL, $transient->response[ $basename ]->url );
     }
 }

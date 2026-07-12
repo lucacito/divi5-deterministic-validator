@@ -4,165 +4,105 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\WP;
 
+use AiEditorDivi5\Licensing\LicenseClient;
+
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
- * Self-hosted premium licensing — offline, no license server.
+ * Premium gate — an adapter over the divi5lab license server client.
  *
- * A license key is an Ed25519-signed token the vendor mints with a private key
- * that never ships. The plugin embeds only the matching PUBLIC key and verifies
- * signatures locally, so premium checks work with zero network calls and keys
- * cannot be forged.
- *
- * Key format:  base64url(payloadJson) "." base64url(signature)
- * Payload:     { "email": string, "plan": "premium",
- *                "domain"?: string,   // optional — bind license to one site host
- *                "exp"?: int }        // optional unix ts; 0/absent = perpetual
- *
- * Mint keys with scripts/make-license.php (vendor side).
+ * Enforcement (approved spec, differs from the converters' soft model because
+ * here the license gates FEATURES): first successful activation sets a
+ * persistent unlock; only an explicit server verdict of `revoked` or `invalid`
+ * (invalid_key) re-locks. Lapse (expired/canceled/past_due) and transient
+ * failures (offline/429/5xx) NEVER re-lock — lapsed customers keep what they
+ * activated and only lose updates + support.
  */
 final class Licensing
 {
-    private const OPTION_KEY = 'ai_editor_divi5_license';
+    private const UNLOCKED_OPTION = 'ai_editor_divi5_premium_unlocked';
+    private const LOCKING = [ 'revoked', 'invalid' ];
 
-    /** Ed25519 public key (base64). Safe to ship — only verifies, never signs. */
-    private const PUBLIC_KEY = 'LeK3CYS3EzY4h0BKL/3a65JfpqyF8eICgCjyoT+Je10=';
+    public const UPGRADE_URL = 'https://divi5lab.com/plugins/divi-5-ai-editor';
 
-    public const UPGRADE_URL = 'https://jhmediagroup.com/plugin/ai-editor-divi5#pricing';
+    private static ?LicenseClient $client = null;
 
-    // ---------------------------------------------------------------
-    // Stored license key
-    // ---------------------------------------------------------------
-
-    public static function getKey(): string
+    public static function client(): LicenseClient
     {
-        return trim( (string) get_option( self::OPTION_KEY, '' ) );
+        if ( self::$client === null ) {
+            self::$client = new LicenseClient(
+                AI_EDITOR_DIVI5_PRODUCT,
+                AI_EDITOR_DIVI5_VERSION,
+                defined( 'AIED_API_BASE' ) ? AIED_API_BASE : 'https://divi5lab.com',
+                plugin_basename( AI_EDITOR_DIVI5_FILE ),
+                'ai-editor-divi5',
+                self::UPGRADE_URL,
+                'aied'
+            );
+        }
+        return self::$client;
     }
 
-    public static function setKey(string $key): void
+    /** @internal test isolation only */
+    public static function resetForTests(): void
     {
-        update_option( self::OPTION_KEY, trim( $key ), false );
+        self::$client = null;
     }
 
-    public static function clear(): void
-    {
-        delete_option( self::OPTION_KEY );
-    }
-
-    // ---------------------------------------------------------------
-    // Premium gate
-    // ---------------------------------------------------------------
-
-    /** True only when a valid, unexpired, domain-matching premium key is stored. */
     public static function isPremium(): bool
     {
-        return self::status()['valid'];
+        if ( ! get_option( self::UNLOCKED_OPTION ) ) {
+            return false;
+        }
+        $state = self::client()->get_state();
+        return ! in_array( $state['status'] ?? '', self::LOCKING, true );
+    }
+
+    /** @return array{ok: bool, error: ?string} */
+    public static function activate(string $key): array
+    {
+        $res = self::client()->activate( trim( $key ) );
+        if ( $res['ok'] ) {
+            update_option( self::UNLOCKED_OPTION, 1, false );
+        }
+        return [ 'ok' => (bool) $res['ok'], 'error' => $res['error'] ];
+    }
+
+    public static function deactivate(): void
+    {
+        self::client()->deactivate();
+        delete_option( self::UNLOCKED_OPTION );
+    }
+
+    public static function refresh(bool $force = false): void
+    {
+        self::client()->refresh( $force );
     }
 
     /**
-     * Full license status for display and gating.
-     *
-     * @return array{valid: bool, plan: ?string, email: ?string, expires: ?int, reason: string}
+     * @return array{valid: bool, status: ?string, expires: ?int, reason: string}
      */
     public static function status(): array
     {
-        $empty = ['valid' => false, 'plan' => null, 'email' => null, 'expires' => null];
-
-        $key = self::getKey();
-        if ( $key === '' ) {
-            return $empty + ['reason' => 'no_key'];
+        if ( self::client()->get_key() === null ) {
+            return [ 'valid' => false, 'status' => null, 'expires' => null, 'reason' => 'no_key' ];
         }
-
-        $payload = self::verify( $key );
-        if ( $payload === null ) {
-            return $empty + ['reason' => 'invalid_signature'];
+        $state   = self::client()->get_state();
+        $status  = (string) ( $state['status'] ?? 'unknown' );
+        $expires = null;
+        if ( ! empty( $state['expires'] ) ) {
+            $ts      = strtotime( (string) $state['expires'] );
+            $expires = $ts !== false ? $ts : null;
         }
-
-        $plan    = isset( $payload['plan'] )  ? (string) $payload['plan']  : '';
-        $email   = isset( $payload['email'] ) ? (string) $payload['email'] : null;
-        $exp     = isset( $payload['exp'] )   ? (int) $payload['exp']      : 0;
-        $domain  = isset( $payload['domain'] ) ? (string) $payload['domain'] : '';
-        $details = ['plan' => $plan ?: null, 'email' => $email, 'expires' => $exp ?: null];
-
-        if ( $plan !== 'premium' ) {
-            return ['valid' => false] + $details + ['reason' => 'wrong_plan'];
-        }
-        if ( $exp > 0 && time() > $exp ) {
-            return ['valid' => false] + $details + ['reason' => 'expired'];
-        }
-        if ( $domain !== '' && ! self::hostMatches( $domain ) ) {
-            return ['valid' => false] + $details + ['reason' => 'domain_mismatch'];
-        }
-
-        return ['valid' => true] + $details + ['reason' => 'ok'];
+        return [ 'valid' => self::isPremium(), 'status' => $status, 'expires' => $expires, 'reason' => $status ];
     }
 
-    // ---------------------------------------------------------------
-    // Crypto verification (pure — no WordPress, unit-testable)
-    // ---------------------------------------------------------------
-
-    /**
-     * Verify a license key's signature and return its decoded payload, or null
-     * if the key is malformed or the signature does not match the public key.
-     *
-     * @return array<string, mixed>|null
-     */
-    public static function verify(string $key): ?array
+    /** Local-only wipe (uninstall). Never performs HTTP. */
+    public static function clear(): void
     {
-        $parts = explode( '.', trim( $key ) );
-        if ( count( $parts ) !== 2 ) {
-            return null;
-        }
-
-        $payloadRaw = self::b64urlDecode( $parts[0] );
-        $signature  = self::b64urlDecode( $parts[1] );
-        if ( $payloadRaw === null || $signature === null ) {
-            return null;
-        }
-        if ( strlen( $signature ) !== SODIUM_CRYPTO_SIGN_BYTES ) {
-            return null;
-        }
-
-        $publicKey = base64_decode( self::PUBLIC_KEY, true );
-        if ( $publicKey === false || strlen( $publicKey ) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES ) {
-            return null;
-        }
-
-        if ( ! sodium_crypto_sign_verify_detached( $signature, $payloadRaw, $publicKey ) ) {
-            return null;
-        }
-
-        $payload = json_decode( $payloadRaw, true );
-        return is_array( $payload ) ? $payload : null;
-    }
-
-    // ---------------------------------------------------------------
-    // Helpers
-    // ---------------------------------------------------------------
-
-    /** Compares a license domain claim against this site's host, ignoring scheme and a leading "www.". */
-    private static function hostMatches(string $domain): bool
-    {
-        return self::normalizeHost( $domain ) === self::normalizeHost( (string) home_url() );
-    }
-
-    private static function normalizeHost(string $value): string
-    {
-        $host = wp_parse_url( $value, PHP_URL_HOST );
-        if ( ! is_string( $host ) || $host === '' ) {
-            // Bare host like "example.com" with no scheme.
-            $host = preg_replace( '#^.*?//#', '', $value );
-            $host = explode( '/', (string) $host )[0];
-        }
-        $host = strtolower( $host );
-        return preg_replace( '#^www\.#', '', $host );
-    }
-
-    private static function b64urlDecode(string $value): ?string
-    {
-        $b64     = strtr( $value, '-_', '+/' );
-        $padded  = str_pad( $b64, intdiv( strlen( $b64 ) + 3, 4 ) * 4, '=' );
-        $decoded = base64_decode( $padded, true );
-        return $decoded === false ? null : $decoded;
+        delete_option( self::UNLOCKED_OPTION );
+        delete_option( 'aied_license_key' );
+        delete_option( 'aied_license_state' );
+        delete_option( 'aied_update_blocked' );
     }
 }

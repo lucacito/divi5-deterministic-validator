@@ -1,14 +1,14 @@
 <?php
 /**
  * Plugin Name:       AI Editor for Divi 5
- * Plugin URI:        https://jhmediagroup.com/plugin/ai-editor-divi5
+ * Plugin URI:        https://divi5lab.com/plugins/divi-5-ai-editor
  * Description:       Let your AI assistant (Claude, ChatGPT, Cursor) read and edit Divi 5 pages with natural language — every change is validated before saving, so broken pages become impossible.
- * Version:           2.15.0
+ * Version:           3.0.0
  * Requires at least: 6.0
  * Tested up to:      7.0
  * Requires PHP:      8.1
  * Author:            JHMG
- * Author URI:        https://jhmediagroup.com
+ * Author URI:        https://divi5lab.com
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       ai-editor-divi5
@@ -21,10 +21,13 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('AI_EDITOR_DIVI5_VERSION', '2.15.0');
+define('AI_EDITOR_DIVI5_VERSION', '3.0.0');
 define('AI_EDITOR_DIVI5_MIN_PHP', '8.1');
 define('AI_EDITOR_DIVI5_MIN_WP',  '6.0');
 define('AI_EDITOR_DIVI5_FILE',    __FILE__);
+define('AI_EDITOR_DIVI5_PRODUCT', 'ai-editor-divi5-pro');
+// License/update server. Override in wp-config.php for dev:
+//   define('AIED_API_BASE', 'http://host.docker.internal:3100');
 
 // ---------------------------------------------------------------
 // Activation — check requirements, create DB table, generate API key
@@ -99,9 +102,24 @@ add_action('rest_api_init', function (): void {
 });
 
 // ---------------------------------------------------------------
-// Admin page
+// Licensing: WP-native update checks + periodic validation + notices
 // ---------------------------------------------------------------
+
+add_filter('pre_set_site_transient_update_plugins', static function ($transient) {
+    return AiEditorDivi5\WP\Licensing::client()->inject_update($transient);
+});
 
 if (is_admin()) {
     (new AiEditorDivi5\WP\AdminPage())->register();
+    add_action('admin_init', static function (): void {
+        AiEditorDivi5\WP\Licensing::refresh(); // daily-cached validate (24h + 72h offline grace)
+    });
+    add_action('admin_notices', static function (): void {
+        $has_key = AiEditorDivi5\WP\Licensing::client()->get_key() !== null;
+        $screen  = function_exists('get_current_screen') ? get_current_screen() : null;
+        $on_own  = $screen && $screen->id === 'toplevel_page_ai-editor-divi5';
+        if ($has_key || $on_own) {
+            AiEditorDivi5\WP\Licensing::client()->status_notice();
+        }
+    });
 }
