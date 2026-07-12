@@ -1,14 +1,14 @@
 <?php
 /**
  * Plugin Name:       AI Editor for Divi 5
- * Plugin URI:        https://jhmediagroup.com/plugin/ai-editor-divi5
+ * Plugin URI:        https://divi5lab.com/plugins/divi-5-ai-editor
  * Description:       Let your AI assistant (Claude, ChatGPT, Cursor) read and edit Divi 5 pages with natural language — every change is validated before saving, so broken pages become impossible.
- * Version:           2.15.0
+ * Version:           3.0.0
  * Requires at least: 6.0
  * Tested up to:      7.0
  * Requires PHP:      8.1
  * Author:            JHMG
- * Author URI:        https://jhmediagroup.com
+ * Author URI:        https://divi5lab.com
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       ai-editor-divi5
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('AI_EDITOR_DIVI5_VERSION', '2.15.0');
+define('AI_EDITOR_DIVI5_VERSION', '3.0.0');
 define('AI_EDITOR_DIVI5_MIN_PHP', '8.1');
 define('AI_EDITOR_DIVI5_MIN_WP',  '6.0');
 define('AI_EDITOR_DIVI5_FILE',    __FILE__);

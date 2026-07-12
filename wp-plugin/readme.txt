@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        2.15.0
+Stable tag:        3.0.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -22,17 +22,28 @@ AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Curs
 4. The validator checks every Divi 5 block type, required attribute, and nesting rule deterministically — no AI involved.
 5. Valid layouts are saved instantly. Invalid layouts return exact violation messages so the AI self-corrects and retries.
 
-**Seven tools your AI gets**
+**What your AI gets**
 
 * `list_divi_pages` — list all pages built with Divi 5
-* `get_style_guide` — real Divi 5 structure + styling vocabulary so the AI builds styled, not plain, layouts
-* `get_landing_guide` — a conversion-focused blueprint (persuasion flow, copywriting rules, CTA strategy) so generated landing pages are strategically structured, not just pretty
-* `get_image_guide` — role-based image assignment with a keyless source toolkit (relevant photos, avatars, labeled placeholders) so pages look like finished demos, not empty templates
-* `get_section_recipes` — a library of complete, validated section patterns (hero, feature grid, split, slider, CTA, footer) the AI assembles pages from, each mapped to its persuasion stage
 * `get_page_layout` — read the current layout of any page
 * `validate_layout` — dry-run a change without saving
 * `update_page_layout` — validate then save (the live edit tool)
-* `create_page` — build a brand-new page from scratch (premium — requires a license)
+* `get_style_guide` — real Divi 5 structure + styling vocabulary so the AI builds styled, not plain, layouts
+* `get_site_guide` — blueprint for planning and building an entire multi-page site from one brief
+* `get_landing_guide` — a conversion-focused blueprint (persuasion flow, copywriting rules, CTA strategy) so generated landing pages are strategically structured, not just pretty
+* `get_image_guide` — role-based image assignment with a keyless source toolkit (relevant photos, avatars, labeled placeholders) so pages look like finished demos, not empty templates
+* `get_section_recipes` — a library of complete, validated section patterns (hero, feature grid, split, slider, CTA, footer) the AI assembles pages from, each mapped to its persuasion stage
+* `create_page` (Pro) — build a brand-new page from scratch
+* `set_front_page` (Pro) — set a page as the site's homepage
+* `set_primary_menu` (Pro) — build and assign the theme's primary navigation menu
+* `set_custom_css` (Pro) — add safe site-wide custom CSS for effects plain attributes can't express (backdrop-filter, keyframe animations, pseudo-elements)
+* `propose_php_snippet` (Pro) — draft a PHP snippet as a reviewed proposal for a human to apply; nothing is ever auto-executed
+
+**Free vs. Pro**
+
+The free tier is fully functional for editing existing Divi 5 pages: list pages, read layouts, validate, save changes, and pull every guide (style, landing, image, site) and the section recipe library.
+
+Pro unlocks whole-site building: create new pages, set the front page, build the primary menu, add site-wide custom CSS, and propose PHP snippets. Pro is an annual license — $79/year, unlimited sites — available at [https://divi5lab.com/plugins/divi-5-ai-editor](https://divi5lab.com/plugins/divi-5-ai-editor). If a license lapses, Pro features already activated on that site keep working — you just stop receiving plugin updates and support until you renew.
 
 **Compatible AI assistants**
 
@@ -44,7 +55,7 @@ AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Curs
 
 **Privacy**
 
-The plugin stores a single API key and an optional usage log in your WordPress database. No data is sent to any external server. All AI communication goes directly between your AI assistant and your WordPress site.
+The plugin stores a single API key and an optional usage log in your WordPress database. All AI communication goes directly between your AI assistant and your WordPress site — it never passes through our servers. If you enter a Pro license key, the plugin contacts divi5lab.com to activate/validate the license and to check for plugin updates; no other data leaves your site.
 
 == Installation ==
 
@@ -93,6 +104,11 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 3.0.0 =
+* Licensing now runs through divi5lab.com — annual Pro license, unlimited sites.
+* Automatic plugin updates for licensed sites.
+* Premium features: create pages, set front page, build menus, site-wide CSS, PHP proposals.
 
 = 2.15.0 =
 * Image intelligence: new get_image_guide tool (MCP + REST + OpenAPI) teaches the AI to assign the right visual to each section by role instead of dropping random placeholders everywhere. It documents a keyless, verified source toolkit — relevant keyword photos (LoremFlickr), generic/abstract (Picsum), real avatars for testimonials and team sections (Random User, Pravatar), and descriptive labeled placeholders (Placehold.co) — plus per-section rules, how to derive search keywords from the business type, stable image pinning so pages don't reshuffle, aspect-ratio sizing for even grids, and a clear fallback order. The style and landing guides and create_page / update_page_layout now point the AI to it, so generated pages look like finished premium demos rather than empty templates. (Curated API stock — Unsplash/Pexels/Pixabay — is noted as the premium, key-based find_image path.)
@@ -195,6 +211,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 * Initial release.
 
 == Upgrade Notice ==
+
+= 3.0.0 =
+Rebranded to divi5lab. Pro licensing now runs through divi5lab.com (annual license, unlimited sites) with automatic plugin updates for licensed sites. Existing free features are unchanged.
 
 = 2.1.0 =
 Adds the premium create_page feature and license activation. Existing free features are unchanged and no reconfiguration is needed.
