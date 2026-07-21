@@ -105,3 +105,26 @@ if ( ! function_exists( 'plugin_basename' ) ) {
 if ( ! function_exists( 'get_bloginfo' ) ) {
     function get_bloginfo( $key ) { return $key === 'version' ? '6.5' : ''; }
 }
+
+// ── View-layer escaping/i18n shims (identity-ish; enough to render admin views) ──
+if ( ! function_exists( 'esc_html' ) ) {
+    function esc_html( $s ) { return htmlspecialchars( (string) $s, ENT_QUOTES ); }
+}
+if ( ! function_exists( 'esc_attr' ) ) {
+    function esc_attr( $s ) { return htmlspecialchars( (string) $s, ENT_QUOTES ); }
+}
+if ( ! function_exists( 'esc_url' ) ) {
+    function esc_url( $s ) { return (string) $s; }
+}
+if ( ! function_exists( '__' ) ) {
+    function __( $s, $d = null ) { return (string) $s; }
+}
+if ( ! function_exists( 'esc_html__' ) ) {
+    function esc_html__( $s, $d = null ) { return htmlspecialchars( (string) $s, ENT_QUOTES ); }
+}
+if ( ! function_exists( 'esc_attr__' ) ) {
+    function esc_attr__( $s, $d = null ) { return htmlspecialchars( (string) $s, ENT_QUOTES ); }
+}
+if ( ! function_exists( 'esc_html_e' ) ) {
+    function esc_html_e( $s, $d = null ) { echo htmlspecialchars( (string) $s, ENT_QUOTES ); }
+}

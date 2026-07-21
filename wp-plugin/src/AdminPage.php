@@ -177,19 +177,128 @@ final class AdminPage
         ];
     }
 
-    /** Connection details + a ready-to-paste config snippet. */
-    private function connection(): array
+    /**
+     * Renders the tabbed per-assistant connection UI. Panels are NOT server-hidden;
+     * admin.js hides inactive ones on load (progressive enhancement / no-JS fallback).
+     *
+     * @param array<string, array{transport:string, snippet:?string, guide:?string, specUrl:?string}> $clients
+     */
+    public function connectCard( array $clients ): void
     {
-        $apiKey  = ApiKey::get();
-        $siteUrl = rtrim(get_site_url(), '/');
-        $mcpUrl  = $siteUrl . '/wp-json/ai-editor-divi5/v1/mcp';
-        $snippet = wp_json_encode([
-            'mcpServers' => ['ai-editor-divi5' => [
-                'url'     => $mcpUrl,
-                'headers' => ['Authorization' => "Bearer {$apiKey}"],
-            ]],
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        return ['key' => $apiKey, 'mcpUrl' => $mcpUrl, 'specUrl' => $siteUrl . '/wp-json/ai-editor-divi5/v1/openapi.json', 'snippet' => (string) $snippet];
+        $tabs = [
+            'claude'  => __( 'Claude', 'ai-editor-divi5' ),
+            'cursor'  => __( 'Cursor', 'ai-editor-divi5' ),
+            'vscode'  => __( 'VS Code', 'ai-editor-divi5' ),
+            'chatgpt' => __( 'ChatGPT', 'ai-editor-divi5' ),
+            'other'   => __( 'Other MCP client', 'ai-editor-divi5' ),
+        ];
+        ?>
+        <p class="aied-connect-reassure">
+            <strong><?php esc_html_e( 'MCP is an open standard', 'ai-editor-divi5' ); ?></strong> —
+            <?php esc_html_e( 'it works with any of these assistants. You don’t need a Claude account or subscription to use it.', 'ai-editor-divi5' ); ?>
+        </p>
+
+        <div class="aied-llm-tabs" role="tablist">
+            <?php $first = true; foreach ( $tabs as $id => $label ) : ?>
+                <button type="button"
+                        class="aied-llm-tab<?php echo $first ? ' aied-llm-tab--active' : ''; ?>"
+                        data-target="<?php echo esc_attr( $id ); ?>">
+                    <?php echo esc_html( $label ); ?>
+                </button>
+            <?php $first = false; endforeach; ?>
+        </div>
+
+        <?php foreach ( $tabs as $id => $label ) :
+            $client = $clients[ $id ] ?? [];
+            $guide  = $client['guide'] ?? null; ?>
+            <div class="aied-llm-panel" id="aied-panel-<?php echo esc_attr( $id ); ?>" role="tabpanel">
+                <?php $this->connectPanelBody( $id, $client ); ?>
+                <?php if ( $guide ) : ?>
+                    <a class="aied-guide-link" href="<?php echo esc_url( $guide ); ?>" target="_blank" rel="noopener noreferrer">
+                        <?php esc_html_e( 'Full step-by-step guide →', 'ai-editor-divi5' ); ?>
+                    </a>
+                <?php endif; ?>
+            </div>
+        <?php endforeach;
+    }
+
+    /** Renders the per-client steps + snippet (MCP) or Actions steps (ChatGPT). */
+    private function connectPanelBody( string $id, array $client ): void
+    {
+        // ChatGPT: OpenAPI Actions, not MCP.
+        if ( ( $client['transport'] ?? '' ) === 'actions' ) {
+            ?>
+            <p class="aied-note"><strong><?php esc_html_e( 'ChatGPT uses Actions, not MCP.', 'ai-editor-divi5' ); ?></strong></p>
+            <ol class="aied-steps">
+                <li><?php esc_html_e( 'In ChatGPT, go to Explore GPTs → Create (or My GPTs → Create a GPT).', 'ai-editor-divi5' ); ?></li>
+                <li><?php esc_html_e( 'Under Actions, click “Create new action”, then “Import from URL”.', 'ai-editor-divi5' ); ?></li>
+                <li><?php
+                    printf(
+                        /* translators: %s: OpenAPI spec URL */
+                        esc_html__( 'Paste your OpenAPI spec URL: %s', 'ai-editor-divi5' ),
+                        '<a href="' . esc_url( (string) ( $client['specUrl'] ?? '' ) ) . '" target="_blank" rel="noopener noreferrer">openapi.json</a>'
+                    ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- URL escaped inline.
+                ?></li>
+                <li><?php esc_html_e( 'Set Authentication to API Key, type Bearer, and paste the API key shown above.', 'ai-editor-divi5' ); ?></li>
+            </ol>
+            <p class="aied-merge-warn"><?php esc_html_e( 'Requires your site to be reachable over public HTTPS — localhost or an unreachable staging box will not work, because ChatGPT calls your site from OpenAI’s servers.', 'ai-editor-divi5' ); ?></p>
+            <?php
+            return;
+        }
+
+        // MCP clients: per-client destination steps, then the snippet + merge warning.
+        $steps = $this->mcpSteps( $id );
+        ?>
+        <ol class="aied-steps"><?php foreach ( $steps as $step ) {
+            // Each step may contain a single inline <code> span, pre-escaped in mcpSteps().
+            echo '<li>' . $step . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_html in mcpSteps.
+        } ?></ol>
+        <?php if ( ! empty( $client['snippet'] ) ) : ?>
+            <div class="aied-snippet-wrap">
+                <pre class="aied-snippet" id="snippet-<?php echo esc_attr( $id ); ?>"><?php echo esc_html( (string) $client['snippet'] ); ?></pre>
+                <button class="button button-primary aied-copy-btn" data-target="snippet-<?php echo esc_attr( $id ); ?>"><?php esc_html_e( 'Copy', 'ai-editor-divi5' ); ?></button>
+            </div>
+            <p class="aied-merge-warn"><?php esc_html_e( 'Already have MCP servers configured? Paste only the inner "ai-editor-divi5": { … } entry into your existing list — not the whole snippet — or it will not load.', 'ai-editor-divi5' ); ?></p>
+        <?php endif;
+    }
+
+    /**
+     * Per-client "where does it go" steps. Returns HTML-safe list items; any inline
+     * code is escaped here so the caller can echo them directly.
+     *
+     * @return list<string>
+     */
+    private function mcpSteps( string $id ): array
+    {
+        $code = static fn( string $s ): string => '<code>' . esc_html( $s ) . '</code>';
+        switch ( $id ) {
+            case 'claude':
+                return [
+                    esc_html__( 'Claude Desktop: open your config file —', 'ai-editor-divi5' ) . ' '
+                        . $code( '~/Library/Application Support/Claude/claude_desktop_config.json' ) . ' '
+                        . esc_html__( '(macOS) or', 'ai-editor-divi5' ) . ' '
+                        . $code( '%APPDATA%\\Claude\\claude_desktop_config.json' ) . ' ' . esc_html__( '(Windows).', 'ai-editor-divi5' ),
+                    esc_html__( 'Paste the snippet below, then fully quit and relaunch Claude Desktop (not just close the window).', 'ai-editor-divi5' ),
+                    esc_html__( 'Prefer Claude Code (CLI)? Run:', 'ai-editor-divi5' ) . ' '
+                        . $code( 'claude mcp add --transport http ai-editor-divi5 <MCP-URL> --header "Authorization: Bearer <KEY>"' ),
+                ];
+            case 'cursor':
+                return [
+                    esc_html__( 'Open Cursor Settings → MCP (or edit', 'ai-editor-divi5' ) . ' ' . $code( '.cursor/mcp.json' ) . ' ' . esc_html__( 'in your project).', 'ai-editor-divi5' ),
+                    esc_html__( 'Add the snippet below, then use Cursor’s agent mode — plain chat mode will not call the tools.', 'ai-editor-divi5' ),
+                ];
+            case 'vscode':
+                return [
+                    esc_html__( 'Open Settings → Copilot → MCP Servers (search “MCP” if the path has moved).', 'ai-editor-divi5' ),
+                    esc_html__( 'Add the snippet below, then use Copilot’s agent mode — standard chat mode will not reach the plugin.', 'ai-editor-divi5' ),
+                ];
+            case 'other':
+            default:
+                return [
+                    esc_html__( 'Add the snippet below to your assistant’s MCP configuration.', 'ai-editor-divi5' ),
+                    esc_html__( 'Works with Windsurf and any client that supports MCP Streamable HTTP.', 'ai-editor-divi5' ),
+                ];
+        }
     }
 
     // ---------------------------------------------------------------
@@ -435,37 +544,26 @@ final class AdminPage
 
     private function viewSettings(): void
     {
-        $c = $this->connection();
+        $key = ApiKey::get();
         ?>
         <div class="aied-hello"><h1><?php esc_html_e( 'Settings', 'ai-editor-divi5' ); ?></h1>
             <p><?php esc_html_e( 'Connect your AI assistant and manage your account.', 'ai-editor-divi5' ); ?></p></div>
 
         <!-- Connection -->
         <div class="aied-card">
-            <h3><?php esc_html_e( 'Connection', 'ai-editor-divi5' ); ?></h3>
+            <h3><?php esc_html_e( 'Connect your AI assistant', 'ai-editor-divi5' ); ?></h3>
             <p class="aied-muted"><?php esc_html_e( 'Your API key authorizes your AI assistant to read and edit this site. Keep it private.', 'ai-editor-divi5' ); ?></p>
             <div class="aied-key-row">
-                <code class="aied-key" id="aied-api-key" data-key="<?php echo esc_attr( $c['key'] ); ?>">••••••••••••••••••••••••</code>
+                <code class="aied-key" id="aied-api-key" data-key="<?php echo esc_attr( $key ); ?>">••••••••••••••••••••••••</code>
                 <button type="button" class="button" id="aied-toggle-key"><?php esc_html_e( 'Show', 'ai-editor-divi5' ); ?></button>
-                <button type="button" class="button button-primary" data-copy="<?php echo esc_attr( $c['key'] ); ?>"><?php esc_html_e( 'Copy', 'ai-editor-divi5' ); ?></button>
+                <button type="button" class="button button-primary" data-copy="<?php echo esc_attr( $key ); ?>"><?php esc_html_e( 'Copy', 'ai-editor-divi5' ); ?></button>
                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline">
                     <input type="hidden" name="action" value="ai_editor_divi5_regenerate_key">
                     <?php wp_nonce_field( 'ai_editor_divi5_regenerate_key' ); ?>
                     <button type="submit" class="button aied-btn-danger" onclick="return confirm('<?php echo esc_js( __( 'Regenerate the key? You will need to update your AI assistant.', 'ai-editor-divi5' ) ); ?>')"><?php esc_html_e( 'Regenerate', 'ai-editor-divi5' ); ?></button>
                 </form>
             </div>
-            <p class="aied-field-label"><?php esc_html_e( 'Add this to Claude Desktop, Cursor, or VS Code (MCP):', 'ai-editor-divi5' ); ?></p>
-            <div class="aied-snippet-wrap">
-                <pre class="aied-snippet" id="snippet-mcp"><?php echo esc_html( $c['snippet'] ); ?></pre>
-                <button class="button button-primary aied-copy-btn" data-target="snippet-mcp"><?php esc_html_e( 'Copy', 'ai-editor-divi5' ); ?></button>
-            </div>
-            <p class="aied-muted aied-note"><?php
-                printf(
-                    /* translators: %s: OpenAPI spec URL */
-                    esc_html__( 'ChatGPT / REST clients: use the OpenAPI spec at %s with Bearer auth.', 'ai-editor-divi5' ),
-                    '<a href="' . esc_url( $c['specUrl'] ) . '" target="_blank" rel="noopener noreferrer">openapi.json</a>'
-                ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- esc applied inline above.
-            ?></p>
+            <?php $this->connectCard( self::connectClients( rtrim( get_site_url(), '/' ), $key ) ); ?>
         </div>
 
         <!-- Account / License -->
