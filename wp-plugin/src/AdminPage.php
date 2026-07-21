@@ -132,6 +132,51 @@ final class AdminPage
         return ['steps' => $steps, 'done' => $done, 'total' => $total, 'pct' => (int) round($done / $total * 100)];
     }
 
+    /**
+     * Pure per-assistant connection data. No WordPress calls beyond wp_json_encode
+     * (shimmed in tests), so it is unit-testable directly with synthetic inputs.
+     *
+     * Snippet formats intentionally differ per client:
+     *  - Claude / Cursor / Other MCP clients: {"mcpServers":{...}} with a bare url.
+     *  - VS Code (mcp.json): {"servers":{...}} with "type":"http".
+     *  - ChatGPT: no MCP snippet — it connects via OpenAPI Actions (specUrl).
+     *
+     * @return array<string, array{transport:string, snippet:?string, guide:?string, specUrl:?string}>
+     */
+    public static function connectClients(string $siteUrl, string $apiKey): array
+    {
+        $siteUrl = rtrim($siteUrl, '/');
+        $mcpUrl  = $siteUrl . '/wp-json/ai-editor-divi5/v1/mcp';
+        $specUrl = $siteUrl . '/wp-json/ai-editor-divi5/v1/openapi.json';
+        $bearer  = "Bearer {$apiKey}";
+        $flags   = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES;
+
+        $mcpSnippet = (string) wp_json_encode([
+            'mcpServers' => ['ai-editor-divi5' => [
+                'url'     => $mcpUrl,
+                'headers' => ['Authorization' => $bearer],
+            ]],
+        ], $flags);
+
+        $vscodeSnippet = (string) wp_json_encode([
+            'servers' => ['ai-editor-divi5' => [
+                'type'    => 'http',
+                'url'     => $mcpUrl,
+                'headers' => ['Authorization' => $bearer],
+            ]],
+        ], $flags);
+
+        $guides = 'https://divi5lab.com/guides/';
+
+        return [
+            'claude'  => ['transport' => 'mcp',     'snippet' => $mcpSnippet,    'guide' => $guides . 'connect-claude-to-divi-5', 'specUrl' => null],
+            'cursor'  => ['transport' => 'mcp',     'snippet' => $mcpSnippet,    'guide' => $guides . 'connect-cursor-to-divi-5', 'specUrl' => null],
+            'vscode'  => ['transport' => 'mcp',     'snippet' => $vscodeSnippet, 'guide' => $guides . 'connect-cursor-to-divi-5', 'specUrl' => null],
+            'chatgpt' => ['transport' => 'actions', 'snippet' => null,           'guide' => $guides . 'connect-chatgpt-to-divi-5', 'specUrl' => $specUrl],
+            'other'   => ['transport' => 'mcp',     'snippet' => $mcpSnippet,    'guide' => null, 'specUrl' => null],
+        ];
+    }
+
     /** Connection details + a ready-to-paste config snippet. */
     private function connection(): array
     {
