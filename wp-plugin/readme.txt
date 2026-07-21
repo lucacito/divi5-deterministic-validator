@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        3.1.0
+Stable tag:        3.1.1
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -104,6 +104,10 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 3.1.1 =
+* ChatGPT: the OpenAPI spec now imports cleanly as a Custom GPT Action — operation descriptions fit ChatGPT's length limit and every response declares its shape (no more "object schema missing properties" warnings).
+* Connect screen: the ChatGPT tab now shows the full OpenAPI spec URL as copyable text (with a Copy button) instead of a linked word, so it's clear what to paste.
 
 = 3.1.0 =
 * Redesigned the connection screen into a guided, per-assistant setup — Claude, Cursor, VS Code, ChatGPT, and other MCP clients each get their own tab with exact "where does this go" steps, a copy-ready config, and a safe-merge warning.

@@ -3,7 +3,7 @@
  * Plugin Name:       AI Editor for Divi 5
  * Plugin URI:        https://divi5lab.com/plugins/divi-5-ai-editor
  * Description:       Let your AI assistant (Claude, ChatGPT, Cursor) read and edit Divi 5 pages with natural language — every change is validated before saving, so broken pages become impossible.
- * Version:           3.1.0
+ * Version:           3.1.1
  * Requires at least: 6.0
  * Tested up to:      7.0
  * Requires PHP:      8.1
