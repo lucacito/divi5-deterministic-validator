@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        3.0.0
+Stable tag:        3.1.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -104,6 +104,13 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 3.1.0 =
+* Redesigned the connection screen into a guided, per-assistant setup — Claude, Cursor, VS Code, ChatGPT, and other MCP clients each get their own tab with exact "where does this go" steps, a copy-ready config, and a safe-merge warning.
+* Made clear that MCP is an open standard — no Claude account required — and gave ChatGPT its own OpenAPI Actions path with a public-HTTPS note.
+* Added full keyboard and screen-reader (ARIA) semantics to the connection tabs.
+* Added a "More Divi tools from JHMG" section highlighting the Elementor to Divi 5 and Divi to Elementor converters.
+* Updated Pro pricing copy.
 
 = 3.0.0 =
 * Licensing now runs through divi5lab.com — annual Pro license, unlimited sites.
