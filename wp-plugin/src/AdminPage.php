@@ -484,7 +484,79 @@ final class AdminPage
                 </div>
             <?php endif; ?>
         </div>
+
+        <?php $this->converterPromoSection( true ); ?>
         <?php
+    }
+
+    // ---------------------------------------------------------------
+    // Cross-promo: JHMG's other Divi plugins (the converters)
+    // ---------------------------------------------------------------
+
+    /**
+     * The two converter plugins we cross-promote. Static, pure data — unit-testable.
+     * Upstream source of truth for names / prices / URLs:
+     * layoutlab/lib/nav/menu-data.ts (PLUGIN_MENU). Keep in sync by hand.
+     * Note: Divi→Elementor is not purchasable yet — it's a waitlist ("Coming soon").
+     *
+     * @return list<array{name:string, blurb:string, chip:string, cta:string, url:string}>
+     */
+    public static function converterPromos(): array
+    {
+        return [
+            [
+                'name'  => 'Elementor → Divi 5 Converter',
+                'blurb' => __( 'Migrate Elementor pages and kits into validated Divi 5.', 'ai-editor-divi5' ),
+                'chip'  => __( 'Free · Pro $25/yr', 'ai-editor-divi5' ),
+                'cta'   => __( 'Get it', 'ai-editor-divi5' ),
+                'url'   => 'https://divi5lab.com/plugins/elementor-to-divi-5',
+            ],
+            [
+                'name'  => 'Divi → Elementor Converter',
+                'blurb' => __( 'Batch-convert Divi sites the other way — 35+ modules mapped.', 'ai-editor-divi5' ),
+                'chip'  => __( 'Coming soon', 'ai-editor-divi5' ),
+                'cta'   => __( 'Join the waitlist', 'ai-editor-divi5' ),
+                'url'   => 'https://divi5lab.com/plugins/divi-to-elementor',
+            ],
+        ];
+    }
+
+    /**
+     * Renders the converter cross-promo. $compact = a slim Dashboard strip;
+     * otherwise a full two-card section (Upgrade/Account tab).
+     */
+    public function converterPromoSection( bool $compact ): void
+    {
+        $promos = self::converterPromos();
+        if ( $compact ) : ?>
+            <div class="aied-card aied-promo">
+                <div class="aied-card__head">
+                    <h3><?php esc_html_e( 'More Divi tools from JHMG', 'ai-editor-divi5' ); ?></h3>
+                </div>
+                <ul class="aied-promo-list">
+                    <?php foreach ( $promos as $p ) : ?>
+                        <li>
+                            <a href="<?php echo esc_url( $p['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $p['name'] ); ?></a>
+                            <span class="aied-chip"><?php echo esc_html( $p['chip'] ); ?></span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php else : ?>
+            <h3 class="aied-section-title"><?php esc_html_e( 'More Divi tools from JHMG', 'ai-editor-divi5' ); ?></h3>
+            <div class="aied-grid aied-grid--2">
+                <?php foreach ( $promos as $p ) : ?>
+                    <div class="aied-card">
+                        <div class="aied-card__head">
+                            <h4><?php echo esc_html( $p['name'] ); ?></h4>
+                            <span class="aied-chip"><?php echo esc_html( $p['chip'] ); ?></span>
+                        </div>
+                        <p class="aied-muted"><?php echo esc_html( $p['blurb'] ); ?></p>
+                        <a class="button button-primary" href="<?php echo esc_url( $p['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $p['cta'] ); ?> &rarr;</a>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif;
     }
 
     // ---------------------------------------------------------------
@@ -729,6 +801,8 @@ final class AdminPage
         <div class="aied-card">
             <?php $this->licensePanel(); ?>
         </div>
+
+        <?php $this->converterPromoSection( false ); ?>
         <?php
     }
 }

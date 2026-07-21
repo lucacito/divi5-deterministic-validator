@@ -186,3 +186,13 @@
     padding: 9px 11px; margin: 10px 0;
 }
 .aied-guide-link { display: inline-block; margin-top: 4px; font-size: 13px; }
+
+/* ── Cross-promo (other JHMG plugins) ──────────────────── */
+.aied-chip {
+    display: inline-block; font-size: 11px; font-weight: 600; color: var(--aied-muted);
+    background: #eceef4; border-radius: 999px; padding: 2px 9px; white-space: nowrap;
+}
+.aied-promo-list { margin: 6px 0 0; }
+.aied-promo-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13.5px; }
+.aied-promo-list li + li { border-top: 1px solid var(--aied-line); }
+.aied-promo-list a { font-weight: 600; }
