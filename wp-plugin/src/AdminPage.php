@@ -202,6 +202,10 @@ final class AdminPage
             <?php $first = true; foreach ( $tabs as $id => $label ) : ?>
                 <button type="button"
                         class="aied-llm-tab<?php echo $first ? ' aied-llm-tab--active' : ''; ?>"
+                        role="tab"
+                        id="aied-tab-<?php echo esc_attr( $id ); ?>"
+                        aria-controls="aied-panel-<?php echo esc_attr( $id ); ?>"
+                        aria-selected="<?php echo $first ? 'true' : 'false'; ?>"
                         data-target="<?php echo esc_attr( $id ); ?>">
                     <?php echo esc_html( $label ); ?>
                 </button>
@@ -211,7 +215,7 @@ final class AdminPage
         <?php foreach ( $tabs as $id => $label ) :
             $client = $clients[ $id ] ?? [];
             $guide  = $client['guide'] ?? null; ?>
-            <div class="aied-llm-panel" id="aied-panel-<?php echo esc_attr( $id ); ?>" role="tabpanel">
+            <div class="aied-llm-panel" id="aied-panel-<?php echo esc_attr( $id ); ?>" role="tabpanel" aria-labelledby="aied-tab-<?php echo esc_attr( $id ); ?>" tabindex="0">
                 <?php $this->connectPanelBody( $id, $client ); ?>
                 <?php if ( $guide ) : ?>
                     <a class="aied-guide-link" href="<?php echo esc_url( $guide ); ?>" target="_blank" rel="noopener noreferrer">

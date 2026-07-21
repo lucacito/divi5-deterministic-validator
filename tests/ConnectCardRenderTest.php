@@ -63,7 +63,22 @@ class ConnectCardRenderTest extends TestCase
     public function testPanelsAreNotServerHiddenForNoJsFallback(): void
     {
         // JS hides inactive panels on load; server output must not pre-hide them.
-        $this->assertStringNotContainsString('aied-llm-panel" hidden', $this->render());
-        $this->assertSame(5, substr_count($this->render(), 'aied-llm-panel'));
+        $html = $this->render();
+        $this->assertStringNotContainsString('aied-llm-panel" hidden', $html);
+        $this->assertSame(5, substr_count($html, 'aied-llm-panel'));
+    }
+
+    public function testTabsHaveAccessibleRolesAndState(): void
+    {
+        $html = $this->render();
+        // Each tab is a real ARIA tab wired to its panel; exactly one is selected.
+        foreach (['claude', 'cursor', 'vscode', 'chatgpt', 'other'] as $id) {
+            $this->assertStringContainsString('id="aied-tab-' . $id . '"', $html);
+            $this->assertStringContainsString('aria-controls="aied-panel-' . $id . '"', $html);
+            $this->assertStringContainsString('aria-labelledby="aied-tab-' . $id . '"', $html);
+        }
+        $this->assertSame(5, substr_count($html, 'role="tab"'));
+        $this->assertSame(1, substr_count($html, 'aria-selected="true"'));
+        $this->assertSame(4, substr_count($html, 'aria-selected="false"'));
     }
 }
