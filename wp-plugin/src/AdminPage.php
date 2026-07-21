@@ -236,13 +236,13 @@ final class AdminPage
             <ol class="aied-steps">
                 <li><?php esc_html_e( 'In ChatGPT, go to Explore GPTs → Create (or My GPTs → Create a GPT).', 'ai-editor-divi5' ); ?></li>
                 <li><?php esc_html_e( 'Under Actions, click “Create new action”, then “Import from URL”.', 'ai-editor-divi5' ); ?></li>
-                <li><?php
-                    printf(
-                        /* translators: %s: OpenAPI spec URL */
-                        esc_html__( 'Paste your OpenAPI spec URL: %s', 'ai-editor-divi5' ),
-                        '<a href="' . esc_url( (string) ( $client['specUrl'] ?? '' ) ) . '" target="_blank" rel="noopener noreferrer">openapi.json</a>'
-                    ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- URL escaped inline.
-                ?></li>
+                <li>
+                    <?php esc_html_e( 'Import from this OpenAPI spec URL (copy the whole thing):', 'ai-editor-divi5' ); ?>
+                    <span class="aied-spec-url-row">
+                        <code class="aied-spec-url"><?php echo esc_html( (string) ( $client['specUrl'] ?? '' ) ); ?></code>
+                        <button type="button" class="button aied-copy-inline" data-copy="<?php echo esc_attr( (string) ( $client['specUrl'] ?? '' ) ); ?>"><?php esc_html_e( 'Copy', 'ai-editor-divi5' ); ?></button>
+                    </span>
+                </li>
                 <li><?php esc_html_e( 'Set Authentication to API Key, type Bearer, and paste the API key shown above.', 'ai-editor-divi5' ); ?></li>
             </ol>
             <p class="aied-merge-warn"><?php esc_html_e( 'Requires your site to be reachable over public HTTPS — localhost or an unreachable staging box will not work, because ChatGPT calls your site from OpenAI’s servers.', 'ai-editor-divi5' ); ?></p>

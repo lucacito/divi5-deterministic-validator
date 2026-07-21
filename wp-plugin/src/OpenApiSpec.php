@@ -29,13 +29,25 @@ final class OpenApiSpec
     public function serve(WP_REST_Request $request): WP_REST_Response
     {
         $base = rtrim(get_site_url(), '/') . '/wp-json/ai-editor-divi5/v1';
+        return new WP_REST_Response(self::spec($base, AI_EDITOR_DIVI5_VERSION), 200);
+    }
 
-        $spec = [
+    /**
+     * Builds the OpenAPI 3.1 spec array. Pure (base + version injected) so it is
+     * unit-testable — notably that every operation description stays within
+     * ChatGPT Actions' 300-character limit and no response object schema is empty
+     * (ChatGPT rejects a bare `type: object` with no properties).
+     *
+     * @return array<string, mixed>
+     */
+    public static function spec(string $base, string $version): array
+    {
+        return [
             'openapi' => '3.1.0',
             'info'    => [
                 'title'       => 'AI Editor for Divi 5',
                 'description' => 'Let your AI assistant read and edit Divi 5 pages with natural language. Every change is validated before saving — broken pages become impossible.',
-                'version'     => AI_EDITOR_DIVI5_VERSION,
+                'version'     => $version,
             ],
             'servers'    => [['url' => $base]],
             'security'   => [['ApiKey' => []]],
@@ -97,7 +109,7 @@ final class OpenApiSpec
                     'post' => [
                         'operationId' => 'createPage',
                         'summary'     => 'Create a new page (premium)',
-                        'description' => 'PREMIUM: Validates the submitted layout and, if valid, creates a new page as a draft for the site owner to review and publish. Returns 402 if no active license, 422 with violations if the layout is invalid — no page is created in either case. For any image, unless the caller supplies a specific image URL, use https://picsum.photos/seed/{keyword}/{width}/{height} as the src (a stable placeholder per keyword).',
+                        'description' => 'PREMIUM: Validates the submitted layout and, if valid, creates a new page as a draft for the owner to review and publish. Returns 402 if there is no active license, or 422 with violations if the layout is invalid — no page is created in either case.',
                         'requestBody' => [
                             'required' => true,
                             'content'  => ['application/json' => ['schema' => [
@@ -125,14 +137,25 @@ final class OpenApiSpec
                         'description' => 'Returns the full Divi 5 post_content (Gutenberg block HTML) and metadata for a page.',
                         'parameters'  => [self::idParam()],
                         'responses'   => [
-                            '200' => ['description' => 'Page layout', 'content' => ['application/json' => ['schema' => ['type' => 'object']]]],
+                            '200' => ['description' => 'Page layout', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'post_id'      => ['type' => 'integer'],
+                                    'post_title'   => ['type' => 'string'],
+                                    'post_status'  => ['type' => 'string'],
+                                    'post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML'],
+                                    'format'       => ['type' => 'string'],
+                                    'divi_version' => ['type' => 'string'],
+                                ],
+                                'additionalProperties' => true,
+                            ]]]],
                             '404' => ['description' => 'Page not found'],
                         ],
                     ],
                     'put' => [
                         'operationId' => 'updatePageLayout',
                         'summary'     => 'Validate and save a page layout',
-                        'description' => 'Validates the submitted layout and saves it only if all checks pass. Returns 422 with violations if the layout is invalid — the page is NOT updated. For any image, unless the caller supplies a specific image URL, use https://picsum.photos/seed/{keyword}/{width}/{height} as the src (a stable placeholder per keyword).',
+                        'description' => 'Validates the submitted layout and saves it only if all checks pass. Returns 422 with violations if the layout is invalid — the page is NOT updated.',
                         'parameters'  => [self::idParam()],
                         'requestBody' => self::postContentBody(),
                         'responses'   => [
@@ -165,7 +188,7 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'getLandingGuide',
                         'summary'     => 'Get the conversion-focused landing page blueprint',
-                        'description' => 'Strategic blueprint for a single landing page that converts: the persuasion flow (hero → problem → solution → benefits → social proof → how-it-works → features → FAQ → final CTA), how to adapt structure to the business type/audience/goal, copywriting rules, and CTA placement. Call before building or restyling a marketing page.',
+                        'description' => 'Strategic blueprint for a landing page that converts: the persuasion flow (hero, problem, solution, benefits, social proof, features, FAQ, final CTA), how to adapt it to the business and audience, plus copywriting and CTA-placement rules. Call before building a marketing page.',
                         'responses'   => ['200' => ['description' => 'The blueprint (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
                     ],
                 ],
@@ -173,7 +196,7 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'getImageGuide',
                         'summary'     => 'Get the image-intelligence guide',
-                        'description' => 'How to assign the right visual to each section by role using keyless, verified sources: relevant photos (LoremFlickr), generic/abstract (Picsum), avatars (Random User, Pravatar), and labeled placeholders (Placehold.co). Covers per-section rules, keyword derivation, stable pinning, aspect-ratio sizing, and the fallback order. Call before choosing any image src.',
+                        'description' => 'How to assign the right visual to each section by role using keyless sources (LoremFlickr, Picsum, Random User and Pravatar avatars, Placehold.co). Covers per-section rules, keyword derivation, stable pinning, and sizing. Call before choosing any image src.',
                         'responses'   => ['200' => ['description' => 'The guide (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
                     ],
                 ],
@@ -202,7 +225,16 @@ final class OpenApiSpec
                         'description' => 'Library of complete, validated Divi 5 section patterns (hero, feature grids, split, slider, CTA, footer). With no query, returns the catalog of recipe names; pass ?name=<recipe> to get that section\'s full block markup to copy and fill.',
                         'parameters'  => [['name' => 'name', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Recipe name (omit to list all)']]],
                         'responses'   => [
-                            '200' => ['description' => 'Catalog or a single recipe', 'content' => ['application/json' => ['schema' => ['type' => 'object']]]],
+                            '200' => ['description' => 'Catalog or a single recipe', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'catalog' => ['type' => 'object', 'additionalProperties' => true, 'description' => 'Recipe names to summaries (when listing)'],
+                                    'names'   => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'All recipe names (when listing)'],
+                                    'name'    => ['type' => 'string', 'description' => 'The requested recipe name (single lookup)'],
+                                    'markup'  => ['type' => 'string', 'description' => 'Block markup for the requested recipe'],
+                                ],
+                                'additionalProperties' => true,
+                            ]]]],
                             '404' => ['description' => 'Unknown recipe name'],
                         ],
                     ],
@@ -221,8 +253,6 @@ final class OpenApiSpec
                 ],
             ],
         ];
-
-        return new WP_REST_Response($spec, 200);
     }
 
     private static function idParam(): array
