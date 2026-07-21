@@ -43,7 +43,7 @@ AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Curs
 
 The free tier is fully functional for editing existing Divi 5 pages: list pages, read layouts, validate, save changes, and pull every guide (style, landing, image, site) and the section recipe library.
 
-Pro unlocks whole-site building: create new pages, set the front page, build the primary menu, add site-wide custom CSS, and propose PHP snippets. Pro is an annual license — $79/year, unlimited sites — available at [https://divi5lab.com/plugins/divi-5-ai-editor](https://divi5lab.com/plugins/divi-5-ai-editor). If a license lapses, Pro features already activated on that site keep working — you just stop receiving plugin updates and support until you renew.
+Pro unlocks whole-site building: create new pages, set the front page, build the primary menu, add site-wide custom CSS, and propose PHP snippets. Pro is an annual license — $30/year, unlimited sites — available at [https://divi5lab.com/plugins/divi-5-ai-editor](https://divi5lab.com/plugins/divi-5-ai-editor). If a license lapses, Pro features already activated on that site keep working — you just stop receiving plugin updates and support until you renew.
 
 **Compatible AI assistants**
 
