@@ -86,8 +86,8 @@ final class AdminPage
 
     public function handleActivateLicense(): void
     {
-        $this->guard('ai_editor_divi5_activate_license');
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- opaque key, trimmed in Licensing.
+        $this->guard('ai_editor_divi5_activate_license'); // guard() verifies the nonce via check_admin_referer().
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.NonceVerification.Missing -- opaque key, trimmed in Licensing; nonce verified in guard().
         $key    = sanitize_text_field( wp_unslash( $_POST['license_key'] ?? '' ) );
         $result = $key !== '' ? Licensing::activate( $key ) : [ 'ok' => false, 'error' => 'invalid_request' ];
         $this->redirect('upgrade', $result['ok'] ? 'license_activated' : 'license_invalid');
@@ -102,8 +102,8 @@ final class AdminPage
 
     public function handleDeleteProposal(): void
     {
-        $this->guard('ai_editor_divi5_delete_proposal');
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- opaque id, sanitized.
+        $this->guard('ai_editor_divi5_delete_proposal'); // guard() verifies the nonce via check_admin_referer().
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.NonceVerification.Missing -- opaque id, sanitized; nonce verified in guard().
         PhpProposals::delete( sanitize_text_field( wp_unslash( $_POST['proposal_id'] ?? '' ) ) );
         $this->redirect('settings', 'proposal_deleted');
     }
@@ -657,17 +657,17 @@ final class AdminPage
                     <p><strong><?php esc_html_e( 'No proposals yet', 'ai-editor-divi5' ); ?></strong></p>
                     <p class="aied-muted"><?php esc_html_e( 'Ask your AI to build a PHP feature (e.g. a custom post type) and it appears here for review.', 'ai-editor-divi5' ); ?></p>
                 </div>
-            <?php else : foreach ( $proposals as $p ) : $pid = esc_attr( $p['id'] ); ?>
+            <?php else : foreach ( $proposals as $p ) : $pid = $p['id']; ?>
                 <div class="aied-proposal">
                     <h4><?php echo esc_html( $p['title'] ); ?></h4>
                     <p class="aied-muted"><?php echo esc_html( $p['description'] ); ?></p>
                     <div class="aied-snippet-wrap">
-                        <pre class="aied-snippet" id="proposal-<?php echo $pid; ?>"><?php echo esc_html( $p['code'] ); ?></pre>
-                        <button class="button button-primary aied-copy-btn" data-target="proposal-<?php echo $pid; ?>"><?php esc_html_e( 'Copy', 'ai-editor-divi5' ); ?></button>
+                        <pre class="aied-snippet" id="proposal-<?php echo esc_attr( $pid ); ?>"><?php echo esc_html( $p['code'] ); ?></pre>
+                        <button class="button button-primary aied-copy-btn" data-target="proposal-<?php echo esc_attr( $pid ); ?>"><?php esc_html_e( 'Copy', 'ai-editor-divi5' ); ?></button>
                     </div>
                     <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                         <input type="hidden" name="action" value="ai_editor_divi5_delete_proposal">
-                        <input type="hidden" name="proposal_id" value="<?php echo $pid; ?>">
+                        <input type="hidden" name="proposal_id" value="<?php echo esc_attr( $pid ); ?>">
                         <?php wp_nonce_field( 'ai_editor_divi5_delete_proposal' ); ?>
                         <button type="submit" class="button aied-btn-danger" onclick="return confirm('<?php echo esc_js( __( 'Delete this proposal?', 'ai-editor-divi5' ) ); ?>')"><?php esc_html_e( 'Delete', 'ai-editor-divi5' ); ?></button>
                     </form>

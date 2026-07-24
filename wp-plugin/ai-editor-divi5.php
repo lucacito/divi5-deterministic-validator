@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('AI_EDITOR_DIVI5_VERSION', '3.0.0');
+define('AI_EDITOR_DIVI5_VERSION', '3.1.1');
 define('AI_EDITOR_DIVI5_MIN_PHP', '8.1');
 define('AI_EDITOR_DIVI5_MIN_WP',  '6.0');
 define('AI_EDITOR_DIVI5_FILE',    __FILE__);
@@ -102,12 +102,10 @@ add_action('rest_api_init', function (): void {
 });
 
 // ---------------------------------------------------------------
-// Licensing: WP-native update checks + periodic validation + notices
+// Licensing: periodic validation + admin notices.
+// No self-update hook — this plugin is distributed on WordPress.org,
+// which delivers all updates. Premium features unlock via license only.
 // ---------------------------------------------------------------
-
-add_filter('pre_set_site_transient_update_plugins', static function ($transient) {
-    return AiEditorDivi5\WP\Licensing::client()->inject_update($transient);
-});
 
 if (is_admin()) {
     (new AiEditorDivi5\WP\AdminPage())->register();
