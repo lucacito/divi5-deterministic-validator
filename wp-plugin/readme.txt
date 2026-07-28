@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.0
-Stable tag:        3.1.1
+Stable tag:        3.2.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -104,6 +104,10 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. The validator blocking an invalid layout and returning violation details to the AI.
 
 == Changelog ==
+
+= 3.2.0 =
+* New: **surgical page edits** — ask your AI to change one thing (an email address, phone number, link, price, or line of copy) and it updates just that text without rebuilding the whole page. Available in both MCP (edit_page_content) and the ChatGPT/OpenAPI action (POST /pages/{id}/edit). The edit is an exact find-and-replace, re-validated before saving; if the text is not found or matches more than one place, the edit is refused so nothing unrelated changes (pass expect_count to replace several deliberately).
+* Fixed: listing Divi 5 pages could fail in ChatGPT with "something went wrong" when the connected API key's owner lacked page-edit permissions — page links are now always returned as text, so the response always matches the spec.
 
 = 3.1.1 =
 * ChatGPT: the OpenAPI spec now imports cleanly as a Custom GPT Action — operation descriptions fit ChatGPT's length limit and every response declares its shape (no more "object schema missing properties" warnings).

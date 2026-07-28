@@ -166,6 +166,32 @@ final class OpenApiSpec
                         ],
                     ],
                 ],
+                '/pages/{id}/edit' => [
+                    'post' => [
+                        'operationId' => 'editPageContent',
+                        'summary'     => 'Surgically edit page text (find/replace)',
+                        'description' => 'Change one small part of a page by exact find-and-replace, without resending the whole layout (e.g. an email, phone, link, or line of copy). "find" must match once unless expect_count is set. Returns 422 and leaves the page unchanged if find is missing, ambiguous, or would break validation.',
+                        'parameters'  => [self::idParam()],
+                        'requestBody' => [
+                            'required' => true,
+                            'content'  => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'required'   => ['find', 'replace'],
+                                'properties' => [
+                                    'find'         => ['type' => 'string',  'description' => 'Exact text to find (verbatim; include surrounding text so it is unique)'],
+                                    'replace'      => ['type' => 'string',  'description' => 'Text to replace it with'],
+                                    'expect_count' => ['type' => 'integer', 'description' => 'Optional: number of matches to replace (must equal the number found)'],
+                                ],
+                            ]]],
+                        ],
+                        'responses'   => [
+                            '200' => ['description' => 'Edit saved'],
+                            '400' => ['description' => 'Missing find or replace'],
+                            '404' => ['description' => 'Page not found'],
+                            '422' => ['description' => 'Find not found, ambiguous, or edit would invalidate — page unchanged', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/ValidationResult']]]],
+                        ],
+                    ],
+                ],
                 '/style-guide' => [
                     'get' => [
                         'operationId' => 'getStyleGuide',

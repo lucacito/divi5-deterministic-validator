@@ -56,6 +56,14 @@ final class RestController
             'args'                => ['id' => ['validate_callback' => fn($v) => is_numeric($v)]],
         ]);
 
+        // POST /pages/{id}/edit — surgical exact find/replace (no full-layout resend)
+        register_rest_route(self::NS, '/pages/(?P<id>\d+)/edit', [
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'edit_page'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+            'args'                => ['id' => ['validate_callback' => fn($v) => is_numeric($v)]],
+        ]);
+
         // POST /validate — validate a layout without saving
         register_rest_route(self::NS, '/validate', [
             'methods'             => WP_REST_Server::CREATABLE,
@@ -185,12 +193,17 @@ final class RestController
             ],
         ]);
 
+        // Coerce link/edit_link to strings: get_permalink() can return false and
+        // get_edit_post_link() returns null when the API-key owner lacks edit
+        // caps. The OpenAPI schema (and ChatGPT's response validator) require a
+        // string here — a null/false emits invalid JSON and ChatGPT then shows a
+        // generic "something went wrong" for an otherwise-successful call.
         $pages = array_map(fn(\WP_Post $p) => [
             'id'         => $p->ID,
             'title'      => get_the_title($p),
             'status'     => $p->post_status,
-            'link'       => get_permalink($p),
-            'edit_link'  => get_edit_post_link($p->ID, 'raw'),
+            'link'       => (string) get_permalink($p),
+            'edit_link'  => (string) get_edit_post_link($p->ID, 'raw'),
             'divi_meta'  => [
                 '_et_pb_use_divi_5'  => get_post_meta($p->ID, '_et_pb_use_divi_5', true),
                 '_et_pb_use_builder' => get_post_meta($p->ID, '_et_pb_use_builder', true),
@@ -269,6 +282,70 @@ final class RestController
         return new WP_REST_Response([
             'saved'      => true,
             'valid'      => true,
+            'violations' => [],
+            'page'       => $this->build_layout_envelope($post),
+        ], 200);
+    }
+
+    public function edit_page(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        $id   = (int) $request->get_param('id');
+        $post = get_post($id);
+
+        if (!$post || $post->post_type !== 'page') {
+            return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
+        }
+        if (!current_user_can('edit_post', $id)) {
+            return new WP_Error('forbidden', "You do not have permission to edit page $id.", ['status' => 403]);
+        }
+
+        $body    = $request->get_json_params();
+        $find    = isset($body['find'])    && is_string($body['find'])    ? $body['find']    : '';
+        $replace = isset($body['replace']) && is_string($body['replace']) ? $body['replace'] : '';
+        if (!isset($body['find']) || !isset($body['replace'])) {
+            return new WP_Error('missing_field', 'Request body must include "find" and "replace" strings.', ['status' => 400]);
+        }
+        $expect = (isset($body['expect_count']) && $body['expect_count'] !== null && $body['expect_count'] !== '')
+            ? (int) $body['expect_count']
+            : null;
+
+        $edit = PageEditor::apply($post->post_content, $find, $replace, $expect);
+
+        if (!$edit['ok']) {
+            UsageTracker::log('edit_page', $id, 'error');
+            return new WP_REST_Response([
+                'saved'   => false,
+                'matches' => $edit['count'],
+                'message' => $edit['error'],
+            ], 422);
+        }
+
+        // Same safety gate as update_page — the edited content must still validate.
+        $result = (new Validator())->validateContent($edit['content']);
+        if (!$result->isValid()) {
+            UsageTracker::log('edit_page', $id, 'invalid', count($result->violations()));
+            return new WP_REST_Response([
+                'saved'      => false,
+                'valid'      => false,
+                'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
+                'message'    => 'Edit would make the layout invalid. Page was NOT updated.',
+            ], 422);
+        }
+
+        // wp_slash because wp_update_post runs wp_unslash internally (see update_page).
+        $updated = wp_update_post(wp_slash(['ID' => $id, 'post_content' => $edit['content']]), true);
+        if (is_wp_error($updated)) {
+            return new WP_Error('update_failed', $updated->get_error_message(), ['status' => 500]);
+        }
+
+        UsageTracker::log('edit_page', $id, 'valid');
+
+        $post->post_content = $edit['content'];
+
+        return new WP_REST_Response([
+            'saved'      => true,
+            'valid'      => true,
+            'replaced'   => $edit['count'],
             'violations' => [],
             'page'       => $this->build_layout_envelope($post),
         ], 200);

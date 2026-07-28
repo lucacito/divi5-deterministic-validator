@@ -200,6 +200,20 @@ final class McpHandler
                 ],
             ],
             [
+                'name'        => 'edit_page_content',
+                'description' => 'Make a small, surgical edit to an existing page WITHOUT re-sending the whole layout: an exact find-and-replace on the page\'s stored content. Use this for changing an email, phone number, link, price, or a line of copy — never rebuild the full page for a tiny change. "find" must match exactly once unless you set expect_count to the number of matches. The result is re-validated before saving; if "find" is empty, not found, or ambiguous, nothing is changed.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'find'         => ['type' => 'string',  'description' => 'Exact text to find (verbatim, including any surrounding markup needed to make it unique)'],
+                        'replace'      => ['type' => 'string',  'description' => 'Text to replace it with'],
+                        'expect_count' => ['type' => 'integer', 'description' => 'Optional: how many matches to replace (must equal the number found). Omit to require a single unique match.'],
+                    ],
+                    'required' => ['page_id', 'find', 'replace'],
+                ],
+            ],
+            [
                 'name'        => 'create_page',
                 'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the page is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src (see get_image_guide for the right keyless source per role; picsum /seed/ is the generic fallback).',
                 'inputSchema' => [
@@ -234,6 +248,7 @@ final class McpHandler
             'get_page_layout'    => $this->toolGetLayout($id, $arguments),
             'validate_layout'    => $this->toolValidate($id, $arguments),
             'update_page_layout' => $this->toolUpdate($id, $arguments),
+            'edit_page_content'  => $this->toolEditContent($id, $arguments),
             'create_page'        => $this->toolCreatePage($id, $arguments),
             default              => $this->rpcError($id, -32602, "Unknown tool: {$name}"),
         };
@@ -368,6 +383,71 @@ final class McpHandler
                 'saved' => true,
                 'valid' => true,
                 'page'  => ['id' => $pageId, 'title' => get_the_title($pageId)],
+            ])]],
+        ]);
+    }
+
+    private function toolEditContent(mixed $id, array $args): WP_REST_Response
+    {
+        $pageId  = (int)    ($args['page_id'] ?? 0);
+        $find    = (string) ($args['find']    ?? '');
+        $replace = (string) ($args['replace'] ?? '');
+        $expect  = (array_key_exists('expect_count', $args) && $args['expect_count'] !== null)
+            ? (int) $args['expect_count']
+            : null;
+        $post = $pageId ? get_post($pageId) : null;
+
+        if (!$post || $post->post_type !== 'page') {
+            return $this->rpcError($id, -32602, "Page {$pageId} not found.");
+        }
+        if (!current_user_can('edit_post', $pageId)) {
+            return $this->rpcError($id, -32602, "You do not have permission to edit page {$pageId}.");
+        }
+
+        $edit = PageEditor::apply($post->post_content, $find, $replace, $expect);
+
+        if (!$edit['ok']) {
+            UsageTracker::log('edit_content', $pageId, 'error');
+            return $this->rpcResult($id, [
+                'content' => [['type' => 'text', 'text' => json_encode([
+                    'saved'   => false,
+                    'matches' => $edit['count'],
+                    'message' => $edit['error'],
+                ])]],
+                'isError' => true,
+            ]);
+        }
+
+        // A find/replace still has to clear the deterministic validator — the
+        // same gate as update_page_layout — before anything is written.
+        $result = (new Validator())->validateContent($edit['content']);
+        if (!$result->isValid()) {
+            UsageTracker::log('edit_content', $pageId, 'invalid', count($result->violations()));
+            return $this->rpcResult($id, [
+                'content' => [['type' => 'text', 'text' => json_encode([
+                    'saved'      => false,
+                    'valid'      => false,
+                    'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
+                ])]],
+                'isError' => true,
+            ]);
+        }
+
+        // wp_slash: wp_update_post runs wp_unslash internally (see toolUpdate).
+        $updated = wp_update_post(wp_slash(['ID' => $pageId, 'post_content' => $edit['content']]), true);
+        if (is_wp_error($updated)) {
+            UsageTracker::log('edit_content', $pageId, 'error');
+            return $this->rpcError($id, -32603, $updated->get_error_message());
+        }
+
+        UsageTracker::log('edit_content', $pageId, 'valid');
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => json_encode([
+                'saved'    => true,
+                'valid'    => true,
+                'replaced' => $edit['count'],
+                'page'     => ['id' => $pageId, 'title' => get_the_title($pageId)],
             ])]],
         ]);
     }
