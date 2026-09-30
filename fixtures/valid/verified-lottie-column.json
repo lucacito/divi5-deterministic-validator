@@ -1,0 +1,8 @@
+{
+    "source": "render-verified",
+    "format": "gutenberg-blocks",
+    "divi_version": "5.14.0",
+    "post_title": "Verified lottie (column)",
+    "post_status": "draft",
+    "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.14.0\"} --><!-- wp:divi/row {\"builderVersion\":\"5.14.0\"} --><!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.14.0\"} --><!-- wp:divi/lottie {\"builderVersion\":\"5.14.0\"} /--><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+}

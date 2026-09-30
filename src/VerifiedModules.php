@@ -12,13 +12,73 @@ final class VerifiedModules
 {
     public const DIVI_VERSION = '5.14.0';
 
-    public const LEAF = [];
+    public const LEAF = [
+        'divi/charts',
+        'divi/comments',
+        'divi/dropdown',
+        'divi/filterable-portfolio',
+        'divi/fullwidth-code',
+        'divi/fullwidth-image',
+        'divi/fullwidth-menu',
+        'divi/fullwidth-portfolio',
+        'divi/fullwidth-post-content',
+        'divi/fullwidth-post-slider',
+        'divi/fullwidth-post-title',
+        'divi/link',
+        'divi/lottie',
+        'divi/map-pin',
+        'divi/portfolio',
+        'divi/post-content',
+        'divi/post-filter-item',
+        'divi/post-slider',
+        'divi/post-title',
+        'divi/slide',
+        'divi/svg',
+        'divi/table-of-contents',
+        'divi/tooltip',
+        'divi/video-slider-item',
+    ];
 
-    public const STRUCTURAL = [];
+    public const STRUCTURAL = [
+        'divi/fullwidth-map',
+        'divi/fullwidth-slider',
+        'divi/post-filter',
+        'divi/video-slider',
+    ];
 
-    public const COLUMN_CHILDREN = [];
+    public const COLUMN_CHILDREN = [
+        'divi/charts',
+        'divi/comments',
+        'divi/dropdown',
+        'divi/filterable-portfolio',
+        'divi/fullwidth-code',
+        'divi/fullwidth-image',
+        'divi/fullwidth-map',
+        'divi/fullwidth-menu',
+        'divi/fullwidth-portfolio',
+        'divi/fullwidth-post-content',
+        'divi/fullwidth-post-slider',
+        'divi/fullwidth-post-title',
+        'divi/fullwidth-slider',
+        'divi/link',
+        'divi/lottie',
+        'divi/portfolio',
+        'divi/post-content',
+        'divi/post-filter',
+        'divi/post-slider',
+        'divi/post-title',
+        'divi/svg',
+        'divi/table-of-contents',
+        'divi/tooltip',
+        'divi/video-slider',
+    ];
 
     public const SECTION_CHILDREN = [];
 
-    public const CHILDREN = [];
+    public const CHILDREN = [
+        'divi/fullwidth-map' => ['divi/map-pin'],
+        'divi/fullwidth-slider' => ['divi/slide'],
+        'divi/post-filter' => ['divi/post-filter-item'],
+        'divi/video-slider' => ['divi/video-slider-item'],
+    ];
 }
