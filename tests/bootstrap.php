@@ -47,6 +47,11 @@ if ( ! function_exists( 'wp_parse_url' ) ) {
         return parse_url( $url, $component );
     }
 }
+if ( ! function_exists( 'wp_http_validate_url' ) ) {
+    function wp_http_validate_url( $url ) {
+        return false !== filter_var( $url, FILTER_VALIDATE_URL ) ? $url : false;
+    }
+}
 
 foreach ( [ 'MINUTE_IN_SECONDS' => 60, 'HOUR_IN_SECONDS' => 3600, 'DAY_IN_SECONDS' => 86400 ] as $c => $v ) {
     if ( ! defined( $c ) ) define( $c, $v );

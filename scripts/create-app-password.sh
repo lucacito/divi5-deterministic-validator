@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# create-app-password.sh — generate a WordPress Application Password for the MCP server
+# create-app-password.sh — generate a WordPress Application Password for REST/API testing
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -25,13 +25,11 @@ echo ""
 echo "  User:     $WP_USER"
 echo "  Password: $APP_PASS"
 echo ""
-echo "  Add to your MCP server config or .env:"
+echo "  Use with the REST API (Basic auth) or your .env:"
 echo ""
 echo "    WP_URL=http://localhost:${WP_PORT:-8181}"
 echo "    WP_USER=$WP_USER"
 echo "    WP_APP_PASSWORD=$APP_PASS"
 echo ""
-echo "  Or run: make mcp-server"
-echo "  Then add to Claude Desktop config with the password above."
 echo "================================================================"
 echo ""

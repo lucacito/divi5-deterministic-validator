@@ -103,9 +103,23 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- Validator MVP proven; plugin shipped through v2.14.0.
-- Generation is guidance-driven (style + landing + site guides, section recipes),
-  gated by the deterministic validator. v2.14.0 added the conversion-focused
-  `get_landing_guide` and mapped every recipe to a persuasion stage.
-- Header/footer are the active theme's (nav menu drives the header); global
-  Theme Builder header/footer templates are a later phase.
+- Validator MVP proven; plugin at v3.3.0, being prepared for its first
+  WordPress.org submission (freemium single build: free tier + Pro licence via
+  divi5lab.com). Never submitted yet.
+- Generation is guidance-driven (style, landing, image and site guides, 17
+  section recipes), gated by the deterministic validator. `edit_page_content`
+  (v3.2.0) does surgical find-and-replace edits.
+- `wp-plugin/src/Licensing/LicenseClient.php` is a **WP.org variant** of the
+  shared canonical client (layoutlab repo): the updater code is removed here
+  because Plugin Check bans it. Don't re-sync the updater into this copy.
+  Plugin Check (run in the Docker env) is clean at 3.3.0.
+- `wporg-assets/` holds the WordPress.org directory art (icon, banner, 3 real
+  screenshots, API key masked). It is NOT part of the plugin zip; it is uploaded
+  to the WP.org SVN `assets/` folder at submission. Retake screenshots with the
+  masking script approach (hide notices, mask key/URL) when the admin UI changes.
+- The old standalone `mcp-server/` (Node) was removed in 3.3.0: the plugin's
+  built-in HTTP MCP endpoint is the only supported connection path.
+- Roadmap: 3.3.0 cleanup + WP.org submission; 3.4.0 re-export against the
+  newest Divi 5 and close schema gaps; 3.5.0+ differentiators (undo/revision
+  history, preview-before-save, Theme Builder header/footer, global presets).
+- Header/footer are the active theme's (nav menu drives the header).

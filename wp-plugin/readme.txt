@@ -2,8 +2,8 @@
 Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
-Tested up to:      7.0
-Stable tag:        3.2.0
+Tested up to:      7.1
+Stable tag:        3.3.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -43,7 +43,7 @@ AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Curs
 
 The free tier is fully functional for editing existing Divi 5 pages: list pages, read layouts, validate, save changes, and pull every guide (style, landing, image, site) and the section recipe library.
 
-Pro unlocks whole-site building: create new pages, set the front page, build the primary menu, add site-wide custom CSS, and propose PHP snippets. Pro is an annual license — $30/year, unlimited sites — available at [https://divi5lab.com/plugins/divi-5-ai-editor](https://divi5lab.com/plugins/divi-5-ai-editor). If a license lapses, Pro features already activated on that site keep working — you just stop receiving plugin updates and support until you renew.
+Pro unlocks whole-site building: create new pages, set the front page, build the primary menu, add site-wide custom CSS, and propose PHP snippets. Pro is an annual license — $30/year, unlimited sites — available at [https://divi5lab.com/plugins/divi-5-ai-editor](https://divi5lab.com/plugins/divi-5-ai-editor). If a license lapses, Pro features already activated on that site keep working — you just stop receiving support until you renew. Plugin updates themselves are delivered through WordPress.org.
 
 **Compatible AI assistants**
 
@@ -55,7 +55,18 @@ Pro unlocks whole-site building: create new pages, set the front page, build the
 
 **Privacy**
 
-The plugin stores a single API key and an optional usage log in your WordPress database. All AI communication goes directly between your AI assistant and your WordPress site — it never passes through our servers. If you enter a Pro license key, the plugin contacts divi5lab.com to activate/validate the license and to check for plugin updates; no other data leaves your site.
+The plugin stores a single API key and an optional usage log in your WordPress database. All AI communication goes directly between your AI assistant and your WordPress site — it never passes through our servers. Nothing is sent anywhere unless you enter a Pro license key. See "External services" below.
+
+== External services ==
+
+This plugin connects to one external service, and only if you enter a Pro license key: the **divi5lab.com licensing API** (https://divi5lab.com), operated by the plugin author.
+
+* **What it is used for:** activating, validating and deactivating your Pro license.
+* **What is sent:** your license key, your site's URL, the plugin's product slug, and the plugin and WordPress version numbers. This happens when you activate or deactivate a key and periodically to re-validate it. Nothing about your pages, content, API key or AI conversations is sent.
+* **When:** only after a license key has been entered. Free-tier use never contacts divi5lab.com.
+* License terms, refunds and privacy policy: https://divi5lab.com/license (privacy: https://divi5lab.com/license#privacy)
+
+Your AI assistant talks directly to your own WordPress site; that traffic never passes through divi5lab.com.
 
 == Installation ==
 
@@ -99,11 +110,16 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 
 == Screenshots ==
 
-1. The Settings page — API key, connection instructions, and usage stats side by side.
-2. Claude Desktop connected and editing a Divi 5 page from a plain-English prompt.
-3. The validator blocking an invalid layout and returning violation details to the AI.
+1. The dashboard — connection status, setup progress and your results at a glance.
+2. Connect your AI assistant — one API key and copy-paste setup for Claude, Cursor, VS Code, ChatGPT or any MCP client.
+3. Features — what's free, and what Pro adds.
 
 == Changelog ==
+
+= 3.3.0 =
+* Prepared for the WordPress.org directory: plugin updates now come from WordPress.org; the readme documents the one external service (Pro license checks).
+* Removed all self-update code from the license client (WordPress.org hosts updates). Licence activation and Pro gating are unchanged.
+* Verified on WordPress 7.1 and Divi 5.14.0.
 
 = 3.2.0 =
 * New: **surgical page edits** — ask your AI to change one thing (an email address, phone number, link, price, or line of copy) and it updates just that text without rebuilding the whole page. Available in both MCP (edit_page_content) and the ChatGPT/OpenAPI action (POST /pages/{id}/edit). The edit is an exact find-and-replace, re-validated before saving; if the text is not found or matches more than one place, the edit is refused so nothing unrelated changes (pass expect_count to replace several deliberately).
@@ -226,6 +242,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 * Initial release.
 
 == Upgrade Notice ==
+
+= 3.3.0 =
+Maintenance release: WordPress.org readiness and license-client hardening. No reconfiguration needed.
 
 = 3.0.0 =
 Rebranded to divi5lab. Pro licensing now runs through divi5lab.com (annual license, unlimited sites) with automatic plugin updates for licensed sites. Existing free features are unchanged.

@@ -3,6 +3,9 @@
  * JHMG License Client — CANONICAL COPY.
  * Source of truth: layoutlab repo, lib/license-server/php-client/class-license-client.php
  * Synced into Pro plugins via scripts/sync-license-client.sh — DO NOT edit the plugin copies.
+ * WP.ORG VARIANT (AI Editor for Divi 5): the update-check/updater code (inject_update and
+ * helpers) is deliberately removed here — WordPress.org bans self-updaters (Plugin Check:
+ * plugin_updater_detected). Do not re-sync the updater into this copy.
  * Constructor-parameterized per product; see sync script for consumers.
  * API contract (frozen): /api/license/{activate,validate,deactivate}, /api/plugin/update-check
  * Error codes: invalid_key | product_mismatch | license_not_usable | rate_limited | invalid_request
@@ -22,12 +25,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class LicenseClient {
     private const CACHE_TTL          = DAY_IN_SECONDS;
     private const GRACE_TTL          = 3 * DAY_IN_SECONDS;
-    private const UPDATE_CHECK_TTL   = 6 * HOUR_IN_SECONDS;
 
     private string $opt_key;
     private string $opt_state;
-    private string $opt_blocked;
-    private string $update_check_prefix;
 
     public function __construct(
         private string $product,
@@ -40,8 +40,6 @@ class LicenseClient {
     ) {
         $this->opt_key             = "{$this->option_prefix}_license_key";
         $this->opt_state           = "{$this->option_prefix}_license_state";
-        $this->opt_blocked         = "{$this->option_prefix}_update_blocked";
-        $this->update_check_prefix = "{$this->option_prefix}_update_check_";
     }
 
     public function get_key(): ?string { $k = get_option( $this->opt_key, '' ); return $k !== '' ? $k : null; }
@@ -70,15 +68,11 @@ class LicenseClient {
         }
         delete_option( $this->opt_key );
         delete_option( $this->opt_state );
-        delete_option( $this->opt_blocked );
+        delete_option( $this->option_prefix . '_update_blocked' ); // legacy option from the pre-WP.org updater
     }
 
     public function refresh( bool $force = false ): void {
         $key = $this->get_key();
-        if ( $force ) {
-            // Busts the update-check cache too, so "Check again" always hits the network.
-            delete_transient( $this->update_check_transient_key( $key ) );
-        }
         if ( ! $key ) { return; }
         $state = $this->get_state();
         $age   = time() - (int) ( $state['checked_at'] ?? 0 );
@@ -107,61 +101,6 @@ class LicenseClient {
         }
     }
 
-    public function inject_update( $transient ) {
-        $key        = $this->get_key();
-        $cache_key  = $this->update_check_transient_key( $key );
-        $body       = get_transient( $cache_key );
-
-        if ( false === $body ) {
-            $url = sprintf(
-                '%s/api/plugin/update-check?product=%s&version=%s%s',
-                $this->api_base,
-                rawurlencode( $this->product ),
-                rawurlencode( $this->plugin_version ),
-                $key ? '&key=' . rawurlencode( $key ) : ''
-            );
-            $raw = wp_remote_get( $url, [ 'timeout' => 10 ] );
-            if ( is_wp_error( $raw ) || wp_remote_retrieve_response_code( $raw ) !== 200 ) { return $transient; }
-            $body = json_decode( wp_remote_retrieve_body( $raw ), true );
-            set_transient( $cache_key, $body, self::UPDATE_CHECK_TTL );
-        }
-
-        if ( ! is_object( $transient ) ) { $transient = (object) [ 'response' => [] ]; }
-
-        if ( empty( $body['update'] ) ) {
-            delete_option( $this->opt_blocked );
-            if ( ! isset( $transient->no_update ) || ! is_array( $transient->no_update ) ) {
-                $transient->no_update = [];
-            }
-            // Populate no_update so WP core's auto-update UI renders this plugin correctly.
-            $transient->no_update[ $this->plugin_basename ] = (object) [
-                'plugin'      => $this->plugin_basename,
-                'slug'        => dirname( $this->plugin_basename ),
-                'new_version' => $this->plugin_version,
-            ];
-            return $transient;
-        }
-        if ( empty( $body['package'] ) ) {
-            update_option( $this->opt_blocked, $body['version'] ?? '1', false );
-            return $transient;
-        }
-        delete_option( $this->opt_blocked );
-        $transient->response[ $this->plugin_basename ] = (object) [
-            'plugin'      => $this->plugin_basename,
-            'id'          => $this->plugin_basename,
-            'slug'        => dirname( $this->plugin_basename ),
-            'new_version' => $body['version'],
-            'package'     => $body['package'],
-            'url'         => $this->product_page_url,
-        ];
-        return $transient;
-    }
-
-    /** Cache key for a cached update-check response, scoped to product|version|key. */
-    private function update_check_transient_key( ?string $key ): string {
-        return $this->update_check_prefix . md5( $this->product . '|' . $this->plugin_version . '|' . ( $key ?? '' ) );
-    }
-
     /**
      * Soft-enforcement admin notice. Informational only — never disables
      * features. Hooked indirectly via Licensing\LicensePage::maybe_render_notice().
@@ -177,7 +116,7 @@ class LicenseClient {
         if ( ! $key ) {
             $this->render_notice(
                 'notice-warning',
-                __( 'AI Editor for Divi 5: activate your license to receive automatic updates and support.', 'ai-editor-divi5' ),
+                __( 'AI Editor for Divi 5: activate your Pro license to unlock site-building tools and support.', 'ai-editor-divi5' ),
                 __( 'Activate now', 'ai-editor-divi5' ),
                 $license_url
             );
@@ -189,20 +128,11 @@ class LicenseClient {
         if ( in_array( $status, [ 'expired', 'canceled' ], true ) ) {
             $this->render_notice(
                 'notice-warning',
-                __( 'AI Editor for Divi 5: your license has expired. Renew to keep receiving updates.', 'ai-editor-divi5' ),
+                __( 'AI Editor for Divi 5: your license has expired. Renew to keep receiving support.', 'ai-editor-divi5' ),
                 __( 'Renew', 'ai-editor-divi5' ),
                 $license_url
             );
             return;
-        }
-
-        if ( get_option( $this->opt_blocked ) ) {
-            $this->render_notice(
-                'notice-info',
-                __( 'AI Editor for Divi 5: an update is available. Renew your license to receive it.', 'ai-editor-divi5' ),
-                __( 'Renew', 'ai-editor-divi5' ),
-                $license_url
-            );
         }
     }
 
