@@ -891,9 +891,13 @@ class PromoterTest extends TestCase
     public function testPlacementsFollowTheEvidence(): void
     {
         $sets = Promoter::promote($this->proposals(), $this->results());
-        $this->assertContains('divi/fullwidth-image', $sets['sectionChildren']);
+        // Rendering cannot discriminate placement (a module that renders in a column also
+        // renders directly in a section), so only the column placement — the one real-export
+        // precedent (shop, fullwidth-header) supports — is promoted. Section stays empty until a
+        // real builder export proves it.
         $this->assertContains('divi/fullwidth-image', $sets['columnChildren']);
-        $this->assertNotContains('divi/portfolio', $sets['sectionChildren']);
+        $this->assertContains('divi/portfolio', $sets['columnChildren']);
+        $this->assertSame([], $sets['sectionChildren']);
     }
 
     public function testOutputIsSortedAndStable(): void
@@ -1050,9 +1054,8 @@ final class Promoter
             if (in_array('column', $r['placements_ok'], true)) {
                 $sets['columnChildren'][] = $p['name'];
             }
-            if (in_array('section', $r['placements_ok'], true)) {
-                $sets['sectionChildren'][] = $p['name'];
-            }
+            // 'section' evidence is deliberately NOT promoted: a render that succeeds in a section
+            // does not prove Divi's builder allows the module there (see Task 3 review).
         }
 
         foreach (['leaf', 'structural', 'columnChildren', 'sectionChildren'] as $k) {
