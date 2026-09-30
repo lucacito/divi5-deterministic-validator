@@ -7,12 +7,28 @@ namespace Divi5Validator\Tools;
 /** Decides, from what Divi rendered, whether a module is proven. Pure. */
 final class RenderEvidence
 {
-    private const ERROR_PATTERN = '/(Fatal error|Parse error|Uncaught|Warning:|Notice:|Deprecated:)/i';
+    /** Detects PHP diagnostics including HTML-formatted and WP-CLI Error prefix. */
+    private const ERROR_PATTERN = '/(Fatal error|Parse error|Uncaught|(?:Warning|Notice|Deprecated|Strict Standards)(?:<\/b>)?\s*:|(?:^|\n)Error:)/i';
+
+    /** Structural wrapper types that cannot be proven by a probe page wrapped in themselves. */
+    private const WRAPPER_TYPES = [
+        'divi/section',
+        'divi/row',
+        'divi/column',
+        'divi/row-inner',
+        'divi/column-inner',
+        'divi/placeholder',
+    ];
 
     /** @return array{status:string, reasons:list<string>} */
     public static function classify(string $html, string $noise, string $module): array
     {
         $reasons = [];
+
+        // Wrapper types cannot be proven by a probe page that is itself wrapped in them.
+        if (in_array($module, self::WRAPPER_TYPES, true)) {
+            return ['status' => 'needs-real-export', 'reasons' => ['structural wrapper: cannot be proven by a probe page that is itself wrapped in it']];
+        }
 
         if (preg_match(self::ERROR_PATTERN, $html . "\n" . $noise, $m) === 1) {
             return ['status' => 'fail', 'reasons' => ['PHP diagnostic in output: ' . $m[1]]];
@@ -23,7 +39,10 @@ final class RenderEvidence
         }
 
         foreach (self::markers($module) as $marker) {
-            if (stripos($html, $marker) !== false) {
+            // Use boundary-aware regex matching to avoid prefix collisions.
+            // Pattern matches the marker with optional numeric suffix (_0, _1, etc.) and no preceding/following identifier chars.
+            $pattern = '/(?<![a-z0-9_])' . preg_quote($marker, '/') . '(?:_\d+)?(?![a-z0-9_])/i';
+            if (preg_match($pattern, $html) === 1) {
                 return ['status' => 'pass', 'reasons' => ['found marker ' . $marker]];
             }
         }
