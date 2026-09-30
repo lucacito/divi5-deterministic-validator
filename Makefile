@@ -1,4 +1,4 @@
-.PHONY: up down clean test validate install shell-wp shell-wpcli export-layouts app-password schema-gap
+.PHONY: up down clean test validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -67,6 +67,12 @@ app-password:
 # ---------------------------------------------------------------
 schema-gap:
 	@bash scripts/schema-gap.sh
+
+# ---------------------------------------------------------------
+# verify-modules — render candidate modules on the real Divi and record evidence
+# ---------------------------------------------------------------
+verify-modules:
+	@bash scripts/verify-modules.sh
 
 # ---------------------------------------------------------------
 # shell helpers
