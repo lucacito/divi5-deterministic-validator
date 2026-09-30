@@ -56,7 +56,7 @@ final class Promoter
     /** Names end up in generated PHP source and fixture file paths, so they must be plain slugs. */
     private static function assertName(string $name): void
     {
-        if (preg_match('#^divi/[a-z0-9-]+$#', $name) !== 1) {
+        if (preg_match('#^divi/[a-z0-9-]+\z#', $name) !== 1) {
             throw new \UnexpectedValueException("Invalid module name: {$name}");
         }
     }

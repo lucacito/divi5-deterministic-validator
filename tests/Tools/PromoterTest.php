@@ -90,7 +90,7 @@ class PromoterTest extends TestCase
     /** @return array<string, array{string}> */
     public static function badNames(): array
     {
-        return ["quote" => ["divi/x'y"], 'traversal' => ['divi/../../x'], 'namespace' => ['other/thing']];
+        return ["quote" => ["divi/x'y"], 'traversal' => ['divi/../../x'], 'namespace' => ['other/thing'], 'trailing newline' => ["divi/x\n"]];
     }
 
     #[DataProvider('badNames')]
