@@ -144,4 +144,24 @@ class RenderEvidenceTest extends TestCase
         $r = RenderEvidence::classify('<div class="et_pb_placeholder_0">content</div>', '', 'divi/placeholder');
         $this->assertSame('needs-real-export', $r['status']);
     }
+
+    public function testMarkerEchoedOutsideAClassAttributeIsNotAPass(): void
+    {
+        // Inline CSS, a data attribute and raw text can all echo the marker without the module rendering.
+        $html = '<style>.et_pb_video_slider_0{color:red}</style><div data-x="et_pb_video_slider_0">et_pb_video_slider_0</div>';
+        $r = RenderEvidence::classify($html, '', 'divi/video-slider');
+        $this->assertSame('needs-real-export', $r['status']);
+    }
+
+    public function testMarkerInsideAMultiClassAttributeIsAPass(): void
+    {
+        $r = RenderEvidence::classify('<div class="et_pb_module et_pb_video_slider_3 et_flex_module">x</div>', '', 'divi/video-slider');
+        $this->assertSame('pass', $r['status']);
+    }
+
+    public function testMarkerInsideASingleQuotedClassAttributeIsAPass(): void
+    {
+        $r = RenderEvidence::classify("<div class='et_pb_video_slider_3'>x</div>", '', 'divi/video-slider');
+        $this->assertSame('pass', $r['status']);
+    }
 }

@@ -39,11 +39,13 @@ final class RenderEvidence
         }
 
         foreach (self::markers($module) as $marker) {
-            // Use boundary-aware regex matching to avoid prefix collisions.
-            // Pattern matches the marker with optional numeric suffix (_0, _1, etc.) and no preceding/following identifier chars.
-            $pattern = '/(?<![a-z0-9_])' . preg_quote($marker, '/') . '(?:_\d+)?(?![a-z0-9_])/i';
+            // The marker must sit inside a real class="..." attribute (boundary-aware, optional numeric
+            // suffix such as _0). The same text echoed in inline CSS, a data attribute or raw text is
+            // not evidence that the module rendered.
+            $token = '(?<![a-z0-9_])' . preg_quote($marker, '/') . '(?:_\d+)?(?![a-z0-9_])';
+            $pattern = '/\bclass\s*=\s*(?:"[^"]*' . $token . '[^"]*"|\'[^\']*' . $token . '[^\']*\')/i';
             if (preg_match($pattern, $html) === 1) {
-                return ['status' => 'pass', 'reasons' => ['found marker ' . $marker]];
+                return ['status' => 'pass', 'reasons' => ['found marker ' . $marker . ' in a class attribute']];
             }
         }
 
