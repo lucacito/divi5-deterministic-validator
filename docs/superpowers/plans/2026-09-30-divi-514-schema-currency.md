@@ -636,7 +636,7 @@ Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: `build/candidates.json` (Task 1), `MarkupBuilder::page`, `RenderEvidence::classify` (Task 2).
-- Produces: `docs/module-verification-<version>.json` — `{ "divi_version": "5.14.0", "results": { "<divi/name>": { "status": "pass|fail|needs-real-export", "placements_ok": ["column","section"], "placements": { "column": {"status":..., "reasons":[...], "html_bytes":int}, "section": {...} } } }, "controls": {...} }`.
+- Produces: `docs/module-verification-<version>.json` — `{ "divi_version": "5.14.0", "results": { "<divi/name>": { "status": "pass|fail|needs-real-export", "placements_rendered": ["column","section"], "placements": { "column": {"status":..., "reasons":[...], "html_bytes":int}, "section": {...} } } }, "controls": {...} }`.
 
 - [ ] **Step 1: Write the harness** — create `scripts/verify-modules.php`
 
@@ -702,7 +702,7 @@ $verify = function (array $p) use ($probe): array {
         $status = 'needs-real-export';
     }
 
-    return ['status' => $status, 'placements_ok' => $ok, 'placements' => $placements];
+    return ['status' => $status, 'placements_rendered' => $ok, 'placements' => $placements];
 };
 
 // Controls prove the harness can tell real from unreal BEFORE we trust any result.
@@ -714,7 +714,7 @@ $controls['divi/not-a-module'] = $verify(['name' => 'divi/not-a-module', 'childr
 
 $bad = [];
 foreach (['divi/heading', 'divi/blurb', 'divi/shop'] as $known) {
-    if (!in_array(MarkupBuilder::PLACEMENT_COLUMN, $controls[$known]['placements_ok'], true)) {
+    if (!in_array(MarkupBuilder::PLACEMENT_COLUMN, $controls[$known]['placements_rendered'], true)) {
         $bad[] = "positive control $known did not pass in a column";
     }
 }
@@ -729,7 +729,7 @@ if ($bad !== []) {
 $results = [];
 foreach ($candidates as $p) {
     $results[$p['name']] = $verify($p);
-    WP_CLI::log(sprintf('%-46s %s [%s]', $p['name'], $results[$p['name']]['status'], implode(',', $results[$p['name']]['placements_ok'])));
+    WP_CLI::log(sprintf('%-46s %s [%s]', $p['name'], $results[$p['name']]['status'], implode(',', $results[$p['name']]['placements_rendered'])));
 }
 
 file_put_contents($outFile, json_encode(
@@ -856,11 +856,11 @@ class PromoterTest extends TestCase
     private function results(): array
     {
         return [
-            'divi/portfolio'       => ['status' => 'pass', 'placements_ok' => ['column']],
-            'divi/video-slider'    => ['status' => 'pass', 'placements_ok' => ['column']],
-            'divi/gravity-forms'   => ['status' => 'needs-real-export', 'placements_ok' => []],
-            'divi/broken'          => ['status' => 'fail', 'placements_ok' => []],
-            'divi/fullwidth-image' => ['status' => 'pass', 'placements_ok' => ['column', 'section']],
+            'divi/portfolio'       => ['status' => 'pass', 'placements_rendered' => ['column']],
+            'divi/video-slider'    => ['status' => 'pass', 'placements_rendered' => ['column']],
+            'divi/gravity-forms'   => ['status' => 'needs-real-export', 'placements_rendered' => []],
+            'divi/broken'          => ['status' => 'fail', 'placements_rendered' => []],
+            'divi/fullwidth-image' => ['status' => 'pass', 'placements_rendered' => ['column', 'section']],
         ];
     }
 
@@ -1027,7 +1027,7 @@ final class Promoter
 {
     /**
      * @param list<array{name:string, children:list<string>, isChild:bool}> $proposals
-     * @param array<string, array{status:string, placements_ok:list<string>}> $results
+     * @param array<string, array{status:string, placements_rendered:list<string>}> $results
      * @return array{leaf:list<string>, structural:list<string>, columnChildren:list<string>, sectionChildren:list<string>, children:array<string,list<string>>}
      */
     public static function promote(array $proposals, array $results): array
@@ -1051,7 +1051,7 @@ final class Promoter
                     $sets['leaf'][] = $kid;
                 }
             }
-            if (in_array('column', $r['placements_ok'], true)) {
+            if (in_array('column', $r['placements_rendered'], true)) {
                 $sets['columnChildren'][] = $p['name'];
             }
             // 'section' evidence is deliberately NOT promoted: a render that succeeds in a section
@@ -1495,7 +1495,7 @@ for status in ('pass', 'needs-real-export', 'fail'):
     for n in names:
         r = d['results'][n]
         why = '; '.join(r['placements'].get('column', {}).get('reasons', []))
-        print(f'- `{n}`' + (f' — placements: {", ".join(r["placements_ok"])}' if status == 'pass' else f' — {why}'))
+        print(f'- `{n}`' + (f' — placements: {", ".join(r["placements_rendered"])}' if status == 'pass' else f' — {why}'))
 EOF
 ```
 
