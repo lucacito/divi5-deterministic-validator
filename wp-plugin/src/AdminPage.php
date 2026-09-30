@@ -354,6 +354,7 @@ final class AdminPage
             </nav>
 
             <?php $this->notice( $notice ); ?>
+            <?php $this->diviCompatNotice(); ?>
 
             <div class="aied-view">
                 <?php
@@ -383,6 +384,15 @@ final class AdminPage
         } elseif ( $notice === 'license_invalid' ) {
             printf('<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'That license key is not valid for this site.', 'ai-editor-for-divi-5' ));
         }
+    }
+
+    private function diviCompatNotice(): void
+    {
+        $status = DiviCompat::status( DiviCompat::installedVersion() );
+        if ( 'newer' !== $status['level'] ) {
+            return;
+        }
+        echo '<div class="notice notice-info inline"><p>' . esc_html( $status['message'] ) . '</p></div>';
     }
 
     // ---------------------------------------------------------------
