@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests\Tools;
 
 use Divi5Validator\Tools\Promoter;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class PromoterTest extends TestCase
@@ -84,5 +85,34 @@ class PromoterTest extends TestCase
         unlink($tmp);
         $this->assertSame(0, $rc, implode("\n", $out));
         $this->assertStringContainsString("const DIVI_VERSION = '5.14.0';", $src);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function badNames(): array
+    {
+        return ["quote" => ["divi/x'y"], 'traversal' => ['divi/../../x'], 'namespace' => ['other/thing']];
+    }
+
+    #[DataProvider('badNames')]
+    public function testBadModuleNamesThrow(string $bad): void
+    {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage($bad);
+        Promoter::promote([['name' => $bad, 'category' => 'module', 'children' => [], 'isChild' => false]], [$bad => ['status' => 'pass', 'placements_rendered' => ['column']]]);
+    }
+
+    #[DataProvider('badNames')]
+    public function testBadChildNamesThrow(string $bad): void
+    {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage($bad);
+        Promoter::promote([['name' => 'divi/ok', 'category' => 'module', 'children' => [$bad], 'isChild' => false]], ['divi/ok' => ['status' => 'pass', 'placements_rendered' => ['column']]]);
+    }
+
+    #[DataProvider('badNames')]
+    public function testRenderRejectsBadNames(string $bad): void
+    {
+        $this->expectException(\UnexpectedValueException::class);
+        Promoter::render(['leaf' => [$bad], 'structural' => [], 'columnChildren' => [], 'sectionChildren' => [], 'children' => []], '5.14.0');
     }
 }

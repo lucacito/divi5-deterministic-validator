@@ -19,5 +19,15 @@ class ValidatorSyncTest extends TestCase
             $this->assertFileExists($copy, basename($file) . ' is missing from wp-plugin/validator/');
             $this->assertSame(file_get_contents($file), file_get_contents($copy), basename($file) . ' differs from wp-plugin/validator/');
         }
+
+        // Reverse direction: the bundle must not carry stale files that src/ no longer has.
+        foreach (glob($root . '/wp-plugin/validator/*.php') ?: [] as $copy) {
+            if (basename($copy) === 'index.php') {
+                continue;
+            }
+            $src = $root . '/src/' . basename($copy);
+            $this->assertFileExists($src, basename($copy) . ' exists in wp-plugin/validator/ but not in src/');
+            $this->assertSame(file_get_contents($src), file_get_contents($copy), basename($copy) . ' differs from src/');
+        }
     }
 }
