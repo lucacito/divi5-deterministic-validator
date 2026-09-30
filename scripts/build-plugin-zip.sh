@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# Build the distributable ai-editor-divi5.zip from wp-plugin/.
+# Build the distributable ai-editor-for-divi-5.zip from wp-plugin/.
 #
 # The archive is a clean copy of wp-plugin/'s contents under a top-level
-# `ai-editor-divi5/` folder (the WordPress plugin slug), with no macOS temp
+# `ai-editor-for-divi-5/` folder (the WordPress plugin slug), with no macOS temp
 # junk. Rebuild after changing anything under wp-plugin/ so the installable
 # distributable stays current. See CLAUDE.md → "The plugin build".
 #
@@ -13,15 +13,16 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 SRC="wp-plugin"
-SLUG="ai-editor-divi5"
+SLUG="ai-editor-for-divi-5"   # WordPress.org slug (folder + zip name; must equal the Text Domain)
+MAIN="ai-editor-divi5"        # main plugin file name (unchanged)
 OUT="$ROOT/$SLUG.zip"
 
-if [ ! -f "$SRC/$SLUG.php" ]; then
-  echo "[build] ERROR: $SRC/$SLUG.php not found — run from the repo root." >&2
+if [ ! -f "$SRC/$MAIN.php" ]; then
+  echo "[build] ERROR: $SRC/$MAIN.php not found — run from the repo root." >&2
   exit 1
 fi
 
-VERSION="$(grep -E "^\s*\*\s*Version:" "$SRC/$SLUG.php" | head -1 | sed -E 's/.*Version:\s*//')"
+VERSION="$(grep -E "^\s*\*\s*Version:" "$SRC/$MAIN.php" | head -1 | sed -E 's/.*Version:\s*//')"
 echo "[build] Packaging $SLUG version $VERSION"
 
 STAGE="$(mktemp -d)"

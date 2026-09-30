@@ -5,13 +5,12 @@
  * Description:       Let your AI assistant (Claude, ChatGPT, Cursor) read and edit Divi 5 pages with natural language — every change is validated before saving, so broken pages become impossible.
  * Version:           3.3.0
  * Requires at least: 6.0
- * Tested up to:      7.1
  * Requires PHP:      8.1
  * Author:            JHMG
  * Author URI:        https://divi5lab.com
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       ai-editor-divi5
+ * Text Domain:       ai-editor-for-divi-5
  * Domain Path:       /languages
  */
 

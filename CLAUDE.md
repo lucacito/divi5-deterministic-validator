@@ -88,7 +88,7 @@ broken or incomplete.
 
 ## The plugin build
 
-The installable plugin is `ai-editor-divi5.zip` at the repo root — a clean
+The installable plugin is `ai-editor-for-divi-5.zip` at the repo root (folder/slug/Text Domain = `ai-editor-for-divi-5`, the WP.org-assigned slug; the main file stays `ai-editor-divi5.php`) — a clean
 archive of `wp-plugin/`'s contents (files at the zip root, no macOS temp junk).
 Rebuild it after changing anything under `wp-plugin/` so the distributable stays
 current. Bump the version in `wp-plugin/ai-editor-divi5.php` (header +
