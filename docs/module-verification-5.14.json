@@ -1,9 +1,11 @@
 {
     "divi_version": "5.14.0",
+    "calibrated": true,
+    "placement_note": "placements_rendered records where a module's class rendered without diagnostics. Rendering cannot discriminate placement (the harness has no control for a placement Divi should reject), so this is NOT proof that the builder allows the placement.",
     "results": {
         "divi/charts": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -28,7 +30,7 @@
         },
         "divi/comments": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -53,7 +55,7 @@
         },
         "divi/contact-form-7": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -75,7 +77,7 @@
         },
         "divi/dropdown": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -100,7 +102,7 @@
         },
         "divi/filterable-portfolio": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -125,7 +127,7 @@
         },
         "divi/fullwidth-code": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -150,7 +152,7 @@
         },
         "divi/fullwidth-image": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -175,7 +177,7 @@
         },
         "divi/fullwidth-map": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -200,7 +202,7 @@
         },
         "divi/fullwidth-menu": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -225,7 +227,7 @@
         },
         "divi/fullwidth-portfolio": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -250,7 +252,7 @@
         },
         "divi/fullwidth-post-content": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -275,7 +277,7 @@
         },
         "divi/fullwidth-post-slider": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -300,7 +302,7 @@
         },
         "divi/fullwidth-post-title": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -325,7 +327,7 @@
         },
         "divi/fullwidth-slider": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -350,7 +352,7 @@
         },
         "divi/gravity-forms": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -372,7 +374,7 @@
         },
         "divi/imagely-gallery": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -394,7 +396,7 @@
         },
         "divi/link": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -419,7 +421,7 @@
         },
         "divi/lottie": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -444,7 +446,7 @@
         },
         "divi/payment-button": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -466,7 +468,7 @@
         },
         "divi/portfolio": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -491,7 +493,7 @@
         },
         "divi/post-content": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -516,7 +518,7 @@
         },
         "divi/post-filter": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -541,7 +543,7 @@
         },
         "divi/post-slider": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -566,7 +568,7 @@
         },
         "divi/post-title": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -591,7 +593,7 @@
         },
         "divi/svg": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -616,7 +618,7 @@
         },
         "divi/table-of-contents": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -641,7 +643,7 @@
         },
         "divi/tooltip": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -666,7 +668,7 @@
         },
         "divi/video-slider": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -691,7 +693,7 @@
         },
         "divi/woocommerce-breadcrumb": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -713,7 +715,7 @@
         },
         "divi/woocommerce-cart-notice": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -735,7 +737,7 @@
         },
         "divi/woocommerce-cart-products": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -757,7 +759,7 @@
         },
         "divi/woocommerce-cart-totals": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -779,7 +781,7 @@
         },
         "divi/woocommerce-checkout-additional-info": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -801,7 +803,7 @@
         },
         "divi/woocommerce-checkout-billing": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -823,7 +825,7 @@
         },
         "divi/woocommerce-checkout-order-details": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -845,7 +847,7 @@
         },
         "divi/woocommerce-checkout-payment-info": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -867,7 +869,7 @@
         },
         "divi/woocommerce-checkout-shipping": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -889,7 +891,7 @@
         },
         "divi/woocommerce-cross-sells": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -911,7 +913,7 @@
         },
         "divi/woocommerce-product-add-to-cart": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -933,7 +935,7 @@
         },
         "divi/woocommerce-product-additional-info": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -955,7 +957,7 @@
         },
         "divi/woocommerce-product-description": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -977,7 +979,7 @@
         },
         "divi/woocommerce-product-gallery": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -999,7 +1001,7 @@
         },
         "divi/woocommerce-product-images": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -1021,7 +1023,7 @@
         },
         "divi/woocommerce-product-meta": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -1043,7 +1045,7 @@
         },
         "divi/woocommerce-product-price": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -1065,7 +1067,7 @@
         },
         "divi/woocommerce-product-rating": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -1087,7 +1089,7 @@
         },
         "divi/woocommerce-product-reviews": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -1109,7 +1111,7 @@
         },
         "divi/woocommerce-product-stock": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -1131,7 +1133,7 @@
         },
         "divi/woocommerce-product-tabs": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -1153,7 +1155,7 @@
         },
         "divi/woocommerce-product-title": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -1175,7 +1177,7 @@
         },
         "divi/woocommerce-product-upsell": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -1197,7 +1199,7 @@
         },
         "divi/woocommerce-related-products": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",
@@ -1213,7 +1215,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 4775,
-                    "sample": "<div class=\"et_pb_section_111 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_related_products_1 et_pb_wc_related_products et_pb_module\"><div class=\"et_pb_module_inner\">\n\t<section class=\"related products\">\n\n\t\t\t\t\t<h2>Related products</h2>\n\t\t\t\t<ul class=\"products columns-4\">\n\n\t\t\t\n\t\t\t\t\t<li class=\"product type-product post-631 status-publish first instock product_cat-accessories"
+                    "sample": "<div class=\"et_pb_section_111 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_related_products_1 et_pb_wc_related_products et_pb_module\"><div class=\"et_pb_module_inner\">\n\t<section class=\"related products\">\n\n\t\t\t\t\t<h2>Related products</h2>\n\t\t\t\t<ul class=\"products columns-4\">\n\n\t\t\t\n\t\t\t\t\t<li class=\"product type-product post-632 status-publish first instock product_cat-accessories"
                 }
             }
         }
@@ -1221,7 +1223,7 @@
     "controls": {
         "divi/heading": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -1246,7 +1248,7 @@
         },
         "divi/blurb": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -1271,7 +1273,7 @@
         },
         "divi/shop": {
             "status": "pass",
-            "placements_ok": [
+            "placements_rendered": [
                 "column",
                 "section"
             ],
@@ -1296,7 +1298,7 @@
         },
         "divi/not-a-module": {
             "status": "needs-real-export",
-            "placements_ok": [],
+            "placements_rendered": [],
             "placements": {
                 "column": {
                     "status": "needs-real-export",

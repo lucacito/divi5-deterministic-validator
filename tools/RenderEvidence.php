@@ -38,13 +38,17 @@ final class RenderEvidence
             return ['status' => 'needs-real-export', 'reasons' => ['render produced no output']];
         }
 
+        // Markers are judged only against real markup: script/style bodies and comments can echo
+        // a class string without any module having rendered. (Diagnostics above use the original.)
+        $markup = preg_replace('#<script\b[^>]*>.*?</script\s*>|<style\b[^>]*>.*?</style\s*>|<!--.*?-->#is', '', $html) ?? $html;
+
         foreach (self::markers($module) as $marker) {
             // The marker must sit inside a real class="..." attribute (boundary-aware, optional numeric
             // suffix such as _0). The same text echoed in inline CSS, a data attribute or raw text is
             // not evidence that the module rendered.
             $token = '(?<![a-z0-9_])' . preg_quote($marker, '/') . '(?:_\d+)?(?![a-z0-9_])';
-            $pattern = '/\bclass\s*=\s*(?:"[^"]*' . $token . '[^"]*"|\'[^\']*' . $token . '[^\']*\')/i';
-            if (preg_match($pattern, $html) === 1) {
+            $pattern = '/(?<![\w-])class\s*=\s*(?:"[^"]*' . $token . '[^"]*"|\'[^\']*' . $token . '[^\']*\')/i';
+            if (preg_match($pattern, $markup) === 1) {
                 return ['status' => 'pass', 'reasons' => ['found marker ' . $marker . ' in a class attribute']];
             }
         }

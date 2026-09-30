@@ -164,4 +164,38 @@ class RenderEvidenceTest extends TestCase
         $r = RenderEvidence::classify("<div class='et_pb_video_slider_3'>x</div>", '', 'divi/video-slider');
         $this->assertSame('pass', $r['status']);
     }
+
+    public function testMarkerOnlyInADataClassAttributeIsNotAPass(): void
+    {
+        $r = RenderEvidence::classify('<div data-class="et_pb_video_slider_0">x</div>', '', 'divi/video-slider');
+        $this->assertSame('needs-real-export', $r['status']);
+        $r = RenderEvidence::classify('<div aria-x-class="et_pb_video_slider_0">x</div>', '', 'divi/video-slider');
+        $this->assertSame('needs-real-export', $r['status']);
+    }
+
+    public function testMarkerOnlyInsideAScriptIsNotAPass(): void
+    {
+        $html = '<div class="et_pb_section_0"><script>var c="class=\\"et_pb_video_slider_0\\"";</script></div>';
+        $this->assertSame('needs-real-export', RenderEvidence::classify($html, '', 'divi/video-slider')['status']);
+        $html = '<script>document.write(\'<div class="et_pb_video_slider_0">\');</script>';
+        $this->assertSame('needs-real-export', RenderEvidence::classify($html, '', 'divi/video-slider')['status']);
+    }
+
+    public function testMarkerOnlyInsideAStyleOrCommentIsNotAPass(): void
+    {
+        $this->assertSame('needs-real-export', RenderEvidence::classify('<p>x</p><!-- <div class="et_pb_video_slider_0"> -->', '', 'divi/video-slider')['status']);
+        $this->assertSame('needs-real-export', RenderEvidence::classify('<style>/* class="et_pb_video_slider_0" */</style><p>x</p>', '', 'divi/video-slider')['status']);
+    }
+
+    public function testRealClassStillPassesNextToScriptStyleAndComments(): void
+    {
+        $html = '<style>.a{}</style><!-- c --><script>var x=1;</script><div class="et_pb_module et_pb_video_slider_0">x</div>';
+        $this->assertSame('pass', RenderEvidence::classify($html, '', 'divi/video-slider')['status']);
+    }
+
+    public function testDiagnosticsInsideScriptOrCommentStillFail(): void
+    {
+        $r = RenderEvidence::classify('<div class="et_pb_video_slider_0"></div><!-- Fatal error: boom -->', '', 'divi/video-slider');
+        $this->assertSame('fail', $r['status']);
+    }
 }
