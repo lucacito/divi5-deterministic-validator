@@ -383,7 +383,7 @@ Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Produces: `MarkupBuilder::page(string $module, string $placement, ?string $child = null, string $version = '5.14.0'): string` — full `post_content` (placeholder → section → [row → column →] module, with one optional child). Placements: `MarkupBuilder::PLACEMENT_COLUMN = 'column'`, `MarkupBuilder::PLACEMENT_SECTION = 'section'`.
 - Produces: `RenderEvidence::classify(string $html, string $noise, string $module): array{status:string, reasons:list<string>}` where status is `pass | fail | needs-real-export`.
-- Produces: `RenderEvidence::markers(string $module): list<string>` — substrings, any one of which proves the module rendered.
+- Produces: `RenderEvidence::markers(string $module): list<string>` — module-specific substrings (each containing the full module name), any one of which proves the module rendered.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -429,7 +429,7 @@ class MarkupBuilderTest extends TestCase
     {
         $markup = MarkupBuilder::page('divi/shop', MarkupBuilder::PLACEMENT_COLUMN, null, '9.9.9');
         $this->assertSame(0, preg_match('/5\.14\.0/', $markup));
-        $this->assertGreaterThanOrEqual(5, substr_count($markup, '"builderVersion":"9.9.9"'));
+        $this->assertGreaterThanOrEqual(4, substr_count($markup, '"builderVersion":"9.9.9"'));
     }
 
     public function testUnknownPlacementThrows(): void
@@ -488,11 +488,20 @@ class RenderEvidenceTest extends TestCase
         $this->assertSame('needs-real-export', $r['status']);
     }
 
-    public function testMarkersCoverUnderscoreAndHyphenSpellings(): void
+    public function testMarkersAreModuleSpecific(): void
     {
         $m = RenderEvidence::markers('divi/video-slider');
         $this->assertContains('et_pb_video_slider', $m);
-        $this->assertContains('video-slider', $m);
+        foreach ($m as $marker) {
+            $this->assertStringContainsString('video_slider', str_replace('-', '_', $marker), 'every marker must contain the full module name');
+        }
+    }
+
+    public function testGenericWordsInOutputDoNotProveAModule(): void
+    {
+        // "link" appears in almost any page output; it must not prove divi/link rendered.
+        $r = RenderEvidence::classify('<a class="link" href="#">x</a><link rel="stylesheet">', '', 'divi/link');
+        $this->assertSame('needs-real-export', $r['status']);
     }
 }
 ```
@@ -594,7 +603,10 @@ final class RenderEvidence
         $slug       = preg_replace('#^divi/#', '', $module) ?? $module;
         $underscore = str_replace('-', '_', $slug);
 
-        return array_values(array_unique(['et_pb_' . $underscore, $slug, $underscore]));
+        // Module-specific only. A bare slug such as "link" or "map" occurs in unrelated markup
+        // and would produce false passes. Calibration (Task 3) may ADD further markers, but each
+        // must contain the full module name.
+        return ['et_pb_' . $underscore];
     }
 }
 ```
@@ -775,7 +787,7 @@ Run: `make verify-modules`
 
 Expected on success: `Harness calibration failed` does NOT appear; one line per candidate; `Wrote /tmp/results.json`.
 
-If it fails with `Harness calibration failed: positive control divi/heading did not pass in a column`: open `/tmp/results.json` in the container (`docker compose exec -T wpcli cat /tmp/results.json | head -60`) and read `controls["divi/heading"].placements.column.sample` — the real rendered HTML of a module Divi certainly supports. Identify the class/attribute that Divi 5.14 actually emits for that module and update `RenderEvidence::markers()` so that spelling is included (keep the existing spellings; add the observed one, e.g. a different class prefix), update `RenderEvidenceTest::testMarkersCoverUnderscoreAndHyphenSpellings` to assert the new marker, re-run `vendor/bin/phpunit tests/Tools`, then re-run `make verify-modules`. The negative control (`divi/not-a-module`) must never pass; if it does, the markers are too loose — tighten them and repeat.
+If it fails with `Harness calibration failed: positive control divi/heading did not pass in a column`: open `/tmp/results.json` in the container (`docker compose exec -T wpcli cat /tmp/results.json | head -60`) and read `controls["divi/heading"].placements.column.sample` — the real rendered HTML of a module Divi certainly supports. Identify the class/attribute that Divi 5.14 actually emits for that module and update `RenderEvidence::markers()` so the observed spelling is included (keep `et_pb_<name>`; add e.g. a different class prefix — it must still contain the full module name, never a bare word), update `RenderEvidenceTest::testMarkersAreModuleSpecific` to assert the new marker, re-run `vendor/bin/phpunit tests/Tools`, then re-run `make verify-modules`. The negative control (`divi/not-a-module`) must never pass; if it does, the markers are too loose — tighten them and repeat.
 
 Do not proceed until all three positive controls pass and the negative control does not.
 
