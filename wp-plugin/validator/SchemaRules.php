@@ -32,6 +32,7 @@ class SchemaRules
         // Nested (inner) row/column — Divi 5's specialty nesting blocks
         'divi/row-inner',
         'divi/column-inner',
+        ...VerifiedModules::STRUCTURAL,
     ];
 
     // Leaf modules — self-closing, carry actual content
@@ -86,6 +87,7 @@ class SchemaRules
         'divi/slide',
         'divi/tab',
         'divi/social-media-follow-network',
+        ...VerifiedModules::LEAF,
     ];
 
     // Types that appear in exports but carry no children and no builderVersion;
@@ -100,7 +102,7 @@ class SchemaRules
         // A section usually holds rows, but real exports also place a column
         // directly in a section (layout-4), or a divi/global-layout Theme Builder
         // reference inside a section (Site B).
-        'divi/section'        => ['divi/row', 'divi/column', 'divi/global-layout'],
+        'divi/section'        => ['divi/row', 'divi/column', 'divi/global-layout', ...VerifiedModules::SECTION_CHILDREN],
         'divi/row'            => ['divi/column'],
         'divi/column'         => [
             // Basic leaf modules
@@ -159,6 +161,7 @@ class SchemaRules
             // (page-23: divi/row; layout-4: divi/row-inner).
             'divi/row',
             'divi/row-inner',
+            ...VerifiedModules::COLUMN_CHILDREN,
         ],
         // Compound module children
         'divi/accordion'      => ['divi/accordion-item', 'divi/code'],
@@ -175,6 +178,7 @@ class SchemaRules
         // Carousel of groups (confirmed on real site exports).
         'divi/group-carousel' => ['divi/group'],
         'divi/timeline'       => ['divi/timeline-item'],
+        ...VerifiedModules::CHILDREN,
     ];
 
     /**

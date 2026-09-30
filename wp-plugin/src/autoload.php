@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 // Wrap in a closure to avoid polluting global scope with loader variables.
 (function () {
     $validator_src = __DIR__ . '/../validator';
-    foreach ( ['Violation', 'ValidationResult', 'SchemaRules', 'Block', 'ParseResult', 'BlockParser', 'Validator'] as $cls ) {
+    foreach ( ['Violation', 'ValidationResult', 'VerifiedModules', 'SchemaRules', 'Block', 'ParseResult', 'BlockParser', 'Validator'] as $cls ) {
         require_once $validator_src . '/' . $cls . '.php';
     }
 })();
