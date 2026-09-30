@@ -1,4 +1,4 @@
-.PHONY: up down clean test validate install shell-wp shell-wpcli export-layouts app-password
+.PHONY: up down clean test validate install shell-wp shell-wpcli export-layouts app-password schema-gap
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -61,6 +61,12 @@ export-layouts:
 # ---------------------------------------------------------------
 app-password:
 	@bash scripts/create-app-password.sh
+
+# ---------------------------------------------------------------
+# schema-gap — which Divi modules does the validator not know yet?
+# ---------------------------------------------------------------
+schema-gap:
+	@bash scripts/schema-gap.sh
 
 # ---------------------------------------------------------------
 # shell helpers

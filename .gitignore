@@ -8,6 +8,9 @@ db-data/
 # Composer
 vendor/
 
+# Generated tooling output (proposals, extracted Divi files)
+build/
+
 # Environment
 .env
 
