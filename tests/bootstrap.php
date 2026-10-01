@@ -76,7 +76,7 @@ if ( ! function_exists( 'delete_transient' ) ) {
     function delete_transient( $key ): bool { unset( $GLOBALS['__wp_transients'][ $key ] ); return true; }
 }
 if ( ! class_exists( 'WP_Error' ) ) {
-    class WP_Error { public function __construct( public string $code = 'http_request_failed' ) {} }
+    class WP_Error { public function __construct( public string $code = 'http_request_failed', public string $message = '' ) {} public function get_error_message(): string { return $this->message; } }
 }
 if ( ! function_exists( 'is_wp_error' ) ) {
     function is_wp_error( $thing ): bool { return $thing instanceof WP_Error; }
@@ -132,4 +132,57 @@ if ( ! function_exists( 'esc_attr__' ) ) {
 }
 if ( ! function_exists( 'esc_html_e' ) ) {
     function esc_html_e( $s, $d = null ) { echo htmlspecialchars( (string) $s, ENT_QUOTES ); }
+}
+
+// ---- Post / post-meta shims for history tests -------------------------------------------
+$GLOBALS['__wp_posts'] = [];      // id => object{ID, post_type, post_content}
+$GLOBALS['__wp_postmeta'] = [];   // id => [key => value]
+$GLOBALS['__wp_update_fail'] = false;
+
+if ( ! function_exists( 'wp_slash' ) ) {
+    function wp_slash( $value ) {
+        if ( is_array( $value ) ) {
+            return array_map( 'wp_slash', $value );
+        }
+        return is_string( $value ) ? addslashes( $value ) : $value;
+    }
+}
+if ( ! function_exists( 'wp_unslash' ) ) {
+    function wp_unslash( $value ) {
+        if ( is_array( $value ) ) {
+            return array_map( 'wp_unslash', $value );
+        }
+        return is_string( $value ) ? stripslashes( $value ) : $value;
+    }
+}
+if ( ! function_exists( 'get_post' ) ) {
+    function get_post( $id ) { return $GLOBALS['__wp_posts'][ (int) $id ] ?? null; }
+}
+if ( ! function_exists( 'wp_update_post' ) ) {
+    // Mirrors core: the incoming array is treated as slashed and unslashed once.
+    function wp_update_post( $arr, $wp_error = false ) {
+        if ( $GLOBALS['__wp_update_fail'] ) {
+            return new WP_Error( 'db_update_error', 'simulated failure' );
+        }
+        $arr = wp_unslash( $arr );
+        $id  = (int) $arr['ID'];
+        if ( ! isset( $GLOBALS['__wp_posts'][ $id ] ) ) {
+            return new WP_Error( 'invalid_post', 'Invalid post ID.' );
+        }
+        $GLOBALS['__wp_posts'][ $id ]->post_content = (string) $arr['post_content'];
+        return $id;
+    }
+}
+if ( ! function_exists( 'get_post_meta' ) ) {
+    function get_post_meta( $id, $key, $single = false ) { return $GLOBALS['__wp_postmeta'][ (int) $id ][ $key ] ?? ''; }
+}
+if ( ! function_exists( 'update_post_meta' ) ) {
+    // Mirrors core: the value is unslashed on write.
+    function update_post_meta( $id, $key, $value ) { $GLOBALS['__wp_postmeta'][ (int) $id ][ $key ] = wp_unslash( $value ); return true; }
+}
+if ( ! function_exists( 'delete_post_meta_by_key' ) ) {
+    function delete_post_meta_by_key( $key ) { foreach ( $GLOBALS['__wp_postmeta'] as $id => $m ) { unset( $GLOBALS['__wp_postmeta'][ $id ][ $key ] ); } return true; }
+}
+if ( ! function_exists( 'get_current_user_id' ) ) {
+    function get_current_user_id() { return 7; }
 }
