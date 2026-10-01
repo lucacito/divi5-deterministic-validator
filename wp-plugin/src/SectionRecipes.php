@@ -10,7 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Library of real, validated Divi 5 section recipes — whole proven sections the
  * AI copies and fills with the user's content, instead of composing from
  * primitives. Each recipe is a section block fragment extracted verbatim from a
- * real export (local image URLs swapped for picsum placeholders).
+ * real export (local image URLs swapped for local image tokens, resolved at serve time to
+ * the plugin's bundled image pack).
  *
  * Served by the get_section_recipes tool: no name => the catalog (small);
  * a name => that recipe's full block markup.
@@ -35,7 +36,9 @@ final class SectionRecipes
             '',
             'Whole proven, validated sections. To build a page, pick the recipes you need,',
             'fetch each with get_section_recipes {"name":"<name>"}, then replace the example',
-            'text and image URLs with the user\'s content. Place sections between the root',
+            'text with the user\'s content and swap the example images for Media Library images',
+            '(list_media_images) when suitable ones exist; otherwise keep the built-in images.',
+            'Place sections between the root',
             '<!-- wp:divi/placeholder --> ... <!-- /wp:divi/placeholder --> wrapper.',
             '',
             'Each recipe lists the persuasion _Stage_ it serves. Assemble a landing page by',
@@ -54,10 +57,21 @@ final class SectionRecipes
     {
         foreach ( self::all() as $r ) {
             if ( $r['name'] === $name ) {
-                return $r['markup'];
+                return ImageTokens::resolve(
+                    $r['markup'],
+                    self::imageBaseUrl(),
+                    null,
+                    static fn ( ?string $u, string $t ): ?string => apply_filters( 'jhmg_aied_image_token', $u, $t )
+                );
             }
         }
         return null;
+    }
+
+    /** Site-local URL of the bundled image pack directory ('' outside WordPress). */
+    private static function imageBaseUrl(): string
+    {
+        return defined( 'AI_EDITOR_DIVI5_FILE' ) ? plugins_url( 'assets/images/', AI_EDITOR_DIVI5_FILE ) : '';
     }
 
     /** @return list<string> recipe names (used by tests) */

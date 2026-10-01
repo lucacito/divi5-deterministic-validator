@@ -31,7 +31,7 @@ AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Curs
 * `get_style_guide` — real Divi 5 structure + styling vocabulary so the AI builds styled, not plain, layouts
 * `get_site_guide` — blueprint for planning and building an entire multi-page site from one brief
 * `get_landing_guide` — a conversion-focused blueprint (persuasion flow, copywriting rules, CTA strategy) so generated landing pages are strategically structured, not just pretty
-* `get_image_guide` — role-based image assignment with a keyless source toolkit (relevant photos, avatars, labeled placeholders) so pages look like finished demos, not empty templates
+* `get_image_guide` — role-based image assignment: your Media Library first, then a built-in pack of original, locally bundled images, so pages look like finished demos, not empty templates
 * `get_section_recipes` — a library of complete, validated section patterns (hero, feature grid, split, slider, CTA, footer) the AI assembles pages from, each mapped to its persuasion stage
 * `list_page_history`, `get_page_history_entry`, `restore_page_version` — undo AI edits: list the saved previous versions of a page and restore one when a snapshot was kept (free)
 * `create_page` (Pro) — build a brand-new page from scratch
@@ -154,7 +154,7 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 * Premium features: create pages, set front page, build menus, site-wide CSS, PHP proposals.
 
 = 2.15.0 =
-* Image intelligence: new get_image_guide tool (MCP + REST + OpenAPI) teaches the AI to assign the right visual to each section by role instead of dropping random placeholders everywhere. It documents a keyless, verified source toolkit — relevant keyword photos (LoremFlickr), generic/abstract (Picsum), real avatars for testimonials and team sections (Random User, Pravatar), and descriptive labeled placeholders (Placehold.co) — plus per-section rules, how to derive search keywords from the business type, stable image pinning so pages don't reshuffle, aspect-ratio sizing for even grids, and a clear fallback order. The style and landing guides and create_page / update_page_layout now point the AI to it, so generated pages look like finished premium demos rather than empty templates. (Curated API stock — Unsplash/Pexels/Pixabay — is noted as the premium, key-based find_image path.)
+* Image intelligence: new get_image_guide tool (MCP + REST + OpenAPI) teaches the AI to assign the right visual to each section by role instead of dropping random placeholders everywhere, with per-section rules, aspect-ratio sizing for even grids and a clear fallback order. The style and landing guides and create_page / update_page_layout now point the AI to it, so generated pages look like finished demos rather than empty templates.
 
 = 2.14.1 =
 * Style guide now teaches the column-nesting rule explicitly: a divi/column can never directly contain another divi/column (rejected as UNEXPECTED_CHILD_TYPE) — to nest columns, go through a row (column → row-inner → column-inner), and use a divi/group for a single styled card container inside a column. Removes a common trial-and-error round-trip when AI assistants build grids inside columns.
@@ -227,7 +227,7 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 
 = 2.2.0 =
 * Validator now supports nested rows (a divi/row inside a divi/column, recursing to any depth) — confirmed against a real Divi 5 export. Previously these valid layouts were wrongly rejected.
-* create_page and update_page_layout now instruct AI assistants to use https://picsum.photos placeholders for images when the user has not supplied a specific image URL, so generated pages are never left with blank images.
+* create_page and update_page_layout now instruct AI assistants to give every image module a src, so generated pages are never left with blank images.
 
 = 2.1.2 =
 * Fixed content corruption on save: page content is now wp_slash()'d before wp_insert_post/wp_update_post, which run wp_unslash internally. Previously backslashes in escaped HTML (e.g. < for <) were stripped, breaking text modules. Affects create_page and update_page_layout (MCP + REST).

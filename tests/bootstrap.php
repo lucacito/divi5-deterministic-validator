@@ -60,6 +60,12 @@ if ( ! defined( 'AI_EDITOR_DIVI5_VERSION' ) )  define( 'AI_EDITOR_DIVI5_VERSION'
 if ( ! defined( 'AI_EDITOR_DIVI5_PRODUCT' ) )  define( 'AI_EDITOR_DIVI5_PRODUCT', 'ai-editor-divi5-pro' );
 if ( ! defined( 'AI_EDITOR_DIVI5_FILE' ) )     define( 'AI_EDITOR_DIVI5_FILE', __DIR__ . '/../wp-plugin/jhmg-ai-editor-for-divi-5.php' );
 
+if ( ! function_exists( 'plugins_url' ) ) {
+    function plugins_url( $path = '', $plugin = '' ) {
+        return 'https://example.com/wp-content/plugins/jhmg-ai-editor-for-divi-5/' . ltrim( $path, '/' );
+    }
+}
+
 $GLOBALS['__wp_transients'] = [];
 // Scripted HTTP: tests push [ 'code' => int, 'body' => array ] entries or the
 // string 'network_error'; each wp_remote_post/get shifts the next one.

@@ -126,7 +126,7 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
-        // GET /image-guide — role-based image assignment + keyless source toolkit
+        // GET /image-guide — role-based image assignment (Media Library first, then the built-in image pack)
         register_rest_route(self::NS, '/image-guide', [
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => fn() => new WP_REST_Response(['guide' => ImageGuide::markdown()], 200),

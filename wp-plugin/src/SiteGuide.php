@@ -19,7 +19,7 @@ final class SiteGuide
 
 Build a cohesive multi-page website from one brief. The key to a site that feels
 custom (not a set of unrelated pages) is ONE shared design system applied to
-every page, plus wired navigation.
+every page, plus cross-links between pages (the owner adds the menu).
 
 ## 1. Plan the page set
 From the brief, choose pages. A typical business site:

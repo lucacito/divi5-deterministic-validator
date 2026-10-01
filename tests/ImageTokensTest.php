@@ -47,4 +47,26 @@ class ImageTokensTest extends TestCase
     {
         $this->assertSame('plain {text} {{other}}', ImageTokens::resolve('plain {text} {{other}}', 'https://s.example/i', $this->manifest()));
     }
+    public function testEmptyManifestNeverLeaksBraces(): void
+    {
+        // An empty src means the manifest is broken; ImagePackTest guards against shipping that.
+        $out = ImageTokens::resolve('<img src="{{aied:image:hero-blue-1}}">', 'https://s.example/i', ['fallback' => '', 'images' => []]);
+        $this->assertSame('<img src="">', $out);
+        $this->assertStringNotContainsString('{{aied:', $out);
+    }
+
+    public function testIncompleteManifestEntriesDoNotWarnOrLeak(): void
+    {
+        $manifest = ['fallback' => 'b', 'images' => [['token' => 'a'], ['token' => 'b', 'file' => 'b.svg'], ['file' => 'orphan.svg']]];
+        $out = ImageTokens::resolve('{{aied:image:a}}|{{aied:image:b}}|{{aied:image:zzz}}', 'https://s.example/i', $manifest);
+        $this->assertSame('https://s.example/i/b.svg|https://s.example/i/b.svg|https://s.example/i/b.svg', $out);
+    }
+
+    public function testHasUnresolvedDetectsLeftovers(): void
+    {
+        $this->assertTrue(ImageTokens::hasUnresolved('x {{aied:image:hero-blue-1}} y'));
+        $this->assertTrue(ImageTokens::hasUnresolved('{{aied:something}}'));
+        $this->assertFalse(ImageTokens::hasUnresolved('plain {text} {{other}} https://s.example/i/a.svg'));
+        $this->assertFalse(ImageTokens::hasUnresolved(''));
+    }
 }

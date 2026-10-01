@@ -25,12 +25,24 @@ final class ImagePack
         return [ 'fallback' => (string) ( $data['fallback'] ?? '' ), 'images' => array_values( $data['images'] ) ];
     }
 
-    /** Markdown table of every token the AI may use. */
-    public static function catalogMarkdown(): string
+    /**
+     * Markdown table of the bundled images. With an empty base URL it lists the
+     * `{{aied:image:…}}` tokens (used by tests and recipes); with a base URL it
+     * lists each image's real, copyable URL (what the AI must use).
+     */
+    public static function catalogMarkdown( string $baseUrl = '' ): string
     {
-        $lines = [ '| Token | Role | Ratio | Palette | What it shows |', '|---|---|---|---|---|' ];
+        $withUrl = '' !== $baseUrl;
+        $base    = rtrim( $baseUrl, '/' );
+        $lines   = $withUrl
+            ? [ '| Token | URL | Role | Ratio | Palette | What it shows |', '|---|---|---|---|---|---|' ]
+            : [ '| Token | Role | Ratio | Palette | What it shows |', '|---|---|---|---|---|' ];
         foreach ( self::manifest()['images'] as $i ) {
-            $lines[] = sprintf( '| `{{aied:image:%s}}` | %s | %s | %s | %s |', $i['token'], $i['role'], $i['ratio'], $i['palette'], $i['alt'] );
+            if ( $withUrl ) {
+                $lines[] = sprintf( '| `%s` | %s | %s | %s | %s | %s |', $i['token'], $base . '/' . $i['file'], $i['role'], $i['ratio'], $i['palette'], $i['alt'] );
+            } else {
+                $lines[] = sprintf( '| `{{aied:image:%s}}` | %s | %s | %s | %s |', $i['token'], $i['role'], $i['ratio'], $i['palette'], $i['alt'] );
+            }
         }
 
         return implode( "\n", $lines );

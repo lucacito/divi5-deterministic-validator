@@ -18,6 +18,8 @@ Hook names are a stable public API.
 | `jhmg_aied_openapi_schemas` | filter | `( array $schemas ): array` | Add entries to `components.schemas`. |
 | `jhmg_aied_admin_tabs` | filter | `( array $tabs ): array` | Add admin tabs as `slug => label`. Built-in slugs cannot be overridden. |
 | `jhmg_aied_render_admin_tab` | action | `( string $tab )` | Render the screen for one of your tab slugs. |
+| `jhmg_aied_image_token` | filter | `( ?string $url, string $token ): ?string` | Replace the URL of one bundled image when a recipe is served. |
+| `jhmg_aied_image_guide` | filter | `( string $markdown ): string` | Append to or rewrite the image guide the AI receives from `get_image_guide`. |
 
 ## Rules for add-on code
 
@@ -37,6 +39,28 @@ Hook names are a stable public API.
    `description` and `summary` at most 300 characters, and no bare
    `type: object` without `properties` (use `additionalProperties` or list the
    fields).
+
+## Image tokens
+
+Section recipes store their images as `{{aied:image:<token>}}` placeholders (for
+example `{{aied:image:card-blue-1}}`). When a recipe is served, each token is
+resolved to the site-local URL of the matching file in `assets/images/` (see
+`manifest.json` there). A token that is not in the manifest resolves to the
+manifest's fallback image, so no `{{aied:` text ever reaches the AI.
+
+- `jhmg_aied_image_token` receives the resolved bundled URL and the token name.
+  Return a different URL to serve that image from somewhere else (for example a
+  Media Library or CDN image), or return the incoming `$url` / an empty value to
+  keep the bundled one. **The plugin does not escape or validate the URL you
+  return.** It is placed into the layout as-is, so an add-on must return a safe,
+  absolute `http(s)` URL it controls or has already sanitised (for example with
+  `esc_url_raw()`).
+- `jhmg_aied_image_guide` receives the guide as **Markdown** and must return
+  Markdown. Use it to add your own image-sourcing instructions after the built-in
+  Media Library and bundled-pack sections. Return the incoming string untouched
+  when you have nothing to add.
+
+With no listener registered, both hooks leave behaviour unchanged.
 
 ## Minimal example
 

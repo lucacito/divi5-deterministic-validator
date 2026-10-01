@@ -72,6 +72,16 @@ class ImagePackTest extends TestCase
         }
     }
 
+    public function testCatalogMarkdownWithBaseUrlListsRealUrlsInsteadOfTokens(): void
+    {
+        $md = ImagePack::catalogMarkdown('https://s.example/wp-content/plugins/p/assets/images/');
+        $this->assertStringContainsString('| Token | URL | Role | Ratio | Palette | What it shows |', $md);
+        $this->assertStringNotContainsString('{{aied:', $md);
+        foreach (ImagePack::manifest()['images'] as $i) {
+            $this->assertStringContainsString('| `' . $i['token'] . '` | https://s.example/wp-content/plugins/p/assets/images/' . $i['file'] . ' |', $md);
+        }
+    }
+
     public function testGeneratorIsDeterministic(): void
     {
         $tmp = sys_get_temp_dir() . '/aied-pack-' . bin2hex(random_bytes(4));

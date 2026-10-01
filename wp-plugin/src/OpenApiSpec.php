@@ -325,7 +325,7 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'getImageGuide',
                         'summary'     => 'Get the image-intelligence guide',
-                        'description' => 'How to assign the right visual to each section by role using keyless sources (LoremFlickr, Picsum, Random User and Pravatar avatars, Placehold.co). Covers per-section rules, keyword derivation, stable pinning, and sizing. Call before choosing any image src.',
+                        'description' => 'How to assign the right image to each section by role: Media Library first (list_media_images), then the built-in image pack. Covers per-section rules, sizing and alt text. Call before choosing any image src.',
                         'responses'   => ['200' => ['description' => 'The guide (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
                     ],
                 ],

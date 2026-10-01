@@ -116,7 +116,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'get_image_guide',
-                'description' => 'Get the IMAGE-INTELLIGENCE guide: how to assign the right visual to each section by role (not random images everywhere), using keyless, verified image sources — relevant photos (LoremFlickr), generic/abstract (Picsum), real avatars for testimonials/team (Random User, Pravatar), and descriptive labeled placeholders (Placehold.co). Covers per-section image rules, how to derive search keywords from the business type, stable image pinning, aspect-ratio sizing, and the fallback order. Call this BEFORE choosing any image src so generated pages look like finished demos, not empty templates.',
+                'description' => 'Get the IMAGE-INTELLIGENCE guide: how to assign the right visual to each section by role (not random images everywhere), using the Media Library of the site first (list_media_images) and the built-in image pack (a catalogue of real site-local URLs) as the fallback. Covers per-section image rules, aspect-ratio sizing and alt text. Never hotlink or invent an image URL. Call this BEFORE choosing any image src so generated pages look like finished demos, not empty templates.',
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
             ],
             [
@@ -139,7 +139,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'update_page_layout',
-                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src (see get_image_guide for the right keyless source per role; picsum /seed/ is the generic fallback).',
+                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (get_image_guide) — never an invented or hotlinked URL.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -200,7 +200,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'create_page',
-                'description' => 'Create a new WordPress page with a validated Divi 5 layout. The page is always created as a DRAFT for the site owner to review and publish. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the page is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src (see get_image_guide for the right keyless source per role; picsum /seed/ is the generic fallback).',
+                'description' => 'Create a new WordPress page with a validated Divi 5 layout. The page is always created as a DRAFT for the site owner to review and publish. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the page is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (get_image_guide) — never an invented or hotlinked URL.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [

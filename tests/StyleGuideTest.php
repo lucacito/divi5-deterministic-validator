@@ -17,6 +17,16 @@ require_once __DIR__ . '/../wp-plugin/src/StyleGuide.php';
  */
 class StyleGuideTest extends TestCase
 {
+    public function testImageGuidancePointsAtTheImageGuideNotARemoteHost(): void
+    {
+        $md = StyleGuide::markdown();
+        $this->assertStringContainsString('get_image_guide', $md);
+        $this->assertStringContainsString('list_media_images', $md);
+        foreach (['picsum', 'pravatar', 'randomuser', 'placehold.co', 'loremflickr', 'unsplash'] as $host) {
+            $this->assertStringNotContainsStringIgnoringCase($host, $md, "StyleGuide must not mention $host");
+        }
+    }
+
     public function testGuideCoversKeyTopics(): void
     {
         $md = StyleGuide::markdown();
@@ -24,7 +34,7 @@ class StyleGuideTest extends TestCase
         foreach ([
             'builderVersion', 'divi/placeholder', 'divi/section', 'divi/column-inner',
             'background', 'gradient', 'boxShadow', 'transform', 'animation',
-            'picsum.photos', 'Worked example',
+            'Worked example',
             // The column-nesting rule the AI keeps re-deriving: must be taught explicitly.
             'can NEVER directly contain another', 'divi/group',
         ] as $needle) {

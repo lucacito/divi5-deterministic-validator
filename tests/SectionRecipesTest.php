@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\ImageTokens;
 use AiEditorDivi5\WP\SectionRecipes;
 use Divi5Validator\Validator;
 use PHPUnit\Framework\TestCase;
 
+require_once __DIR__ . '/../wp-plugin/src/ImagePack.php';
+require_once __DIR__ . '/../wp-plugin/src/ImageTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
 
 /**
@@ -55,5 +58,58 @@ class SectionRecipesTest extends TestCase
     public function testUnknownRecipeReturnsNull(): void
     {
         $this->assertNull(SectionRecipes::recipe('does-not-exist'));
+    }
+    public function testNoRecipeContainsARemoteImageHostOrAnUnresolvedToken(): void
+    {
+        foreach (SectionRecipes::names() as $name) {
+            $md = (string) SectionRecipes::recipe($name);
+            $this->assertFalse(ImageTokens::hasUnresolved($md), "$name leaks an unresolved token");
+            $this->assertStringNotContainsString('{{aied:', $md, "$name leaks an unresolved token");
+            $this->assertDoesNotMatchRegularExpression('#https?://(?!example\.com|[a-z0-9.-]*\.example(/|"))[^"\s]*\.(jpe?g|png|webp|gif|svg)#i', $md, "$name hotlinks a remote image");
+            $this->assertStringNotContainsString('srcset', $md, "$name keeps a stale srcset from the original export");
+            $this->assertStringNotContainsString('/wp-content/uploads/', $md, "$name references the exported site's uploads");
+            foreach (['picsum.photos', 'pravatar', 'randomuser', 'placehold.co', 'loremflickr', 'unsplash'] as $host) {
+                $this->assertStringNotContainsString($host, $md, "$name mentions $host");
+            }
+        }
+    }
+
+    public function testRecipeImagesPointAtTheBundledPack(): void
+    {
+        $withImages = 0;
+        foreach (SectionRecipes::names() as $name) {
+            $md = (string) SectionRecipes::recipe($name);
+            if (str_contains($md, '/assets/images/')) {
+                $withImages++;
+                $this->assertMatchesRegularExpression('#https://example\.com/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/[a-z0-9-]+\.svg#', $md);
+            }
+        }
+        $this->assertGreaterThanOrEqual(4, $withImages, 'image-bearing recipes should use the bundled pack');
+    }
+
+    public function testRecipesWithSeveralImagesUseDistinctOnes(): void
+    {
+        foreach (['image-gallery', 'image-carousel', 'card-grid-3'] as $name) {
+            preg_match_all('#/assets/images/([a-z0-9-]+)\.svg#', (string) SectionRecipes::recipe($name), $m);
+            $this->assertGreaterThan(1, count($m[1]), "$name should show several images");
+            $this->assertSame(count($m[1]), count(array_unique($m[1])), "$name should use a different image per slot");
+        }
+    }
+
+    public function testImageTokenFilterCanOverrideARecipeImage(): void
+    {
+        add_filter('jhmg_aied_image_token', static fn (?string $url, string $token): ?string => 'https://cdn.addon.example/' . $token . '.jpg', 10, 2);
+        try {
+            $md = (string) SectionRecipes::recipe('image-gallery');
+            $this->assertStringContainsString('https://cdn.addon.example/', $md);
+            $this->assertStringNotContainsString('/assets/images/', $md);
+        } finally {
+            remove_all_filters('jhmg_aied_image_token');
+        }
+    }
+
+    public function testCatalogPointsAtTheMediaLibraryTool(): void
+    {
+        $this->assertStringContainsString('list_media_images', SectionRecipes::catalog());
     }
 }

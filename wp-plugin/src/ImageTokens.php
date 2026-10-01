@@ -21,16 +21,21 @@ final class ImageTokens
     {
         $manifest ??= ImagePack::manifest();
         $files    = [];
-        foreach ( $manifest['images'] as $i ) {
-            $files[ (string) $i['token'] ] = (string) $i['file'];
+        foreach ( (array) ( $manifest['images'] ?? [] ) as $i ) {
+            $token = (string) ( $i['token'] ?? '' );
+            $file  = (string) ( $i['file'] ?? '' );
+            if ( '' !== $token && '' !== $file ) {
+                $files[ $token ] = $file;
+            }
         }
-        $base = rtrim( $baseUrl, '/' );
+        $fallback = (string) ( $manifest['fallback'] ?? '' );
+        $base     = rtrim( $baseUrl, '/' );
 
         return (string) preg_replace_callback(
             self::PATTERN,
-            static function ( array $m ) use ( $files, $manifest, $base, $override ): string {
+            static function ( array $m ) use ( $files, $fallback, $base, $override ): string {
                 $token = $m[1];
-                $file  = $files[ $token ] ?? ( $files[ $manifest['fallback'] ] ?? '' );
+                $file  = $files[ $token ] ?? ( $files[ $fallback ] ?? '' );
                 $url   = $file === '' ? null : $base . '/' . $file;
                 if ( null !== $override ) {
                     $custom = $override( $url, $token );
@@ -39,9 +44,17 @@ final class ImageTokens
                     }
                 }
 
+                // An empty result only happens when the manifest has no usable file at all
+                // (a broken pack; ImagePackTest guards against shipping that). Never leak the token.
                 return (string) $url;
             },
             $text
         );
+    }
+
+    /** True when any {{aied:…}} placeholder text remains in $text. */
+    public static function hasUnresolved( string $text ): bool
+    {
+        return str_contains( $text, '{{aied:' );
     }
 }
