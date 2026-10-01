@@ -190,6 +190,10 @@ if ( ! function_exists( 'update_post_meta' ) ) {
 if ( ! function_exists( 'delete_post_meta_by_key' ) ) {
     function delete_post_meta_by_key( $key ) { foreach ( $GLOBALS['__wp_postmeta'] as $id => $m ) { unset( $GLOBALS['__wp_postmeta'][ $id ][ $key ] ); } return true; }
 }
+if ( ! function_exists( 'wp_cache_delete' ) ) {
+    // Records calls so tests can assert the object cache was purged.
+    function wp_cache_delete( $key, $group = '' ) { $GLOBALS['__wp_cache_deleted'][] = [ $key, $group ]; return true; }
+}
 if ( ! function_exists( 'get_current_user_id' ) ) {
     function get_current_user_id() { return 7; }
 }

@@ -16,6 +16,9 @@ final class PageHistory
 {
     public const RETENTION = 10;
     public const MAX_BYTES = 524288; // 512 KB per snapshot
+    // Per-page budget for all stored snapshot content. WP_Query primes ALL post meta for
+    // every queried page, so an unbounded history would be loaded on every page query.
+    public const MAX_TOTAL_BYTES = 786432; // 768 KB
 
     /** @return array{next:int, items:list<array<string,mixed>>} */
     public static function empty(): array
@@ -56,7 +59,8 @@ final class PageHistory
         }
 
         // A snapshot that cannot be JSON-encoded would wipe the whole stored history.
-        if ( ! mb_check_encoding( $content, 'UTF-8' ) ) {
+        // preg_match('//u') validates UTF-8 without mbstring (WordPress does not polyfill mb_*).
+        if ( 1 !== preg_match( '//u', $content ) ) {
             return [ 'history' => $history, 'stored' => false, 'version_id' => null, 'reason' => 'invalid_encoding' ];
         }
 
@@ -77,6 +81,15 @@ final class PageHistory
             'content'  => $content,
         ] );
         $history['items'] = array_slice( $history['items'], 0, self::RETENTION );
+        // Trim the oldest while over the per-page budget, but always keep the newest.
+        $total = 0;
+        foreach ( $history['items'] as $item ) {
+            $total += (int) ( $item['bytes'] ?? strlen( (string) $item['content'] ) );
+        }
+        while ( $total > self::MAX_TOTAL_BYTES && count( $history['items'] ) > 1 ) {
+            $dropped = array_pop( $history['items'] );
+            $total  -= (int) ( $dropped['bytes'] ?? strlen( (string) $dropped['content'] ) );
+        }
         $history['next']  = $id + 1;
 
         return [ 'history' => $history, 'stored' => true, 'version_id' => $id, 'reason' => null ];

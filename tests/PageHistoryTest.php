@@ -20,6 +20,64 @@ class PageHistoryTest extends TestCase
     {
         $this->assertSame(10, PageHistory::RETENTION);
         $this->assertSame(524288, PageHistory::MAX_BYTES);
+        $this->assertSame(786432, PageHistory::MAX_TOTAL_BYTES);
+    }
+
+    public function testSourceDoesNotDependOnMbstring(): void
+    {
+        $src = (string) file_get_contents(__DIR__ . '/../wp-plugin/src/PageHistory.php');
+        $this->assertSame(0, preg_match('/\bmb_[a-z_]+\s*\(/', $src), 'WordPress does not polyfill mb_* (mbstring may be absent).');
+    }
+
+    public function testInvalidUtf8LeadingByteSequenceIsRejected(): void
+    {
+        $r = $this->rec(PageHistory::empty(), "\xC3\x28");
+        $this->assertFalse($r['stored']);
+        $this->assertSame('invalid_encoding', $r['reason']);
+    }
+
+    public function testEmptyStringAndLargeMultibyteAreStored(): void
+    {
+        $e = $this->rec(PageHistory::empty(), '');
+        $this->assertTrue($e['stored']);
+        $big = str_repeat("\u{e9}", 262144); // exactly 512 KB (2 bytes each)
+        $this->assertSame(PageHistory::MAX_BYTES, strlen($big));
+        $r = $this->rec(PageHistory::empty(), $big);
+        $this->assertTrue($r['stored']);
+        $this->assertNull($r['reason']);
+    }
+
+    public function testTotalBudgetTrimsOldestSnapshotsAndKeepsIdsMonotonic(): void
+    {
+        $h = PageHistory::empty();
+        for ($i = 1; $i <= 6; $i++) {
+            $h = $this->rec($h, str_repeat((string) $i, 200000))['history']; // 200,000 bytes each
+        }
+        // 3 x 200,000 = 600,000 fits in 786,432; 4 x = 800,000 does not.
+        $this->assertCount(3, $h['items']);
+        $this->assertSame([6, 5, 4], array_column($h['items'], 'id'));
+        $this->assertLessThanOrEqual(PageHistory::MAX_TOTAL_BYTES, array_sum(array_column($h['items'], 'bytes')));
+        $this->assertSame(7, $h['next']);
+        $this->assertSame(7, $this->rec($h, 'seven')['version_id']);
+    }
+
+    public function testNewestIsAlwaysKeptEvenWhenItAloneNearsTheBudget(): void
+    {
+        $h = $this->rec(PageHistory::empty(), str_repeat('a', PageHistory::MAX_BYTES))['history'];
+        $r = $this->rec($h, str_repeat('b', PageHistory::MAX_BYTES));
+        $this->assertTrue($r['stored']);
+        $this->assertCount(1, $r['history']['items']);
+        $this->assertSame(2, $r['history']['items'][0]['id']);
+        $this->assertSame(PageHistory::MAX_BYTES, $r['history']['items'][0]['bytes']);
+    }
+
+    public function testSmallItemsStillKeepTenUnderTheBudget(): void
+    {
+        $h = PageHistory::empty();
+        for ($i = 1; $i <= 12; $i++) {
+            $h = $this->rec($h, "small {$i}")['history'];
+        }
+        $this->assertCount(PageHistory::RETENTION, $h['items']);
     }
 
     public function testRecordStoresNewestFirstWithMetadata(): void

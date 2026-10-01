@@ -23,6 +23,7 @@ class HistoryServiceTest extends TestCase
         $GLOBALS['__wp_postmeta']    = [];
         $GLOBALS['__wp_update_fail'] = false;
         $GLOBALS['__wp_meta_fail']   = false;
+        $GLOBALS['__wp_cache_deleted'] = [];
     }
 
     public function testWriteSnapshotsPreviousContentThenSavesNew(): void
@@ -296,5 +297,14 @@ class HistoryServiceTest extends TestCase
         $this->assertLessThan( 1000, strlen( serialize( $rows ) ) );
         // The stored history itself is untouched.
         $this->assertSame( $big, HistoryService::entry( 5, 1 )['content'] );
+    }
+
+    public function testRecentPurgesEachPagesPostMetaFromTheObjectCache(): void
+    {
+        $GLOBALS['__wp_posts'][6] = (object) [ 'ID' => 6, 'post_type' => 'page', 'post_title' => 'P6', 'post_content' => 'x' ];
+        $this->seedHistory( 5, '2026-01-01T00:00:00Z' );
+        $this->seedHistory( 6, '2026-02-01T00:00:00Z' );
+        HistoryService::recent( 5, [ 5, 6 ] );
+        $this->assertSame( [ [ 5, 'post_meta' ], [ 6, 'post_meta' ] ], $GLOBALS['__wp_cache_deleted'] );
     }
 }

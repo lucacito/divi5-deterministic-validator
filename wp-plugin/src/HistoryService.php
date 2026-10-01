@@ -106,6 +106,9 @@ final class HistoryService
             // Keep only the newest item's metadata: the stored histories can hold
             // up to 10 x 512 KB of content per page and only items[0] is needed.
             $h = HistoryStore::load( (int) $pageId );
+            // get_post_meta primed this page's whole meta into the object cache; drop it so
+            // the raw history strings of up to RECENT_SCAN pages are not retained all request.
+            wp_cache_delete( (int) $pageId, 'post_meta' );
             if ( $h['items'] !== [] ) {
                 $h['items'] = [ array_merge( $h['items'][0], [ 'content' => '' ] ) ];
             }

@@ -123,7 +123,14 @@ final class AdminPage
         }
 
         $result = HistoryService::restore( $pageId, $versionId );
-        $this->redirect( 'dashboard', $result['ok'] ? 'version_restored' : 'restore_failed' );
+        UsageTracker::log( 'restore_version', $pageId, $result['ok'] ? 'valid' : 'error' );
+
+        if ( ! $result['ok'] ) {
+            $this->redirect( 'dashboard', 'restore_failed' );
+        }
+        // Only claim the replaced version was kept when it really was (stored, or identical to the newest snapshot).
+        $kept = ! empty( $result['snapshot']['stored'] ) || 'duplicate' === ( $result['snapshot']['reason'] ?? null );
+        $this->redirect( 'dashboard', $kept ? 'version_restored' : 'version_restored_no_undo' );
     }
 
     // ---------------------------------------------------------------
@@ -402,6 +409,8 @@ final class AdminPage
             printf('<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $map[ $notice ] ));
         } elseif ( $notice === 'license_invalid' ) {
             printf('<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'That license key is not valid for this site.', 'ai-editor-for-divi-5' ));
+        } elseif ( $notice === 'version_restored_no_undo' ) {
+            printf('<div class="notice notice-warning is-dismissible"><p>%s</p></div>', esc_html__( 'Previous version restored, but the version it replaced could not be kept, so this restore cannot be undone from here.', 'ai-editor-for-divi-5' ));
         } elseif ( $notice === 'restore_failed' ) {
             printf('<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'Could not restore that version.', 'ai-editor-for-divi-5' ));
         }
@@ -429,7 +438,7 @@ final class AdminPage
         ?>
         <h3 class="aied-section-title"><?php esc_html_e( 'Recent AI edits', 'ai-editor-for-divi-5' ); ?></h3>
         <div class="aied-card">
-            <p class="aied-muted"><?php esc_html_e( 'Every AI save keeps the previous version. Restore it here if an edit was not what you wanted.', 'ai-editor-for-divi-5' ); ?></p>
+            <p class="aied-muted"><?php esc_html_e( 'Every AI save keeps the previous version when it can. Restore it here if an edit was not what you wanted.', 'ai-editor-for-divi-5' ); ?></p>
             <table class="widefat striped">
                 <tbody>
                 <?php foreach ( $rows as $row ) :
