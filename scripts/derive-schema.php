@@ -37,12 +37,11 @@ $proposals = ModuleDeriver::derive($defs);
 $rules     = new SchemaRules();
 $missing   = SchemaGap::missing($proposals, $rules);
 
-// Candidates the harness should try: missing, placeable on their own (not child items),
-// and of a category that lives in a column/section.
-$candidates = array_values(array_filter(
-    $missing,
-    fn (array $p): bool => !$p['isChild'] && in_array($p['category'], ['module', 'fullwidth-module'], true)
-));
+// Candidates the harness should try: placeable on their own (not child items, category
+// module/fullwidth-module) and either still missing or already promoted (re-verified so a
+// Divi update cannot silently invalidate the shipped schema).
+$candidates = SchemaGap::candidates($proposals, $rules);
+$reverified = count($candidates) - count(array_filter($candidates, fn (array $p): bool => !$rules->isKnownType($p['name'])));
 // Children referenced by a candidate travel with it; keep their own proposals for the promoter.
 $all = $proposals;
 
@@ -54,7 +53,7 @@ if (isset($opts['candidates']) && is_string($opts['candidates'])) {
 }
 
 if (isset($opts['report'])) {
-    printf("Divi declares %d modules; validator is missing %d (%d placeable candidates).\n", count($proposals), count($missing), count($candidates));
+    printf("Divi declares %d modules; validator is missing %d (%d placeable candidates: %d missing + %d already promoted, re-verified).\n", count($proposals), count($missing), count($candidates), count($candidates) - $reverified, $reverified);
     foreach ($missing as $p) {
         printf("  MISSING  %-46s %s%s\n", $p['name'], $p['category'] ?? '?', $p['isChild'] ? ' (child item)' : '');
     }
