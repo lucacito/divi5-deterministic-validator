@@ -198,4 +198,24 @@ class RenderEvidenceTest extends TestCase
         $r = RenderEvidence::classify('<div class="et_pb_video_slider_0"></div><!-- Fatal error: boom -->', '', 'divi/video-slider');
         $this->assertSame('fail', $r['status']);
     }
+
+    public function testRegexFailureFailsClosed(): void
+    {
+        // Would pass with a working regex engine.
+        $html = '<style>' . str_repeat('a{}', 2000) . '</style><!-- ' . str_repeat('c', 4000) . ' --><div class="et_pb_module et_pb_video_slider_0">x</div>';
+        $this->assertSame('pass', RenderEvidence::classify($html, '', 'divi/video-slider')['status'], 'control: passes with default limits');
+
+        $backtrack = ini_get('pcre.backtrack_limit');
+        $jit       = ini_get('pcre.jit');
+        try {
+            ini_set('pcre.jit', '0');
+            ini_set('pcre.backtrack_limit', '200');
+            $r = RenderEvidence::classify($html, '', 'divi/video-slider');
+        } finally {
+            ini_set('pcre.backtrack_limit', (string) $backtrack);
+            ini_set('pcre.jit', (string) $jit);
+        }
+        $this->assertSame('needs-real-export', $r['status'], 'a regex error must never let a module pass');
+        $this->assertStringContainsString('regex', strtolower(implode(' ', $r['reasons'])));
+    }
 }

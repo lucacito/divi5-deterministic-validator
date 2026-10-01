@@ -40,7 +40,11 @@ final class RenderEvidence
 
         // Markers are judged only against real markup: script/style bodies and comments can echo
         // a class string without any module having rendered. (Diagnostics above use the original.)
-        $markup = preg_replace('#<script\b[^>]*>.*?</script\s*>|<style\b[^>]*>.*?</style\s*>|<!--.*?-->#is', '', $html) ?? $html;
+        // FAIL CLOSED: if the regex engine errors, the markup cannot be trusted, so nothing passes.
+        $markup = preg_replace('#<script\b[^>]*>.*?</script\s*>|<style\b[^>]*>.*?</style\s*>|<!--.*?-->#is', '', $html);
+        if ($markup === null) {
+            return ['status' => 'needs-real-export', 'reasons' => ['regex error while stripping script/style/comments: ' . preg_last_error_msg()]];
+        }
 
         foreach (self::markers($module) as $marker) {
             // The marker must sit inside a real class="..." attribute (boundary-aware, optional numeric
