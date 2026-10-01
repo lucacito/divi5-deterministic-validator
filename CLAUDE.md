@@ -120,7 +120,7 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 - `wp-plugin/src/Licensing/LicenseClient.php` is a **WP.org variant** of the
   shared canonical client (layoutlab repo): the updater code is removed here
   because Plugin Check bans it. Don't re-sync the updater into this copy.
-  Plugin Check (run in the Docker env) is clean at 3.3.0.
+  Plugin Check (run in the Docker env) is clean at 3.4.0.
 - `wporg-assets/` holds the WordPress.org directory art (icon, banner, 3 real
   screenshots, API key masked). It is NOT part of the plugin zip; it is uploaded
   to the WP.org SVN `assets/` folder at submission. Retake screenshots with the
@@ -130,7 +130,8 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 - 3.4.0: validator recognises the render-verified Divi 5.14 modules (see
   docs/module-verification-5.14.json); modules that could not be verified stay
   rejected and are listed in docs/SCHEMA.md.
-- Roadmap: 3.3.0 cleanup + WP.org submission; 3.4.0 re-export against the
-  newest Divi 5 and close schema gaps; 3.5.0+ differentiators (undo/revision
-  history, preview-before-save, Theme Builder header/footer, global presets).
+- Roadmap: 3.4.0 is done (render-verified Divi 5.14 module coverage). Remaining:
+  3.5.0+ differentiators (undo/revision history, preview-before-save, Theme
+  Builder header/footer, global presets) and WooCommerce template modules via a
+  real export or class map.
 - Header/footer are the active theme's (nav menu drives the header).

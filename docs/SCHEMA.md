@@ -266,75 +266,80 @@ For that reason only the **column** placement is promoted (`section > row > colu
 
 Child items are vouched for only through their parent's render: `divi/map-pin` (in `divi/fullwidth-map`), `divi/slide` (in `divi/fullwidth-slider`), `divi/post-filter-item` (in `divi/post-filter`) and `divi/video-slider-item` (in `divi/video-slider`). They are accepted only inside those parents.
 
-### Promoted modules
+### Promoted modules (24)
 
-Accepted in a column placement only. "Placements rendered" below is the evidence record of where each rendered without diagnostics; it is not the placement the validator accepts.
+Accepted in a column placement only. The evidence records that each of these also rendered directly under a section; that is not the placement the validator accepts.
 
+- `divi/charts`
+- `divi/comments`
+- `divi/dropdown`
+- `divi/filterable-portfolio`
+- `divi/fullwidth-code`
+- `divi/fullwidth-image`
+- `divi/fullwidth-map`
+- `divi/fullwidth-menu`
+- `divi/fullwidth-portfolio`
+- `divi/fullwidth-post-content`
+- `divi/fullwidth-post-slider`
+- `divi/fullwidth-post-title`
+- `divi/fullwidth-slider`
+- `divi/link`
+- `divi/lottie`
+- `divi/portfolio`
+- `divi/post-content`
+- `divi/post-filter`
+- `divi/post-slider`
+- `divi/post-title`
+- `divi/svg`
+- `divi/table-of-contents`
+- `divi/tooltip`
+- `divi/video-slider`
 
-pass (24):
-- `divi/charts` — placements rendered: column, section
-- `divi/comments` — placements rendered: column, section
-- `divi/dropdown` — placements rendered: column, section
-- `divi/filterable-portfolio` — placements rendered: column, section
-- `divi/fullwidth-code` — placements rendered: column, section
-- `divi/fullwidth-image` — placements rendered: column, section
-- `divi/fullwidth-map` — placements rendered: column, section
-- `divi/fullwidth-menu` — placements rendered: column, section
-- `divi/fullwidth-portfolio` — placements rendered: column, section
-- `divi/fullwidth-post-content` — placements rendered: column, section
-- `divi/fullwidth-post-slider` — placements rendered: column, section
-- `divi/fullwidth-post-title` — placements rendered: column, section
-- `divi/fullwidth-slider` — placements rendered: column, section
-- `divi/link` — placements rendered: column, section
-- `divi/lottie` — placements rendered: column, section
-- `divi/portfolio` — placements rendered: column, section
-- `divi/post-content` — placements rendered: column, section
-- `divi/post-filter` — placements rendered: column, section
-- `divi/post-slider` — placements rendered: column, section
-- `divi/post-title` — placements rendered: column, section
-- `divi/svg` — placements rendered: column, section
-- `divi/table-of-contents` — placements rendered: column, section
-- `divi/tooltip` — placements rendered: column, section
-- `divi/video-slider` — placements rendered: column, section
+No candidate module failed outright (no `fail` results in the evidence).
 
-### Known gaps
+### Known gaps (28 modules, all still rejected)
 
-28 candidate modules stayed rejected. Each rendered output with none of the expected module markers:
+These candidates have status `needs-real-export` in the evidence: the harness found none of its module-specific class markers in the rendered output. None of them are accepted by the validator; they are rejected rather than guessed. The evidence records only that no marker was found. The groupings below are computed from the recorded render samples; statements marked *inference* are not established by the evidence.
 
-- The 24 `divi/woocommerce-*` template modules render `et_pb_wc_*` classes that do not contain the module name, so the harness cannot recognise them. They need a real export or a class map before they can be promoted.
-- `divi/contact-form-7`, `divi/gravity-forms`, `divi/imagely-gallery` and `divi/payment-button` render nothing without their third-party plugin installed.
+#### WooCommerce modules whose output carries `et_pb_wc` classes the harness does not recognise (19)
 
-These stay rejected by the validator rather than guessed.
+The rendered sample contains `et_pb_wc*` classes, so these modules did render something, but not classes the harness's module-specific markers match. They need a real export or an explicit class map before they can be promoted.
 
+- `divi/woocommerce-breadcrumb`
+- `divi/woocommerce-cart-products`
+- `divi/woocommerce-checkout-additional-info`
+- `divi/woocommerce-checkout-billing`
+- `divi/woocommerce-checkout-order-details`
+- `divi/woocommerce-checkout-payment-info`
+- `divi/woocommerce-checkout-shipping`
+- `divi/woocommerce-cross-sells`
+- `divi/woocommerce-product-add-to-cart`
+- `divi/woocommerce-product-additional-info`
+- `divi/woocommerce-product-description`
+- `divi/woocommerce-product-gallery`
+- `divi/woocommerce-product-images`
+- `divi/woocommerce-product-meta`
+- `divi/woocommerce-product-price`
+- `divi/woocommerce-product-reviews`
+- `divi/woocommerce-product-tabs`
+- `divi/woocommerce-product-title`
+- `divi/woocommerce-related-products`
 
-needs-real-export (28):
-- `divi/contact-form-7` — output had none of the expected module markers
-- `divi/gravity-forms` — output had none of the expected module markers
-- `divi/imagely-gallery` — output had none of the expected module markers
-- `divi/payment-button` — output had none of the expected module markers
-- `divi/woocommerce-breadcrumb` — output had none of the expected module markers
-- `divi/woocommerce-cart-notice` — output had none of the expected module markers
-- `divi/woocommerce-cart-products` — output had none of the expected module markers
-- `divi/woocommerce-cart-totals` — output had none of the expected module markers
-- `divi/woocommerce-checkout-additional-info` — output had none of the expected module markers
-- `divi/woocommerce-checkout-billing` — output had none of the expected module markers
-- `divi/woocommerce-checkout-order-details` — output had none of the expected module markers
-- `divi/woocommerce-checkout-payment-info` — output had none of the expected module markers
-- `divi/woocommerce-checkout-shipping` — output had none of the expected module markers
-- `divi/woocommerce-cross-sells` — output had none of the expected module markers
-- `divi/woocommerce-product-add-to-cart` — output had none of the expected module markers
-- `divi/woocommerce-product-additional-info` — output had none of the expected module markers
-- `divi/woocommerce-product-description` — output had none of the expected module markers
-- `divi/woocommerce-product-gallery` — output had none of the expected module markers
-- `divi/woocommerce-product-images` — output had none of the expected module markers
-- `divi/woocommerce-product-meta` — output had none of the expected module markers
-- `divi/woocommerce-product-price` — output had none of the expected module markers
-- `divi/woocommerce-product-rating` — output had none of the expected module markers
-- `divi/woocommerce-product-reviews` — output had none of the expected module markers
-- `divi/woocommerce-product-stock` — output had none of the expected module markers
-- `divi/woocommerce-product-tabs` — output had none of the expected module markers
-- `divi/woocommerce-product-title` — output had none of the expected module markers
-- `divi/woocommerce-product-upsell` — output had none of the expected module markers
-- `divi/woocommerce-related-products` — output had none of the expected module markers
+#### WooCommerce modules that rendered an empty column (5)
 
-fail (0):
+The render produced only the empty section/row/column wrapper (about 330 bytes) with no module output at all. The cause is not established by the evidence. *Inference, unverified:* these modules may render nothing without cart, product or order context. They need a real export before they can be promoted.
+
+- `divi/woocommerce-cart-notice`
+- `divi/woocommerce-cart-totals`
+- `divi/woocommerce-product-rating`
+- `divi/woocommerce-product-stock`
+- `divi/woocommerce-product-upsell`
+
+#### Third-party plugin modules that rendered an empty column (4)
+
+The render produced only the empty wrapper, and the evidence records just "output had none of the expected module markers". *Inference, unverified:* this is probably because the third-party plugin (Contact Form 7, Gravity Forms, Imagely/NextGEN Gallery, a payment provider) is not installed on the test site.
+
+- `divi/contact-form-7`
+- `divi/gravity-forms`
+- `divi/imagely-gallery`
+- `divi/payment-button`

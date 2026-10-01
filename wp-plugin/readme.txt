@@ -117,7 +117,7 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 == Changelog ==
 
 = 3.4.0 =
-* New: your AI can now edit pages that use 24 more Divi 5 modules, plus their child items such as map pins and slides (for example Portfolio, Post Slider, Video Slider, Lottie, SVG, Link, Tooltip, Dropdown, Charts, Table of Contents, Comments and the Fullwidth modules) — every one verified to render on Divi 5.14.
+* New: your AI can now edit pages that use 24 more Divi 5 modules, plus their child items such as map pins and slides, verified through their parent modules (for example Portfolio, Post Slider, Video Slider, Lottie, SVG, Link, Tooltip, Dropdown, Charts, Table of Contents, Comments and the Fullwidth modules) — every one verified to render on Divi 5.14.
 * New: a notice on the plugin's admin screen when your Divi is newer than the newest version this plugin was verified on.
 * Modules that could not be verified yet (WooCommerce template modules and modules that need a third-party plugin) are still rejected rather than guessed.
 
