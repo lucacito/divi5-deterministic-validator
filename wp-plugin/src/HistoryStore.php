@@ -53,6 +53,7 @@ final class HistoryStore
         foreach ( array_keys( self::storedHashes( $pageId ) ) as $stored ) {
             if ( ! in_array( $stored, $keep, true ) ) {
                 // A failed trim leaves an extra old row; the next save recomputes and removes it.
+                // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->delete( HistoryTable::name(), [ 'page_id' => $pageId, 'version_id' => $stored ], [ '%d', '%d' ] );
             }
         }
@@ -170,6 +171,7 @@ final class HistoryStore
         if ( ! HistoryTable::hasTable() ) {
             return;
         }
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         $wpdb->delete( HistoryTable::name(), [ 'page_id' => $pageId ], [ '%d' ] );
     }
 
@@ -197,6 +199,7 @@ final class HistoryStore
 
         $content = (string) $item['content'];
         // No wp_slash here: $wpdb->insert escapes the values itself, slashing would double the backslashes.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         $ok = $wpdb->insert(
             HistoryTable::name(),
             [
