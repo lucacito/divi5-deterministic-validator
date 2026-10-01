@@ -1,4 +1,4 @@
-/* JHMG AI Editor for Divi 5 — SaaS-style admin UI */
+/* JHMG AI Editor for Divi 5 — admin UI */
 
 .aied {
     --aied-accent:   #4f46e5;
@@ -140,6 +140,7 @@
 /* ── Status pills + buttons ────────────────────────────── */
 .aied-result { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; letter-spacing: .03em; }
 .aied-result--valid   { background: #e3f6ec; color: var(--aied-ok); }
+.aied-result--read    { background: #eef1f4; color: #50575e; }
 .aied-result--invalid { background: #f0eefb; color: var(--aied-accent); }
 .aied-btn-danger { color: #b32d2e !important; border-color: #d7a9a9 !important; }
 .aied-btn-danger:hover { background: #fbeaea !important; }

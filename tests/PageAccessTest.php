@@ -38,6 +38,26 @@ class PageAccessTest extends TestCase
         $this->assertSame(['edit_pages'], $asked);
     }
 
+    public function testKeyOwnerHintCondition(): void
+    {
+        $asked = [];
+        $can = function (int $uid, string $cap) use (&$asked) { $asked[] = [$uid, $cap]; return $uid === 5; };
+        $this->assertTrue(PageAccess::keyOwnerCanUse(5, $can));
+        $this->assertFalse(PageAccess::keyOwnerCanUse(6, $can), 'a user without edit_pages');
+        $this->assertFalse(PageAccess::keyOwnerCanUse(0, $can), 'owner 0 (WP-CLI activation) is unusable');
+        $this->assertSame([[5, 'edit_pages'], [6, 'edit_pages']], $asked, 'user 0 is rejected without asking');
+    }
+
+    public function testSettingsShowsTheHintOnlyOnTheSettingsView(): void
+    {
+        $src = $this->src('AdminPage.php');
+        $this->assertSame(1, substr_count($src, 'PageAccess::keyOwnerCanUse('), 'one check, in viewSettings');
+        $body = $this->method('AdminPage.php', 'private function viewSettings(');
+        $this->assertStringContainsString('PageAccess::keyOwnerCanUse(', $body);
+        $this->assertStringContainsString('Press “Regenerate” to create a key owned by you.', $body);
+        $this->assertStringContainsString('esc_html_e', $body);
+    }
+
     public function testFilterEditableKeepsOnlyEditablePages(): void
     {
         $posts = [(object) ['ID' => 1], (object) ['ID' => 2], (object) ['ID' => 3], 'not-a-post', (object) ['no' => 'id']];
@@ -92,5 +112,25 @@ class PageAccessTest extends TestCase
             $this->assertStringContainsString('PageAccess::stringArg(', $body, "RestController {$sig} must type-check its strings");
             $this->assertDoesNotMatchRegularExpression("/\(string\)\s*\\\$body\['(post_content|title|find|replace|slug)'\]/", $body);
         }
+    }
+
+    public function testNameAndMethodArgumentsAreTypeChecked(): void
+    {
+        $handle = $this->method('McpHandler.php', 'public function handle(');
+        $this->assertStringContainsString("is_string(\$body['method'] ?? '')", $handle, 'JSON-RPC method must be a string');
+        $this->assertDoesNotMatchRegularExpression("/\(string\)\s*\(\$body\['method'\]/", $handle);
+
+        $call = $this->method('McpHandler.php', 'private function onToolsCall(');
+        $this->assertStringContainsString("PageAccess::stringArg(\$params, 'name')", $call);
+        $this->assertStringContainsString('-32602', $call);
+
+        $recipes = $this->method('McpHandler.php', 'private function toolSectionRecipes(');
+        $this->assertStringContainsString("PageAccess::stringArg(\$args, 'name')", $recipes);
+        $this->assertStringContainsString('-32602', $recipes);
+
+        $rest = $this->method('RestController.php', 'public function section_recipes(');
+        $this->assertStringContainsString('PageAccess::stringArg(', $rest);
+        $this->assertStringContainsString(', 400)', $rest);
+        $this->assertDoesNotMatchRegularExpression("/\(string\)\s*\$request->get_param\('name'\)/", $rest);
     }
 }

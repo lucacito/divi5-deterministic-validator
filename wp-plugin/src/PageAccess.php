@@ -27,6 +27,17 @@ final class PageAccess
     }
 
     /**
+     * Whether the user the API key is stored against ($uid) could use the plugin: a real user
+     * (a key created by WP-CLI has owner 0) who can edit pages. Used for the Settings hint.
+     *
+     * @param callable(int,string):bool $userCan user_can($uid, $cap)
+     */
+    public static function keyOwnerCanUse(int $uid, callable $userCan): bool
+    {
+        return $uid > 0 && (bool) $userCan($uid, self::CAP);
+    }
+
+    /**
      * Keeps only the posts the current user can edit (drafts, pending and private pages of
      * other users are never listed to someone who cannot edit them).
      *

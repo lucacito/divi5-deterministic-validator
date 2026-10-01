@@ -30,6 +30,18 @@
         });
     });
 
+    // ── Confirm before a destructive form submit ───────────────────────
+    // A form with data-confirm="message" asks first; Cancel stops the submit.
+
+    document.addEventListener('submit', function (event) {
+        var form = event.target;
+        if (!form || !form.getAttribute) return;
+        var message = form.getAttribute('data-confirm');
+        if (message && !window.confirm(message)) {
+            event.preventDefault();
+        }
+    });
+
     // ── Show / hide API key ────────────────────────────────────────────
 
     var toggleBtn = document.getElementById('aied-toggle-key');

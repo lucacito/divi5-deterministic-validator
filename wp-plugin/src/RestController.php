@@ -160,7 +160,10 @@ final class RestController
 
     public function section_recipes(WP_REST_Request $request): WP_REST_Response
     {
-        $name = (string) $request->get_param('name');
+        $name = PageAccess::stringArg(['name' => $request->get_param('name')], 'name');
+        if ($name === null) {
+            return new WP_REST_Response(['error' => 'Invalid parameter: "name" must be a string'], 400);
+        }
         if ($name !== '') {
             $markup = SectionRecipes::recipe($name);
             if ($markup === null) {
@@ -229,7 +232,7 @@ final class RestController
             return new WP_Error('forbidden', "You do not have permission to read page $id.", ['status' => 403]);
         }
 
-        UsageTracker::log('get_page', $id, 'valid');
+        UsageTracker::log('get_page', $id, 'read');
 
         $layout = $this->build_layout_envelope($post);
 
@@ -310,7 +313,7 @@ final class RestController
         if (is_wp_error($post)) {
             return $post;
         }
-        UsageTracker::log('list_history', $post->ID, 'valid');
+        UsageTracker::log('list_history', $post->ID, 'read');
         $versions = HistoryService::listFor($post->ID);
 
         return new WP_REST_Response(['page_id' => $post->ID, 'versions' => $versions, 'count' => count($versions)], 200);
@@ -328,7 +331,7 @@ final class RestController
             UsageTracker::log('get_history', $post->ID, 'error');
             return new WP_Error('not_found', "Version $versionId not found for page {$post->ID}.", ['status' => 404]);
         }
-        UsageTracker::log('get_history', $post->ID, 'valid');
+        UsageTracker::log('get_history', $post->ID, 'read');
 
         return new WP_REST_Response(['page_id' => $post->ID, 'version' => array_diff_key($entry, ['content' => 1]), 'post_content' => $entry['content']], 200);
     }
@@ -509,7 +512,7 @@ final class RestController
             $result = (new Validator())->validate((string) json_encode($body));
         }
 
-        UsageTracker::log('validate', null, $result->isValid() ? 'valid' : 'invalid', count($result->violations()));
+        UsageTracker::log('validate', null, $result->isValid() ? 'read' : 'invalid', count($result->violations()));
 
         return new WP_REST_Response($result->toArray(), $result->isValid() ? 200 : 422);
     }
@@ -548,7 +551,7 @@ final class RestController
             'page'        => $request->get_param('page'),
             'orientation' => $request->get_param('orientation'),
         ]);
-        UsageTracker::log('list_media', null, 'valid');
+        UsageTracker::log('list_media', null, 'read');
 
         return new WP_REST_Response($result, 200);
     }

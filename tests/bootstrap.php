@@ -131,6 +131,14 @@ if ( ! function_exists( 'get_bloginfo' ) ) {
 if ( ! function_exists( 'esc_html' ) ) {
     function esc_html( $s ) { return htmlspecialchars( (string) $s, ENT_QUOTES ); }
 }
+if ( ! function_exists( 'wp_kses' ) ) {
+    /** Test shim: keeps only the allowed tags (attributes are not allowed by any caller that passes empty arrays). */
+    function wp_kses( $string, $allowed_html, $allowed_protocols = [] ) {
+        $tags = '';
+        foreach ( array_keys( (array) $allowed_html ) as $t ) { $tags .= '<' . $t . '>'; }
+        return strip_tags( (string) $string, $tags );
+    }
+}
 if ( ! function_exists( 'esc_attr' ) ) {
     function esc_attr( $s ) { return htmlspecialchars( (string) $s, ENT_QUOTES ); }
 }

@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 require_once __DIR__ . '/ExtensionGuard.php';
 
 /**
- * Top-level admin experience — a guided, outcome-focused "SaaS" app:
+ * Top-level admin experience — a guided, outcome-focused app:
  * Dashboard · Features · Settings (one menu item, internal views).
  */
 final class AdminPage
@@ -129,7 +129,7 @@ final class AdminPage
         $steps = [
             ['label' => __( 'Plugin activated', 'jhmg-ai-editor-for-divi-5' ),            'done' => true],
             ['label' => __( 'AI assistant connected', 'jhmg-ai-editor-for-divi-5' ),      'done' => (int) $summary['total'] > 0],
-            ['label' => __( 'First page edit saved', 'jhmg-ai-editor-for-divi-5' ),       'done' => (int) $summary['valid'] > 0],
+            ['label' => __( 'First page edit saved', 'jhmg-ai-editor-for-divi-5' ),       'done' => (int) $summary['saved'] > 0],
         ];
         $done  = count(array_filter($steps, static fn($s) => $s['done']));
         $total = count($steps);
@@ -258,8 +258,8 @@ final class AdminPage
         $steps = $this->mcpSteps( $id );
         ?>
         <ol class="aied-steps"><?php foreach ( $steps as $step ) {
-            // Each step may contain a single inline <code> span, pre-escaped in mcpSteps().
-            echo '<li>' . $step . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_html in mcpSteps.
+            // Each step is escaped text that may contain inline <code> spans; wp_kses keeps only those.
+            echo '<li>' . wp_kses( $step, [ 'code' => [] ] ) . '</li>';
         } ?></ol>
         <?php if ( ! empty( $client['snippet'] ) ) : ?>
             <div class="aied-snippet-wrap">
@@ -436,7 +436,7 @@ final class AdminPage
                         <td><code><?php echo esc_html( (string) $row['tool'] ); ?></code></td>
                         <td>
                             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
-                                  onsubmit="return confirm('<?php echo esc_js( __( 'Restore the version saved before this AI edit?', 'jhmg-ai-editor-for-divi-5' ) ); ?>')">
+                                  data-confirm="<?php echo esc_attr__( 'Restore the version saved before this AI edit?', 'jhmg-ai-editor-for-divi-5' ); ?>">
                                 <input type="hidden" name="action" value="ai_editor_divi5_restore_page">
                                 <input type="hidden" name="page_id" value="<?php echo esc_attr( (string) $row['page_id'] ); ?>">
                                 <input type="hidden" name="version_id" value="<?php echo esc_attr( (string) $row['version_id'] ); ?>">
@@ -506,7 +506,7 @@ final class AdminPage
         <?php if ( $connected ) : ?>
             <div class="aied-stats">
                 <div class="aied-stat"><span class="aied-stat__n"><?php echo esc_html( $summary['total'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'AI edits processed', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
-                <div class="aied-stat"><span class="aied-stat__n aied-pos"><?php echo esc_html( $summary['valid'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'Changes saved', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
+                <div class="aied-stat"><span class="aied-stat__n aied-pos"><?php echo esc_html( $summary['saved'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'Changes saved', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
                 <div class="aied-stat"><span class="aied-stat__n aied-warn"><?php echo esc_html( $summary['invalid'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'Invalid layouts rejected', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
                 <div class="aied-stat"><span class="aied-stat__n"><?php echo esc_html( $summary['today'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'Today', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
             </div>
@@ -586,9 +586,15 @@ final class AdminPage
     private function viewSettings(): void
     {
         $key = ApiKey::get();
+        // The key acts as one WordPress user; if that user cannot edit pages every call is refused (403).
+        $keyUnusable = ! PageAccess::keyOwnerCanUse( ApiKey::getUserId(), 'user_can' );
         ?>
         <div class="aied-hello"><h1><?php esc_html_e( 'Settings', 'jhmg-ai-editor-for-divi-5' ); ?></h1>
             <p><?php esc_html_e( 'Connect your AI assistant and manage your API key.', 'jhmg-ai-editor-for-divi-5' ); ?></p></div>
+
+        <?php if ( $keyUnusable ) : ?>
+            <div class="notice notice-warning inline"><p><?php esc_html_e( 'The API key’s user can’t edit pages, so your AI assistant will be refused. Press “Regenerate” to create a key owned by you.', 'jhmg-ai-editor-for-divi-5' ); ?></p></div>
+        <?php endif; ?>
 
         <!-- Connection -->
         <div class="aied-card">
@@ -598,10 +604,11 @@ final class AdminPage
                 <code class="aied-key" id="aied-api-key" data-key="<?php echo esc_attr( $key ); ?>">••••••••••••••••••••••••</code>
                 <button type="button" class="button" id="aied-toggle-key"><?php esc_html_e( 'Show', 'jhmg-ai-editor-for-divi-5' ); ?></button>
                 <button type="button" class="button button-primary" data-copy="<?php echo esc_attr( $key ); ?>"><?php esc_html_e( 'Copy', 'jhmg-ai-editor-for-divi-5' ); ?></button>
-                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline">
+                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline"
+                      data-confirm="<?php echo esc_attr__( 'Regenerate the key? You will need to update your AI assistant.', 'jhmg-ai-editor-for-divi-5' ); ?>">
                     <input type="hidden" name="action" value="ai_editor_divi5_regenerate_key">
                     <?php wp_nonce_field( 'ai_editor_divi5_regenerate_key' ); ?>
-                    <button type="submit" class="button aied-btn-danger" onclick="return confirm('<?php echo esc_js( __( 'Regenerate the key? You will need to update your AI assistant.', 'jhmg-ai-editor-for-divi-5' ) ); ?>')"><?php esc_html_e( 'Regenerate', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+                    <button type="submit" class="button aied-btn-danger"><?php esc_html_e( 'Regenerate', 'jhmg-ai-editor-for-divi-5' ); ?></button>
                 </form>
             </div>
             <?php $this->connectCard( self::connectClients( rtrim( get_site_url(), '/' ), $key ) ); ?>

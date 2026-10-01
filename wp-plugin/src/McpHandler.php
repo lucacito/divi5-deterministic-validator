@@ -64,8 +64,11 @@ final class McpHandler
             return $this->rpcError(null, -32600, 'Invalid Request — expected JSON-RPC 2.0');
         }
 
+        $id = $body['id'] ?? null;
+        if (!is_string($body['method'] ?? '')) {
+            return $this->rpcError($id, -32600, 'Invalid Request — "method" must be a string');
+        }
         $method = (string) ($body['method'] ?? '');
-        $id     = $body['id']     ?? null;
         $params = (array)  ($body['params'] ?? []);
 
         return match ($method) {
@@ -243,8 +246,11 @@ final class McpHandler
 
     private function onToolsCall(mixed $id, array $params): WP_REST_Response
     {
-        $name      = (string) ($params['name']      ?? '');
-        $arguments = (array)  ($params['arguments'] ?? []);
+        $name = PageAccess::stringArg($params, 'name');
+        if ($name === null) {
+            return $this->rpcError($id, -32602, 'Invalid params — tool "name" must be a string');
+        }
+        $arguments = (array) ($params['arguments'] ?? []);
 
         return match ($name) {
             'list_divi_pages'    => $this->toolListPages($id),
@@ -287,7 +293,10 @@ final class McpHandler
 
     private function toolSectionRecipes(mixed $id, array $args): WP_REST_Response
     {
-        $name = isset($args['name']) ? (string) $args['name'] : '';
+        $name = PageAccess::stringArg($args, 'name');
+        if ($name === null) {
+            return $this->rpcError($id, -32602, 'Invalid params — recipe "name" must be a string');
+        }
         if ($name !== '') {
             $markup = SectionRecipes::recipe($name);
             $text = $markup ?? ("Unknown recipe '{$name}'.\n\n" . SectionRecipes::catalog());
@@ -320,7 +329,7 @@ final class McpHandler
             'link'   => get_permalink($p),
         ], $posts);
 
-        UsageTracker::log('list_pages', null, 'valid');
+        UsageTracker::log('list_pages', null, 'read');
 
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => json_encode(['pages' => $pages, 'count' => count($pages)])]],
@@ -342,7 +351,7 @@ final class McpHandler
             return $this->rpcError($id, -32602, "You do not have permission to read page {$pageId}.");
         }
 
-        UsageTracker::log('get_layout', $pageId, 'valid');
+        UsageTracker::log('get_layout', $pageId, 'read');
 
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => json_encode([
@@ -365,7 +374,7 @@ final class McpHandler
         }
 
         $result = (new Validator())->validateContent($content);
-        UsageTracker::log('validate', null, $result->isValid() ? 'valid' : 'invalid', count($result->violations()));
+        UsageTracker::log('validate', null, $result->isValid() ? 'read' : 'invalid', count($result->violations()));
 
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => json_encode($result->toArray())]],
@@ -518,7 +527,7 @@ final class McpHandler
         if ($post instanceof WP_REST_Response) {
             return $post;
         }
-        UsageTracker::log('list_history', $post->ID, 'valid');
+        UsageTracker::log('list_history', $post->ID, 'read');
         $versions = HistoryService::listFor($post->ID);
 
         return $this->rpcResult($id, [
@@ -538,7 +547,7 @@ final class McpHandler
             UsageTracker::log('get_history', $post->ID, 'error');
             return $this->rpcError($id, -32602, "Version {$versionId} not found for page {$post->ID}.");
         }
-        UsageTracker::log('get_history', $post->ID, 'valid');
+        UsageTracker::log('get_history', $post->ID, 'read');
 
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => json_encode(['page_id' => $post->ID, 'version' => array_diff_key($entry, ['content' => 1]), 'post_content' => $entry['content']])]],
@@ -577,7 +586,7 @@ final class McpHandler
             return $this->rpcError($id, -32602, 'You do not have permission to read the Media Library.');
         }
         $result = MediaService::list($args);
-        UsageTracker::log('list_media', null, 'valid');
+        UsageTracker::log('list_media', null, 'read');
 
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => wp_json_encode($result)]],
