@@ -107,6 +107,17 @@ if ( ! function_exists( 'wp_remote_retrieve_response_code' ) ) {
 if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
     function wp_remote_retrieve_body( $res ) { return is_wp_error( $res ) ? '' : ( $res['body'] ?? '' ); }
 }
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+    // Mirrors core: drop script/style blocks including their content, then strip remaining tags.
+    function wp_strip_all_tags( $text, $remove_breaks = false ) {
+        $text = preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', (string) $text );
+        $text = strip_tags( (string) $text );
+        if ( $remove_breaks ) {
+            $text = preg_replace( '/[\r\n\t ]+/', ' ', $text );
+        }
+        return trim( $text );
+    }
+}
 if ( ! function_exists( 'wp_json_encode' ) ) {
     function wp_json_encode( $data ) { return json_encode( $data ); }
 }

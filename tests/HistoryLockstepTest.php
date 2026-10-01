@@ -73,5 +73,12 @@ class HistoryLockstepTest extends TestCase
         $spec = OpenApiSpec::spec('https://x.example/wp-json/ai-editor-divi5/v1', '9.9.9');
         $this->assertSame('listMediaImages', $spec['paths']['/media']['get']['operationId'] ?? null);
         $this->assertArrayHasKey('MediaItem', $spec['components']['schemas']);
+        $props = $spec['paths']['/media']['get']['responses']['200']['content']['application/json']['schema']['properties'] ?? [];
+        $this->assertSame('boolean', $props['truncated']['type'] ?? null);
+        $this->assertStringContainsString('truncated', $mcp);
+        $this->assertStringContainsString('truncated', $this->src('ImageGuide.php'));
+        $rest = $this->src('RestController.php');
+        $this->assertStringContainsString("'sanitize_callback' => 'sanitize_text_field'", $rest);
+        $this->assertStringContainsString("'maximum' => 200", $rest);
     }
 }

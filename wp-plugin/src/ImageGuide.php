@@ -59,6 +59,8 @@ Call `list_media_images` before using any built-in image:
 - Search by subject/keywords from Step 0.
 - Pass `orientation` per role: **hero** → `landscape`, **avatar / team** →
   `square`, **card / blog** → `landscape`.
+- The tool scans the newest 200 matches; if the result has `truncated: true`, narrow
+  with search words (older images are reachable that way).
 - Pick by the attachment's alt text and title (they say what the image shows).
 - Put the returned `url` in the Divi image module (`image.innerContent.{bp}.value.src`)
   and set the module's alt text from the attachment's alt.

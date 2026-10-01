@@ -349,7 +349,7 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'listMediaImages',
                         'summary'     => 'List Media Library images',
-                        'description' => 'Lists images already in the Media Library (read-only) so pages can reuse the owner\'s own images. Filter by search text and orientation. Returns id, title, alt, url, thumbnail, size and orientation for each image.',
+                        'description' => 'Lists images already in the Media Library (read-only) so pages can reuse the owner\'s own images. Scans the newest 200 matches (truncated=true if more; narrow with search). Filter by search and orientation. Returns id, title, alt, url, size, orientation.',
                         'parameters'  => [
                             ['name' => 'search', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Keywords matched against title, alt text and filename']],
                             ['name' => 'orientation', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'enum' => ['landscape', 'portrait', 'square'], 'description' => 'Orientation filter']],
@@ -365,6 +365,7 @@ final class OpenApiSpec
                                     'pages'    => ['type' => 'integer'],
                                     'page'     => ['type' => 'integer'],
                                     'per_page' => ['type' => 'integer'],
+                                    'truncated' => ['type' => 'boolean', 'description' => 'True when more matches exist beyond the 200 newest scanned; narrow with search'],
                                 ],
                             ]]]],
                             '403' => ['description' => 'Caller cannot read the Media Library'],

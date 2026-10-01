@@ -200,7 +200,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'list_media_images',
-                'description' => 'List images already in this site\'s Media Library (read-only). Call this BEFORE building a page and use a suitable image\'s "url" in Divi image modules (set the module alt text from the image alt). Filter with "search" (title/alt/filename) and "orientation" (landscape for heroes/cards, square for people). Use the built-in image pack (get_image_guide) only when the library has nothing suitable.',
+                'description' => 'List images already in this site\'s Media Library (read-only). Call this BEFORE building a page and use a suitable image\'s "url" in Divi image modules (set the module alt text from the image alt). Filter with "search" (title/alt/filename) and "orientation" (landscape for heroes/cards, square for people). Scans the newest 200 matches (the result has "truncated": true when more exist; narrow with search). Use the built-in image pack (get_image_guide) only when the library has nothing suitable.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -554,7 +554,7 @@ final class McpHandler
         UsageTracker::log('list_media', null, 'valid');
 
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode($result)]],
+            'content' => [['type' => 'text', 'text' => wp_json_encode($result)]],
         ]);
     }
 

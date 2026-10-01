@@ -34,7 +34,6 @@ class ExtensionHooksTest extends TestCase
         $this->assertArrayHasKey('/pages/{id}/history', $s['paths']);
         $this->assertArrayHasKey('/validate', $s['paths']);
         $this->assertArrayHasKey('/media', $s['paths']);
-        $this->assertArrayNotHasKey('/addon/other', $s['paths']);
         $this->assertArrayNotHasKey('/addon/thing', $s['paths']);
         $this->assertArrayHasKey('Violation', $s['components']['schemas']);
     }

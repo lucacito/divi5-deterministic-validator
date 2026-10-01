@@ -138,6 +138,12 @@ final class RestController
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => [$this, 'list_media'],
             'permission_callback' => [$this, 'require_edit_posts'],
+            'args'                => [
+                'search'      => ['type' => 'string', 'sanitize_callback' => 'sanitize_text_field', 'validate_callback' => fn($v) => is_string($v)],
+                'orientation' => ['type' => 'string', 'enum' => ['landscape', 'portrait', 'square'], 'validate_callback' => fn($v) => is_string($v) && in_array($v, ['landscape', 'portrait', 'square'], true)],
+                'per_page'    => ['type' => 'integer', 'minimum' => 1, 'maximum' => 50, 'validate_callback' => fn($v) => is_numeric($v) && (int) $v >= 1 && (int) $v <= 50],
+                'page'        => ['type' => 'integer', 'minimum' => 1, 'maximum' => 200, 'validate_callback' => fn($v) => is_numeric($v) && (int) $v >= 1 && (int) $v <= 200],
+            ],
         ]);
 
         // Extension point: add-ons register their own routes under the same namespace.
@@ -514,6 +520,7 @@ final class RestController
     public function list_media(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
         if (!current_user_can('upload_files')) {
+            UsageTracker::log('list_media', null, 'error');
             return new WP_Error('forbidden', 'You do not have permission to read the Media Library.', ['status' => 403]);
         }
         $result = MediaService::list([

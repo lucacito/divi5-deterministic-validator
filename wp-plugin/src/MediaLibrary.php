@@ -8,25 +8,69 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-/** Pure helpers for the read-only Media Library tool. No WordPress calls. */
+/** Pure helpers for the read-only Media Library tool. Only core string helper used: wp_strip_all_tags(). */
 final class MediaLibrary
 {
     public const DEFAULT_PER_PAGE = 20;
     public const MAX_PER_PAGE     = 50;
     public const SCAN_LIMIT       = 200;
 
+    public const MAX_SEARCH_LENGTH = 200;
+
     public static function perPage( mixed $v ): int
     {
-        if ( ! is_numeric( $v ) ) {
+        $n = self::finite( $v );
+        if ( null === $n ) {
             return self::DEFAULT_PER_PAGE;
         }
 
-        return max( 1, min( self::MAX_PER_PAGE, (int) $v ) );
+        return (int) max( 1, min( self::MAX_PER_PAGE, $n ) );
     }
 
+    /** More than SCAN_LIMIT pages can never exist (one item per page at minimum), so the page is clamped to it. */
     public static function page( mixed $v ): int
     {
-        return is_numeric( $v ) ? max( 1, (int) $v ) : 1;
+        $n = self::finite( $v );
+
+        return null === $n ? 1 : (int) max( 1, min( self::SCAN_LIMIT, $n ) );
+    }
+
+    /** Zero-based slice offset from an already-clamped page and per-page (cannot overflow). */
+    public static function offset( int $page, int $perPage ): int
+    {
+        return ( max( 1, min( self::SCAN_LIMIT, $page ) ) - 1 ) * max( 1, min( self::MAX_PER_PAGE, $perPage ) );
+    }
+
+    /** True when a bounded query returned as many rows as the scan limit (more may exist). */
+    public static function isTruncated( int $queryCount, int $scanLimit = self::SCAN_LIMIT ): bool
+    {
+        return $queryCount >= $scanLimit;
+    }
+
+    /** Trimmed search text capped at MAX_SEARCH_LENGTH bytes without splitting a multibyte character. */
+    public static function searchTerm( mixed $v ): string
+    {
+        $s = is_string( $v ) ? trim( $v ) : '';
+        if ( strlen( $s ) > self::MAX_SEARCH_LENGTH ) {
+            $s = substr( $s, 0, self::MAX_SEARCH_LENGTH );
+            // Drop a trailing partial UTF-8 sequence (at most 3 bytes) left by the byte cut.
+            for ( $i = 0; $i < 3 && 1 !== preg_match( '//u', $s ); $i++ ) {
+                $s = substr( $s, 0, -1 );
+            }
+            $s = trim( $s );
+        }
+
+        return $s;
+    }
+
+    private static function finite( mixed $v ): ?float
+    {
+        if ( ! is_numeric( $v ) ) {
+            return null;
+        }
+        $n = (float) $v;
+
+        return is_finite( $n ) ? $n : null;
     }
 
     public static function normalizeOrientation( mixed $v ): ?string
@@ -62,9 +106,7 @@ final class MediaLibrary
      */
     public static function formatItem( array $a ): array
     {
-        // Pure class (no WordPress calls, unit-tested without WP), so plain strip_tags() rather than wp_strip_all_tags().
-        // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags
-        $clean = static fn ( mixed $v ): string => trim( (string) preg_replace( '/\s+/', ' ', strip_tags( (string) $v ) ) );
+        $clean = static fn ( mixed $v ): string => trim( (string) preg_replace( '/\s+/', ' ', wp_strip_all_tags( (string) $v ) ) );
         $w     = (int) ( $a['width'] ?? 0 );
         $h     = (int) ( $a['height'] ?? 0 );
 
