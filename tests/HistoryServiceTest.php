@@ -22,6 +22,7 @@ class HistoryServiceTest extends TestCase
         $GLOBALS['__wp_posts']       = [ 5 => (object) [ 'ID' => 5, 'post_type' => 'page', 'post_content' => 'ORIGINAL' ] ];
         $GLOBALS['__wp_postmeta']    = [];
         $GLOBALS['__wp_update_fail'] = false;
+        $GLOBALS['__wp_meta_fail']   = false;
     }
 
     public function testWriteSnapshotsPreviousContentThenSavesNew(): void
@@ -131,6 +132,8 @@ class HistoryServiceTest extends TestCase
         $this->assertFalse( $r2['snapshot']['stored'] );
         $this->assertSame( 'duplicate', $r2['snapshot']['reason'] );
         $this->assertNotNull( $r2['snapshot']['version_id'] );
+        $this->assertSame( 2, $r2['snapshot']['version_id'] );
+        $this->assertCount( 2, HistoryService::listFor( 5 ) );
     }
 
     public function testListForReturnsSummariesWithoutContent(): void
@@ -140,5 +143,93 @@ class HistoryServiceTest extends TestCase
         $this->assertCount( 1, $list );
         $this->assertArrayNotHasKey( 'content', $list[0] );
         $this->assertSame( 'update_page_layout', $list[0]['tool'] );
+    }
+
+    public function testMetaWriteFailureIsReportedAsStoreFailedAndWriteStillSucceeds(): void
+    {
+        HistoryService::write( 5, 'B', 'update_page_layout' );               // snapshot #1 = ORIGINAL
+        $before = $GLOBALS['__wp_postmeta'][5][ HistoryStore::META_KEY ];
+        $GLOBALS['__wp_meta_fail'] = true;
+        $r = HistoryService::write( 5, 'C', 'update_page_layout' );
+        $this->assertTrue( $r['ok'] );
+        $this->assertSame( 'C', $GLOBALS['__wp_posts'][5]->post_content );
+        $this->assertFalse( $r['snapshot']['stored'] );
+        $this->assertNull( $r['snapshot']['version_id'] );
+        $this->assertSame( 'store_failed', $r['snapshot']['reason'] );
+        $this->assertSame( $before, $GLOBALS['__wp_postmeta'][5][ HistoryStore::META_KEY ] );
+        $this->assertCount( 1, HistoryService::listFor( 5 ) );
+    }
+
+    public function testInvalidUtf8PreWriteContentKeepsExistingHistoryAndIds(): void
+    {
+        HistoryService::write( 5, 'B', 'update_page_layout' );               // #1 = ORIGINAL
+        HistoryService::write( 5, 'C', 'update_page_layout' );               // #2 = B
+        $GLOBALS['__wp_posts'][5]->post_content = "bad \xC3\x28 bytes";
+        $r = HistoryService::write( 5, 'D', 'update_page_layout' );
+        $this->assertTrue( $r['ok'] );
+        $this->assertSame( 'D', $GLOBALS['__wp_posts'][5]->post_content );
+        $this->assertFalse( $r['snapshot']['stored'] );
+        $this->assertSame( 'invalid_encoding', $r['snapshot']['reason'] );
+        $this->assertSame( [ 2, 1 ], array_column( HistoryService::listFor( 5 ), 'id' ) );
+        $this->assertSame( 'B', HistoryService::entry( 5, 2 )['content'] );
+
+        $next = HistoryService::write( 5, 'E', 'update_page_layout' );       // pre-write 'D' -> id 3, not reused
+        $this->assertSame( 3, $next['snapshot']['version_id'] );
+    }
+
+    public function testStoreSaveReturnsFalseAndWritesNothingWhenEncodeFails(): void
+    {
+        $this->assertFalse( HistoryStore::save( 5, [ 'next' => 2, 'items' => [ [ 'id' => 1, 'content' => "\xC3\x28" ] ] ] ) );
+        $this->assertArrayNotHasKey( HistoryStore::META_KEY, $GLOBALS['__wp_postmeta'][5] ?? [] );
+        $this->assertTrue( HistoryStore::save( 5, [ 'next' => 1, 'items' => [] ] ) );
+    }
+
+    public function testWriteToMissingPageFailsWithoutCreatingMeta(): void
+    {
+        $r = HistoryService::write( 999, 'X', 'update_page_layout' );
+        $this->assertFalse( $r['ok'] );
+        $this->assertSame( 'update_failed', $r['error'] );
+        $this->assertSame( 'Page 999 not found.', $r['message'] );
+        $this->assertSame( [ 'stored' => false, 'version_id' => null, 'reason' => null ], $r['snapshot'] );
+        $this->assertArrayNotHasKey( 999, $GLOBALS['__wp_postmeta'] );
+    }
+
+    public function testRestoreFailureShapesCarryASnapshotKey(): void
+    {
+        $nf = HistoryService::restore( 5, 99 );
+        $this->assertSame( [ 'stored' => false, 'version_id' => null, 'reason' => null ], $nf['snapshot'] );
+
+        $w = HistoryService::write( 5, 'NEW', 'update_page_layout' );
+        $GLOBALS['__wp_update_fail'] = true;
+        $r = HistoryService::restore( 5, $w['snapshot']['version_id'] );
+        $this->assertFalse( $r['ok'] );
+        $this->assertSame( 'update_failed', $r['error'] );
+        $this->assertArrayHasKey( 'snapshot', $r );
+        $this->assertSame( 'NEW', $GLOBALS['__wp_posts'][5]->post_content );
+    }
+
+    public function testThirteenWritesKeepNewestTenWithMonotonicIds(): void
+    {
+        for ( $i = 1; $i <= 13; $i++ ) {
+            $r = HistoryService::write( 5, "V{$i}", 'update_page_layout' );
+            $this->assertSame( $i, $r['snapshot']['version_id'] );
+        }
+        $this->assertSame( [ 13, 12, 11, 10, 9, 8, 7, 6, 5, 4 ], array_column( HistoryService::listFor( 5 ), 'id' ) );
+        $this->assertSame( 14, HistoryService::write( 5, 'V14', 'update_page_layout' )['snapshot']['version_id'] );
+    }
+
+    public function testRestoringTheOldestVersionWhenHistoryIsFullSucceeds(): void
+    {
+        for ( $i = 1; $i <= 10; $i++ ) {
+            HistoryService::write( 5, "V{$i}", 'update_page_layout' );       // ids 1..10, #1 = ORIGINAL
+        }
+        $this->assertCount( PageHistory::RETENTION, HistoryService::listFor( 5 ) );
+        $oldest = HistoryService::entry( 5, 1 );
+        $this->assertSame( 'ORIGINAL', $oldest['content'] );
+
+        $r = HistoryService::restore( 5, 1 );
+        $this->assertTrue( $r['ok'] );
+        $this->assertSame( 'ORIGINAL', $GLOBALS['__wp_posts'][5]->post_content );
+        $this->assertTrue( $r['snapshot']['stored'] );
     }
 }

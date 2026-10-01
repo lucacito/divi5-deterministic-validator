@@ -21,8 +21,11 @@ final class HistoryService
     /** @return array{ok:bool, snapshot:array, error?:string, message?:string} */
     public static function write( int $pageId, string $newContent, string $tool ): array
     {
-        $post     = get_post( $pageId );
-        $snapshot = self::snapshot( $pageId, $post ? (string) $post->post_content : '', $tool );
+        $post = get_post( $pageId );
+        if ( ! $post ) {
+            return [ 'ok' => false, 'error' => 'update_failed', 'message' => "Page {$pageId} not found.", 'snapshot' => self::noSnapshot() ];
+        }
+        $snapshot = self::snapshot( $pageId, (string) $post->post_content, $tool );
 
         // wp_slash: wp_update_post runs wp_unslash internally, which would strip
         // backslashes from escaped HTML (e.g. <) and corrupt the content.
@@ -51,7 +54,7 @@ final class HistoryService
     {
         $target = self::entry( $pageId, $versionId );
         if ( null === $target ) {
-            return [ 'ok' => false, 'error' => 'version_not_found', 'message' => "Version {$versionId} not found for page {$pageId}." ];
+            return [ 'ok' => false, 'error' => 'version_not_found', 'message' => "Version {$versionId} not found for page {$pageId}.", 'snapshot' => self::noSnapshot() ];
         }
 
         $post     = get_post( $pageId );
@@ -59,7 +62,7 @@ final class HistoryService
 
         $updated = wp_update_post( wp_slash( [ 'ID' => $pageId, 'post_content' => (string) $target['content'] ] ), true );
         if ( is_wp_error( $updated ) ) {
-            return [ 'ok' => false, 'error' => 'update_failed', 'message' => $updated->get_error_message() ];
+            return [ 'ok' => false, 'error' => 'update_failed', 'message' => $updated->get_error_message(), 'snapshot' => $snapshot ];
         }
 
         // Restore is NOT a validated write: it returns the person's own earlier content.
@@ -78,6 +81,12 @@ final class HistoryService
     }
 
     /** @return array{stored:bool, version_id:?int, reason:?string} */
+    private static function noSnapshot(): array
+    {
+        return [ 'stored' => false, 'version_id' => null, 'reason' => null ];
+    }
+
+    /** @return array{stored:bool, version_id:?int, reason:null|'duplicate'|'too_large'|'invalid_encoding'|'store_failed'} */
     private static function snapshot( int $pageId, string $before, string $tool, ?string $label = null ): array
     {
         $result = PageHistory::record(
@@ -88,8 +97,8 @@ final class HistoryService
             gmdate( 'Y-m-d\TH:i:s\Z' ),
             $label
         );
-        if ( $result['stored'] ) {
-            HistoryStore::save( $pageId, $result['history'] );
+        if ( $result['stored'] && ! HistoryStore::save( $pageId, $result['history'] ) ) {
+            return [ 'stored' => false, 'version_id' => null, 'reason' => 'store_failed' ];
         }
 
         return [ 'stored' => $result['stored'], 'version_id' => $result['version_id'], 'reason' => $result['reason'] ];

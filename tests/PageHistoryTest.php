@@ -67,6 +67,23 @@ class PageHistoryTest extends TestCase
         $this->assertSame([], $r['history']['items']);
     }
 
+    public function testInvalidUtf8ContentIsNotStoredAndHistoryIsUnchanged(): void
+    {
+        $h = $this->rec(PageHistory::empty(), 'A')['history'];
+        $r = $this->rec($h, "bad \xC3\x28 bytes");
+        $this->assertFalse($r['stored']);
+        $this->assertNull($r['version_id']);
+        $this->assertSame('invalid_encoding', $r['reason']);
+        $this->assertSame($h, $r['history']);
+    }
+
+    public function testValidMultibyteUtf8IsStillStored(): void
+    {
+        $r = $this->rec(PageHistory::empty(), "h\u{e9}llo \u{1F600}");
+        $this->assertTrue($r['stored']);
+        $this->assertSame("h\u{e9}llo \u{1F600}", $r['history']['items'][0]['content']);
+    }
+
     public function testContentExactlyAtTheCapIsStored(): void
     {
         $r = $this->rec(PageHistory::empty(), str_repeat('x', PageHistory::MAX_BYTES));

@@ -138,6 +138,7 @@ if ( ! function_exists( 'esc_html_e' ) ) {
 $GLOBALS['__wp_posts'] = [];      // id => object{ID, post_type, post_content}
 $GLOBALS['__wp_postmeta'] = [];   // id => [key => value]
 $GLOBALS['__wp_update_fail'] = false;
+$GLOBALS['__wp_meta_fail'] = false;
 
 if ( ! function_exists( 'wp_slash' ) ) {
     function wp_slash( $value ) {
@@ -178,7 +179,13 @@ if ( ! function_exists( 'get_post_meta' ) ) {
 }
 if ( ! function_exists( 'update_post_meta' ) ) {
     // Mirrors core: the value is unslashed on write.
-    function update_post_meta( $id, $key, $value ) { $GLOBALS['__wp_postmeta'][ (int) $id ][ $key ] = wp_unslash( $value ); return true; }
+    function update_post_meta( $id, $key, $value ) {
+        if ( $GLOBALS['__wp_meta_fail'] ) {
+            return false;
+        }
+        $GLOBALS['__wp_postmeta'][ (int) $id ][ $key ] = wp_unslash( $value );
+        return true;
+    }
 }
 if ( ! function_exists( 'delete_post_meta_by_key' ) ) {
     function delete_post_meta_by_key( $key ) { foreach ( $GLOBALS['__wp_postmeta'] as $id => $m ) { unset( $GLOBALS['__wp_postmeta'][ $id ][ $key ] ); } return true; }

@@ -44,7 +44,7 @@ final class PageHistory
 
     /**
      * @param array{next:int, items:list<array<string,mixed>>} $history
-     * @return array{history:array{next:int, items:list<array<string,mixed>>}, stored:bool, version_id:?int, reason:?string}
+     * @return array{history:array{next:int, items:list<array<string,mixed>>}, stored:bool, version_id:?int, reason:null|'duplicate'|'too_large'|'invalid_encoding'}
      */
     public static function record( array $history, string $content, string $tool, int $actor, string $savedAt, ?string $label = null ): array
     {
@@ -53,6 +53,11 @@ final class PageHistory
 
         if ( $bytes > self::MAX_BYTES ) {
             return [ 'history' => $history, 'stored' => false, 'version_id' => null, 'reason' => 'too_large' ];
+        }
+
+        // A snapshot that cannot be JSON-encoded would wipe the whole stored history.
+        if ( ! mb_check_encoding( $content, 'UTF-8' ) ) {
+            return [ 'history' => $history, 'stored' => false, 'version_id' => null, 'reason' => 'invalid_encoding' ];
         }
 
         $sha = hash( 'sha256', $content );

@@ -22,11 +22,21 @@ final class HistoryStore
         return PageHistory::normalize( $decoded );
     }
 
-    public static function save( int $pageId, array $history ): void
+    /**
+     * Returns false (and writes nothing) if the history cannot be encoded or the
+     * meta write fails, so an existing history is never overwritten with junk.
+     */
+    public static function save( int $pageId, array $history ): bool
     {
+        $json = wp_json_encode( $history );
+        if ( ! is_string( $json ) || '' === $json ) {
+            return false;
+        }
+
         // wp_slash: update_post_meta runs wp_unslash on the value; without it the
         // backslashes in the JSON (and in escaped Divi HTML) would be stripped.
-        update_post_meta( $pageId, self::META_KEY, wp_slash( (string) wp_json_encode( $history ) ) );
+        // Note: update_post_meta returns false on DB failure (int|true on success).
+        return false !== update_post_meta( $pageId, self::META_KEY, wp_slash( $json ) );
     }
 
     public static function deleteAll(): void
