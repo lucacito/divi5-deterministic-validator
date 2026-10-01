@@ -112,4 +112,45 @@ class SectionRecipesTest extends TestCase
     {
         $this->assertStringContainsString('list_media_images', SectionRecipes::catalog());
     }
+
+    public function testEveryRecipeImageHasMeaningfulAltText(): void
+    {
+        $slots = 0;
+        foreach (SectionRecipes::names() as $name) {
+            $md = (string) SectionRecipes::recipe($name);
+            if (!str_contains($md, '<!-- wp:divi/image ')) {
+                continue;
+            }
+            preg_match_all('#<!-- wp:divi/image (\{.*?\}) /-->#s', $md, $blocks);
+            $this->assertNotEmpty($blocks[1] ?? [], "$name: image blocks should be parseable");
+            $this->assertSame(substr_count($md, '<!-- wp:divi/image '), count($blocks[1]), "$name: every image block must be parsed");
+            foreach ($blocks[1] as $json) {
+                $attrs = json_decode($json, true);
+                $this->assertIsArray($attrs, "$name: image block JSON must decode");
+                $slots++;
+                $value = $attrs['image']['innerContent']['desktop']['value'] ?? [];
+                $alt = (string) ($value['alt'] ?? '');
+                $this->assertNotSame('', trim($alt), "$name: image {$value['src']} has no alt");
+                $this->assertNotSame('image', strtolower(trim($alt)), "$name: image alt must not be the literal 'Image'");
+                // Leftover export-style names (file names, @2x) must not survive as title/alt attributes.
+                $htmlAttrs = $attrs['module']['decoration']['attributes']['desktop']['value']['attributes'] ?? [];
+                foreach ($htmlAttrs as $a) {
+                    if (in_array($a['name'] ?? '', ['alt', 'title'], true)) {
+                        $this->assertSame($alt, $a['value'], "$name: image {$a['name']} attribute must match the alt text");
+                    }
+                }
+            }
+        }
+        $this->assertGreaterThanOrEqual(11, $slots, 'expected to inspect every image slot');
+    }
+
+    public function testImageCarouselIsALogoStrip(): void
+    {
+        $md = (string) SectionRecipes::recipe('image-carousel');
+        preg_match_all('#/assets/images/([a-z0-9-]+)\.svg#', $md, $m);
+        $this->assertGreaterThan(1, count($m[1]));
+        foreach ($m[1] as $file) {
+            $this->assertStringStartsWith('logo-', $file, 'carousel recipe is a logo strip');
+        }
+    }
 }

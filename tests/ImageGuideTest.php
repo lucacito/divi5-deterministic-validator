@@ -20,6 +20,16 @@ require_once __DIR__ . '/../wp-plugin/src/ImageGuide.php';
  */
 class ImageGuideTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        $GLOBALS['__wp_filters'] = [];
+    }
+
+    protected function tearDown(): void
+    {
+        $GLOBALS['__wp_filters'] = [];
+    }
+
     private const HOSTS = ['picsum', 'pravatar', 'randomuser', 'placehold.co', 'loremflickr', 'unsplash', 'pexels', 'pixabay'];
 
     public function testCataloguesEveryBundledImageWithItsRealUrl(): void
@@ -76,12 +86,19 @@ class ImageGuideTest extends TestCase
 
     public function testImageGuideFilterReceivesAndReturnsMarkdown(): void
     {
-        add_filter('jhmg_aied_image_guide', static fn (string $md): string => $md . "\n\n## Add-on sourcing\n", 10, 1);
-        try {
-            $this->assertStringEndsWith("## Add-on sourcing\n", ImageGuide::markdown());
-        } finally {
-            remove_all_filters('jhmg_aied_image_guide');
+        $builtIn = ImageGuide::markdown();
+        add_filter('jhmg_aied_image_guide', static fn (string $md): string => $md . "\n\nextra", 10, 1);
+        $this->assertSame($builtIn . "\n\nextra", ImageGuide::markdown());
+    }
+
+    public function testBadImageGuideFilterResultsLeaveTheBuiltInGuideIntact(): void
+    {
+        $builtIn = ImageGuide::markdown();
+        $this->assertNotSame('', $builtIn);
+        foreach ([fn () => null, fn () => ['x'], fn () => '', fn () => 42, fn () => false] as $bad) {
+            $GLOBALS['__wp_filters'] = [];
+            add_filter('jhmg_aied_image_guide', $bad, 10, 1);
+            $this->assertSame($builtIn, ImageGuide::markdown());
         }
-        $this->assertStringNotContainsString('Add-on sourcing', ImageGuide::markdown());
     }
 }

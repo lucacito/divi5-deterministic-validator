@@ -30,18 +30,26 @@ final class ImagePack
      * `{{aied:image:…}}` tokens (used by tests and recipes); with a base URL it
      * lists each image's real, copyable URL (what the AI must use).
      */
-    public static function catalogMarkdown( string $baseUrl = '' ): string
+    public static function catalogMarkdown( string $baseUrl = '', ?string $manifestPath = null ): string
     {
         $withUrl = '' !== $baseUrl;
         $base    = rtrim( $baseUrl, '/' );
         $lines   = $withUrl
             ? [ '| Token | URL | Role | Ratio | Palette | What it shows |', '|---|---|---|---|---|---|' ]
             : [ '| Token | Role | Ratio | Palette | What it shows |', '|---|---|---|---|---|' ];
-        foreach ( self::manifest()['images'] as $i ) {
+        foreach ( self::manifest( $manifestPath )['images'] as $i ) {
+            $token = (string) ( $i['token'] ?? '' );
+            $role  = (string) ( $i['role'] ?? '' );
+            $ratio = (string) ( $i['ratio'] ?? '' );
+            $pal   = (string) ( $i['palette'] ?? '' );
+            $alt   = (string) ( $i['alt'] ?? '' );
+            if ( '' === $token ) {
+                continue;
+            }
             if ( $withUrl ) {
-                $lines[] = sprintf( '| `%s` | %s | %s | %s | %s | %s |', $i['token'], $base . '/' . $i['file'], $i['role'], $i['ratio'], $i['palette'], $i['alt'] );
+                $lines[] = sprintf( '| `%s` | %s | %s | %s | %s | %s |', $token, $base . '/' . (string) ( $i['file'] ?? '' ), $role, $ratio, $pal, $alt );
             } else {
-                $lines[] = sprintf( '| `{{aied:image:%s}}` | %s | %s | %s | %s |', $i['token'], $i['role'], $i['ratio'], $i['palette'], $i['alt'] );
+                $lines[] = sprintf( '| `{{aied:image:%s}}` | %s | %s | %s | %s |', $token, $role, $ratio, $pal, $alt );
             }
         }
 

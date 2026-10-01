@@ -82,6 +82,21 @@ class ImagePackTest extends TestCase
         }
     }
 
+    public function testCatalogMarkdownToleratesIncompleteManifestEntries(): void
+    {
+        $dir = sys_get_temp_dir() . '/aied-cat-' . bin2hex(random_bytes(4));
+        mkdir($dir);
+        file_put_contents($dir . '/manifest.json', json_encode(['fallback' => 'a', 'images' => [['token' => 'a'], ['file' => 'x.svg']]]));
+        try {
+            $md = ImagePack::catalogMarkdown('https://s.example/i', $dir . '/manifest.json');
+            $this->assertStringContainsString('`a`', $md);
+            $this->assertStringNotContainsString('{{aied:', $md);
+        } finally {
+            unlink($dir . '/manifest.json');
+            rmdir($dir);
+        }
+    }
+
     public function testGeneratorIsDeterministic(): void
     {
         $tmp = sys_get_temp_dir() . '/aied-pack-' . bin2hex(random_bytes(4));

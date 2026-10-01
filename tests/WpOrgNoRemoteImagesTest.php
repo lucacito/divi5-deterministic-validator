@@ -39,6 +39,7 @@ class WpOrgNoRemoteImagesTest extends TestCase
         $mcp = (string) file_get_contents(dirname(__DIR__) . '/wp-plugin/src/McpHandler.php');
         $this->assertStringContainsString('list_media_images', $mcp);
         $this->assertStringContainsString('get_image_guide', $mcp);
+        $this->assertSame(2, substr_count($mcp, '(or an image URL the owner supplied)'), 'create_page and update_page_layout must match the guide rule about owner-supplied images');
     }
 
     public function testSiteGuideDoesNotPromiseWiredNavigation(): void

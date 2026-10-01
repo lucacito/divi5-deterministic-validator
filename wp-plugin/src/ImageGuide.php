@@ -26,7 +26,10 @@ final class ImageGuide
 
         $markdown = self::intro() . "\n" . ImagePack::catalogMarkdown( $base ) . "\n\n" . self::rules();
 
-        return (string) apply_filters( 'jhmg_aied_image_guide', $markdown );
+        // A misbehaving add-on filter (null, array, empty string) must never blank the guide.
+        $filtered = apply_filters( 'jhmg_aied_image_guide', $markdown );
+
+        return is_string( $filtered ) && '' !== $filtered ? $filtered : $markdown;
     }
 
     private static function intro(): string
