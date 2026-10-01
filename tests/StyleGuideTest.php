@@ -79,4 +79,11 @@ class StyleGuideTest extends TestCase
         $this->assertStringContainsString('valid: false', $md);
         $this->assertStringContainsString('counts as one removed/added block', $md);
     }
+
+    public function testHeaderAndFooterSectionTeachesListThemeLayouts(): void
+    {
+        $md = StyleGuide::markdown();
+        $this->assertStringContainsString('list_theme_layouts', $md);
+        $this->assertStringContainsString('layout_id', $md);
+    }
 }
