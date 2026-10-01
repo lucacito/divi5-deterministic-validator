@@ -18,6 +18,9 @@ final class HistoryService
 {
     public const TOOL_RESTORE = 'restore';
 
+    /** How many most-recently-modified pages the dashboard scans for history. */
+    private const RECENT_SCAN = 15;
+
     /** @return array{ok:bool, snapshot:array, error?:string, message?:string} */
     public static function write( int $pageId, string $newContent, string $tool ): array
     {
@@ -90,7 +93,9 @@ final class HistoryService
             $pageIds = array_map( 'intval', get_posts( [
                 'post_type'      => 'page',
                 'post_status'    => 'any',
-                'posts_per_page' => 50,
+                'posts_per_page' => self::RECENT_SCAN,
+                'orderby'        => 'modified',
+                'order'          => 'DESC',
                 'fields'         => 'ids',
                 'meta_key'       => HistoryStore::META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
             ] ) );
@@ -98,7 +103,14 @@ final class HistoryService
 
         $byPage = [];
         foreach ( $pageIds as $pageId ) {
-            $byPage[ $pageId ] = HistoryStore::load( (int) $pageId );
+            // Keep only the newest item's metadata: the stored histories can hold
+            // up to 10 x 512 KB of content per page and only items[0] is needed.
+            $h = HistoryStore::load( (int) $pageId );
+            if ( $h['items'] !== [] ) {
+                $h['items'] = [ array_merge( $h['items'][0], [ 'content' => '' ] ) ];
+            }
+            $byPage[ $pageId ] = $h;
+            unset( $h );
         }
 
         $rows = [];

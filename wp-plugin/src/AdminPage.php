@@ -436,7 +436,15 @@ final class AdminPage
                     $title = '' === $row['title'] ? __( '(no title)', 'ai-editor-for-divi-5' ) : $row['title']; ?>
                     <tr>
                         <td><strong><?php echo esc_html( $title ); ?></strong></td>
-                        <td><?php echo esc_html( (string) $row['saved_at'] ); ?></td>
+                        <?php
+                        $savedAt = (string) $row['saved_at'];
+                        $ts      = strtotime( $savedAt );
+                        $when    = false === $ts
+                            ? $savedAt
+                            /* translators: %s: how long ago, e.g. "5 minutes" */
+                            : sprintf( __( '%s ago', 'ai-editor-for-divi-5' ), human_time_diff( $ts ) );
+                        ?>
+                        <td title="<?php echo esc_attr( $savedAt ); ?>"><?php echo esc_html( $when ); ?></td>
                         <td><code><?php echo esc_html( (string) $row['tool'] ); ?></code></td>
                         <td>
                             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"

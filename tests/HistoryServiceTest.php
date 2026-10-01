@@ -246,4 +246,55 @@ class HistoryServiceTest extends TestCase
         $this->assertSame( [ 'About', 'Home' ], $titles );
         $this->assertSame( [ 1 ], array_unique( array_column( $rows, 'version_id' ) ) );
     }
+
+    private function seedHistory( int $pageId, string $savedAt, string $content = 'C', int $id = 1 ): void
+    {
+        HistoryStore::save( $pageId, [
+            'next'  => $id + 1,
+            'items' => [ [ 'id' => $id, 'saved_at' => $savedAt, 'tool' => 'update_page', 'actor' => 1, 'bytes' => strlen( $content ), 'sha256' => hash( 'sha256', $content ), 'label' => null, 'content' => $content ] ],
+        ] );
+    }
+
+    public function testRecentHonoursLimitAndOrdersNewestFirst(): void
+    {
+        foreach ( [ 6, 7 ] as $id ) {
+            $GLOBALS['__wp_posts'][ $id ] = (object) [ 'ID' => $id, 'post_type' => 'page', 'post_title' => "P{$id}", 'post_content' => 'x' ];
+        }
+        $this->seedHistory( 5, '2026-01-01T00:00:00Z' );
+        $this->seedHistory( 6, '2026-03-01T00:00:00Z' );
+        $this->seedHistory( 7, '2026-02-01T00:00:00Z' );
+        $rows = HistoryService::recent( 2, [ 5, 6, 7 ] );
+        $this->assertCount( 2, $rows );
+        $this->assertSame( [ 6, 7 ], array_column( $rows, 'page_id' ) );
+    }
+
+    public function testRecentMissingPostYieldsEmptyTitleWithoutWarning(): void
+    {
+        $this->seedHistory( 99, '2026-01-01T00:00:00Z' );
+        $rows = HistoryService::recent( 5, [ 99 ] );
+        $this->assertCount( 1, $rows );
+        $this->assertSame( '', $rows[0]['title'] );
+        $this->assertSame( 99, $rows[0]['page_id'] );
+    }
+
+    public function testRecentIgnoresGarbageMeta(): void
+    {
+        $GLOBALS['__wp_postmeta'][5][ HistoryStore::META_KEY ] = '{not json';
+        $this->assertSame( [], HistoryService::recent( 5, [ 5 ] ) );
+        $GLOBALS['__wp_postmeta'][5][ HistoryStore::META_KEY ] = '{"items":"nope"}';
+        $this->assertSame( [], HistoryService::recent( 5, [ 5 ] ) );
+    }
+
+    public function testRecentRowsNeverCarryContentEvenWhenLarge(): void
+    {
+        $big = str_repeat( 'A', 400 * 1024 );
+        $GLOBALS['__wp_posts'][5]->post_title = 'Big';
+        $this->seedHistory( 5, '2026-01-01T00:00:00Z', $big );
+        $rows = HistoryService::recent( 5, [ 5 ] );
+        $this->assertCount( 1, $rows );
+        $this->assertArrayNotHasKey( 'content', $rows[0] );
+        $this->assertLessThan( 1000, strlen( serialize( $rows ) ) );
+        // The stored history itself is untouched.
+        $this->assertSame( $big, HistoryService::entry( 5, 1 )['content'] );
+    }
 }
