@@ -21,7 +21,9 @@ final class HistoryTable
     /** No legacy `_aied_history` post meta is left to import. */
     public const STAGE_MIGRATED = 2;
 
-    private const BACKOFF_TRANSIENT = 'ai_editor_divi5_history_backoff';
+    /** Set after a refused CREATE TABLE or a migration batch with a failed page: no retry until it expires. */
+    public const BACKOFF_TRANSIENT = 'ai_editor_divi5_history_backoff';
+    public const BACKOFF_SECONDS   = 300;
     /** Pages whose legacy meta is imported per request. */
     private const MIGRATION_BATCH = 20;
 
@@ -108,7 +110,7 @@ final class HistoryTable
             self::createTable();
             if ( ! self::exists() ) {
                 // The host refused CREATE TABLE (or it failed): wait instead of retrying every request.
-                set_transient( self::BACKOFF_TRANSIENT, 1, 5 * MINUTE_IN_SECONDS );
+                set_transient( self::BACKOFF_TRANSIENT, 1, self::BACKOFF_SECONDS );
 
                 return;
             }

@@ -144,6 +144,41 @@ class HistoryMigrationTest extends TestCase
         $this->assertTrue( HistoryMigration::run( 2 ), 'a finished migration stays finished' );
     }
 
+    public function testAFailingPageBacksTheMigrationOffInsteadOfRetryingEveryRequest(): void
+    {
+        $this->seedLegacy( 5, $this->legacyJson( 1, 2 ) );
+        $GLOBALS['wpdb']->failInserts = true;
+
+        $this->assertFalse( HistoryMigration::run( 20 ) );
+        $this->assertArrayHasKey( HistoryTable::BACKOFF_TRANSIENT, $GLOBALS['__wp_transients'] );
+        $this->assertTrue( $this->hasLegacy( 5 ) );
+
+        $GLOBALS['wpdb']->queries = [];
+        HistoryTable::ensureReady();
+        $this->assertSame( [], $GLOBALS['wpdb']->queries, 'backed off: the database is not touched' );
+        $this->assertSame( HistoryTable::STAGE_TABLE, (int) $GLOBALS['__wp_options'][ HistoryTable::DB_VERSION_OPTION ] );
+
+        HistoryTable::ensureReady( true );
+        $this->assertNotSame( [], $GLOBALS['wpdb']->queries, 'activation ignores the backoff' );
+
+        $GLOBALS['wpdb']->queries = [];
+        unset( $GLOBALS['__wp_transients'][ HistoryTable::BACKOFF_TRANSIENT ] );
+        $GLOBALS['wpdb']->failInserts = false;
+        HistoryTable::ensureReady();
+        $this->assertNotSame( [], $GLOBALS['wpdb']->queries, 'once the backoff is over the migration runs again' );
+        $this->assertSame( HistoryTable::STAGE_MIGRATED, (int) $GLOBALS['__wp_options'][ HistoryTable::DB_VERSION_OPTION ] );
+        $this->assertFalse( $this->hasLegacy( 5 ) );
+    }
+
+    public function testAHealthyFullBatchDoesNotSetTheBackoff(): void
+    {
+        foreach ( [ 11, 12, 13 ] as $id ) {
+            $this->seedLegacy( $id, $this->legacyJson( 1 ) );
+        }
+        $this->assertFalse( HistoryMigration::run( 2 ), 'a full batch: more pages may remain' );
+        $this->assertArrayNotHasKey( HistoryTable::BACKOFF_TRANSIENT, $GLOBALS['__wp_transients'] );
+    }
+
     public function testLazyImportShowsAndRestoresOldHistoryBeforeTheBatchRuns(): void
     {
         $this->seedLegacy( 5, $this->legacyJson( 1, 2 ) );

@@ -70,6 +70,11 @@ final class HistoryMigration
             }
         }
 
+        if ( ! $allDone ) {
+            // A page that cannot be stored would be retried on every request: wait before the next batch.
+            set_transient( HistoryTable::BACKOFF_TRANSIENT, 1, HistoryTable::BACKOFF_SECONDS );
+        }
+
         return $allDone && count( $ids ) < $limit;
     }
 }
