@@ -308,7 +308,10 @@ final class AdminPage
         }
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only nav.
         $tab = sanitize_key( $_GET['tab'] ?? 'dashboard' );
-        if (!in_array($tab, ['dashboard', 'features', 'settings'], true)) {
+        // Extension point: add-ons may contribute extra tabs (slug => label).
+        $extra = (array) apply_filters( 'jhmg_aied_admin_tabs', [] );
+        $extra = array_diff_key( $extra, array_flip( [ 'dashboard', 'features', 'settings' ] ) );
+        if (!in_array($tab, array_merge(['dashboard', 'features', 'settings'], array_map('strval', array_keys($extra))), true)) {
             $tab = 'dashboard';
         }
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- set by our own nonce-verified redirects.
@@ -319,6 +322,9 @@ final class AdminPage
             'features'  => __( 'Features', 'jhmg-ai-editor-for-divi-5' ),
             'settings'  => __( 'Settings', 'jhmg-ai-editor-for-divi-5' ),
         ];
+        foreach ( $extra as $xslug => $xlabel ) {
+            $tabs[ (string) $xslug ] = (string) $xlabel;
+        }
         ?>
         <div class="wrap aied">
             <div class="aied-topbar">
@@ -348,7 +354,13 @@ final class AdminPage
                 switch ( $tab ) {
                     case 'features': $this->viewFeatures(); break;
                     case 'settings': $this->viewSettings(); break;
-                    default:         $this->viewDashboard(); break;
+                    default:
+                        if ( isset( $extra[ $tab ] ) ) {
+                            do_action( 'jhmg_aied_render_admin_tab', $tab );
+                        } else {
+                            $this->viewDashboard();
+                        }
+                        break;
                 }
                 ?>
             </div>

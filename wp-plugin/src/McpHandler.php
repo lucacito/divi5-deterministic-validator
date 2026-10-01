@@ -84,7 +84,7 @@ final class McpHandler
 
     private function onToolsList(mixed $id): WP_REST_Response
     {
-        return $this->rpcResult($id, ['tools' => [
+        $tools = [
             [
                 'name'        => 'list_divi_pages',
                 'description' => 'List all WordPress pages built with the Divi 5 editor. Returns page IDs, titles, status, and links.',
@@ -211,7 +211,12 @@ final class McpHandler
                     'required' => ['title', 'post_content'],
                 ],
             ],
-        ]]);
+        ];
+
+        // Extension point: add-ons may append tool definitions. With no listener this is a no-op.
+        $tools = apply_filters( 'jhmg_aied_mcp_tools', $tools );
+
+        return $this->rpcResult($id, ['tools' => $tools]);
     }
 
     private function onToolsCall(mixed $id, array $params): WP_REST_Response
@@ -234,8 +239,23 @@ final class McpHandler
             'get_page_history_entry' => $this->toolGetHistoryEntry($id, $arguments),
             'restore_page_version'   => $this->toolRestoreVersion($id, $arguments),
             'create_page'        => $this->toolCreatePage($id, $arguments),
-            default              => $this->rpcError($id, -32602, "Unknown tool: {$name}"),
+            default              => $this->extensionCall($id, $name, $arguments),
         };
+    }
+
+    /**
+     * Add-ons claim tool calls via the jhmg_aied_mcp_call filter. An add-on handler is
+     * responsible for its own capability checks and returns a WP_REST_Response
+     * (use the same JSON-RPC shapes as the built-in tools); anything else = unknown tool.
+     */
+    private function extensionCall(mixed $id, string $name, array $arguments): WP_REST_Response
+    {
+        $response = apply_filters( 'jhmg_aied_mcp_call', null, $name, $arguments, $id );
+        if ( $response instanceof WP_REST_Response ) {
+            return $response;
+        }
+
+        return $this->rpcError($id, -32602, "Unknown tool: {$name}");
     }
 
     // ---------------------------------------------------------------

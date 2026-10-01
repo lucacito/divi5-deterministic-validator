@@ -132,6 +132,9 @@ final class RestController
             'callback'            => fn() => new WP_REST_Response(['guide' => ImageGuide::markdown()], 200),
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
+
+        // Extension point: add-ons register their own routes under the same namespace.
+        do_action( 'jhmg_aied_register_rest_routes', self::NS );
     }
 
     public function style_guide(WP_REST_Request $request): WP_REST_Response

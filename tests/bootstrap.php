@@ -197,3 +197,25 @@ if ( ! function_exists( 'wp_cache_delete' ) ) {
 if ( ! function_exists( 'get_current_user_id' ) ) {
     function get_current_user_id() { return 7; }
 }
+
+// ---- Hook shims (filters/actions) ------------------------------------------------------
+// Tests reset $GLOBALS['__wp_filters'] in setUp so listeners never leak between tests.
+$GLOBALS['__wp_filters'] = [];
+if ( ! function_exists( 'add_filter' ) ) {
+    function add_filter( $tag, $fn, $priority = 10, $args = 1 ) { $GLOBALS['__wp_filters'][ $tag ][] = $fn; return true; }
+}
+if ( ! function_exists( 'add_action' ) ) {
+    function add_action( $tag, $fn, $priority = 10, $args = 1 ) { return add_filter( $tag, $fn, $priority, $args ); }
+}
+if ( ! function_exists( 'apply_filters' ) ) {
+    function apply_filters( $tag, $value, ...$args ) {
+        foreach ( $GLOBALS['__wp_filters'][ $tag ] ?? [] as $fn ) { $value = $fn( $value, ...$args ); }
+        return $value;
+    }
+}
+if ( ! function_exists( 'do_action' ) ) {
+    function do_action( $tag, ...$args ) { foreach ( $GLOBALS['__wp_filters'][ $tag ] ?? [] as $fn ) { $fn( ...$args ); } }
+}
+if ( ! function_exists( 'remove_all_filters' ) ) {
+    function remove_all_filters( $tag ) { unset( $GLOBALS['__wp_filters'][ $tag ] ); return true; }
+}

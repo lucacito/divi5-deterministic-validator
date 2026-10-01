@@ -42,7 +42,7 @@ final class OpenApiSpec
      */
     public static function spec(string $base, string $version): array
     {
-        return [
+        $spec = [
             'openapi' => '3.1.0',
             'info'    => [
                 'title'       => 'AI Editor for Divi 5',
@@ -362,6 +362,12 @@ final class OpenApiSpec
                 ],
             ],
         ];
+
+        // Extension points: add-ons may append paths and component schemas.
+        $spec['paths']                 = apply_filters( 'jhmg_aied_openapi_paths', $spec['paths'], $base );
+        $spec['components']['schemas'] = apply_filters( 'jhmg_aied_openapi_schemas', $spec['components']['schemas'] );
+
+        return $spec;
     }
 
     private static function idParam(): array
