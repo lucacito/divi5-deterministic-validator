@@ -20,6 +20,12 @@ final class FakeWpdb
     public bool $failInserts = false;
     /** Simulate a host that forbids CREATE TABLE. */
     public bool $denyCreate = false;
+    /** Make the next N SELECT-type calls (get_results / get_col / get_var) fail, like a dropped connection. */
+    public int $failSelects = 0;
+    /** Runs once at the start of the next insert(): lets a test simulate another request writing first. */
+    public ?\Closure $beforeInsert = null;
+    /** Like wpdb::$last_error: '' after a successful query, a message after a failed one. */
+    public string $last_error = '';
     /** @var list<string> every SQL string executed, for assertions */
     public array $queries = [];
 
@@ -87,9 +93,16 @@ final class FakeWpdb
     public function get_results( string $sql, mixed $output = null ): array
     {
         $this->queries[] = $sql;
+        $this->last_error = '';
+        if ( $this->failSelects > 0 ) {
+            --$this->failSelects;
+            $this->last_error = 'simulated select failure';
+            return [];
+        }
         try {
             return $this->pdo->query( $sql )->fetchAll( \PDO::FETCH_ASSOC );
         } catch ( \PDOException $e ) {
+            $this->last_error = $e->getMessage();
             return [];
         }
     }
@@ -98,12 +111,19 @@ final class FakeWpdb
     public function get_col( string $sql ): array
     {
         $this->queries[] = $sql;
+        $this->last_error = '';
+        if ( $this->failSelects > 0 ) {
+            --$this->failSelects;
+            $this->last_error = 'simulated select failure';
+            return [];
+        }
         if ( str_contains( $sql, $this->postmeta ) ) {
             return $this->legacyMetaPageIds( $sql );
         }
         try {
             return $this->pdo->query( $sql )->fetchAll( \PDO::FETCH_COLUMN );
         } catch ( \PDOException $e ) {
+            $this->last_error = $e->getMessage();
             return [];
         }
     }
@@ -111,10 +131,17 @@ final class FakeWpdb
     public function get_var( string $sql ): ?string
     {
         $this->queries[] = $sql;
+        $this->last_error = '';
+        if ( $this->failSelects > 0 ) {
+            --$this->failSelects;
+            $this->last_error = 'simulated select failure';
+            return null;
+        }
         try {
             $v = $this->pdo->query( $sql )->fetchColumn();
             return false === $v ? null : (string) $v;
         } catch ( \PDOException $e ) {
+            $this->last_error = $e->getMessage();
             return null; // like wpdb with errors suppressed: a missing table yields null
         }
     }
@@ -123,7 +150,15 @@ final class FakeWpdb
     public function insert( string $table, array $data, array $format = [] ): int|false
     {
         $this->queries[] = "INSERT INTO {$table} (" . implode( ', ', array_keys( $data ) ) . ')';
+        $this->last_error = '';
+        if ( null !== $this->beforeInsert ) {
+            $hook               = $this->beforeInsert;
+            $this->beforeInsert = null;
+            $hook();
+            $this->last_error = '';
+        }
         if ( $this->failInserts ) {
+            $this->last_error = 'simulated insert failure';
             return false;
         }
         try {
@@ -134,6 +169,7 @@ final class FakeWpdb
             $this->insert_id = (int) $this->pdo->lastInsertId();
             return 1;
         } catch ( \PDOException $e ) {
+            $this->last_error = $e->getMessage();
             return false; // e.g. UNIQUE (page_id, version_id) clash
         }
     }
@@ -142,12 +178,14 @@ final class FakeWpdb
     public function delete( string $table, array $where, array $format = [] ): int|false
     {
         $this->queries[] = "DELETE FROM {$table} WHERE " . implode( ' AND ', array_keys( $where ) );
+        $this->last_error = '';
         try {
             $clause = implode( ' AND ', array_map( static fn ( string $c ): string => "{$c} = :{$c}", array_keys( $where ) ) );
             $stmt   = $this->pdo->prepare( "DELETE FROM {$table} WHERE {$clause}" );
             $stmt->execute( $where );
             return $stmt->rowCount();
         } catch ( \PDOException $e ) {
+            $this->last_error = $e->getMessage();
             return false;
         }
     }
@@ -155,9 +193,11 @@ final class FakeWpdb
     public function query( string $sql ): int|false
     {
         $this->queries[] = $sql;
+        $this->last_error = '';
         try {
             return (int) $this->pdo->exec( $sql );
         } catch ( \PDOException $e ) {
+            $this->last_error = $e->getMessage();
             return false;
         }
     }

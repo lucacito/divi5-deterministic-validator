@@ -129,6 +129,24 @@ class HistoryMigrationTest extends TestCase
         return [ [ 'not json at all' ], [ '{"items":"nope"}' ], [ '[1,2,3]' ], [ '{"items":[]}' ], [ '12345' ] ];
     }
 
+    public function testAFailedImportDoesNotLetANewSnapshotReuseALegacyId(): void
+    {
+        // Page 5 already has a different row 1, so importing the legacy 1 and 2 clashes and fails.
+        HistoryStore::save( 5, [ 'next' => 2, 'items' => [ [ 'id' => 1, 'saved_at' => 't', 'tool' => 't', 'actor' => 1, 'bytes' => 5, 'sha256' => hash( 'sha256', 'other' ), 'label' => null, 'content' => 'other' ] ] ] );
+        $this->seedLegacy( 5, $this->legacyJson( 1, 2 ) );
+        $w = HistoryService::write( 5, 'NEW', 'update_page_layout' );
+        $this->assertTrue( $w['ok'] );
+        $this->assertSame( 3, $w['snapshot']['version_id'], 'the new id must be above the legacy ids that are still waiting to be imported' );
+        $this->assertTrue( $this->hasLegacy( 5 ) );
+    }
+
+    public function testAnEmptyStringLegacyValueIsRemovedSoItIsNotListedEveryBatch(): void
+    {
+        $this->seedLegacy( 5, '' );
+        $this->assertTrue( HistoryMigration::importPage( 5 ) );
+        $this->assertFalse( $this->hasLegacy( 5 ) );
+    }
+
     public function testRunRespectsTheBatchLimitAndReportsWhenDone(): void
     {
         foreach ( [ 11, 12, 13, 14, 15 ] as $id ) {

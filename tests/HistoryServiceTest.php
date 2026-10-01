@@ -208,6 +208,23 @@ class HistoryServiceTest extends TestCase
         $this->assertSame( 14, HistoryService::write( 5, 'V14', 'update_page_layout' )['snapshot']['version_id'] );
     }
 
+    public function testAFailedHistoryReadNeverMakesTheNextWriteDeleteStoredSnapshots(): void
+    {
+        for ( $i = 1; $i <= 13; $i++ ) {
+            HistoryService::write( 5, "V{$i}", 'update_page_layout' );       // ids 1..13, 1..3 already trimmed
+        }
+        $before = array_column( HistoryService::listFor( 5 ), 'id' );
+        $this->assertSame( [ 13, 12, 11, 10, 9, 8, 7, 6, 5, 4 ], $before );
+
+        $GLOBALS['wpdb']->failSelects = 1;                                   // the history read inside write() fails
+        $r = HistoryService::write( 5, 'AFTER FAILURE', 'update_page_layout' );
+
+        $this->assertTrue( $r['ok'], 'the page write itself still succeeds' );
+        $this->assertSame( 'AFTER FAILURE', $GLOBALS['__wp_posts'][5]->post_content );
+        $this->assertSame( [ 'stored' => false, 'version_id' => null, 'reason' => 'store_failed' ], $r['snapshot'] );
+        $this->assertSame( $before, array_column( HistoryService::listFor( 5 ), 'id' ), 'no stored snapshot may be lost' );
+    }
+
     public function testRestoringTheOldestVersionWhenHistoryIsFullSucceeds(): void
     {
         for ( $i = 1; $i <= 10; $i++ ) {

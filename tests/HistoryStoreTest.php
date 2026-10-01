@@ -141,6 +141,55 @@ class HistoryStoreTest extends TestCase
         $this->assertSame( [], HistoryStore::recent( 0 ) );
     }
 
+    public function testAFailedReadIsReportedAndDoesNotLookLikeAnEmptyHistory(): void
+    {
+        HistoryStore::save( 5, [ 'next' => 2, 'items' => [ $this->item( 1, 'a' ) ] ] );
+        $this->assertArrayNotHasKey( 'failed', HistoryStore::load( 5 ) );
+
+        $GLOBALS['wpdb']->failSelects = 1;
+        $h = HistoryStore::load( 5 );
+        $this->assertTrue( $h['failed'] ?? false );
+        $this->assertSame( [], $h['items'] );
+
+        $GLOBALS['wpdb']->failSelects = 1;
+        $this->assertSame( [], HistoryStore::summaries( 5 ) );
+        $GLOBALS['wpdb']->failSelects = 1;
+        $this->assertNull( HistoryStore::entry( 5, 1 ) );
+        $GLOBALS['wpdb']->failSelects = 1;
+        $this->assertSame( [], HistoryStore::recent( 5 ) );
+        $this->assertSame( [ 1 ], array_column( HistoryStore::summaries( 5 ), 'id' ), 'nothing was deleted' );
+    }
+
+    public function testTrimIsOneDeleteBelowTheOldestKeptVersion(): void
+    {
+        HistoryStore::save( 5, [ 'next' => 4, 'items' => [ $this->item( 3, 'c' ), $this->item( 2, 'b' ), $this->item( 1, 'a' ) ] ] );
+        $GLOBALS['wpdb']->queries = [];
+        HistoryStore::save( 5, [ 'next' => 5, 'items' => [ $this->item( 4, 'd' ), $this->item( 3, 'c' ), $this->item( 2, 'b' ) ] ] );
+        $this->assertSame( 1, $this->countQueries( 'DELETE' ) );
+        $this->assertSame( [ 4, 3, 2 ], array_column( HistoryStore::summaries( 5 ), 'id' ) );
+    }
+
+    public function testAnInsertThatLosesARaceToIdenticalContentCountsAsStored(): void
+    {
+        $item = $this->item( 1, 'same' );
+        $GLOBALS['wpdb']->beforeInsert = function () use ( $item ): void {
+            // another request stores the very same snapshot between our check and our insert
+            $GLOBALS['wpdb']->insert( HistoryTable::name(), [ 'page_id' => 5, 'version_id' => 1, 'saved_at' => $item['saved_at'], 'tool' => $item['tool'], 'actor' => 7, 'bytes' => 4, 'sha256' => $item['sha256'], 'label' => null, 'content' => 'same' ] );
+        };
+        $this->assertTrue( HistoryStore::save( 5, [ 'next' => 2, 'items' => [ $item ] ] ) );
+        $this->assertCount( 1, HistoryStore::summaries( 5 ) );
+    }
+
+    public function testAnInsertThatLosesARaceToDifferentContentIsStillAFailure(): void
+    {
+        $other = $this->item( 1, 'other' );
+        $GLOBALS['wpdb']->beforeInsert = function () use ( $other ): void {
+            $GLOBALS['wpdb']->insert( HistoryTable::name(), [ 'page_id' => 5, 'version_id' => 1, 'saved_at' => $other['saved_at'], 'tool' => $other['tool'], 'actor' => 7, 'bytes' => 5, 'sha256' => $other['sha256'], 'label' => null, 'content' => 'other' ] );
+        };
+        $this->assertFalse( HistoryStore::save( 5, [ 'next' => 2, 'items' => [ $this->item( 1, 'mine' ) ] ] ) );
+        $this->assertSame( 'other', HistoryStore::entry( 5, 1 )['content'] );
+    }
+
     public function testDeleteForPageRemovesOnlyThatPage(): void
     {
         HistoryStore::save( 5, [ 'next' => 2, 'items' => [ $this->item( 1, 'a' ) ] ] );

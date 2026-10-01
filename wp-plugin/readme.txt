@@ -164,7 +164,7 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Undo history is now kept in its own table in your database instead of in each page's custom fields. Pages and the front end no longer load it, and copying or exporting a page no longer carries its history along.
 * Existing undo history is moved over automatically. Nothing changes in how undo works or in what your AI assistant sees.
 * Going back to version 4.0.0 afterwards is not supported: it would not find the moved history.
-* Deleting a page now also deletes its undo history.
+* Deleting a page still deletes its undo history.
 
 = 4.0.0 =
 * Renamed to JHMG AI Editor for Divi 5 (plugin folder and slug: `jhmg-ai-editor-for-divi-5`).
@@ -201,7 +201,7 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 == Upgrade Notice ==
 
 = 4.1.0 =
-Undo history moves to its own database table. Your existing history is moved over automatically the first time the site loads after the update.
+Undo history moves to its own database table. Your existing history is moved over automatically after the update; there is nothing to do.
 
 = 4.0.0 =
 New name and folder (`jhmg-ai-editor-for-divi-5`). Creating pages, undo and the new Media Library tool are included. Tools that changed site settings or saved CSS or PHP code are no longer part of this plugin.

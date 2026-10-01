@@ -17,22 +17,36 @@ final class HistoryStore
     /** Where 4.0.0 kept the history; read only to migrate it (HistoryMigration) and removed on uninstall. */
     public const LEGACY_META_KEY = '_aied_history';
 
-    /** @return array{next:int, items:list<array<string,mixed>>} */
+    /**
+     * `failed` is present (true) only when the read itself failed: that is not an empty history,
+     * and the caller must not record or save anything based on it.
+     *
+     * @return array{next:int, items:list<array<string,mixed>>, failed?:true}
+     */
     public static function load( int $pageId ): array
     {
         if ( ! HistoryTable::hasTable() ) {
             return PageHistory::empty();
         }
         self::importLegacy( $pageId );
-        $items = array_map( [ self::class, 'toItem' ], self::fetch( $pageId, null, true ) );
+        $rows = self::fetch( $pageId, null, true );
+        if ( null === $rows ) {
+            return PageHistory::empty() + [ 'failed' => true ];
+        }
 
         // normalize() derives `next` as max(id) + 1: ids only grow and the newest row is never trimmed.
-        return PageHistory::normalize( [ 'next' => 1, 'items' => $items ] );
+        $history = PageHistory::normalize( [ 'next' => 1, 'items' => array_map( [ self::class, 'toItem' ], $rows ) ] );
+        if ( ! HistoryTable::migrationDone() ) {
+            // Old history that could not be imported yet still owns its ids: never hand one out again.
+            $history['next'] = max( $history['next'], HistoryMigration::legacyMaxId( $pageId ) + 1 );
+        }
+
+        return $history;
     }
 
     /**
      * Makes the stored rows for the page match $history: inserts rows that are not stored yet,
-     * then deletes rows that PageHistory trimmed. Returns false (deleting nothing) when an insert
+     * then deletes the rows PageHistory trimmed. Returns false (deleting nothing) when an insert
      * fails or clashes with a stored row holding different content.
      *
      * @param array{next:int, items:list<array<string,mixed>>} $history
@@ -50,12 +64,14 @@ final class HistoryStore
         }
 
         $keep = array_map( static fn ( array $item ): int => (int) $item['id'], $history['items'] );
-        foreach ( array_keys( self::storedHashes( $pageId ) ) as $stored ) {
-            if ( ! in_array( $stored, $keep, true ) ) {
-                // A failed trim leaves an extra old row; the next save recomputes and removes it.
-                // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->delete( HistoryTable::name(), [ 'page_id' => $pageId, 'version_id' => $stored ], [ '%d', '%d' ] );
-            }
+        if ( [] !== $keep ) {
+            // Trimming only ever removes the oldest versions and the newest is always kept, so one
+            // range delete does it, and a history that looks shorter than it is can never delete much.
+            // A failed trim leaves extra old rows; the next save removes them.
+            $table = HistoryTable::name();
+            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+            $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE page_id = %d AND version_id < %d", $pageId, min( $keep ) ) );
+            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
         }
 
         return true;
@@ -71,15 +87,16 @@ final class HistoryStore
     {
         $stored = self::storedHashes( $pageId );
         foreach ( $items as $item ) {
-            $id   = (int) $item['id'];
-            $sha  = (string) ( $item['sha256'] ?? hash( 'sha256', (string) $item['content'] ) );
+            $id  = (int) $item['id'];
+            $sha = (string) ( $item['sha256'] ?? hash( 'sha256', (string) $item['content'] ) );
             if ( isset( $stored[ $id ] ) ) {
                 if ( $stored[ $id ] !== $sha ) {
                     return false;
                 }
                 continue;
             }
-            if ( ! self::insertRow( $pageId, $item, $sha ) ) {
+            // A failed insert may be a race with another request storing the very same snapshot.
+            if ( ! self::insertRow( $pageId, $item, $sha ) && self::storedHash( $pageId, $id ) !== $sha ) {
                 return false;
             }
         }
@@ -95,7 +112,7 @@ final class HistoryStore
         }
         self::importLegacy( $pageId );
         $out = [];
-        foreach ( self::fetch( $pageId, null, false ) as $row ) {
+        foreach ( self::fetch( $pageId, null, false ) ?? [] as $row ) {
             $item  = self::toItem( $row );
             $out[] = [
                 'id'       => $item['id'],
@@ -119,7 +136,7 @@ final class HistoryStore
         self::importLegacy( $pageId );
         $rows = self::fetch( $pageId, $versionId, true );
 
-        return [] === $rows ? null : self::toItem( $rows[0] );
+        return null === $rows || [] === $rows ? null : self::toItem( $rows[0] );
     }
 
     /**
@@ -198,6 +215,8 @@ final class HistoryStore
         global $wpdb;
 
         $content = (string) $item['content'];
+        // An expected UNIQUE clash (two requests racing) must not print a database error into an API response.
+        $prev = $wpdb->suppress_errors( true );
         // No wp_slash here: $wpdb->insert escapes the values itself, slashing would double the backslashes.
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         $ok = $wpdb->insert(
@@ -215,8 +234,22 @@ final class HistoryStore
             ],
             [ '%d', '%d', '%s', '%s', '%d', '%d', '%s', '%s', '%s' ]
         );
+        $wpdb->suppress_errors( $prev );
 
         return false !== $ok;
+    }
+
+    /** The stored sha256 of one version, or null when it is not stored (or cannot be read). */
+    private static function storedHash( int $pageId, int $versionId ): ?string
+    {
+        global $wpdb;
+
+        $table = HistoryTable::name();
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $sha = $wpdb->get_var( $wpdb->prepare( "SELECT sha256 FROM {$table} WHERE page_id = %d AND version_id = %d", $pageId, $versionId ) );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+        return is_string( $sha ) ? $sha : null;
     }
 
     /** @return array<int,string> stored version id => sha256 */
@@ -240,8 +273,8 @@ final class HistoryStore
         return $out;
     }
 
-    /** @return list<array<string,mixed>> rows newest first; `content` is selected only when asked for */
-    private static function fetch( int $pageId, ?int $versionId, bool $withContent ): array
+    /** @return list<array<string,mixed>>|null rows newest first (`content` only when asked for); null when the read failed */
+    private static function fetch( int $pageId, ?int $versionId, bool $withContent ): ?array
     {
         global $wpdb;
 
@@ -259,7 +292,12 @@ final class HistoryStore
         $rows = $wpdb->get_results( $wpdb->prepare( $sql, $args ), ARRAY_A );
         // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
-        return is_array( $rows ) ? $rows : [];
+        // wpdb returns an empty array both for "no rows" and for a failed query; last_error tells them apart.
+        if ( '' !== (string) $wpdb->last_error || ! is_array( $rows ) ) {
+            return null;
+        }
+
+        return $rows;
     }
 
     /**

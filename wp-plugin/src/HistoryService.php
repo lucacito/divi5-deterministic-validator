@@ -103,8 +103,14 @@ final class HistoryService
     /** @return array{stored:bool, version_id:?int, reason:null|'duplicate'|'too_large'|'invalid_encoding'|'store_failed'} */
     private static function snapshot( int $pageId, string $before, string $tool, ?string $label = null ): array
     {
+        $history = HistoryStore::load( $pageId );
+        if ( isset( $history['failed'] ) ) {
+            // The stored history could not be read: recording against an empty one would hand out ids
+            // that are already taken. The page write still goes ahead, without an undo point.
+            return [ 'stored' => false, 'version_id' => null, 'reason' => 'store_failed' ];
+        }
         $result = PageHistory::record(
-            HistoryStore::load( $pageId ),
+            $history,
             $before,
             $tool,
             (int) get_current_user_id(),

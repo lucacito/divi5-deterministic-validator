@@ -24,8 +24,10 @@ final class HistoryMigration
     {
         $raw = get_post_meta( $pageId, HistoryStore::LEGACY_META_KEY, true );
         if ( ! is_string( $raw ) || '' === $raw ) {
-            if ( false !== $raw && '' !== $raw ) {
-                delete_post_meta( $pageId, HistoryStore::LEGACY_META_KEY ); // not a string: unusable
+            // Absent reads as '' too. Removing an empty or unusable value is harmless and keeps it
+            // from being listed again on every batch.
+            if ( false !== $raw ) {
+                delete_post_meta( $pageId, HistoryStore::LEGACY_META_KEY );
             }
 
             return true;
@@ -41,6 +43,21 @@ final class HistoryMigration
         delete_post_meta( $pageId, HistoryStore::LEGACY_META_KEY );
 
         return true;
+    }
+
+    /** The highest snapshot id still held in the page's old post meta (0 when there is none). */
+    public static function legacyMaxId( int $pageId ): int
+    {
+        $raw = get_post_meta( $pageId, HistoryStore::LEGACY_META_KEY, true );
+        if ( ! is_string( $raw ) || '' === $raw ) {
+            return 0;
+        }
+        $max = 0;
+        foreach ( PageHistory::normalize( json_decode( $raw, true ) )['items'] as $item ) {
+            $max = max( $max, (int) $item['id'] );
+        }
+
+        return $max;
     }
 
     /**
