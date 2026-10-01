@@ -77,7 +77,7 @@ The plugin includes a pack of 44 original images (hero backgrounds, card and sec
 
 = Add-on =
 
-A separate Pro add-on (sold separately at https://divi5lab.com/plugins/divi-5-ai-editor) adds live stock-photo sourcing.
+A separate Pro add-on is planned (details and waitlist at https://divi5lab.com/plugins/divi-5-ai-editor) and will add live stock-photo sourcing.
 
 = Compatible AI assistants =
 

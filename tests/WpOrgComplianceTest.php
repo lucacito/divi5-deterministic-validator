@@ -453,7 +453,7 @@ class WpOrgComplianceTest extends TestCase
     {
         $r = (string) file_get_contents(self::ROOT . '/readme.txt');
         $this->assertSame(1, preg_match_all('/\bPro add-on\b/', $r), 'the add-on is mentioned in exactly one sentence');
-        $this->assertStringContainsString('A separate Pro add-on (sold separately at https://divi5lab.com/plugins/divi-5-ai-editor) adds live stock-photo sourcing.', $r);
+        $this->assertStringContainsString('A separate Pro add-on is planned (details and waitlist at https://divi5lab.com/plugins/divi-5-ai-editor) and will add live stock-photo sourcing.', $r);
         // The only place menus / the front page may be named is the FAQ answer stating the plugin CANNOT change them.
         $faq = 'They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.';
         $this->assertStringContainsString($faq, $r);

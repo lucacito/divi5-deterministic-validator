@@ -534,9 +534,9 @@ final class AdminPage
             <div class="aied-card__head">
                 <h3><?php esc_html_e( 'Want live stock photos?', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
             </div>
-            <p class="aied-muted"><?php esc_html_e( 'JHMG AI Editor for Divi 5 includes a built-in image pack and reads your Media Library. The separate Pro add-on adds live photo sourcing for each section.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <p class="aied-muted"><?php esc_html_e( 'JHMG AI Editor for Divi 5 includes a built-in image pack and reads your Media Library. A separate Pro add-on, coming later, will add live photo sourcing for each section.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
             <div class="aied-procard__actions">
-                <a class="button" href="<?php echo esc_url( self::PRO_URL ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Learn about the Pro add-on', 'jhmg-ai-editor-for-divi-5' ); ?><span class="screen-reader-text"> <?php esc_html_e( '(opens in a new tab)', 'jhmg-ai-editor-for-divi-5' ); ?></span></a>
+                <a class="button" href="<?php echo esc_url( self::PRO_URL ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'About the Pro add-on', 'jhmg-ai-editor-for-divi-5' ); ?><span class="screen-reader-text"> <?php esc_html_e( '(opens in a new tab)', 'jhmg-ai-editor-for-divi-5' ); ?></span></a>
                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                     <input type="hidden" name="action" value="ai_editor_divi5_dismiss_pro_card">
                     <?php wp_nonce_field( 'ai_editor_divi5_dismiss_pro_card' ); ?>
