@@ -15,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 // Load plugin classes
 require_once __DIR__ . '/ApiKey.php';
 require_once __DIR__ . '/StyleGuide.php';
+require_once __DIR__ . '/ImagePack.php';
+require_once __DIR__ . '/ImageTokens.php';
 require_once __DIR__ . '/SectionRecipes.php';
 require_once __DIR__ . '/SiteGuide.php';
 require_once __DIR__ . '/LandingGuide.php';

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="200" viewBox="0 0 600 200" role="img">
+<title>Placeholder logo: teal hexagon emblem and abstract wordmark bars (no text)</title>
+<defs><linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#0f766e"/></linearGradient></defs>
+<polygon points="185.4 132 130 164 74.6 132 74.6 68 130 36 185.4 68" fill="url(#m)" stroke="url(#m)" stroke-width="10" stroke-linejoin="round"/><circle cx="130" cy="100" r="24" fill="#ffffff"/><circle cx="130" cy="100" r="10" fill="#0d9488"/><rect x="220" y="74" width="250" height="30" rx="15" fill="#134e4a"/><rect x="220" y="118" width="170" height="14" rx="7" fill="#5eead4"/>
+</svg>
