@@ -34,7 +34,13 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
     }
 }
 if ( ! function_exists( 'current_user_can' ) ) {
-    function current_user_can( $cap, ...$args ) { return $GLOBALS['__wp_can'] ?? true; }
+    function current_user_can( $cap, ...$args ) {
+        if ( isset( $GLOBALS['__wp_caps'] ) && is_array( $GLOBALS['__wp_caps'] ) ) {
+            return (bool) ( $GLOBALS['__wp_caps'][ $cap ] ?? false ); // per-capability map: anything not listed is denied
+        }
+
+        return $GLOBALS['__wp_can'] ?? true;
+    }
 }
 if ( ! function_exists( 'get_the_title' ) ) {
     function get_the_title( $post = 0 ) { return is_object( $post ) ? $post->post_title : 'Title'; }

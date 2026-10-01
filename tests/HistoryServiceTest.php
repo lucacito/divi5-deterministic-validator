@@ -11,6 +11,10 @@ use AiEditorDivi5\WP\PageHistory;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/FakeWpdb.php';
+require_once __DIR__ . '/WpRestShims.php';
+require_once __DIR__ . '/DiviThemeBuilderShims.php';
+require_once __DIR__ . '/../wp-plugin/src/ThemeLayouts.php';
+require_once __DIR__ . '/../wp-plugin/src/DiviCompat.php';
 require_once __DIR__ . '/../wp-plugin/src/UsageTracker.php';
 require_once __DIR__ . '/../wp-plugin/src/PageHistory.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryTable.php';
@@ -304,5 +308,55 @@ class HistoryServiceTest extends TestCase
         }
         // The stored history itself is untouched.
         $this->assertSame( $big, HistoryService::entry( 5, 1 )['content'] );
+    }
+
+    public function testWritingAHeaderLayoutClearsDivisCachesButWritingAPageDoesNot(): void
+    {
+        $GLOBALS['__divi_cache_clears']  = [];
+        $GLOBALS['__divi_static_clears'] = [];
+        HistoryService::write( 5, 'PAGE EDIT', 'update_page_layout' );
+        $this->assertSame( [], $GLOBALS['__divi_cache_clears'], 'a page save leaves Divi caches alone' );
+
+        $h              = new \WP_Post();
+        $h->ID          = 8;
+        $h->post_type   = 'et_header_layout';
+        $h->post_content = 'HEADER';
+        $GLOBALS['__wp_posts'][8] = $h;
+        $r = HistoryService::write( 8, 'HEADER EDIT', 'edit_page_content' );
+        $this->assertTrue( $r['ok'] );
+        $this->assertSame( [ 'all' ], $GLOBALS['__divi_cache_clears'] );
+        $this->assertSame( [ [ 'all', 'all' ] ], $GLOBALS['__divi_static_clears'] );
+
+        HistoryService::restore( 8, (int) $r['snapshot']['version_id'] );
+        $this->assertCount( 2, $GLOBALS['__divi_cache_clears'], 'a restore of a layout clears them too' );
+    }
+
+    public function testAFailedLayoutWriteDoesNotClearCaches(): void
+    {
+        $h              = new \WP_Post();
+        $h->ID          = 8;
+        $h->post_type   = 'et_footer_layout';
+        $h->post_content = 'FOOTER';
+        $GLOBALS['__wp_posts'][8]    = $h;
+        $GLOBALS['__divi_cache_clears'] = [];
+        $GLOBALS['__wp_update_fail']    = true;
+        $r = HistoryService::write( 8, 'X', 'edit_page_content' );
+        $this->assertFalse( $r['ok'] );
+        $this->assertSame( [], $GLOBALS['__divi_cache_clears'] );
+    }
+
+    public function testRecentRowsCarryTheKindOfEachEditedPost(): void
+    {
+        $h              = new \WP_Post();
+        $h->ID          = 8;
+        $h->post_type   = 'et_header_layout';
+        $h->post_title  = 'Main Header';
+        $h->post_content = 'HEADER';
+        $GLOBALS['__wp_posts'][8] = $h;
+        HistoryService::write( 5, 'A', 'update_page_layout' );
+        HistoryService::write( 8, 'B', 'edit_page_content' );
+        $kinds = array_column( HistoryService::recent( 5 ), 'kind', 'page_id' );
+        $this->assertSame( 'page', $kinds[5] );
+        $this->assertSame( 'header', $kinds[8] );
     }
 }
