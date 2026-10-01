@@ -21,6 +21,10 @@ final class HistoryTable
     /** No legacy `_aied_history` post meta is left to import. */
     public const STAGE_MIGRATED = 2;
 
+    private const BACKOFF_TRANSIENT = 'ai_editor_divi5_history_backoff';
+    /** Pages whose legacy meta is imported per request. */
+    private const MIGRATION_BATCH = 20;
+
     public static function name(): string
     {
         global $wpdb;
@@ -85,6 +89,47 @@ final class HistoryTable
         return (int) get_option( self::DB_VERSION_OPTION, 0 ) >= self::STAGE_MIGRATED;
     }
 
+    /**
+     * Creates the table and migrates old post-meta history, a little per request until done.
+     * Runs on `plugins_loaded` (an auto-update does not re-run the activation hook) and on
+     * activation (with $force, which ignores the backoff).
+     */
+    public static function ensureReady( bool $force = false ): void
+    {
+        $stage = (int) get_option( self::DB_VERSION_OPTION, 0 );
+        if ( $stage >= self::STAGE_MIGRATED ) {
+            return;
+        }
+        if ( ! $force && false !== get_transient( self::BACKOFF_TRANSIENT ) ) {
+            return;
+        }
+
+        if ( $stage < self::STAGE_TABLE ) {
+            self::createTable();
+            if ( ! self::exists() ) {
+                // The host refused CREATE TABLE (or it failed): wait instead of retrying every request.
+                set_transient( self::BACKOFF_TRANSIENT, 1, 5 * MINUTE_IN_SECONDS );
+
+                return;
+            }
+            update_option( self::DB_VERSION_OPTION, self::STAGE_TABLE, true );
+        }
+
+        if ( HistoryMigration::run( self::MIGRATION_BATCH ) ) {
+            update_option( self::DB_VERSION_OPTION, self::STAGE_MIGRATED, true );
+        }
+    }
+
+    /** Hooks: schema/migration on load, history cleanup on page delete, drop on multisite site delete. */
+    public static function register(): void
+    {
+        add_action( 'plugins_loaded', static function (): void {
+            self::ensureReady();
+        } );
+        add_action( 'delete_post', [ HistoryStore::class, 'deleteForPage' ] );
+        add_filter( 'wpmu_drop_tables', [ self::class, 'dropTablesFilter' ] );
+    }
+
     public static function drop(): void
     {
         global $wpdb;
@@ -93,6 +138,7 @@ final class HistoryTable
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, PluginCheck.Security.DirectDB.UnescapedDBParameter
         $wpdb->query( "DROP TABLE IF EXISTS {$table}" );
         delete_option( self::DB_VERSION_OPTION );
+        delete_transient( self::BACKOFF_TRANSIENT );
     }
 
     /**

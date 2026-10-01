@@ -89,6 +89,7 @@ class WpOrgComplianceTest extends TestCase
     private const OPTION_WRITERS = [
         'src/ApiKey.php'       => 'stores the plugin API key and its user (ai_editor_divi5_api_key / _api_user_id)',
         'src/UsageTracker.php' => 'stores the usage-log table schema version (ai_editor_divi5_db_version)',
+        'src/HistoryTable.php' => 'stores the history table stage: created / old history migrated (ai_editor_divi5_history_db_version)',
     ];
 
     /** @return array<string,string> relative path => contents */

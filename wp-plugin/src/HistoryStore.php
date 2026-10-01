@@ -23,6 +23,7 @@ final class HistoryStore
         if ( ! HistoryTable::hasTable() ) {
             return PageHistory::empty();
         }
+        self::importLegacy( $pageId );
         $items = array_map( [ self::class, 'toItem' ], self::fetch( $pageId, null, true ) );
 
         // normalize() derives `next` as max(id) + 1: ids only grow and the newest row is never trimmed.
@@ -91,6 +92,7 @@ final class HistoryStore
         if ( ! HistoryTable::hasTable() ) {
             return [];
         }
+        self::importLegacy( $pageId );
         $out = [];
         foreach ( self::fetch( $pageId, null, false ) as $row ) {
             $item  = self::toItem( $row );
@@ -113,6 +115,7 @@ final class HistoryStore
         if ( ! HistoryTable::hasTable() ) {
             return null;
         }
+        self::importLegacy( $pageId );
         $rows = self::fetch( $pageId, $versionId, true );
 
         return [] === $rows ? null : self::toItem( $rows[0] );
@@ -175,6 +178,14 @@ final class HistoryStore
     {
         HistoryTable::drop();
         delete_post_meta_by_key( self::LEGACY_META_KEY );
+    }
+
+    /** Until the batch migration has finished, a page's old post-meta history is imported when first read. */
+    private static function importLegacy( int $pageId ): void
+    {
+        if ( ! HistoryTable::migrationDone() ) {
+            HistoryMigration::importPage( $pageId );
+        }
     }
 
     /**

@@ -49,6 +49,7 @@ register_activation_hook(__FILE__, function (): void {
     require_once __DIR__ . '/src/autoload.php';
 
     AiEditorDivi5\WP\UsageTracker::createTable();
+    AiEditorDivi5\WP\HistoryTable::ensureReady(true);
 
     if (get_option('ai_editor_divi5_api_key', '') === '') {
         AiEditorDivi5\WP\ApiKey::generate();
@@ -85,6 +86,8 @@ if (version_compare(PHP_VERSION, AI_EDITOR_DIVI5_MIN_PHP, '<')) {
 // ---------------------------------------------------------------
 
 require_once __DIR__ . '/src/autoload.php';
+
+AiEditorDivi5\WP\HistoryTable::register();
 
 // ---------------------------------------------------------------
 // Register REST routes
