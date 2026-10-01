@@ -77,8 +77,8 @@ PHP classes in `wp-plugin/src/`:
 | `get_image_guide` (`ImageGuide`) | which image fits each section: Media Library first, then the built-in pack |
 | `get_section_recipes` (`SectionRecipes` + `data/section-recipes.json`) | 17 proven, validated section patterns, each mapped to a persuasion stage |
 
-**15 MCP tools, all free:** `list_divi_pages`, `get_page_layout`, `validate_layout`,
-`update_page_layout`, `edit_page_content` (surgical find-and-replace), `create_page`
+**16 MCP tools, all free:** `list_divi_pages`, `get_page_layout`, `list_theme_layouts`
+(read-only, `ThemeLayouts`), `validate_layout`, `update_page_layout`, `edit_page_content` (surgical find-and-replace), `create_page`
 (always a draft), `list_page_history`, `get_page_history_entry`,
 `restore_page_version`, `list_media_images` (read-only Media Library listing,
 `MediaLibrary` + `MediaService`, needs `upload_files` + per-item `read_post`) and the
@@ -121,7 +121,21 @@ Dry run (v4.2.0): `update_page_layout`, `edit_page_content`, `PUT /pages/{id}` a
 cut to 200 characters, `builderVersion` ignored) BEFORE `HistoryService::write()` is reachable;
 the page, its history and `post_modified` are never touched. A preview of an invalid layout
 is a normal 200 / `isError: false` response carrying `valid: false`. Logged as endpoint
-`dry_run`, result `read`. It is a flag, not a tool: the list stays at 15 tools / 15 operations.
+`dry_run`, result `read`. It is a flag, not a tool: the list stayed at 15 tools / 15 operations in 4.2.0 (4.3.0 adds the read-only `list_theme_layouts`: 16).
+
+Theme layouts (v4.3.0): the existing, LIVE Theme Builder header and footer layouts
+(`et_header_layout` / `et_footer_layout`, content in `post_content`) can be read, previewed,
+edited and restored with the page tools by passing their id as `page_id`. `EditTarget::resolve()`
+is the single rule for "which post may the plugin touch" (9 call sites): a page as before; a
+layout only if a template of the live Theme Builder uses it (`ThemeLayouts`, read through
+Divi's own guarded functions with `$create = false`, never creating a Theme Builder post),
+status `publish`, and the user has `edit_post` + `edit_others_posts` + Divi's Role Editor Theme Builder permission (`ThemeLayouts::userMay()`, fails closed). Body layouts, templates,
+the Theme Builder post, orphan/draft-only layouts and every other post type are "not found".
+`list_theme_layouts` (MCP/REST/OpenAPI) is read-only. After a layout write `HistoryService`
+calls `DiviCompat::clearLayoutCaches()`. The free plugin NEVER creates/deletes/assigns/publishes
+templates or writes `_et_use_on`/`_et_default`/`_et_enabled`/`*_layout_id`/`_et_template` (site
+settings: Pro add-on territory). Unverified: that a REAL builder-made header passes the validator
+(see the spec); until a real export exists the readme claims only what the checker accepts.
 
 Same logic is exposed three ways, kept in lockstep: MCP (`McpHandler`), REST
 (`RestController`), and the ChatGPT OpenAPI spec (`OpenApiSpec`). Add or change a
@@ -135,7 +149,7 @@ tool → update all three.
 that save CSS/PHP or change site settings (front page, menus, users, plugins). The
 only Pro mention allowed in the plugin UI is the one dismissible Dashboard card in
 `AdminPage::proCard()`. `tests/WpOrgComplianceTest.php` enforces all of this (plus
-the URL-host allowlist, the 15-tool list and the readme's claims, including the
+the URL-host allowlist, the 16-tool list and the readme's claims, including the
 "more than N Divi 5 block types" number checked against `SchemaRules`). Never weaken
 that test to make it pass — fix the plugin, or add a justified explicit exception.
 
@@ -153,6 +167,7 @@ Docker env + validator workflows go through `make`:
 | `make verify-modules` | Re-verify the already-promoted modules and probe the still-missing ones on the real Divi (Docker); writes evidence, but refuses to overwrite committed evidence with a result set that loses or demotes modules |
 | `make verify-history` | Real-database check of the undo-history table on the Docker site (creates and deletes one throwaway draft page) |
 | `make verify-dry-run` | Real-site check of `dry_run` on the REST and MCP handlers (creates and deletes one throwaway draft page) |
+| `make verify-theme-layouts` | Real-site check of header/footer editing: builds its own Theme Builder fixtures with Divi's functions, drives the REAL handlers, removes only what it created |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
 Tests run via PHPUnit (`phpunit.xml`) and cover both the validator
@@ -192,6 +207,9 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
+- **4.3.0 = header/footer release** (branch `feat/theme-layouts`, NOT merged to main on purpose): edit the
+  existing live Theme Builder header/footer (spec `docs/superpowers/specs/2026-10-01-theme-layouts-design.md`).
+  Held: ships as its own update after the first WordPress.org approval; `main` (4.2.0 + 4.1.0) is the upload candidate.
 - **4.2.0 = preview-before-save release** (branch `feat/dry-run-diff`): `dry_run` on the two write
   tools/routes with a capped structured diff; spec `docs/superpowers/specs/2026-10-01-dry-run-diff-design.md`.
   Not uploaded; ships in one upload together with 4.1.0 after WordPress.org answers the 4.0.0 review.

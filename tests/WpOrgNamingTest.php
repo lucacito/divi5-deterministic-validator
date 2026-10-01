@@ -41,8 +41,8 @@ class WpOrgNamingTest extends TestCase
         $h = (string) file_get_contents($this->root . '/' . self::SLUG . '.php');
         $this->assertMatchesRegularExpression('/^\s*\*\s*Plugin Name:\s+JHMG AI Editor for Divi 5\s*$/m', $h);
         $this->assertMatchesRegularExpression('/^\s*\*\s*Text Domain:\s+' . preg_quote(self::SLUG, '/') . '\s*$/m', $h);
-        $this->assertMatchesRegularExpression('/^\s*\*\s*Version:\s+4\.2\.0\s*$/m', $h);
-        $this->assertStringContainsString("define('AI_EDITOR_DIVI5_VERSION', '4.2.0');", $h);
+        $this->assertMatchesRegularExpression('/^\s*\*\s*Version:\s+4\.3\.0\s*$/m', $h);
+        $this->assertStringContainsString("define('AI_EDITOR_DIVI5_VERSION', '4.3.0');", $h);
         $this->assertDoesNotMatchRegularExpression('/Tested up to/i', $h, 'Tested up to belongs only in readme.txt');
     }
 
@@ -73,6 +73,6 @@ class WpOrgNamingTest extends TestCase
         $r = (string) file_get_contents($this->root . '/readme.txt');
         $this->assertStringStartsWith('=== JHMG AI Editor for Divi 5 ===', $r);
         $this->assertMatchesRegularExpression('/^Contributors:\s+lucaslopvet\s*$/m', $r);
-        $this->assertMatchesRegularExpression('/^Stable tag:\s+4\.2\.0\s*$/m', $r);
+        $this->assertMatchesRegularExpression('/^Stable tag:\s+4\.3\.0\s*$/m', $r);
     }
 }

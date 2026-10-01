@@ -375,9 +375,9 @@ class WpOrgComplianceTest extends TestCase
         $this->assertSame([
             'create_page', 'edit_page_content', 'get_image_guide', 'get_landing_guide', 'get_page_history_entry',
             'get_page_layout', 'get_section_recipes', 'get_site_guide', 'get_style_guide', 'list_divi_pages',
-            'list_media_images', 'list_page_history', 'restore_page_version', 'update_page_layout', 'validate_layout',
+            'list_media_images', 'list_page_history', 'list_theme_layouts', 'restore_page_version', 'update_page_layout', 'validate_layout',
         ], $tools);
-        $this->assertCount(15, $tools);
+        $this->assertCount(16, $tools);
     }
 
     public function testVisibleProductNameIsTheFullJhmgName(): void

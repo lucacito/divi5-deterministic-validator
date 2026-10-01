@@ -1,4 +1,4 @@
-.PHONY: up down clean test validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run
+.PHONY: up down clean test validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-theme-layouts
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -86,6 +86,12 @@ verify-history:
 # ---------------------------------------------------------------
 verify-dry-run:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-dry-run.php --user=1
+
+# ---------------------------------------------------------------
+# verify-theme-layouts — real-site check of header/footer editing (Docker site; builds and removes its own Theme Builder fixtures)
+# ---------------------------------------------------------------
+verify-theme-layouts:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-theme-layouts.php --user=1
 
 # ---------------------------------------------------------------
 # shell helpers

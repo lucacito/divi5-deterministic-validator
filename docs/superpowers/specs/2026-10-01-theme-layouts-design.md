@@ -42,14 +42,14 @@ Today ten call sites (five MCP tool handlers, five REST handlers, plus the Dashb
 | Post | Allowed when |
 |---|---|
 | `page` | exactly as today (`edit_post`; the plugin-wide `edit_pages` key rule is unchanged) |
-| `et_header_layout` / `et_footer_layout` | status `publish` **and** the id is referenced by a template of the live Theme Builder **and** the user has `edit_post` on it **and** `edit_others_posts` (Divi's own bar for the Theme Builder) |
+| `et_header_layout` / `et_footer_layout` | status `publish` **and** the id is referenced by a template of the live Theme Builder **and** the user has `edit_post` on it **and** `edit_others_posts` **and** Divi's Role Editor allows them the Theme Builder (`et_pb_is_allowed( 'theme_builder' )`; Divi grants it to administrators only by default and an owner can switch it off), failing closed when that function is missing |
 | anything else (posts, `et_template`, `et_theme_builder`, `et_body_layout`, attachments, orphaned or draft-only layouts) | never: reported exactly like a missing page (`Page N not found.`), so nothing leaks about other post types |
 
 The "referenced by a live template" set is read by `ThemeLayouts` (read-only): `et_theme_builder_get_theme_builder_post_id( true, false )` (**`$create = false` is mandatory** — the default would create a Theme Builder post), then `et_theme_builder_get_theme_builder_template_ids( true, $tbId )`, then the verified `_et_*_layout_id` / `_et_default` / `_et_enabled` / `_et_use_on` / `_et_exclude_from` meta of each template. Each Divi function is guarded with `function_exists`; if Divi's Theme Builder is not present the set is empty and every header/footer id is simply "not found". Pure rule logic (is this id in the set? which kind?) is separated from the WordPress reads so it is unit-testable.
 
 ### Tools (MCP, REST, ChatGPT OpenAPI in lockstep)
 
-- **New:** `list_theme_layouts` (MCP) / `GET /theme-layouts` (REST) / `listThemeLayouts` (OpenAPI). Requires the plugin-wide `edit_pages` and `edit_others_posts`. Returns the live templates: `{ templates: [ { template_id, title, default, enabled, use_on[], exclude_from[], header: {layout_id, enabled, editable} | null, footer: {…} | null, body: {layout_id, enabled, editable: false} | null } ], count }` and says plainly when there is no live Theme Builder. Read-only; logged as `list_theme_layouts` / `read`.
+- **New:** `list_theme_layouts` (MCP) / `GET /theme-layouts` (REST) / `listThemeLayouts` (OpenAPI). Requires the plugin-wide `edit_pages`, `edit_others_posts` and Divi's Theme Builder permission (`ThemeLayouts::userMay()`). Returns the live templates: `{ templates: [ { template_id, title, default, enabled, use_on[], exclude_from[], header: {layout_id, enabled, editable} | null, footer: {…} | null, body: {layout_id, enabled, editable: false} | null } ], count }` and says plainly when there is no live Theme Builder. Read-only; logged as `list_theme_layouts` / `read`.
 - **Existing tools accept a header/footer layout id in their `page_id` parameter** (the name stays: renaming would break clients): `get_page_layout`, `validate_layout` (no id), `update_page_layout`, `edit_page_content`, `list_page_history`, `get_page_history_entry`, `restore_page_version`, and the REST equivalents. Descriptions say so. Everything they do for pages (validator gate, `dry_run`, snapshot-before-write, restore reports the verdict) applies unchanged. The layout envelope gains an additive `post_type` field.
 - `list_divi_pages` and `create_page` are unchanged (pages only).
 - Tool count 15 → **16**, OpenAPI operations 15 → **16** (cap 30). `WpOrgComplianceTest`'s pinned tool list and the readme's "(15 tools)" claim are updated with a justification: a new **read-only** tool, nothing licence-gated, nothing that writes settings.
@@ -92,7 +92,7 @@ Built and merged locally as 4.3.0 but **not bundled with 4.1.0/4.2.0**: the firs
 ## Decisions I need from the owner (defaults if you just say "approved")
 
 - Header and footer only; body layouts listed read-only and not editable: **yes** (default).
-- Layouts of the live Theme Builder only; `edit_others_posts` required in addition to `edit_post`: **yes** (default).
+- Layouts of the live Theme Builder only; `edit_others_posts` and Divi's own Theme Builder permission (Role Editor; fail closed) required in addition to `edit_post`: **yes** (default; the Role Editor condition was added by the controller during execution after review, it only narrows access).
 - One new read-only tool (`list_theme_layouts`, 16 tools); the existing tools take a layout id in `page_id`: **yes** (default).
 - Built now, shipped later as its own update (4.3.0) after the first WordPress.org approval: **yes** (default).
 - Real header/footer export from the training site (or any real Divi 5 site) requested before the readme claims real-world coverage: **yes** (default).

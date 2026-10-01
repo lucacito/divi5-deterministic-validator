@@ -36,6 +36,13 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
+        // GET /theme-layouts — read-only list of the live Theme Builder's header/footer layouts
+        register_rest_route(self::NS, '/theme-layouts', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'theme_layouts'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
         // POST /pages — validate + create a new page (always a draft)
         register_rest_route(self::NS, '/pages', [
             'methods'             => WP_REST_Server::CREATABLE,
@@ -221,16 +228,17 @@ final class RestController
 
     public function get_page(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
-        $id   = (int) $request->get_param('id');
-        $post = get_post($id);
+        $id     = (int) $request->get_param('id');
+        $target = EditTarget::resolve($id);
 
-        if (!$post || $post->post_type !== 'page') {
+        if ($target['error'] === EditTarget::NOT_FOUND) {
             return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
         }
 
-        if (!current_user_can('edit_post', $id)) {
+        if ($target['error'] === EditTarget::FORBIDDEN) {
             return new WP_Error('forbidden', "You do not have permission to read page $id.", ['status' => 403]);
         }
+        $post = $target['post'];
 
         UsageTracker::log('get_page', $id, 'read');
 
@@ -241,16 +249,17 @@ final class RestController
 
     public function update_page(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
-        $id   = (int) $request->get_param('id');
-        $post = get_post($id);
+        $id     = (int) $request->get_param('id');
+        $target = EditTarget::resolve($id);
 
-        if (!$post || $post->post_type !== 'page') {
+        if ($target['error'] === EditTarget::NOT_FOUND) {
             return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
         }
 
-        if (!current_user_can('edit_post', $id)) {
+        if ($target['error'] === EditTarget::FORBIDDEN) {
             return new WP_Error('forbidden', "You do not have permission to edit page $id.", ['status' => 403]);
         }
+        $post = $target['post'];
 
         $body    = (array) $request->get_json_params();
         $content = PageAccess::stringArg($body, 'post_content');
@@ -305,17 +314,17 @@ final class RestController
     /** @return \WP_Post|WP_Error */
     private function history_page(WP_REST_Request $request): \WP_Post|WP_Error
     {
-        $id   = (int) $request->get_param('id');
-        $post = get_post($id);
+        $id     = (int) $request->get_param('id');
+        $target = EditTarget::resolve($id);
 
-        if (!$post || $post->post_type !== 'page') {
+        if ($target['error'] === EditTarget::NOT_FOUND) {
             return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
         }
-        if (!current_user_can('edit_post', $id)) {
+        if ($target['error'] === EditTarget::FORBIDDEN) {
             return new WP_Error('forbidden', "You do not have permission to access page $id.", ['status' => 403]);
         }
 
-        return $post;
+        return $target['post'];
     }
 
     public function history_list(WP_REST_Request $request): WP_REST_Response|WP_Error
@@ -374,15 +383,16 @@ final class RestController
 
     public function edit_page(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
-        $id   = (int) $request->get_param('id');
-        $post = get_post($id);
+        $id     = (int) $request->get_param('id');
+        $target = EditTarget::resolve($id);
 
-        if (!$post || $post->post_type !== 'page') {
+        if ($target['error'] === EditTarget::NOT_FOUND) {
             return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
         }
-        if (!current_user_can('edit_post', $id)) {
+        if ($target['error'] === EditTarget::FORBIDDEN) {
             return new WP_Error('forbidden', "You do not have permission to edit page $id.", ['status' => 403]);
         }
+        $post = $target['post'];
 
         $body    = (array) $request->get_json_params();
         $find    = PageAccess::stringArg($body, 'find');
@@ -550,6 +560,7 @@ final class RestController
             'format'       => 'gutenberg-blocks',
             'divi_version' => defined('ET_CORE_VERSION') ? ET_CORE_VERSION : 'unknown',
             'post_id'      => $post->ID,
+            'post_type'    => $post->post_type,
             'post_title'   => get_the_title($post),
             'post_status'  => $post->post_status,
             'post_content' => $post->post_content,
@@ -559,6 +570,18 @@ final class RestController
             ],
             'exported_at'  => gmdate('c'),
         ];
+    }
+
+    public function theme_layouts(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!current_user_can(PageAccess::CAP) || !ThemeLayouts::userMay()) {
+            UsageTracker::log('list_theme_layouts', null, 'error');
+            return new WP_Error('forbidden', 'You do not have permission to list theme layouts.', ['status' => 403]);
+        }
+        $result = ThemeLayouts::listing();
+        UsageTracker::log('list_theme_layouts', null, 'read');
+
+        return new WP_REST_Response($result, 200);
     }
 
     public function list_media(WP_REST_Request $request): WP_REST_Response|WP_Error
