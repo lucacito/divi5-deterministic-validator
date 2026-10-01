@@ -1,6 +1,6 @@
 # 4.2.0 — Preview before save (dry-run diff)
 
-Status: DRAFT v2, awaiting owner approval · Date: 2026-10-01 · Target release: JHMG AI Editor for Divi 5 4.2.0
+Status: v2, decisions delegated by the owner to Claude's recommendation on 2026-10-01 ("do as best, you are a better expert"): flag rather than a new tool, and every default below. The implementation plan is still reviewed by the owner before any execution. · Date: 2026-10-01 · Target release: JHMG AI Editor for Divi 5 4.2.0
 Supersedes the 3.6.0 draft written before the WordPress.org compliance release. Roadmap: undo (4.0.0) → history in its own table (4.1.0, merged locally) → **dry-run diff (4.2.0)** → Theme Builder header/footer → global presets. Each is its own spec. Nothing since 4.0.0 has been uploaded, so 4.1.0 and 4.2.0 would go out in one upload.
 
 ## Goal
