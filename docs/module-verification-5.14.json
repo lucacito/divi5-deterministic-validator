@@ -1215,7 +1215,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 4775,
-                    "sample": "<div class=\"et_pb_section_114 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_related_products_1 et_pb_wc_related_products et_pb_module\"><div class=\"et_pb_module_inner\">\n\t<section class=\"related products\">\n\n\t\t\t\t\t<h2>Related products</h2>\n\t\t\t\t<ul class=\"products columns-4\">\n\n\t\t\t\n\t\t\t\t\t<li class=\"product type-product post-632 status-publish first instock product_cat-accessories"
+                    "sample": "<div class=\"et_pb_section_114 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_related_products_1 et_pb_wc_related_products et_pb_module\"><div class=\"et_pb_module_inner\">\n\t<section class=\"related products\">\n\n\t\t\t\t\t<h2>Related products</h2>\n\t\t\t\t<ul class=\"products columns-4\">\n\n\t\t\t\n\t\t\t\t\t<li class=\"product type-product post-630 status-publish first instock product_cat-accessories"
                 }
             }
         }
