@@ -153,4 +153,74 @@ class SectionRecipesTest extends TestCase
             $this->assertStringStartsWith('logo-', $file, 'carousel recipe is a logo strip');
         }
     }
+
+    /** @return array<string,string> recipe name => raw markup (tokens unresolved) */
+    private function rawRecipes(): array
+    {
+        $data = json_decode((string) file_get_contents(__DIR__ . '/../wp-plugin/data/section-recipes.json'), true);
+        $out  = [];
+        foreach ($data as $r) {
+            $out[$r['name']] = $r['markup'];
+        }
+        return $out;
+    }
+
+    public function testNoPhoneScrubberArtefactsInRecipesGuidesOrToolDescriptions(): void
+    {
+        $blob = json_encode(json_decode((string) file_get_contents(__DIR__ . '/../wp-plugin/data/section-recipes.json'), true));
+        foreach (['McpHandler.php', 'OpenApiSpec.php', 'StyleGuide.php', 'SiteGuide.php', 'LandingGuide.php', 'ImageGuide.php', 'SectionRecipes.php'] as $f) {
+            $blob .= (string) file_get_contents(__DIR__ . '/../wp-plugin/src/' . $f);
+        }
+        foreach (['(555)', '+1 (', '010-1000'] as $bad) {
+            $this->assertStringNotContainsString($bad, $blob, "scrubber artefact {$bad}");
+        }
+    }
+
+    public function testGlobalColourIdsAndUuidsAreWellFormed(): void
+    {
+        $uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+        foreach ($this->rawRecipes() as $name => $m) {
+            preg_match_all('/gcid-([^\\\\"\s);,]*)/', $m, $g); // also used as a CSS var: var(--gcid-primary-color);
+            foreach ($g[1] as $id) {
+                // Real shapes: a UUID (Divi exports), a 10-char random id (Site B export), or a named one (gcid-body-color).
+                $this->assertMatchesRegularExpression('/^(?:' . $uuid . '|[a-z0-9]{10}|[a-z]+(?:-[a-z]+)+)$/', $id, "{$name}: malformed gcid-{$id}");
+            }
+            // Any uuid-like value (8 hex + dash) must be a complete UUID.
+            preg_match_all('/(?<![0-9a-z-])[0-9a-f]{8}-[^"\\\\]*/', $m, $u);
+            foreach ($u[0] as $id) {
+                $this->assertMatchesRegularExpression('/^' . $uuid . '$/', $id, "{$name}: malformed uuid {$id}");
+            }
+            foreach (['"id":"', '"uniqueId":{"desktop":{"value":"', '"modulePreset":["'] as $prefix) {
+                preg_match_all('/' . preg_quote($prefix, '/') . '([^"]+)"/', $m, $v);
+                foreach ($v[1] as $id) {
+                    if ($id !== 'default') {
+                        // Real shapes: UUID, 13-hex uniqid (fixtures/valid/*.json) or 10-char random id (Site B export).
+                        $this->assertMatchesRegularExpression('/^(?:' . $uuid . '|[0-9a-f]{13}|[a-z0-9]{10})$/', $id, "{$name}: malformed id {$id} after {$prefix}");
+                    }
+                }
+            }
+        }
+    }
+
+    public function testUniqueIdsAndCssIdsDoNotCollide(): void
+    {
+        $cssIds = [];
+        foreach ($this->rawRecipes() as $name => $m) {
+            preg_match_all('/"uniqueId":\{"desktop":\{"value":"([^"]+)"/', $m, $u);
+            $this->assertSame(count($u[1]), count(array_unique($u[1])), "{$name}: duplicate uniqueId");
+            preg_match_all('/"name":"id","value":"([^"]+)"/', $m, $c);
+            foreach ($c[1] as $id) {
+                $this->assertArrayNotHasKey($id, $cssIds, "CSS id #{$id} is used by both {$name} and " . ($cssIds[$id] ?? ''));
+                $cssIds[$id] = $name;
+            }
+        }
+    }
+
+    public function testNoSourceSiteLeftovers(): void
+    {
+        $blob = implode("\n", $this->rawRecipes());
+        foreach (['sitehackedfix', 'Fashion Stylist', 'Interior Design Planner', 'Book A Seat', 'Barbers', 'Ayoka Stewart', '"value":"pricing"', '\\u003eDivi\\u003c', 'Hacking Audit', 'hacked', 'malicious code', 'defacement'] as $bad) {
+            $this->assertStringNotContainsString($bad, $blob, "source-site leftover: {$bad}");
+        }
+    }
 }
