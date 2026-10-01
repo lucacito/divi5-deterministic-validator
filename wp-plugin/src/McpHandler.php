@@ -104,10 +104,10 @@ final class McpHandler
             ],
             [
                 'name'        => 'get_page_layout',
-                'description' => 'Get the full Divi 5 layout (Gutenberg block HTML) for a specific page by ID.',
+                'description' => 'Get the full Divi 5 layout (Gutenberg block HTML) for a specific page by ID. A header or footer layout id from list_theme_layouts also works.',
                 'inputSchema' => [
                     'type'       => 'object',
-                    'properties' => ['page_id' => ['type' => 'integer', 'description' => 'WordPress page ID']],
+                    'properties' => ['page_id' => ['type' => 'integer', 'description' => 'WordPress page ID (or a header/footer layout id from list_theme_layouts)']],
                     'required'   => ['page_id'],
                 ],
             ],
@@ -151,11 +151,11 @@ final class McpHandler
             ],
             [
                 'name'        => 'update_page_layout',
-                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL. Pass dry_run=true to preview what would change (a diff plus the checker\'s verdict) without saving anything; an invalid result comes back as a normal preview with valid:false.',
+                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. A header or footer layout id from list_theme_layouts also works. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL. Pass dry_run=true to preview what would change (a diff plus the checker\'s verdict) without saving anything; an invalid result comes back as a normal preview with valid:false.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
-                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page ID (or a header/footer layout id from list_theme_layouts)'],
                         'post_content' => ['type' => 'string',  'description' => 'Divi 5 Gutenberg block HTML'],
                         'dry_run' => ['type' => 'boolean', 'description' => 'Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing.'],
                     ],
@@ -164,11 +164,11 @@ final class McpHandler
             ],
             [
                 'name'        => 'edit_page_content',
-                'description' => 'Make a small, surgical edit to an existing page WITHOUT re-sending the whole layout: an exact find-and-replace on the page\'s stored content. Use this for changing an email, phone number, link, price, or a line of copy — never rebuild the full page for a tiny change. "find" must match exactly once unless you set expect_count to the number of matches. The result is re-validated before saving; if "find" is empty, not found, or ambiguous, nothing is changed. Pass dry_run=true to preview the change (a diff plus the checker\'s verdict) without saving; an invalid result comes back as a normal preview with valid:false.',
+                'description' => 'Make a small, surgical edit to an existing page WITHOUT re-sending the whole layout: an exact find-and-replace on the page\'s stored content. A header or footer layout id from list_theme_layouts also works. Use this for changing an email, phone number, link, price, or a line of copy — never rebuild the full page for a tiny change. "find" must match exactly once unless you set expect_count to the number of matches. The result is re-validated before saving; if "find" is empty, not found, or ambiguous, nothing is changed. Pass dry_run=true to preview the change (a diff plus the checker\'s verdict) without saving; an invalid result comes back as a normal preview with valid:false.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
-                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page ID (or a header/footer layout id from list_theme_layouts)'],
                         'find'         => ['type' => 'string',  'description' => 'Exact text to find (verbatim, including any surrounding markup needed to make it unique)'],
                         'replace'      => ['type' => 'string',  'description' => 'Text to replace it with'],
                         'expect_count' => ['type' => 'integer', 'description' => 'Optional: how many matches to replace (must equal the number found). Omit to require a single unique match.'],
@@ -179,22 +179,22 @@ final class McpHandler
             ],
             [
                 'name'        => 'list_page_history',
-                'description' => 'List the saved previous versions of a page (newest first). Every AI save tries to snapshot the page\'s prior content (up to the last 10 per page, fewer for very large pages), so an AI edit can be undone when a snapshot was kept (the save result\'s history.stored says so). Returns id, saved_at, tool, actor, bytes, label for each version (no content). Use restore_page_version to undo.',
+                'description' => 'List the saved previous versions of a page (newest first). A header or footer layout id from list_theme_layouts also works. Every AI save tries to snapshot the page\'s prior content (up to the last 10 per page, fewer for very large pages), so an AI edit can be undone when a snapshot was kept (the save result\'s history.stored says so). Returns id, saved_at, tool, actor, bytes, label for each version (no content). Use restore_page_version to undo.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
-                        'page_id' => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'page_id' => ['type' => 'integer', 'description' => 'WordPress page ID (or a header/footer layout id from list_theme_layouts)'],
                     ],
                     'required' => ['page_id'],
                 ],
             ],
             [
                 'name'        => 'get_page_history_entry',
-                'description' => 'Get the full saved content of one previous version of a page (from list_page_history), e.g. to compare it with the current layout before restoring.',
+                'description' => 'Get the full saved content of one previous version of a page (from list_page_history), e.g. to compare it with the current layout before restoring. A header or footer layout id from list_theme_layouts also works.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
-                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page ID (or a header/footer layout id from list_theme_layouts)'],
                         'version_id' => ['type' => 'integer', 'description' => 'Version id from list_page_history'],
                     ],
                     'required' => ['page_id', 'version_id'],
@@ -202,11 +202,11 @@ final class McpHandler
             ],
             [
                 'name'        => 'restore_page_version',
-                'description' => 'Undo: restore a page to a previous saved version. The current content is snapshotted first; the restore itself is undoable when its own history.stored is true. Restore does not block on validation (it returns the person\'s own earlier content); the result reports whether that content passes the validator.',
+                'description' => 'Undo: restore a page to a previous saved version. A header or footer layout id from list_theme_layouts also works. The current content is snapshotted first; the restore itself is undoable when its own history.stored is true. Restore does not block on validation (it returns the person\'s own earlier content); the result reports whether that content passes the validator.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
-                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page ID (or a header/footer layout id from list_theme_layouts)'],
                         'version_id' => ['type' => 'integer', 'description' => 'Version id from list_page_history'],
                     ],
                     'required' => ['page_id', 'version_id'],
@@ -341,23 +341,25 @@ final class McpHandler
     private function toolGetLayout(mixed $id, array $args): WP_REST_Response
     {
         $pageId = (int) ($args['page_id'] ?? 0);
-        $post   = $pageId ? get_post($pageId) : null;
+        $target = EditTarget::resolve($pageId);
 
-        if (!$post || $post->post_type !== 'page') {
+        if ($target['error'] === EditTarget::NOT_FOUND) {
             UsageTracker::log('get_layout', $pageId ?: null, 'error');
             return $this->rpcError($id, -32602, "Page {$pageId} not found.");
         }
 
-        if (!current_user_can('edit_post', $pageId)) {
+        if ($target['error'] === EditTarget::FORBIDDEN) {
             UsageTracker::log('get_layout', $pageId, 'error');
             return $this->rpcError($id, -32602, "You do not have permission to read page {$pageId}.");
         }
+        $post = $target['post'];
 
         UsageTracker::log('get_layout', $pageId, 'read');
 
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => json_encode([
                 'post_id'      => $post->ID,
+                'post_type'    => $post->post_type,
                 'post_title'   => get_the_title($post),
                 'post_status'  => $post->post_status,
                 'post_content' => $post->post_content,
@@ -388,7 +390,6 @@ final class McpHandler
         $pageId  = (int) ($args['page_id'] ?? 0);
         $content = PageAccess::stringArg($args, 'post_content');
         $dryRun  = PageAccess::boolArg($args, 'dry_run');
-        $post    = $pageId ? get_post($pageId) : null;
 
         if ($content === null) {
             return $this->rpcError($id, -32602, 'post_content must be a string.');
@@ -398,13 +399,15 @@ final class McpHandler
             return $this->rpcError($id, -32602, 'dry_run must be a boolean.');
         }
 
-        if (!$post || $post->post_type !== 'page') {
+        $target = EditTarget::resolve($pageId);
+        if ($target['error'] === EditTarget::NOT_FOUND) {
             return $this->rpcError($id, -32602, "Page {$pageId} not found.");
         }
 
-        if (!current_user_can('edit_post', $pageId)) {
+        if ($target['error'] === EditTarget::FORBIDDEN) {
             return $this->rpcError($id, -32602, "You do not have permission to edit page {$pageId}.");
         }
+        $post = $target['post'];
 
         if ($content === '') {
             return $this->rpcError($id, -32602, 'post_content is required.');
@@ -467,14 +470,15 @@ final class McpHandler
         if ($dryRun === null) {
             return $this->rpcError($id, -32602, 'dry_run must be a boolean.');
         }
-        $post = $pageId ? get_post($pageId) : null;
 
-        if (!$post || $post->post_type !== 'page') {
+        $target = EditTarget::resolve($pageId);
+        if ($target['error'] === EditTarget::NOT_FOUND) {
             return $this->rpcError($id, -32602, "Page {$pageId} not found.");
         }
-        if (!current_user_can('edit_post', $pageId)) {
+        if ($target['error'] === EditTarget::FORBIDDEN) {
             return $this->rpcError($id, -32602, "You do not have permission to edit page {$pageId}.");
         }
+        $post = $target['post'];
 
         $edit = PageEditor::apply($post->post_content, $find, $replace, $expect);
 
@@ -536,16 +540,16 @@ final class McpHandler
     private function historyPage(mixed $id, array $args): \WP_Post|WP_REST_Response
     {
         $pageId = (int) ($args['page_id'] ?? 0);
-        $post   = $pageId ? get_post($pageId) : null;
+        $target = EditTarget::resolve($pageId);
 
-        if (!$post || $post->post_type !== 'page') {
+        if ($target['error'] === EditTarget::NOT_FOUND) {
             return $this->rpcError($id, -32602, "Page {$pageId} not found.");
         }
-        if (!current_user_can('edit_post', $pageId)) {
+        if ($target['error'] === EditTarget::FORBIDDEN) {
             return $this->rpcError($id, -32602, "You do not have permission to access page {$pageId}.");
         }
 
-        return $post;
+        return $target['post'];
     }
 
     private function toolListHistory(mixed $id, array $args): WP_REST_Response

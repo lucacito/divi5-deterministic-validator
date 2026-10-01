@@ -212,6 +212,7 @@ final class OpenApiSpec
                                 'type'       => 'object',
                                 'properties' => [
                                     'post_id'      => ['type' => 'integer'],
+                                    'post_type'    => ['type' => 'string', 'description' => 'page, et_header_layout or et_footer_layout'],
                                     'post_title'   => ['type' => 'string'],
                                     'post_status'  => ['type' => 'string'],
                                     'post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML'],

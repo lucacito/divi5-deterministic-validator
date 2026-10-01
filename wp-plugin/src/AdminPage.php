@@ -102,8 +102,7 @@ final class AdminPage
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard().
         $versionId = isset( $_POST['version_id'] ) ? absint( wp_unslash( $_POST['version_id'] ) ) : 0;
 
-        $post = $pageId ? get_post( $pageId ) : null;
-        if ( ! $post || 'page' !== $post->post_type || ! current_user_can( 'edit_post', $pageId ) ) {
+        if ( null !== EditTarget::resolve( $pageId )['error'] ) {
             $this->redirect( 'dashboard', 'restore_failed' );
         }
 
@@ -421,7 +420,12 @@ final class AdminPage
             <table class="widefat striped">
                 <tbody>
                 <?php foreach ( $rows as $row ) :
-                    $title = '' === $row['title'] ? __( '(no title)', 'jhmg-ai-editor-for-divi-5' ) : $row['title']; ?>
+                    $title = '' === $row['title'] ? __( '(no title)', 'jhmg-ai-editor-for-divi-5' ) : $row['title'];
+                    if ( 'header' === $row['kind'] ) {
+                        $title = __( 'Header', 'jhmg-ai-editor-for-divi-5' ) . ': ' . $title;
+                    } elseif ( 'footer' === $row['kind'] ) {
+                        $title = __( 'Footer', 'jhmg-ai-editor-for-divi-5' ) . ': ' . $title;
+                    } ?>
                     <tr>
                         <td><strong><?php echo esc_html( $title ); ?></strong></td>
                         <?php
