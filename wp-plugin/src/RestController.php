@@ -258,6 +258,17 @@ final class RestController
             return new WP_Error('missing_field', 'Request body must include a non-empty string "post_content".', ['status' => 400]);
         }
 
+        $dryRun = PageAccess::boolArg($body, 'dry_run');
+        if ($dryRun === null) {
+            return new WP_Error('invalid_field', '"dry_run" must be a boolean.', ['status' => 400]);
+        }
+
+        if ($dryRun) {
+            UsageTracker::log(DryRun::ENDPOINT, $id, UsageTracker::RESULT_READ);
+
+            return new WP_REST_Response(DryRun::preview((string) $post->post_content, $content), 200);
+        }
+
         // Validate before saving — this is the safety gate
         $result = (new Validator())->validateContent($content);
 
@@ -383,6 +394,11 @@ final class RestController
             ? (int) $body['expect_count']
             : null;
 
+        $dryRun = PageAccess::boolArg($body, 'dry_run');
+        if ($dryRun === null) {
+            return new WP_Error('invalid_field', '"dry_run" must be a boolean.', ['status' => 400]);
+        }
+
         $edit = PageEditor::apply($post->post_content, $find, $replace, $expect);
 
         if (!$edit['ok']) {
@@ -392,6 +408,12 @@ final class RestController
                 'matches' => $edit['count'],
                 'message' => $edit['error'],
             ], 422);
+        }
+
+        if ($dryRun) {
+            UsageTracker::log(DryRun::ENDPOINT, $id, UsageTracker::RESULT_READ);
+
+            return new WP_REST_Response(DryRun::preview((string) $post->post_content, $edit['content']) + ['replaced' => $edit['count']], 200);
         }
 
         // Same safety gate as update_page — the edited content must still validate.
