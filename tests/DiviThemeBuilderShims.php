@@ -21,6 +21,13 @@ if ( ! function_exists( 'et_theme_builder_get_theme_builder_template_ids' ) ) {
         return (array) ( $GLOBALS['__divi_tb'][ $live ? 'template_ids' : 'draft_template_ids' ] ?? [] );
     }
 }
+if ( ! function_exists( 'et_pb_is_allowed' ) ) {
+    function et_pb_is_allowed( $capabilities, $role = '' ) {
+        $GLOBALS['__divi_tb_calls'][] = [ 'allowed', $capabilities ];
+
+        return $GLOBALS['__divi_role_allowed'] ?? true;
+    }
+}
 if ( ! function_exists( 'et_theme_builder_clear_wp_cache' ) ) {
     function et_theme_builder_clear_wp_cache( $which = 'all' ) {
         $GLOBALS['__divi_cache_clears'][] = $which;

@@ -36,6 +36,11 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 if ( ! function_exists( 'current_user_can' ) ) {
     function current_user_can( $cap, ...$args ) {
         if ( isset( $GLOBALS['__wp_caps'] ) && is_array( $GLOBALS['__wp_caps'] ) ) {
+            $perId = $cap . ':' . ( $args[0] ?? '' );
+            if ( array_key_exists( $perId, $GLOBALS['__wp_caps'] ) ) {
+                return (bool) $GLOBALS['__wp_caps'][ $perId ]; // per-id override, e.g. 'edit_post:202' => false
+            }
+
             return (bool) ( $GLOBALS['__wp_caps'][ $cap ] ?? false ); // per-capability map: anything not listed is denied
         }
 

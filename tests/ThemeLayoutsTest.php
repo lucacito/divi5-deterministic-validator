@@ -58,7 +58,7 @@ class ThemeLayoutsTest extends TestCase
         $GLOBALS['__wp_posts']    = [];
         $GLOBALS['__wp_postmeta'] = [];
         $GLOBALS['__divi_tb']     = [];
-        unset( $GLOBALS['__wp_caps'] );
+        unset( $GLOBALS['__wp_caps'], $GLOBALS['__divi_role_allowed'] );
         $GLOBALS['__wp_can'] = true;
     }
 
@@ -186,6 +186,26 @@ class ThemeLayoutsTest extends TestCase
         $GLOBALS['__wp_caps'] = [ 'edit_post' => false ];
         $l = ThemeLayouts::listing();
         $this->assertFalse( $l['templates'][0]['header']['editable'] );
+    }
+
+    public function testUserMayWithFailsClosedAndAsksForTheThemeBuilderCapability(): void
+    {
+        $this->assertFalse( ThemeLayouts::userMayWith( true, null ), 'a missing Divi function fails closed' );
+        $this->assertFalse( ThemeLayouts::userMayWith( true, static fn () => false ) );
+        $asked = [];
+        $this->assertTrue( ThemeLayouts::userMayWith( true, static function ( $cap ) use ( &$asked ) { $asked[] = $cap; return true; } ) );
+        $this->assertSame( [ 'theme_builder' ], $asked );
+        $this->assertFalse( ThemeLayouts::userMayWith( false, static fn () => true ) );
+    }
+
+    public function testListingIsNotEditableWhenDiviRoleEditorDeniesTheThemeBuilder(): void
+    {
+        $GLOBALS['__divi_role_allowed'] = false;
+        $l = ThemeLayouts::listing();
+        $this->assertFalse( $l['templates'][0]['header']['editable'] );
+        $this->assertFalse( $l['templates'][0]['footer']['editable'] );
+        $this->assertFalse( $l['templates'][0]['body']['editable'] );
+        $this->assertFalse( $l['templates'][1]['header']['editable'] );
     }
 
     public function testLiveTemplatesAreNeverWrittenOrCreatedBySimplyReadingThem(): void

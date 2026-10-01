@@ -316,6 +316,7 @@ class HistoryServiceTest extends TestCase
         $GLOBALS['__divi_static_clears'] = [];
         HistoryService::write( 5, 'PAGE EDIT', 'update_page_layout' );
         $this->assertSame( [], $GLOBALS['__divi_cache_clears'], 'a page save leaves Divi caches alone' );
+        $this->assertSame( [], $GLOBALS['__divi_static_clears'] );
 
         $h              = new \WP_Post();
         $h->ID          = 8;
@@ -329,6 +330,7 @@ class HistoryServiceTest extends TestCase
 
         HistoryService::restore( 8, (int) $r['snapshot']['version_id'] );
         $this->assertCount( 2, $GLOBALS['__divi_cache_clears'], 'a restore of a layout clears them too' );
+        $this->assertSame( [ [ 'all', 'all' ], [ 'all', 'all' ] ], $GLOBALS['__divi_static_clears'] );
     }
 
     public function testAFailedLayoutWriteDoesNotClearCaches(): void

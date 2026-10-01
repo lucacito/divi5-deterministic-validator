@@ -32,6 +32,27 @@ final class ThemeLayouts
     }
 
     /**
+     * Pure seam for userMay(): the user may touch Theme Builder content only with edit_others_posts AND
+     * Divi's own 'theme_builder' capability. Fails closed when Divi's capability function is missing.
+     */
+    public static function userMayWith( bool $canEditOthers, ?callable $isAllowed ): bool
+    {
+        return $canEditOthers && null !== $isAllowed && (bool) $isAllowed( 'theme_builder' );
+    }
+
+    /**
+     * The single definition of "may this user touch Theme Builder content": it mirrors Divi's own bar
+     * (edit_others_posts plus the Divi Role Editor's 'theme_builder' capability).
+     */
+    public static function userMay(): bool
+    {
+        return self::userMayWith(
+            current_user_can( 'edit_others_posts' ),
+            function_exists( 'et_pb_is_allowed' ) ? 'et_pb_is_allowed' : null
+        );
+    }
+
+    /**
      * Template ids of the LIVE Theme Builder, read through the two given Divi functions. Both must be
      * callable (Divi's Theme Builder present); otherwise the result is empty. The Theme Builder post is
      * requested with $create = false: reading must never create one.
@@ -127,7 +148,7 @@ final class ThemeLayouts
                     unset( $template[ $kind ] );
                     continue;
                 }
-                $template[ $kind ]['editable'] = 'body' !== $kind && current_user_can( 'edit_post', (int) $template[ $kind ]['layout_id'] );
+                $template[ $kind ]['editable'] = 'body' !== $kind && current_user_can( 'edit_post', (int) $template[ $kind ]['layout_id'] ) && self::userMay();
             }
             $templates[] = $template;
         }

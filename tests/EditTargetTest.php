@@ -49,7 +49,7 @@ class EditTargetTest extends TestCase
 
     protected function tearDown(): void
     {
-        unset( $GLOBALS['__wp_caps'] );
+        unset( $GLOBALS['__wp_caps'], $GLOBALS['__divi_role_allowed'] );
         $GLOBALS['__wp_can']      = true;
         $GLOBALS['__wp_posts']    = [];
         $GLOBALS['__wp_postmeta'] = [];
@@ -151,6 +151,32 @@ class EditTargetTest extends TestCase
             }
         }
         $this->assertCount( $postsBefore, $GLOBALS['__wp_posts'], 'no post was created while resolving' );
+    }
+
+    public function testALiveLayoutIsForbiddenWhenDiviDeniesTheThemeBuilderCapability(): void
+    {
+        $GLOBALS['__divi_role_allowed'] = false;
+        $this->assertSame( EditTarget::FORBIDDEN, EditTarget::resolve( 201 )['error'] );
+        $this->assertSame( EditTarget::FORBIDDEN, EditTarget::resolve( 202 )['error'] );
+        $this->assertNull( EditTarget::resolve( 5 )['error'], 'pages are unaffected by the Theme Builder capability' );
+        foreach ( [ 203, 204, 302, 200 ] as $id ) {
+            $this->assertSame( EditTarget::NOT_FOUND, EditTarget::resolve( $id )['error'], (string) $id );
+        }
+    }
+
+    public function testThePerIdEditPostCheckIsHonoured(): void
+    {
+        $GLOBALS['__wp_caps'] = [ 'edit_post' => true, 'edit_others_posts' => true, 'edit_post:202' => false ];
+        $this->assertNull( EditTarget::resolve( 201 )['error'] );
+        $this->assertSame( EditTarget::FORBIDDEN, EditTarget::resolve( 202 )['error'] );
+    }
+
+    public function testAFooterLayoutInTheHeaderSlotIsNotFound(): void
+    {
+        $this->post( 205, 'et_footer_layout' );
+        $this->post( 206, 'et_template', 'publish', [ '_et_header_layout_id' => 205 ] );
+        $GLOBALS['__divi_tb']['template_ids'] = [ 200, 206 ];
+        $this->assertSame( EditTarget::NOT_FOUND, EditTarget::resolve( 205 )['error'] );
     }
 
     public function testAPageNeverTouchesTheThemeBuilder(): void

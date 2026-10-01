@@ -36,8 +36,9 @@ final class EditTarget
         if ( null === $kind || 'publish' !== $post->post_status || ThemeLayouts::kindOf( (string) $post->post_type ) !== $kind ) {
             return self::fail( self::NOT_FOUND );
         }
-        // Divi's own Theme Builder needs edit_others_posts; the header/footer shows on every page.
-        if ( ! current_user_can( 'edit_post', $id ) || ! current_user_can( 'edit_others_posts' ) ) {
+        // Divi's own Theme Builder bar (edit_others_posts and the 'theme_builder' capability); the
+        // header/footer shows on every page.
+        if ( ! current_user_can( 'edit_post', $id ) || ! ThemeLayouts::userMay() ) {
             return self::fail( self::FORBIDDEN );
         }
 
