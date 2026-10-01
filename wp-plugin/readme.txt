@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        3.4.0
+Stable tag:        3.5.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -33,6 +33,7 @@ AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Curs
 * `get_landing_guide` — a conversion-focused blueprint (persuasion flow, copywriting rules, CTA strategy) so generated landing pages are strategically structured, not just pretty
 * `get_image_guide` — role-based image assignment with a keyless source toolkit (relevant photos, avatars, labeled placeholders) so pages look like finished demos, not empty templates
 * `get_section_recipes` — a library of complete, validated section patterns (hero, feature grid, split, slider, CTA, footer) the AI assembles pages from, each mapped to its persuasion stage
+* `list_page_history`, `get_page_history_entry`, `restore_page_version` — undo AI edits: list the saved previous versions of a page and restore one (free)
 * `create_page` (Pro) — build a brand-new page from scratch
 * `set_front_page` (Pro) — set a page as the site's homepage
 * `set_primary_menu` (Pro) — build and assign the theme's primary navigation menu
@@ -55,7 +56,7 @@ Pro unlocks whole-site building: create new pages, set the front page, build the
 
 **Privacy**
 
-The plugin stores a single API key and an optional usage log in your WordPress database. All AI communication goes directly between your AI assistant and your WordPress site — it never passes through our servers. Nothing is sent anywhere unless you enter a Pro license key. See "External services" below.
+The plugin stores a single API key and an optional usage log in your WordPress database. To make undo possible, the plugin keeps the last 10 previous versions of each page the AI edits through the plugin in your WordPress database (post meta); nothing is sent anywhere, and the history is removed when you delete the plugin. All AI communication goes directly between your AI assistant and your WordPress site — it never passes through our servers. Nothing is sent anywhere unless you enter a Pro license key. See "External services" below.
 
 == External services ==
 
@@ -115,6 +116,12 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. Features — what's free, and what Pro adds.
 
 == Changelog ==
+
+= 3.5.0 =
+* New: **Undo for AI edits.** When your AI saves a page through the plugin (update_page_layout or edit_page_content, or the REST API equivalents), the plugin keeps the previous version (last 10 per page) whenever it can, and the result confirms it. Ask your AI to "undo that" — it can list the saved versions and restore one (free, in MCP, the REST API and the ChatGPT action) — or restore the most recent previous version from the new "Recent AI edits" panel on the plugin's Dashboard. A restore is itself undoable.
+* Edits you make yourself in the Divi builder are not snapshotted on their own; they become the "previous version" the next AI edit keeps. create_page has no previous state, so there is nothing to undo there.
+* Restoring brings back your own earlier content and is not blocked by validation; the result tells you whether that content passes the validator.
+* Pages larger than 512 KB are still saved normally but no snapshot is kept for that edit (the result says so).
 
 = 3.4.0 =
 * New: your AI can now edit pages that use 24 more Divi 5 modules, plus their child items such as map pins and slides, verified through their parent modules (for example Portfolio, Post Slider, Video Slider, Lottie, SVG, Link, Tooltip, Dropdown, Charts, Table of Contents, Comments and the Fullwidth modules) — every one verified to render on Divi 5.14.
@@ -247,6 +254,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 * Initial release.
 
 == Upgrade Notice ==
+
+= 3.5.0 =
+Adds undo for AI edits. No reconfiguration needed.
 
 = 3.4.0 =
 Adds support for more Divi 5.14 modules. No reconfiguration needed.

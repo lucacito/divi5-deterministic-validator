@@ -70,6 +70,16 @@ self-corrects. `create_page`, `set_front_page`, `set_primary_menu`,
 `set_custom_css`, and `propose_php_snippet` are premium (offline license gate).
 `propose_php_snippet` never executes PHP — it stores a proposal for human review.
 
+Undo (v3.5.0): `HistoryService` is the single write path for AI page-content
+writes (`update_page_layout`, `edit_page_content`, REST PUT/edit): it snapshots the
+previous content (post meta `_aied_history`, last 10 per page, each <= 512 KB)
+before saving. `list_page_history`, `get_page_history_entry` and
+`restore_page_version` are **free** tools (all three surfaces). Restore bypasses the
+validator gate by design (it brings back the person's own earlier content; the
+result reports whether it passes) and snapshots the current content first, so a
+restore is itself undoable. Only plugin edits are snapshotted, not Divi-builder
+edits; `create_page` has nothing to undo.
+
 Same logic is exposed three ways, kept in lockstep: MCP (`McpHandler`), REST
 (`RestController`), and the ChatGPT OpenAPI spec (`OpenApiSpec`). Add or change a
 tool → update all three.
@@ -111,18 +121,19 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- Validator MVP proven; plugin at v3.4.0 (freemium single build: free tier + Pro
+- Validator MVP proven; plugin at v3.5.0 (freemium single build: free tier + Pro
   licence via divi5lab.com). 3.3.0 was submitted to WordPress.org and is under
   review (fixes applied after the first automated scan: Text Domain = slug
-  `ai-editor-for-divi-5`, no `Tested up to` in the header); 3.4.0 is built on top
-  and not yet submitted.
+  `ai-editor-for-divi-5`, no `Tested up to` in the header); 3.4.0 is merged
+  locally and not uploaded; 3.5.0 (undo for AI edits) is built on top of it.
+  Nothing is uploaded to WordPress.org without the owner.
 - Generation is guidance-driven (style, landing, image and site guides, 17
   section recipes), gated by the deterministic validator. `edit_page_content`
   (v3.2.0) does surgical find-and-replace edits.
 - `wp-plugin/src/Licensing/LicenseClient.php` is a **WP.org variant** of the
   shared canonical client (layoutlab repo): the updater code is removed here
   because Plugin Check bans it. Don't re-sync the updater into this copy.
-  Plugin Check (run in the Docker env) is clean at 3.4.0.
+  Plugin Check (run in the Docker env) is clean at 3.5.0.
 - `wporg-assets/` holds the WordPress.org directory art (icon, banner, 3 real
   screenshots, API key masked). It is NOT part of the plugin zip; it is uploaded
   to the WP.org SVN `assets/` folder at submission. Retake screenshots with the
@@ -133,8 +144,8 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   docs/module-verification-5.14.json); modules that could not be verified stay
   rejected and are listed in docs/SCHEMA.md (29 Divi 5.14 modules still rejected:
   28 harness-probed needs-real-export + 1 unprobed child, `divi/signup-custom-field`).
-- Roadmap: 3.4.0 is done (render-verified Divi 5.14 module coverage). Remaining:
-  3.5.0+ differentiators (undo/revision history, preview-before-save, Theme
-  Builder header/footer, global presets) and WooCommerce template modules via a
+- Roadmap: 3.4.0 (render-verified Divi 5.14 module coverage) and 3.5.0 (undo for
+  AI edits) are done. Remaining differentiators: preview-before-save, Theme
+  Builder header/footer, global presets and WooCommerce template modules via a
   real export or class map.
 - Header/footer are the active theme's (nav menu drives the header).

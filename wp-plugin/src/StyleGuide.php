@@ -259,6 +259,13 @@ part of its background (on gradients, the lightest stop).
 ```
 Always run validate_layout (or rely on update_page_layout/create_page, which
 validate) before trusting a layout.
+
+## Undo
+Every save through this plugin (update_page_layout / edit_page_content) keeps the
+page's previous content as a snapshot when it can (the result's `history` field
+confirms it). If an edit was wrong, `list_page_history` then `restore_page_version`
+undoes it (the restore is itself undoable). Prefer small `edit_page_content`
+edits over rewriting a whole page.
 MD;
     }
 }

@@ -60,6 +60,11 @@ same tokens so the site reads as one brand.
   Global Divi Theme Builder header/footer templates are a later phase.
 - create_page is premium; so are set_front_page and set_primary_menu.
 - Build pages first, capture each returned page id, then wire front page + menu.
+- Undo: Every save through this plugin (update_page_layout / edit_page_content) keeps the
+  page's previous content as a snapshot when it can (the result's `history` field
+  confirms it). If an edit was wrong, `list_page_history` then `restore_page_version`
+  undoes it (the restore is itself undoable). Prefer small `edit_page_content`
+  edits over rewriting a whole page.
 MD;
     }
 }
