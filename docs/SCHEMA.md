@@ -262,9 +262,13 @@ The validator reads the `post_content` field from this envelope and parses the b
 
 Each promoted module was rendered through real Divi 5.14 and produced its own `et_pb_<name>` class without PHP diagnostics. That proves the module exists and renders. It does **not** prove the visual builder allows a given placement: the harness has no control for a placement Divi should reject, so rendering cannot discriminate placement (`placement_note` in the evidence file).
 
-For that reason only the **column** placement is promoted (`section > row > column > module`), matching real-export precedent. **Section placement is deliberately not accepted**, even though the evidence shows these modules also rendered directly under a section. Accepting it would rest on rendering alone.
+For that reason only the **column** placement is promoted (`section > row > column > module`), matching real-export precedent. Like every hand-written column module, promoted modules are also valid inside `divi/column-inner` and `divi/group`. **Section placement is deliberately not accepted**, even though the evidence shows these modules also rendered directly under a section. Accepting it would rest on rendering alone.
 
-Child items are vouched for only through their parent's render: `divi/map-pin` (in `divi/fullwidth-map`), `divi/slide` (in `divi/fullwidth-slider`), `divi/post-filter-item` (in `divi/post-filter`) and `divi/video-slider-item` (in `divi/video-slider`). They are accepted only inside those parents.
+Child items are vouched for only through their parent's render: `divi/map-pin` (in `divi/fullwidth-map`), `divi/slide` (in `divi/fullwidth-slider`), `divi/post-filter-item` (in `divi/post-filter`) and `divi/video-slider-item` (in `divi/video-slider`). Child items are rejected when placed directly in a column or a section (verified: `divi/map-pin`, `divi/slide`, `divi/post-filter-item` and `divi/video-slider-item` each fail alone in both placements). They are **not**, however, confined to their parent. Like every existing child item (`divi/slide`, `divi/tab`, ...), they are accepted as children of any *leaf* module, because the validator does not restrict which children a leaf module may have. This is pre-existing behaviour, not something this release introduced. For example `divi/text > divi/video-slider-item` and `divi/map > divi/map-pin` both validate. Tightening leaf nesting is a separate future change.
+
+### How verification was done
+
+Each module was rendered via `apply_filters('the_content')` under WP-CLI inside the real Divi 5.14 site and classified by `RenderEvidence`. This is not an HTTP front-end fetch, so the `wp_head`/footer/enqueue paths are not exercised. A follow-up is a front-end smoke fetch of a page holding all 24 modules.
 
 ### Promoted modules (24)
 
@@ -297,9 +301,11 @@ Accepted in a column placement only. The evidence records that each of these als
 
 No candidate module failed outright (no `fail` results in the evidence).
 
-### Known gaps (28 modules, all still rejected)
+### Known gaps (29 modules, all still rejected)
 
-These candidates have status `needs-real-export` in the evidence: the harness found none of its module-specific class markers in the rendered output. None of them are accepted by the validator; they are rejected rather than guessed. The evidence records only that no marker was found. The groupings below are computed from the recorded render samples; statements marked *inference* are not established by the evidence.
+Divi 5.14 declares 115 modules; the validator still rejects 29 of them: the 28 harness-probed candidates below, plus one child item the harness never probes (see the end of this section).
+
+These 28 candidates have status `needs-real-export` in the evidence: the harness found none of its module-specific class markers in the rendered output. None of them are accepted by the validator; they are rejected rather than guessed. The evidence records only that no marker was found. The groupings below are computed from the recorded render samples; statements marked *inference* are not established by the evidence.
 
 #### WooCommerce modules whose output carries `et_pb_wc` classes the harness does not recognise (19)
 
@@ -343,3 +349,7 @@ The render produced only the empty wrapper, and the evidence records just "outpu
 - `divi/gravity-forms`
 - `divi/imagely-gallery`
 - `divi/payment-button`
+
+#### Child of an already-known parent, not probed (1)
+
+- `divi/signup-custom-field`: a child of the already-known `divi/signup`. It exists in Divi 5.14 but is still rejected. The candidate filter excludes child items and the promoter only promotes children of *missing* parents, so the harness does not probe children of known parents (follow-up). This is not evidence of any render problem.

@@ -111,9 +111,11 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- Validator MVP proven; plugin at v3.4.0, being prepared for its first
-  WordPress.org submission (freemium single build: free tier + Pro licence via
-  divi5lab.com). Never submitted yet.
+- Validator MVP proven; plugin at v3.4.0 (freemium single build: free tier + Pro
+  licence via divi5lab.com). 3.3.0 was submitted to WordPress.org and is under
+  review (fixes applied after the first automated scan: Text Domain = slug
+  `ai-editor-for-divi-5`, no `Tested up to` in the header); 3.4.0 is built on top
+  and not yet submitted.
 - Generation is guidance-driven (style, landing, image and site guides, 17
   section recipes), gated by the deterministic validator. `edit_page_content`
   (v3.2.0) does surgical find-and-replace edits.
@@ -129,7 +131,8 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   built-in HTTP MCP endpoint is the only supported connection path.
 - 3.4.0: validator recognises the render-verified Divi 5.14 modules (see
   docs/module-verification-5.14.json); modules that could not be verified stay
-  rejected and are listed in docs/SCHEMA.md.
+  rejected and are listed in docs/SCHEMA.md (29 Divi 5.14 modules still rejected:
+  28 harness-probed needs-real-export + 1 unprobed child, `divi/signup-custom-field`).
 - Roadmap: 3.4.0 is done (render-verified Divi 5.14 module coverage). Remaining:
   3.5.0+ differentiators (undo/revision history, preview-before-save, Theme
   Builder header/footer, global presets) and WooCommerce template modules via a
