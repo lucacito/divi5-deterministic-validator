@@ -71,6 +71,9 @@ List the page titles and slugs you created so the owner can tick them off.
   `restore_page_version` undoes it; the restore is itself undoable when its own
   `history.stored` is true. Prefer small `edit_page_content` edits over rewriting a
   whole page.
+- Preview: update_page_layout and edit_page_content accept `dry_run: true` to return the
+  checker's verdict and a diff of what would change without saving anything. Preview big
+  or risky edits first, then repeat the call without `dry_run` to save.
 MD;
     }
 }

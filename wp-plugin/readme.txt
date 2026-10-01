@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.1.0
+Stable tag:        4.2.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -27,6 +27,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * **It knows Divi 5 well.** The checker knows more than 80 Divi 5 block types (modules, sections, rows and columns) and which ones are allowed inside which.
 * **Rules come from real Divi 5, not guesses.** The rules come from real Divi 5 page exports and, for 24 newer modules (and their child items), from Divi's own module definitions, verified by rendering them in real Divi 5.14.
 * **Small changes stay small.** Changing one phone number replaces just that text. The rest of the page is not rebuilt or touched.
+* **Preview before saving.** Your AI can ask what a change would do before it saves anything. It gets a list of the blocks and settings that would change, and the checker's verdict. Nothing is saved until it repeats the request for real.
 * **Proven building blocks.** 17 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
 * **Sensible images.** The AI looks in your Media Library first. When nothing there fits, it uses a built-in pack of 44 original images that ships with the plugin.
 * **One-click undo.** The previous version of each page the AI changes is kept (up to the last 10). Restore it from the plugin's Dashboard with one click, or just ask your AI to undo.
@@ -51,8 +52,8 @@ Read and check:
 
 Edit and create:
 
-* `edit_page_content`: change one piece of text (an email, phone number, price or sentence) without rebuilding the page.
-* `update_page_layout`: save a new layout for a page, after the checker approves it.
+* `edit_page_content`: change one piece of text (an email, phone number, price or sentence) without rebuilding the page. Add `dry_run` to preview the change without saving it.
+* `update_page_layout`: save a new layout for a page, after the checker approves it. Add `dry_run` to preview what would change without saving it.
 * `create_page`: create a new page. It is always saved as a draft for you to review and publish.
 
 Undo:
@@ -160,6 +161,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 
 == Changelog ==
 
+= 4.2.0 =
+* New: preview before saving. `update_page_layout` and `edit_page_content` accept `dry_run`: they return the checker's verdict and a short list of the blocks and settings that would change, and save nothing.
+
 = 4.1.0 =
 * Undo history is now kept in its own table in your database instead of in each page's custom fields. Pages and the front end no longer load it, and copying or exporting a page no longer carries its history along.
 * Existing undo history is moved over automatically. Nothing changes in how undo works or in what your AI assistant sees.
@@ -199,6 +203,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 4.2.0 =
+Adds an optional preview (`dry_run`) to the two tools that save pages. Nothing changes unless your AI assistant uses it.
 
 = 4.1.0 =
 Undo history moves to its own database table. Your existing history is moved over automatically after the update; there is nothing to do.

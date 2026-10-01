@@ -273,6 +273,14 @@ small). If an edit was wrong and a snapshot was kept, `list_page_history` then
 `restore_page_version` undoes it; the restore is itself undoable when its own
 `history.stored` is true. Prefer small `edit_page_content` edits over rewriting a
 whole page.
+
+## Preview before saving
+update_page_layout and edit_page_content accept `dry_run: true`. The call then runs the
+same checks as a real save but saves nothing: it returns whether the result would pass
+the checker plus a diff of what would change (blocks added, removed or changed, with the
+before and after value of each changed setting, at most 50 changes). Use it for a big
+rewrite or any edit you are not sure about, confirm that only the intended blocks
+changed, then repeat the same call without `dry_run` to save.
 MD;
     }
 }
