@@ -127,8 +127,8 @@ final class OpenApiSpec
                     ],
                     'post' => [
                         'operationId' => 'createPage',
-                        'summary'     => 'Create a new page (premium)',
-                        'description' => 'PREMIUM: Validates the submitted layout and, if valid, creates a new page as a draft for the owner to review and publish. Returns 402 if there is no active license, or 422 with violations if the layout is invalid — no page is created in either case.',
+                        'summary'     => 'Create a new page (draft)',
+                        'description' => 'Validates the layout and creates a new page as a DRAFT for the owner to review and publish. Returns 422 with violations if it is invalid, and nothing is created. Call the landing, style, section-recipes and image guides first.',
                         'requestBody' => [
                             'required' => true,
                             'content'  => ['application/json' => ['schema' => [
@@ -144,7 +144,6 @@ final class OpenApiSpec
                         'responses'   => [
                             '201' => ['description' => 'Page created'],
                             '400' => ['description' => 'Missing title or post_content'],
-                            '402' => ['description' => 'Premium license required'],
                             '422' => ['description' => 'Validation failed', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/ValidationResult']]]],
                         ],
                     ],
@@ -308,7 +307,7 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'getSiteGuide',
                         'summary'     => 'Get the multi-page site blueprint',
-                        'description' => 'Blueprint for building an entire multi-page website from one brief: plan pages, lock one design system, build each page with a slug, cross-link, then set the front page and nav menu.',
+                        'description' => 'Blueprint for building an entire multi-page website from one brief: plan pages, lock one design system, build each page with a slug, cross-link, then tell the owner which page to set as the front page and which to add to the menu.',
                         'responses'   => ['200' => ['description' => 'The blueprint (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
                     ],
                 ],
@@ -326,24 +325,6 @@ final class OpenApiSpec
                         'summary'     => 'Get the image-intelligence guide',
                         'description' => 'How to assign the right visual to each section by role using keyless sources (LoremFlickr, Picsum, Random User and Pravatar avatars, Placehold.co). Covers per-section rules, keyword derivation, stable pinning, and sizing. Call before choosing any image src.',
                         'responses'   => ['200' => ['description' => 'The guide (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
-                    ],
-                ],
-                '/front-page' => [
-                    'post' => [
-                        'operationId' => 'setFrontPage',
-                        'summary'     => 'Set the static front page (premium)',
-                        'description' => 'PREMIUM: Make a page the site front page.',
-                        'requestBody' => ['required' => true, 'content' => ['application/json' => ['schema' => ['type' => 'object', 'required' => ['page_id'], 'properties' => ['page_id' => ['type' => 'integer']]]]]],
-                        'responses'   => ['200' => ['description' => 'Front page set'], '402' => ['description' => 'Premium required'], '404' => ['description' => 'Page not found']],
-                    ],
-                ],
-                '/primary-menu' => [
-                    'post' => [
-                        'operationId' => 'setPrimaryMenu',
-                        'summary'     => 'Build + assign the primary nav menu (premium)',
-                        'description' => 'PREMIUM: Build the Main Menu from items and assign it to the theme primary location.',
-                        'requestBody' => ['required' => true, 'content' => ['application/json' => ['schema' => ['type' => 'object', 'required' => ['items'], 'properties' => ['items' => ['type' => 'array', 'items' => ['type' => 'object', 'properties' => ['title' => ['type' => 'string'], 'page_id' => ['type' => 'integer'], 'url' => ['type' => 'string']]]]]]]]],
-                        'responses'   => ['200' => ['description' => 'Menu built'], '402' => ['description' => 'Premium required']],
                     ],
                 ],
                 '/section-recipes' => [

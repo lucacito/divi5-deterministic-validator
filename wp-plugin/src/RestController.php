@@ -33,7 +33,7 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
-        // POST /pages — PREMIUM: validate + create a new page
+        // POST /pages — validate + create a new page (always a draft)
         register_rest_route(self::NS, '/pages', [
             'methods'             => WP_REST_Server::CREATABLE,
             'callback'            => [$this, 'create_page'],
@@ -132,55 +132,6 @@ final class RestController
             'callback'            => fn() => new WP_REST_Response(['guide' => ImageGuide::markdown()], 200),
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
-
-        // POST /front-page — set the static front page (premium)
-        register_rest_route(self::NS, '/front-page', [
-            'methods'             => WP_REST_Server::CREATABLE,
-            'callback'            => [$this, 'set_front_page'],
-            'permission_callback' => [$this, 'require_edit_posts'],
-        ]);
-
-        // POST /primary-menu — build + assign the primary nav menu (premium)
-        register_rest_route(self::NS, '/primary-menu', [
-            'methods'             => WP_REST_Server::CREATABLE,
-            'callback'            => [$this, 'set_primary_menu'],
-            'permission_callback' => [$this, 'require_edit_posts'],
-        ]);
-    }
-
-    public function set_front_page(WP_REST_Request $request): WP_REST_Response|WP_Error
-    {
-        if (!Licensing::isPremium()) {
-            return new WP_REST_Response(['premium' => true, 'message' => 'Premium feature.', 'upgrade_url' => Licensing::UPGRADE_URL], 402);
-        }
-        if (!current_user_can('manage_options')) {
-            return new WP_Error('forbidden', 'Cannot change site settings.', ['status' => 403]);
-        }
-        $body   = $request->get_json_params();
-        $pageId = (int) ($body['page_id'] ?? 0);
-        $post   = $pageId ? get_post($pageId) : null;
-        if (!$post || $post->post_type !== 'page') {
-            return new WP_Error('not_found', "Page $pageId not found.", ['status' => 404]);
-        }
-        update_option('show_on_front', 'page');
-        update_option('page_on_front', $pageId);
-        return new WP_REST_Response(['front_page' => $pageId], 200);
-    }
-
-    public function set_primary_menu(WP_REST_Request $request): WP_REST_Response|WP_Error
-    {
-        if (!Licensing::isPremium()) {
-            return new WP_REST_Response(['premium' => true, 'message' => 'Premium feature.', 'upgrade_url' => Licensing::UPGRADE_URL], 402);
-        }
-        if (!current_user_can('edit_theme_options')) {
-            return new WP_Error('forbidden', 'Cannot manage menus.', ['status' => 403]);
-        }
-        $body  = $request->get_json_params();
-        $items = is_array($body['items'] ?? null) ? $body['items'] : [];
-        if ($items === []) {
-            return new WP_Error('missing_field', 'items is required.', ['status' => 400]);
-        }
-        return new WP_REST_Response(MenuBuilder::build($items), 200);
     }
 
     public function style_guide(WP_REST_Request $request): WP_REST_Response
@@ -447,15 +398,6 @@ final class RestController
 
     public function create_page(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
-        if (!Licensing::isPremium()) {
-            return new WP_REST_Response([
-                'created'     => false,
-                'premium'     => true,
-                'message'     => 'Creating pages is a premium feature. Activate a license to enable it.',
-                'upgrade_url' => Licensing::UPGRADE_URL,
-            ], 402);
-        }
-
         if (!current_user_can('publish_pages')) {
             return new WP_Error('forbidden', 'Your account does not have permission to create pages.', ['status' => 403]);
         }

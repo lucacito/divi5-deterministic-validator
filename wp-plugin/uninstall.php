@@ -8,7 +8,5 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 require_once __DIR__ . '/src/autoload.php';
 AiEditorDivi5\WP\UsageTracker::dropTable();
 AiEditorDivi5\WP\ApiKey::delete();
-AiEditorDivi5\WP\Licensing::clear();
-AiEditorDivi5\WP\PhpProposals::clear();
 AiEditorDivi5\WP\HistoryStore::deleteAll();
 delete_option('ai_editor_divi5_db_version');

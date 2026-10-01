@@ -51,4 +51,12 @@ class ImageGuideTest extends TestCase
         // broken images. It may only appear as an explicit "never use" warning.
         $this->assertStringNotContainsString('https://source.unsplash.com', $md);
     }
+
+    public function testDoesNotReferenceRemovedOrPaidTools(): void
+    {
+        $md = ImageGuide::markdown();
+        foreach (['set_front_page', 'set_primary_menu', 'set_custom_css', 'propose_php_snippet', 'find_image', 'premium', 'upgrade', 'license'] as $needle) {
+            $this->assertStringNotContainsStringIgnoringCase($needle, $md, "ImageGuide must not mention $needle");
+        }
+    }
 }

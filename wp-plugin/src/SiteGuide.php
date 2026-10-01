@@ -23,7 +23,7 @@ every page, plus wired navigation.
 
 ## 1. Plan the page set
 From the brief, choose pages. A typical business site:
-- **Home** (slug `home` — will be the front page)
+- **Home** (slug `home` — the owner will set it as the front page)
 - **About** (`about`)
 - **Services** (`services`)
 - **Contact** (`contact`)
@@ -49,17 +49,20 @@ same tokens so the site reads as one brand.
   `/`, `/about/`, `/services/`, `/contact/`. CTAs like "Book a Call" link to
   `/contact/`.
 
-## 4. Wire the site (after all pages exist)
-- `set_front_page` {"page_id": <home id>} — make Home the site's front page.
-- `set_primary_menu` {"items":[{"title":"Home","page_id":<id>}, …]} — build the
-  nav menu the theme header shows site-wide. Order: Home, then inner pages,
-  Contact last.
+## 4. Hand over to the owner (after all pages exist)
+Pages are created as drafts and this plugin does not change site settings, so
+finish by telling the owner exactly what to do in WordPress:
+- Review and publish each draft page.
+- **Front page**: set the Home page under Settings → Reading ("A static page").
+- **Menu**: add the pages to the navigation menu under Appearance → Menus,
+  in this order: Home, then inner pages, Contact last. Link each item to its page.
+List the page titles and slugs you created so the owner can tick them off.
 
 ## Notes
 - Header/footer are currently the active theme's (the nav menu drives the header).
   Global Divi Theme Builder header/footer templates are a later phase.
-- create_page is premium; so are set_front_page and set_primary_menu.
-- Build pages first, capture each returned page id, then wire front page + menu.
+- Build pages first and keep each returned page id and link, then give the owner
+  the Settings → Reading and Appearance → Menus steps above.
 - Undo: Every save through this plugin (update_page_layout / edit_page_content) keeps the
   page's previous content as a snapshot when it can (the result's `history.stored`
   says whether it did). Up to the last 10 previous versions are kept per page, fewer

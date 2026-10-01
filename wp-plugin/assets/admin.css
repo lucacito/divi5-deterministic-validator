@@ -32,12 +32,6 @@
     background: linear-gradient(135deg, var(--aied-accent), var(--aied-accent-2));
     color: #fff; font-size: 18px;
 }
-.aied-plan {
-    font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 999px;
-    letter-spacing: .02em;
-}
-.aied-plan--free { background: #eef0f6; color: var(--aied-muted); }
-.aied-plan--pro  { background: linear-gradient(135deg, var(--aied-accent), var(--aied-accent-2)); color: #fff; }
 
 /* ── Nav ───────────────────────────────────────────────── */
 .aied-nav {
@@ -110,16 +104,13 @@
 .aied-pos { color: var(--aied-ok); }
 .aied-warn { color: var(--aied-warn); }
 
-/* ── Recommendations / features ────────────────────────── */
-.aied-rec h4 { font-size: 14px; }
+/* ── Features ────────────────────────── */
 .aied-feature { display: flex; gap: 12px; align-items: flex-start; }
 .aied-feature__badge {
     flex: 0 0 28px; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
     font-size: 14px; background: #eceef4; color: var(--aied-muted);
 }
 .aied-feature__badge--free { background: #e3f6ec; color: var(--aied-ok); }
-.aied-locked { background: #fcfcfd; }
-.aied-locked .aied-feature__badge { background: #f0eefb; color: var(--aied-accent); }
 
 /* ── Tick lists ────────────────────────────────────────── */
 .aied-ticklist { margin: 8px 0 14px; }
@@ -129,7 +120,7 @@
 .aied-empty { text-align: center; padding: 28px 20px; }
 .aied-empty p { margin: 4px 0; }
 
-/* ── Keys, snippets, proposals ─────────────────────────── */
+/* ── Keys and snippets ───────────────────────────────── */
 .aied-key-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
 .aied-key {
     flex: 1; min-width: 220px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
@@ -142,8 +133,6 @@
     overflow-x: auto; white-space: pre; margin: 0;
 }
 .aied-snippet-wrap .aied-copy-btn { position: absolute; top: 10px; right: 10px; }
-.aied-proposal { border: 1px solid var(--aied-line); border-radius: 10px; padding: 16px; margin-top: 14px; background: #fcfcfd; }
-.aied-proposal form { margin-top: 10px; }
 
 /* ── Status pills + buttons ────────────────────────────── */
 .aied-result { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; letter-spacing: .03em; }
@@ -186,16 +175,6 @@
     padding: 9px 11px; margin: 10px 0;
 }
 .aied-guide-link { display: inline-block; margin-top: 4px; font-size: 13px; }
-
-/* ── Cross-promo (other JHMG plugins) ──────────────────── */
-.aied-chip {
-    display: inline-block; font-size: 11px; font-weight: 600; color: var(--aied-muted);
-    background: #eceef4; border-radius: 999px; padding: 2px 9px; white-space: nowrap;
-}
-.aied-promo-list { margin: 6px 0 0; }
-.aied-promo-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13.5px; }
-.aied-promo-list li + li { border-top: 1px solid var(--aied-line); }
-.aied-promo-list a { font-weight: 600; }
 
 /* ── ChatGPT spec URL (shown in full for non-devs) ─────── */
 .aied-spec-url-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }

@@ -46,4 +46,12 @@ class StyleGuideTest extends TestCase
         $messages = implode('; ', array_map(fn($v) => $v->toArray()['code'] . ' ' . $v->toArray()['path'], $result->violations()));
         $this->assertTrue($result->isValid(), "worked example must validate, got: $messages");
     }
+
+    public function testDoesNotReferenceRemovedOrPaidTools(): void
+    {
+        $md = StyleGuide::markdown();
+        foreach (['set_front_page', 'set_primary_menu', 'set_custom_css', 'propose_php_snippet', 'find_image', 'premium', 'upgrade', 'license'] as $needle) {
+            $this->assertStringNotContainsStringIgnoringCase($needle, $md, "StyleGuide must not mention $needle");
+        }
+    }
 }

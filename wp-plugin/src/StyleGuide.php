@@ -225,9 +225,10 @@ css.{bp}.value.freeForm    = "selector { backdrop-filter: blur(12px); } selector
 ```
 This is how to do TRUE frosted-glass (backdrop-filter — no native Divi attr),
 keyframe `@keyframes` animations, and `::before`/`::after` pseudo-elements.
-For reusable, SITE-WIDE CSS (a `.glass` class, global `@keyframes`), call the
-premium `set_custom_css` tool instead of per-module css — it stores CSS in
-WordPress Additional CSS (safe, no code execution).
+This plugin does not edit site-wide CSS. If the design needs reusable, SITE-WIDE
+CSS (a `.glass` class, global `@keyframes`), keep it per-module with the `css` key
+above, or tell the owner the CSS to paste into Appearance → Customize →
+Additional CSS themselves.
 
 ## Full-viewport height & background blend
 ```

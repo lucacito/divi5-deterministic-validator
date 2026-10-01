@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Top-level admin experience — a guided, outcome-focused "SaaS" app:
- * Dashboard · Features · Settings · Upgrade (one menu item, internal views).
+ * Dashboard · Features · Settings (one menu item, internal views).
  */
 final class AdminPage
 {
@@ -21,9 +21,6 @@ final class AdminPage
         add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
         add_action('admin_post_ai_editor_divi5_regenerate_key',     [$this, 'handleRegenerate']);
         add_action('admin_post_ai_editor_divi5_clear_usage',        [$this, 'handleClearUsage']);
-        add_action('admin_post_ai_editor_divi5_activate_license',   [$this, 'handleActivateLicense']);
-        add_action('admin_post_ai_editor_divi5_deactivate_license', [$this, 'handleDeactivateLicense']);
-        add_action('admin_post_ai_editor_divi5_delete_proposal',    [$this, 'handleDeleteProposal']);
         add_action('admin_post_ai_editor_divi5_restore_page',       [$this, 'handleRestorePage']);
     }
 
@@ -85,30 +82,6 @@ final class AdminPage
         $this->redirect('dashboard', 'usage_cleared');
     }
 
-    public function handleActivateLicense(): void
-    {
-        $this->guard('ai_editor_divi5_activate_license'); // guard() verifies the nonce via check_admin_referer().
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.NonceVerification.Missing -- opaque key, trimmed in Licensing; nonce verified in guard().
-        $key    = sanitize_text_field( wp_unslash( $_POST['license_key'] ?? '' ) );
-        $result = $key !== '' ? Licensing::activate( $key ) : [ 'ok' => false, 'error' => 'invalid_request' ];
-        $this->redirect('upgrade', $result['ok'] ? 'license_activated' : 'license_invalid');
-    }
-
-    public function handleDeactivateLicense(): void
-    {
-        $this->guard('ai_editor_divi5_deactivate_license');
-        Licensing::deactivate();
-        $this->redirect('upgrade', 'license_deactivated');
-    }
-
-    public function handleDeleteProposal(): void
-    {
-        $this->guard('ai_editor_divi5_delete_proposal'); // guard() verifies the nonce via check_admin_referer().
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.NonceVerification.Missing -- opaque id, sanitized; nonce verified in guard().
-        PhpProposals::delete( sanitize_text_field( wp_unslash( $_POST['proposal_id'] ?? '' ) ) );
-        $this->redirect('settings', 'proposal_deleted');
-    }
-
     public function handleRestorePage(): void
     {
         $this->guard('ai_editor_divi5_restore_page'); // guard() verifies the nonce via check_admin_referer().
@@ -137,11 +110,6 @@ final class AdminPage
     // Derived data (no new storage — computed from existing classes)
     // ---------------------------------------------------------------
 
-    private function isPremium(): bool
-    {
-        return Licensing::isPremium();
-    }
-
     /** @return array{steps: list<array{label:string, done:bool}>, done:int, total:int, pct:int} */
     private function setupProgress(): array
     {
@@ -150,7 +118,6 @@ final class AdminPage
             ['label' => __( 'Plugin activated', 'jhmg-ai-editor-for-divi-5' ),            'done' => true],
             ['label' => __( 'AI assistant connected', 'jhmg-ai-editor-for-divi-5' ),      'done' => (int) $summary['total'] > 0],
             ['label' => __( 'First page edit saved', 'jhmg-ai-editor-for-divi-5' ),       'done' => (int) $summary['valid'] > 0],
-            ['label' => __( 'Premium unlocked', 'jhmg-ai-editor-for-divi-5' ),            'done' => $this->isPremium()],
         ];
         $done  = count(array_filter($steps, static fn($s) => $s['done']));
         $total = count($steps);
@@ -341,18 +308,16 @@ final class AdminPage
         }
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only nav.
         $tab = sanitize_key( $_GET['tab'] ?? 'dashboard' );
-        if (!in_array($tab, ['dashboard', 'features', 'settings', 'upgrade'], true)) {
+        if (!in_array($tab, ['dashboard', 'features', 'settings'], true)) {
             $tab = 'dashboard';
         }
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- set by our own nonce-verified redirects.
         $notice  = sanitize_key( $_GET['notice'] ?? '' );
-        $premium = $this->isPremium();
 
         $tabs = [
             'dashboard' => __( 'Dashboard', 'jhmg-ai-editor-for-divi-5' ),
             'features'  => __( 'Features', 'jhmg-ai-editor-for-divi-5' ),
             'settings'  => __( 'Settings', 'jhmg-ai-editor-for-divi-5' ),
-            'upgrade'   => $premium ? __( 'Account', 'jhmg-ai-editor-for-divi-5' ) : __( 'Upgrade', 'jhmg-ai-editor-for-divi-5' ),
         ];
         ?>
         <div class="wrap aied">
@@ -364,9 +329,6 @@ final class AdminPage
                         <span class="aied-topbar__ver">v<?php echo esc_html( AI_EDITOR_DIVI5_VERSION ); ?></span>
                     </div>
                 </div>
-                <span class="aied-plan aied-plan--<?php echo $premium ? 'pro' : 'free'; ?>">
-                    <?php echo $premium ? esc_html__( 'Premium', 'jhmg-ai-editor-for-divi-5' ) : esc_html__( 'Free plan', 'jhmg-ai-editor-for-divi-5' ); ?>
-                </span>
             </div>
 
             <nav class="aied-nav">
@@ -386,7 +348,6 @@ final class AdminPage
                 switch ( $tab ) {
                     case 'features': $this->viewFeatures(); break;
                     case 'settings': $this->viewSettings(); break;
-                    case 'upgrade':  $this->viewUpgrade();  break;
                     default:         $this->viewDashboard(); break;
                 }
                 ?>
@@ -400,15 +361,10 @@ final class AdminPage
         $map = [
             'key_regenerated'    => __( 'API key regenerated. Update your AI assistant configuration.', 'jhmg-ai-editor-for-divi-5' ),
             'usage_cleared'      => __( 'Activity log cleared.', 'jhmg-ai-editor-for-divi-5' ),
-            'license_activated'  => __( 'License activated — premium features are now unlocked.', 'jhmg-ai-editor-for-divi-5' ),
-            'license_deactivated'=> __( 'License removed.', 'jhmg-ai-editor-for-divi-5' ),
-            'proposal_deleted'   => __( 'Code proposal deleted.', 'jhmg-ai-editor-for-divi-5' ),
             'version_restored'   => __( 'Previous version restored. The version it replaced was saved too, so you can undo this.', 'jhmg-ai-editor-for-divi-5' ),
         ];
         if ( isset( $map[ $notice ] ) ) {
             printf('<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $map[ $notice ] ));
-        } elseif ( $notice === 'license_invalid' ) {
-            printf('<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'That license key is not valid for this site.', 'jhmg-ai-editor-for-divi-5' ));
         } elseif ( $notice === 'version_restored_no_undo' ) {
             printf('<div class="notice notice-warning is-dismissible"><p>%s</p></div>', esc_html__( 'Previous version restored, but the version it replaced could not be kept, so this restore cannot be undone from here.', 'jhmg-ai-editor-for-divi-5' ));
         } elseif ( $notice === 'restore_failed' ) {
@@ -478,8 +434,6 @@ final class AdminPage
         $summary  = UsageTracker::getSummary();
         $progress = $this->setupProgress();
         $connected = (int) $summary['total'] > 0;
-        $premium  = $this->isPremium();
-        $proposals = PhpProposals::count();
         ?>
         <div class="aied-hello">
             <h1><?php esc_html_e( 'Welcome 👋', 'jhmg-ai-editor-for-divi-5' ); ?></h1>
@@ -539,110 +493,7 @@ final class AdminPage
         <?php endif; ?>
 
         <?php $this->historySection(); ?>
-
-        <!-- Recommendations -->
-        <h3 class="aied-section-title"><?php esc_html_e( 'Recommended for you', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
-        <div class="aied-grid aied-grid--3">
-            <?php if ( $proposals > 0 ) : ?>
-                <div class="aied-card aied-rec">
-                    <h4><?php echo esc_html( sprintf( /* translators: %d count */ _n( '%d code proposal to review', '%d code proposals to review', $proposals, 'jhmg-ai-editor-for-divi-5' ), $proposals ) ); ?></h4>
-                    <p class="aied-muted"><?php esc_html_e( 'Your AI drafted PHP for you to review and apply safely.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
-                    <a class="button" href="<?php echo esc_url( add_query_arg(['page' => self::SLUG, 'tab' => 'settings'], admin_url('admin.php')) ); ?>#proposals"><?php esc_html_e( 'Review', 'jhmg-ai-editor-for-divi-5' ); ?></a>
-                </div>
-            <?php endif; ?>
-
-            <?php if ( ! $premium ) : ?>
-                <div class="aied-card aied-rec aied-locked">
-                    <h4>&#128274; <?php esc_html_e( 'Create whole pages & sites', 'jhmg-ai-editor-for-divi-5' ); ?></h4>
-                    <p class="aied-muted"><?php esc_html_e( 'Premium lets the AI build brand-new pages and entire multi-page sites — not just edit existing ones.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
-                    <a class="button" href="<?php echo esc_url( add_query_arg(['page' => self::SLUG, 'tab' => 'upgrade'], admin_url('admin.php')) ); ?>"><?php esc_html_e( 'See what’s included', 'jhmg-ai-editor-for-divi-5' ); ?></a>
-                </div>
-                <div class="aied-card aied-rec aied-locked">
-                    <h4>&#128274; <?php esc_html_e( 'Custom CSS & effects', 'jhmg-ai-editor-for-divi-5' ); ?></h4>
-                    <p class="aied-muted"><?php esc_html_e( 'Add site-wide CSS for glassmorphism and animations the page builder can’t do.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
-                    <a class="button" href="<?php echo esc_url( add_query_arg(['page' => self::SLUG, 'tab' => 'upgrade'], admin_url('admin.php')) ); ?>"><?php esc_html_e( 'Learn more', 'jhmg-ai-editor-for-divi-5' ); ?></a>
-                </div>
-            <?php else : ?>
-                <div class="aied-card aied-rec">
-                    <h4><?php esc_html_e( 'Build a full site from one prompt', 'jhmg-ai-editor-for-divi-5' ); ?></h4>
-                    <p class="aied-muted"><?php esc_html_e( 'Ask your AI to build a homepage, about, services and contact pages in one go.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
-                    <a class="button" href="<?php echo esc_url( add_query_arg(['page' => self::SLUG, 'tab' => 'features'], admin_url('admin.php')) ); ?>"><?php esc_html_e( 'See features', 'jhmg-ai-editor-for-divi-5' ); ?></a>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <?php $this->converterPromoSection( true ); ?>
         <?php
-    }
-
-    // ---------------------------------------------------------------
-    // Cross-promo: JHMG's other Divi plugins (the converters)
-    // ---------------------------------------------------------------
-
-    /**
-     * The two converter plugins we cross-promote. Static, pure data — unit-testable.
-     * Upstream source of truth for names / prices / URLs:
-     * layoutlab/lib/nav/menu-data.ts (PLUGIN_MENU). Keep in sync by hand.
-     * Note: Divi→Elementor is not purchasable yet — it's a waitlist ("Coming soon").
-     *
-     * @return list<array{name:string, blurb:string, chip:string, cta:string, url:string}>
-     */
-    public static function converterPromos(): array
-    {
-        return [
-            [
-                'name'  => 'Elementor → Divi 5 Converter',
-                'blurb' => __( 'Migrate Elementor pages and kits into validated Divi 5.', 'jhmg-ai-editor-for-divi-5' ),
-                'chip'  => __( 'Free · Pro $25/yr', 'jhmg-ai-editor-for-divi-5' ),
-                'cta'   => __( 'Get it', 'jhmg-ai-editor-for-divi-5' ),
-                'url'   => 'https://divi5lab.com/plugins/elementor-to-divi-5',
-            ],
-            [
-                'name'  => 'Divi → Elementor Converter',
-                'blurb' => __( 'Batch-convert Divi sites the other way — 35+ modules mapped.', 'jhmg-ai-editor-for-divi-5' ),
-                'chip'  => __( 'Coming soon', 'jhmg-ai-editor-for-divi-5' ),
-                'cta'   => __( 'Join the waitlist', 'jhmg-ai-editor-for-divi-5' ),
-                'url'   => 'https://divi5lab.com/plugins/divi-to-elementor',
-            ],
-        ];
-    }
-
-    /**
-     * Renders the converter cross-promo. $compact = a slim Dashboard strip;
-     * otherwise a full two-card section (Upgrade/Account tab).
-     */
-    public function converterPromoSection( bool $compact ): void
-    {
-        $promos = self::converterPromos();
-        if ( $compact ) : ?>
-            <div class="aied-card aied-promo">
-                <div class="aied-card__head">
-                    <h3><?php esc_html_e( 'More Divi tools from JHMG', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
-                </div>
-                <ul class="aied-promo-list">
-                    <?php foreach ( $promos as $p ) : ?>
-                        <li>
-                            <a href="<?php echo esc_url( $p['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $p['name'] ); ?></a>
-                            <span class="aied-chip"><?php echo esc_html( $p['chip'] ); ?></span>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php else : ?>
-            <h3 class="aied-section-title"><?php esc_html_e( 'More Divi tools from JHMG', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
-            <div class="aied-grid aied-grid--2">
-                <?php foreach ( $promos as $p ) : ?>
-                    <div class="aied-card">
-                        <div class="aied-card__head">
-                            <h4><?php echo esc_html( $p['name'] ); ?></h4>
-                            <span class="aied-chip"><?php echo esc_html( $p['chip'] ); ?></span>
-                        </div>
-                        <p class="aied-muted"><?php echo esc_html( $p['blurb'] ); ?></p>
-                        <a class="button button-primary" href="<?php echo esc_url( $p['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $p['cta'] ); ?> &rarr;</a>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif;
     }
 
     // ---------------------------------------------------------------
@@ -651,49 +502,27 @@ final class AdminPage
 
     private function viewFeatures(): void
     {
-        $premium = $this->isPremium();
-        $free = [
-            [ __( 'Edit pages in plain English', 'jhmg-ai-editor-for-divi-5' ), __( 'Tell your AI what to change and it updates the live Divi 5 layout — no builder, no copy-paste.', 'jhmg-ai-editor-for-divi-5' ) ],
-            [ __( 'Validated, safe saves', 'jhmg-ai-editor-for-divi-5' ), __( 'Every change is checked against 56+ Divi 5 module types before saving, so broken layouts never reach your site.', 'jhmg-ai-editor-for-divi-5' ) ],
-            [ __( 'Read & understand any page', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can list and read existing pages to make precise, context-aware edits.', 'jhmg-ai-editor-for-divi-5' ) ],
-            [ __( 'Conversion-focused page generation', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in landing-page blueprint, design vocabulary and proven section patterns guide the AI to produce polished, on-brand pages with a strategic structure built to convert.', 'jhmg-ai-editor-for-divi-5' ) ],
-        ];
-        $pro = [
-            [ __( 'Create new pages', 'jhmg-ai-editor-for-divi-5' ), __( 'Generate brand-new pages from a prompt — drafted, validated, ready to review.', 'jhmg-ai-editor-for-divi-5' ) ],
-            [ __( 'Build entire websites', 'jhmg-ai-editor-for-divi-5' ), __( 'Produce a cohesive multi-page site (home, about, services, contact) with shared styling and navigation in one go.', 'jhmg-ai-editor-for-divi-5' ) ],
-            [ __( 'Set homepage & menus', 'jhmg-ai-editor-for-divi-5' ), __( 'Wire up the front page and primary navigation automatically.', 'jhmg-ai-editor-for-divi-5' ) ],
-            [ __( 'Site-wide custom CSS', 'jhmg-ai-editor-for-divi-5' ), __( 'Add real glassmorphism, animations and fine-tuning the builder can’t express — safely, never executing code.', 'jhmg-ai-editor-for-divi-5' ) ],
-            [ __( 'Reviewed PHP snippets', 'jhmg-ai-editor-for-divi-5' ), __( 'The AI drafts custom post types, hooks and integrations for you to review and apply — nothing runs automatically.', 'jhmg-ai-editor-for-divi-5' ) ],
+        // [title, description, tools it covers] — the 14 tools your AI assistant can call.
+        $features = [
+            [ __( 'Edit pages in plain English', 'jhmg-ai-editor-for-divi-5' ), __( 'Tell your AI what to change and it updates the live Divi 5 layout — no builder, no copy-paste.', 'jhmg-ai-editor-for-divi-5' ), 'update_page_layout, edit_page_content' ],
+            [ __( 'Validated, safe saves', 'jhmg-ai-editor-for-divi-5' ), __( 'Every change is checked against 56+ Divi 5 module types before saving, so broken layouts never reach your site.', 'jhmg-ai-editor-for-divi-5' ), 'validate_layout' ],
+            [ __( 'Read & understand any page', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can list and read existing pages to make precise, context-aware edits.', 'jhmg-ai-editor-for-divi-5' ), 'list_divi_pages, get_page_layout' ],
+            [ __( 'Undo AI edits', 'jhmg-ai-editor-for-divi-5' ), __( 'Every AI save keeps the previous version, so you or your AI can browse the history and restore an earlier one.', 'jhmg-ai-editor-for-divi-5' ), 'list_page_history, get_page_history_entry, restore_page_version' ],
+            [ __( 'Create new pages (as drafts)', 'jhmg-ai-editor-for-divi-5' ), __( 'Generate brand-new pages from a prompt — always saved as a draft, validated, ready for you to review and publish.', 'jhmg-ai-editor-for-divi-5' ), 'create_page' ],
+            [ __( 'Build entire websites', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in blueprint helps your AI plan a cohesive multi-page site (home, about, services, contact) with shared styling, then tells you which page to set as the front page and which to add to the menu.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_guide' ],
+            [ __( 'Conversion-focused page generation', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in landing-page blueprint, design vocabulary and proven section patterns guide the AI to produce polished, on-brand pages with a strategic structure built to convert.', 'jhmg-ai-editor-for-divi-5' ), 'get_landing_guide, get_style_guide, get_section_recipes' ],
+            [ __( 'Relevant images', 'jhmg-ai-editor-for-divi-5' ), __( 'An image guide teaches your AI to pick the right visual for each section, so pages do not ship with empty image slots.', 'jhmg-ai-editor-for-divi-5' ), 'get_image_guide' ],
         ];
         ?>
         <div class="aied-hello"><h1><?php esc_html_e( 'Features', 'jhmg-ai-editor-for-divi-5' ); ?></h1>
             <p><?php esc_html_e( 'Everything your AI assistant can do with your Divi 5 site.', 'jhmg-ai-editor-for-divi-5' ); ?></p></div>
 
-        <h3 class="aied-section-title"><?php esc_html_e( 'Included free', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
+        <h3 class="aied-section-title"><?php esc_html_e( 'Included', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
         <div class="aied-grid aied-grid--2">
-            <?php foreach ( $free as [$t, $d] ) : ?>
+            <?php foreach ( $features as [$t, $d, $tools] ) : ?>
                 <div class="aied-card aied-feature">
                     <span class="aied-feature__badge aied-feature__badge--free">&#10003;</span>
-                    <div><h4><?php echo esc_html( $t ); ?></h4><p class="aied-muted"><?php echo esc_html( $d ); ?></p></div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <h3 class="aied-section-title">
-            <?php esc_html_e( 'Premium', 'jhmg-ai-editor-for-divi-5' ); ?>
-            <span class="aied-result <?php echo $premium ? 'aied-result--valid' : 'aied-result--invalid'; ?>"><?php echo $premium ? esc_html__( 'ACTIVE', 'jhmg-ai-editor-for-divi-5' ) : esc_html__( 'LOCKED', 'jhmg-ai-editor-for-divi-5' ); ?></span>
-        </h3>
-        <div class="aied-grid aied-grid--2">
-            <?php foreach ( $pro as [$t, $d] ) : ?>
-                <div class="aied-card aied-feature <?php echo $premium ? '' : 'aied-locked'; ?>">
-                    <span class="aied-feature__badge"><?php echo $premium ? '&#10003;' : '&#128274;'; ?></span>
-                    <div>
-                        <h4><?php echo esc_html( $t ); ?></h4>
-                        <p class="aied-muted"><?php echo esc_html( $d ); ?></p>
-                        <?php if ( ! $premium ) : ?>
-                            <a class="aied-link" href="<?php echo esc_url( add_query_arg(['page' => self::SLUG, 'tab' => 'upgrade'], admin_url('admin.php')) ); ?>"><?php esc_html_e( 'Unlock feature →', 'jhmg-ai-editor-for-divi-5' ); ?></a>
-                        <?php endif; ?>
-                    </div>
+                    <div><h4><?php echo esc_html( $t ); ?></h4><p class="aied-muted"><?php echo esc_html( $d ); ?></p><p class="aied-muted"><code><?php echo esc_html( $tools ); ?></code></p></div>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -709,7 +538,7 @@ final class AdminPage
         $key = ApiKey::get();
         ?>
         <div class="aied-hello"><h1><?php esc_html_e( 'Settings', 'jhmg-ai-editor-for-divi-5' ); ?></h1>
-            <p><?php esc_html_e( 'Connect your AI assistant and manage your account.', 'jhmg-ai-editor-for-divi-5' ); ?></p></div>
+            <p><?php esc_html_e( 'Connect your AI assistant and manage your API key.', 'jhmg-ai-editor-for-divi-5' ); ?></p></div>
 
         <!-- Connection -->
         <div class="aied-card">
@@ -726,39 +555,6 @@ final class AdminPage
                 </form>
             </div>
             <?php $this->connectCard( self::connectClients( rtrim( get_site_url(), '/' ), $key ) ); ?>
-        </div>
-
-        <!-- Account / License -->
-        <div class="aied-card">
-            <?php $this->licensePanel(); ?>
-        </div>
-
-        <!-- Code proposals -->
-        <div class="aied-card" id="proposals">
-            <h3><?php esc_html_e( 'Code Proposals', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
-            <p class="aied-muted"><?php esc_html_e( 'PHP your AI drafted for you. Nothing is executed or saved to your site — review each one and apply it yourself.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
-            <?php $proposals = PhpProposals::all(); ?>
-            <?php if ( empty( $proposals ) ) : ?>
-                <div class="aied-empty">
-                    <p><strong><?php esc_html_e( 'No proposals yet', 'jhmg-ai-editor-for-divi-5' ); ?></strong></p>
-                    <p class="aied-muted"><?php esc_html_e( 'Ask your AI to build a PHP feature (e.g. a custom post type) and it appears here for review.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
-                </div>
-            <?php else : foreach ( $proposals as $p ) : $pid = $p['id']; ?>
-                <div class="aied-proposal">
-                    <h4><?php echo esc_html( $p['title'] ); ?></h4>
-                    <p class="aied-muted"><?php echo esc_html( $p['description'] ); ?></p>
-                    <div class="aied-snippet-wrap">
-                        <pre class="aied-snippet" id="proposal-<?php echo esc_attr( $pid ); ?>"><?php echo esc_html( $p['code'] ); ?></pre>
-                        <button class="button button-primary aied-copy-btn" data-target="proposal-<?php echo esc_attr( $pid ); ?>"><?php esc_html_e( 'Copy', 'jhmg-ai-editor-for-divi-5' ); ?></button>
-                    </div>
-                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-                        <input type="hidden" name="action" value="ai_editor_divi5_delete_proposal">
-                        <input type="hidden" name="proposal_id" value="<?php echo esc_attr( $pid ); ?>">
-                        <?php wp_nonce_field( 'ai_editor_divi5_delete_proposal' ); ?>
-                        <button type="submit" class="button aied-btn-danger" onclick="return confirm('<?php echo esc_js( __( 'Delete this proposal?', 'jhmg-ai-editor-for-divi-5' ) ); ?>')"><?php esc_html_e( 'Delete', 'jhmg-ai-editor-for-divi-5' ); ?></button>
-                    </form>
-                </div>
-            <?php endforeach; endif; ?>
         </div>
 
         <!-- Activity log -->
@@ -792,103 +588,6 @@ final class AdminPage
             </table>
         </div>
         <?php endif; ?>
-        <?php
-    }
-
-    private function licensePanel(): void
-    {
-        $license = Licensing::status();
-        ?>
-        <h3>
-            <?php esc_html_e( 'License', 'jhmg-ai-editor-for-divi-5' ); ?>
-            <span class="aied-result <?php echo $license['valid'] ? 'aied-result--valid' : 'aied-result--invalid'; ?>"><?php echo $license['valid'] ? esc_html__( 'PREMIUM', 'jhmg-ai-editor-for-divi-5' ) : esc_html__( 'FREE', 'jhmg-ai-editor-for-divi-5' ); ?></span>
-        </h3>
-        <?php if ( $license['valid'] ) : ?>
-            <p class="aied-muted">
-                <?php esc_html_e( 'Premium is active on this site.', 'jhmg-ai-editor-for-divi-5' ); ?>
-                <?php if ( $license['expires'] ) {
-                    $aied_is_lapsed = in_array( $license['status'], [ 'expired', 'canceled' ], true );
-                    echo ' ' . esc_html( sprintf(
-                        /* translators: %s date */
-                        $aied_is_lapsed ? __( 'Expired %s.', 'jhmg-ai-editor-for-divi-5' ) : __( 'Renews %s.', 'jhmg-ai-editor-for-divi-5' ),
-                        date_i18n( get_option( 'date_format' ), (int) $license['expires'] )
-                    ) );
-                } ?>
-            </p>
-            <?php if ( in_array( $license['status'], [ 'expired', 'canceled' ], true ) ) : ?>
-                <p class="aied-muted">
-                    <?php esc_html_e( 'Your license has lapsed: premium features stay unlocked here, but updates and support are paused.', 'jhmg-ai-editor-for-divi-5' ); ?>
-                    <a href="<?php echo esc_url( Licensing::UPGRADE_URL ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Renew', 'jhmg-ai-editor-for-divi-5' ); ?></a>
-                </p>
-            <?php endif; ?>
-            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-                <input type="hidden" name="action" value="ai_editor_divi5_deactivate_license">
-                <?php wp_nonce_field( 'ai_editor_divi5_deactivate_license' ); ?>
-                <button type="submit" class="button aied-btn-danger"><?php esc_html_e( 'Deactivate license', 'jhmg-ai-editor-for-divi-5' ); ?></button>
-            </form>
-        <?php else : ?>
-            <p class="aied-muted"><?php esc_html_e( 'Enter a license key to unlock premium features.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
-            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="aied-key-row">
-                <input type="hidden" name="action" value="ai_editor_divi5_activate_license">
-                <?php wp_nonce_field( 'ai_editor_divi5_activate_license' ); ?>
-                <input type="text" name="license_key" class="regular-text" style="flex:1" placeholder="<?php esc_attr_e( 'JHMG-XXXX-XXXX-XXXX-XXXX', 'jhmg-ai-editor-for-divi-5' ); ?>" autocomplete="off" spellcheck="false">
-                <button type="submit" class="button button-primary"><?php esc_html_e( 'Activate', 'jhmg-ai-editor-for-divi-5' ); ?></button>
-            </form>
-        <?php endif; ?>
-        <?php
-    }
-
-    // ---------------------------------------------------------------
-    // View: Upgrade / Account
-    // ---------------------------------------------------------------
-
-    private function viewUpgrade(): void
-    {
-        $premium = $this->isPremium();
-        $benefits = [
-            __( 'Generate brand-new pages from a prompt instead of building them by hand.', 'jhmg-ai-editor-for-divi-5' ),
-            __( 'Spin up a whole multi-page website — consistent design and navigation — in minutes, not days.', 'jhmg-ai-editor-for-divi-5' ),
-            __( 'Add polished effects (glassmorphism, animations) with safe, site-wide custom CSS.', 'jhmg-ai-editor-for-divi-5' ),
-            __( 'Get reviewed PHP for custom features without writing it yourself.', 'jhmg-ai-editor-for-divi-5' ),
-        ];
-        ?>
-        <div class="aied-hello">
-            <h1><?php echo $premium ? esc_html__( 'Your account', 'jhmg-ai-editor-for-divi-5' ) : esc_html__( 'Unlock more with Premium', 'jhmg-ai-editor-for-divi-5' ); ?></h1>
-            <p><?php echo $premium
-                ? esc_html__( 'Premium is active. Thanks for your support!', 'jhmg-ai-editor-for-divi-5' )
-                : esc_html__( 'You already get safe, AI-powered page editing for free. Premium adds creation and automation.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
-        </div>
-
-        <div class="aied-grid aied-grid--2">
-            <div class="aied-card">
-                <h3><?php esc_html_e( 'You already have', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
-                <ul class="aied-ticklist">
-                    <li>&#10003; <?php esc_html_e( 'AI editing of existing Divi 5 pages', 'jhmg-ai-editor-for-divi-5' ); ?></li>
-                    <li>&#10003; <?php esc_html_e( 'Validated, never-break-the-site saves', 'jhmg-ai-editor-for-divi-5' ); ?></li>
-                    <li>&#10003; <?php esc_html_e( 'Conversion-focused page generation (landing blueprint, style guide & section recipes)', 'jhmg-ai-editor-for-divi-5' ); ?></li>
-                    <li>&#10003; <?php esc_html_e( 'Works with Claude, Cursor, VS Code & ChatGPT', 'jhmg-ai-editor-for-divi-5' ); ?></li>
-                </ul>
-            </div>
-            <div class="aied-card aied-card--accent">
-                <h3>&#128640; <?php esc_html_e( 'Premium unlocks', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
-                <ul class="aied-ticklist">
-                    <?php foreach ( $benefits as $b ) : ?>
-                        <li>&#128640; <?php echo esc_html( $b ); ?></li>
-                    <?php endforeach; ?>
-                </ul>
-                <?php if ( ! $premium ) : ?>
-                    <a class="button button-primary button-hero" href="<?php echo esc_url( Licensing::UPGRADE_URL ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Get Premium', 'jhmg-ai-editor-for-divi-5' ); ?></a>
-                <?php else : ?>
-                    <p class="aied-eyebrow aied-eyebrow--ok">&#10003; <?php esc_html_e( 'Active on this site', 'jhmg-ai-editor-for-divi-5' ); ?></p>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <div class="aied-card">
-            <?php $this->licensePanel(); ?>
-        </div>
-
-        <?php $this->converterPromoSection( false ); ?>
         <?php
     }
 }

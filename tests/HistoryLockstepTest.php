@@ -62,16 +62,4 @@ class HistoryLockstepTest extends TestCase
             $this->assertSame('#/components/schemas/SnapshotInfo', $schema['properties']['history']['$ref'] ?? null);
         }
     }
-
-    public function testHistoryToolsAreNotPremiumGated(): void
-    {
-        $mcp = $this->src('McpHandler.php');
-        foreach (['toolListHistory', 'toolGetHistoryEntry', 'toolRestoreVersion'] as $m) {
-            $start = strpos($mcp, "function {$m}(");
-            $this->assertNotFalse($start, "$m not found");
-            $end  = strpos($mcp, "\n    private function", (int) $start + 10);
-            $body = substr($mcp, (int) $start, ($end === false ? strlen($mcp) : $end) - (int) $start);
-            $this->assertStringNotContainsString('isPremium', $body, "$m must be free tier");
-        }
-    }
 }

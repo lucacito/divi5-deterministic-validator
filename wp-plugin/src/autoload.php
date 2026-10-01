@@ -14,16 +14,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 // Load plugin classes
 require_once __DIR__ . '/ApiKey.php';
-require_once __DIR__ . '/Licensing/LicenseClient.php';
-require_once __DIR__ . '/Licensing.php';
 require_once __DIR__ . '/StyleGuide.php';
 require_once __DIR__ . '/SectionRecipes.php';
 require_once __DIR__ . '/SiteGuide.php';
 require_once __DIR__ . '/LandingGuide.php';
 require_once __DIR__ . '/ImageGuide.php';
-require_once __DIR__ . '/MenuBuilder.php';
-require_once __DIR__ . '/PhpProposals.php';
-require_once __DIR__ . '/CustomCss.php';
 require_once __DIR__ . '/UsageTracker.php';
 require_once __DIR__ . '/DiviCompat.php';
 require_once __DIR__ . '/PageEditor.php';

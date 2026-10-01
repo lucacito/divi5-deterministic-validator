@@ -53,4 +53,12 @@ class LandingGuideTest extends TestCase
             $this->assertStringContainsString($tool, $md, "landing guide should reference $tool");
         }
     }
+
+    public function testDoesNotReferenceRemovedOrPaidTools(): void
+    {
+        $md = LandingGuide::markdown();
+        foreach (['set_front_page', 'set_primary_menu', 'set_custom_css', 'propose_php_snippet', 'find_image', 'premium', 'upgrade', 'license'] as $needle) {
+            $this->assertStringNotContainsStringIgnoringCase($needle, $md, "LandingGuide must not mention $needle");
+        }
+    }
 }

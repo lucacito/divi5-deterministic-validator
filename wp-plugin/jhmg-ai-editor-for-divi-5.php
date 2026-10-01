@@ -24,9 +24,6 @@ define('AI_EDITOR_DIVI5_VERSION', '4.0.0');
 define('AI_EDITOR_DIVI5_MIN_PHP', '8.1');
 define('AI_EDITOR_DIVI5_MIN_WP',  '6.0');
 define('AI_EDITOR_DIVI5_FILE',    __FILE__);
-define('AI_EDITOR_DIVI5_PRODUCT', 'ai-editor-divi5-pro');
-// License/update server. Override in wp-config.php for dev:
-//   define('AIED_API_BASE', 'http://host.docker.internal:3100');
 
 // ---------------------------------------------------------------
 // Activation — check requirements, create DB table, generate API key
@@ -101,22 +98,9 @@ add_action('rest_api_init', function (): void {
 });
 
 // ---------------------------------------------------------------
-// Licensing: periodic validation + admin notices.
-// No self-update hook — this plugin is distributed on WordPress.org,
-// which delivers all updates. Premium features unlock via license only.
+// Admin UI
 // ---------------------------------------------------------------
 
 if (is_admin()) {
     (new AiEditorDivi5\WP\AdminPage())->register();
-    add_action('admin_init', static function (): void {
-        AiEditorDivi5\WP\Licensing::refresh(); // daily-cached validate (24h + 72h offline grace)
-    });
-    add_action('admin_notices', static function (): void {
-        $has_key = AiEditorDivi5\WP\Licensing::client()->get_key() !== null;
-        $screen  = function_exists('get_current_screen') ? get_current_screen() : null;
-        $on_own  = $screen && $screen->id === 'toplevel_page_ai-editor-divi5';
-        if ($has_key || $on_own) {
-            AiEditorDivi5\WP\Licensing::client()->status_notice();
-        }
-    });
 }

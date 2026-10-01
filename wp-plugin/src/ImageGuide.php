@@ -9,8 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * AI-facing IMAGE-INTELLIGENCE guide. Teaches the AI to assign the RIGHT visual
  * to each section by role (not random images everywhere), using keyless,
- * verified image sources — so generated pages look like finished premium
- * marketplace demos instead of empty templates.
+ * verified image sources — so generated pages look like finished demos
+ * instead of empty templates.
  *
  * Every URL pattern here is confirmed reachable without an API key. Served by the
  * get_image_guide tool and GET /image-guide. Pure — testable.
@@ -24,7 +24,7 @@ final class ImageGuide
 
 Images are not decoration — each one does a job for its section. Pick visuals by
 ROLE, never at random. A page where the hero shows a real product, testimonials
-have real faces, and cards share one consistent ratio reads as a premium
+have real faces, and cards share one consistent ratio reads as a finished
 template; the same layout with random unrelated photos reads as an empty
 generator. Pair this with get_style_guide (the image module's attribute shape)
 and get_landing_guide (the section's conversion job).
@@ -114,12 +114,11 @@ designed.
 5. Nothing fits / needs a label → **Placehold.co** (descriptive text).
 Never leave an image module without a `src`.
 
-## Premium: real curated stock (Unsplash / Pexels / Pixabay)
-For brand-grade, hand-curated photography, those libraries need an API key and a
-server-side fetch that sideloads the file into the WordPress media library (so
-the image is permanent, not hot-linked or rate-limited). That is the premium
-`find_image` path. Until a key is configured, prefer LoremFlickr for relevance —
-it needs nothing.
+## Real curated stock (Unsplash / Pexels / Pixabay)
+Those libraries need an API key and a server-side fetch, which this guide does
+not do. Use the keyless sources above; if the owner wants brand-grade photography,
+tell them to replace the image `src` values with their own media-library images
+afterwards.
 
 ## Quality
 Use the divi/image module shape from get_style_guide (its required

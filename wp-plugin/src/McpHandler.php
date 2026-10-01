@@ -106,7 +106,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'get_site_guide',
-                'description' => 'Get the blueprint for building an ENTIRE multi-page website from one brief: how to plan the page set, lock one shared design system across all pages, build each page with create_page (passing a slug), cross-link them, and wire the front page + nav menu. Call this when the user asks for a whole site, not a single page.',
+                'description' => 'Get the blueprint for building an ENTIRE multi-page website from one brief: how to plan the page set, lock one shared design system across all pages, build each page with create_page (passing a slug), cross-link them, and hand the owner a short list of what to set up in WordPress (front page, menu). Call this when the user asks for a whole site, not a single page.',
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
             ],
             [
@@ -116,58 +116,8 @@ final class McpHandler
             ],
             [
                 'name'        => 'get_image_guide',
-                'description' => 'Get the IMAGE-INTELLIGENCE guide: how to assign the right visual to each section by role (not random images everywhere), using keyless, verified image sources — relevant photos (LoremFlickr), generic/abstract (Picsum), real avatars for testimonials/team (Random User, Pravatar), and descriptive labeled placeholders (Placehold.co). Covers per-section image rules, how to derive search keywords from the business type, stable image pinning, aspect-ratio sizing, and the fallback order. Call this BEFORE choosing any image src so generated pages look like finished premium demos, not empty templates.',
+                'description' => 'Get the IMAGE-INTELLIGENCE guide: how to assign the right visual to each section by role (not random images everywhere), using keyless, verified image sources — relevant photos (LoremFlickr), generic/abstract (Picsum), real avatars for testimonials/team (Random User, Pravatar), and descriptive labeled placeholders (Placehold.co). Covers per-section image rules, how to derive search keywords from the business type, stable image pinning, aspect-ratio sizing, and the fallback order. Call this BEFORE choosing any image src so generated pages look like finished demos, not empty templates.',
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
-            ],
-            [
-                'name'        => 'set_custom_css',
-                'description' => 'PREMIUM: Add site-wide custom CSS (stored in WordPress Additional CSS, inside a managed block that preserves the user\'s own CSS). Use for effects decoration attributes cannot express — true frosted-glass (backdrop-filter), @keyframes animations, ::before/::after, and fine-tuning. CSS cannot execute code, so this is safe. Replaces the managed block on each call (idempotent).',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => ['css' => ['type' => 'string', 'description' => 'The CSS to apply site-wide']],
-                    'required'   => ['css'],
-                ],
-            ],
-            [
-                'name'        => 'propose_php_snippet',
-                'description' => 'PREMIUM: Propose a PHP snippet (custom post type, hook, shortcode, form handler, integration, etc.) for the site owner to REVIEW and apply manually. This does NOT execute or save any code to the site — it stores a reviewed proposal that appears under Settings → AI Editor for Divi 5 → Code Proposals, where a human copies it into their snippets manager or functions.php. Always include a clear description of what the code does and any setup notes.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'title'       => ['type' => 'string', 'description' => 'Short name for the snippet'],
-                        'description' => ['type' => 'string', 'description' => 'What it does + where/how to apply it'],
-                        'code'        => ['type' => 'string', 'description' => 'The PHP code (include the <?php tag if a full file, or a function/hook snippet)'],
-                    ],
-                    'required'   => ['title', 'code'],
-                ],
-            ],
-            [
-                'name'        => 'set_front_page',
-                'description' => 'PREMIUM: Set a page as the site\'s static front page (homepage). Pass the page_id returned by create_page for the Home page.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => ['page_id' => ['type' => 'integer', 'description' => 'Page ID to use as the front page']],
-                    'required'   => ['page_id'],
-                ],
-            ],
-            [
-                'name'        => 'set_primary_menu',
-                'description' => 'PREMIUM: Build the primary navigation menu (shown in the theme header) from a list of items, and assign it to the theme\'s primary menu location. Each item links to a page by id or to a custom url.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'items' => [
-                            'type'        => 'array',
-                            'description' => 'Ordered menu items',
-                            'items'       => ['type' => 'object', 'properties' => [
-                                'title'   => ['type' => 'string'],
-                                'page_id' => ['type' => 'integer', 'description' => 'Link to this page (preferred)'],
-                                'url'     => ['type' => 'string',  'description' => 'Or a custom URL'],
-                            ], 'required' => ['title']],
-                        ],
-                    ],
-                    'required' => ['items'],
-                ],
             ],
             [
                 'name'        => 'get_section_recipes',
@@ -250,7 +200,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'create_page',
-                'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the page is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src (see get_image_guide for the right keyless source per role; picsum /seed/ is the generic fallback).',
+                'description' => 'Create a new WordPress page with a validated Divi 5 layout. The page is always created as a DRAFT for the site owner to review and publish. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the page is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src (see get_image_guide for the right keyless source per role; picsum /seed/ is the generic fallback).',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -275,10 +225,6 @@ final class McpHandler
             'get_site_guide'     => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => SiteGuide::markdown()]]]),
             'get_landing_guide'  => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => LandingGuide::markdown()]]]),
             'get_image_guide'    => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => ImageGuide::markdown()]]]),
-            'set_front_page'     => $this->toolSetFrontPage($id, $arguments),
-            'set_primary_menu'   => $this->toolSetPrimaryMenu($id, $arguments),
-            'set_custom_css'      => $this->toolSetCustomCss($id, $arguments),
-            'propose_php_snippet' => $this->toolProposePhp($id, $arguments),
             'get_section_recipes' => $this->toolSectionRecipes($id, $arguments),
             'get_page_layout'    => $this->toolGetLayout($id, $arguments),
             'validate_layout'    => $this->toolValidate($id, $arguments),
@@ -566,19 +512,6 @@ final class McpHandler
 
     private function toolCreatePage(mixed $id, array $args): WP_REST_Response
     {
-        if (!Licensing::isPremium()) {
-            UsageTracker::log('create_page', null, 'error');
-            return $this->rpcResult($id, [
-                'content' => [['type' => 'text', 'text' => json_encode([
-                    'created'     => false,
-                    'premium'     => true,
-                    'message'     => 'create_page is a premium feature. Activate a license under the AI Editor menu in wp-admin to enable it.',
-                    'upgrade_url' => Licensing::UPGRADE_URL,
-                ])]],
-                'isError' => true,
-            ]);
-        }
-
         if (!current_user_can('publish_pages')) {
             UsageTracker::log('create_page', null, 'error');
             return $this->rpcError($id, -32602, 'You do not have permission to create pages.');
@@ -647,106 +580,6 @@ final class McpHandler
                     'link'   => get_permalink((int) $pageId),
                 ],
             ])]],
-        ]);
-    }
-
-    private function toolSetFrontPage(mixed $id, array $args): WP_REST_Response
-    {
-        if (!Licensing::isPremium()) {
-            return $this->premiumRequired($id);
-        }
-        if (!current_user_can('manage_options')) {
-            return $this->rpcError($id, -32602, 'You do not have permission to change site settings.');
-        }
-        $pageId = (int) ($args['page_id'] ?? 0);
-        $post   = $pageId ? get_post($pageId) : null;
-        if (!$post || $post->post_type !== 'page') {
-            return $this->rpcError($id, -32602, "Page {$pageId} not found.");
-        }
-        update_option('show_on_front', 'page');
-        update_option('page_on_front', $pageId);
-
-        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => json_encode([
-            'front_page' => ['id' => $pageId, 'title' => get_the_title($pageId)],
-        ])]]]);
-    }
-
-    private function toolSetPrimaryMenu(mixed $id, array $args): WP_REST_Response
-    {
-        if (!Licensing::isPremium()) {
-            return $this->premiumRequired($id);
-        }
-        if (!current_user_can('edit_theme_options')) {
-            return $this->rpcError($id, -32602, 'You do not have permission to manage menus.');
-        }
-        $items = is_array($args['items'] ?? null) ? $args['items'] : [];
-        if ($items === []) {
-            return $this->rpcError($id, -32602, 'items is required (a non-empty list of menu items).');
-        }
-
-        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => json_encode(MenuBuilder::build($items))]]]);
-    }
-
-    private function toolSetCustomCss(mixed $id, array $args): WP_REST_Response
-    {
-        if (!Licensing::isPremium()) {
-            return $this->premiumRequired($id);
-        }
-        if (!current_user_can('edit_theme_options')) {
-            return $this->rpcError($id, -32602, 'You do not have permission to edit site CSS.');
-        }
-        $css = (string) ($args['css'] ?? '');
-        if (trim($css) === '') {
-            return $this->rpcError($id, -32602, 'css is required.');
-        }
-        $result = CustomCss::set($css);
-        if (empty($result['updated'])) {
-            return $this->rpcError($id, -32603, (string) ($result['error'] ?? 'Failed to update custom CSS.'));
-        }
-        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => json_encode([
-            'updated' => true,
-            'bytes'   => $result['bytes'] ?? 0,
-            'message' => 'Custom CSS applied site-wide (WordPress → Appearance → Customize → Additional CSS).',
-        ])]]]);
-    }
-
-    private function toolProposePhp(mixed $id, array $args): WP_REST_Response
-    {
-        if (!Licensing::isPremium()) {
-            return $this->premiumRequired($id);
-        }
-        // Only an admin-capable API user can file code proposals for review.
-        if (!current_user_can('manage_options')) {
-            return $this->rpcError($id, -32602, 'You do not have permission to propose code.');
-        }
-        $title = trim((string) ($args['title'] ?? ''));
-        $code  = (string) ($args['code'] ?? '');
-        $desc  = (string) ($args['description'] ?? '');
-        if (trim($code) === '') {
-            return $this->rpcError($id, -32602, 'code is required.');
-        }
-
-        // Stored inert for human review — never executed or written as runnable PHP.
-        $pid = PhpProposals::add(sanitize_text_field($title), wp_kses_post($desc), $code);
-
-        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => json_encode([
-            'proposed'   => true,
-            'executed'   => false,
-            'id'         => $pid,
-            'message'    => 'Snippet stored for review. It was NOT executed or saved to the site. Review and apply it under AI Editor → Settings → Code Proposals.',
-            'review_url' => admin_url('admin.php?page=ai-editor-divi5&tab=settings#proposals'),
-        ])]]]);
-    }
-
-    private function premiumRequired(mixed $id): WP_REST_Response
-    {
-        return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode([
-                'premium'     => true,
-                'message'     => 'This is a premium feature. Activate a license under the AI Editor menu in wp-admin.',
-                'upgrade_url' => Licensing::UPGRADE_URL,
-            ])]],
-            'isError' => true,
         ]);
     }
 
