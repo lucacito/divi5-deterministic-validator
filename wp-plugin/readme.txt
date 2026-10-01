@@ -33,7 +33,7 @@ AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Curs
 * `get_landing_guide` — a conversion-focused blueprint (persuasion flow, copywriting rules, CTA strategy) so generated landing pages are strategically structured, not just pretty
 * `get_image_guide` — role-based image assignment with a keyless source toolkit (relevant photos, avatars, labeled placeholders) so pages look like finished demos, not empty templates
 * `get_section_recipes` — a library of complete, validated section patterns (hero, feature grid, split, slider, CTA, footer) the AI assembles pages from, each mapped to its persuasion stage
-* `list_page_history`, `get_page_history_entry`, `restore_page_version` — undo AI edits: list the saved previous versions of a page and restore one (free)
+* `list_page_history`, `get_page_history_entry`, `restore_page_version` — undo AI edits: list the saved previous versions of a page and restore one when a snapshot was kept (free)
 * `create_page` (Pro) — build a brand-new page from scratch
 * `set_front_page` (Pro) — set a page as the site's homepage
 * `set_primary_menu` (Pro) — build and assign the theme's primary navigation menu
@@ -56,7 +56,7 @@ Pro unlocks whole-site building: create new pages, set the front page, build the
 
 **Privacy**
 
-The plugin stores a single API key and an optional usage log in your WordPress database. To make undo possible, the plugin keeps the last 10 previous versions of each page the AI edits through the plugin in your WordPress database (post meta); nothing is sent anywhere, and the history is removed when you delete the plugin. All AI communication goes directly between your AI assistant and your WordPress site — it never passes through our servers. Nothing is sent anywhere unless you enter a Pro license key. See "External services" below.
+The plugin stores a single API key and an optional usage log in your WordPress database. To make undo possible, the plugin keeps up to the last 10 previous versions of each page the AI edits through the plugin (fewer for very large pages; a per-page budget of about 768 KB keeps the saved history small) in your WordPress database (post meta); nothing is sent anywhere, and the history is removed when you delete the plugin. All AI communication goes directly between your AI assistant and your WordPress site — it never passes through our servers. Nothing is sent anywhere unless you enter a Pro license key. See "External services" below.
 
 == External services ==
 
@@ -118,7 +118,7 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 == Changelog ==
 
 = 3.5.0 =
-* New: **Undo for AI edits.** When your AI saves a page through the plugin (update_page_layout or edit_page_content, or the REST API equivalents), the plugin keeps the previous version (last 10 per page) whenever it can, and the result confirms it. Ask your AI to "undo that" — it can list the saved versions and restore one (free, in MCP, the REST API and the ChatGPT action) — or restore the most recent previous version from the new "Recent AI edits" panel on the plugin's Dashboard. A restore is itself undoable.
+* New: **Undo for AI edits.** When your AI saves a page through the plugin (update_page_layout or edit_page_content, or the REST API equivalents), the plugin keeps the previous version whenever it can (up to the last 10 per page, fewer for very large pages; a per-page budget of about 768 KB keeps the saved history small), and the result's history.stored says whether it did. Ask your AI to "undo that" — it can list the saved versions and restore one when a snapshot was kept (free, in MCP, the REST API and the ChatGPT action) — or restore the most recent previous version from the new "Recent AI edits" panel on the plugin's Dashboard. A restore is itself undoable when its own history.stored is true.
 * Edits you make yourself in the Divi builder are not snapshotted on their own; they become the "previous version" the next AI edit keeps. create_page has no previous state, so there is nothing to undo there.
 * Restoring brings back your own earlier content and is not blocked by validation; the result tells you whether that content passes the validator.
 * Pages larger than 512 KB are still saved normally but no snapshot is kept for that edit (the result says so).

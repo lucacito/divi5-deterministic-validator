@@ -262,10 +262,13 @@ validate) before trusting a layout.
 
 ## Undo
 Every save through this plugin (update_page_layout / edit_page_content) keeps the
-page's previous content as a snapshot when it can (the result's `history` field
-confirms it). If an edit was wrong, `list_page_history` then `restore_page_version`
-undoes it (the restore is itself undoable). Prefer small `edit_page_content`
-edits over rewriting a whole page.
+page's previous content as a snapshot when it can (the result's `history.stored`
+says whether it did). Up to the last 10 previous versions are kept per page, fewer
+for very large pages (a per-page budget of about 768 KB keeps the saved history
+small). If an edit was wrong and a snapshot was kept, `list_page_history` then
+`restore_page_version` undoes it; the restore is itself undoable when its own
+`history.stored` is true. Prefer small `edit_page_content` edits over rewriting a
+whole page.
 MD;
     }
 }

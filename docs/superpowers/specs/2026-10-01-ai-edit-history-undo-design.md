@@ -1,6 +1,6 @@
 # 3.5.0 — Undo for AI edits (page history)
 
-Status: DRAFT for owner approval · Date: 2026-10-01 · Target release: AI Editor for Divi 5 3.5.0
+Status: APPROVED by owner 2026-10-01 · Date: 2026-10-01 · Target release: AI Editor for Divi 5 3.5.0
 Roadmap context: 3.5 history/undo → 3.6 dry-run diff (preview before save) → 3.7 Theme Builder header/footer → 3.8 global presets/variables. Each is its own spec.
 
 ## Goal
@@ -120,3 +120,10 @@ plugin deliberately never exposes).
 - Restore bypasses the reject-invalid gate but reports the verdict: **yes** (default).
 - Ship as 3.5.0 after WordPress.org has approved 3.3.0 (do not upload 3.4.0/3.5.0 while
   the first review is pending): **yes** (default).
+
+## Implementation notes (post-review)
+
+- **Per-page total budget: 768 KB** (`PageHistory::MAX_TOTAL_BYTES = 786432`). Oldest snapshots are trimmed while the stored total exceeds it; the newest is always kept. Reason: WP_Query primes all post meta for every queried page, so an unbounded history would be loaded on every page query and could exceed `max_allowed_packet`. This narrows "10 snapshots" to "up to 10 within the budget".
+- UTF-8 validation uses `preg_match('//u', ...)` instead of `mb_check_encoding` because WordPress does not polyfill `mb_*` and mbstring may be absent.
+- Notices and AI-facing wording are honest: undo is available only when a snapshot was kept (`history.stored`); the Dashboard shows `version_restored_no_undo` when the replaced version could not be kept; dashboard restores are logged as `restore_version`.
+- **Still open (owner decision):** post meta vs a custom table for history storage must be settled BEFORE any 3.5.0 upload, because changing storage after users hold data needs a migration.

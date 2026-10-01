@@ -72,12 +72,15 @@ self-corrects. `create_page`, `set_front_page`, `set_primary_menu`,
 
 Undo (v3.5.0): `HistoryService` is the single write path for AI page-content
 writes (`update_page_layout`, `edit_page_content`, REST PUT/edit): it snapshots the
-previous content (post meta `_aied_history`, last 10 per page, each <= 512 KB)
-before saving. `list_page_history`, `get_page_history_entry` and
+previous content (post meta `_aied_history`) before saving: up to the last 10 per
+page, each <= 512 KB, trimmed oldest-first to a ~768 KB per-page budget
+(`PageHistory::MAX_TOTAL_BYTES`; the newest is always kept). A snapshot can be
+skipped (`history.reason`: `too_large` | `invalid_encoding` | `store_failed` |
+`duplicate`), so undo is available only when `history.stored` is true. `list_page_history`, `get_page_history_entry` and
 `restore_page_version` are **free** tools (all three surfaces). Restore bypasses the
 validator gate by design (it brings back the person's own earlier content; the
 result reports whether it passes) and snapshots the current content first, so a
-restore is itself undoable. Only plugin edits are snapshotted, not Divi-builder
+restore is itself undoable when its own `history.stored` is true. Only plugin edits are snapshotted, not Divi-builder
 edits; `create_page` has nothing to undo.
 
 Same logic is exposed three ways, kept in lockstep: MCP (`McpHandler`), REST
@@ -107,7 +110,7 @@ broken or incomplete.
 ## The plugin build
 
 The installable plugin is `ai-editor-for-divi-5.zip` at the repo root (folder/slug/Text Domain = `ai-editor-for-divi-5`, the WP.org-assigned slug; the main file stays `ai-editor-divi5.php`) — a clean
-archive of `wp-plugin/`'s contents (files at the zip root, no macOS temp junk).
+archive of `wp-plugin/`'s contents under a top-level `ai-editor-for-divi-5/` folder (no macOS temp junk).
 Rebuild it after changing anything under `wp-plugin/` so the distributable stays
 current. Bump the version in `wp-plugin/ai-editor-divi5.php` (header +
 `AI_EDITOR_DIVI5_VERSION`) and `wp-plugin/readme.txt` (Stable tag + Changelog)

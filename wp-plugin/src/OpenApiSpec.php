@@ -231,7 +231,7 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'listPageHistory',
                         'summary'     => 'List a page\'s saved previous versions',
-                        'description' => 'Every AI save snapshots the page\'s prior content. Returns the saved versions newest first (id, time, tool, size) so an edit can be undone with restorePageVersion.',
+                        'description' => 'Every AI save tries to snapshot the page\'s prior content (last 10, fewer for large pages). Returns saved versions newest first (id, time, tool, size); restore one with restorePageVersion when a snapshot was kept (history.stored).',
                         'parameters'  => [self::idParam()],
                         'responses'   => [
                             '200' => ['description' => 'Versions', 'content' => ['application/json' => ['schema' => [
@@ -269,7 +269,7 @@ final class OpenApiSpec
                     'post' => [
                         'operationId' => 'restorePageVersion',
                         'summary'     => 'Undo: restore a saved version',
-                        'description' => 'Restores a page to a previous saved version. The current content is snapshotted first, so a restore can itself be undone. Not blocked by validation (it is the owner\'s own earlier content); the response reports whether it passes the validator.',
+                        'description' => 'Restores a page to a previous saved version. The current content is snapshotted first; the restore is itself undoable when its own history.stored is true. Not blocked by validation (it is the owner\'s own earlier content); the response reports whether it passes the validator.',
                         'parameters'  => [self::idParam()],
                         'requestBody' => [
                             'required' => true,

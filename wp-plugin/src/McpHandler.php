@@ -215,7 +215,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'list_page_history',
-                'description' => 'List the saved previous versions of a page (newest first). Every AI save snapshots the page\'s prior content, so any AI edit can be undone. Returns id, saved_at, tool, actor, bytes, label for each version (no content). Use restore_page_version to undo.',
+                'description' => 'List the saved previous versions of a page (newest first). Every AI save tries to snapshot the page\'s prior content (up to the last 10 per page, fewer for very large pages), so an AI edit can be undone when a snapshot was kept (the save result\'s history.stored says so). Returns id, saved_at, tool, actor, bytes, label for each version (no content). Use restore_page_version to undo.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -238,7 +238,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'restore_page_version',
-                'description' => 'Undo: restore a page to a previous saved version. The current content is snapshotted first, so the restore itself can be undone. Restore does not block on validation (it returns the person\'s own earlier content); the result reports whether that content passes the validator.',
+                'description' => 'Undo: restore a page to a previous saved version. The current content is snapshotted first; the restore itself is undoable when its own history.stored is true. Restore does not block on validation (it returns the person\'s own earlier content); the result reports whether that content passes the validator.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
