@@ -367,22 +367,22 @@ final class McpHandler
             ]);
         }
 
-        // wp_slash: wp_update_post runs wp_unslash internally, which would
-        // otherwise strip backslashes from escaped HTML (e.g. <) and corrupt content.
-        $updated = wp_update_post(wp_slash(['ID' => $pageId, 'post_content' => $content]), true);
+        // Snapshots the previous content, then saves (wp_slash is applied inside HistoryService).
+        $write = HistoryService::write($pageId, $content, 'update_page_layout');
 
-        if (is_wp_error($updated)) {
+        if (!$write['ok']) {
             UsageTracker::log('update_layout', $pageId, 'error');
-            return $this->rpcError($id, -32603, $updated->get_error_message());
+            return $this->rpcError($id, -32603, (string) $write['message']);
         }
 
         UsageTracker::log('update_layout', $pageId, 'valid');
 
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => json_encode([
-                'saved' => true,
-                'valid' => true,
-                'page'  => ['id' => $pageId, 'title' => get_the_title($pageId)],
+                'saved'   => true,
+                'valid'   => true,
+                'history' => $write['snapshot'],
+                'page'    => ['id' => $pageId, 'title' => get_the_title($pageId)],
             ])]],
         ]);
     }
@@ -433,11 +433,10 @@ final class McpHandler
             ]);
         }
 
-        // wp_slash: wp_update_post runs wp_unslash internally (see toolUpdate).
-        $updated = wp_update_post(wp_slash(['ID' => $pageId, 'post_content' => $edit['content']]), true);
-        if (is_wp_error($updated)) {
+        $write = HistoryService::write($pageId, $edit['content'], 'edit_page_content');
+        if (!$write['ok']) {
             UsageTracker::log('edit_content', $pageId, 'error');
-            return $this->rpcError($id, -32603, $updated->get_error_message());
+            return $this->rpcError($id, -32603, (string) $write['message']);
         }
 
         UsageTracker::log('edit_content', $pageId, 'valid');
@@ -447,6 +446,7 @@ final class McpHandler
                 'saved'    => true,
                 'valid'    => true,
                 'replaced' => $edit['count'],
+                'history'  => $write['snapshot'],
                 'page'     => ['id' => $pageId, 'title' => get_the_title($pageId)],
             ])]],
         ]);

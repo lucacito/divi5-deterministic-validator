@@ -264,15 +264,11 @@ final class RestController
             ], 422);
         }
 
-        // Validation passed — safe to save. wp_slash because wp_update_post runs
-        // wp_unslash internally and would otherwise strip backslashes from escaped HTML.
-        $updated = wp_update_post(wp_slash([
-            'ID'           => $id,
-            'post_content' => $body['post_content'],
-        ]), true);
+        // Validation passed — snapshot the previous content, then save (wp_slash inside HistoryService).
+        $write = HistoryService::write($id, $body['post_content'], 'update_page');
 
-        if (is_wp_error($updated)) {
-            return new WP_Error('update_failed', $updated->get_error_message(), ['status' => 500]);
+        if (!$write['ok']) {
+            return new WP_Error('update_failed', (string) $write['message'], ['status' => 500]);
         }
 
         UsageTracker::log('update_page', $id, 'valid');
@@ -283,6 +279,7 @@ final class RestController
             'saved'      => true,
             'valid'      => true,
             'violations' => [],
+            'history'    => $write['snapshot'],
             'page'       => $this->build_layout_envelope($post),
         ], 200);
     }
@@ -332,10 +329,9 @@ final class RestController
             ], 422);
         }
 
-        // wp_slash because wp_update_post runs wp_unslash internally (see update_page).
-        $updated = wp_update_post(wp_slash(['ID' => $id, 'post_content' => $edit['content']]), true);
-        if (is_wp_error($updated)) {
-            return new WP_Error('update_failed', $updated->get_error_message(), ['status' => 500]);
+        $write = HistoryService::write($id, $edit['content'], 'edit_page');
+        if (!$write['ok']) {
+            return new WP_Error('update_failed', (string) $write['message'], ['status' => 500]);
         }
 
         UsageTracker::log('edit_page', $id, 'valid');
@@ -347,6 +343,7 @@ final class RestController
             'valid'      => true,
             'replaced'   => $edit['count'],
             'violations' => [],
+            'history'    => $write['snapshot'],
             'page'       => $this->build_layout_envelope($post),
         ], 200);
     }
