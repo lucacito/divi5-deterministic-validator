@@ -103,6 +103,11 @@ final class McpHandler
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
             ],
             [
+                'name'        => 'list_theme_layouts',
+                'description' => 'List the header and footer layouts of the live Divi Theme Builder that you can edit (read-only), with the templates that use them (title, default, enabled, where they apply). Edit a header or footer with the page tools, passing its layout_id as page_id; use dry_run first because it appears on every page. Body layouts are listed but cannot be edited. Creating or assigning templates is not possible here: that is done in Divi\'s Theme Builder.',
+                'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
+            ],
+            [
                 'name'        => 'get_page_layout',
                 'description' => 'Get the full Divi 5 layout (Gutenberg block HTML) for a specific page by ID. A header or footer layout id from list_theme_layouts also works.',
                 'inputSchema' => [
@@ -269,6 +274,7 @@ final class McpHandler
             'get_page_history_entry' => $this->toolGetHistoryEntry($id, $arguments),
             'restore_page_version'   => $this->toolRestoreVersion($id, $arguments),
             'list_media_images'  => $this->toolListMedia($id, $arguments),
+            'list_theme_layouts' => $this->toolListThemeLayouts($id),
             'create_page'        => $this->toolCreatePage($id, $arguments),
             default              => $this->extensionCall($id, $name, $arguments),
         };
@@ -607,6 +613,20 @@ final class McpHandler
                 'validator'        => $result['validator'],
                 'page'             => ['id' => $post->ID, 'title' => get_the_title($post->ID)],
             ])]],
+        ]);
+    }
+
+    private function toolListThemeLayouts(mixed $id): WP_REST_Response
+    {
+        if (!current_user_can(PageAccess::CAP) || !ThemeLayouts::userMay()) {
+            UsageTracker::log('list_theme_layouts', null, 'error');
+            return $this->rpcError($id, -32602, 'You do not have permission to list theme layouts.');
+        }
+        $result = ThemeLayouts::listing();
+        UsageTracker::log('list_theme_layouts', null, 'read');
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => wp_json_encode($result)]],
         ]);
     }
 

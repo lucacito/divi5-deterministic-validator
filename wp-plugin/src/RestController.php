@@ -36,6 +36,13 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
+        // GET /theme-layouts — read-only list of the live Theme Builder's header/footer layouts
+        register_rest_route(self::NS, '/theme-layouts', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'theme_layouts'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
         // POST /pages — validate + create a new page (always a draft)
         register_rest_route(self::NS, '/pages', [
             'methods'             => WP_REST_Server::CREATABLE,
@@ -563,6 +570,18 @@ final class RestController
             ],
             'exported_at'  => gmdate('c'),
         ];
+    }
+
+    public function theme_layouts(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!current_user_can(PageAccess::CAP) || !ThemeLayouts::userMay()) {
+            UsageTracker::log('list_theme_layouts', null, 'error');
+            return new WP_Error('forbidden', 'You do not have permission to list theme layouts.', ['status' => 403]);
+        }
+        $result = ThemeLayouts::listing();
+        UsageTracker::log('list_theme_layouts', null, 'read');
+
+        return new WP_REST_Response($result, 200);
     }
 
     public function list_media(WP_REST_Request $request): WP_REST_Response|WP_Error

@@ -98,6 +98,29 @@ final class OpenApiSpec
                             'label'    => ['type' => 'string'],
                         ],
                     ],
+                    'ThemeLayoutRef' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'layout_id' => ['type' => 'integer', 'description' => 'Pass this as the page id to the page tools'],
+                            'title'     => ['type' => 'string'],
+                            'enabled'   => ['type' => 'boolean', 'description' => 'Whether the template shows this layout'],
+                            'editable'  => ['type' => 'boolean', 'description' => 'false for body layouts and for layouts the caller cannot edit'],
+                        ],
+                    ],
+                    'ThemeTemplate' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'template_id'  => ['type' => 'integer'],
+                            'title'        => ['type' => 'string'],
+                            'default'      => ['type' => 'boolean', 'description' => 'true when this is the default template (applies everywhere nothing else matches)'],
+                            'enabled'      => ['type' => 'boolean'],
+                            'use_on'       => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Where the template applies (Divi condition strings)'],
+                            'exclude_from' => ['type' => 'array', 'items' => ['type' => 'string']],
+                            'header'       => ['$ref' => '#/components/schemas/ThemeLayoutRef'],
+                            'footer'       => ['$ref' => '#/components/schemas/ThemeLayoutRef'],
+                            'body'         => ['$ref' => '#/components/schemas/ThemeLayoutRef'],
+                        ],
+                    ],
                     'DryRunAttr' => [
                         'type'       => 'object',
                         'properties' => [
@@ -380,6 +403,24 @@ final class OpenApiSpec
                         'summary'     => 'Get the image-intelligence guide',
                         'description' => 'How to assign the right image to each section by role: Media Library first (list_media_images), then the built-in image pack. Covers per-section rules, sizing and alt text. Call before choosing any image src.',
                         'responses'   => ['200' => ['description' => 'The guide (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
+                    ],
+                ],
+                '/theme-layouts' => [
+                    'get' => [
+                        'operationId' => 'listThemeLayouts',
+                        'summary'     => 'List editable header and footer layouts',
+                        'description' => 'Lists the header and footer layouts of the live Divi Theme Builder that you can edit (read-only), with the templates that use them. Edit one with the page tools, passing its layout_id as the page id. Body layouts are listed but not editable.',
+                        'responses'   => [
+                            '200' => ['description' => 'Live templates and their layouts', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'templates' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/ThemeTemplate']],
+                                    'count'     => ['type' => 'integer'],
+                                    'note'      => ['type' => 'string', 'description' => 'Present when there is no live Theme Builder with templates'],
+                                ],
+                            ]]]],
+                            '403' => ['description' => 'The user cannot edit other users\' content'],
+                        ],
                     ],
                 ],
                 '/media' => [
