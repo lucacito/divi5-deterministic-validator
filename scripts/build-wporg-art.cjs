@@ -5,6 +5,7 @@
  *
  *   node scripts/build-wporg-art.cjs art            # icon-128/256 + banner-772x250/1544x500
  *   node scripts/build-wporg-art.cjs shots          # screenshot-1..3 from the running dev site
+ *   node scripts/build-wporg-art.cjs shots 3        # only screenshot-3 (list numbers, e.g. "1,3")
  *   node scripts/build-wporg-art.cjs all
  *
  * Environment:
@@ -168,7 +169,9 @@ async function renderShots(browser) {
     ['screenshot-2.png', 'settings', '.aied-view > .aied-card'], // the Connect card; not the dev site's activity log
     ['screenshot-3.png', 'features', null],
   ];
+  const only = (process.argv[3] || '').split(',').filter(Boolean);
   for (const [out, tab, cropBelow] of shots) {
+    if (only.length && !only.some((n) => out === `screenshot-${n}.png`)) continue;
     const page = await ctx.newPage();
     await page.goto(`${SITE}/wp-admin/admin.php?page=ai-editor-divi5&tab=${tab}`, { waitUntil: 'networkidle' });
     if (!(await page.locator('.aied-topbar').count())) throw new Error(`not logged in or plugin screen missing (${tab})`);
