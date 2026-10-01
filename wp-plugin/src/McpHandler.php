@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 // The extension guard is also loaded by autoload.php; requiring it here keeps this file safe on its own.
 require_once __DIR__ . '/ExtensionGuard.php';
+require_once __DIR__ . '/PageAccess.php';
 
 use Divi5Validator\Validator;
 use WP_REST_Request;
@@ -39,6 +40,11 @@ final class McpHandler
     public function authenticate(): bool|WP_Error
     {
         if (ApiKey::authenticateRequest()) {
+            // The key is valid, but its user must still be able to edit pages (a demoted or
+            // deleted key owner cannot keep using the plugin).
+            if (!PageAccess::keyUserAllowed('current_user_can')) {
+                return new WP_Error('forbidden', 'The API key belongs to a user who cannot edit pages.', ['status' => 403]);
+            }
             return true;
         }
 
@@ -90,7 +96,7 @@ final class McpHandler
         $tools = [
             [
                 'name'        => 'list_divi_pages',
-                'description' => 'List all WordPress pages built with the Divi 5 editor. Returns page IDs, titles, status, and links.',
+                'description' => 'List the WordPress pages built with the Divi 5 editor that you can edit. Returns page IDs, titles, status, and links.',
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
             ],
             [
@@ -209,8 +215,8 @@ final class McpHandler
                     'properties' => [
                         'search'      => ['type' => 'string',  'description' => 'Optional keywords matched against title, alt text and filename'],
                         'orientation' => ['type' => 'string',  'enum' => ['landscape', 'portrait', 'square'], 'description' => 'Optional orientation filter'],
-                        'per_page'    => ['type' => 'integer', 'description' => 'Results per page (default 20, max 50)'],
-                        'page'        => ['type' => 'integer', 'description' => 'Page number (default 1)'],
+                        'per_page'    => ['type' => 'integer', 'minimum' => 1, 'maximum' => 50,  'description' => 'Results per page (default 20, max 50)'],
+                        'page'        => ['type' => 'integer', 'minimum' => 1, 'maximum' => 200, 'description' => 'Page number (default 1, max 200)'],
                     ],
                 ],
             ],
@@ -293,12 +299,19 @@ final class McpHandler
 
     private function toolListPages(mixed $id): WP_REST_Response
     {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('list_pages', null, 'error');
+            return $this->rpcError($id, -32602, 'You do not have permission to list pages.');
+        }
+
         $posts = get_posts([
             'post_type'      => 'page',
             'post_status'    => 'any',
             'posts_per_page' => 100,
             'meta_query'     => [['key' => '_et_pb_use_divi_5', 'value' => 'on']], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
         ]);
+        // Only pages this user can edit (other users' drafts/private pages stay hidden).
+        $posts = PageAccess::filterEditable($posts, static fn(int $pid): bool => current_user_can('edit_post', $pid));
 
         $pages = array_map(fn(\WP_Post $p) => [
             'id'     => $p->ID,
@@ -343,7 +356,10 @@ final class McpHandler
 
     private function toolValidate(mixed $id, array $args): WP_REST_Response
     {
-        $content = (string) ($args['post_content'] ?? '');
+        $content = PageAccess::stringArg($args, 'post_content');
+        if ($content === null) {
+            return $this->rpcError($id, -32602, 'post_content must be a string.');
+        }
         if ($content === '') {
             return $this->rpcError($id, -32602, 'post_content is required.');
         }
@@ -358,9 +374,13 @@ final class McpHandler
 
     private function toolUpdate(mixed $id, array $args): WP_REST_Response
     {
-        $pageId  = (int)    ($args['page_id']      ?? 0);
-        $content = (string) ($args['post_content'] ?? '');
+        $pageId  = (int) ($args['page_id'] ?? 0);
+        $content = PageAccess::stringArg($args, 'post_content');
         $post    = $pageId ? get_post($pageId) : null;
+
+        if ($content === null) {
+            return $this->rpcError($id, -32602, 'post_content must be a string.');
+        }
 
         if (!$post || $post->post_type !== 'page') {
             return $this->rpcError($id, -32602, "Page {$pageId} not found.");
@@ -410,9 +430,12 @@ final class McpHandler
 
     private function toolEditContent(mixed $id, array $args): WP_REST_Response
     {
-        $pageId  = (int)    ($args['page_id'] ?? 0);
-        $find    = (string) ($args['find']    ?? '');
-        $replace = (string) ($args['replace'] ?? '');
+        $pageId  = (int) ($args['page_id'] ?? 0);
+        $find    = PageAccess::stringArg($args, 'find');
+        $replace = PageAccess::stringArg($args, 'replace');
+        if ($find === null || $replace === null) {
+            return $this->rpcError($id, -32602, 'find and replace must be strings.');
+        }
         $expect  = (array_key_exists('expect_count', $args) && $args['expect_count'] !== null)
             ? (int) $args['expect_count']
             : null;
@@ -568,9 +591,14 @@ final class McpHandler
             return $this->rpcError($id, -32602, 'You do not have permission to create pages.');
         }
 
-        $title   = trim((string) ($args['title'] ?? ''));
-        $content = (string) ($args['post_content'] ?? '');
-        $slug    = sanitize_title((string) ($args['slug'] ?? ''));
+        $title   = PageAccess::stringArg($args, 'title');
+        $content = PageAccess::stringArg($args, 'post_content');
+        $slug    = PageAccess::stringArg($args, 'slug');
+        if ($title === null || $content === null || $slug === null) {
+            return $this->rpcError($id, -32602, 'title, post_content and slug must be strings.');
+        }
+        $title = trim($title);
+        $slug  = sanitize_title($slug);
 
         if ($title === '') {
             return $this->rpcError($id, -32602, 'title is required.');

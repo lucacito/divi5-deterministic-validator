@@ -8,7 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Plugin API key — a single Bearer token that authenticates all plugin endpoints.
- * Generated on first use, stored in wp_options, never exposed in source code.
+ * Generated on activation or when an administrator opens the Settings screen (get()),
+ * stored in wp_options, never exposed in source code. verify() never creates one.
  */
 final class ApiKey
 {
@@ -32,9 +33,14 @@ final class ApiKey
         return $key;
     }
 
+    /** Read-only: never creates a key (an unauthenticated request must not have side effects). */
     public static function verify(string $candidate): bool
     {
-        return hash_equals(self::get(), $candidate);
+        $key = (string) get_option(self::OPTION_KEY, '');
+        if ($key === '' || $candidate === '') {
+            return false;
+        }
+        return hash_equals($key, $candidate);
     }
 
     public static function getUserId(): int

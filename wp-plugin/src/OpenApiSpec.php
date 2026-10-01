@@ -129,7 +129,7 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'listDiviPages',
                         'summary'     => 'List all Divi 5 pages',
-                        'description' => 'Returns all WordPress pages that use the Divi 5 builder, including their IDs and edit links.',
+                        'description' => 'Returns the WordPress pages that use the Divi 5 builder and that the authenticated user can edit, including their IDs and edit links.',
                         'responses'   => [
                             '200' => [
                                 'description' => 'Success',
@@ -141,6 +141,7 @@ final class OpenApiSpec
                                     ],
                                 ]]],
                             ],
+                            '403' => ['description' => 'The user cannot edit pages'],
                         ],
                     ],
                     'post' => [
@@ -161,7 +162,7 @@ final class OpenApiSpec
                         ],
                         'responses'   => [
                             '201' => ['description' => 'Page created'],
-                            '400' => ['description' => 'Missing title or post_content'],
+                            '400' => ['description' => 'Missing title or post_content, or a field that is not a string'],
                             '422' => ['description' => 'Validation failed', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/ValidationResult']]]],
                         ],
                     ],

@@ -28,6 +28,7 @@ require_once __DIR__ . '/PageHistory.php';
 require_once __DIR__ . '/HistoryStore.php';
 require_once __DIR__ . '/HistoryService.php';
 require_once __DIR__ . '/ExtensionGuard.php';
+require_once __DIR__ . '/PageAccess.php';
 require_once __DIR__ . '/MediaLibrary.php';
 require_once __DIR__ . '/MediaService.php';
 require_once __DIR__ . '/RestController.php';

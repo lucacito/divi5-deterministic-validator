@@ -6,6 +6,8 @@ namespace AiEditorDivi5\WP;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+require_once __DIR__ . '/PageAccess.php';
+
 use Divi5Validator\Validator;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -13,12 +15,13 @@ use WP_REST_Server;
 use WP_Error;
 
 /**
- * REST API endpoints for the Divi 5 validator.
+ * REST API endpoints (the same tools as the MCP server, for ChatGPT Actions and scripts).
  *
- * Namespace: /wp-json/divi5-validator/v1/
+ * Namespace: /wp-json/ai-editor-divi5/v1/
  *
- * All write endpoints require authentication (Application Password recommended).
- * Read + validate endpoints require at minimum 'edit_posts' capability.
+ * Every endpoint requires authentication: the plugin API key (Bearer; its user must be able
+ * to edit pages) or a WordPress Application Password (the user needs at least edit_posts).
+ * Page endpoints then check edit_pages / edit_post for the specific page.
  */
 final class RestController
 {
@@ -172,8 +175,12 @@ final class RestController
     // Endpoint handlers
     // ---------------------------------------------------------------
 
-    public function list_pages(WP_REST_Request $request): WP_REST_Response
+    public function list_pages(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
+        if (!current_user_can(PageAccess::CAP)) {
+            return new WP_Error('forbidden', 'You do not have permission to list pages.', ['status' => 403]);
+        }
+
         $posts = get_posts([
             'post_type'      => 'page',
             'post_status'    => 'any',
@@ -186,6 +193,8 @@ final class RestController
                 ],
             ],
         ]);
+        // Only pages this user can edit (other users' drafts/private pages stay hidden).
+        $posts = PageAccess::filterEditable($posts, static fn(int $pid): bool => current_user_can('edit_post', $pid));
 
         // Coerce link/edit_link to strings: get_permalink() can return false and
         // get_edit_post_link() returns null when the API-key owner lacks edit
@@ -240,13 +249,14 @@ final class RestController
             return new WP_Error('forbidden', "You do not have permission to edit page $id.", ['status' => 403]);
         }
 
-        $body = $request->get_json_params();
-        if (!isset($body['post_content']) || !is_string($body['post_content']) || trim($body['post_content']) === '') {
+        $body    = (array) $request->get_json_params();
+        $content = PageAccess::stringArg($body, 'post_content');
+        if ($content === null || trim($content) === '') {
             return new WP_Error('missing_field', 'Request body must include a non-empty string "post_content".', ['status' => 400]);
         }
 
         // Validate before saving — this is the safety gate
-        $result = (new Validator())->validateContent($body['post_content']);
+        $result = (new Validator())->validateContent($content);
 
         if (!$result->isValid()) {
             UsageTracker::log('update_page', $id, 'invalid', count($result->violations()));
@@ -259,7 +269,7 @@ final class RestController
         }
 
         // Validation passed — snapshot the previous content, then save (wp_slash inside HistoryService).
-        $write = HistoryService::write($id, $body['post_content'], 'update_page');
+        $write = HistoryService::write($id, $content, 'update_page');
 
         if (!$write['ok']) {
             return new WP_Error('update_failed', (string) $write['message'], ['status' => 500]);
@@ -267,7 +277,7 @@ final class RestController
 
         UsageTracker::log('update_page', $id, 'valid');
 
-        $post->post_content = $body['post_content'];
+        $post->post_content = $content;
 
         return new WP_REST_Response([
             'saved'      => true,
@@ -360,10 +370,10 @@ final class RestController
             return new WP_Error('forbidden', "You do not have permission to edit page $id.", ['status' => 403]);
         }
 
-        $body    = $request->get_json_params();
-        $find    = isset($body['find'])    && is_string($body['find'])    ? $body['find']    : '';
-        $replace = isset($body['replace']) && is_string($body['replace']) ? $body['replace'] : '';
-        if (!isset($body['find']) || !isset($body['replace'])) {
+        $body    = (array) $request->get_json_params();
+        $find    = PageAccess::stringArg($body, 'find');
+        $replace = PageAccess::stringArg($body, 'replace');
+        if (!isset($body['find']) || !isset($body['replace']) || $find === null || $replace === null) {
             return new WP_Error('missing_field', 'Request body must include "find" and "replace" strings.', ['status' => 400]);
         }
         $expect = (isset($body['expect_count']) && $body['expect_count'] !== null && $body['expect_count'] !== '')
@@ -418,10 +428,15 @@ final class RestController
             return new WP_Error('forbidden', 'Your account does not have permission to create pages.', ['status' => 403]);
         }
 
-        $body    = $request->get_json_params();
-        $title   = isset($body['title']) ? trim((string) $body['title']) : '';
-        $content = isset($body['post_content']) && is_string($body['post_content']) ? $body['post_content'] : '';
-        $slug    = isset($body['slug']) ? sanitize_title((string) $body['slug']) : '';
+        $body    = (array) $request->get_json_params();
+        $title   = PageAccess::stringArg($body, 'title');
+        $content = PageAccess::stringArg($body, 'post_content');
+        $slug    = PageAccess::stringArg($body, 'slug');
+        if ($title === null || $content === null || $slug === null) {
+            return new WP_Error('invalid_field', '"title", "post_content" and "slug" must be strings.', ['status' => 400]);
+        }
+        $title = trim($title);
+        $slug  = sanitize_title($slug);
 
         if ($title === '') {
             return new WP_Error('missing_field', 'Request body must include a non-empty "title".', ['status' => 400]);
@@ -477,7 +492,7 @@ final class RestController
 
     public function validate(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
-        $body = $request->get_json_params();
+        $body = (array) $request->get_json_params();
 
         if (!isset($body['post_content']) && !isset($body['layout'])) {
             return new WP_Error('missing_field', 'Request body must include "post_content".', ['status' => 400]);
@@ -485,7 +500,11 @@ final class RestController
 
         // Accept either {post_content:...} or a full layout envelope
         if (isset($body['post_content'])) {
-            $result = (new Validator())->validateContent($body['post_content']);
+            $content = PageAccess::stringArg($body, 'post_content');
+            if ($content === null) {
+                return new WP_Error('invalid_field', '"post_content" must be a string.', ['status' => 400]);
+            }
+            $result = (new Validator())->validateContent($content);
         } else {
             $result = (new Validator())->validate((string) json_encode($body));
         }
@@ -538,6 +557,11 @@ final class RestController
     {
         // Accept plugin API key (Bearer token) — simpler than Application Passwords
         if (ApiKey::authenticateRequest()) {
+            // The key is valid, but its user must still be able to edit pages (a demoted or
+            // deleted key owner cannot keep using the plugin).
+            if (!PageAccess::keyUserAllowed('current_user_can')) {
+                return new WP_Error('forbidden', 'The API key belongs to a user who cannot edit pages.', ['status' => 403]);
+            }
             return true;
         }
 
