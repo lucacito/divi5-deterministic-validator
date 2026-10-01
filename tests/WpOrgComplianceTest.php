@@ -74,6 +74,7 @@ class WpOrgComplianceTest extends TestCase
     /** Legitimate hits: [relative path, substring the matching line must contain, reason]. */
     private const COMMERCIAL_EXCEPTIONS = [
         ['src/UsageTracker.php', "wp-admin/includes/upgrade.php", 'WordPress core include that provides dbDelta() for the usage-log table'],
+        ['src/HistoryTable.php', "wp-admin/includes/upgrade.php", 'WordPress core include that provides dbDelta() for the history table'],
     ];
 
     /** APIs that change site settings, users, themes, plugins, menus or run code. */
