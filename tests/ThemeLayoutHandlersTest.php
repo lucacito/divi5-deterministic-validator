@@ -216,6 +216,27 @@ class ThemeLayoutHandlersTest extends TestCase
         $this->assertGreaterThanOrEqual( 1, $m['count'] );
     }
 
+    public function testMcpHistoryEntryAndRestoreWorkForALiveHeader(): void
+    {
+        $this->rest( 'edit_page', 201, [ 'find' => self::SHOP, 'replace' => self::SHOP . self::SHOP ] );
+        $this->assertNotSame( self::HEADER, $this->content( 201 ) );
+
+        [ $code, , $list ] = $this->mcp( 'list_page_history', [ 'page_id' => 201 ] );
+        $this->assertNull( $code );
+        $vid = (int) $list['versions'][0]['id'];
+
+        [ $code, , $entry ] = $this->mcp( 'get_page_history_entry', [ 'page_id' => 201, 'version_id' => $vid ] );
+        $this->assertNull( $code );
+        $this->assertSame( self::HEADER, $entry['post_content'] );
+
+        $GLOBALS['__divi_cache_clears'] = [];
+        [ $code, , $restored ] = $this->mcp( 'restore_page_version', [ 'page_id' => 201, 'version_id' => $vid ] );
+        $this->assertNull( $code );
+        $this->assertTrue( $restored['restored'] );
+        $this->assertSame( self::HEADER, $this->content( 201 ) );
+        $this->assertSame( [ 'all' ], $GLOBALS['__divi_cache_clears'] );
+    }
+
     // ---- everything else is "not found" ---------------------------------------------------------
 
     /** @return list<array{int,string}> */
@@ -239,6 +260,7 @@ class ThemeLayoutHandlersTest extends TestCase
         $this->assertSame( 404, $this->rest( 'update_page', $id, [ 'post_content' => self::HEADER ] )[0], "update_page: {$why}" );
         $this->assertSame( 404, $this->rest( 'edit_page', $id, [ 'find' => 'a', 'replace' => 'b' ] )[0], "edit_page: {$why}" );
         $this->assertSame( 404, $this->rest( 'history_list', $id )[0], "history_list: {$why}" );
+        $this->assertSame( 404, $this->rest( 'history_entry', $id, [], [ 'version_id' => 1 ] )[0], "history_entry: {$why}" );
         $this->assertSame( 404, $this->rest( 'history_restore', $id, [ 'version_id' => 1 ] )[0], "history_restore: {$why}" );
         $this->assertSame( 0, $GLOBALS['__wp_update_calls'], $why );
     }

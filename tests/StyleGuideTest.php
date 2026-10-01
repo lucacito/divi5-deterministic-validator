@@ -85,5 +85,7 @@ class StyleGuideTest extends TestCase
         $md = StyleGuide::markdown();
         $this->assertStringContainsString('list_theme_layouts', $md);
         $this->assertStringContainsString('layout_id', $md);
+        $this->assertStringContainsString('Only entries marked `editable: true` can be edited.', $md);
+        $this->assertStringContainsString('`update_page_layout` (with `dry_run: true` first)', $md);
     }
 }

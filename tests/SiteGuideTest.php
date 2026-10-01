@@ -48,5 +48,6 @@ class SiteGuideTest extends TestCase
         $md = SiteGuide::markdown();
         $this->assertStringContainsString('list_theme_layouts', $md);
         $this->assertStringContainsString('layout_id', $md);
+        $this->assertStringContainsString('only entries marked `editable: true` can be edited', $md);
     }
 }

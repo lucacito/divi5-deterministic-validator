@@ -289,10 +289,10 @@ not listed.
 The owner's existing Theme Builder header and footer can be edited like pages. Call
 `list_theme_layouts` to find them (each template lists its header and footer with a
 `layout_id`), then pass that `layout_id` as `page_id` to `get_page_layout`,
-`edit_page_content`, `update_page_layout`, `dry_run` and the history tools. A header or
-footer appears on EVERY page, so always preview with `dry_run: true` first and prefer a
-small `edit_page_content` change. Only the layouts of the live Theme Builder can be
-edited, and body layouts cannot. You cannot create templates or choose where they apply;
+`edit_page_content` and `update_page_layout` (with `dry_run: true` first) and to the
+history tools. A header or footer appears on EVERY page, so always preview with
+`dry_run: true` first and prefer a small `edit_page_content` change. Only entries marked `editable: true` can be edited.
+Only the layouts of the live Theme Builder can be edited, and body layouts cannot. You cannot create templates or choose where they apply;
 that is the owner's job in Divi's Theme Builder. If the owner has unsaved Theme Builder
 changes open in Divi, ask them to publish or discard those first, because publishing
 them could overwrite your edit.

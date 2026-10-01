@@ -95,7 +95,7 @@ class ThemeLayoutsLockstepTest extends TestCase
         $schema = $op['responses']['200']['content']['application/json']['schema'];
         $this->assertSame( '#/components/schemas/ThemeTemplate', $schema['properties']['templates']['items']['$ref'] );
         $this->assertSame( 'integer', $schema['properties']['count']['type'] );
-        $this->assertSame( 'string', $schema['properties']['note']['type'] );
+        $this->assertSame( [ 'string', 'null' ], $schema['properties']['note']['type'] );
         foreach ( [ 'ThemeTemplate', 'ThemeLayoutRef' ] as $name ) {
             $this->assertArrayHasKey( $name, $spec['components']['schemas'] );
         }

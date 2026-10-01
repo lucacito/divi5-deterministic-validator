@@ -61,7 +61,7 @@ List the page titles and slugs you created so the owner can tick them off.
 ## Notes
 - Header/footer: the owner's existing Theme Builder header and footer can be previewed and
   edited (list_theme_layouts, then pass the layout_id as page_id; always `dry_run` first,
-  they appear on every page). Creating them and choosing where they apply is done by the
+  they appear on every page; only entries marked `editable: true` can be edited). Creating them and choosing where they apply is done by the
   owner in Divi's Theme Builder. Otherwise they are the active theme's (the nav menu
   drives the header).
 - Build pages first and keep each returned page id and link, then give the owner

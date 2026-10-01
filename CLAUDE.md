@@ -121,7 +121,7 @@ Dry run (v4.2.0): `update_page_layout`, `edit_page_content`, `PUT /pages/{id}` a
 cut to 200 characters, `builderVersion` ignored) BEFORE `HistoryService::write()` is reachable;
 the page, its history and `post_modified` are never touched. A preview of an invalid layout
 is a normal 200 / `isError: false` response carrying `valid: false`. Logged as endpoint
-`dry_run`, result `read`. It is a flag, not a tool: the list stays at 15 tools / 15 operations.
+`dry_run`, result `read`. It is a flag, not a tool: the list stayed at 15 tools / 15 operations in 4.2.0 (4.3.0 adds the read-only `list_theme_layouts`: 16).
 
 Theme layouts (v4.3.0): the existing, LIVE Theme Builder header and footer layouts
 (`et_header_layout` / `et_footer_layout`, content in `post_content`) can be read, previewed,
@@ -149,7 +149,7 @@ tool → update all three.
 that save CSS/PHP or change site settings (front page, menus, users, plugins). The
 only Pro mention allowed in the plugin UI is the one dismissible Dashboard card in
 `AdminPage::proCard()`. `tests/WpOrgComplianceTest.php` enforces all of this (plus
-the URL-host allowlist, the 15-tool list and the readme's claims, including the
+the URL-host allowlist, the 16-tool list and the readme's claims, including the
 "more than N Divi 5 block types" number checked against `SchemaRules`). Never weaken
 that test to make it pass — fix the plugin, or add a justified explicit exception.
 

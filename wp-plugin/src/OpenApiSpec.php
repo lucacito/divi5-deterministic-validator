@@ -416,10 +416,10 @@ final class OpenApiSpec
                                 'properties' => [
                                     'templates' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/ThemeTemplate']],
                                     'count'     => ['type' => 'integer'],
-                                    'note'      => ['type' => 'string', 'description' => 'Present when there is no live Theme Builder with templates'],
+                                    'note'      => ['type' => ['string', 'null'], 'description' => 'Present when there is no live Theme Builder with templates; otherwise null'],
                                 ],
                             ]]]],
-                            '403' => ['description' => 'The user cannot edit other users\' content'],
+                            '403' => ['description' => 'The user may not use Divi\'s Theme Builder (needs edit_pages, edit_others_posts and Divi\'s Theme Builder permission)'],
                         ],
                     ],
                 ],
