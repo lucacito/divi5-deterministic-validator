@@ -58,7 +58,7 @@ foreach ( [ 'MINUTE_IN_SECONDS' => 60, 'HOUR_IN_SECONDS' => 3600, 'DAY_IN_SECOND
 }
 if ( ! defined( 'AI_EDITOR_DIVI5_VERSION' ) )  define( 'AI_EDITOR_DIVI5_VERSION', '3.0.0' );
 if ( ! defined( 'AI_EDITOR_DIVI5_PRODUCT' ) )  define( 'AI_EDITOR_DIVI5_PRODUCT', 'ai-editor-divi5-pro' );
-if ( ! defined( 'AI_EDITOR_DIVI5_FILE' ) )     define( 'AI_EDITOR_DIVI5_FILE', __DIR__ . '/../wp-plugin/ai-editor-divi5.php' );
+if ( ! defined( 'AI_EDITOR_DIVI5_FILE' ) )     define( 'AI_EDITOR_DIVI5_FILE', __DIR__ . '/../wp-plugin/jhmg-ai-editor-for-divi-5.php' );
 
 $GLOBALS['__wp_transients'] = [];
 // Scripted HTTP: tests push [ 'code' => int, 'body' => array ] entries or the

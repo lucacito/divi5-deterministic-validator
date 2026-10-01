@@ -1,9 +1,9 @@
-=== AI Editor for Divi 5 ===
-Contributors:      jhmg
+=== JHMG AI Editor for Divi 5 ===
+Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        3.5.0
+Stable tag:        4.0.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html

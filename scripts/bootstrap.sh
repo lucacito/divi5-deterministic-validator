@@ -127,13 +127,13 @@ fi
 # ---------------------------------------------------------------
 # 8. Activate the Divi 5 Validator REST plugin (idempotent)
 # ---------------------------------------------------------------
-PLUGIN_STATUS=$(docker compose exec -T wpcli wp plugin status ai-editor-divi5 2>&1 || echo "not-found")
+PLUGIN_STATUS=$(docker compose exec -T wpcli wp plugin status jhmg-ai-editor-for-divi-5 2>&1 || echo "not-found")
 if echo "$PLUGIN_STATUS" | grep -q "Active"; then
-    echo "[bootstrap] ai-editor-divi5 plugin already active ✓"
+    echo "[bootstrap] jhmg-ai-editor-for-divi-5 plugin already active ✓"
 else
-    echo "[bootstrap] Activating ai-editor-divi5 plugin..."
-    docker compose exec -T wpcli wp plugin activate ai-editor-divi5
-    echo "[bootstrap] ai-editor-divi5 plugin activated ✓"
+    echo "[bootstrap] Activating jhmg-ai-editor-for-divi-5 plugin..."
+    docker compose exec -T wpcli wp plugin activate jhmg-ai-editor-for-divi-5
+    echo "[bootstrap] jhmg-ai-editor-for-divi-5 plugin activated ✓"
 fi
 
 # ---------------------------------------------------------------

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# Build the distributable ai-editor-for-divi-5.zip from wp-plugin/.
+# Build the distributable jhmg-ai-editor-for-divi-5.zip from wp-plugin/.
 #
 # The archive is a clean copy of wp-plugin/'s contents under a top-level
-# `ai-editor-for-divi-5/` folder (the WordPress plugin slug), with no macOS temp
+# `jhmg-ai-editor-for-divi-5/` folder (the WordPress plugin slug), with no macOS temp
 # junk. Rebuild after changing anything under wp-plugin/ so the installable
 # distributable stays current. See CLAUDE.md → "The plugin build".
 #
@@ -13,8 +13,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 SRC="wp-plugin"
-SLUG="ai-editor-for-divi-5"   # WordPress.org slug (folder + zip name; must equal the Text Domain)
-MAIN="ai-editor-divi5"        # main plugin file name (unchanged)
+SLUG="jhmg-ai-editor-for-divi-5"   # WordPress.org slug (folder + zip name; must equal the Text Domain)
+MAIN="jhmg-ai-editor-for-divi-5"   # main plugin file name (equals the slug)
 OUT="$ROOT/$SLUG.zip"
 
 if [ ! -f "$SRC/$MAIN.php" ]; then

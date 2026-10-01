@@ -109,12 +109,14 @@ broken or incomplete.
 
 ## The plugin build
 
-The installable plugin is `ai-editor-for-divi-5.zip` at the repo root (folder/slug/Text Domain = `ai-editor-for-divi-5`, the WP.org-assigned slug; the main file stays `ai-editor-divi5.php`) — a clean
-archive of `wp-plugin/`'s contents under a top-level `ai-editor-for-divi-5/` folder (no macOS temp junk).
+The installable plugin is `jhmg-ai-editor-for-divi-5.zip` at the repo root (folder/slug/Text Domain = `jhmg-ai-editor-for-divi-5`; the main file is `wp-plugin/jhmg-ai-editor-for-divi-5.php`) — a clean
+archive of `wp-plugin/`'s contents under a top-level `jhmg-ai-editor-for-divi-5/` folder (no macOS temp junk).
 Rebuild it after changing anything under `wp-plugin/` so the distributable stays
-current. Bump the version in `wp-plugin/ai-editor-divi5.php` (header +
+current. Bump the version in `wp-plugin/jhmg-ai-editor-for-divi-5.php` (header +
 `AI_EDITOR_DIVI5_VERSION`) and `wp-plugin/readme.txt` (Stable tag + Changelog)
-on every release.
+on every release. Internal identifiers keep the old names on purpose: namespace
+`AiEditorDivi5\WP`, `AI_EDITOR_DIVI5_*` constants, `ai_editor_divi5_*` options,
+REST namespace/menu slug/MCP server name `ai-editor-divi5`.
 
 ## The one manual blocker
 
@@ -124,6 +126,8 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
+- WP.org review (2026-10-01) -> 4.0.0 compliance rework in progress: plugin renamed to
+  **JHMG AI Editor for Divi 5** (slug/text domain `jhmg-ai-editor-for-divi-5`).
 - Validator MVP proven; plugin at v3.5.0 (freemium single build: free tier + Pro
   licence via divi5lab.com). 3.3.0 was submitted to WordPress.org and is under
   review (fixes applied after the first automated scan: Text Domain = slug

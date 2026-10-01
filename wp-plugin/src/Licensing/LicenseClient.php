@@ -116,8 +116,8 @@ class LicenseClient {
         if ( ! $key ) {
             $this->render_notice(
                 'notice-warning',
-                __( 'AI Editor for Divi 5: activate your Pro license to unlock site-building tools and support.', 'ai-editor-for-divi-5' ),
-                __( 'Activate now', 'ai-editor-for-divi-5' ),
+                __( 'AI Editor for Divi 5: activate your Pro license to unlock site-building tools and support.', 'jhmg-ai-editor-for-divi-5' ),
+                __( 'Activate now', 'jhmg-ai-editor-for-divi-5' ),
                 $license_url
             );
             return;
@@ -128,8 +128,8 @@ class LicenseClient {
         if ( in_array( $status, [ 'expired', 'canceled' ], true ) ) {
             $this->render_notice(
                 'notice-warning',
-                __( 'AI Editor for Divi 5: your license has expired. Renew to keep receiving support.', 'ai-editor-for-divi-5' ),
-                __( 'Renew', 'ai-editor-for-divi-5' ),
+                __( 'AI Editor for Divi 5: your license has expired. Renew to keep receiving support.', 'jhmg-ai-editor-for-divi-5' ),
+                __( 'Renew', 'jhmg-ai-editor-for-divi-5' ),
                 $license_url
             );
             return;

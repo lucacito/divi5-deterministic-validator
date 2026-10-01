@@ -27,7 +27,7 @@ final class DiviCompat
                 'level'   => 'newer',
                 'message' => sprintf(
                     /* translators: 1: installed Divi version, 2: newest tested Divi version */
-                    __( 'Divi %1$s is newer than the newest version this plugin was verified on (%2$s). Editing still works, but pages that use brand-new Divi modules may be rejected until a plugin update adds them.', 'ai-editor-for-divi-5' ),
+                    __( 'Divi %1$s is newer than the newest version this plugin was verified on (%2$s). Editing still works, but pages that use brand-new Divi modules may be rejected until a plugin update adds them.', 'jhmg-ai-editor-for-divi-5' ),
                     $inst,
                     $test
                 ),
