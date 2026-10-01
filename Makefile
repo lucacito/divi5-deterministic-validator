@@ -1,4 +1,4 @@
-.PHONY: up down clean test validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules
+.PHONY: up down clean test validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -73,6 +73,13 @@ schema-gap:
 # ---------------------------------------------------------------
 verify-modules:
 	@bash scripts/verify-modules.sh
+
+# ---------------------------------------------------------------
+# verify-history — real-database check of the undo-history table (Docker site)
+# (php -d memory_limit=1G: the wpcli default 128M dies loading the Divi theme)
+# ---------------------------------------------------------------
+verify-history:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-history-table.php --user=1
 
 # ---------------------------------------------------------------
 # shell helpers
