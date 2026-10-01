@@ -85,6 +85,12 @@ PHP classes in `wp-plugin/src/`:
 five guide tools above. Write tools run the validator and reject anything invalid
 with exact violation codes so the AI self-corrects.
 
+**Authorisation** (`PageAccess`): an accepted API key still requires its user to have
+`edit_pages` (a demoted/deleted key owner is refused with 403); `list_divi_pages`
+requires `edit_pages` and only lists pages the user can `edit_post`; every page
+read/write re-checks `edit_post`. String arguments are type-checked (non-strings → 400 /
+-32602), never cast.
+
 **Images:** `wp-plugin/assets/images/` is an original, generated pack of 44 SVGs
 (`scripts/generate-image-pack.php`, byte-deterministic; `manifest.json`). Recipes
 store images as `{{aied:image:<token>}}`; `ImageTokens` resolves them to site-local
