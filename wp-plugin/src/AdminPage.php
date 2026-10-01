@@ -534,7 +534,7 @@ final class AdminPage
             <div class="aied-card__head">
                 <h3><?php esc_html_e( 'Want live stock photos?', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
             </div>
-            <p class="aied-muted"><?php esc_html_e( 'JHMG AI Editor for Divi 5 includes a built-in image pack and reads your Media Library. The separate Pro add-on adds live photo sourcing for each section, plus site tools like front page and menu setup.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <p class="aied-muted"><?php esc_html_e( 'JHMG AI Editor for Divi 5 includes a built-in image pack and reads your Media Library. The separate Pro add-on adds live photo sourcing for each section.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
             <div class="aied-procard__actions">
                 <a class="button" href="<?php echo esc_url( self::PRO_URL ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Learn about the Pro add-on', 'jhmg-ai-editor-for-divi-5' ); ?><span class="screen-reader-text"> <?php esc_html_e( '(opens in a new tab)', 'jhmg-ai-editor-for-divi-5' ); ?></span></a>
                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -560,7 +560,7 @@ final class AdminPage
             [ __( 'Read & understand any page', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can list and read existing pages to make precise, context-aware edits.', 'jhmg-ai-editor-for-divi-5' ), 'list_divi_pages, get_page_layout' ],
             [ __( 'Undo AI edits', 'jhmg-ai-editor-for-divi-5' ), __( 'Every AI save keeps the previous version, so you or your AI can browse the history and restore an earlier one.', 'jhmg-ai-editor-for-divi-5' ), 'list_page_history, get_page_history_entry, restore_page_version' ],
             [ __( 'Create new pages (as drafts)', 'jhmg-ai-editor-for-divi-5' ), __( 'Generate brand-new pages from a prompt — always saved as a draft, validated, ready for you to review and publish.', 'jhmg-ai-editor-for-divi-5' ), 'create_page' ],
-            [ __( 'Build entire websites', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in blueprint helps your AI plan a cohesive multi-page site (home, about, services, contact) with shared styling, then tells you which page to set as the front page and which to add to the menu.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_guide' ],
+            [ __( 'Build entire websites', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in blueprint helps your AI plan a cohesive multi-page site (home, about, services, contact) with shared styling and links between the pages, then tells you how to finish setting it up yourself.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_guide' ],
             [ __( 'Conversion-focused page generation', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in landing-page blueprint, design vocabulary and proven section patterns guide the AI to produce polished, on-brand pages with a strategic structure built to convert.', 'jhmg-ai-editor-for-divi-5' ), 'get_landing_guide, get_style_guide, get_section_recipes' ],
             [ __( 'Relevant images', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI looks in your Media Library first (read-only) and otherwise uses the built-in image pack, so pages do not ship with empty image slots. Nothing is downloaded from other sites.', 'jhmg-ai-editor-for-divi-5' ), 'list_media_images, get_image_guide' ],
         ];
@@ -568,7 +568,6 @@ final class AdminPage
         <div class="aied-hello"><h1><?php esc_html_e( 'Features', 'jhmg-ai-editor-for-divi-5' ); ?></h1>
             <p><?php esc_html_e( 'Everything JHMG AI Editor for Divi 5 lets your AI assistant do on your Divi 5 site.', 'jhmg-ai-editor-for-divi-5' ); ?></p></div>
 
-        <h3 class="aied-section-title"><?php esc_html_e( 'Included', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
         <div class="aied-grid aied-grid--2">
             <?php foreach ( $features as [$t, $d, $tools] ) : ?>
                 <div class="aied-card aied-feature">

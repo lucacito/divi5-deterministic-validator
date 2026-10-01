@@ -44,7 +44,11 @@ class ProCardTest extends TestCase
     {
         $src = $this->admin();
         $this->assertStringContainsString('Want live stock photos?', $src);
-        $this->assertStringContainsString('includes a built-in image pack and reads your Media Library', $src);
+        $this->assertStringContainsString('JHMG AI Editor for Divi 5 includes a built-in image pack and reads your Media Library. The separate Pro add-on adds live photo sourcing for each section.', $src);
+        // The card must not advertise remote-admin-style tools (WordPress.org review, fix round 1).
+        foreach (['front page', 'menu setup', 'site tools', 'site-level'] as $bad) {
+            $this->assertStringNotContainsStringIgnoringCase($bad, $src, "AdminPage must not advertise “{$bad}”");
+        }
         foreach (['unlock', 'locked', 'trial', 'limited', 'upgrade now', 'only in pro', 'included with pro', 'free version'] as $bad) {
             $this->assertStringNotContainsStringIgnoringCase($bad, $src, "AdminPage must not contain “{$bad}”");
         }

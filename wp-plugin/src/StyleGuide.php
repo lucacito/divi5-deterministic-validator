@@ -117,9 +117,10 @@ subtle light border and radius on a Group/column/row:
 `module.decoration.border.{bp}.value.styles.all.{width,color}` = "1px","rgba(255,255,255,0.12)";
 `module.decoration.border.{bp}.value.radius.{topLeft,topRight,bottomRight,bottomLeft}` = "20px" (all four).
 True frosted-glass *backdrop-blur* (blurring what's behind the card) is NOT a
-standard Divi attribute — it needs custom CSS via the top-level `css` key
-(`css.desktop.value.mainElement` = "backdrop-filter:blur(12px);"). Use the
-semi-transparent + border recipe for the glass look without custom CSS.
+standard Divi attribute — it needs the module's own `css` attribute (see
+"Per-module styling" below: `css.desktop.value.mainElement` =
+"backdrop-filter:blur(12px);"). Use the semi-transparent + border recipe for the
+glass look without any CSS.
 
 **Box shadow:**
 `module.decoration.boxShadow.{bp}.value.{style,horizontal,vertical,blur,color}`
@@ -215,20 +216,22 @@ module.decoration.position.{bp}.value.offset.vertical = "20px"
 module.decoration.zIndex.{bp}.value                   = 10
 ```
 
-## Custom CSS — top-level `css` key (mined from a 2nd production site)
-For anything decoration attributes can't express, use the TOP-LEVEL `css` key
-(a sibling of `module`/`builderVersion`, NOT under `module`). Use the literal
-token `selector` to target the module's main element:
+## Per-module styling (Divi's `css` attribute)
+Every Divi 5 module can carry its own optional `css` attribute (seen in real
+exports from a 2nd production site). It is a sibling of `module`/`builderVersion`,
+NOT under `module`. It styles that ONE module only and is saved inside the page
+layout like any other module setting. Use it only for what the decoration
+attributes above can't express; the literal token `selector` targets the
+module's main element:
 ```
 css.{bp}.value.mainElement = "backdrop-filter: blur(12px);"
 css.{bp}.value.freeForm    = "selector { backdrop-filter: blur(12px); } selector:after { content:''; display:block; }"
 ```
-This is how to do TRUE frosted-glass (backdrop-filter — no native Divi attr),
-keyframe `@keyframes` animations, and `::before`/`::after` pseudo-elements.
-This plugin does not edit site-wide CSS. If the design needs reusable, SITE-WIDE
-CSS (a `.glass` class, global `@keyframes`), keep it per-module with the `css` key
-above, or tell the owner the CSS to paste into Appearance → Customize →
-Additional CSS themselves.
+Typical uses: true frosted glass (backdrop-filter has no native Divi attribute),
+an `@keyframes` animation for that module, `::before`/`::after` decoration.
+This plugin never changes site-wide styles (Additional CSS, theme files). If a
+design needs a reusable site-wide class, tell the owner what to add in
+Appearance → Customize → Additional CSS themselves.
 
 ## Full-viewport height & background blend
 ```

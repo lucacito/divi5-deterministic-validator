@@ -83,7 +83,8 @@ final class UsageTracker
                 'result'     => substr($result, 0, 10),
                 'violations' => $violations,
                 'client'     => self::detectClient($ua),
-                'ip_hash'    => $ip ? hash('sha256', $ip) : null,
+                // Salted with the site's own secret (wp_hash), so the stored value cannot be reversed to the IP.
+                'ip_hash'    => $ip ? wp_hash($ip) : null,
             ],
             ['%s', $pageId !== null ? '%d' : '%s', '%s', '%d', '%s', '%s']
         );

@@ -25,7 +25,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 
 * **The checker is not AI.** It follows fixed rules: same page in, same verdict out. The AI can be creative, but it can never save a broken page.
 * **It knows Divi 5 well.** The checker knows more than 80 Divi 5 block types (modules, sections, rows and columns) and which ones are allowed inside which.
-* **Rules come from real Divi 5 pages.** Every rule was taken from pages exported from real Divi 5 sites, not from guesses.
+* **Rules come from real Divi 5, not guesses.** The rules come from real Divi 5 page exports and, for 24 newer modules (and their child items), from Divi's own module definitions, verified by rendering them in real Divi 5.14.
 * **Small changes stay small.** Changing one phone number replaces just that text. The rest of the page is not rebuilt or touched.
 * **Proven building blocks.** 17 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
 * **Sensible images.** The AI looks in your Media Library first. When nothing there fits, it uses a built-in pack of 44 original images that ships with the plugin.
@@ -45,7 +45,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 
 Read and check:
 
-* `list_divi_pages`: list the pages built with Divi 5.
+* `list_divi_pages`: list the pages built with Divi 5 that you can edit.
 * `get_page_layout`: read a page's current layout.
 * `validate_layout`: check a layout without saving anything.
 
@@ -75,9 +75,9 @@ Images:
 
 The plugin includes a pack of 44 original images (hero backgrounds, card and section images, people placeholders and logo placeholders) made for this plugin and bundled inside it. Your AI uses your own Media Library images first and the built-in pack when nothing fits. Nothing is downloaded from other websites.
 
-= Pro add-on =
+= Add-on =
 
-A separate Pro add-on (sold separately at https://divi5lab.com/plugins/divi-5-ai-editor) adds live stock-photo sourcing and site-level tools.
+A separate Pro add-on (sold separately at https://divi5lab.com/plugins/divi-5-ai-editor) adds live stock-photo sourcing.
 
 = Compatible AI assistants =
 
@@ -94,7 +94,7 @@ Works with Divi 5. Not affiliated with, endorsed by, or sponsored by Elegant The
 The plugin stores these things in your own WordPress database:
 
 * The API key (and which user it belongs to).
-* An activity log of AI actions: the action, the page, the result, the assistant's name and a hashed IP address. You can clear it from the Settings screen.
+* An activity log of AI actions: the action, the page ID, the result, the assistant's name (or, when it is not recognised, the first 80 characters of its user-agent string) and a hashed IP address (hashed with your site's own secret key, so the IP itself is not stored). You can clear it from the Settings screen.
 * Page history for undo: up to the last 10 previous versions of each page the AI changes (fewer for very large pages, about 768 KB per page at most).
 
 Nothing is sent anywhere by the plugin. All of this is removed when you delete the plugin.
@@ -106,7 +106,7 @@ This plugin does not connect to any external service. Your AI assistant connects
 == Installation ==
 
 1. In your WordPress admin, go to Plugins → Add New, search for "JHMG AI Editor for Divi 5", then install and activate it. (Or upload the `jhmg-ai-editor-for-divi-5` folder to `/wp-content/plugins/` and activate it on the Plugins screen.)
-2. Open the **AI Editor** menu in your WordPress admin.
+2. Open **AI Editor** in your WordPress admin sidebar.
 3. Go to **Settings**, choose your AI assistant and copy the ready-made setup into it.
 4. Ask your assistant to list your Divi 5 pages to check that it is connected.
 
@@ -122,7 +122,7 @@ This plugin does not connect to any external service. Your AI assistant connects
 
 = Does the AI get administrator access to my site? =
 
-No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every page read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions. The tools can only list, read, check, edit, create (as a draft) and undo page content, and read Media Library images (read-only). They cannot install plugins, change users, settings, menus or the front page, or run code.
+No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit, create (as a draft) and undo page content, and read Media Library images (read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
 
 = Where do images come from? =
 
@@ -166,9 +166,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * New: `list_media_images` lets your AI reuse the images already in your Media Library (read-only).
 * New: a built-in pack of 44 original images. Section patterns and guides now use it, so no images are loaded from other websites.
 * Undo history (`list_page_history`, `get_page_history_entry`, `restore_page_version`) is part of this plugin.
-* Removed the front page, menu, custom CSS and PHP proposal tools and all licensing code from this plugin. Site-level tools are offered in a separate add-on.
+* Removed every tool that changed site settings or saved CSS or PHP code, and all licensing code, from this plugin.
 * The plugin makes no calls to external services and loads no remote files.
-* Dashboard: one card about the separate Pro add-on, which you can dismiss.
+* Dashboard: one card about the separate add-on, which you can dismiss.
 
 = 3.5.0 =
 * Undo for AI edits: the previous version of a page is kept when the AI saves it, and can be restored by the AI or from the Dashboard.
@@ -195,4 +195,4 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 == Upgrade Notice ==
 
 = 4.0.0 =
-New name and folder (`jhmg-ai-editor-for-divi-5`). Creating pages, undo and the new Media Library tool are included. The front page, menu, custom CSS and PHP proposal tools are no longer part of this plugin.
+New name and folder (`jhmg-ai-editor-for-divi-5`). Creating pages, undo and the new Media Library tool are included. Tools that changed site settings or saved CSS or PHP code are no longer part of this plugin.
