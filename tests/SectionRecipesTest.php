@@ -219,7 +219,7 @@ class SectionRecipesTest extends TestCase
     public function testNoSourceSiteLeftovers(): void
     {
         $blob = implode("\n", $this->rawRecipes());
-        foreach (['sitehackedfix', 'Fashion Stylist', 'Interior Design Planner', 'Book A Seat', 'Barbers', 'Ayoka Stewart', '"value":"pricing"', '\\u003eDivi\\u003c', 'Hacking Audit', 'hacked', 'malicious code', 'defacement'] as $bad) {
+        foreach (['sitehackedfix', 'Fashion Stylist', 'Interior Design Planner', 'Book A Seat', 'Barbers', 'Ayoka Stewart', '"value":"pricing"', '\\u003eDivi\\u003c', 'Hacking Audit', 'hacked', 'malicious code', 'defacement', 'Smith + Howard', 'Support My Website', 'MembersFirst'] as $bad) {
             $this->assertStringNotContainsString($bad, $blob, "source-site leftover: {$bad}");
         }
     }
