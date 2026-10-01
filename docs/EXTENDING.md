@@ -21,6 +21,25 @@ Hook names are a stable public API.
 | `jhmg_aied_image_token` | filter | `( ?string $url, string $token ): ?string` | Replace the URL of one bundled image when a recipe is served. |
 | `jhmg_aied_image_guide` | filter | `( string $markdown ): string` | Append to or rewrite the image guide the AI receives from `get_image_guide`. |
 
+## Built-in tools always win
+
+An add-on can **add** things; it cannot override, remove or edit the plugin's
+built-in tools in place:
+
+- `jhmg_aied_mcp_tools`: an add-on tool whose `name` equals a built-in tool (or an
+  earlier add-on tool) is dropped; the built-in definition is kept unchanged.
+  Removing or rewriting built-in entries in the filtered array has no effect.
+- `jhmg_aied_mcp_call` only runs for tool names the plugin does not handle itself,
+  so a built-in tool's behaviour cannot be intercepted.
+- `jhmg_aied_openapi_paths` / `jhmg_aied_openapi_schemas`: built-in keys always win;
+  only new keys are appended.
+- `jhmg_aied_admin_tabs`: the `dashboard`, `features` and `settings` slugs are reserved.
+- `jhmg_aied_register_rest_routes`: register only your own routes; do not re-register
+  a route the plugin already serves.
+
+(Enforced by `ExtensionGuard`; see `tests/ExtensionHooksTest.php`.) If an add-on needs
+different behaviour, it adds a new tool with its own name.
+
 ## Rules for add-on code
 
 1. **Check capabilities yourself.** The base plugin authenticates the request

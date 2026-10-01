@@ -1,4 +1,4 @@
-# AI Editor for Divi 5 — Claude Instructions
+# JHMG AI Editor for Divi 5 — Claude Instructions
 
 ## What this project is
 
@@ -7,18 +7,28 @@ proving the core bet: can we tell a valid Divi 5 layout from a broken one with
 zero AI inference? That bet is proven, and the project has grown into the
 product it was meant to power:
 
-**AI Editor for Divi 5** — a WordPress plugin that lets an AI assistant (Claude,
-Cursor, VS Code Copilot, ChatGPT) read, edit, and generate Divi 5 pages in plain
-English over MCP and a REST API. The deterministic validator is the **gate**:
-every write is validated before it touches the database, so the AI can be
-creative but can never ship a broken layout.
+**JHMG AI Editor for Divi 5** (WordPress.org slug `jhmg-ai-editor-for-divi-5`) — a
+**free** WordPress.org plugin that lets an AI assistant (Claude, Cursor, VS Code
+Copilot, ChatGPT) read, edit and create (as drafts) Divi 5 pages in plain English
+over MCP and a REST API. The deterministic validator is the **gate**: every write is
+validated before it touches the database, so the AI can be creative but can never
+save a broken layout.
 
-Two halves, one repo:
+Paid features live in a **separate Pro add-on** (a different plugin, sold and hosted
+at divi5lab.com, not on WordPress.org). Its source material is staged in `pro-addon/`
+(licence client, front page/menu, custom CSS, PHP proposals); its own spec and plan
+are still pending. The old freemium-in-one-build model (licence-gated tools inside
+the WP.org plugin) was **rejected by WordPress.org Guideline 5** in the 2026-10-01
+review — do not reintroduce it.
+
+Three parts, one repo:
 - **The validator** (`src/`) — the deterministic core. Pure PHP, no dependencies,
   no AI. This is the sacred part.
-- **The plugin** (`wp-plugin/`) — "AI Editor for Divi 5". Bundles a synced copy
-  of the validator under `wp-plugin/validator/` and wraps it in the MCP server,
-  REST API, AI-facing guides, licensing, and admin UI.
+- **The plugin** (`wp-plugin/`) — bundles a synced copy of the validator under
+  `wp-plugin/validator/` and wraps it in the MCP server, REST API, AI-facing guides,
+  the built-in image pack and the admin UI. No licensing, no remote calls.
+- **The Pro add-on staging area** (`pro-addon/`) — not shipped, not built, not tested
+  by `make test` (see `pro-addon/README.md`).
 
 ## Hard constraints — do not violate
 
@@ -47,9 +57,11 @@ These still hold and are non-negotiable:
 
 > Note: the original brief said "no admin UI, no MCP server, no SaaS, no
 > licensing." That was the validator-MVP boundary and is **no longer the
-> project's scope** — those layers now exist by design in `wp-plugin/`. The
-> constraint that survived is narrower and sharper: the *validator core* stays
-> pure and deterministic. New scope is fine; compromising the gate is not.
+> project's scope** — the admin UI and MCP server now exist by design in
+> `wp-plugin/`; licensing exists only in the separate Pro add-on, never in
+> `wp-plugin/` (see "WordPress.org compliance rule" below). The constraint that
+> survived is narrower and sharper: the *validator core* stays pure and
+> deterministic. New scope is fine; compromising the gate is not.
 
 ## Architecture: how generation is steered
 
@@ -61,14 +73,26 @@ PHP classes in `wp-plugin/src/`:
 |---|---|
 | `get_style_guide` (`StyleGuide`) | how to make a layout *valid + styled* (real attribute shapes) |
 | `get_landing_guide` (`LandingGuide`) | how to make a single page *convert* (persuasion flow, copy, CTA strategy) |
-| `get_site_guide` (`SiteGuide`) | how to build + wire a *multi-page site* |
-| `get_section_recipes` (`SectionRecipes` + `data/section-recipes.json`) | proven, validated section markup to fill, each mapped to a persuasion stage |
+| `get_site_guide` (`SiteGuide`) | how to plan a *multi-page site* with cross-links (the owner sets the menu/front page) |
+| `get_image_guide` (`ImageGuide`) | which image fits each section: Media Library first, then the built-in pack |
+| `get_section_recipes` (`SectionRecipes` + `data/section-recipes.json`) | 17 proven, validated section patterns, each mapped to a persuasion stage |
 
-Write tools (`validate_layout`, `update_page_layout`, `create_page`) run the
-validator and reject anything invalid with exact violation codes so the AI
-self-corrects. `create_page`, `set_front_page`, `set_primary_menu`,
-`set_custom_css`, and `propose_php_snippet` are premium (offline license gate).
-`propose_php_snippet` never executes PHP — it stores a proposal for human review.
+**15 MCP tools, all free:** `list_divi_pages`, `get_page_layout`, `validate_layout`,
+`update_page_layout`, `edit_page_content` (surgical find-and-replace), `create_page`
+(always a draft), `list_page_history`, `get_page_history_entry`,
+`restore_page_version`, `list_media_images` (read-only Media Library listing,
+`MediaLibrary` + `MediaService`, needs `upload_files` + per-item `read_post`) and the
+five guide tools above. Write tools run the validator and reject anything invalid
+with exact violation codes so the AI self-corrects.
+
+**Images:** `wp-plugin/assets/images/` is an original, generated pack of 44 SVGs
+(`scripts/generate-image-pack.php`, byte-deterministic; `manifest.json`). Recipes
+store images as `{{aied:image:<token>}}`; `ImageTokens` resolves them to site-local
+URLs when served (`ImagePack` reads the manifest), so no token and no third-party
+image host ever reaches the AI.
+
+**Extension hooks** (`jhmg_aied_*`, guarded by `ExtensionGuard` so built-ins always
+win): the only way the Pro add-on extends the plugin. Reference: `docs/EXTENDING.md`.
 
 Undo (v3.5.0): `HistoryService` is the single write path for AI page-content
 writes (`update_page_layout`, `edit_page_content`, REST PUT/edit): it snapshots the
@@ -76,16 +100,27 @@ previous content (post meta `_aied_history`) before saving: up to the last 10 pe
 page, each <= 512 KB, trimmed oldest-first to a ~768 KB per-page budget
 (`PageHistory::MAX_TOTAL_BYTES`; the newest is always kept). A snapshot can be
 skipped (`history.reason`: `too_large` | `invalid_encoding` | `store_failed` |
-`duplicate`), so undo is available only when `history.stored` is true. `list_page_history`, `get_page_history_entry` and
-`restore_page_version` are **free** tools (all three surfaces). Restore bypasses the
-validator gate by design (it brings back the person's own earlier content; the
-result reports whether it passes) and snapshots the current content first, so a
-restore is itself undoable when its own `history.stored` is true. Only plugin edits are snapshotted, not Divi-builder
-edits; `create_page` has nothing to undo.
+`duplicate`), so undo is available only when `history.stored` is true. Restore
+bypasses the validator gate by design (it brings back the person's own earlier
+content; the result reports whether it passes) and snapshots the current content
+first, so a restore is itself undoable when its own `history.stored` is true. Only
+plugin edits are snapshotted, not Divi-builder edits; `create_page` has nothing to undo.
 
 Same logic is exposed three ways, kept in lockstep: MCP (`McpHandler`), REST
 (`RestController`), and the ChatGPT OpenAPI spec (`OpenApiSpec`). Add or change a
 tool → update all three.
+
+## WordPress.org compliance rule
+
+**Nothing licence-gated, remote-fetching or custom-code-saving may enter
+`wp-plugin/`.** No licence checks or "upgrade"/"premium" gating, no
+`wp_remote_*`/cURL/remote `file_get_contents`, no third-party image hosts, no tools
+that save CSS/PHP or change site settings (front page, menus, users, plugins). The
+only Pro mention allowed in the plugin UI is the one dismissible Dashboard card in
+`AdminPage::proCard()`. `tests/WpOrgComplianceTest.php` enforces all of this (plus
+the URL-host allowlist, the 15-tool list and the readme's claims, including the
+"more than N Divi 5 block types" number checked against `SchemaRules`). Never weaken
+that test to make it pass — fix the plugin, or add a justified explicit exception.
 
 ## Entry points
 
@@ -109,14 +144,26 @@ broken or incomplete.
 
 ## The plugin build
 
-The installable plugin is `jhmg-ai-editor-for-divi-5.zip` at the repo root (folder/slug/Text Domain = `jhmg-ai-editor-for-divi-5`; the main file is `wp-plugin/jhmg-ai-editor-for-divi-5.php`) — a clean
-archive of `wp-plugin/`'s contents under a top-level `jhmg-ai-editor-for-divi-5/` folder (no macOS temp junk).
-Rebuild it after changing anything under `wp-plugin/` so the distributable stays
-current. Bump the version in `wp-plugin/jhmg-ai-editor-for-divi-5.php` (header +
-`AI_EDITOR_DIVI5_VERSION`) and `wp-plugin/readme.txt` (Stable tag + Changelog)
-on every release. Internal identifiers keep the old names on purpose: namespace
+The installable plugin is `jhmg-ai-editor-for-divi-5.zip` at the repo root, built by
+`bash scripts/build-plugin-zip.sh`: a clean archive of `wp-plugin/`'s contents under
+a top-level `jhmg-ai-editor-for-divi-5/` folder (folder = slug = Text Domain; main
+file `wp-plugin/jhmg-ai-editor-for-divi-5.php`; no macOS temp junk). Rebuild it after
+changing anything under `wp-plugin/` so the distributable stays current. Bump the
+version in `wp-plugin/jhmg-ai-editor-for-divi-5.php` (header + `AI_EDITOR_DIVI5_VERSION`)
+and `wp-plugin/readme.txt` (Stable tag + Changelog) on every release. `Tested up to`
+belongs only in readme.txt. Run Plugin Check (Docker env) on the dev copy and on the
+extracted zip before any upload; never `wp plugin delete` a test copy (it runs
+uninstall.php against the shared dev DB) — remove its folder instead.
+
+Rename facts: display name **JHMG AI Editor for Divi 5** everywhere the product is
+named (the WP admin menu label stays the short "AI Editor"); Contributors:
+`lucaslopvet`. Internal identifiers keep the old names on purpose: namespace
 `AiEditorDivi5\WP`, `AI_EDITOR_DIVI5_*` constants, `ai_editor_divi5_*` options,
 REST namespace/menu slug/MCP server name `ai-editor-divi5`.
+
+`wporg-assets/` holds the WordPress.org directory art (icon, banner, 3 screenshots),
+regenerated by the dev-only `scripts/build-wporg-art.cjs` (masks the API key and URL
+in the DOM before capturing). It is not part of the plugin zip.
 
 ## The one manual blocker
 
@@ -126,33 +173,19 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- WP.org review (2026-10-01) -> 4.0.0 compliance rework in progress: plugin renamed to
-  **JHMG AI Editor for Divi 5** (slug/text domain `jhmg-ai-editor-for-divi-5`).
-- Validator MVP proven; plugin at v3.5.0 (freemium single build: free tier + Pro
-  licence via divi5lab.com). 3.3.0 was submitted to WordPress.org and is under
-  review (fixes applied after the first automated scan: Text Domain = slug
-  `ai-editor-for-divi-5`, no `Tested up to` in the header); 3.4.0 is merged
-  locally and not uploaded; 3.5.0 (undo for AI edits) is built on top of it.
-  Nothing is uploaded to WordPress.org without the owner.
-- Generation is guidance-driven (style, landing, image and site guides, 17
-  section recipes), gated by the deterministic validator. `edit_page_content`
-  (v3.2.0) does surgical find-and-replace edits.
-- `wp-plugin/src/Licensing/LicenseClient.php` is a **WP.org variant** of the
-  shared canonical client (layoutlab repo): the updater code is removed here
-  because Plugin Check bans it. Don't re-sync the updater into this copy.
-  Plugin Check (run in the Docker env) is clean at 3.5.0.
-- `wporg-assets/` holds the WordPress.org directory art (icon, banner, 3 real
-  screenshots, API key masked). It is NOT part of the plugin zip; it is uploaded
-  to the WP.org SVN `assets/` folder at submission. Retake screenshots with the
-  masking script approach (hide notices, mask key/URL) when the admin UI changes.
+- **4.0.0 = WordPress.org compliance release** (branch `feat/wporg-compliance`):
+  renamed plugin, licensing and Pro-only tools removed (staged in `pro-addon/`),
+  `create_page` + undo free, `jhmg_aied_*` hooks, built-in image pack + tokens,
+  `list_media_images`, one dismissible Pro add-on card. Plugin Check clean on the
+  dev copy and the zip. The owner replies in the WP.org review thread (draft:
+  `docs/wporg-review-reply-draft.md`, includes the slug request) and uploads the
+  zip — nothing is uploaded or sent without the owner.
+- Validator: knows 88 Divi 5 block types (`SchemaRules`), including the
+  render-verified Divi 5.14 modules (docs/module-verification-5.14.json); modules
+  that could not be verified stay rejected and are listed in docs/SCHEMA.md.
 - The old standalone `mcp-server/` (Node) was removed in 3.3.0: the plugin's
   built-in HTTP MCP endpoint is the only supported connection path.
-- 3.4.0: validator recognises the render-verified Divi 5.14 modules (see
-  docs/module-verification-5.14.json); modules that could not be verified stay
-  rejected and are listed in docs/SCHEMA.md (29 Divi 5.14 modules still rejected:
-  28 harness-probed needs-real-export + 1 unprobed child, `divi/signup-custom-field`).
-- Roadmap: 3.4.0 (render-verified Divi 5.14 module coverage) and 3.5.0 (undo for
-  AI edits) are done. Remaining differentiators: preview-before-save, Theme
-  Builder header/footer, global presets and WooCommerce template modules via a
-  real export or class map.
+- Roadmap after approval: the Pro add-on (own spec/plan), then preview-before-save,
+  Theme Builder header/footer, global presets and WooCommerce template modules via
+  a real export or class map.
 - Header/footer are the active theme's (nav menu drives the header).
