@@ -47,4 +47,17 @@ class DiviCompatTest extends TestCase
     {
         return [[null], [''], ['garbage'], ['v?']];
     }
+
+    public function testTestedVersionMatchesTheVerifiedEvidenceVersion(): void
+    {
+        $minor = static fn (string $v): string => implode('.', array_slice(explode('.', $v), 0, 2));
+
+        $this->assertSame(
+            $minor(\Divi5Validator\VerifiedModules::DIVI_VERSION),
+            $minor(DiviCompat::TESTED),
+            'DiviCompat::TESTED (' . DiviCompat::TESTED . ') must match the major.minor of VerifiedModules::DIVI_VERSION ('
+            . \Divi5Validator\VerifiedModules::DIVI_VERSION . '). The promoter bumped the verified Divi version: '
+            . 'bump DiviCompat::TESTED in wp-plugin/src/DiviCompat.php to match.'
+        );
+    }
 }

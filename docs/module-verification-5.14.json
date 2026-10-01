@@ -15,7 +15,7 @@
                     "reasons": [
                         "found marker et_pb_charts in a class attribute"
                     ],
-                    "html_bytes": 553,
+                    "html_bytes": 554,
                     "sample": "_phone\"><div class=\"et_pb_charts_0 et_pb_charts et_pb_module et_flex_module\"><div class=\"et_pb_charts__canvas-wrap\" data-module-id=\"divi/charts-0\"><canvas class=\"et_pb_charts__canvas\" role=\"img\" aria-label=\"Chart\"></canvas></div></div></div></div></div>"
                 },
                 "section": {
@@ -23,7 +23,7 @@
                     "reasons": [
                         "found marker et_pb_charts in a class attribute"
                     ],
-                    "html_bytes": 311,
+                    "html_bytes": 312,
                     "sample": "ection\"><div class=\"et_pb_charts_1 et_pb_charts et_pb_module et_flex_module\"><div class=\"et_pb_charts__canvas-wrap\" data-module-id=\"divi/charts-1\"><canvas class=\"et_pb_charts__canvas\" role=\"img\" aria-label=\"Chart\"></canvas></div></div></div>"
                 }
             }
@@ -63,7 +63,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 327,
-                    "sample": "<div class=\"et_pb_section_12 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_6 et_pb_row et_flex_row\"><div class=\"et_pb_column_6 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_15 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_9 et_pb_row et_flex_row\"><div class=\"et_pb_column_9 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -71,7 +71,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 85,
-                    "sample": "<div class=\"et_pb_section_13 et_pb_section et_section_regular et_flex_section\"></div>"
+                    "sample": "<div class=\"et_pb_section_16 et_pb_section et_section_regular et_flex_section\"></div>"
                 }
             }
         },
@@ -87,7 +87,7 @@
                     "reasons": [
                         "found marker et_pb_dropdown in a class attribute"
                     ],
-                    "html_bytes": 584,
+                    "html_bytes": 586,
                     "sample": "_phone\"><div class=\"et_pb_dropdown_0 et_pb_dropdown et_pb_dropdown_hidden et_pb_module et_flex_module\" data-show-dropdown-on=\"hover\" data-dropdown-direction=\"below\" data-dropdown-alignment=\"start\" data-dropdown-offset=\"20px\" data-dropdown-position=\"floating\"></div></div></div></div>"
                 },
                 "section": {
@@ -112,7 +112,7 @@
                     "reasons": [
                         "found marker et_pb_filterable_portfolio in a class attribute"
                     ],
-                    "html_bytes": 679,
+                    "html_bytes": 681,
                     "sample": "_phone\"><div class=\"et_pb_filterable_portfolio_0 et_pb_filterable_portfolio et_pb_bg_layout_light et_pb_portfolio et_pb_module\" data-posts-number=\"10\"><div class=\"entry\">\n\t<h1 class=\"not-found-title\">No Results Found</h1>\n\t<p>The page you requested could not be found. Try refining your search, or use the navigation above to locate the post.</p>\n</div>\n</div></div></div></div>"
                 },
                 "section": {
@@ -137,7 +137,7 @@
                     "reasons": [
                         "found marker et_pb_fullwidth_code in a class attribute"
                     ],
-                    "html_bytes": 403,
+                    "html_bytes": 405,
                     "sample": "_phone\"><div class=\"et_pb_fullwidth_code_0 et_pb_fullwidth_code et_pb_module\"></div></div></div></div>"
                 },
                 "section": {
@@ -312,16 +312,16 @@
                     "reasons": [
                         "found marker et_pb_fullwidth_post_title in a class attribute"
                     ],
-                    "html_bytes": 715,
-                    "sample": "_phone\"><div class=\"et_pb_fullwidth_post_title_0 et_pb_post_title et_pb_image_below et_pb_bg_layout_light et_pb_module\"><div class=\"et_pb_title_container\"><h1 class=\"entry-title\">aied-verify</h1><p class=\"et_pb_title_meta_container\">by <span class=\"author vcard\"><a href=\"http://localhost:8181/author/\" title=\"Posts by \"></a></span> | <span class=\"published\">Sep 30, 2026</span></p></div></div></div>"
+                    "html_bytes": 714,
+                    "sample": "_phone\"><div class=\"et_pb_fullwidth_post_title_0 et_pb_post_title et_pb_image_below et_pb_bg_layout_light et_pb_module\"><div class=\"et_pb_title_container\"><h1 class=\"entry-title\">aied-verify</h1><p class=\"et_pb_title_meta_container\">by <span class=\"author vcard\"><a href=\"http://localhost:8181/author/\" title=\"Posts by \"></a></span> | <span class=\"published\">Oct 1, 2026</span></p></div></div></div><"
                 },
                 "section": {
                     "status": "pass",
                     "reasons": [
                         "found marker et_pb_fullwidth_post_title in a class attribute"
                     ],
-                    "html_bytes": 471,
-                    "sample": "ection\"><div class=\"et_pb_fullwidth_post_title_1 et_pb_post_title et_pb_image_below et_pb_bg_layout_light et_pb_module\"><div class=\"et_pb_title_container\"><h1 class=\"entry-title\">aied-verify</h1><p class=\"et_pb_title_meta_container\">by <span class=\"author vcard\"><a href=\"http://localhost:8181/author/\" title=\"Posts by \"></a></span> | <span class=\"published\">Sep 30, 2026</span></p></div></div></div>"
+                    "html_bytes": 470,
+                    "sample": "ection\"><div class=\"et_pb_fullwidth_post_title_1 et_pb_post_title et_pb_image_below et_pb_bg_layout_light et_pb_module\"><div class=\"et_pb_title_container\"><h1 class=\"entry-title\">aied-verify</h1><p class=\"et_pb_title_meta_container\">by <span class=\"author vcard\"><a href=\"http://localhost:8181/author/\" title=\"Posts by \"></a></span> | <span class=\"published\">Oct 1, 2026</span></p></div></div></div>"
                 }
             }
         },
@@ -360,7 +360,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 329,
-                    "sample": "<div class=\"et_pb_section_36 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_18 et_pb_row et_flex_row\"><div class=\"et_pb_column_18 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_39 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_21 et_pb_row et_flex_row\"><div class=\"et_pb_column_21 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -368,7 +368,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 85,
-                    "sample": "<div class=\"et_pb_section_37 et_pb_section et_section_regular et_flex_section\"></div>"
+                    "sample": "<div class=\"et_pb_section_40 et_pb_section et_section_regular et_flex_section\"></div>"
                 }
             }
         },
@@ -382,7 +382,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 329,
-                    "sample": "<div class=\"et_pb_section_38 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_19 et_pb_row et_flex_row\"><div class=\"et_pb_column_19 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_41 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_22 et_pb_row et_flex_row\"><div class=\"et_pb_column_22 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -390,7 +390,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 85,
-                    "sample": "<div class=\"et_pb_section_39 et_pb_section et_section_regular et_flex_section\"></div>"
+                    "sample": "<div class=\"et_pb_section_42 et_pb_section et_section_regular et_flex_section\"></div>"
                 }
             }
         },
@@ -454,7 +454,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 329,
-                    "sample": "<div class=\"et_pb_section_44 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_22 et_pb_row et_flex_row\"><div class=\"et_pb_column_22 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_47 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_25 et_pb_row et_flex_row\"><div class=\"et_pb_column_25 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -462,7 +462,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 85,
-                    "sample": "<div class=\"et_pb_section_45 et_pb_section et_section_regular et_flex_section\"></div>"
+                    "sample": "<div class=\"et_pb_section_48 et_pb_section et_section_regular et_flex_section\"></div>"
                 }
             }
         },
@@ -578,16 +578,16 @@
                     "reasons": [
                         "found marker et_pb_post_title in a class attribute"
                     ],
-                    "html_bytes": 702,
-                    "sample": "_phone\"><div class=\"et_pb_post_title_0 et_pb_post_title et_pb_bg_layout_light et_pb_module et_flex_module\"><div class=\"et_pb_title_container\"><h1 class=\"entry-title\">aied-verify</h1><p class=\"et_pb_title_meta_container\">by <span class=\"author vcard\"><a href=\"http://localhost:8181/author/\" title=\"Posts by \"></a></span> | <span class=\"published\">Sep 30, 2026</span></p></div></div></div></div></div>"
+                    "html_bytes": 701,
+                    "sample": "_phone\"><div class=\"et_pb_post_title_0 et_pb_post_title et_pb_bg_layout_light et_pb_module et_flex_module\"><div class=\"et_pb_title_container\"><h1 class=\"entry-title\">aied-verify</h1><p class=\"et_pb_title_meta_container\">by <span class=\"author vcard\"><a href=\"http://localhost:8181/author/\" title=\"Posts by \"></a></span> | <span class=\"published\">Oct 1, 2026</span></p></div></div></div></div></div>"
                 },
                 "section": {
                     "status": "pass",
                     "reasons": [
                         "found marker et_pb_post_title in a class attribute"
                     ],
-                    "html_bytes": 458,
-                    "sample": "ection\"><div class=\"et_pb_post_title_1 et_pb_post_title et_pb_bg_layout_light et_pb_module et_flex_module\"><div class=\"et_pb_title_container\"><h1 class=\"entry-title\">aied-verify</h1><p class=\"et_pb_title_meta_container\">by <span class=\"author vcard\"><a href=\"http://localhost:8181/author/\" title=\"Posts by \"></a></span> | <span class=\"published\">Sep 30, 2026</span></p></div></div></div>"
+                    "html_bytes": 457,
+                    "sample": "ection\"><div class=\"et_pb_post_title_1 et_pb_post_title et_pb_bg_layout_light et_pb_module et_flex_module\"><div class=\"et_pb_title_container\"><h1 class=\"entry-title\">aied-verify</h1><p class=\"et_pb_title_meta_container\">by <span class=\"author vcard\"><a href=\"http://localhost:8181/author/\" title=\"Posts by \"></a></span> | <span class=\"published\">Oct 1, 2026</span></p></div></div></div>"
                 }
             }
         },
@@ -654,7 +654,7 @@
                         "found marker et_pb_tooltip in a class attribute"
                     ],
                     "html_bytes": 517,
-                    "sample": "_phone\"><div class=\"et_pb_tooltip_0 et_pb_tooltip et_pb_module et_flex_module\" role=\"tooltip\" aria-hidden=\"true\" id=\"et_pb_tooltip_divi/tooltip-0\" data-et-tooltip-parent-id=\"divi/column-30\"></div></div></div></div>"
+                    "sample": "_phone\"><div class=\"et_pb_tooltip_0 et_pb_tooltip et_pb_module et_flex_module\" role=\"tooltip\" aria-hidden=\"true\" id=\"et_pb_tooltip_divi/tooltip-0\" data-et-tooltip-parent-id=\"divi/column-33\"></div></div></div></div>"
                 },
                 "section": {
                     "status": "pass",
@@ -662,7 +662,7 @@
                         "found marker et_pb_tooltip in a class attribute"
                     ],
                     "html_bytes": 274,
-                    "sample": "ection\"><div class=\"et_pb_tooltip_1 et_pb_tooltip et_pb_module et_flex_module\" role=\"tooltip\" aria-hidden=\"true\" id=\"et_pb_tooltip_divi/tooltip-1\" data-et-tooltip-parent-id=\"divi/section-61\"></div></div>"
+                    "sample": "ection\"><div class=\"et_pb_tooltip_1 et_pb_tooltip et_pb_module et_flex_module\" role=\"tooltip\" aria-hidden=\"true\" id=\"et_pb_tooltip_divi/tooltip-1\" data-et-tooltip-parent-id=\"divi/section-64\"></div></div>"
                 }
             }
         },
@@ -701,7 +701,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 650,
-                    "sample": "<div class=\"et_pb_section_64 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_32 et_pb_row et_flex_row\"><div class=\"et_pb_column_32 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_breadcrumb_0 et_pb_wc_breadcrumb et_pb_module\"><div class=\"et_pb_mod"
+                    "sample": "<div class=\"et_pb_section_67 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_35 et_pb_row et_flex_row\"><div class=\"et_pb_column_35 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_breadcrumb_0 et_pb_wc_breadcrumb et_pb_module\"><div class=\"et_pb_mod"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -709,7 +709,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 406,
-                    "sample": "<div class=\"et_pb_section_65 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_breadcrumb_1 et_pb_wc_breadcrumb et_pb_module\"><div class=\"et_pb_module_inner\"><nav class=\"woocommerce-breadcrumb\" aria-label=\"Breadcrumb\"><a href=\"http://localhost:8181\">Home</a>  /  <a href=\"http://localhost:8181/product-category/accessories/\">Accessories</a>  /  Beanie with Logo</nav></div></div>"
+                    "sample": "<div class=\"et_pb_section_68 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_breadcrumb_1 et_pb_wc_breadcrumb et_pb_module\"><div class=\"et_pb_module_inner\"><nav class=\"woocommerce-breadcrumb\" aria-label=\"Breadcrumb\"><a href=\"http://localhost:8181\">Home</a>  /  <a href=\"http://localhost:8181/product-category/accessories/\">Accessories</a>  /  Beanie with Logo</nav></div></div>"
                 }
             }
         },
@@ -723,7 +723,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 329,
-                    "sample": "<div class=\"et_pb_section_66 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_33 et_pb_row et_flex_row\"><div class=\"et_pb_column_33 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_69 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_36 et_pb_row et_flex_row\"><div class=\"et_pb_column_36 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -731,7 +731,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 85,
-                    "sample": "<div class=\"et_pb_section_67 et_pb_section et_section_regular et_flex_section\"></div>"
+                    "sample": "<div class=\"et_pb_section_70 et_pb_section et_section_regular et_flex_section\"></div>"
                 }
             }
         },
@@ -745,7 +745,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 521,
-                    "sample": "<div class=\"et_pb_section_68 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_34 et_pb_row et_flex_row\"><div class=\"et_pb_column_34 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_cart_products_0 et_pb_wc_cart_products woocommerce-cart woocommerce "
+                    "sample": "<div class=\"et_pb_section_71 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_37 et_pb_row et_flex_row\"><div class=\"et_pb_column_37 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_cart_products_0 et_pb_wc_cart_products woocommerce-cart woocommerce "
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -753,7 +753,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 277,
-                    "sample": "<div class=\"et_pb_section_69 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_cart_products_1 et_pb_wc_cart_products woocommerce-cart woocommerce et_pb_wc_cart_empty et_pb_row_layout_default et_pb_module\"><div class=\"et_pb_module_inner\"></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_72 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_cart_products_1 et_pb_wc_cart_products woocommerce-cart woocommerce et_pb_wc_cart_empty et_pb_row_layout_default et_pb_module\"><div class=\"et_pb_module_inner\"></div></div></div>"
                 }
             }
         },
@@ -767,7 +767,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 329,
-                    "sample": "<div class=\"et_pb_section_70 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_35 et_pb_row et_flex_row\"><div class=\"et_pb_column_35 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_73 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_38 et_pb_row et_flex_row\"><div class=\"et_pb_column_38 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -775,7 +775,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 85,
-                    "sample": "<div class=\"et_pb_section_71 et_pb_section et_section_regular et_flex_section\"></div>"
+                    "sample": "<div class=\"et_pb_section_74 et_pb_section et_section_regular et_flex_section\"></div>"
                 }
             }
         },
@@ -789,7 +789,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 516,
-                    "sample": "<div class=\"et_pb_section_72 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_36 et_pb_row et_flex_row\"><div class=\"et_pb_column_36 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_checkout_additional_info_0 et_pb_wc_checkout_additional_info et_pb_m"
+                    "sample": "<div class=\"et_pb_section_75 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_39 et_pb_row et_flex_row\"><div class=\"et_pb_column_39 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_checkout_additional_info_0 et_pb_wc_checkout_additional_info et_pb_m"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -797,7 +797,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 272,
-                    "sample": "<div class=\"et_pb_section_73 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_checkout_additional_info_1 et_pb_wc_checkout_additional_info et_pb_module\"><div class=\"et_pb_module_inner\"><div class=\"woocommerce-notices-wrapper\"></div></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_76 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_checkout_additional_info_1 et_pb_wc_checkout_additional_info et_pb_module\"><div class=\"et_pb_module_inner\"><div class=\"woocommerce-notices-wrapper\"></div></div></div></div>"
                 }
             }
         },
@@ -811,7 +811,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 561,
-                    "sample": "<div class=\"et_pb_section_74 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_37 et_pb_row et_flex_row\"><div class=\"et_pb_column_37 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_checkout_billing_0 et_pb_wc_checkout_billing woocommerce-checkout wo"
+                    "sample": "<div class=\"et_pb_section_77 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_40 et_pb_row et_flex_row\"><div class=\"et_pb_column_40 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_checkout_billing_0 et_pb_wc_checkout_billing woocommerce-checkout wo"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -819,7 +819,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 317,
-                    "sample": "<div class=\"et_pb_section_75 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_checkout_billing_1 et_pb_wc_checkout_billing woocommerce-checkout woocommerce et_pb_fields_layout_default et_pb_module\"><div class=\"et_pb_module_inner\"><div class=\"woocommerce-notices-wrapper\"></div></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_78 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_checkout_billing_1 et_pb_wc_checkout_billing woocommerce-checkout woocommerce et_pb_fields_layout_default et_pb_module\"><div class=\"et_pb_module_inner\"><div class=\"woocommerce-notices-wrapper\"></div></div></div></div>"
                 }
             }
         },
@@ -833,7 +833,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 512,
-                    "sample": "<div class=\"et_pb_section_76 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_38 et_pb_row et_flex_row\"><div class=\"et_pb_column_38 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_checkout_order_details_0 et_pb_wc_checkout_order_details et_pb_modul"
+                    "sample": "<div class=\"et_pb_section_79 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_41 et_pb_row et_flex_row\"><div class=\"et_pb_column_41 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_checkout_order_details_0 et_pb_wc_checkout_order_details et_pb_modul"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -841,7 +841,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 268,
-                    "sample": "<div class=\"et_pb_section_77 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_checkout_order_details_1 et_pb_wc_checkout_order_details et_pb_module\"><div class=\"et_pb_module_inner\"><div class=\"woocommerce-notices-wrapper\"></div></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_80 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_checkout_order_details_1 et_pb_wc_checkout_order_details et_pb_module\"><div class=\"et_pb_module_inner\"><div class=\"woocommerce-notices-wrapper\"></div></div></div></div>"
                 }
             }
         },
@@ -855,7 +855,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 510,
-                    "sample": "<div class=\"et_pb_section_78 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_39 et_pb_row et_flex_row\"><div class=\"et_pb_column_39 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_checkout_payment_info_0 et_pb_wc_checkout_payment_info et_pb_module\""
+                    "sample": "<div class=\"et_pb_section_81 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_42 et_pb_row et_flex_row\"><div class=\"et_pb_column_42 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_checkout_payment_info_0 et_pb_wc_checkout_payment_info et_pb_module\""
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -863,7 +863,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 266,
-                    "sample": "<div class=\"et_pb_section_79 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_checkout_payment_info_1 et_pb_wc_checkout_payment_info et_pb_module\"><div class=\"et_pb_module_inner\"><div class=\"woocommerce-notices-wrapper\"></div></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_82 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_checkout_payment_info_1 et_pb_wc_checkout_payment_info et_pb_module\"><div class=\"et_pb_module_inner\"><div class=\"woocommerce-notices-wrapper\"></div></div></div></div>"
                 }
             }
         },
@@ -877,7 +877,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 530,
-                    "sample": "<div class=\"et_pb_section_80 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_40 et_pb_row et_flex_row\"><div class=\"et_pb_column_40 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_checkout_shipping_0 et_pb_wc_checkout_shipping et_pb_fields_layout_d"
+                    "sample": "<div class=\"et_pb_section_83 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_43 et_pb_row et_flex_row\"><div class=\"et_pb_column_43 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_checkout_shipping_0 et_pb_wc_checkout_shipping et_pb_fields_layout_d"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -885,7 +885,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 286,
-                    "sample": "<div class=\"et_pb_section_81 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_checkout_shipping_1 et_pb_wc_checkout_shipping et_pb_fields_layout_default et_pb_module\"><div class=\"et_pb_module_inner\"><div class=\"woocommerce-notices-wrapper\"></div></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_84 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_checkout_shipping_1 et_pb_wc_checkout_shipping et_pb_fields_layout_default et_pb_module\"><div class=\"et_pb_module_inner\"><div class=\"woocommerce-notices-wrapper\"></div></div></div></div>"
                 }
             }
         },
@@ -899,7 +899,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 443,
-                    "sample": "<div class=\"et_pb_section_82 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_41 et_pb_row et_flex_row\"><div class=\"et_pb_column_41 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_cross_sells_0 et_pb_wc_cross_sells et_pb_module\"><div class=\"et_pb_m"
+                    "sample": "<div class=\"et_pb_section_85 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_44 et_pb_row et_flex_row\"><div class=\"et_pb_column_44 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_cross_sells_0 et_pb_wc_cross_sells et_pb_module\"><div class=\"et_pb_m"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -907,7 +907,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 199,
-                    "sample": "<div class=\"et_pb_section_83 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_cross_sells_1 et_pb_wc_cross_sells et_pb_module\"><div class=\"et_pb_module_inner\"></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_86 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_cross_sells_1 et_pb_wc_cross_sells et_pb_module\"><div class=\"et_pb_module_inner\"></div></div></div>"
                 }
             }
         },
@@ -921,7 +921,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 1335,
-                    "sample": "<div class=\"et_pb_section_84 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_42 et_pb_row et_flex_row\"><div class=\"et_pb_column_42 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_add_to_cart_0 et_pb_wc_add_to_cart et_pb_fields_label_position_inlin"
+                    "sample": "<div class=\"et_pb_section_87 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_45 et_pb_row et_flex_row\"><div class=\"et_pb_column_45 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_add_to_cart_0 et_pb_wc_add_to_cart et_pb_fields_label_position_inlin"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -929,7 +929,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 1091,
-                    "sample": "<div class=\"et_pb_section_85 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_add_to_cart_1 et_pb_wc_add_to_cart et_pb_fields_label_position_inline et_pb_woo_custom_button_icon et_pb_module\" data-button-class=\"single_add_to_cart_button\" data-button-icon=\"5\" data-button-icon-tablet=\"\" data-button-icon-phone=\"\" data-button-icon-placement=\"right\" data-button-icon-on-hover=\"on\"><"
+                    "sample": "<div class=\"et_pb_section_88 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_add_to_cart_1 et_pb_wc_add_to_cart et_pb_fields_label_position_inline et_pb_woo_custom_button_icon et_pb_module\" data-button-class=\"single_add_to_cart_button\" data-button-icon=\"5\" data-button-icon-tablet=\"\" data-button-icon-phone=\"\" data-button-icon-placement=\"right\" data-button-icon-on-hover=\"on\"><"
                 }
             }
         },
@@ -943,7 +943,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 1399,
-                    "sample": "<div class=\"et_pb_section_86 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_43 et_pb_row et_flex_row\"><div class=\"et_pb_column_43 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_additional_info_0 et_pb_wc_additional_info et_pb_module\"><div class="
+                    "sample": "<div class=\"et_pb_section_89 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_46 et_pb_row et_flex_row\"><div class=\"et_pb_column_46 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_additional_info_0 et_pb_wc_additional_info et_pb_module\"><div class="
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -951,7 +951,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 1155,
-                    "sample": "<div class=\"et_pb_section_87 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_additional_info_1 et_pb_wc_additional_info et_pb_module\"><div class=\"et_pb_module_inner\">\n\t<h2>Additional information</h2>\n\n<table class=\"woocommerce-product-attributes shop_attributes\" aria-label=\"Product Details\">\n\t\t\t<tr class=\"woocommerce-product-attributes-item woocommerce-product-attributes-ite"
+                    "sample": "<div class=\"et_pb_section_90 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_additional_info_1 et_pb_wc_additional_info et_pb_module\"><div class=\"et_pb_module_inner\">\n\t<h2>Additional information</h2>\n\n<table class=\"woocommerce-product-attributes shop_attributes\" aria-label=\"Product Details\">\n\t\t\t<tr class=\"woocommerce-product-attributes-item woocommerce-product-attributes-ite"
                 }
             }
         },
@@ -965,7 +965,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 476,
-                    "sample": "<div class=\"et_pb_section_88 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_44 et_pb_row et_flex_row\"><div class=\"et_pb_column_44 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_description_0 et_pb_wc_description et_pb_module\"><div class=\"et_pb_m"
+                    "sample": "<div class=\"et_pb_section_91 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_47 et_pb_row et_flex_row\"><div class=\"et_pb_column_47 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_description_0 et_pb_wc_description et_pb_module\"><div class=\"et_pb_m"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -973,7 +973,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 232,
-                    "sample": "<div class=\"et_pb_section_89 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_description_1 et_pb_wc_description et_pb_module\"><div class=\"et_pb_module_inner\"><p>This is a simple product.</p>\n</div></div></div>"
+                    "sample": "<div class=\"et_pb_section_92 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_description_1 et_pb_wc_description et_pb_module\"><div class=\"et_pb_module_inner\"><p>This is a simple product.</p>\n</div></div></div>"
                 }
             }
         },
@@ -987,7 +987,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 1560,
-                    "sample": "<div class=\"et_pb_section_90 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_45 et_pb_row et_flex_row\"><div class=\"et_pb_column_45 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_gallery_0 et_pb_wc_gallery et_pb_gallery et_pb_wc_gallery_module et_"
+                    "sample": "<div class=\"et_pb_section_93 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_48 et_pb_row et_flex_row\"><div class=\"et_pb_column_48 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_gallery_0 et_pb_wc_gallery et_pb_gallery et_pb_wc_gallery_module et_"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -995,7 +995,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 1316,
-                    "sample": "<div class=\"et_pb_section_91 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_gallery_1 et_pb_wc_gallery et_pb_gallery et_pb_wc_gallery_module et_pb_gallery_fullwidth et_pb_simple_slider et_pb_slider et_pb_module\"><div class=\"et_pb_gallery_items et_post_gallery clearfix\" data-per_page=\"4\"><div class=\"et_pb_gallery_item et_pb_main_image et_pb_gallery_item_wc_gallery_0\"><div cl"
+                    "sample": "<div class=\"et_pb_section_94 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_gallery_1 et_pb_wc_gallery et_pb_gallery et_pb_wc_gallery_module et_pb_gallery_fullwidth et_pb_simple_slider et_pb_slider et_pb_module\"><div class=\"et_pb_gallery_items et_post_gallery clearfix\" data-per_page=\"4\"><div class=\"et_pb_gallery_item et_pb_main_image et_pb_gallery_item_wc_gallery_0\"><div cl"
                 }
             }
         },
@@ -1009,7 +1009,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 1785,
-                    "sample": "<div class=\"et_pb_section_92 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_46 et_pb_row et_flex_row\"><div class=\"et_pb_column_46 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_images_0 et_pb_wc_images et_pb_module\"><div class=\"et_pb_module_inne"
+                    "sample": "<div class=\"et_pb_section_95 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_49 et_pb_row et_flex_row\"><div class=\"et_pb_column_49 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_images_0 et_pb_wc_images et_pb_module\"><div class=\"et_pb_module_inne"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -1017,7 +1017,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 1541,
-                    "sample": "<div class=\"et_pb_section_93 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_images_1 et_pb_wc_images et_pb_module\"><div class=\"et_pb_module_inner\">\n\t<span class=\"onsale\">Sale!</span>\n\t<div data-product-id=\"647\" class=\"woocommerce-product-gallery woocommerce-product-gallery--with-images woocommerce-product-gallery--columns-4 images\" data-columns=\"4\" style=\"opacity: 0; transi"
+                    "sample": "<div class=\"et_pb_section_96 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_images_1 et_pb_wc_images et_pb_module\"><div class=\"et_pb_module_inner\">\n\t<span class=\"onsale\">Sale!</span>\n\t<div data-product-id=\"647\" class=\"woocommerce-product-gallery woocommerce-product-gallery--with-images woocommerce-product-gallery--columns-4 images\" data-columns=\"4\" style=\"opacity: 0; transi"
                 }
             }
         },
@@ -1031,7 +1031,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 714,
-                    "sample": "<div class=\"et_pb_section_94 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_47 et_pb_row et_flex_row\"><div class=\"et_pb_column_47 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_meta_0 et_pb_wc_meta et_pb_wc_meta_layout_inline et_pb_module\"><div "
+                    "sample": "<div class=\"et_pb_section_97 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_50 et_pb_row et_flex_row\"><div class=\"et_pb_column_50 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_meta_0 et_pb_wc_meta et_pb_wc_meta_layout_inline et_pb_module\"><div "
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -1039,7 +1039,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 470,
-                    "sample": "<div class=\"et_pb_section_95 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_meta_1 et_pb_wc_meta et_pb_wc_meta_layout_inline et_pb_module\"><div class=\"et_pb_module_inner\"><div class=\"product_meta\">\n\n\t\n\t\n\t\t<span class=\"sku_wrapper\">SKU: <span class=\"sku\">Woo-beanie-logo</span></span>\n\n\t\n\t<span class=\"posted_in\">Category: <a href=\"http://localhost:8181/product-category/access"
+                    "sample": "<div class=\"et_pb_section_98 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_meta_1 et_pb_wc_meta et_pb_wc_meta_layout_inline et_pb_module\"><div class=\"et_pb_module_inner\"><div class=\"product_meta\">\n\n\t\n\t\n\t\t<span class=\"sku_wrapper\">SKU: <span class=\"sku\">Woo-beanie-logo</span></span>\n\n\t\n\t<span class=\"posted_in\">Category: <a href=\"http://localhost:8181/product-category/access"
                 }
             }
         },
@@ -1053,15 +1053,15 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 942,
-                    "sample": "<div class=\"et_pb_section_96 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_48 et_pb_row et_flex_row\"><div class=\"et_pb_column_48 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_price_0 et_pb_wc_price et_pb_module\"><div class=\"et_pb_module_inner\""
+                    "sample": "<div class=\"et_pb_section_99 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_51 et_pb_row et_flex_row\"><div class=\"et_pb_column_51 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_price_0 et_pb_wc_price et_pb_module\"><div class=\"et_pb_module_inner\""
                 },
                 "section": {
                     "status": "needs-real-export",
                     "reasons": [
                         "output had none of the expected module markers"
                     ],
-                    "html_bytes": 698,
-                    "sample": "<div class=\"et_pb_section_97 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_price_1 et_pb_wc_price et_pb_module\"><div class=\"et_pb_module_inner\"><p class=\"price\"><del aria-hidden=\"true\"><span class=\"woocommerce-Price-amount amount\"><bdi><span class=\"woocommerce-Price-currencySymbol\" translate=\"no\">&#36;</span>20.00</bdi></span></del> <span class=\"screen-reader-text\">Origina"
+                    "html_bytes": 699,
+                    "sample": "<div class=\"et_pb_section_100 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_price_1 et_pb_wc_price et_pb_module\"><div class=\"et_pb_module_inner\"><p class=\"price\"><del aria-hidden=\"true\"><span class=\"woocommerce-Price-amount amount\"><bdi><span class=\"woocommerce-Price-currencySymbol\" translate=\"no\">&#36;</span>20.00</bdi></span></del> <span class=\"screen-reader-text\">Origin"
                 }
             }
         },
@@ -1074,16 +1074,16 @@
                     "reasons": [
                         "output had none of the expected module markers"
                     ],
-                    "html_bytes": 329,
-                    "sample": "<div class=\"et_pb_section_98 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_49 et_pb_row et_flex_row\"><div class=\"et_pb_column_49 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
+                    "html_bytes": 330,
+                    "sample": "<div class=\"et_pb_section_101 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_52 et_pb_row et_flex_row\"><div class=\"et_pb_column_52 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
                 },
                 "section": {
                     "status": "needs-real-export",
                     "reasons": [
                         "output had none of the expected module markers"
                     ],
-                    "html_bytes": 85,
-                    "sample": "<div class=\"et_pb_section_99 et_pb_section et_section_regular et_flex_section\"></div>"
+                    "html_bytes": 86,
+                    "sample": "<div class=\"et_pb_section_102 et_pb_section et_section_regular et_flex_section\"></div>"
                 }
             }
         },
@@ -1097,7 +1097,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 532,
-                    "sample": "<div class=\"et_pb_section_100 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_50 et_pb_row et_flex_row\"><div class=\"et_pb_column_50 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_reviews_0 et_pb_wc_reviews et_pb_comments_module et_pb_bg_layout_li"
+                    "sample": "<div class=\"et_pb_section_103 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_53 et_pb_row et_flex_row\"><div class=\"et_pb_column_53 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_reviews_0 et_pb_wc_reviews et_pb_comments_module et_pb_bg_layout_li"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -1105,7 +1105,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 288,
-                    "sample": "<div class=\"et_pb_section_101 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_reviews_1 et_pb_wc_reviews et_pb_comments_module et_pb_bg_layout_light et_pb_module\" data-icon=\"\" data-icon-tablet=\"\" data-icon-phone=\"\"><div class=\"et_pb_module_inner\"></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_104 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_reviews_1 et_pb_wc_reviews et_pb_comments_module et_pb_bg_layout_light et_pb_module\" data-icon=\"\" data-icon-tablet=\"\" data-icon-phone=\"\"><div class=\"et_pb_module_inner\"></div></div></div>"
                 }
             }
         },
@@ -1119,7 +1119,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 330,
-                    "sample": "<div class=\"et_pb_section_102 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_51 et_pb_row et_flex_row\"><div class=\"et_pb_column_51 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_105 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_54 et_pb_row et_flex_row\"><div class=\"et_pb_column_54 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -1127,7 +1127,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 86,
-                    "sample": "<div class=\"et_pb_section_103 et_pb_section et_section_regular et_flex_section\"></div>"
+                    "sample": "<div class=\"et_pb_section_106 et_pb_section et_section_regular et_flex_section\"></div>"
                 }
             }
         },
@@ -1141,7 +1141,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 2284,
-                    "sample": "<div class=\"et_pb_section_104 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_52 et_pb_row et_flex_row\"><div class=\"et_pb_column_52 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_tabs_0 et_pb_wc_tabs et_pb_tabs et_pb_module\"><div class=\"et_pb_mod"
+                    "sample": "<div class=\"et_pb_section_107 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_55 et_pb_row et_flex_row\"><div class=\"et_pb_column_55 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_tabs_0 et_pb_wc_tabs et_pb_tabs et_pb_module\"><div class=\"et_pb_mod"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -1149,7 +1149,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 2040,
-                    "sample": "<div class=\"et_pb_section_105 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_tabs_1 et_pb_wc_tabs et_pb_tabs et_pb_module\"><div class=\"et_pb_module_inner\"><ul class=\"et_pb_tabs_controls clearfix\"><li class=\"et_pb_tab_nav_item et_pb_tab_nav_item_description description_tab et_pb_tab_active\" data-id=\"description\"><a href=\"#tab-description\">Description</a></li><li class=\"et_pb"
+                    "sample": "<div class=\"et_pb_section_108 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_tabs_1 et_pb_wc_tabs et_pb_tabs et_pb_module\"><div class=\"et_pb_module_inner\"><ul class=\"et_pb_tabs_controls clearfix\"><li class=\"et_pb_tab_nav_item et_pb_tab_nav_item_description description_tab et_pb_tab_active\" data-id=\"description\"><a href=\"#tab-description\">Description</a></li><li class=\"et_pb"
                 }
             }
         },
@@ -1163,7 +1163,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 482,
-                    "sample": "<div class=\"et_pb_section_106 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_53 et_pb_row et_flex_row\"><div class=\"et_pb_column_53 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_title_0 et_pb_wc_title et_pb_bg_layout_light et_pb_module\"><div cla"
+                    "sample": "<div class=\"et_pb_section_109 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_56 et_pb_row et_flex_row\"><div class=\"et_pb_column_56 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_title_0 et_pb_wc_title et_pb_bg_layout_light et_pb_module\"><div cla"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -1171,7 +1171,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 238,
-                    "sample": "<div class=\"et_pb_section_107 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_title_1 et_pb_wc_title et_pb_bg_layout_light et_pb_module\"><div class=\"et_pb_module_inner\">\n\t\t<h1>Beanie with Logo</h1></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_110 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_title_1 et_pb_wc_title et_pb_bg_layout_light et_pb_module\"><div class=\"et_pb_module_inner\">\n\t\t<h1>Beanie with Logo</h1></div></div></div>"
                 }
             }
         },
@@ -1185,7 +1185,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 330,
-                    "sample": "<div class=\"et_pb_section_108 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_54 et_pb_row et_flex_row\"><div class=\"et_pb_column_54 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
+                    "sample": "<div class=\"et_pb_section_111 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_57 et_pb_row et_flex_row\"><div class=\"et_pb_column_57 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"></div></div></div>"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -1193,7 +1193,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 86,
-                    "sample": "<div class=\"et_pb_section_109 et_pb_section et_section_regular et_flex_section\"></div>"
+                    "sample": "<div class=\"et_pb_section_112 et_pb_section et_section_regular et_flex_section\"></div>"
                 }
             }
         },
@@ -1207,7 +1207,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 5019,
-                    "sample": "<div class=\"et_pb_section_110 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_55 et_pb_row et_flex_row\"><div class=\"et_pb_column_55 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_related_products_0 et_pb_wc_related_products et_pb_module\"><div cla"
+                    "sample": "<div class=\"et_pb_section_113 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_row_58 et_pb_row et_flex_row\"><div class=\"et_pb_column_58 et_pb_column et-last-child et_flex_column et_pb_css_mix_blend_mode_passthrough et_flex_column_24_24 et_flex_column_24_24_tablet et_flex_column_24_24_phone\"><div class=\"et_pb_wc_related_products_0 et_pb_wc_related_products et_pb_module\"><div cla"
                 },
                 "section": {
                     "status": "needs-real-export",
@@ -1215,7 +1215,7 @@
                         "output had none of the expected module markers"
                     ],
                     "html_bytes": 4775,
-                    "sample": "<div class=\"et_pb_section_111 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_related_products_1 et_pb_wc_related_products et_pb_module\"><div class=\"et_pb_module_inner\">\n\t<section class=\"related products\">\n\n\t\t\t\t\t<h2>Related products</h2>\n\t\t\t\t<ul class=\"products columns-4\">\n\n\t\t\t\n\t\t\t\t\t<li class=\"product type-product post-632 status-publish first instock product_cat-accessories"
+                    "sample": "<div class=\"et_pb_section_114 et_pb_section et_section_regular et_flex_section\"><div class=\"et_pb_wc_related_products_1 et_pb_wc_related_products et_pb_module\"><div class=\"et_pb_module_inner\">\n\t<section class=\"related products\">\n\n\t\t\t\t\t<h2>Related products</h2>\n\t\t\t\t<ul class=\"products columns-4\">\n\n\t\t\t\n\t\t\t\t\t<li class=\"product type-product post-632 status-publish first instock product_cat-accessories"
                 }
             }
         }
@@ -1317,6 +1317,30 @@
                     "sample": "<div class=\"et_pb_section_7 et_pb_section et_section_regular et_flex_section\"></div>"
                 }
             }
+        },
+        "diagnostic:E_USER_WARNING": {
+            "status": "fail",
+            "reasons": [
+                "PHP diagnostic in output: Warning:"
+            ],
+            "html_bytes": 446,
+            "sample": "_phone\"><div class=\"et_pb_heading_2 et_pb_heading et_pb_module et_flex_module\"><div class=\"et_pb_heading_container\"></div></div></div></div></div>"
+        },
+        "diagnostic:E_USER_NOTICE": {
+            "status": "fail",
+            "reasons": [
+                "PHP diagnostic in output: Notice:"
+            ],
+            "html_bytes": 446,
+            "sample": "_phone\"><div class=\"et_pb_heading_3 et_pb_heading et_pb_module et_flex_module\"><div class=\"et_pb_heading_container\"></div></div></div></div></div>"
+        },
+        "diagnostic:E_USER_DEPRECATED": {
+            "status": "fail",
+            "reasons": [
+                "PHP diagnostic in output: Deprecated:"
+            ],
+            "html_bytes": 447,
+            "sample": "_phone\"><div class=\"et_pb_heading_4 et_pb_heading et_pb_module et_flex_module\"><div class=\"et_pb_heading_container\"></div></div></div></div></div>"
         }
     }
 }

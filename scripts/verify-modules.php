@@ -12,6 +12,18 @@ require_once '/tmp/divi5-tools/MarkupBuilder.php';
 require_once '/tmp/divi5-tools/RenderEvidence.php';
 
 [$candidatesFile, $outFile, $version] = $args;
+
+// WP_DEBUG is off on the test site, and WordPress lowers error_reporting / disables display_errors
+// while loading. Re-enable every diagnostic and route it to the output buffer the probes capture,
+// otherwise a module emitting a notice or deprecation would be indistinguishable from a clean one.
+// (A one-shot script: nothing is restored afterwards.) The calibration control below PROVES this works.
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+ini_set('html_errors', '0');
+// This PHP build has ignore_repeated_errors=1, which silently DROPS a diagnostic identical to the
+// previous one (same message/file/line). Two probes hitting the same notice would then look clean.
+ini_set('ignore_repeated_errors', '0');
+ini_set('ignore_repeated_source', '0');
 $candidates = json_decode((string) file_get_contents($candidatesFile), true);
 if (!is_array($candidates)) {
     WP_CLI::error('candidates.json is not valid JSON');
@@ -34,7 +46,7 @@ $sweep = function (): int {
     return count($ids);
 };
 
-$probe = function (string $module, ?string $child, string $placement) use ($version): array {
+$probe = function (string $module, ?string $child, string $placement, ?callable $inject = null) use ($version): array {
     $startLevel = ob_get_level();
     $id = 0;
     $html = '';
@@ -60,10 +72,17 @@ $probe = function (string $module, ?string $child, string $placement) use ($vers
         $GLOBALS['post'] = $post;
         setup_postdata($post);
         ob_start();
+        if ($inject !== null) {
+            add_filter('the_content', $inject, 999); // calibration only: emulates a module emitting a diagnostic
+        }
         try {
             $html = (string) apply_filters('the_content', $post->post_content);
         } catch (\Throwable $e) {
             $html = 'Fatal error: ' . $e->getMessage();
+        } finally {
+            if ($inject !== null) {
+                remove_filter('the_content', $inject, 999);
+            }
         }
         $noise = (string) ob_get_clean();
     } catch (\Throwable $e) {
@@ -124,6 +143,24 @@ try {
     }
     $controls['divi/not-a-module'] = $verify(['name' => 'divi/not-a-module', 'children' => []]);
 
+    // Diagnostics control: a render that emits a PHP diagnostic through the real the_content path
+    // (same ob_start()/classify route every probe uses) MUST classify as 'fail'. If it does not,
+    // the harness cannot see notices/warnings/deprecations and no 'pass' can be trusted.
+    $diagnosticLevels = [
+        'E_USER_WARNING'    => E_USER_WARNING,
+        'E_USER_NOTICE'     => E_USER_NOTICE,
+        'E_USER_DEPRECATED' => E_USER_DEPRECATED,
+    ];
+    foreach ($diagnosticLevels as $label => $level) {
+        $inject = function ($content) use ($level) {
+            trigger_error('aied-calibration', $level);
+
+            return $content;
+        };
+        $result = $probe('divi/heading', null, MarkupBuilder::PLACEMENT_COLUMN, $inject);
+        $controls['diagnostic:' . $label] = $result;
+    }
+
     $bad = [];
     foreach (['divi/heading', 'divi/blurb', 'divi/shop'] as $known) {
         if (!in_array(MarkupBuilder::PLACEMENT_COLUMN, $controls[$known]['placements_rendered'], true)) {
@@ -132,6 +169,13 @@ try {
     }
     if ($controls['divi/not-a-module']['status'] === 'pass') {
         $bad[] = 'negative control divi/not-a-module passed';
+    }
+    foreach (array_keys($diagnosticLevels) as $label) {
+        $c = $controls['diagnostic:' . $label];
+        // Must be a captured Warning/Notice/Deprecated diagnostic, not merely some failure (e.g. a caught Fatal).
+        if ($c['status'] !== 'fail' || preg_match('/PHP diagnostic in output: (Warning|Notice|Deprecated)/i', implode(' ', $c['reasons'])) !== 1) {
+            $bad[] = "diagnostics control $label was not captured as a failure (status {$c['status']}): the harness cannot see PHP diagnostics";
+        }
     }
     if ($bad !== []) {
         file_put_contents($outFile, json_encode(['calibrated' => false, 'controls' => $controls, 'error' => $bad], JSON_PRETTY_PRINT));
