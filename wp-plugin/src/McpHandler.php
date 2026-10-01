@@ -214,6 +214,41 @@ final class McpHandler
                 ],
             ],
             [
+                'name'        => 'list_page_history',
+                'description' => 'List the saved previous versions of a page (newest first). Every AI save snapshots the page\'s prior content, so any AI edit can be undone. Returns id, saved_at, tool, actor, bytes, label for each version (no content). Use restore_page_version to undo.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'page_id' => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                    ],
+                    'required' => ['page_id'],
+                ],
+            ],
+            [
+                'name'        => 'get_page_history_entry',
+                'description' => 'Get the full saved content of one previous version of a page (from list_page_history), e.g. to compare it with the current layout before restoring.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'version_id' => ['type' => 'integer', 'description' => 'Version id from list_page_history'],
+                    ],
+                    'required' => ['page_id', 'version_id'],
+                ],
+            ],
+            [
+                'name'        => 'restore_page_version',
+                'description' => 'Undo: restore a page to a previous saved version. The current content is snapshotted first, so the restore itself can be undone. Restore does not block on validation (it returns the person\'s own earlier content); the result reports whether that content passes the validator.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'version_id' => ['type' => 'integer', 'description' => 'Version id from list_page_history'],
+                    ],
+                    'required' => ['page_id', 'version_id'],
+                ],
+            ],
+            [
                 'name'        => 'create_page',
                 'description' => 'PREMIUM: Create a new WordPress page with a validated Divi 5 layout. The page is always created as a draft for the site owner to review and publish. Requires an active license — without one the call returns an upgrade message and creates nothing. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the page is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src (see get_image_guide for the right keyless source per role; picsum /seed/ is the generic fallback).',
                 'inputSchema' => [
@@ -249,6 +284,9 @@ final class McpHandler
             'validate_layout'    => $this->toolValidate($id, $arguments),
             'update_page_layout' => $this->toolUpdate($id, $arguments),
             'edit_page_content'  => $this->toolEditContent($id, $arguments),
+            'list_page_history'      => $this->toolListHistory($id, $arguments),
+            'get_page_history_entry' => $this->toolGetHistoryEntry($id, $arguments),
+            'restore_page_version'   => $this->toolRestoreVersion($id, $arguments),
             'create_page'        => $this->toolCreatePage($id, $arguments),
             default              => $this->rpcError($id, -32602, "Unknown tool: {$name}"),
         };
@@ -448,6 +486,80 @@ final class McpHandler
                 'replaced' => $edit['count'],
                 'history'  => $write['snapshot'],
                 'page'     => ['id' => $pageId, 'title' => get_the_title($pageId)],
+            ])]],
+        ]);
+    }
+
+    /** Resolves a page the caller may edit, or returns an rpcError response. */
+    private function historyPage(mixed $id, array $args): \WP_Post|WP_REST_Response
+    {
+        $pageId = (int) ($args['page_id'] ?? 0);
+        $post   = $pageId ? get_post($pageId) : null;
+
+        if (!$post || $post->post_type !== 'page') {
+            return $this->rpcError($id, -32602, "Page {$pageId} not found.");
+        }
+        if (!current_user_can('edit_post', $pageId)) {
+            return $this->rpcError($id, -32602, "You do not have permission to access page {$pageId}.");
+        }
+
+        return $post;
+    }
+
+    private function toolListHistory(mixed $id, array $args): WP_REST_Response
+    {
+        $post = $this->historyPage($id, $args);
+        if ($post instanceof WP_REST_Response) {
+            return $post;
+        }
+        UsageTracker::log('list_history', $post->ID, 'valid');
+        $versions = HistoryService::listFor($post->ID);
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => json_encode(['page_id' => $post->ID, 'versions' => $versions, 'count' => count($versions)])]],
+        ]);
+    }
+
+    private function toolGetHistoryEntry(mixed $id, array $args): WP_REST_Response
+    {
+        $post = $this->historyPage($id, $args);
+        if ($post instanceof WP_REST_Response) {
+            return $post;
+        }
+        $versionId = (int) ($args['version_id'] ?? 0);
+        $entry     = HistoryService::entry($post->ID, $versionId);
+        if ($entry === null) {
+            UsageTracker::log('get_history', $post->ID, 'error');
+            return $this->rpcError($id, -32602, "Version {$versionId} not found for page {$post->ID}.");
+        }
+        UsageTracker::log('get_history', $post->ID, 'valid');
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => json_encode(['page_id' => $post->ID, 'version' => array_diff_key($entry, ['content' => 1]), 'post_content' => $entry['content']])]],
+        ]);
+    }
+
+    private function toolRestoreVersion(mixed $id, array $args): WP_REST_Response
+    {
+        $post = $this->historyPage($id, $args);
+        if ($post instanceof WP_REST_Response) {
+            return $post;
+        }
+        $versionId = (int) ($args['version_id'] ?? 0);
+        $result    = HistoryService::restore($post->ID, $versionId);
+        if (!$result['ok']) {
+            UsageTracker::log('restore_version', $post->ID, 'error');
+            return $this->rpcError($id, $result['error'] === 'version_not_found' ? -32602 : -32603, (string) $result['message']);
+        }
+        UsageTracker::log('restore_version', $post->ID, 'valid');
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => json_encode([
+                'restored'         => true,
+                'restored_version' => $result['restored_version'],
+                'history'          => $result['snapshot'],
+                'validator'        => $result['validator'],
+                'page'             => ['id' => $post->ID, 'title' => get_the_title($post->ID)],
             ])]],
         ]);
     }

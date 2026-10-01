@@ -64,6 +64,33 @@ final class RestController
             'args'                => ['id' => ['validate_callback' => fn($v) => is_numeric($v)]],
         ]);
 
+        // GET /pages/{id}/history — saved previous versions (no content)
+        register_rest_route(self::NS, '/pages/(?P<id>\d+)/history', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'history_list'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+            'args'                => ['id' => ['validate_callback' => fn($v) => is_numeric($v)]],
+        ]);
+
+        // GET /pages/{id}/history/{version_id} — one version's full content
+        register_rest_route(self::NS, '/pages/(?P<id>\d+)/history/(?P<version_id>\d+)', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'history_entry'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+            'args'                => [
+                'id'         => ['validate_callback' => fn($v) => is_numeric($v)],
+                'version_id' => ['validate_callback' => fn($v) => is_numeric($v)],
+            ],
+        ]);
+
+        // POST /pages/{id}/restore — undo: restore a saved version
+        register_rest_route(self::NS, '/pages/(?P<id>\d+)/restore', [
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'history_restore'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+            'args'                => ['id' => ['validate_callback' => fn($v) => is_numeric($v)]],
+        ]);
+
         // POST /validate — validate a layout without saving
         register_rest_route(self::NS, '/validate', [
             'methods'             => WP_REST_Server::CREATABLE,
@@ -281,6 +308,76 @@ final class RestController
             'violations' => [],
             'history'    => $write['snapshot'],
             'page'       => $this->build_layout_envelope($post),
+        ], 200);
+    }
+
+    /** @return \WP_Post|WP_Error */
+    private function history_page(WP_REST_Request $request): \WP_Post|WP_Error
+    {
+        $id   = (int) $request->get_param('id');
+        $post = get_post($id);
+
+        if (!$post || $post->post_type !== 'page') {
+            return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
+        }
+        if (!current_user_can('edit_post', $id)) {
+            return new WP_Error('forbidden', "You do not have permission to access page $id.", ['status' => 403]);
+        }
+
+        return $post;
+    }
+
+    public function history_list(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        $post = $this->history_page($request);
+        if (is_wp_error($post)) {
+            return $post;
+        }
+        UsageTracker::log('list_history', $post->ID, 'valid');
+        $versions = HistoryService::listFor($post->ID);
+
+        return new WP_REST_Response(['page_id' => $post->ID, 'versions' => $versions, 'count' => count($versions)], 200);
+    }
+
+    public function history_entry(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        $post = $this->history_page($request);
+        if (is_wp_error($post)) {
+            return $post;
+        }
+        $versionId = (int) $request->get_param('version_id');
+        $entry     = HistoryService::entry($post->ID, $versionId);
+        if ($entry === null) {
+            UsageTracker::log('get_history', $post->ID, 'error');
+            return new WP_Error('not_found', "Version $versionId not found for page {$post->ID}.", ['status' => 404]);
+        }
+        UsageTracker::log('get_history', $post->ID, 'valid');
+
+        return new WP_REST_Response(['page_id' => $post->ID, 'version' => array_diff_key($entry, ['content' => 1]), 'post_content' => $entry['content']], 200);
+    }
+
+    public function history_restore(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        $post = $this->history_page($request);
+        if (is_wp_error($post)) {
+            return $post;
+        }
+        $body = $request->get_json_params();
+        if (!isset($body['version_id']) || !is_numeric($body['version_id'])) {
+            return new WP_Error('missing_field', 'Request body must include an integer "version_id".', ['status' => 400]);
+        }
+        $result = HistoryService::restore($post->ID, (int) $body['version_id']);
+        if (!$result['ok']) {
+            UsageTracker::log('restore_version', $post->ID, 'error');
+            return new WP_Error($result['error'], (string) $result['message'], ['status' => $result['error'] === 'version_not_found' ? 404 : 500]);
+        }
+        UsageTracker::log('restore_version', $post->ID, 'valid');
+
+        return new WP_REST_Response([
+            'restored'         => true,
+            'restored_version' => $result['restored_version'],
+            'history'          => $result['snapshot'],
+            'validator'        => $result['validator'],
         ], 200);
     }
 

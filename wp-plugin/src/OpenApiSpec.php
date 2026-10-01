@@ -85,6 +85,25 @@ final class OpenApiSpec
                             'violations' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/Violation']],
                         ],
                     ],
+                    'HistoryEntry' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'id'       => ['type' => 'integer', 'description' => 'Version id (use with restore)'],
+                            'saved_at' => ['type' => 'string',  'description' => 'UTC time the snapshot was taken'],
+                            'tool'     => ['type' => 'string',  'description' => 'Which action replaced this version'],
+                            'actor'    => ['type' => 'integer', 'description' => 'WordPress user id'],
+                            'bytes'    => ['type' => 'integer'],
+                            'label'    => ['type' => 'string'],
+                        ],
+                    ],
+                    'SnapshotInfo' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'stored'     => ['type' => 'boolean', 'description' => 'True if the previous content was saved as an undo version'],
+                            'version_id' => ['type' => 'integer', 'description' => 'Version id to pass to restorePageVersion (when stored)'],
+                            'reason'     => ['type' => 'string',  'description' => 'Why nothing was stored: duplicate, too_large, invalid_encoding or store_failed (absent or null when stored)'],
+                        ],
+                    ],
                 ],
             ],
             'paths' => [
@@ -159,7 +178,15 @@ final class OpenApiSpec
                         'parameters'  => [self::idParam()],
                         'requestBody' => self::postContentBody(),
                         'responses'   => [
-                            '200' => ['description' => 'Layout saved'],
+                            '200' => ['description' => 'Layout saved; history reports the undo snapshot', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'saved'      => ['type' => 'boolean'],
+                                    'valid'      => ['type' => 'boolean'],
+                                    'history'    => ['$ref' => '#/components/schemas/SnapshotInfo'],
+                                ],
+                                'additionalProperties' => true,
+                            ]]]],
                             '400' => ['description' => 'Missing post_content'],
                             '404' => ['description' => 'Page not found'],
                             '422' => ['description' => 'Validation failed', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/ValidationResult']]]],
@@ -185,10 +212,85 @@ final class OpenApiSpec
                             ]]],
                         ],
                         'responses'   => [
-                            '200' => ['description' => 'Edit saved'],
+                            '200' => ['description' => 'Edit saved; history reports the undo snapshot', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'saved'      => ['type' => 'boolean'],
+                                    'replaced'   => ['type' => 'integer'],
+                                    'history'    => ['$ref' => '#/components/schemas/SnapshotInfo'],
+                                ],
+                                'additionalProperties' => true,
+                            ]]]],
                             '400' => ['description' => 'Missing find or replace'],
                             '404' => ['description' => 'Page not found'],
                             '422' => ['description' => 'Find not found, ambiguous, or edit would invalidate — page unchanged', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/ValidationResult']]]],
+                        ],
+                    ],
+                ],
+                '/pages/{id}/history' => [
+                    'get' => [
+                        'operationId' => 'listPageHistory',
+                        'summary'     => 'List a page\'s saved previous versions',
+                        'description' => 'Every AI save snapshots the page\'s prior content. Returns the saved versions newest first (id, time, tool, size) so an edit can be undone with restorePageVersion.',
+                        'parameters'  => [self::idParam()],
+                        'responses'   => [
+                            '200' => ['description' => 'Versions', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'page_id'  => ['type' => 'integer'],
+                                    'count'    => ['type' => 'integer'],
+                                    'versions' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/HistoryEntry']],
+                                ],
+                            ]]]],
+                            '404' => ['description' => 'Page not found'],
+                        ],
+                    ],
+                ],
+                '/pages/{id}/history/{versionId}' => [
+                    'get' => [
+                        'operationId' => 'getPageHistoryEntry',
+                        'summary'     => 'Get one saved version\'s content',
+                        'description' => 'Returns the full saved content of one previous version (from listPageHistory), e.g. to compare it with the current layout before restoring.',
+                        'parameters'  => [self::idParam(), self::versionParam()],
+                        'responses'   => [
+                            '200' => ['description' => 'Version content', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'page_id'      => ['type' => 'integer'],
+                                    'version'      => ['$ref' => '#/components/schemas/HistoryEntry'],
+                                    'post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML'],
+                                ],
+                            ]]]],
+                            '404' => ['description' => 'Page or version not found'],
+                        ],
+                    ],
+                ],
+                '/pages/{id}/restore' => [
+                    'post' => [
+                        'operationId' => 'restorePageVersion',
+                        'summary'     => 'Undo: restore a saved version',
+                        'description' => 'Restores a page to a previous saved version. The current content is snapshotted first, so a restore can itself be undone. Not blocked by validation (it is the owner\'s own earlier content); the response reports whether it passes the validator.',
+                        'parameters'  => [self::idParam()],
+                        'requestBody' => [
+                            'required' => true,
+                            'content'  => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'required'   => ['version_id'],
+                                'properties' => ['version_id' => ['type' => 'integer', 'description' => 'Version id from listPageHistory']],
+                            ]]],
+                        ],
+                        'responses'   => [
+                            '200' => ['description' => 'Restored', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'restored'         => ['type' => 'boolean'],
+                                    'restored_version' => ['type' => 'integer'],
+                                    'history'          => ['$ref' => '#/components/schemas/SnapshotInfo'],
+                                    'validator'        => ['$ref' => '#/components/schemas/ValidationResult'],
+                                ],
+                            ]]]],
+                            '400' => ['description' => 'Missing version_id'],
+                            '404' => ['description' => 'Page or version not found'],
                         ],
                     ],
                 ],
@@ -284,6 +386,11 @@ final class OpenApiSpec
     private static function idParam(): array
     {
         return ['name' => 'id', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'integer', 'description' => 'WordPress page ID']];
+    }
+
+    private static function versionParam(): array
+    {
+        return ['name' => 'versionId', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'integer', 'description' => 'Version id from listPageHistory']];
     }
 
     private static function postContentBody(): array
