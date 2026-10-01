@@ -309,8 +309,7 @@ final class AdminPage
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only nav.
         $tab = sanitize_key( $_GET['tab'] ?? 'dashboard' );
         // Extension point: add-ons may contribute extra tabs (slug => label).
-        $extra = (array) apply_filters( 'jhmg_aied_admin_tabs', [] );
-        $extra = array_diff_key( $extra, array_flip( [ 'dashboard', 'features', 'settings' ] ) );
+        $extra = ExtensionGuard::tabs( apply_filters( 'jhmg_aied_admin_tabs', [] ), [ 'dashboard', 'features', 'settings' ] );
         if (!in_array($tab, array_merge(['dashboard', 'features', 'settings'], array_map('strval', array_keys($extra))), true)) {
             $tab = 'dashboard';
         }
@@ -323,7 +322,7 @@ final class AdminPage
             'settings'  => __( 'Settings', 'jhmg-ai-editor-for-divi-5' ),
         ];
         foreach ( $extra as $xslug => $xlabel ) {
-            $tabs[ (string) $xslug ] = (string) $xlabel;
+            $tabs[ $xslug ] = $xlabel;
         }
         ?>
         <div class="wrap aied">
@@ -340,7 +339,7 @@ final class AdminPage
             <nav class="aied-nav">
                 <?php foreach ( $tabs as $slug => $tlabel ) :
                     $url = add_query_arg(['page' => self::SLUG, 'tab' => $slug], admin_url('admin.php')); ?>
-                    <a href="<?php echo esc_url( $url ); ?>" class="aied-nav__item <?php echo $tab === $slug ? 'is-active' : ''; ?>">
+                    <a href="<?php echo esc_url( $url ); ?>" class="aied-nav__item <?php echo $tab === (string) $slug ? 'is-active' : ''; ?>">
                         <?php echo esc_html( $tlabel ); ?>
                     </a>
                 <?php endforeach; ?>

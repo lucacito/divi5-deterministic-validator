@@ -214,7 +214,7 @@ final class McpHandler
         ];
 
         // Extension point: add-ons may append tool definitions. With no listener this is a no-op.
-        $tools = apply_filters( 'jhmg_aied_mcp_tools', $tools );
+        $tools = ExtensionGuard::tools( $tools, apply_filters( 'jhmg_aied_mcp_tools', $tools ) );
 
         return $this->rpcResult($id, ['tools' => $tools]);
     }

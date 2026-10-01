@@ -6,6 +6,8 @@ namespace AiEditorDivi5\WP;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+require_once __DIR__ . '/ExtensionGuard.php';
+
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -364,8 +366,9 @@ final class OpenApiSpec
         ];
 
         // Extension points: add-ons may append paths and component schemas.
-        $spec['paths']                 = apply_filters( 'jhmg_aied_openapi_paths', $spec['paths'], $base );
-        $spec['components']['schemas'] = apply_filters( 'jhmg_aied_openapi_schemas', $spec['components']['schemas'] );
+        // Built-in paths/schemas always win; a bad filter return value is ignored.
+        $spec['paths']                 = ExtensionGuard::map( $spec['paths'], apply_filters( 'jhmg_aied_openapi_paths', $spec['paths'], $base ) );
+        $spec['components']['schemas'] = ExtensionGuard::map( $spec['components']['schemas'], apply_filters( 'jhmg_aied_openapi_schemas', $spec['components']['schemas'] ) );
 
         return $spec;
     }
