@@ -54,7 +54,7 @@ class WpOrgNamingTest extends TestCase
                 continue;
             }
             $src = (string) file_get_contents($file);
-            // define('AI_EDITOR_DIVI5_PRODUCT', 'ai-editor-divi5-pro') is a licence-server product id, not an i18n call.
+            // define(...) lines are constants, not i18n calls; skip them so their string arguments are not mistaken for a text domain.
             $src = (string) preg_replace('/^\s*define\(.*$/m', '', $src);
             // The text domain is the LAST string argument of an i18n call: ..., 'domain' )
             if (preg_match_all("/,\s*'([a-z0-9-]*editor[a-z0-9-]*)'\s*\)/", $src, $m)) {

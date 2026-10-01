@@ -6,6 +6,9 @@ namespace AiEditorDivi5\WP;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+// The extension guard is also loaded by autoload.php; requiring it here keeps this file safe on its own.
+require_once __DIR__ . '/ExtensionGuard.php';
+
 /**
  * Top-level admin experience — a guided, outcome-focused "SaaS" app:
  * Dashboard · Features · Settings (one menu item, internal views).
@@ -29,7 +32,7 @@ final class AdminPage
     public function addMenu(): void
     {
         add_menu_page(
-            __( 'AI Editor for Divi 5', 'jhmg-ai-editor-for-divi-5' ),
+            __( 'JHMG AI Editor for Divi 5', 'jhmg-ai-editor-for-divi-5' ),
             __( 'AI Editor', 'jhmg-ai-editor-for-divi-5' ),
             'manage_options',
             self::SLUG,
@@ -339,7 +342,7 @@ final class AdminPage
                 <div class="aied-topbar__brand">
                     <span class="aied-logo">&#10086;</span>
                     <div>
-                        <strong><?php esc_html_e( 'AI Editor for Divi 5', 'jhmg-ai-editor-for-divi-5' ); ?></strong>
+                        <strong><?php esc_html_e( 'JHMG AI Editor for Divi 5', 'jhmg-ai-editor-for-divi-5' ); ?></strong>
                         <span class="aied-topbar__ver">v<?php echo esc_html( AI_EDITOR_DIVI5_VERSION ); ?></span>
                     </div>
                 </div>
@@ -504,7 +507,7 @@ final class AdminPage
             <div class="aied-stats">
                 <div class="aied-stat"><span class="aied-stat__n"><?php echo esc_html( $summary['total'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'AI edits processed', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
                 <div class="aied-stat"><span class="aied-stat__n aied-pos"><?php echo esc_html( $summary['valid'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'Changes saved', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
-                <div class="aied-stat"><span class="aied-stat__n aied-warn"><?php echo esc_html( $summary['invalid'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'Invalid layouts stopped', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
+                <div class="aied-stat"><span class="aied-stat__n aied-warn"><?php echo esc_html( $summary['invalid'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'Invalid layouts rejected', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
                 <div class="aied-stat"><span class="aied-stat__n"><?php echo esc_html( $summary['today'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'Today', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
             </div>
         <?php else : ?>
@@ -533,7 +536,7 @@ final class AdminPage
             </div>
             <p class="aied-muted"><?php esc_html_e( 'JHMG AI Editor for Divi 5 includes a built-in image pack and reads your Media Library. The separate Pro add-on adds live photo sourcing for each section, plus site tools like front page and menu setup.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
             <div class="aied-procard__actions">
-                <a class="button" href="<?php echo esc_url( self::PRO_URL ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Learn about the Pro add-on', 'jhmg-ai-editor-for-divi-5' ); ?></a>
+                <a class="button" href="<?php echo esc_url( self::PRO_URL ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Learn about the Pro add-on', 'jhmg-ai-editor-for-divi-5' ); ?><span class="screen-reader-text"> <?php esc_html_e( '(opens in a new tab)', 'jhmg-ai-editor-for-divi-5' ); ?></span></a>
                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                     <input type="hidden" name="action" value="ai_editor_divi5_dismiss_pro_card">
                     <?php wp_nonce_field( 'ai_editor_divi5_dismiss_pro_card' ); ?>
@@ -550,20 +553,20 @@ final class AdminPage
 
     private function viewFeatures(): void
     {
-        // [title, description, tools it covers] — the 14 tools your AI assistant can call.
+        // [title, description, tools it covers] — the 15 tools your AI assistant can call.
         $features = [
             [ __( 'Edit pages in plain English', 'jhmg-ai-editor-for-divi-5' ), __( 'Tell your AI what to change and it updates the live Divi 5 layout — no builder, no copy-paste.', 'jhmg-ai-editor-for-divi-5' ), 'update_page_layout, edit_page_content' ],
-            [ __( 'Validated, safe saves', 'jhmg-ai-editor-for-divi-5' ), __( 'Every change is checked against 56+ Divi 5 module types before saving, so broken layouts never reach your site.', 'jhmg-ai-editor-for-divi-5' ), 'validate_layout' ],
+            [ __( 'Validated, safe saves', 'jhmg-ai-editor-for-divi-5' ), __( 'Every change is checked against fixed rules for more than 80 Divi 5 block types before saving. A broken layout is refused with the exact reason, so it is never saved.', 'jhmg-ai-editor-for-divi-5' ), 'validate_layout' ],
             [ __( 'Read & understand any page', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can list and read existing pages to make precise, context-aware edits.', 'jhmg-ai-editor-for-divi-5' ), 'list_divi_pages, get_page_layout' ],
             [ __( 'Undo AI edits', 'jhmg-ai-editor-for-divi-5' ), __( 'Every AI save keeps the previous version, so you or your AI can browse the history and restore an earlier one.', 'jhmg-ai-editor-for-divi-5' ), 'list_page_history, get_page_history_entry, restore_page_version' ],
             [ __( 'Create new pages (as drafts)', 'jhmg-ai-editor-for-divi-5' ), __( 'Generate brand-new pages from a prompt — always saved as a draft, validated, ready for you to review and publish.', 'jhmg-ai-editor-for-divi-5' ), 'create_page' ],
             [ __( 'Build entire websites', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in blueprint helps your AI plan a cohesive multi-page site (home, about, services, contact) with shared styling, then tells you which page to set as the front page and which to add to the menu.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_guide' ],
             [ __( 'Conversion-focused page generation', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in landing-page blueprint, design vocabulary and proven section patterns guide the AI to produce polished, on-brand pages with a strategic structure built to convert.', 'jhmg-ai-editor-for-divi-5' ), 'get_landing_guide, get_style_guide, get_section_recipes' ],
-            [ __( 'Relevant images', 'jhmg-ai-editor-for-divi-5' ), __( 'An image guide teaches your AI to pick the right visual for each section, so pages do not ship with empty image slots.', 'jhmg-ai-editor-for-divi-5' ), 'get_image_guide' ],
+            [ __( 'Relevant images', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI looks in your Media Library first (read-only) and otherwise uses the built-in image pack, so pages do not ship with empty image slots. Nothing is downloaded from other sites.', 'jhmg-ai-editor-for-divi-5' ), 'list_media_images, get_image_guide' ],
         ];
         ?>
         <div class="aied-hello"><h1><?php esc_html_e( 'Features', 'jhmg-ai-editor-for-divi-5' ); ?></h1>
-            <p><?php esc_html_e( 'Everything your AI assistant can do with your Divi 5 site.', 'jhmg-ai-editor-for-divi-5' ); ?></p></div>
+            <p><?php esc_html_e( 'Everything JHMG AI Editor for Divi 5 lets your AI assistant do on your Divi 5 site.', 'jhmg-ai-editor-for-divi-5' ); ?></p></div>
 
         <h3 class="aied-section-title"><?php esc_html_e( 'Included', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
         <div class="aied-grid aied-grid--2">

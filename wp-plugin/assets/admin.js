@@ -1,4 +1,4 @@
-/* AI Editor for Divi 5 — Admin JS */
+/* JHMG AI Editor for Divi 5 — Admin JS */
 (function () {
     'use strict';
 

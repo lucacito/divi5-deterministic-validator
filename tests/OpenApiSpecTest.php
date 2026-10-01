@@ -64,5 +64,21 @@ class OpenApiSpecTest extends TestCase
         $spec = $this->spec();
         $this->assertSame('9.9.9', $spec['info']['version']);
         $this->assertSame('https://acme.example/wp-json/ai-editor-divi5/v1', $spec['servers'][0]['url']);
+        $this->assertSame('JHMG AI Editor for Divi 5', $spec['info']['title']);
+    }
+
+    public function testMediaPagingParamsDeclareTheSameBoundsAsTheRestRoute(): void
+    {
+        $params = [];
+        foreach ($this->spec()['paths']['/media']['get']['parameters'] as $p) {
+            $params[$p['name']] = $p['schema'];
+        }
+        $this->assertSame([1, 50], [$params['per_page']['minimum'], $params['per_page']['maximum']]);
+        $this->assertSame([1, 200], [$params['page']['minimum'], $params['page']['maximum']]);
+
+        // Lockstep with RestController's args for GET /media.
+        $rest = (string) file_get_contents(__DIR__ . '/../wp-plugin/src/RestController.php');
+        $this->assertStringContainsString("'per_page'    => ['type' => 'integer', 'minimum' => 1, 'maximum' => 50,", $rest);
+        $this->assertStringContainsString("'page'        => ['type' => 'integer', 'minimum' => 1, 'maximum' => 200,", $rest);
     }
 }

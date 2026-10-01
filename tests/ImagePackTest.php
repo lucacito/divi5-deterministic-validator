@@ -101,12 +101,20 @@ class ImagePackTest extends TestCase
     {
         $tmp = sys_get_temp_dir() . '/aied-pack-' . bin2hex(random_bytes(4));
         mkdir($tmp);
-        exec('php ' . escapeshellarg(dirname(__DIR__) . '/scripts/generate-image-pack.php') . ' ' . escapeshellarg($tmp) . ' 2>&1', $out, $rc);
-        $this->assertSame(0, $rc, implode("\n", $out));
-        foreach (glob(self::DIR . '/*') ?: [] as $f) {
-            $this->assertFileEquals($f, $tmp . '/' . basename($f), basename($f) . ' differs from a fresh generator run');
+        try {
+            exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(dirname(__DIR__) . '/scripts/generate-image-pack.php') . ' ' . escapeshellarg($tmp) . ' 2>&1', $out, $rc);
+            $this->assertSame(0, $rc, implode("\n", $out));
+            $shipped   = array_values(array_diff(scandir(self::DIR) ?: [], ['.', '..']));
+            $generated = array_values(array_diff(scandir($tmp) ?: [], ['.', '..']));
+            $this->assertSame($shipped, $generated, 'the generator must write exactly the shipped files, no more and no fewer');
+            foreach ($shipped as $name) {
+                $this->assertFileEquals(self::DIR . '/' . $name, $tmp . '/' . $name, $name . ' differs from a fresh generator run');
+            }
+        } finally {
+            foreach (array_diff(scandir($tmp) ?: [], ['.', '..']) as $name) {
+                unlink($tmp . '/' . $name);
+            }
+            rmdir($tmp);
         }
-        array_map('unlink', glob($tmp . '/*') ?: []);
-        rmdir($tmp);
     }
 }

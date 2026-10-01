@@ -6,7 +6,10 @@ This folder holds the source that was removed from the WordPress.org plugin
 - **Not shipped** — it is never part of `jhmg-ai-editor-for-divi-5.zip`.
 - **Not built** — nothing here is loaded, autoloaded or activated.
 - **Not in PHPUnit** — `phpunit.xml` only scans `tests/`; the tests in `pro-addon/tests/`
-  are kept for reference and are not run.
+  are kept for reference and are not run. Their `require_once` paths point at
+  `pro-addon/src/`, but they still expect the free plugin's old namespace, constants and
+  WordPress shims from the main `tests/bootstrap.php`; they must be re-wired (own
+  bootstrap, own `phpunit.xml`) when the add-on is built.
 
 ## What is in here
 

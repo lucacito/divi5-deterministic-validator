@@ -1,0 +1,3 @@
+# Keep generated assets byte-identical across platforms (the image pack test compares bytes).
+wp-plugin/assets/images/* text eol=lf
+*.svg text eol=lf

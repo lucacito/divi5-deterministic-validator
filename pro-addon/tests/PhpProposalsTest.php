@@ -7,7 +7,7 @@ namespace Divi5Validator\Tests;
 use AiEditorDivi5\WP\PhpProposals;
 use PHPUnit\Framework\TestCase;
 
-require_once __DIR__ . '/../wp-plugin/src/PhpProposals.php';
+require_once __DIR__ . '/../src/PhpProposals.php';
 
 /**
  * Code proposals are stored inert for human review. This guards the store/list/

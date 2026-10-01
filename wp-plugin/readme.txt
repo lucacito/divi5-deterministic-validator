@@ -1,6 +1,6 @@
 === JHMG AI Editor for Divi 5 ===
 Contributors:      lucaslopvet
-Tags:              divi, divi 5, ai, editor, page builder
+Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
 Stable tag:        4.0.0
@@ -8,267 +8,191 @@ Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Edit your Divi 5 pages with plain-English instructions from any AI assistant — changes are validated before they land.
+Edit and build Divi 5 pages in plain English with the AI assistant you already use. Every change is checked before it is saved.
 
 == Description ==
 
-AI Editor for Divi 5 connects your WordPress site to AI assistants (Claude, Cursor, VS Code Copilot, ChatGPT) via the Model Context Protocol (MCP) and a standard REST API. You describe what you want in plain English; the AI edits the Divi 5 layout and the plugin's built-in validator checks the result before anything touches the database.
+Tell your AI assistant what you want changed on your Divi 5 website, in your own words, and it makes the change for you. A built-in checker makes sure a broken page is never saved.
 
-**How it works**
+= How it works (in plain words) =
 
-1. You connect your AI assistant once using the API key shown in Settings.
-2. You type a plain-English instruction: *"Change the hero heading on Home to 'Welcome back'"*.
-3. The AI fetches the live page layout, applies your change, and submits it back.
-4. The validator checks every Divi 5 block type, required attribute, and nesting rule deterministically — no AI involved.
-5. Valid layouts are saved instantly. Invalid layouts return exact violation messages so the AI self-corrects and retries.
+1. Connect your own AI assistant (Claude, ChatGPT, Cursor or Copilot) to your site with one key. It is copy and paste, and takes about two minutes.
+2. Tell it what you want in plain English, for example "change the phone number on the Contact page" or "build me a landing page for my dental clinic".
+3. The plugin's built-in guides and proven section patterns steer the AI, so it builds real, good-looking Divi 5 pages instead of guessing. It uses your own Media Library images when it can.
+4. Before anything is saved, a built-in checker tests the page against fixed rules. If something is wrong, the change is refused with the exact reason and the AI fixes it. If it is fine, it is saved, and the previous version is kept so you can undo.
 
-**What your AI gets**
+= What makes it smart =
 
-* `list_divi_pages` — list all pages built with Divi 5
-* `get_page_layout` — read the current layout of any page
-* `validate_layout` — dry-run a change without saving
-* `update_page_layout` — validate then save (the live edit tool)
-* `get_style_guide` — real Divi 5 structure + styling vocabulary so the AI builds styled, not plain, layouts
-* `get_site_guide` — blueprint for planning and building an entire multi-page site from one brief
-* `get_landing_guide` — a conversion-focused blueprint (persuasion flow, copywriting rules, CTA strategy) so generated landing pages are strategically structured, not just pretty
-* `get_image_guide` — role-based image assignment: your Media Library first, then a built-in pack of original, locally bundled images, so pages look like finished demos, not empty templates
-* `get_section_recipes` — a library of complete, validated section patterns (hero, feature grid, split, slider, CTA, footer) the AI assembles pages from, each mapped to its persuasion stage
-* `list_page_history`, `get_page_history_entry`, `restore_page_version` — undo AI edits: list the saved previous versions of a page and restore one when a snapshot was kept (free)
-* `create_page` (Pro) — build a brand-new page from scratch
-* `set_front_page` (Pro) — set a page as the site's homepage
-* `set_primary_menu` (Pro) — build and assign the theme's primary navigation menu
-* `set_custom_css` (Pro) — add safe site-wide custom CSS for effects plain attributes can't express (backdrop-filter, keyframe animations, pseudo-elements)
-* `propose_php_snippet` (Pro) — draft a PHP snippet as a reviewed proposal for a human to apply; nothing is ever auto-executed
+* **The checker is not AI.** It follows fixed rules: same page in, same verdict out. The AI can be creative, but it can never save a broken page.
+* **It knows Divi 5 well.** The checker knows more than 80 Divi 5 block types (modules, sections, rows and columns) and which ones are allowed inside which.
+* **Rules come from real Divi 5 pages.** Every rule was taken from pages exported from real Divi 5 sites, not from guesses.
+* **Small changes stay small.** Changing one phone number replaces just that text. The rest of the page is not rebuilt or touched.
+* **Proven building blocks.** 17 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
+* **Sensible images.** The AI looks in your Media Library first. When nothing there fits, it uses a built-in pack of 44 original images that ships with the plugin.
+* **One-click undo.** The previous version of each page the AI changes is kept (up to the last 10). Restore it from the plugin's Dashboard with one click, or just ask your AI to undo.
+* **Works with the AI assistant you already use.** Claude, ChatGPT, Cursor, VS Code Copilot, or any assistant that supports MCP.
+* **Nothing leaves your site through the plugin.** It uses no third-party services. Your AI assistant talks directly to your own site.
 
-**Free vs. Pro**
+= Examples to try =
 
-The free tier is fully functional for editing existing Divi 5 pages: list pages, read layouts, validate, save changes, and pull every guide (style, landing, image, site) and the section recipe library.
+* "Change the phone number on the Contact page to 555-0142."
+* "Make the main heading on the Home page say 'Fresh bread every morning'."
+* "Build me a landing page for my dental clinic, with a booking button and three patient reviews."
+* "Add a section with our opening hours under the hero on the About page."
+* "Undo the last change you made to the Services page."
 
-Pro unlocks whole-site building: create new pages, set the front page, build the primary menu, add site-wide custom CSS, and propose PHP snippets. Pro is an annual license — $30/year, unlimited sites — available at [https://divi5lab.com/plugins/divi-5-ai-editor](https://divi5lab.com/plugins/divi-5-ai-editor). If a license lapses, Pro features already activated on that site keep working — you just stop receiving support until you renew. Plugin updates themselves are delivered through WordPress.org.
+= What your AI assistant can do (15 tools) =
 
-**Compatible AI assistants**
+Read and check:
 
-* Claude Desktop (MCP)
-* Cursor / Windsurf (MCP)
-* VS Code + GitHub Copilot (MCP)
-* ChatGPT Custom GPT (OpenAPI actions)
-* Any HTTP client via the REST API
+* `list_divi_pages`: list the pages built with Divi 5.
+* `get_page_layout`: read a page's current layout.
+* `validate_layout`: check a layout without saving anything.
 
-**Privacy**
+Edit and create:
 
-The plugin stores a single API key and an optional usage log in your WordPress database. To make undo possible, the plugin keeps up to the last 10 previous versions of each page the AI edits through the plugin (fewer for very large pages; a per-page budget of about 768 KB keeps the saved history small) in your WordPress database (post meta); nothing is sent anywhere, and the history is removed when you delete the plugin. All AI communication goes directly between your AI assistant and your WordPress site — it never passes through our servers. Nothing is sent anywhere unless you enter a Pro license key. See "External services" below.
+* `edit_page_content`: change one piece of text (an email, phone number, price or sentence) without rebuilding the page.
+* `update_page_layout`: save a new layout for a page, after the checker approves it.
+* `create_page`: create a new page. It is always saved as a draft for you to review and publish.
+
+Undo:
+
+* `list_page_history`, `get_page_history_entry`, `restore_page_version`: see the saved earlier versions of a page and bring one back.
+
+Guides that help the AI build good pages:
+
+* `get_style_guide`: how to build styled Divi 5 layouts, using real Divi 5 settings.
+* `get_landing_guide`: how to build a landing page that turns visitors into customers.
+* `get_site_guide`: how to plan a site with several pages that link to each other.
+* `get_section_recipes`: the 17 ready-made section patterns.
+* `get_image_guide`: how to pick the right image for each section, including the built-in image pack.
+
+Images:
+
+* `list_media_images`: look through the images already in your Media Library (read-only; nothing is uploaded, changed or deleted).
+
+= Images =
+
+The plugin includes a pack of 44 original images (hero backgrounds, card and section images, people placeholders and logo placeholders) made for this plugin and bundled inside it. Your AI uses your own Media Library images first and the built-in pack when nothing fits. Nothing is downloaded from other websites.
+
+= Pro add-on =
+
+A separate Pro add-on (sold separately at https://divi5lab.com/plugins/divi-5-ai-editor) adds live stock-photo sourcing and site-level tools.
+
+= Compatible AI assistants =
+
+* Claude (Desktop and Claude Code), through MCP
+* Cursor and Windsurf, through MCP
+* VS Code with GitHub Copilot, through MCP
+* ChatGPT, through a custom GPT Action (OpenAPI)
+* Any other MCP client, or any HTTP client through the REST API
+
+Works with Divi 5. Not affiliated with, endorsed by, or sponsored by Elegant Themes. Divi is a trademark of Elegant Themes; this is an independent plugin and is not affiliated with Elegant Themes.
+
+= Privacy =
+
+The plugin stores these things in your own WordPress database:
+
+* The API key (and which user it belongs to).
+* An activity log of AI actions: the action, the page, the result, the assistant's name and a hashed IP address. You can clear it from the Settings screen.
+* Page history for undo: up to the last 10 previous versions of each page the AI changes (fewer for very large pages, about 768 KB per page at most).
+
+Nothing is sent anywhere by the plugin. All of this is removed when you delete the plugin.
 
 == External services ==
 
-This plugin connects to one external service, and only if you enter a Pro license key: the **divi5lab.com licensing API** (https://divi5lab.com), operated by the plugin author.
-
-* **What it is used for:** activating, validating and deactivating your Pro license.
-* **What is sent:** your license key, your site's URL, the plugin's product slug, and the plugin and WordPress version numbers. This happens when you activate or deactivate a key and periodically to re-validate it. Nothing about your pages, content, API key or AI conversations is sent.
-* **When:** only after a license key has been entered. Free-tier use never contacts divi5lab.com.
-* License terms, refunds and privacy policy: https://divi5lab.com/license (privacy: https://divi5lab.com/license#privacy)
-
-Your AI assistant talks directly to your own WordPress site; that traffic never passes through divi5lab.com.
+This plugin does not connect to any external service. Your AI assistant connects to your own site using the API key you generate; no data passes through the plugin author's servers.
 
 == Installation ==
 
-1. Upload the `ai-editor-divi5` folder to `/wp-content/plugins/`.
-2. Activate the plugin through the **Plugins** screen.
-3. Go to the **AI Editor** menu in wp-admin.
-4. Copy the API key and follow the step-by-step instructions for your AI assistant.
+1. In your WordPress admin, go to Plugins → Add New, search for "JHMG AI Editor for Divi 5", then install and activate it. (Or upload the `jhmg-ai-editor-for-divi-5` folder to `/wp-content/plugins/` and activate it on the Plugins screen.)
+2. Open the **AI Editor** menu in your WordPress admin.
+3. Go to **Settings**, choose your AI assistant and copy the ready-made setup into it.
+4. Ask your assistant to list your Divi 5 pages to check that it is connected.
 
-**Requirements**
+= Requirements =
 
 * WordPress 6.0 or later
 * PHP 8.1 or later
-* Divi 5 (not Divi 4 / classic shortcode mode)
-* Pretty permalinks enabled (Settings → Permalinks — any option except Plain)
+* The Divi 5 theme (Divi 4 and its shortcode format are not supported)
+* Pretty permalinks (Settings → Permalinks, any option except "Plain")
+* For ChatGPT: your site must be reachable over public HTTPS
 
 == Frequently Asked Questions ==
 
-= Does this work with Divi 4? =
+= Does the AI get administrator access to my site? =
 
-No. Divi 4 uses PHP shortcodes. This plugin is built specifically for the Divi 5 JSON block format introduced in late 2024.
+No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every page read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions. The tools can only list, read, check, edit, create (as a draft) and undo page content, and read Media Library images (read-only). They cannot install plugins, change users, settings, menus or the front page, or run code.
 
-= Is the API key secure? =
+= Where do images come from? =
 
-Yes. The key is a 32-byte random hex string stored in `wp_options`. It is never exposed in page source or JavaScript. All requests require the key as a Bearer token over HTTPS. You can regenerate it at any time from the Settings page.
+From your own Media Library first. When nothing there fits, the AI uses the built-in image pack that ships inside the plugin. Nothing is downloaded from third-party websites.
+
+= Is my data sent anywhere? =
+
+No. The plugin does not send your data anywhere and uses no third-party services. Your AI assistant connects directly to your site with your key. The page content your assistant reads is handled by the AI service you chose (for example Anthropic or OpenAI), under that service's own terms.
 
 = Can the AI break my pages? =
 
-The validator runs before every save. If the AI produces an invalid layout it is rejected and the AI receives the exact list of violations so it can self-correct. Your live page is never modified by an invalid layout.
+The AI can make mistakes, but it cannot save a broken page. The checker runs before every save. If a layout breaks a rule, it is refused, nothing is saved, and the AI gets the exact reason so it can fix it. If you do not like a change that was saved, restore the previous version from the Dashboard.
 
-= Does this work with staging or multisite? =
+= Is the API key safe? =
 
-The plugin works on any standard WordPress install, including staging environments. Multisite is not officially supported in this version.
+The key is a long random code stored in your WordPress database and shown only to administrators on the plugin's Settings screen. Keep it private, like a password. You can make a new one at any time with the Regenerate button, which stops the old one from working.
 
-= What AI assistants are supported? =
+= Does this work with Divi 4? =
 
-Any assistant that supports MCP Streamable HTTP (Claude Desktop, Cursor, Windsurf, VS Code Copilot) or OpenAPI REST actions (ChatGPT Custom GPTs). The REST API is also directly accessible from scripts, Zapier, Make, or any HTTP client.
+No. Divi 4 stores pages as shortcodes. This plugin is made for the Divi 5 page format.
+
+= Does it work on staging sites or multisite? =
+
+It works on any standard WordPress site, including staging sites. Multisite is not officially supported yet.
 
 = Will this slow down my site? =
 
-No. The plugin registers REST routes and an admin page but adds no front-end scripts or database queries to page loads.
+No. The plugin adds no scripts or styles to your public pages. It only adds its admin screen and the connection endpoints your AI assistant uses.
 
 == Screenshots ==
 
-1. The dashboard — connection status, setup progress and your results at a glance.
-2. Connect your AI assistant — one API key and copy-paste setup for Claude, Cursor, VS Code, ChatGPT or any MCP client.
-3. Features — what's free, and what Pro adds.
+1. The Dashboard: your setup progress, your results and recent AI edits you can undo.
+2. Settings: one API key and a copy-and-paste setup for Claude, Cursor, VS Code, ChatGPT or any MCP client.
+3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
 
+= 4.0.0 =
+* Renamed to JHMG AI Editor for Divi 5 (plugin folder and slug: `jhmg-ai-editor-for-divi-5`).
+* `create_page` is part of this plugin: create new pages, always saved as drafts.
+* New: `list_media_images` lets your AI reuse the images already in your Media Library (read-only).
+* New: a built-in pack of 44 original images. Section patterns and guides now use it, so no images are loaded from other websites.
+* Undo history (`list_page_history`, `get_page_history_entry`, `restore_page_version`) is part of this plugin.
+* Removed the front page, menu, custom CSS and PHP proposal tools and all licensing code from this plugin. Site-level tools are offered in a separate add-on.
+* The plugin makes no calls to external services and loads no remote files.
+* Dashboard: one card about the separate Pro add-on, which you can dismiss.
+
 = 3.5.0 =
-* New: **Undo for AI edits.** When your AI saves a page through the plugin (update_page_layout or edit_page_content, or the REST API equivalents), the plugin keeps the previous version whenever it can (up to the last 10 per page, fewer for very large pages; a per-page budget of about 768 KB keeps the saved history small), and the result's history.stored says whether it did. Ask your AI to "undo that" — it can list the saved versions and restore one when a snapshot was kept (free, in MCP, the REST API and the ChatGPT action) — or restore the most recent previous version from the new "Recent AI edits" panel on the plugin's Dashboard. A restore is itself undoable when its own history.stored is true.
-* Edits you make yourself in the Divi builder are not snapshotted on their own; they become the "previous version" the next AI edit keeps. create_page has no previous state, so there is nothing to undo there.
-* Restoring brings back your own earlier content and is not blocked by validation; the result tells you whether that content passes the validator.
-* Pages larger than 512 KB are still saved normally but no snapshot is kept for that edit (the result says so).
+* Undo for AI edits: the previous version of a page is kept when the AI saves it, and can be restored by the AI or from the Dashboard.
 
 = 3.4.0 =
-* New: your AI can now edit pages that use 24 more Divi 5 modules, plus their child items such as map pins and slides, verified through their parent modules (for example Portfolio, Post Slider, Video Slider, Lottie, SVG, Link, Tooltip, Dropdown, Charts, Table of Contents, Comments and the Fullwidth modules) — every one verified to render on Divi 5.14.
-* New: a notice on the plugin's admin screen when your Divi is newer than the newest version this plugin was verified on.
-* Modules that could not be verified yet (WooCommerce template modules and modules that need a third-party plugin) are still rejected rather than guessed.
+* Support for 24 more Divi 5 modules, each verified to render on Divi 5.14.
+* A notice when your Divi is newer than the newest version this plugin was verified on.
 
 = 3.3.0 =
-* Prepared for the WordPress.org directory: plugin updates now come from WordPress.org; the readme documents the one external service (Pro license checks).
-* Removed all self-update code from the license client (WordPress.org hosts updates). Licence activation and Pro gating are unchanged.
-* Verified on WordPress 7.1 and Divi 5.14.0.
+* Prepared for the WordPress.org directory. Verified on WordPress 7.1 and Divi 5.14.
 
 = 3.2.0 =
-* New: **surgical page edits** — ask your AI to change one thing (an email address, phone number, link, price, or line of copy) and it updates just that text without rebuilding the whole page. Available in both MCP (edit_page_content) and the ChatGPT/OpenAPI action (POST /pages/{id}/edit). The edit is an exact find-and-replace, re-validated before saving; if the text is not found or matches more than one place, the edit is refused so nothing unrelated changes (pass expect_count to replace several deliberately).
-* Fixed: listing Divi 5 pages could fail in ChatGPT with "something went wrong" when the connected API key's owner lacked page-edit permissions — page links are now always returned as text, so the response always matches the spec.
-
-= 3.1.1 =
-* ChatGPT: the OpenAPI spec now imports cleanly as a Custom GPT Action — operation descriptions fit ChatGPT's length limit and every response declares its shape (no more "object schema missing properties" warnings).
-* Connect screen: the ChatGPT tab now shows the full OpenAPI spec URL as copyable text (with a Copy button) instead of a linked word, so it's clear what to paste.
+* Surgical edits: change one piece of text without rebuilding the page (`edit_page_content`).
 
 = 3.1.0 =
-* Redesigned the connection screen into a guided, per-assistant setup — Claude, Cursor, VS Code, ChatGPT, and other MCP clients each get their own tab with exact "where does this go" steps, a copy-ready config, and a safe-merge warning.
-* Made clear that MCP is an open standard — no Claude account required — and gave ChatGPT its own OpenAPI Actions path with a public-HTTPS note.
-* Added full keyboard and screen-reader (ARIA) semantics to the connection tabs.
-* Added a "More Divi tools from JHMG" section highlighting the Elementor to Divi 5 and Divi to Elementor converters.
-* Updated Pro pricing copy.
+* A guided connection screen for Claude, Cursor, VS Code, ChatGPT and other MCP clients.
 
-= 3.0.0 =
-* Licensing now runs through divi5lab.com — annual Pro license, unlimited sites.
-* Automatic plugin updates for licensed sites.
-* Premium features: create pages, set front page, build menus, site-wide CSS, PHP proposals.
-
-= 2.15.0 =
-* Image intelligence: new get_image_guide tool (MCP + REST + OpenAPI) teaches the AI to assign the right visual to each section by role instead of dropping random placeholders everywhere, with per-section rules, aspect-ratio sizing for even grids and a clear fallback order. The style and landing guides and create_page / update_page_layout now point the AI to it, so generated pages look like finished demos rather than empty templates.
-
-= 2.14.1 =
-* Style guide now teaches the column-nesting rule explicitly: a divi/column can never directly contain another divi/column (rejected as UNEXPECTED_CHILD_TYPE) — to nest columns, go through a row (column → row-inner → column-inner), and use a divi/group for a single styled card container inside a column. Removes a common trial-and-error round-trip when AI assistants build grids inside columns.
-
-= 2.14.0 =
-* Conversion-focused page generation: new get_landing_guide blueprint tool (MCP + REST + OpenAPI) teaches the AI to build landing pages with a strategic persuasion structure — hero → problem → solution → benefits → social proof → how-it-works → features → FAQ → final CTA — adapted to the business type, audience and conversion goal, with copywriting rules (benefit-driven headlines, no generic filler) and a disciplined CTA placement strategy. Every section recipe is now mapped to the persuasion stage it serves, and create_page / update_page_layout point the AI to the landing guide so generated pages are agency-grade and built to convert, not just decorated.
-
-= 2.13.0 =
-* Redesigned admin into a guided, SaaS-style experience: a single top-level "AI Editor" menu with Dashboard, Features, Settings and Upgrade views. Dashboard shows a welcome, setup-progress checklist, one clear primary action, your results (edits processed / saved / blocked), and contextual recommendations. Features and Upgrade present Free vs Premium as benefit-framed value (locked-but-visible), not banners. Empty states throughout. Fully escaped, nonce + capability protected, i18n-ready.
-
-= 2.12.0 =
-* Added safe site-wide custom CSS: the premium set_custom_css tool writes into a managed block in WordPress Additional CSS (preserving your own CSS), unlocking true backdrop-filter glassmorphism and keyframe animations. CSS cannot execute code.
-* Admin page: professional refresh with a clear Free vs Premium capabilities breakdown (live license badge), accurate module count, and broader feature copy.
-
-= 2.11.0 =
-* Safe AI-assisted PHP: new propose_php_snippet tool lets the AI draft PHP features (custom post types, hooks, form handlers, integrations) as REVIEWED PROPOSALS. Nothing is executed or written to the site � proposals appear under Settings → Code Proposals for a human to review and apply manually, so the API key never becomes a code-execution credential.
-
-= 2.10.0 =
-* Full-site generation (phase 1): new get_site_guide blueprint tool, create_page now accepts a slug for predictable cross-linking, and premium set_front_page + set_primary_menu tools (MCP + REST) wire the homepage and theme navigation. The AI can now build an entire multi-page website from one brief.
-
-= 2.9.2 =
-* Expanded the section recipe library to 16 with genericized archetypes mined from the second site: animated number-counter stats, a blog/news feed, and an icon values row.
-
-= 2.9.1 =
-* Style guide gains vocabulary mined from the second site: the top-level css freeForm key for custom CSS (enables true backdrop-filter glassmorphism, keyframe animations, pseudo-elements), full-viewport section height (vh), and background-image blend modes.
-
-= 2.9.0 =
-* Integrated a second production site (15 pages): added divi/post-nav, allowed divi/global-layout inside a section, and retired the over-strict "leaf module must not have children" rule (real Divi 5 saves text, number-counter, image, tab, contact-field and more as paired blocks). All pages from both sites now validate.
-
-= 2.8.2 =
-* Style guide now instructs the AI to collapse multi-column rows to a single column on mobile (row layout.phone.flexDirection=column), so generated pages stack cleanly on phones.
-
-= 2.8.1 =
-* Style guide now teaches the side-by-side buttons pattern: wrap a CTA pair in a nested row whose single column is flex row-direction, so two buttons sit on one line (stacking on mobile) instead of stacking vertically.
-
-= 2.8.0 =
-* Added divi/number-counter (animated stat counter) to the schema and style guide.
-* New SEO rule: a page may have at most one h1 (MULTIPLE_H1) — additional headings must use h2-h6 via headingLevel.
-* Fixed border-radius guidance: set all four corners explicitly (sync:on does not propagate one corner to the others at render).
-
-= 2.7.0 =
-* Expanded the section recipe library from 7 to 13 genericized, validated patterns mined from real pages: hero/CTA, section intro, 3- and 4-column card grids, blurb features, icon features, split image+text, contact form, slider, image gallery, image carousel, testimonial, and newsletter+social. All example copy and media are genericized (no real content) and every recipe is validated in the test suite.
-
-= 2.6.1 =
-* Added 7 more modules from a 52-module coverage export: divi/fullwidth-header, divi/gallery, divi/login, divi/instagram-feed, divi/menu (leaf modules), and divi/timeline + divi/timeline-item. A page exercising all 52 Divi 5 module types now validates.
-
-= 2.6.0 =
-* Enriched the style guide with vocabulary mined from a real production site: font family/weight/style (serif headings + sans body, uppercase/italic, letter-spacing), flex layout for reliable multi-column (display:flex + columnGap/rowGap + flexType child sizing), width/centering, background-image positioning, gradient direction, and absolute positioning. The AI can now build richer, properly-laid-out, typographically-styled pages.
-
-= 2.5.0 =
-* Major validator robustness from a real 25-page production site: now supports divi/group + divi/group-carousel (flex containers), divi/global-layout (Theme Builder globals, no builderVersion), and divi/code / divi/sidebar / divi/testimonial modules. Also accepts top-level divi/section blocks (pages need not be wrapped in divi/placeholder) and a paired divi/text wrapping nested text. All 25 real pages validate.
-
-= 2.4.0 =
-* Added get_section_recipes tool (MCP) and GET /section-recipes endpoint (REST + OpenAPI): a library of complete, validated Divi 5 section patterns (hero, feature grids, split, slider, CTA, footer) derived from real exports. The AI assembles well-composed pages from proven sections instead of building from scratch. Each recipe is validated in the test suite.
-
-= 2.3.1 =
-* Style guide now covers the glassmorphism (glass-card) look using confirmed semi-transparent-background shapes, notes that true backdrop-blur needs custom CSS, and adds aesthetic-variety + contrast guidance.
-
-= 2.3.0 =
-* Added get_style_guide tool (MCP) and GET /style-guide endpoint (REST + OpenAPI): serves real Divi 5 structure rules and styling attribute shapes mined from real exports, so AI assistants produce styled, creative layouts instead of plain ones. create_page and update_page_layout now point the AI to it.
-
-= 2.2.3 =
-* Validator now supports Divi 5 specialty nesting: divi/row-inner and divi/column-inner, plus a divi/column placed directly in a section (confirmed via real exports). Documented CSS filter and entrance-animation attribute shapes in docs/STYLE.md.
-
-= 2.2.2 =
-* Validator now recognizes the divi/divider module (confirmed via real export). Documented many real styling attribute shapes (box-shadow, transform, hover, z-index, overflow, scroll-fade, divider) in docs/STYLE.md.
-
-= 2.2.1 =
-* Validator now recognizes the divi/social-media-follow module and its divi/social-media-follow-network children (confirmed via real export). Pages using social-follow icons no longer fail validation.
-
-= 2.2.0 =
-* Validator now supports nested rows (a divi/row inside a divi/column, recursing to any depth) — confirmed against a real Divi 5 export. Previously these valid layouts were wrongly rejected.
-* create_page and update_page_layout now instruct AI assistants to give every image module a src, so generated pages are never left with blank images.
-
-= 2.1.2 =
-* Fixed content corruption on save: page content is now wp_slash()'d before wp_insert_post/wp_update_post, which run wp_unslash internally. Previously backslashes in escaped HTML (e.g. < for <) were stripped, breaking text modules. Affects create_page and update_page_layout (MCP + REST).
-
-= 2.1.1 =
-* create_page now sets the Divi 5 builder meta (_et_pb_use_divi_5, _et_pb_use_builder) so new pages open directly in the Divi 5 editor and appear in list_divi_pages.
-
-= 2.1.0 =
-* Added premium `create_page` tool (MCP) and `POST /pages` REST endpoint — create brand-new pages, validated before they are written.
-* Added self-hosted license activation (offline Ed25519 key verification, no license server or phone-home) under Settings → License.
-* New pages are always created as drafts for the site owner to review and publish.
-* Premium calls without an active license are rejected with an upgrade message and create nothing.
-
-= 2.0.0 =
-* Renamed to AI Editor for Divi 5 to reflect the AI editing focus.
-* Added PHP MCP server (Streamable HTTP, protocol 2024-11-05) — no Node.js required.
-* Added OpenAPI 3.1.0 spec endpoint for ChatGPT Custom GPT integration.
-* Added two-column admin UI with connection instructions and usage dashboard.
-* Added single-key Bearer token authentication with Apache rewrite compatibility.
-* Added deterministic Divi 5 layout validator (pure PHP, zero AI inference).
-* Added usage logging with per-AI-assistant breakdown.
+= 2.0.0 to 3.0.0 =
+* MCP server and REST API, OpenAPI spec for ChatGPT, the deterministic Divi 5 checker, the style, site, landing and image guides, the section pattern library and the admin screens.
 
 = 1.0.0 =
 * Initial release.
 
 == Upgrade Notice ==
 
-= 3.5.0 =
-Adds undo for AI edits. No reconfiguration needed.
-
-= 3.4.0 =
-Adds support for more Divi 5.14 modules. No reconfiguration needed.
-
-= 3.3.0 =
-Maintenance release: WordPress.org readiness and license-client hardening. No reconfiguration needed.
-
-= 3.0.0 =
-Rebranded to divi5lab. Pro licensing now runs through divi5lab.com (annual license, unlimited sites) with automatic plugin updates for licensed sites. Existing free features are unchanged.
-
-= 2.1.0 =
-Adds the premium create_page feature and license activation. Existing free features are unchanged and no reconfiguration is needed.
-
-= 2.0.0 =
-Full rename and rewrite. Deactivate version 1.x before activating 2.0.0. Your API key will be regenerated on first activation.
+= 4.0.0 =
+New name and folder (`jhmg-ai-editor-for-divi-5`). Creating pages, undo and the new Media Library tool are included. The front page, menu, custom CSS and PHP proposal tools are no longer part of this plugin.

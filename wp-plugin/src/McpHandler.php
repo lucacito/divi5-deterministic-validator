@@ -6,6 +6,9 @@ namespace AiEditorDivi5\WP;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+// The extension guard is also loaded by autoload.php; requiring it here keeps this file safe on its own.
+require_once __DIR__ . '/ExtensionGuard.php';
+
 use Divi5Validator\Validator;
 use WP_REST_Request;
 use WP_REST_Response;

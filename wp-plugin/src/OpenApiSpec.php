@@ -47,8 +47,8 @@ final class OpenApiSpec
         $spec = [
             'openapi' => '3.1.0',
             'info'    => [
-                'title'       => 'AI Editor for Divi 5',
-                'description' => 'Let your AI assistant read and edit Divi 5 pages with natural language. Every change is validated before saving — broken pages become impossible.',
+                'title'       => 'JHMG AI Editor for Divi 5',
+                'description' => 'Let your AI assistant read and edit Divi 5 pages with natural language. Every change is validated before saving, so a broken layout is never saved.',
                 'version'     => $version,
             ],
             'servers'    => [['url' => $base]],
@@ -58,7 +58,7 @@ final class OpenApiSpec
                     'ApiKey' => [
                         'type'        => 'http',
                         'scheme'      => 'bearer',
-                        'description' => 'Plugin API key from Settings → AI Editor for Divi 5',
+                        'description' => 'API key from WordPress admin → AI Editor → Settings (JHMG AI Editor for Divi 5)',
                     ],
                 ],
                 'schemas' => [
@@ -353,8 +353,8 @@ final class OpenApiSpec
                         'parameters'  => [
                             ['name' => 'search', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Keywords matched against title, alt text and filename']],
                             ['name' => 'orientation', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'enum' => ['landscape', 'portrait', 'square'], 'description' => 'Orientation filter']],
-                            ['name' => 'per_page', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'integer', 'description' => 'Results per page (default 20, max 50)']],
-                            ['name' => 'page', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'integer', 'description' => 'Page number (default 1)']],
+                            ['name' => 'per_page', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 50, 'description' => 'Results per page (default 20, max 50)']],
+                            ['name' => 'page', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 200, 'description' => 'Page number (default 1, max 200)']],
                         ],
                         'responses'   => [
                             '200' => ['description' => 'Matching images', 'content' => ['application/json' => ['schema' => [

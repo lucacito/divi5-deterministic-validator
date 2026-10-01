@@ -33,7 +33,7 @@ register_activation_hook(__FILE__, function (): void {
     if (version_compare(PHP_VERSION, AI_EDITOR_DIVI5_MIN_PHP, '<')) {
         deactivate_plugins(plugin_basename(__FILE__));
         wp_die(esc_html(sprintf(
-            'AI Editor for Divi 5 requires PHP %s or higher. Your server is running PHP %s.',
+            'JHMG AI Editor for Divi 5 requires PHP %s or higher. Your server is running PHP %s.',
             AI_EDITOR_DIVI5_MIN_PHP,
             PHP_VERSION
         )));
@@ -42,7 +42,7 @@ register_activation_hook(__FILE__, function (): void {
     if (version_compare(get_bloginfo('version'), AI_EDITOR_DIVI5_MIN_WP, '<')) {
         deactivate_plugins(plugin_basename(__FILE__));
         wp_die(esc_html(sprintf(
-            'AI Editor for Divi 5 requires WordPress %s or higher.',
+            'JHMG AI Editor for Divi 5 requires WordPress %s or higher.',
             AI_EDITOR_DIVI5_MIN_WP
         )));
     }
@@ -73,7 +73,7 @@ register_deactivation_hook(__FILE__, function (): void {
 if (version_compare(PHP_VERSION, AI_EDITOR_DIVI5_MIN_PHP, '<')) {
     add_action('admin_notices', function (): void {
         printf(
-            '<div class="notice notice-error"><p><strong>AI Editor for Divi 5</strong> requires PHP %s or higher and has been disabled. Your server runs PHP %s.</p></div>',
+            '<div class="notice notice-error"><p><strong>JHMG AI Editor for Divi 5</strong> requires PHP %s or higher and has been disabled. Your server runs PHP %s.</p></div>',
             esc_html(AI_EDITOR_DIVI5_MIN_PHP),
             esc_html(PHP_VERSION)
         );

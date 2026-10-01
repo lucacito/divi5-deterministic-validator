@@ -7,8 +7,8 @@ namespace Divi5Validator\Tests;
 use AiEditorDivi5\WP\Licensing;
 use PHPUnit\Framework\TestCase;
 
-require_once __DIR__ . '/../wp-plugin/src/Licensing/LicenseClient.php';
-require_once __DIR__ . '/../wp-plugin/src/Licensing.php';
+require_once __DIR__ . '/../src/Licensing/LicenseClient.php';
+require_once __DIR__ . '/../src/Licensing.php';
 
 /**
  * Sticky-unlock enforcement matrix: activation persists premium; ONLY an
