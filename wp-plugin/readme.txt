@@ -154,7 +154,7 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 
 == Screenshots ==
 
-1. The Dashboard: your setup progress, your results and recent AI edits you can undo.
+1. The Dashboard: your setup progress and your results.
 2. Settings: one API key and a copy-and-paste setup for Claude, Cursor, VS Code, ChatGPT or any MCP client.
 3. Features: everything your AI assistant can do on your Divi 5 site.
 

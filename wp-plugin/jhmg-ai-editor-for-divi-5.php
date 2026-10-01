@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       JHMG AI Editor for Divi 5
- * Description:       Let your AI assistant (Claude, ChatGPT, Cursor) read and edit Divi 5 pages with natural language. Every change is validated before saving, so a broken page is never saved.
+ * Description:       Let your AI assistant (Claude, ChatGPT, Cursor) read and edit Divi 5 pages with natural language. Every AI edit is checked before it is saved, so a broken page is never saved by an AI edit.
  * Version:           4.0.0
  * Requires at least: 6.0
  * Requires PHP:      8.1

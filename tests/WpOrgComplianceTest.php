@@ -402,7 +402,7 @@ class WpOrgComplianceTest extends TestCase
         $this->assertStringContainsString('Plugin Name:       JHMG AI Editor for Divi 5', $header);
         $this->assertDoesNotMatchRegularExpression('/^\s*\*\s*Plugin URI:/m', $header, 'Plugin URI pointed at the Pro sales page; it is optional and omitted');
         $this->assertDoesNotMatchRegularExpression('/impossible|\bPro\b|premium/i', $header);
-        $this->assertStringContainsString('a broken page is never saved', $header);
+        $this->assertStringContainsString('a broken page is never saved by an AI edit', $header);
     }
 
     public function testModuleCountClaimsAreRealComputedNumbers(): void
