@@ -243,3 +243,24 @@ if ( ! function_exists( 'do_action' ) ) {
 if ( ! function_exists( 'remove_all_filters' ) ) {
     function remove_all_filters( $tag ) { unset( $GLOBALS['__wp_filters'][ $tag ] ); return true; }
 }
+
+// ---- $wpdb / DB shims for the history-table tests ---------------------------------------
+if ( ! defined( 'ARRAY_A' ) ) {
+    define( 'ARRAY_A', 'ARRAY_A' );
+}
+if ( ! function_exists( 'esc_sql' ) ) {
+    function esc_sql( $s ) { return $s; }
+}
+if ( ! function_exists( 'delete_post_meta' ) ) {
+    function delete_post_meta( $id, $key, $value = '' ) { unset( $GLOBALS['__wp_postmeta'][ (int) $id ][ $key ] ); return true; }
+}
+if ( ! function_exists( 'dbDelta' ) ) {
+    // Records the SQL and asks the fake DB to create the history table (unless the test forbids it).
+    function dbDelta( $sql ) {
+        $GLOBALS['__wp_dbdelta_sql'][] = $sql;
+        if ( isset( $GLOBALS['wpdb'] ) && method_exists( $GLOBALS['wpdb'], 'createHistoryTable' ) && str_contains( (string) $sql, 'ai_editor_divi5_history' ) ) {
+            $GLOBALS['wpdb']->createHistoryTable();
+        }
+        return [];
+    }
+}

@@ -25,6 +25,8 @@ require_once __DIR__ . '/UsageTracker.php';
 require_once __DIR__ . '/DiviCompat.php';
 require_once __DIR__ . '/PageEditor.php';
 require_once __DIR__ . '/PageHistory.php';
+require_once __DIR__ . '/HistoryTable.php';
+require_once __DIR__ . '/HistoryMigration.php';
 require_once __DIR__ . '/HistoryStore.php';
 require_once __DIR__ . '/HistoryService.php';
 require_once __DIR__ . '/ExtensionGuard.php';

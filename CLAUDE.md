@@ -100,10 +100,12 @@ image host ever reaches the AI.
 **Extension hooks** (`jhmg_aied_*`, guarded by `ExtensionGuard` so built-ins always
 win): the only way the Pro add-on extends the plugin. Reference: `docs/EXTENDING.md`.
 
-Undo (v3.5.0): `HistoryService` is the single write path for AI page-content
+Undo (v3.5.0, table storage since 4.1.0): `HistoryService` is the single write path for AI page-content
 writes (`update_page_layout`, `edit_page_content`, REST PUT/edit): it snapshots the
-previous content (post meta `_aied_history`) before saving: up to the last 10 per
-page, each <= 512 KB, trimmed oldest-first to a ~768 KB per-page budget
+previous content before saving, one row per snapshot in the table
+`{prefix}ai_editor_divi5_history` (`HistoryTable` = schema/hooks, `HistoryStore` = the only
+queries, `HistoryMigration` = import of 4.0.0's `_aied_history` post meta; 4.1.0): up to the
+last 10 per page, each <= 512 KB, trimmed oldest-first to a ~768 KB per-page budget
 (`PageHistory::MAX_TOTAL_BYTES`; the newest is always kept). A snapshot can be
 skipped (`history.reason`: `too_large` | `invalid_encoding` | `store_failed` |
 `duplicate`), so undo is available only when `history.stored` is true. Restore
@@ -140,6 +142,7 @@ Docker env + validator workflows go through `make`:
 | `make export-layouts` | Capture real Divi 5 JSON into `fixtures/valid/` |
 | `make schema-gap` | List Divi modules (from `divi/Divi.zip`) the validator doesn't know |
 | `make verify-modules` | Re-verify the already-promoted modules and probe the still-missing ones on the real Divi (Docker); writes evidence, but refuses to overwrite committed evidence with a result set that loses or demotes modules |
+| `make verify-history` | Real-database check of the undo-history table on the Docker site (creates and deletes one throwaway draft page) |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
 Tests run via PHPUnit (`phpunit.xml`) and cover both the validator
@@ -179,6 +182,10 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
+- **4.1.0 = history storage release** (branch `feat/history-table`, merged to local main, not uploaded):
+  undo history moved from post meta to its own table with automatic migration; spec
+  `docs/superpowers/specs/2026-10-01-history-table-storage-design.md`. Upload only after
+  WordPress.org answers the 4.0.0 review (or fold into a change-request upload).
 - **4.0.0 = WordPress.org compliance release** (branch `feat/wporg-compliance`):
   renamed plugin, licensing and Pro-only tools removed (staged in `pro-addon/`),
   `create_page` + undo free, `jhmg_aied_*` hooks, built-in image pack + tokens,

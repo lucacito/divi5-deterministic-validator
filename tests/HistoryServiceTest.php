@@ -6,10 +6,14 @@ namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\HistoryService;
 use AiEditorDivi5\WP\HistoryStore;
+use AiEditorDivi5\WP\HistoryTable;
 use AiEditorDivi5\WP\PageHistory;
 use PHPUnit\Framework\TestCase;
 
+require_once __DIR__ . '/FakeWpdb.php';
+require_once __DIR__ . '/../wp-plugin/src/UsageTracker.php';
 require_once __DIR__ . '/../wp-plugin/src/PageHistory.php';
+require_once __DIR__ . '/../wp-plugin/src/HistoryTable.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryStore.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryService.php';
 
@@ -19,11 +23,19 @@ class HistoryServiceTest extends TestCase
 
     protected function setUp(): void
     {
+        $GLOBALS['wpdb'] = new FakeWpdb();
+        $GLOBALS['wpdb']->createHistoryTable();
+        $GLOBALS['__wp_options']     = [ HistoryTable::DB_VERSION_OPTION => HistoryTable::STAGE_MIGRATED ];
         $GLOBALS['__wp_posts']       = [ 5 => (object) [ 'ID' => 5, 'post_type' => 'page', 'post_content' => 'ORIGINAL' ] ];
         $GLOBALS['__wp_postmeta']    = [];
         $GLOBALS['__wp_update_fail'] = false;
-        $GLOBALS['__wp_meta_fail']   = false;
-        $GLOBALS['__wp_cache_deleted'] = [];
+    }
+
+    protected function tearDown(): void
+    {
+        $GLOBALS['wpdb']          = null;
+        $GLOBALS['__wp_options']  = [];
+        $GLOBALS['__wp_postmeta'] = [];
     }
 
     public function testWriteSnapshotsPreviousContentThenSavesNew(): void
@@ -108,21 +120,6 @@ class HistoryServiceTest extends TestCase
         $this->assertSame( [], HistoryService::listFor( 5 ) );
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider( 'corruptMeta' )]
-    public function testCorruptHistoryMetaNeverBlocksAWrite( mixed $junk ): void
-    {
-        $GLOBALS['__wp_postmeta'][5][ HistoryStore::META_KEY ] = $junk;
-        $r = HistoryService::write( 5, 'NEW', 'update_page_layout' );
-        $this->assertTrue( $r['ok'] );
-        $this->assertSame( 'NEW', $GLOBALS['__wp_posts'][5]->post_content );
-        $this->assertTrue( $r['snapshot']['stored'] );
-    }
-
-    public static function corruptMeta(): array
-    {
-        return [ [ 'not json at all' ], [ '{"items":"nope"}' ], [ '[1,2,3]' ], [ 12345 ], [ '' ] ];
-    }
-
     public function testDuplicateWriteDoesNotAddASnapshot(): void
     {
         HistoryService::write( 5, 'A', 'update_page_layout' );              // snapshot ORIGINAL
@@ -146,18 +143,17 @@ class HistoryServiceTest extends TestCase
         $this->assertSame( 'update_page_layout', $list[0]['tool'] );
     }
 
-    public function testMetaWriteFailureIsReportedAsStoreFailedAndWriteStillSucceeds(): void
+    public function testInsertFailureIsReportedAsStoreFailedAndWriteStillSucceeds(): void
     {
         HistoryService::write( 5, 'B', 'update_page_layout' );               // snapshot #1 = ORIGINAL
-        $before = $GLOBALS['__wp_postmeta'][5][ HistoryStore::META_KEY ];
-        $GLOBALS['__wp_meta_fail'] = true;
+        $GLOBALS['wpdb']->failInserts = true;
         $r = HistoryService::write( 5, 'C', 'update_page_layout' );
+        $GLOBALS['wpdb']->failInserts = false;
         $this->assertTrue( $r['ok'] );
         $this->assertSame( 'C', $GLOBALS['__wp_posts'][5]->post_content );
         $this->assertFalse( $r['snapshot']['stored'] );
         $this->assertNull( $r['snapshot']['version_id'] );
         $this->assertSame( 'store_failed', $r['snapshot']['reason'] );
-        $this->assertSame( $before, $GLOBALS['__wp_postmeta'][5][ HistoryStore::META_KEY ] );
         $this->assertCount( 1, HistoryService::listFor( 5 ) );
     }
 
@@ -178,21 +174,14 @@ class HistoryServiceTest extends TestCase
         $this->assertSame( 3, $next['snapshot']['version_id'] );
     }
 
-    public function testStoreSaveReturnsFalseAndWritesNothingWhenEncodeFails(): void
-    {
-        $this->assertFalse( HistoryStore::save( 5, [ 'next' => 2, 'items' => [ [ 'id' => 1, 'content' => "\xC3\x28" ] ] ] ) );
-        $this->assertArrayNotHasKey( HistoryStore::META_KEY, $GLOBALS['__wp_postmeta'][5] ?? [] );
-        $this->assertTrue( HistoryStore::save( 5, [ 'next' => 1, 'items' => [] ] ) );
-    }
-
-    public function testWriteToMissingPageFailsWithoutCreatingMeta(): void
+    public function testWriteToMissingPageFailsWithoutStoringAnything(): void
     {
         $r = HistoryService::write( 999, 'X', 'update_page_layout' );
         $this->assertFalse( $r['ok'] );
         $this->assertSame( 'update_failed', $r['error'] );
         $this->assertSame( 'Page 999 not found.', $r['message'] );
         $this->assertSame( [ 'stored' => false, 'version_id' => null, 'reason' => null ], $r['snapshot'] );
-        $this->assertArrayNotHasKey( 999, $GLOBALS['__wp_postmeta'] );
+        $this->assertSame( [], HistoryService::listFor( 999 ) );
     }
 
     public function testRestoreFailureShapesCarryASnapshotKey(): void
@@ -219,6 +208,23 @@ class HistoryServiceTest extends TestCase
         $this->assertSame( 14, HistoryService::write( 5, 'V14', 'update_page_layout' )['snapshot']['version_id'] );
     }
 
+    public function testAFailedHistoryReadNeverMakesTheNextWriteDeleteStoredSnapshots(): void
+    {
+        for ( $i = 1; $i <= 13; $i++ ) {
+            HistoryService::write( 5, "V{$i}", 'update_page_layout' );       // ids 1..13, 1..3 already trimmed
+        }
+        $before = array_column( HistoryService::listFor( 5 ), 'id' );
+        $this->assertSame( [ 13, 12, 11, 10, 9, 8, 7, 6, 5, 4 ], $before );
+
+        $GLOBALS['wpdb']->failSelects = 1;                                   // the history read inside write() fails
+        $r = HistoryService::write( 5, 'AFTER FAILURE', 'update_page_layout' );
+
+        $this->assertTrue( $r['ok'], 'the page write itself still succeeds' );
+        $this->assertSame( 'AFTER FAILURE', $GLOBALS['__wp_posts'][5]->post_content );
+        $this->assertSame( [ 'stored' => false, 'version_id' => null, 'reason' => 'store_failed' ], $r['snapshot'] );
+        $this->assertSame( $before, array_column( HistoryService::listFor( 5 ), 'id' ), 'no stored snapshot may be lost' );
+    }
+
     public function testRestoringTheOldestVersionWhenHistoryIsFullSucceeds(): void
     {
         for ( $i = 1; $i <= 10; $i++ ) {
@@ -240,7 +246,7 @@ class HistoryServiceTest extends TestCase
         $GLOBALS['__wp_posts'][5]->post_title = 'Home';
         HistoryService::write( 5, 'A1', 'update_page_layout' );
         HistoryService::write( 6, 'B1', 'edit_page_content' );
-        $rows = HistoryService::recent( 5, [ 5, 6 ] );
+        $rows = HistoryService::recent( 5 );
         $this->assertCount( 2, $rows );
         $titles = array_column( $rows, 'title' );
         sort( $titles );
@@ -264,7 +270,7 @@ class HistoryServiceTest extends TestCase
         $this->seedHistory( 5, '2026-01-01T00:00:00Z' );
         $this->seedHistory( 6, '2026-03-01T00:00:00Z' );
         $this->seedHistory( 7, '2026-02-01T00:00:00Z' );
-        $rows = HistoryService::recent( 2, [ 5, 6, 7 ] );
+        $rows = HistoryService::recent( 2 );
         $this->assertCount( 2, $rows );
         $this->assertSame( [ 6, 7 ], array_column( $rows, 'page_id' ) );
     }
@@ -272,18 +278,15 @@ class HistoryServiceTest extends TestCase
     public function testRecentMissingPostYieldsEmptyTitleWithoutWarning(): void
     {
         $this->seedHistory( 99, '2026-01-01T00:00:00Z' );
-        $rows = HistoryService::recent( 5, [ 99 ] );
+        $rows = HistoryService::recent( 5 );
         $this->assertCount( 1, $rows );
         $this->assertSame( '', $rows[0]['title'] );
         $this->assertSame( 99, $rows[0]['page_id'] );
     }
 
-    public function testRecentIgnoresGarbageMeta(): void
+    public function testRecentOnAnEmptyTableIsEmpty(): void
     {
-        $GLOBALS['__wp_postmeta'][5][ HistoryStore::META_KEY ] = '{not json';
-        $this->assertSame( [], HistoryService::recent( 5, [ 5 ] ) );
-        $GLOBALS['__wp_postmeta'][5][ HistoryStore::META_KEY ] = '{"items":"nope"}';
-        $this->assertSame( [], HistoryService::recent( 5, [ 5 ] ) );
+        $this->assertSame( [], HistoryService::recent( 5 ) );
     }
 
     public function testRecentRowsNeverCarryContentEvenWhenLarge(): void
@@ -291,20 +294,15 @@ class HistoryServiceTest extends TestCase
         $big = str_repeat( 'A', 400 * 1024 );
         $GLOBALS['__wp_posts'][5]->post_title = 'Big';
         $this->seedHistory( 5, '2026-01-01T00:00:00Z', $big );
-        $rows = HistoryService::recent( 5, [ 5 ] );
+        $GLOBALS['wpdb']->queries = [];
+        $rows = HistoryService::recent( 5 );
         $this->assertCount( 1, $rows );
         $this->assertArrayNotHasKey( 'content', $rows[0] );
         $this->assertLessThan( 1000, strlen( serialize( $rows ) ) );
+        foreach ( $GLOBALS['wpdb']->queries as $q ) {
+            $this->assertStringNotContainsString( 'content', $q, 'the dashboard query must not read snapshot content' );
+        }
         // The stored history itself is untouched.
         $this->assertSame( $big, HistoryService::entry( 5, 1 )['content'] );
-    }
-
-    public function testRecentPurgesEachPagesPostMetaFromTheObjectCache(): void
-    {
-        $GLOBALS['__wp_posts'][6] = (object) [ 'ID' => 6, 'post_type' => 'page', 'post_title' => 'P6', 'post_content' => 'x' ];
-        $this->seedHistory( 5, '2026-01-01T00:00:00Z' );
-        $this->seedHistory( 6, '2026-02-01T00:00:00Z' );
-        HistoryService::recent( 5, [ 5, 6 ] );
-        $this->assertSame( [ [ 5, 'post_meta' ], [ 6, 'post_meta' ] ], $GLOBALS['__wp_cache_deleted'] );
     }
 }

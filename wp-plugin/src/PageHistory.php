@@ -16,8 +16,8 @@ final class PageHistory
 {
     public const RETENTION = 10;
     public const MAX_BYTES = 524288; // 512 KB per snapshot
-    // Per-page budget for all stored snapshot content. WP_Query primes ALL post meta for
-    // every queried page, so an unbounded history would be loaded on every page query.
+    // Per-page budget for all stored snapshot content: bounds how much one page can add to the
+    // database and how large any single history query result can get.
     public const MAX_TOTAL_BYTES = 786432; // 768 KB
 
     /** @return array{next:int, items:list<array<string,mixed>>} */
@@ -123,28 +123,5 @@ final class PageHistory
         }
 
         return null;
-    }
-
-    /**
-     * @param array<int, array> $byPage page id => history
-     * @return list<array{page_id:int, version_id:int, saved_at:mixed, tool:mixed}>
-     */
-    public static function recent( array $byPage, int $limit ): array
-    {
-        $rows = [];
-        foreach ( $byPage as $pageId => $history ) {
-            $newest = self::normalize( $history )['items'][0] ?? null;
-            if ( $newest !== null ) {
-                $rows[] = [
-                    'page_id'    => (int) $pageId,
-                    'version_id' => (int) $newest['id'],
-                    'saved_at'   => $newest['saved_at'] ?? null,
-                    'tool'       => $newest['tool'] ?? null,
-                ];
-            }
-        }
-        usort( $rows, static fn ( array $a, array $b ): int => strcmp( (string) $b['saved_at'], (string) $a['saved_at'] ) );
-
-        return array_slice( $rows, 0, max( 0, $limit ) );
     }
 }
