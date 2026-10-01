@@ -80,6 +80,36 @@ final class HistoryService
         ];
     }
 
+    /**
+     * @param list<int>|null $pageIds null = discover pages that have history (production)
+     * @return list<array{page_id:int, title:string, version_id:int, saved_at:mixed, tool:mixed}>
+     */
+    public static function recent( int $limit = 5, ?array $pageIds = null ): array
+    {
+        if ( null === $pageIds ) {
+            $pageIds = array_map( 'intval', get_posts( [
+                'post_type'      => 'page',
+                'post_status'    => 'any',
+                'posts_per_page' => 50,
+                'fields'         => 'ids',
+                'meta_key'       => HistoryStore::META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+            ] ) );
+        }
+
+        $byPage = [];
+        foreach ( $pageIds as $pageId ) {
+            $byPage[ $pageId ] = HistoryStore::load( (int) $pageId );
+        }
+
+        $rows = [];
+        foreach ( PageHistory::recent( $byPage, $limit ) as $row ) {
+            $post   = get_post( $row['page_id'] );
+            $rows[] = $row + [ 'title' => $post ? (string) ( $post->post_title ?? '' ) : '' ];
+        }
+
+        return $rows;
+    }
+
     /** @return array{stored:bool, version_id:?int, reason:?string} */
     private static function noSnapshot(): array
     {

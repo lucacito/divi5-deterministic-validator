@@ -24,6 +24,7 @@ final class AdminPage
         add_action('admin_post_ai_editor_divi5_activate_license',   [$this, 'handleActivateLicense']);
         add_action('admin_post_ai_editor_divi5_deactivate_license', [$this, 'handleDeactivateLicense']);
         add_action('admin_post_ai_editor_divi5_delete_proposal',    [$this, 'handleDeleteProposal']);
+        add_action('admin_post_ai_editor_divi5_restore_page',       [$this, 'handleRestorePage']);
     }
 
     public function addMenu(): void
@@ -106,6 +107,23 @@ final class AdminPage
         // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.NonceVerification.Missing -- opaque id, sanitized; nonce verified in guard().
         PhpProposals::delete( sanitize_text_field( wp_unslash( $_POST['proposal_id'] ?? '' ) ) );
         $this->redirect('settings', 'proposal_deleted');
+    }
+
+    public function handleRestorePage(): void
+    {
+        $this->guard('ai_editor_divi5_restore_page'); // guard() verifies the nonce via check_admin_referer().
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard().
+        $pageId    = isset( $_POST['page_id'] ) ? absint( wp_unslash( $_POST['page_id'] ) ) : 0;
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard().
+        $versionId = isset( $_POST['version_id'] ) ? absint( wp_unslash( $_POST['version_id'] ) ) : 0;
+
+        $post = $pageId ? get_post( $pageId ) : null;
+        if ( ! $post || 'page' !== $post->post_type || ! current_user_can( 'edit_post', $pageId ) ) {
+            $this->redirect( 'dashboard', 'restore_failed' );
+        }
+
+        $result = HistoryService::restore( $pageId, $versionId );
+        $this->redirect( 'dashboard', $result['ok'] ? 'version_restored' : 'restore_failed' );
     }
 
     // ---------------------------------------------------------------
@@ -378,11 +396,14 @@ final class AdminPage
             'license_activated'  => __( 'License activated — premium features are now unlocked.', 'ai-editor-for-divi-5' ),
             'license_deactivated'=> __( 'License removed.', 'ai-editor-for-divi-5' ),
             'proposal_deleted'   => __( 'Code proposal deleted.', 'ai-editor-for-divi-5' ),
+            'version_restored'   => __( 'Previous version restored. The version it replaced was saved too, so you can undo this.', 'ai-editor-for-divi-5' ),
         ];
         if ( isset( $map[ $notice ] ) ) {
             printf('<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $map[ $notice ] ));
         } elseif ( $notice === 'license_invalid' ) {
             printf('<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'That license key is not valid for this site.', 'ai-editor-for-divi-5' ));
+        } elseif ( $notice === 'restore_failed' ) {
+            printf('<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'Could not restore that version.', 'ai-editor-for-divi-5' ));
         }
     }
 
@@ -398,6 +419,42 @@ final class AdminPage
     // ---------------------------------------------------------------
     // View: Dashboard
     // ---------------------------------------------------------------
+
+    private function historySection(): void
+    {
+        $rows = HistoryService::recent( 5 );
+        if ( [] === $rows ) {
+            return;
+        }
+        ?>
+        <h3 class="aied-section-title"><?php esc_html_e( 'Recent AI edits', 'ai-editor-for-divi-5' ); ?></h3>
+        <div class="aied-card">
+            <p class="aied-muted"><?php esc_html_e( 'Every AI save keeps the previous version. Restore it here if an edit was not what you wanted.', 'ai-editor-for-divi-5' ); ?></p>
+            <table class="widefat striped">
+                <tbody>
+                <?php foreach ( $rows as $row ) :
+                    $title = '' === $row['title'] ? __( '(no title)', 'ai-editor-for-divi-5' ) : $row['title']; ?>
+                    <tr>
+                        <td><strong><?php echo esc_html( $title ); ?></strong></td>
+                        <td><?php echo esc_html( (string) $row['saved_at'] ); ?></td>
+                        <td><code><?php echo esc_html( (string) $row['tool'] ); ?></code></td>
+                        <td>
+                            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
+                                  onsubmit="return confirm('<?php echo esc_js( __( 'Restore the version saved before this AI edit?', 'ai-editor-for-divi-5' ) ); ?>')">
+                                <input type="hidden" name="action" value="ai_editor_divi5_restore_page">
+                                <input type="hidden" name="page_id" value="<?php echo esc_attr( (string) $row['page_id'] ); ?>">
+                                <input type="hidden" name="version_id" value="<?php echo esc_attr( (string) $row['version_id'] ); ?>">
+                                <?php wp_nonce_field( 'ai_editor_divi5_restore_page' ); ?>
+                                <button type="submit" class="button"><?php esc_html_e( 'Restore previous version', 'ai-editor-for-divi-5' ); ?></button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php
+    }
 
     private function viewDashboard(): void
     {
@@ -463,6 +520,8 @@ final class AdminPage
                 <p class="aied-muted"><?php esc_html_e( 'Connect your AI assistant and make your first edit — your results will show up here.', 'ai-editor-for-divi-5' ); ?></p>
             </div>
         <?php endif; ?>
+
+        <?php $this->historySection(); ?>
 
         <!-- Recommendations -->
         <h3 class="aied-section-title"><?php esc_html_e( 'Recommended for you', 'ai-editor-for-divi-5' ); ?></h3>

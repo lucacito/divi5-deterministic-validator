@@ -232,4 +232,18 @@ class HistoryServiceTest extends TestCase
         $this->assertSame( 'ORIGINAL', $GLOBALS['__wp_posts'][5]->post_content );
         $this->assertTrue( $r['snapshot']['stored'] );
     }
+
+    public function testRecentListsNewestSnapshotPerPageWithTitles(): void
+    {
+        $GLOBALS['__wp_posts'][6] = (object) [ 'ID' => 6, 'post_type' => 'page', 'post_title' => 'About', 'post_content' => 'B0' ];
+        $GLOBALS['__wp_posts'][5]->post_title = 'Home';
+        HistoryService::write( 5, 'A1', 'update_page_layout' );
+        HistoryService::write( 6, 'B1', 'edit_page_content' );
+        $rows = HistoryService::recent( 5, [ 5, 6 ] );
+        $this->assertCount( 2, $rows );
+        $titles = array_column( $rows, 'title' );
+        sort( $titles );
+        $this->assertSame( [ 'About', 'Home' ], $titles );
+        $this->assertSame( [ 1 ], array_unique( array_column( $rows, 'version_id' ) ) );
+    }
 }
