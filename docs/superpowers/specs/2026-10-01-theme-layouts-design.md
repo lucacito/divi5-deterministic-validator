@@ -1,6 +1,6 @@
 # 4.3.0 — Edit your existing header and footer (Theme Builder layouts)
 
-Status: DRAFT, awaiting owner approval · Date: 2026-10-01 · Target release: JHMG AI Editor for Divi 5 4.3.0, **held as its own later update** (see Release).
+Status: APPROVED by the owner on 2026-10-01 (all five decisions at the bottom, defaults) · Date: 2026-10-01 · Target release: JHMG AI Editor for Divi 5 4.3.0, **held as its own later update** (see Release).
 Roadmap: undo (4.0.0) → history table (4.1.0) → dry-run diff (4.2.0) → **header/footer (4.3.0)** → global presets → Pro add-on spec. 4.1.0 and 4.2.0 are merged locally and ship in one upload after WordPress.org answers the 4.0.0 review.
 
 ## Goal
