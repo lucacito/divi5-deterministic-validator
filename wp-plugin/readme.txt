@@ -3,7 +3,7 @@ Contributors:      jhmg
 Tags:              divi, divi 5, ai, editor, page builder
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        3.3.0
+Stable tag:        3.4.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -115,6 +115,11 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 3. Features — what's free, and what Pro adds.
 
 == Changelog ==
+
+= 3.4.0 =
+* New: your AI can now edit pages that use 24 more Divi 5 modules, plus their child items such as map pins and slides (for example Portfolio, Post Slider, Video Slider, Lottie, SVG, Link, Tooltip, Dropdown, Charts, Table of Contents, Comments and the Fullwidth modules) — every one verified to render on Divi 5.14.
+* New: a notice on the plugin's admin screen when your Divi is newer than the newest version this plugin was verified on.
+* Modules that could not be verified yet (WooCommerce template modules and modules that need a third-party plugin) are still rejected rather than guessed.
 
 = 3.3.0 =
 * Prepared for the WordPress.org directory: plugin updates now come from WordPress.org; the readme documents the one external service (Pro license checks).
@@ -242,6 +247,9 @@ No. The plugin registers REST routes and an admin page but adds no front-end scr
 * Initial release.
 
 == Upgrade Notice ==
+
+= 3.4.0 =
+Adds support for more Divi 5.14 modules. No reconfiguration needed.
 
 = 3.3.0 =
 Maintenance release: WordPress.org readiness and license-client hardening. No reconfiguration needed.

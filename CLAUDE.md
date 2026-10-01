@@ -29,8 +29,14 @@ These still hold and are non-negotiable:
   is provable, not probabilistic.
 - **No Divi schema from memory.** Divi 4 used shortcodes; Divi 5 uses Gutenberg
   block JSON. All schema knowledge in `SchemaRules.php` must come from real
-  exports (`make export-layouts`), documented in `docs/SCHEMA.md`. Never invent
-  block types or attribute shapes.
+  exports (`make export-layouts`, documented in `docs/SCHEMA.md`) **or from the
+  shipped Divi theme's own `module.json` definitions, in either case verified by
+  a live render on the real Divi version** (`make verify-modules`; evidence in
+  `docs/module-verification-*.json`). `src/VerifiedModules.php` is generated
+  from that evidence — never hand-edit it. Never invent block types or
+  attribute shapes. Rendering proves a module exists and renders, not that the
+  builder allows a placement; only placements supported by real-export
+  precedent (column) are accepted.
 - **Section recipes and style/landing guides are grounded in real exports too.**
   The AI-facing guides (`StyleGuide`, `SectionRecipes`, `SiteGuide`,
   `LandingGuide`) may teach *strategy and composition* freely, but any concrete
@@ -78,6 +84,8 @@ Docker env + validator workflows go through `make`:
 | `make test` | Run the PHPUnit suite — the green-light check |
 | `make validate FILE=x` | Validate an arbitrary layout file |
 | `make export-layouts` | Capture real Divi 5 JSON into `fixtures/valid/` |
+| `make schema-gap` | List Divi modules (from `divi/Divi.zip`) the validator doesn't know |
+| `make verify-modules` | Render candidate modules on the real Divi (Docker) and write evidence |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
 Tests run via PHPUnit (`phpunit.xml`) and cover both the validator
@@ -103,7 +111,7 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- Validator MVP proven; plugin at v3.3.0, being prepared for its first
+- Validator MVP proven; plugin at v3.4.0, being prepared for its first
   WordPress.org submission (freemium single build: free tier + Pro licence via
   divi5lab.com). Never submitted yet.
 - Generation is guidance-driven (style, landing, image and site guides, 17
@@ -119,6 +127,9 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   masking script approach (hide notices, mask key/URL) when the admin UI changes.
 - The old standalone `mcp-server/` (Node) was removed in 3.3.0: the plugin's
   built-in HTTP MCP endpoint is the only supported connection path.
+- 3.4.0: validator recognises the render-verified Divi 5.14 modules (see
+  docs/module-verification-5.14.json); modules that could not be verified stay
+  rejected and are listed in docs/SCHEMA.md.
 - Roadmap: 3.3.0 cleanup + WP.org submission; 3.4.0 re-export against the
   newest Divi 5 and close schema gaps; 3.5.0+ differentiators (undo/revision
   history, preview-before-save, Theme Builder header/footer, global presets).
