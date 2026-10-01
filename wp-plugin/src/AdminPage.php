@@ -14,6 +14,7 @@ final class AdminPage
 {
     private const SLUG = 'ai-editor-divi5';
     private const HOOK = 'toplevel_page_ai-editor-divi5';
+    private const PRO_URL = 'https://divi5lab.com/plugins/divi-5-ai-editor';
 
     public function register(): void
     {
@@ -22,6 +23,7 @@ final class AdminPage
         add_action('admin_post_ai_editor_divi5_regenerate_key',     [$this, 'handleRegenerate']);
         add_action('admin_post_ai_editor_divi5_clear_usage',        [$this, 'handleClearUsage']);
         add_action('admin_post_ai_editor_divi5_restore_page',       [$this, 'handleRestorePage']);
+        add_action('admin_post_ai_editor_divi5_dismiss_pro_card',   [$this, 'handleDismissProCard']);
     }
 
     public function addMenu(): void
@@ -80,6 +82,13 @@ final class AdminPage
         $this->guard('ai_editor_divi5_clear_usage');
         UsageTracker::clear();
         $this->redirect('dashboard', 'usage_cleared');
+    }
+
+    public function handleDismissProCard(): void
+    {
+        $this->guard('ai_editor_divi5_dismiss_pro_card'); // guard() verifies the nonce via check_admin_referer().
+        update_user_meta( get_current_user_id(), 'aied_pro_card_dismissed', 1 );
+        $this->redirect('dashboard');
     }
 
     public function handleRestorePage(): void
@@ -487,13 +496,15 @@ final class AdminPage
             </div>
         </div>
 
+        <?php $this->proCard(); ?>
+
         <!-- Achievements -->
         <h3 class="aied-section-title"><?php esc_html_e( 'Your results', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
         <?php if ( $connected ) : ?>
             <div class="aied-stats">
                 <div class="aied-stat"><span class="aied-stat__n"><?php echo esc_html( $summary['total'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'AI edits processed', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
                 <div class="aied-stat"><span class="aied-stat__n aied-pos"><?php echo esc_html( $summary['valid'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'Changes saved', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
-                <div class="aied-stat"><span class="aied-stat__n aied-warn"><?php echo esc_html( $summary['invalid'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'Invalid layouts blocked', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
+                <div class="aied-stat"><span class="aied-stat__n aied-warn"><?php echo esc_html( $summary['invalid'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'Invalid layouts stopped', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
                 <div class="aied-stat"><span class="aied-stat__n"><?php echo esc_html( $summary['today'] ); ?></span><span class="aied-stat__l"><?php esc_html_e( 'Today', 'jhmg-ai-editor-for-divi-5' ); ?></span></div>
             </div>
         <?php else : ?>
@@ -504,6 +515,32 @@ final class AdminPage
         <?php endif; ?>
 
         <?php $this->historySection(); ?>
+        <?php
+    }
+
+    /**
+     * The one Pro add-on notice: Dashboard only, dismissible per user, never re-shown once dismissed.
+     */
+    private function proCard(): void
+    {
+        if ( get_user_meta( get_current_user_id(), 'aied_pro_card_dismissed', true ) ) {
+            return;
+        }
+        ?>
+        <div class="aied-card aied-procard">
+            <div class="aied-card__head">
+                <h3><?php esc_html_e( 'Want live stock photos?', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
+            </div>
+            <p class="aied-muted"><?php esc_html_e( 'JHMG AI Editor for Divi 5 includes a built-in image pack and reads your Media Library. The separate Pro add-on adds live photo sourcing for each section, plus site tools like front page and menu setup.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <div class="aied-procard__actions">
+                <a class="button" href="<?php echo esc_url( self::PRO_URL ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Learn about the Pro add-on', 'jhmg-ai-editor-for-divi-5' ); ?></a>
+                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                    <input type="hidden" name="action" value="ai_editor_divi5_dismiss_pro_card">
+                    <?php wp_nonce_field( 'ai_editor_divi5_dismiss_pro_card' ); ?>
+                    <button type="submit" class="button-link"><?php esc_html_e( 'Dismiss', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+                </form>
+            </div>
+        </div>
         <?php
     }
 
@@ -532,7 +569,7 @@ final class AdminPage
         <div class="aied-grid aied-grid--2">
             <?php foreach ( $features as [$t, $d, $tools] ) : ?>
                 <div class="aied-card aied-feature">
-                    <span class="aied-feature__badge aied-feature__badge--free">&#10003;</span>
+                    <span class="aied-feature__badge aied-feature__badge--ok">&#10003;</span>
                     <div><h4><?php echo esc_html( $t ); ?></h4><p class="aied-muted"><?php echo esc_html( $d ); ?></p><p class="aied-muted"><code><?php echo esc_html( $tools ); ?></code></p></div>
                 </div>
             <?php endforeach; ?>

@@ -71,6 +71,9 @@
 .aied-card p { font-size: 13.5px; line-height: 1.55; margin: 0 0 10px; }
 .aied-card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
 .aied-card--primary { border-color: #d8d6fb; background: linear-gradient(180deg, #fbfbff, #fff); }
+.aied-procard { margin-top: 16px; }
+.aied-procard__actions { display: flex; align-items: center; gap: 16px; }
+.aied-procard__actions form { margin: 0; }
 .aied-card--accent { border-color: #d8d6fb; background: linear-gradient(180deg, #f7f6ff, #fff); }
 .aied-muted { color: var(--aied-muted); }
 .aied-note { font-size: 12.5px; }
@@ -110,7 +113,7 @@
     flex: 0 0 28px; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
     font-size: 14px; background: #eceef4; color: var(--aied-muted);
 }
-.aied-feature__badge--free { background: #e3f6ec; color: var(--aied-ok); }
+.aied-feature__badge--ok { background: #e3f6ec; color: var(--aied-ok); }
 
 /* ── Tick lists ────────────────────────────────────────── */
 .aied-ticklist { margin: 8px 0 14px; }
