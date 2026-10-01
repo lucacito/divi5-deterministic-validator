@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# verify-modules.sh — render each missing Divi module on the real Divi (Docker WP) and record evidence.
+# verify-modules.sh — render every placeable Divi module (still-missing AND already-promoted) on the real
+# Divi (Docker WP) and record evidence. Refuses to overwrite committed evidence with a result set that
+# loses or demotes modules (scripts/check-evidence.php).
 # Requires: make up (WP + Divi running), and divi/Divi.zip matching the installed Divi.
 set -euo pipefail
 
@@ -23,5 +25,19 @@ docker compose cp build/candidates.json wpcli:/tmp/candidates.json
 
 docker compose exec -T wpcli wp eval-file /tmp/verify-modules.php /tmp/candidates.json /tmp/results.json "$VERSION"
 
-docker compose cp wpcli:/tmp/results.json "docs/module-verification-${VERSION%.*}.json"
-echo "[verify] Evidence written to docs/module-verification-${VERSION%.*}.json"
+EVIDENCE="docs/module-verification-${VERSION%.*}.json"
+NEW="$(mktemp "${TMPDIR:-/tmp}/verify-modules-results.XXXXXX")"
+trap 'rm -f "$NEW"' EXIT
+
+docker compose cp wpcli:/tmp/results.json "$NEW"
+
+if [ -f "$EVIDENCE" ]; then
+  if ! php scripts/check-evidence.php "$EVIDENCE" "$NEW"; then
+    echo "[verify] Guard failed: $EVIDENCE left untouched (new results discarded)." >&2
+    exit 1
+  fi
+fi
+
+chmod 644 "$NEW"
+mv "$NEW" "$EVIDENCE"
+echo "[verify] Evidence written to $EVIDENCE"
