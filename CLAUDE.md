@@ -207,9 +207,11 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- **4.3.0 = header/footer release** (branch `feat/theme-layouts`, NOT merged to main on purpose): edit the
-  existing live Theme Builder header/footer (spec `docs/superpowers/specs/2026-10-01-theme-layouts-design.md`).
-  Held: ships as its own update after the first WordPress.org approval; `main` (4.2.0 + 4.1.0) is the upload candidate.
+- **4.3.0 = header/footer release** (merged to LOCAL main, 837b712; NOT uploaded): edit the existing live Theme Builder
+  header/footer (spec `docs/superpowers/specs/2026-10-01-theme-layouts-design.md`). Intended to ship as its own update
+  AFTER the first WordPress.org approval. 4.1.0 + 4.2.0 alone = main at commit 9e806a3 (the 4.2.0 merge); cut the upload
+  from there if 4.3.0 must wait. Before 4.3.0 ships: a real builder-made header/footer export must be run through
+  `validate_layout` (unproven), and the Features screenshot in `wporg-assets/` predates the new card.
 - **4.2.0 = preview-before-save release** (branch `feat/dry-run-diff`): `dry_run` on the two write
   tools/routes with a capped structured diff; spec `docs/superpowers/specs/2026-10-01-dry-run-diff-design.md`.
   Not uploaded; ships in one upload together with 4.1.0 after WordPress.org answers the 4.0.0 review.
