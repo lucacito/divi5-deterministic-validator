@@ -85,7 +85,7 @@ Docker env + validator workflows go through `make`:
 | `make validate FILE=x` | Validate an arbitrary layout file |
 | `make export-layouts` | Capture real Divi 5 JSON into `fixtures/valid/` |
 | `make schema-gap` | List Divi modules (from `divi/Divi.zip`) the validator doesn't know |
-| `make verify-modules` | Render candidate modules on the real Divi (Docker) and write evidence |
+| `make verify-modules` | Re-verify the already-promoted modules and probe the still-missing ones on the real Divi (Docker); writes evidence, but refuses to overwrite committed evidence with a result set that loses or demotes modules |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
 Tests run via PHPUnit (`phpunit.xml`) and cover both the validator

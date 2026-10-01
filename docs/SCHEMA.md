@@ -256,7 +256,7 @@ The validator reads the `post_content` field from this envelope and parses the b
 
 - **Divi version:** 5.14.0 (`docs/module-verification-5.14.json`)
 - **Verification date:** 2026-09-30
-- **Tooling:** `make schema-gap` lists modules in `divi/Divi.zip` the validator does not know; `make verify-modules` renders each candidate through real Divi in Docker and writes the evidence file. `scripts/promote-modules.php` generates `src/VerifiedModules.php` (mirrored to `wp-plugin/validator/`) from that evidence. Never hand-edit the generated file.
+- **Tooling:** `make schema-gap` lists modules in `divi/Divi.zip` the validator does not know; `make verify-modules` renders every placeable candidate through real Divi in Docker (the still-missing modules **and** the already-promoted ones, so a Divi update re-proves the shipped schema) and writes the evidence file; it refuses to overwrite committed evidence with a result set that loses or demotes modules (`scripts/check-evidence.php`). `scripts/promote-modules.php` generates `src/VerifiedModules.php` (mirrored to `wp-plugin/validator/`) from that evidence. Never hand-edit the generated file.
 
 ### What "render-verified" means
 
