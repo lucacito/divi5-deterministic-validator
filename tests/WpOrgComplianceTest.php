@@ -442,7 +442,8 @@ class WpOrgComplianceTest extends TestCase
         foreach (['license key', 'licence key', 'activate your license', '$30', 'per year', 'Pro features already activated'] as $bad) {
             $this->assertStringNotContainsStringIgnoringCase($bad, $r, "readme must not describe licensing ({$bad})");
         }
-        $this->assertStringContainsString('not affiliated with Elegant Themes', $r);
+        $this->assertStringContainsString('Divi is a trademark of Elegant Themes. This plugin is not affiliated with, endorsed by, or sponsored by Elegant Themes.', $r);
+        $this->assertSame(1, substr_count(strtolower($r), 'not affiliated'), 'one non-affiliation sentence only');
         foreach (['unlock', 'locked', 'premium', 'upgrade to'] as $bad) {
             $this->assertStringNotContainsStringIgnoringCase($bad, $r, "readme must not imply locked features ({$bad})");
         }

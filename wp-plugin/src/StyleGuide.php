@@ -219,7 +219,7 @@ module.decoration.zIndex.{bp}.value                   = 10
 ## Per-module styling (Divi's `css` attribute)
 Every Divi 5 module can carry its own optional `css` attribute (seen in real
 exports from a 2nd production site). It is a sibling of `module`/`builderVersion`,
-NOT under `module`. It styles that ONE module only and is saved inside the page
+NOT under `module`. It is meant to style that one module and is saved inside the page
 layout like any other module setting. Use it only for what the decoration
 attributes above can't express; the literal token `selector` targets the
 module's main element:

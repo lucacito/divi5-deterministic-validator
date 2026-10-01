@@ -64,4 +64,11 @@ class StyleGuideTest extends TestCase
             $this->assertStringNotContainsStringIgnoringCase($needle, $md, "StyleGuide must not mention $needle");
         }
     }
+
+    public function testCssAttributeIsNotClaimedToBeScoped(): void
+    {
+        $md = \AiEditorDivi5\WP\StyleGuide::markdown();
+        $this->assertStringNotContainsString('ONE module only', $md);
+        $this->assertStringContainsString('is meant to style that one module', $md);
+    }
 }

@@ -12,7 +12,7 @@ Edit and build Divi 5 pages in plain English with the AI assistant you already u
 
 == Description ==
 
-Tell your AI assistant what you want changed on your Divi 5 website, in your own words, and it makes the change for you. A built-in checker makes sure a broken page is never saved.
+Tell your AI assistant what you want changed on your Divi 5 website, in your own words, and it makes the change for you. A built-in checker tests every change the AI makes before it is saved.
 
 = How it works (in plain words) =
 
@@ -23,7 +23,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 
 = What makes it smart =
 
-* **The checker is not AI.** It follows fixed rules: same page in, same verdict out. The AI can be creative, but it can never save a broken page.
+* **The checker is not AI.** It follows fixed rules: same page in, same verdict out. The AI can be creative, but every save it makes is checked first, so a broken page is never saved by an AI edit.
 * **It knows Divi 5 well.** The checker knows more than 80 Divi 5 block types (modules, sections, rows and columns) and which ones are allowed inside which.
 * **Rules come from real Divi 5, not guesses.** The rules come from real Divi 5 page exports and, for 24 newer modules (and their child items), from Divi's own module definitions, verified by rendering them in real Divi 5.14.
 * **Small changes stay small.** Changing one phone number replaces just that text. The rest of the page is not rebuilt or touched.
@@ -87,7 +87,7 @@ A separate Pro add-on (sold separately at https://divi5lab.com/plugins/divi-5-ai
 * ChatGPT, through a custom GPT Action (OpenAPI)
 * Any other MCP client, or any HTTP client through the REST API
 
-Works with Divi 5. Not affiliated with, endorsed by, or sponsored by Elegant Themes. Divi is a trademark of Elegant Themes; this is an independent plugin and is not affiliated with Elegant Themes.
+Works with Divi 5. Divi is a trademark of Elegant Themes. This plugin is not affiliated with, endorsed by, or sponsored by Elegant Themes.
 
 = Privacy =
 
@@ -134,7 +134,7 @@ No. The plugin does not send your data anywhere and uses no third-party services
 
 = Can the AI break my pages? =
 
-The AI can make mistakes, but it cannot save a broken page. The checker runs before every save. If a layout breaks a rule, it is refused, nothing is saved, and the AI gets the exact reason so it can fix it. If you do not like a change that was saved, restore the previous version from the Dashboard.
+The AI can make mistakes, but a broken page is never saved by an AI edit. The checker runs before every save. If a layout breaks a rule, it is refused, nothing is saved, and the AI gets the exact reason so it can fix it. If you do not like a change that was saved, restore the previous version from the Dashboard: undo puts back your own earlier version exactly as it was, and when your AI assistant does the restore it is told whether that version passes the checker.
 
 = Is the API key safe? =
 

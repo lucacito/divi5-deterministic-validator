@@ -117,4 +117,11 @@ class ImagePackTest extends TestCase
             rmdir($tmp);
         }
     }
+
+    public function testReadmeDoesNotNameAScriptThatIsNotShipped(): void
+    {
+        $readme = (string) file_get_contents(__DIR__ . '/../wp-plugin/assets/images/README.txt');
+        $this->assertStringNotContainsString('scripts/', $readme, 'the generator is dev-only; the pack README must not point at a path that is not in the plugin');
+        $this->assertStringContainsString("a script in the plugin's development repository", $readme);
+    }
 }

@@ -223,4 +223,25 @@ class SectionRecipesTest extends TestCase
             $this->assertStringNotContainsString($bad, $blob, "source-site leftover: {$bad}");
         }
     }
+
+    public function testNoRecipeEmbedsABlobAndSizesStayReasonable(): void
+    {
+        foreach ($this->rawRecipes() as $name => $markup) {
+            $this->assertStringNotContainsString('data:image', $markup, "$name: no inline image blobs (use an image token)");
+            $this->assertStringNotContainsString('base64,', $markup, "$name: no base64 payloads");
+            $this->assertLessThan(60 * 1024, strlen($markup), "$name: recipe markup stays under 60 KB");
+        }
+        $this->assertLessThan(200 * 1024, filesize(__DIR__ . '/../wp-plugin/data/section-recipes.json'), 'the whole recipe file stays small');
+    }
+
+    public function testTestimonialPortraitUsesTheBundledAvatarWithAlt(): void
+    {
+        $raw = $this->rawRecipes()['testimonial'];
+        $this->assertStringContainsString('{{aied:image:avatar-1}}', $raw);
+        $this->assertSame(1, preg_match('/"portrait":\{"innerContent":\{"desktop":\{"value":(\{"url":"[^"]*"(?:,"alt":"[^"]*")?\})\}\}\}/', $raw, $m));
+        $value = json_decode($m[1], true);
+        $this->assertSame('{{aied:image:avatar-1}}', $value['url'] ?? null);
+        $this->assertNotSame('', trim((string) ($value['alt'] ?? '')), 'the portrait has meaningful alt text');
+        $this->assertStringContainsString('/assets/images/avatar-1.svg', (string) SectionRecipes::recipe('testimonial'), 'the token resolves to the local pack');
+    }
 }
