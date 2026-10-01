@@ -1,6 +1,6 @@
 # 4.0.0 — WordPress.org compliance (free plugin + separate Pro add-on)
 
-Status: DRAFT for owner approval · Date: 2026-10-01 · Release: **JHMG AI Editor for Divi 5 4.0.0**
+Status: APPROVED by owner 2026-10-01 (with the Media Library requirement below) · Date: 2026-10-01 · Release: **JHMG AI Editor for Divi 5 4.0.0**
 Trigger: WordPress.org Plugin Review Team pre-review of 3.3.0 (review id AUTOPREREVIEW ❗TRM-LIC-RMT, 2026-10-01).
 Owner decisions already given (2026-10-01): free plugin + separate Pro add-on; name **JHMG AI Editor for Divi 5**;
 no remote image hosts (Media Library + bundled local placeholders).
@@ -95,8 +95,22 @@ live fetching of external/stock images is a PRO-add-on feature.
   real site-local URLs. A catalogue of tokens (name, ratio, palette, intended role) is served by `get_image_guide`
   so the AI picks role-appropriate images instead of guessing. Every recipe still validates (the validator ignores
   `src`).
-- `ImageGuide` rewritten: Media Library / owner-provided URLs first; else the built-in pack by role; never a
-  third-party host. (A read-only `list_media` tool is a possible follow-up, not in 4.0.0.)
+- `ImageGuide` rewritten: **Media Library images first** (via the new `list_media_images` tool below), then
+  owner-provided URLs, then the built-in pack by role; never a third-party host.
+
+### Media Library access (owner requirement, in 4.0.0, free)
+
+New read-only tool `list_media_images` — MCP `list_media_images`, REST `GET /media`, OpenAPI `listMediaImages`
+(lockstep). Arguments: `search` (optional, matches title/alt/filename), `per_page` (default 20, max 50), `page`
+(default 1), `orientation` (optional: landscape|portrait|square). Returns, for each image attachment the caller
+can read: `id`, `title`, `alt`, `caption`, `url` (full size), `thumbnail_url`, `width`, `height`, `mime`,
+`filename`, plus `total` and `pages`. Images only (`image/*`); never other media types; never file contents.
+Requires `upload_files` (the capability WordPress uses for the Media Library) AND per-attachment
+`read_post`. It never uploads, sideloads or modifies media (no remote-file or admin surface). The AI is instructed
+(ImageGuide, StyleGuide, SectionRecipes preface) to call it BEFORE building a page, choose images by alt/title/
+orientation for each section role, put the returned `url` in the Divi image module, and fall back to the built-in
+pack only when the library has no suitable image. Pure helper `MediaLibrary` formats/filters attachment data
+(unit-tested); the WordPress query lives in a thin wrapper.
 - **Pro add-on adds** live stock-photo sourcing (relevant photos fetched per section, external hosts) through two
   more hooks: `apply_filters( 'jhmg_aied_image_guide', string $markdown )` (append sourcing instructions) and
   `apply_filters( 'jhmg_aied_image_token', ?string $url, string $token )` (resolve extra token families to remote
@@ -121,6 +135,8 @@ live fetching of external/stock images is a PRO-add-on feature.
   `wp-plugin/`; no remote image/script host strings under `wp-plugin/` (allowlist: `example.com`, schema/doc URLs
   that are not fetched — enumerated in the test); `Tested up to` absent from the plugin header; text domain equals
   slug everywhere.
+- Media tests: `MediaLibrary` formatting/orientation/search/limit clamping; capability + non-image exclusion;
+  lockstep MCP/REST/OpenAPI; live check against real uploaded attachments (a scratch image uploaded via WP-CLI).
 - Image pack tests: every token used in recipes/guides resolves to an existing file in `assets/images/`; no
   unresolved `{{aied:` tokens in any tool output; pack size budget; every file is SVG/PNG/JPG/WebP with a size cap;
   the token catalogue in `get_image_guide` lists exactly the files present.
@@ -128,7 +144,7 @@ live fetching of external/stock images is a PRO-add-on feature.
   dismissal; no Pro/upgrade string appears on any other screen or in any tool output.
 - Hook tests (tool list/dispatch/OpenAPI/admin tabs) incl. "no filter = unchanged".
 - Existing suites stay green (validator, recipes, history, guides, OpenAPI lockstep — OpenAPI/MCP tool counts
-  updated deliberately: MCP 18 → 14 tools in the free plugin).
+  updated deliberately: MCP 18 → 15 tools in the free plugin (−4 Pro tools, +`list_media_images`)).
 - Plugin Check clean under the NEW slug (swap procedure), live smoke (create page draft, edit, history, restore),
   admin screenshots (no upsell/nag), readme validated.
 
