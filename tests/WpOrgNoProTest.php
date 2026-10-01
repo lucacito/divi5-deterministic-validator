@@ -52,9 +52,9 @@ class WpOrgNoProTest extends TestCase
         $expected = [
             'create_page', 'edit_page_content', 'get_image_guide', 'get_landing_guide', 'get_page_history_entry',
             'get_page_layout', 'get_section_recipes', 'get_site_guide', 'get_style_guide', 'list_divi_pages',
-            'list_page_history', 'restore_page_version', 'update_page_layout', 'validate_layout',
+            'list_media_images', 'list_page_history', 'restore_page_version', 'update_page_layout', 'validate_layout',
         ];
         $this->assertSame($expected, $tools);
-        $this->assertCount(14, $tools);
+        $this->assertCount(15, $tools);
     }
 }

@@ -62,4 +62,16 @@ class HistoryLockstepTest extends TestCase
             $this->assertSame('#/components/schemas/SnapshotInfo', $schema['properties']['history']['$ref'] ?? null);
         }
     }
+
+    public function testMediaToolExistsInAllThreeTransports(): void
+    {
+        $mcp = $this->src('McpHandler.php');
+        $this->assertStringContainsString("'name'        => 'list_media_images'", $mcp);
+        $this->assertMatchesRegularExpression("/'list_media_images'\s*=>\s*\\\$this->toolListMedia/", $mcp);
+        $this->assertStringContainsString("'/media'", $this->src('RestController.php'));
+
+        $spec = OpenApiSpec::spec('https://x.example/wp-json/ai-editor-divi5/v1', '9.9.9');
+        $this->assertSame('listMediaImages', $spec['paths']['/media']['get']['operationId'] ?? null);
+        $this->assertArrayHasKey('MediaItem', $spec['components']['schemas']);
+    }
 }

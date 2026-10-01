@@ -98,6 +98,22 @@ final class OpenApiSpec
                             'label'    => ['type' => 'string'],
                         ],
                     ],
+                    'MediaItem' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'id'            => ['type' => 'integer', 'description' => 'Attachment id'],
+                            'title'         => ['type' => 'string'],
+                            'alt'           => ['type' => 'string', 'description' => 'Alt text (reuse it on the image module)'],
+                            'caption'       => ['type' => 'string'],
+                            'url'           => ['type' => 'string', 'description' => 'Full-size image URL to use as the image src'],
+                            'thumbnail_url' => ['type' => 'string'],
+                            'width'         => ['type' => 'integer'],
+                            'height'        => ['type' => 'integer'],
+                            'orientation'   => ['type' => 'string', 'enum' => ['landscape', 'portrait', 'square']],
+                            'mime'          => ['type' => 'string'],
+                            'filename'      => ['type' => 'string'],
+                        ],
+                    ],
                     'SnapshotInfo' => [
                         'type'       => 'object',
                         'properties' => [
@@ -327,6 +343,32 @@ final class OpenApiSpec
                         'summary'     => 'Get the image-intelligence guide',
                         'description' => 'How to assign the right image to each section by role: Media Library first (list_media_images), then the built-in image pack. Covers per-section rules, sizing and alt text. Call before choosing any image src.',
                         'responses'   => ['200' => ['description' => 'The guide (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
+                    ],
+                ],
+                '/media' => [
+                    'get' => [
+                        'operationId' => 'listMediaImages',
+                        'summary'     => 'List Media Library images',
+                        'description' => 'Lists images already in the Media Library (read-only) so pages can reuse the owner\'s own images. Filter by search text and orientation. Returns id, title, alt, url, thumbnail, size and orientation for each image.',
+                        'parameters'  => [
+                            ['name' => 'search', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Keywords matched against title, alt text and filename']],
+                            ['name' => 'orientation', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'enum' => ['landscape', 'portrait', 'square'], 'description' => 'Orientation filter']],
+                            ['name' => 'per_page', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'integer', 'description' => 'Results per page (default 20, max 50)']],
+                            ['name' => 'page', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'integer', 'description' => 'Page number (default 1)']],
+                        ],
+                        'responses'   => [
+                            '200' => ['description' => 'Matching images', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'items'    => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/MediaItem']],
+                                    'total'    => ['type' => 'integer'],
+                                    'pages'    => ['type' => 'integer'],
+                                    'page'     => ['type' => 'integer'],
+                                    'per_page' => ['type' => 'integer'],
+                                ],
+                            ]]]],
+                            '403' => ['description' => 'Caller cannot read the Media Library'],
+                        ],
                     ],
                 ],
                 '/section-recipes' => [

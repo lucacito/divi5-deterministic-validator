@@ -199,6 +199,19 @@ final class McpHandler
                 ],
             ],
             [
+                'name'        => 'list_media_images',
+                'description' => 'List images already in this site\'s Media Library (read-only). Call this BEFORE building a page and use a suitable image\'s "url" in Divi image modules (set the module alt text from the image alt). Filter with "search" (title/alt/filename) and "orientation" (landscape for heroes/cards, square for people). Use the built-in image pack (get_image_guide) only when the library has nothing suitable.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'search'      => ['type' => 'string',  'description' => 'Optional keywords matched against title, alt text and filename'],
+                        'orientation' => ['type' => 'string',  'enum' => ['landscape', 'portrait', 'square'], 'description' => 'Optional orientation filter'],
+                        'per_page'    => ['type' => 'integer', 'description' => 'Results per page (default 20, max 50)'],
+                        'page'        => ['type' => 'integer', 'description' => 'Page number (default 1)'],
+                    ],
+                ],
+            ],
+            [
                 'name'        => 'create_page',
                 'description' => 'Create a new WordPress page with a validated Divi 5 layout. The page is always created as a DRAFT for the site owner to review and publish. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the page is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL.',
                 'inputSchema' => [
@@ -238,6 +251,7 @@ final class McpHandler
             'list_page_history'      => $this->toolListHistory($id, $arguments),
             'get_page_history_entry' => $this->toolGetHistoryEntry($id, $arguments),
             'restore_page_version'   => $this->toolRestoreVersion($id, $arguments),
+            'list_media_images'  => $this->toolListMedia($id, $arguments),
             'create_page'        => $this->toolCreatePage($id, $arguments),
             default              => $this->extensionCall($id, $name, $arguments),
         };
@@ -527,6 +541,20 @@ final class McpHandler
                 'validator'        => $result['validator'],
                 'page'             => ['id' => $post->ID, 'title' => get_the_title($post->ID)],
             ])]],
+        ]);
+    }
+
+    private function toolListMedia(mixed $id, array $args): WP_REST_Response
+    {
+        if (!current_user_can('upload_files')) {
+            UsageTracker::log('list_media', null, 'error');
+            return $this->rpcError($id, -32602, 'You do not have permission to read the Media Library.');
+        }
+        $result = MediaService::list($args);
+        UsageTracker::log('list_media', null, 'valid');
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => json_encode($result)]],
         ]);
     }
 

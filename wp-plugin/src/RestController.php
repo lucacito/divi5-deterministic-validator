@@ -133,6 +133,13 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
+        // GET /media — read-only list of Media Library images
+        register_rest_route(self::NS, '/media', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'list_media'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
         // Extension point: add-ons register their own routes under the same namespace.
         do_action( 'jhmg_aied_register_rest_routes', self::NS );
     }
@@ -502,6 +509,22 @@ final class RestController
             ],
             'exported_at'  => gmdate('c'),
         ];
+    }
+
+    public function list_media(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!current_user_can('upload_files')) {
+            return new WP_Error('forbidden', 'You do not have permission to read the Media Library.', ['status' => 403]);
+        }
+        $result = MediaService::list([
+            'search'      => $request->get_param('search'),
+            'per_page'    => $request->get_param('per_page'),
+            'page'        => $request->get_param('page'),
+            'orientation' => $request->get_param('orientation'),
+        ]);
+        UsageTracker::log('list_media', null, 'valid');
+
+        return new WP_REST_Response($result, 200);
     }
 
     public function require_edit_posts(): bool|WP_Error
