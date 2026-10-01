@@ -73,7 +73,9 @@ List the page titles and slugs you created so the owner can tick them off.
   whole page.
 - Preview: update_page_layout and edit_page_content accept `dry_run: true` to return the
   checker's verdict and a diff of what would change without saving anything. Preview big
-  or risky edits first, then repeat the call without `dry_run` to save.
+  or risky edits first, then repeat the call without `dry_run` to save. A preview of an
+  invalid layout still returns normally, with `valid: false` and the violations; fix them
+  before saving.
 MD;
     }
 }

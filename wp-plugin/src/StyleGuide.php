@@ -280,7 +280,10 @@ same checks as a real save but saves nothing: it returns whether the result woul
 the checker plus a diff of what would change (blocks added, removed or changed, with the
 before and after value of each changed setting, at most 50 changes). Use it for a big
 rewrite or any edit you are not sure about, confirm that only the intended blocks
-changed, then repeat the same call without `dry_run` to save.
+changed, then repeat the same call without `dry_run` to save. A preview of an invalid
+layout still returns normally, with `valid: false` and the violations; fix them before
+saving. A replaced or new section counts as one removed/added block; its children are
+not listed.
 MD;
     }
 }

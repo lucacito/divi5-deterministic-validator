@@ -62,11 +62,21 @@ class DryRunLockstepTest extends TestCase
         $this->assertStringContainsString( 'dry_run=true', $mcp, 'the tool descriptions explain dry_run' );
     }
 
-    public function testRestPassesNothingExtraToTheWriteRoutes(): void
+    public function testRestReadsDryRunFromTheJsonBodyAndRegistersNoRouteArgForIt(): void
     {
         $rest = $this->src( 'RestController.php' );
-        $this->assertStringContainsString( "'/pages/(?P<id>\\d+)'", $rest );
-        $this->assertStringContainsString( "'/pages/(?P<id>\\d+)/edit'", $rest );
+
+        foreach ( [ 'update_page', 'edit_page' ] as $method ) {
+            $b = $this->body( $rest, $method );
+            $this->assertStringContainsString( '$body    = (array) $request->get_json_params();', $b, "{$method} reads the JSON body" );
+            $this->assertStringContainsString( "PageAccess::boolArg(\$body, 'dry_run')", $b );
+        }
+
+        // A route-level 'dry_run' arg would let WordPress coerce "true" into true before the strict parser sees it.
+        $routes = $this->body( $rest, 'register_routes' );
+        $this->assertStringContainsString( "'/pages/(?P<id>\\d+)'", $routes );
+        $this->assertStringContainsString( "'/pages/(?P<id>\\d+)/edit'", $routes );
+        $this->assertStringNotContainsString( 'dry_run', $routes, 'no route may declare a dry_run arg' );
     }
 
     public function testOpenApiDeclaresDryRunOnBothWriteOperationsAndTheResponseShape(): void

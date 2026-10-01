@@ -81,7 +81,7 @@ if ( ! function_exists( 'delete_transient' ) ) {
     function delete_transient( $key ): bool { unset( $GLOBALS['__wp_transients'][ $key ] ); return true; }
 }
 if ( ! class_exists( 'WP_Error' ) ) {
-    class WP_Error { public function __construct( public string $code = 'http_request_failed', public string $message = '' ) {} public function get_error_message(): string { return $this->message; } }
+    class WP_Error { public function __construct( public string $code = 'http_request_failed', public string $message = '', public mixed $data = '' ) {} public function get_error_message(): string { return $this->message; } }
 }
 if ( ! function_exists( 'is_wp_error' ) ) {
     function is_wp_error( $thing ): bool { return $thing instanceof WP_Error; }
@@ -195,6 +195,7 @@ if ( ! function_exists( 'wp_update_post' ) ) {
             return new WP_Error( 'invalid_post', 'Invalid post ID.' );
         }
         $GLOBALS['__wp_posts'][ $id ]->post_content = (string) $arr['post_content'];
+        $GLOBALS['__wp_update_calls'] = ( $GLOBALS['__wp_update_calls'] ?? 0 ) + 1; // lets a test prove no save happened
         return $id;
     }
 }

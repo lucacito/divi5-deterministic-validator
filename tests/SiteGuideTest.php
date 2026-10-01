@@ -35,4 +35,11 @@ class SiteGuideTest extends TestCase
             $this->assertStringNotContainsStringIgnoringCase($needle, $md, "site guide must not mention $needle");
         }
     }
+
+    public function testBlueprintTeachesPreviewWithDryRun(): void
+    {
+        $md = SiteGuide::markdown();
+        $this->assertStringContainsString('dry_run', $md);
+        $this->assertStringContainsString('valid: false', $md);
+    }
 }

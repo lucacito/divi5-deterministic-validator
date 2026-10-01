@@ -15,6 +15,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Describes what an edit would change, block by block. Information only: it never affects what a
  * real write does. Blocks are compared by child index under the same parent, so an insertion in
  * the middle of a list is reported as changes at the shifted indices (no move detection).
+ *
+ * Known limits, kept on purpose (do not "fix" one of them in isolation):
+ *  - `summary` counts only the root block of an added, removed or type-swapped subtree; the
+ *    children of that subtree are not counted or listed.
+ *  - Leaf values are compared as strings, so a pure type change (true vs "true", 1 vs "1")
+ *    yields no entry. The validator's verdict is the authority on validity, not this diff.
+ *  - Attribute paths are dot-joined, so a key that itself contained a dot would collide with a
+ *    nested path. Divi attribute keys never contain dots.
  */
 final class LayoutDiff
 {

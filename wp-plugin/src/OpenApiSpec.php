@@ -226,11 +226,11 @@ final class OpenApiSpec
                     'put' => [
                         'operationId' => 'updatePageLayout',
                         'summary'     => 'Validate and save a page layout',
-                        'description' => 'Validates the submitted layout and saves it only if all checks pass. Returns 422 with violations if the layout is invalid — the page is NOT updated. Set dry_run to true to preview the changes without saving.',
+                        'description' => 'Validates the submitted layout and saves it only if all checks pass. Returns 422 with violations if the layout is invalid — the page is NOT updated. Set dry_run to true to preview without saving; a dry run of an invalid layout returns 200 with valid:false and the violations.',
                         'parameters'  => [self::idParam()],
                         'requestBody' => self::postContentBody(true),
                         'responses'   => [
-                            '200' => ['description' => 'Layout saved; history reports the undo snapshot', 'content' => ['application/json' => ['schema' => [
+                            '200' => ['description' => 'Saved (history reports the undo snapshot), or, with dry_run, a preview that saved nothing', 'content' => ['application/json' => ['schema' => [
                                 'type'       => 'object',
                                 'properties' => [
                                     'saved'      => ['type' => 'boolean'],
@@ -260,12 +260,12 @@ final class OpenApiSpec
                                     'find'         => ['type' => 'string',  'description' => 'Exact text to find (verbatim; include surrounding text so it is unique)'],
                                     'replace'      => ['type' => 'string',  'description' => 'Text to replace it with'],
                                     'expect_count' => ['type' => 'integer', 'description' => 'Optional: number of matches to replace (must equal the number found)'],
-                                    'dry_run'      => self::dryRunProperty(),
+                                    'dry_run'      => self::dryRunProperty(' An invalid result still comes back as a normal 200 preview with valid:false.'),
                                 ],
                             ]]],
                         ],
                         'responses'   => [
-                            '200' => ['description' => 'Edit saved; history reports the undo snapshot', 'content' => ['application/json' => ['schema' => [
+                            '200' => ['description' => 'Saved (history reports the undo snapshot), or, with dry_run, a preview that saved nothing', 'content' => ['application/json' => ['schema' => [
                                 'type'       => 'object',
                                 'properties' => [
                                     'saved'      => ['type' => 'boolean'],
@@ -480,9 +480,9 @@ final class OpenApiSpec
     }
 
     /** @return array<string,mixed> */
-    private static function dryRunProperty(): array
+    private static function dryRunProperty(string $extra = ''): array
     {
-        return ['type' => 'boolean', 'description' => 'Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing.'];
+        return ['type' => 'boolean', 'description' => 'Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing.' . $extra];
     }
 
     /** @return array<string,array<string,mixed>> the response properties a dry run adds to a save response */
