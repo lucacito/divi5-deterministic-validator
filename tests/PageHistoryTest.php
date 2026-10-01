@@ -203,16 +203,4 @@ class PageHistoryTest extends TestCase
         $this->assertCount(1, $h['items']);
         $this->assertSame(6, $h['next']);
     }
-
-    public function testRecentTakesNewestPerPageAcrossPages(): void
-    {
-        $a = $this->rec(PageHistory::empty(), 'a1', '2026-10-01T01:00:00Z')['history'];
-        $a = $this->rec($a, 'a2', '2026-10-01T05:00:00Z')['history'];
-        $b = $this->rec(PageHistory::empty(), 'b1', '2026-10-01T03:00:00Z', 'edit_page_content')['history'];
-        $rows = PageHistory::recent([10 => $a, 20 => $b, 30 => PageHistory::empty()], 5);
-        $this->assertSame([10, 20], array_column($rows, 'page_id'));
-        $this->assertSame(2, $rows[0]['version_id']);
-        $this->assertSame('edit_page_content', $rows[1]['tool']);
-        $this->assertCount(1, PageHistory::recent([10 => $a, 20 => $b], 1));
-    }
 }

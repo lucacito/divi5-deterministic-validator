@@ -18,9 +18,6 @@ final class HistoryService
 {
     public const TOOL_RESTORE = 'restore';
 
-    /** How many most-recently-modified pages the dashboard scans for history. */
-    private const RECENT_SCAN = 15;
-
     /** @return array{ok:bool, snapshot:array, error?:string, message?:string} */
     public static function write( int $pageId, string $newContent, string $tool ): array
     {
@@ -43,13 +40,13 @@ final class HistoryService
     /** @return list<array<string,mixed>> */
     public static function listFor( int $pageId ): array
     {
-        return PageHistory::summaries( HistoryStore::load( $pageId ) );
+        return HistoryStore::summaries( $pageId );
     }
 
     /** @return array<string,mixed>|null */
     public static function entry( int $pageId, int $versionId ): ?array
     {
-        return PageHistory::find( HistoryStore::load( $pageId ), $versionId );
+        return HistoryStore::entry( $pageId, $versionId );
     }
 
     /** @return array<string,mixed> */
@@ -84,40 +81,12 @@ final class HistoryService
     }
 
     /**
-     * @param list<int>|null $pageIds null = discover pages that have history (production)
      * @return list<array{page_id:int, title:string, version_id:int, saved_at:mixed, tool:mixed}>
      */
-    public static function recent( int $limit = 5, ?array $pageIds = null ): array
+    public static function recent( int $limit = 5 ): array
     {
-        if ( null === $pageIds ) {
-            $pageIds = array_map( 'intval', get_posts( [
-                'post_type'      => 'page',
-                'post_status'    => 'any',
-                'posts_per_page' => self::RECENT_SCAN,
-                'orderby'        => 'modified',
-                'order'          => 'DESC',
-                'fields'         => 'ids',
-                'meta_key'       => HistoryStore::META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-            ] ) );
-        }
-
-        $byPage = [];
-        foreach ( $pageIds as $pageId ) {
-            // Keep only the newest item's metadata: the stored histories can hold
-            // up to 10 x 512 KB of content per page and only items[0] is needed.
-            $h = HistoryStore::load( (int) $pageId );
-            // get_post_meta primed this page's whole meta into the object cache; drop it so
-            // the raw history strings of up to RECENT_SCAN pages are not retained all request.
-            wp_cache_delete( (int) $pageId, 'post_meta' );
-            if ( $h['items'] !== [] ) {
-                $h['items'] = [ array_merge( $h['items'][0], [ 'content' => '' ] ) ];
-            }
-            $byPage[ $pageId ] = $h;
-            unset( $h );
-        }
-
         $rows = [];
-        foreach ( PageHistory::recent( $byPage, $limit ) as $row ) {
+        foreach ( HistoryStore::recent( $limit ) as $row ) {
             $post   = get_post( $row['page_id'] );
             $rows[] = $row + [ 'title' => $post ? (string) ( $post->post_title ?? '' ) : '' ];
         }
