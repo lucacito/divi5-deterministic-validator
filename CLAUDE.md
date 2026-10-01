@@ -114,6 +114,15 @@ content; the result reports whether it passes) and snapshots the current content
 first, so a restore is itself undoable when its own `history.stored` is true. Only
 plugin edits are snapshotted, not Divi-builder edits; `create_page` has nothing to undo.
 
+Dry run (v4.2.0): `update_page_layout`, `edit_page_content`, `PUT /pages/{id}` and
+`POST /pages/{id}/edit` accept a strict boolean `dry_run` (a non-boolean is rejected 400 /
+-32602, never read as false). It runs the same checks, then returns `DryRun::preview()`
+(validator verdict + `LayoutDiff` diff: max 50 changes, 25 attribute diffs per block, values
+cut to 200 characters, `builderVersion` ignored) BEFORE `HistoryService::write()` is reachable;
+the page, its history and `post_modified` are never touched. A preview of an invalid layout
+is a normal 200 / `isError: false` response carrying `valid: false`. Logged as endpoint
+`dry_run`, result `read`. It is a flag, not a tool: the list stays at 15 tools / 15 operations.
+
 Same logic is exposed three ways, kept in lockstep: MCP (`McpHandler`), REST
 (`RestController`), and the ChatGPT OpenAPI spec (`OpenApiSpec`). Add or change a
 tool → update all three.
@@ -143,6 +152,7 @@ Docker env + validator workflows go through `make`:
 | `make schema-gap` | List Divi modules (from `divi/Divi.zip`) the validator doesn't know |
 | `make verify-modules` | Re-verify the already-promoted modules and probe the still-missing ones on the real Divi (Docker); writes evidence, but refuses to overwrite committed evidence with a result set that loses or demotes modules |
 | `make verify-history` | Real-database check of the undo-history table on the Docker site (creates and deletes one throwaway draft page) |
+| `make verify-dry-run` | Real-site check of `dry_run` on the REST and MCP handlers (creates and deletes one throwaway draft page) |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
 Tests run via PHPUnit (`phpunit.xml`) and cover both the validator
@@ -182,6 +192,9 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
+- **4.2.0 = preview-before-save release** (branch `feat/dry-run-diff`): `dry_run` on the two write
+  tools/routes with a capped structured diff; spec `docs/superpowers/specs/2026-10-01-dry-run-diff-design.md`.
+  Not uploaded; ships in one upload together with 4.1.0 after WordPress.org answers the 4.0.0 review.
 - **4.1.0 = history storage release** (branch `feat/history-table`, merged to local main, not uploaded):
   undo history moved from post meta to its own table with automatic migration; spec
   `docs/superpowers/specs/2026-10-01-history-table-storage-design.md`. Upload only after

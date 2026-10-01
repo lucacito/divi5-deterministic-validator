@@ -67,4 +67,17 @@ final class PageAccess
         }
         return is_string($args[$key]) ? $args[$key] : null;
     }
+
+    /**
+     * Optional boolean argument. Absent or null reads as false; a real boolean is returned as is;
+     * any other type (e.g. the string "false", 0, "yes") yields null so the caller rejects it
+     * instead of guessing (a typo must never turn a preview into a save).
+     */
+    public static function boolArg(array $args, string $key): ?bool
+    {
+        if (!array_key_exists($key, $args) || $args[$key] === null) {
+            return false;
+        }
+        return is_bool($args[$key]) ? $args[$key] : null;
+    }
 }

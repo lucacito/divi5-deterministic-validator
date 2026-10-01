@@ -151,19 +151,20 @@ final class McpHandler
             ],
             [
                 'name'        => 'update_page_layout',
-                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL.',
+                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL. Pass dry_run=true to preview what would change (a diff plus the checker\'s verdict) without saving anything; an invalid result comes back as a normal preview with valid:false.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
                         'page_id'      => ['type' => 'integer', 'description' => 'WordPress page ID'],
                         'post_content' => ['type' => 'string',  'description' => 'Divi 5 Gutenberg block HTML'],
+                        'dry_run' => ['type' => 'boolean', 'description' => 'Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing.'],
                     ],
                     'required' => ['page_id', 'post_content'],
                 ],
             ],
             [
                 'name'        => 'edit_page_content',
-                'description' => 'Make a small, surgical edit to an existing page WITHOUT re-sending the whole layout: an exact find-and-replace on the page\'s stored content. Use this for changing an email, phone number, link, price, or a line of copy — never rebuild the full page for a tiny change. "find" must match exactly once unless you set expect_count to the number of matches. The result is re-validated before saving; if "find" is empty, not found, or ambiguous, nothing is changed.',
+                'description' => 'Make a small, surgical edit to an existing page WITHOUT re-sending the whole layout: an exact find-and-replace on the page\'s stored content. Use this for changing an email, phone number, link, price, or a line of copy — never rebuild the full page for a tiny change. "find" must match exactly once unless you set expect_count to the number of matches. The result is re-validated before saving; if "find" is empty, not found, or ambiguous, nothing is changed. Pass dry_run=true to preview the change (a diff plus the checker\'s verdict) without saving; an invalid result comes back as a normal preview with valid:false.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -171,6 +172,7 @@ final class McpHandler
                         'find'         => ['type' => 'string',  'description' => 'Exact text to find (verbatim, including any surrounding markup needed to make it unique)'],
                         'replace'      => ['type' => 'string',  'description' => 'Text to replace it with'],
                         'expect_count' => ['type' => 'integer', 'description' => 'Optional: how many matches to replace (must equal the number found). Omit to require a single unique match.'],
+                        'dry_run' => ['type' => 'boolean', 'description' => 'Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing.'],
                     ],
                     'required' => ['page_id', 'find', 'replace'],
                 ],
@@ -385,10 +387,15 @@ final class McpHandler
     {
         $pageId  = (int) ($args['page_id'] ?? 0);
         $content = PageAccess::stringArg($args, 'post_content');
+        $dryRun  = PageAccess::boolArg($args, 'dry_run');
         $post    = $pageId ? get_post($pageId) : null;
 
         if ($content === null) {
             return $this->rpcError($id, -32602, 'post_content must be a string.');
+        }
+
+        if ($dryRun === null) {
+            return $this->rpcError($id, -32602, 'dry_run must be a boolean.');
         }
 
         if (!$post || $post->post_type !== 'page') {
@@ -401,6 +408,14 @@ final class McpHandler
 
         if ($content === '') {
             return $this->rpcError($id, -32602, 'post_content is required.');
+        }
+
+        if ($dryRun) {
+            UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
+
+            return $this->rpcResult($id, [
+                'content' => [['type' => 'text', 'text' => json_encode(DryRun::preview((string) $post->post_content, $content))]],
+            ]);
         }
 
         $result = (new Validator())->validateContent($content);
@@ -448,6 +463,10 @@ final class McpHandler
         $expect  = (array_key_exists('expect_count', $args) && $args['expect_count'] !== null)
             ? (int) $args['expect_count']
             : null;
+        $dryRun  = PageAccess::boolArg($args, 'dry_run');
+        if ($dryRun === null) {
+            return $this->rpcError($id, -32602, 'dry_run must be a boolean.');
+        }
         $post = $pageId ? get_post($pageId) : null;
 
         if (!$post || $post->post_type !== 'page') {
@@ -468,6 +487,14 @@ final class McpHandler
                     'message' => $edit['error'],
                 ])]],
                 'isError' => true,
+            ]);
+        }
+
+        if ($dryRun) {
+            UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
+
+            return $this->rpcResult($id, [
+                'content' => [['type' => 'text', 'text' => json_encode(DryRun::preview((string) $post->post_content, $edit['content']) + ['replaced' => $edit['count']])]],
             ]);
         }
 

@@ -98,6 +98,40 @@ final class OpenApiSpec
                             'label'    => ['type' => 'string'],
                         ],
                     ],
+                    'DryRunAttr' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'path'   => ['type' => 'string', 'description' => 'Attribute path, dot-separated'],
+                            'before' => ['type' => ['string', 'null'], 'description' => 'Value now (null if absent), cut to 200 characters'],
+                            'after'  => ['type' => ['string', 'null'], 'description' => 'Value after the change (null if removed), cut to 200 characters'],
+                        ],
+                    ],
+                    'DryRunChange' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'path'          => ['type' => 'string', 'description' => 'Where the block sits, e.g. divi/placeholder[0]/divi/section[0]/divi/heading[1]'],
+                            'block'         => ['type' => 'string'],
+                            'kind'          => ['type' => 'string', 'enum' => ['added', 'removed', 'changed']],
+                            'attrs'         => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/DryRunAttr'], 'description' => 'For changed blocks: the attributes that differ (at most 25)'],
+                            'attrs_omitted' => ['type' => 'integer', 'description' => 'How many more differing attributes were left out'],
+                        ],
+                    ],
+                    'DryRunDiff' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'summary'   => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'added'     => ['type' => 'integer'],
+                                    'removed'   => ['type' => 'integer'],
+                                    'changed'   => ['type' => 'integer'],
+                                    'unchanged' => ['type' => 'integer'],
+                                ],
+                            ],
+                            'changes'   => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/DryRunChange'], 'description' => 'At most 50 changes'],
+                            'truncated' => ['type' => 'boolean', 'description' => 'true when there were more than 50 changes; summary has the true totals'],
+                        ],
+                    ],
                     'MediaItem' => [
                         'type'       => 'object',
                         'properties' => [
@@ -192,17 +226,17 @@ final class OpenApiSpec
                     'put' => [
                         'operationId' => 'updatePageLayout',
                         'summary'     => 'Validate and save a page layout',
-                        'description' => 'Validates the submitted layout and saves it only if all checks pass. Returns 422 with violations if the layout is invalid — the page is NOT updated.',
+                        'description' => 'Validates the submitted layout and saves it only if all checks pass. Returns 422 with violations if the layout is invalid — the page is NOT updated. Set dry_run to true to preview without saving; a dry run of an invalid layout returns 200 with valid:false and the violations.',
                         'parameters'  => [self::idParam()],
-                        'requestBody' => self::postContentBody(),
+                        'requestBody' => self::postContentBody(true),
                         'responses'   => [
-                            '200' => ['description' => 'Layout saved; history reports the undo snapshot', 'content' => ['application/json' => ['schema' => [
+                            '200' => ['description' => 'Saved (history reports the undo snapshot), or, with dry_run, a preview that saved nothing', 'content' => ['application/json' => ['schema' => [
                                 'type'       => 'object',
                                 'properties' => [
                                     'saved'      => ['type' => 'boolean'],
                                     'valid'      => ['type' => 'boolean'],
                                     'history'    => ['$ref' => '#/components/schemas/SnapshotInfo'],
-                                ],
+                                ] + self::dryRunResponseProperties(),
                                 'additionalProperties' => true,
                             ]]]],
                             '400' => ['description' => 'Missing post_content'],
@@ -226,17 +260,18 @@ final class OpenApiSpec
                                     'find'         => ['type' => 'string',  'description' => 'Exact text to find (verbatim; include surrounding text so it is unique)'],
                                     'replace'      => ['type' => 'string',  'description' => 'Text to replace it with'],
                                     'expect_count' => ['type' => 'integer', 'description' => 'Optional: number of matches to replace (must equal the number found)'],
+                                    'dry_run'      => self::dryRunProperty(' An invalid result still comes back as a normal 200 preview with valid:false.'),
                                 ],
                             ]]],
                         ],
                         'responses'   => [
-                            '200' => ['description' => 'Edit saved; history reports the undo snapshot', 'content' => ['application/json' => ['schema' => [
+                            '200' => ['description' => 'Saved (history reports the undo snapshot), or, with dry_run, a preview that saved nothing', 'content' => ['application/json' => ['schema' => [
                                 'type'       => 'object',
                                 'properties' => [
                                     'saved'      => ['type' => 'boolean'],
                                     'replaced'   => ['type' => 'integer'],
                                     'history'    => ['$ref' => '#/components/schemas/SnapshotInfo'],
-                                ],
+                                ] + self::dryRunResponseProperties(),
                                 'additionalProperties' => true,
                             ]]]],
                             '400' => ['description' => 'Missing find or replace'],
@@ -427,15 +462,37 @@ final class OpenApiSpec
         return ['name' => 'versionId', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'integer', 'description' => 'Version id from listPageHistory']];
     }
 
-    private static function postContentBody(): array
+    private static function postContentBody(bool $dryRun = false): array
     {
+        $properties = ['post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML']];
+        if ($dryRun) {
+            $properties['dry_run'] = self::dryRunProperty();
+        }
+
         return [
             'required' => true,
             'content'  => ['application/json' => ['schema' => [
                 'type'       => 'object',
                 'required'   => ['post_content'],
-                'properties' => ['post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML']],
+                'properties' => $properties,
             ]]],
+        ];
+    }
+
+    /** @return array<string,mixed> */
+    private static function dryRunProperty(string $extra = ''): array
+    {
+        return ['type' => 'boolean', 'description' => 'Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing.' . $extra];
+    }
+
+    /** @return array<string,array<string,mixed>> the response properties a dry run adds to a save response */
+    private static function dryRunResponseProperties(): array
+    {
+        return [
+            'dry_run'    => ['type' => 'boolean', 'description' => 'true when this was a preview and nothing was saved'],
+            'diff'       => ['$ref' => '#/components/schemas/DryRunDiff'],
+            'diff_error' => ['type' => 'string', 'description' => 'Why no diff could be built (diff is then null); the verdict is still valid'],
+            'message'    => ['type' => 'string'],
         ];
     }
 }

@@ -71,4 +71,12 @@ class StyleGuideTest extends TestCase
         $this->assertStringNotContainsString('ONE module only', $md);
         $this->assertStringContainsString('is meant to style that one module', $md);
     }
+
+    public function testPreviewSectionTeachesDryRunAndThatAnInvalidPreviewStillReturns(): void
+    {
+        $md = StyleGuide::markdown();
+        $this->assertStringContainsString('dry_run', $md);
+        $this->assertStringContainsString('valid: false', $md);
+        $this->assertStringContainsString('counts as one removed/added block', $md);
+    }
 }
