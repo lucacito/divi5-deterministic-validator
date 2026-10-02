@@ -7,4 +7,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once __DIR__ . '/Compat.php';
+require_once __DIR__ . '/Licensing/LicenseClient.php';
+require_once __DIR__ . '/Licensing.php';
 require_once __DIR__ . '/Plugin.php';

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Divi5Validator\Tests;
+namespace AiEditorDivi5\Pro\Tests;
 
-use AiEditorDivi5\WP\Licensing;
+use AiEditorDivi5\Pro\Licensing;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/Licensing/LicenseClient.php';
@@ -37,9 +37,9 @@ class LicensingTest extends TestCase
     /** Age the cached state so refresh() actually hits the network. */
     private function ageState(): void
     {
-        $state = $GLOBALS['__wp_options']['aied_license_state'];
+        $state = $GLOBALS['__wp_options']['aied_pro_license_state'];
         $state['checked_at'] = time() - 2 * DAY_IN_SECONDS;
-        $GLOBALS['__wp_options']['aied_license_state'] = $state;
+        $GLOBALS['__wp_options']['aied_pro_license_state'] = $state;
     }
 
     private function activatePremium(): void
@@ -169,8 +169,51 @@ class LicensingTest extends TestCase
         $this->assertSame( [], array_filter( array_keys( $GLOBALS['__wp_options'] ), fn ( $k ) => str_starts_with( $k, 'aied_' ) ) );
     }
 
-    public function testClientHasNoUpdaterForWordPressOrg(): void
+    public function testClientCarriesTheUpdater(): void
     {
-        $this->assertFalse( method_exists( Licensing::client(), 'inject_update' ) );
+        $this->assertTrue( method_exists( Licensing::client(), 'inject_update' ) );
+    }
+
+    public function testTheClientIsScopedToTheProAddOn(): void
+    {
+        $this->activatePremium();
+        $this->assertArrayHasKey( 'aied_pro_license_key', $GLOBALS['__wp_options'] );
+        $this->assertArrayNotHasKey( 'aied_license_key', $GLOBALS['__wp_options'], 'never collides with the old in-plugin licensing options' );
+        $this->assertTrue( (bool) $GLOBALS['__wp_options']['aied_pro_premium_unlocked'] );
+    }
+
+    public function testTheUpdaterOnlyAcceptsAnHttpsPackageOnTheLicenceHost(): void
+    {
+        $this->activatePremium();
+        $base = plugin_basename( AIED_PRO_FILE );
+        foreach ( [ 'https://evil.example/pkg.zip', 'http://divi5lab.com/pkg.zip', 'https://divi5lab.com.evil.example/pkg.zip' ] as $package ) {
+            $GLOBALS['__wp_transients'] = [];
+            $this->queue( 200, [ 'update' => true, 'version' => '9.9.9', 'package' => $package ] );
+            $t = Licensing::client()->inject_update( (object) [ 'response' => [] ] );
+            $this->assertSame( [], (array) $t->response, $package );
+        }
+        $GLOBALS['__wp_transients'] = [];
+        $this->queue( 200, [ 'update' => true, 'version' => '9.9.9', 'package' => 'https://divi5lab.com/downloads/pro.zip' ] );
+        $t = Licensing::client()->inject_update( (object) [ 'response' => [] ] );
+        $this->assertArrayHasKey( $base, (array) $t->response );
+        $this->assertSame( '9.9.9', $t->response[ $base ]->new_version );
+    }
+
+    public function testTheUpdaterIgnoresAVersionThatIsNotNewer(): void
+    {
+        $this->activatePremium();
+        $GLOBALS['__wp_transients'] = [];
+        $this->queue( 200, [ 'update' => true, 'version' => AIED_PRO_VERSION, 'package' => 'https://divi5lab.com/downloads/pro.zip' ] );
+        $t = Licensing::client()->inject_update( (object) [ 'response' => [] ] );
+        $this->assertSame( [], (array) $t->response );
+    }
+
+    public function testTheUpdaterToleratesAReplyWithNoUpdate(): void
+    {
+        $GLOBALS['__wp_transients'] = [];
+        $this->queue( 200, [] );
+        $t = Licensing::client()->inject_update( (object) [ 'response' => [] ] );
+        $this->assertIsObject( $t );
+        $this->assertSame( [], (array) $t->response );
     }
 }

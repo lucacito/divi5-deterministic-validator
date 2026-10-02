@@ -61,4 +61,23 @@ class PluginTest extends TestCase
     {
         $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
     }
+
+    public function testACompatibleBootRegistersTheLicenceAndUpdateHooks(): void
+    {
+        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        foreach ( [ 'pre_set_site_transient_update_plugins', 'admin_init', 'admin_notices' ] as $hook ) {
+            $this->assertArrayHasKey( $hook, $GLOBALS['__wp_filters'], $hook );
+        }
+    }
+
+    public function testTheAdminInitRefreshDoesNotCallTheServerWithoutAKey(): void
+    {
+        $GLOBALS['__wp_options']  = [];
+        $GLOBALS['__wp_http_log'] = [];
+        Plugin::bootWith( '4.4.0', static fn (): bool => true );
+        foreach ( $GLOBALS['__wp_filters']['admin_init'] as $fn ) {
+            $fn();
+        }
+        $this->assertSame( [], $GLOBALS['__wp_http_log'], 'no licence key means no remote call' );
+    }
 }
