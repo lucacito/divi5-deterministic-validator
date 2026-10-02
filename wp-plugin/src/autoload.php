@@ -24,6 +24,7 @@ require_once __DIR__ . '/ImageGuide.php';
 require_once __DIR__ . '/UsageTracker.php';
 require_once __DIR__ . '/DiviCompat.php';
 require_once __DIR__ . '/ThemeLayouts.php';
+require_once __DIR__ . '/GlobalStyles.php';
 require_once __DIR__ . '/EditTarget.php';
 require_once __DIR__ . '/PageEditor.php';
 require_once __DIR__ . '/LayoutDiff.php';
