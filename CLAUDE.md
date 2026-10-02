@@ -77,8 +77,8 @@ PHP classes in `wp-plugin/src/`:
 | `get_image_guide` (`ImageGuide`) | which image fits each section: Media Library first, then the built-in pack |
 | `get_section_recipes` (`SectionRecipes` + `data/section-recipes.json`) | 17 proven, validated section patterns, each mapped to a persuasion stage |
 
-**17 MCP tools, all free:** `list_divi_pages`, `get_page_layout`, `list_theme_layouts`
-(read-only, `ThemeLayouts`), `list_global_styles` (read-only site presets and colors, `GlobalStyles`), `validate_layout`, `update_page_layout`, `edit_page_content` (surgical find-and-replace), `create_page`
+**16 MCP tools, all free:** `list_divi_pages`, `get_page_layout`,
+`list_global_styles` (read-only site presets and colors, `GlobalStyles`), `validate_layout`, `update_page_layout`, `edit_page_content` (surgical find-and-replace), `create_page`
 (always a draft), `list_page_history`, `get_page_history_entry`,
 `restore_page_version`, `list_media_images` (read-only Media Library listing,
 `MediaLibrary` + `MediaService`, needs `upload_files` + per-item `read_post`) and the
@@ -121,23 +121,15 @@ Dry run (v4.2.0): `update_page_layout`, `edit_page_content`, `PUT /pages/{id}` a
 cut to 200 characters, `builderVersion` ignored) BEFORE `HistoryService::write()` is reachable;
 the page, its history and `post_modified` are never touched. A preview of an invalid layout
 is a normal 200 / `isError: false` response carrying `valid: false`. Logged as endpoint
-`dry_run`, result `read`. It is a flag, not a tool: the list stayed at 15 tools / 15 operations in 4.2.0 (4.3.0 adds the read-only `list_theme_layouts`: 16; 4.4.0 adds the read-only `list_global_styles`: 17).
+`dry_run`, result `read`. It is a flag, not a tool: the list stayed at 15 tools / 15 operations in 4.2.0 (4.4.0 adds the read-only `list_global_styles`: 16).
 
-Theme layouts (v4.3.0): the existing, LIVE Theme Builder header and footer layouts
-(`et_header_layout` / `et_footer_layout`, content in `post_content`) can be read, previewed,
-edited and restored with the page tools by passing their id as `page_id`. `EditTarget::resolve()`
-is the single rule for "which post may the plugin touch" (9 call sites): a page as before; a
-layout only if a template of the live Theme Builder uses it (`ThemeLayouts`, read through
-Divi's own guarded functions with `$create = false`, never creating a Theme Builder post),
-status `publish`, and the user has `edit_post` + `edit_others_posts` + Divi's Role Editor Theme Builder permission (`ThemeLayouts::userMay()`, fails closed). Body layouts, templates,
-the Theme Builder post, orphan/draft-only layouts and every other post type are "not found".
-`list_theme_layouts` (MCP/REST/OpenAPI) is read-only. After a layout write `HistoryService`
-calls `DiviCompat::clearLayoutCaches()`. The free plugin NEVER creates/deletes/assigns/publishes
-templates or writes `_et_use_on`/`_et_default`/`_et_enabled`/`*_layout_id`/`_et_template` (site
-settings: Pro add-on territory). Verified 2026-10-02: a REAL builder-made header (menu, search,
-social follow), footer (text, button, social follow, code) and body layout from Divi 5.14's own Theme Builder all pass
-the validator (`fixtures/valid/themebuilder-*.json`); validate/dry_run/list through the real REST handlers agree.
-That is ONE site's layouts, so the readme keeps hedging ("some headers may not be editable yet").
+Theme layouts (Pro add-on): editing the existing LIVE Theme Builder header and footer (`et_header_layout` /
+`et_footer_layout`) was built as 4.3.0 and then MOVED to the Pro add-on before it was ever uploaded (2026-10-02;
+`docs/superpowers/specs/2026-10-02-pro-addon-design.md`). The free plugin has NO header/footer or Theme Builder code
+(`tests/NoThemeLayoutsInFreeTest.php` enforces it); `EditTarget::resolve()` is page-only. The source is parked in
+`pro-addon/staged-4.3.0/`. Verified 2026-10-02 on Divi 5.14: a REAL builder-made header (menu, search, social follow),
+footer (text, button, social follow, code) and body layout all pass the validator (`fixtures/valid/themebuilder-*.json`);
+that proof stays here because it proves the validator.
 
 Global styles (v4.4.0): `list_global_styles` (MCP / `GET /global-styles` / OpenAPI `listGlobalStyles`, read-only)
 lists the site's own Divi 5 module presets, global colors and variables, read ONLY through Divi's own public
@@ -164,7 +156,7 @@ tool → update all three.
 that save CSS/PHP or change site settings (front page, menus, users, plugins). The
 only Pro mention allowed in the plugin UI is the one dismissible Dashboard card in
 `AdminPage::proCard()`. `tests/WpOrgComplianceTest.php` enforces all of this (plus
-the URL-host allowlist, the 17-tool list and the readme's claims, including the
+the URL-host allowlist, the 16-tool list and the readme's claims, including the
 "more than N Divi 5 block types" number checked against `SchemaRules`). Never weaken
 that test to make it pass — fix the plugin, or add a justified explicit exception.
 
@@ -182,7 +174,6 @@ Docker env + validator workflows go through `make`:
 | `make verify-modules` | Re-verify the already-promoted modules and probe the still-missing ones on the real Divi (Docker); writes evidence, but refuses to overwrite committed evidence with a result set that loses or demotes modules |
 | `make verify-history` | Real-database check of the undo-history table on the Docker site (creates and deletes one throwaway draft page) |
 | `make verify-dry-run` | Real-site check of `dry_run` on the REST and MCP handlers (creates and deletes one throwaway draft page) |
-| `make verify-theme-layouts` | Real-site check of header/footer editing: builds its own Theme Builder fixtures with Divi's functions, drives the REAL handlers, removes only what it created |
 | `make verify-global-styles` | Real-site check of `list_global_styles` and the style-reference advisory on the REST and MCP handlers; proves presets, global colors and variables are byte-identical afterwards (creates and deletes one throwaway draft page) |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
@@ -224,17 +215,9 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 ## Current state
 
 - **4.4.0 = global styles release** (merged to LOCAL main, c3234c2; NOT uploaded): read-only `list_global_styles`
-  (17th tool) + non-blocking style-reference advisory + guide updates (spec
-  `docs/superpowers/specs/2026-10-01-global-styles-design.md`). Ships on top of 4.3.0, after the first WordPress.org
-  approval. Verified: 567 tests, `make verify-global-styles` 25/25, Plugin Check clean (dev copy + zip), whole-branch
-  review + one fix wave done. Before it ships: the Features screenshot in `wporg-assets/` predates the 4.3.0 and 4.4.0
-  cards (regenerated and approved 2026-10-02). The real header/footer proof is done (see Theme layouts).
-- **4.3.0 = header/footer release** (merged to LOCAL main, 837b712; NOT uploaded): edit the existing live Theme Builder
-  header/footer (spec `docs/superpowers/specs/2026-10-01-theme-layouts-design.md`). Intended to ship as its own update
-  AFTER the first WordPress.org approval. 4.1.0 + 4.2.0 alone = main at commit 9e806a3 (the 4.2.0 merge); cut the upload
-  from there if 4.3.0 must wait. The real builder-made header/footer export passes `validate_layout`
-  (2026-10-02, `fixtures/valid/themebuilder-*.json`); the Features screenshot in `wporg-assets/` predates the new card
-  (regenerated and approved 2026-10-02).
+  (16th tool) + non-blocking style-reference advisory + guide updates (spec
+  `docs/superpowers/specs/2026-10-01-global-styles-design.md`). Ships after the first WordPress.org approval (the free re-cut removed the unreleased 4.3.0 header/footer code: 16 tools, merged only after the owner approves). Verified: 548 tests, `make verify-global-styles` 25/25, Plugin Check clean (dev copy + zip), whole-branch
+  review + one fix wave done. The Features screenshot was regenerated after the re-cut.
 - **4.2.0 = preview-before-save release** (branch `feat/dry-run-diff`): `dry_run` on the two write
   tools/routes with a capped structured diff; spec `docs/superpowers/specs/2026-10-01-dry-run-diff-design.md`.
   Not uploaded; ships in one upload together with 4.1.0 after WordPress.org answers the 4.0.0 review.

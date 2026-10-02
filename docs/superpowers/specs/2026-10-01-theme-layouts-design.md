@@ -1,5 +1,7 @@
 # 4.3.0 — Edit your existing header and footer (Theme Builder layouts)
 
+> **MOVED 2026-10-02:** this feature was never released from the free plugin; it moved to the Pro add-on (`docs/superpowers/specs/2026-10-02-pro-addon-design.md`). The free plugin no longer contains it. Kept for the design history and the evidence it records.
+
 Status: APPROVED by the owner on 2026-10-01 (all five decisions at the bottom, defaults) · Date: 2026-10-01 · Target release: JHMG AI Editor for Divi 5 4.3.0, **held as its own later update** (see Release).
 Roadmap: undo (4.0.0) → history table (4.1.0) → dry-run diff (4.2.0) → **header/footer (4.3.0)** → global presets → Pro add-on spec. 4.1.0 and 4.2.0 are merged locally and ship in one upload after WordPress.org answers the 4.0.0 review.
 
