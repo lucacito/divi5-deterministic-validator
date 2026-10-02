@@ -18,13 +18,19 @@ class CodePolicyTest extends TestCase
     private const CSS = ',"css":{"desktop":{"value":{"freeForm":"selector{color:red}"}}}';
 
     /** A real-shaped, validator-clean layout; %ATTRS% is spliced into the heading block's attributes. */
-    private static function layout( string $headingExtra = '', string $between = '' ): string
+    private static function layout( string $headingExtra = '', string $between = '', string $beforeRow = '' ): string
     {
-        return '<!-- wp:divi/placeholder --><!-- wp:divi/section {"builderVersion":"5.14.0"} --><!-- wp:divi/row {"builderVersion":"5.14.0"} -->'
+        return '<!-- wp:divi/placeholder --><!-- wp:divi/section {"builderVersion":"5.14.0"} -->' . $beforeRow . '<!-- wp:divi/row {"builderVersion":"5.14.0"} -->'
             . '<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.14.0"} -->'
             . '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Hello"}}},"builderVersion":"5.14.0"' . $headingExtra . '} /-->'
             . $between
             . '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->';
+    }
+
+    /** A heading attribute holding one string value, as the AI would write rich text. */
+    private static function text( string $value, string $field = 'content' ): string
+    {
+        return ',"' . $field . '":{"innerContent":{"desktop":{"value":' . json_encode( $value ) . '}}}';
     }
 
     /** @return list<string> */
@@ -143,6 +149,109 @@ class CodePolicyTest extends TestCase
         $this->assertCount( 1, CodePolicy::violations( self::layout( self::CSS ), null ) );
         $this->assertCount( 1, CodePolicy::violations( self::layout( self::CSS ), '' ) );
         $this->assertCount( 1, CodePolicy::violations( self::layout( self::CSS ), self::layout() ) );
+    }
+
+    // ---- baseline: a unit of code is the WHOLE offending text -----------------------------------
+
+    public function testSwappingCodeForDifferentCodeIsNewCodeButAnUnchangedUnitStaysAllowedAnywhere(): void
+    {
+        $pairs = [
+            'script'     => [ '<script>safe</script>', '<script src=https://evil/x.js></script>' ],
+            'javascript' => [ '<a href="javascript:a()">x</a>', '<a href="javascript:evil()">x</a>' ],
+            'onclick'    => [ '<a onclick=a()>x</a>', '<a onclick=evil()>x</a>' ],
+            'js value'   => [ 'javascript:a()', 'javascript:evil()' ],
+        ];
+        foreach ( $pairs as $label => [ $old, $new ] ) {
+            $page = self::layout( self::text( $old ) );
+            $this->assertSame( [], self::codes( $page, $page ), $label . ': unchanged' );
+            $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( self::text( $new ) ), $page ), $label . ': substituted' );
+            // The identical unit moved to another field of the same page is still the same code.
+            $moved = self::layout( self::text( $old, 'title' ) );
+            $this->assertSame( [], self::codes( $moved, $page ), $label . ': moved' );
+        }
+        $raw = self::layout( '', '<script>safe</script>' );
+        $this->assertSame( [], self::codes( $raw, $raw ), 'unchanged raw script' );
+        $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( '', '<script src=https://evil/x.js></script>' ), $raw ) );
+    }
+
+    public function testUnchangedCssSurvivesInsertingASectionBeforeIt(): void
+    {
+        $page   = self::layout( self::CSS );
+        $before = '<!-- wp:divi/row {"builderVersion":"5.14.0"} --><!-- wp:divi/column {"builderVersion":"5.14.0"} --><!-- wp:divi/heading {"builderVersion":"5.14.0"} /--><!-- /wp:divi/column --><!-- /wp:divi/row -->';
+        $this->assertSame( [], self::codes( self::layout( self::CSS, '', $before ), $page ) );
+        $this->assertSame( [ CodePolicy::E_CUSTOM_CSS ], self::codes( self::layout( self::CSS, '<!-- wp:divi/heading {"builderVersion":"5.14.0"' . self::CSS . '} /-->', $before ), $page ), 'a second identical copy is still new' );
+    }
+
+    // ---- raw text: only block delimiters are removed, never other comments ----------------------
+
+    public function testHtml5CommentTricksCannotHideScripts(): void
+    {
+        foreach ( [ '<!-- x --!><script>alert(1)</script>-->', '<!--><script>alert(1)</script><!-- -->', '<!---><script>alert(1)</script><!-- -->' ] as $trick ) {
+            $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( '', $trick ) ), $trick );
+        }
+    }
+
+    // ---- obfuscation ----------------------------------------------------------------------------
+
+    public function testObfuscatedScriptsAreFound(): void
+    {
+        $values = [
+            '<img/src=x/onerror=alert(1)>',
+            '<svg/onload=x>',
+            '<a href="x"onclick=x>go</a>',
+            '<img src=x onerror=alert(1)>',
+            "<img src=x\nonerror=alert(1)>",
+            '<a href="&#106;avascript:x">go</a>',
+            '<a href="&amp;#106;avascript:x">go</a>',
+            '<a href="java' . "\t" . 'script:x">go</a>',
+            'jav&#x61;script:x',
+            "java\tscript:x",
+            'java&Tab;script:x',
+            '<scr' . 'ipt>x</script>',
+            '&#106;avascript:x',
+        ];
+        foreach ( $values as $v ) {
+            $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( self::text( $v ) ) ), $v );
+        }
+        // A script URL in a URL-like field may use any whitespace in the scheme.
+        $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( ',"button":{"innerContent":{"desktop":{"value":{"linkUrl":" java script:x"}}}}' ) ) );
+    }
+
+    public function testProseAndAttributeValuesAreNotCode(): void
+    {
+        $values = [
+            'JavaScript: the good parts',
+            'Learn JavaScript : fast',
+            '<h2>Why JavaScript: a primer</h2>',
+            '<img alt="Sign up online = easy" src="a.jpg">',
+            '<a href="/x" title="Book online = save 10%">Go</a>',
+            '<a href="https://example.com/?online=1&once=2">x</a>',
+            'x < script writing',
+            'a < object then',
+            '<p>one &lt;script&gt; mention</p>',
+        ];
+        foreach ( $values as $v ) {
+            $this->assertSame( [], self::codes( self::layout( self::text( $v ) ) ), $v );
+        }
+    }
+
+    // ---- fail closed ----------------------------------------------------------------------------
+
+    public function testContentThatCannotBeScannedIsRefused(): void
+    {
+        $jit = (string) ini_get( 'pcre.jit' );
+        $lim = (string) ini_get( 'pcre.backtrack_limit' );
+        try {
+            ini_set( 'pcre.jit', '0' );
+            ini_set( 'pcre.backtrack_limit', '1' );
+            $v = CodePolicy::violations( self::layout( '', str_repeat( '<b x ', 200 ) . 'plain text' ) );
+        } finally {
+            ini_set( 'pcre.jit', $jit );
+            ini_set( 'pcre.backtrack_limit', $lim );
+        }
+        $this->assertNotSame( [], $v, 'a regex failure must not mean "allowed"' );
+        $this->assertSame( CodePolicy::E_SCRIPT, $v[0]->code() );
+        $this->assertStringContainsString( 'could not be scanned', $v[0]->message() );
     }
 
     // ---- the gate ------------------------------------------------------------------------------
