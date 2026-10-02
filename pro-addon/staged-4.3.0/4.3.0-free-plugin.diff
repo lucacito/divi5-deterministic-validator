@@ -1,0 +1,964 @@
+diff --git a/wp-plugin/jhmg-ai-editor-for-divi-5.php b/wp-plugin/jhmg-ai-editor-for-divi-5.php
+index df2703a..f3a9817 100644
+--- a/wp-plugin/jhmg-ai-editor-for-divi-5.php
++++ b/wp-plugin/jhmg-ai-editor-for-divi-5.php
+@@ -2,7 +2,7 @@
+ /**
+  * Plugin Name:       JHMG AI Editor for Divi 5
+  * Description:       Let your AI assistant (Claude, ChatGPT, Cursor) read and edit Divi 5 pages with natural language. Every AI edit is checked before it is saved, so a broken page is never saved by an AI edit.
+- * Version:           4.2.0
++ * Version:           4.3.0
+  * Requires at least: 6.0
+  * Requires PHP:      8.1
+  * Author:            JHMG
+@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
+     exit;
+ }
+ 
+-define('AI_EDITOR_DIVI5_VERSION', '4.2.0');
++define('AI_EDITOR_DIVI5_VERSION', '4.3.0');
+ define('AI_EDITOR_DIVI5_MIN_PHP', '8.1');
+ define('AI_EDITOR_DIVI5_MIN_WP',  '6.0');
+ define('AI_EDITOR_DIVI5_FILE',    __FILE__);
+diff --git a/wp-plugin/readme.txt b/wp-plugin/readme.txt
+index 77bb50a..f4335e5 100644
+--- a/wp-plugin/readme.txt
++++ b/wp-plugin/readme.txt
+@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
+ Tags:              divi, divi 5, ai, mcp, editor
+ Requires at least: 6.0
+ Tested up to:      7.1
+-Stable tag:        4.2.0
++Stable tag:        4.3.0
+ Requires PHP:      8.1
+ License:           GPL-2.0-or-later
+ License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+@@ -28,6 +28,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
+ * **Rules come from real Divi 5, not guesses.** The rules come from real Divi 5 page exports and, for 24 newer modules (and their child items), from Divi's own module definitions, verified by rendering them in real Divi 5.14.
+ * **Small changes stay small.** Changing one phone number replaces just that text. The rest of the page is not rebuilt or touched.
+ * **Preview before saving.** Your AI can ask what a change would do before it saves anything. It gets a list of the blocks and settings that would change, and the checker's verdict. Nothing is saved until it repeats the request for real.
++* **Header and footer too.** Your AI can preview and edit the content of your existing Theme Builder header and footer, for example a phone number or a link, with the same checker, preview and undo as for pages. The checker still has to accept the result, so some headers may not be editable yet. It cannot create, delete, assign or publish templates: that stays in Divi's Theme Builder.
+ * **Proven building blocks.** 17 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
+ * **Sensible images.** The AI looks in your Media Library first. When nothing there fits, it uses a built-in pack of 44 original images that ships with the plugin.
+ * **One-click undo.** The previous version of each page the AI changes is kept (up to the last 10). Restore it from the plugin's Dashboard with one click, or just ask your AI to undo.
+@@ -42,12 +43,13 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
+ * "Add a section with our opening hours under the hero on the About page."
+ * "Undo the last change you made to the Services page."
+ 
+-= What your AI assistant can do (15 tools) =
++= What your AI assistant can do (16 tools) =
+ 
+ Read and check:
+ 
+ * `list_divi_pages`: list the pages built with Divi 5 that you can edit.
+ * `get_page_layout`: read a page's current layout.
++* `list_theme_layouts`: list the header and footer of your Divi Theme Builder that the AI is allowed to edit (read-only).
+ * `validate_layout`: check a layout without saving anything.
+ 
+ Edit and create:
+@@ -123,7 +125,7 @@ This plugin does not connect to any external service. Your AI assistant connects
+ 
+ = Does the AI get administrator access to my site? =
+ 
+-No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit, create (as a draft) and undo page content, and read Media Library images (read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
++No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages and of your existing Theme Builder header and footer, create pages (as drafts), and read Media Library images (read-only). Editing a header or footer needs a user whom Divi allows to use its Theme Builder (by default, administrators), and the tools cannot create, delete, assign or publish Theme Builder templates. They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
+ 
+ = Where do images come from? =
+ 
+@@ -161,6 +163,10 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its
+ 
+ == Changelog ==
+ 
++= 4.3.0 =
++* New: your AI assistant can now preview and edit the content of your existing Theme Builder header and footer, with the same checker, preview and undo as pages. The checker still has to accept the result. A new read-only tool, `list_theme_layouts`, shows which header and footer it can edit.
++* It cannot create, delete, assign or publish Theme Builder templates, and body layouts are not editable.
++
+ = 4.2.0 =
+ * New: preview before saving. `update_page_layout` and `edit_page_content` accept `dry_run`: they return the checker's verdict and a short list of the blocks and settings that would change, and save nothing.
+ 
+@@ -204,6 +210,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its
+ 
+ == Upgrade Notice ==
+ 
++= 4.3.0 =
++Adds editing of your existing Theme Builder header and footer by your AI assistant (with preview and undo). Nothing changes unless your AI assistant uses it.
++
+ = 4.2.0 =
+ Adds an optional preview (`dry_run`) to the two tools that save pages. Nothing changes unless your AI assistant uses it.
+ 
+diff --git a/wp-plugin/src/AdminPage.php b/wp-plugin/src/AdminPage.php
+index ce5f156..1bf7495 100644
+--- a/wp-plugin/src/AdminPage.php
++++ b/wp-plugin/src/AdminPage.php
+@@ -94,6 +94,30 @@ final class AdminPage
+         $this->redirect('dashboard');
+     }
+ 
++    /** The Restore button may touch exactly what the tools may: a page, or a live header/footer the user may edit. */
++    public static function mayRestore( int $id ): bool
++    {
++        return null === EditTarget::resolve( $id )['error'];
++    }
++
++    /**
++     * Dashboard history row title: "Header: " / "Footer: " prefix for Theme Builder layouts, none for pages.
++     *
++     * @param array{title:string,kind:string} $row
++     */
++    public static function historyRowTitle( array $row ): string
++    {
++        $title = '' === $row['title'] ? __( '(no title)', 'jhmg-ai-editor-for-divi-5' ) : $row['title'];
++        if ( 'header' === $row['kind'] ) {
++            return __( 'Header', 'jhmg-ai-editor-for-divi-5' ) . ': ' . $title;
++        }
++        if ( 'footer' === $row['kind'] ) {
++            return __( 'Footer', 'jhmg-ai-editor-for-divi-5' ) . ': ' . $title;
++        }
++
++        return $title;
++    }
++
+     public function handleRestorePage(): void
+     {
+         $this->guard('ai_editor_divi5_restore_page'); // guard() verifies the nonce via check_admin_referer().
+@@ -102,8 +126,7 @@ final class AdminPage
+         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard().
+         $versionId = isset( $_POST['version_id'] ) ? absint( wp_unslash( $_POST['version_id'] ) ) : 0;
+ 
+-        $post = $pageId ? get_post( $pageId ) : null;
+-        if ( ! $post || 'page' !== $post->post_type || ! current_user_can( 'edit_post', $pageId ) ) {
++        if ( ! self::mayRestore( $pageId ) ) {
+             $this->redirect( 'dashboard', 'restore_failed' );
+         }
+ 
+@@ -421,7 +444,7 @@ final class AdminPage
+             <table class="widefat striped">
+                 <tbody>
+                 <?php foreach ( $rows as $row ) :
+-                    $title = '' === $row['title'] ? __( '(no title)', 'jhmg-ai-editor-for-divi-5' ) : $row['title']; ?>
++                    $title = self::historyRowTitle( $row ); ?>
+                     <tr>
+                         <td><strong><?php echo esc_html( $title ); ?></strong></td>
+                         <?php
+@@ -553,11 +576,12 @@ final class AdminPage
+ 
+     private function viewFeatures(): void
+     {
+-        // [title, description, tools it covers] — the 15 tools your AI assistant can call.
++        // [title, description, tools it covers] — the 16 tools your AI assistant can call.
+         $features = [
+             [ __( 'Edit pages in plain English', 'jhmg-ai-editor-for-divi-5' ), __( 'Tell your AI what to change and it updates the live Divi 5 layout — no builder, no copy-paste.', 'jhmg-ai-editor-for-divi-5' ), 'update_page_layout, edit_page_content' ],
+             [ __( 'Validated, safe saves', 'jhmg-ai-editor-for-divi-5' ), __( 'Every change is checked against fixed rules for more than 80 Divi 5 block types before saving. A broken layout is refused with the exact reason, so it is never saved.', 'jhmg-ai-editor-for-divi-5' ), 'validate_layout' ],
+             [ __( 'Read & understand any page', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can list and read existing pages to make precise, context-aware edits.', 'jhmg-ai-editor-for-divi-5' ), 'list_divi_pages, get_page_layout' ],
++            [ __( 'Edit your existing header and footer', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can preview and edit the content of your live Theme Builder header and footer, with the same checker, preview and undo as for pages. It cannot create, delete, assign or publish templates.', 'jhmg-ai-editor-for-divi-5' ), 'list_theme_layouts' ],
+             [ __( 'Undo AI edits', 'jhmg-ai-editor-for-divi-5' ), __( 'Every AI save keeps the previous version, so you or your AI can browse the history and restore an earlier one.', 'jhmg-ai-editor-for-divi-5' ), 'list_page_history, get_page_history_entry, restore_page_version' ],
+             [ __( 'Create new pages (as drafts)', 'jhmg-ai-editor-for-divi-5' ), __( 'Generate brand-new pages from a prompt — always saved as a draft, validated, ready for you to review and publish.', 'jhmg-ai-editor-for-divi-5' ), 'create_page' ],
+             [ __( 'Build entire websites', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in blueprint helps your AI plan a cohesive multi-page site (home, about, services, contact) with shared styling and links between the pages, then tells you how to finish setting it up yourself.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_guide' ],
+diff --git a/wp-plugin/src/DiviCompat.php b/wp-plugin/src/DiviCompat.php
+index 6ae2460..9880529 100644
+--- a/wp-plugin/src/DiviCompat.php
++++ b/wp-plugin/src/DiviCompat.php
+@@ -52,6 +52,21 @@ final class DiviCompat
+         return null;
+     }
+ 
++    /**
++     * After an edit to a Theme Builder layout: clear Divi's own caches the way Divi's Theme Builder
++     * does when it saves (the layout is used by many pages). Each call is guarded, so nothing happens
++     * when Divi (or that part of it) is not available.
++     */
++    public static function clearLayoutCaches(): void
++    {
++        if ( function_exists( 'et_theme_builder_clear_wp_cache' ) ) {
++            et_theme_builder_clear_wp_cache( 'all' );
++        }
++        if ( class_exists( 'ET_Core_PageResource' ) ) {
++            \ET_Core_PageResource::remove_static_resources( 'all', 'all' );
++        }
++    }
++
+     private static function majorMinor( ?string $version ): ?string
+     {
+         if ( null === $version || 1 !== preg_match( '/^(\d+)\.(\d+)/', $version, $m ) ) {
+diff --git a/wp-plugin/src/EditTarget.php b/wp-plugin/src/EditTarget.php
+new file mode 100644
+index 0000000..043c97c
+--- /dev/null
++++ b/wp-plugin/src/EditTarget.php
+@@ -0,0 +1,59 @@
++<?php
++
++declare(strict_types=1);
++
++namespace AiEditorDivi5\WP;
++
++if ( ! defined( 'ABSPATH' ) ) {
++    exit;
++}
++
++/**
++ * The one rule for "which post may the plugin read and edit": a page (exactly as before) or a
++ * header/footer layout that a template of the LIVE Divi Theme Builder uses. Anything else is
++ * reported like a missing page, so nothing leaks about other post types.
++ */
++final class EditTarget
++{
++    public const NOT_FOUND = 'not_found';
++    public const FORBIDDEN = 'forbidden';
++
++    /**
++     * @return array{post: ?\WP_Post, kind: ?string, error: ?string} kind is 'page', 'header' or 'footer'
++     */
++    public static function resolve( int $id ): array
++    {
++        $post = $id > 0 ? get_post( $id ) : null;
++        if ( ! $post ) {
++            return self::fail( self::NOT_FOUND );
++        }
++
++        if ( 'page' === $post->post_type ) {
++            return current_user_can( 'edit_post', $id ) ? self::ok( $post, 'page' ) : self::fail( self::FORBIDDEN );
++        }
++
++        $kind = null === ThemeLayouts::kindOf( (string) $post->post_type ) ? null : ( ThemeLayouts::liveLayoutKinds()[ $id ] ?? null );
++        if ( null === $kind || 'publish' !== $post->post_status || ThemeLayouts::kindOf( (string) $post->post_type ) !== $kind ) {
++            return self::fail( self::NOT_FOUND );
++        }
++        // Divi's own Theme Builder bar (edit_others_posts and the 'theme_builder' capability); the
++        // header/footer shows on every page.
++        if ( ! current_user_can( 'edit_post', $id ) || ! ThemeLayouts::userMay() ) {
++            return self::fail( self::FORBIDDEN );
++        }
++
++        return self::ok( $post, $kind );
++    }
++
++    /** @return array{post: \WP_Post, kind: string, error: null} */
++    private static function ok( \WP_Post $post, string $kind ): array
++    {
++        return [ 'post' => $post, 'kind' => $kind, 'error' => null ];
++    }
++
++    /** @return array{post: null, kind: null, error: string} */
++    private static function fail( string $error ): array
++    {
++        return [ 'post' => null, 'kind' => null, 'error' => $error ];
++    }
++}
+diff --git a/wp-plugin/src/HistoryService.php b/wp-plugin/src/HistoryService.php
+index 6219c20..5f42ac7 100644
+--- a/wp-plugin/src/HistoryService.php
++++ b/wp-plugin/src/HistoryService.php
+@@ -33,6 +33,7 @@ final class HistoryService
+         if ( is_wp_error( $updated ) ) {
+             return [ 'ok' => false, 'error' => 'update_failed', 'message' => $updated->get_error_message(), 'snapshot' => $snapshot ];
+         }
++        self::afterWrite( $post );
+ 
+         return [ 'ok' => true, 'snapshot' => $snapshot ];
+     }
+@@ -64,6 +65,7 @@ final class HistoryService
+         if ( is_wp_error( $updated ) ) {
+             return [ 'ok' => false, 'error' => 'update_failed', 'message' => $updated->get_error_message(), 'snapshot' => $snapshot ];
+         }
++        self::afterWrite( $post );
+ 
+         // Restore is NOT a validated write: it returns the person's own earlier content.
+         // The validator's verdict is reported as information only.
+@@ -81,19 +83,30 @@ final class HistoryService
+     }
+ 
+     /**
+-     * @return list<array{page_id:int, title:string, version_id:int, saved_at:mixed, tool:mixed}>
++     * @return list<array{page_id:int, title:string, kind:string, version_id:int, saved_at:mixed, tool:mixed}>
+      */
+     public static function recent( int $limit = 5 ): array
+     {
+         $rows = [];
+         foreach ( HistoryStore::recent( $limit ) as $row ) {
+             $post   = get_post( $row['page_id'] );
+-            $rows[] = $row + [ 'title' => $post ? (string) ( $post->post_title ?? '' ) : '' ];
++            $rows[] = $row + [
++                'title' => $post ? (string) ( $post->post_title ?? '' ) : '',
++                'kind'  => $post ? ( ThemeLayouts::kindOf( (string) $post->post_type ) ?? 'page' ) : 'page',
++            ];
+         }
+ 
+         return $rows;
+     }
+ 
++    /** A header/footer layout appears on every page, so Divi's caches are cleared after it changes. */
++    private static function afterWrite( ?object $post ): void
++    {
++        if ( null !== $post && null !== ThemeLayouts::kindOf( (string) $post->post_type ) ) {
++            DiviCompat::clearLayoutCaches();
++        }
++    }
++
+     /** @return array{stored:bool, version_id:?int, reason:?string} */
+     private static function noSnapshot(): array
+     {
+diff --git a/wp-plugin/src/McpHandler.php b/wp-plugin/src/McpHandler.php
+index 9aa8e90..0f23187 100644
+--- a/wp-plugin/src/McpHandler.php
++++ b/wp-plugin/src/McpHandler.php
+@@ -102,12 +102,17 @@ final class McpHandler
+                 'description' => 'List the WordPress pages built with the Divi 5 editor that you can edit. Returns page IDs, titles, status, and links.',
+                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
+             ],
++            [
++                'name'        => 'list_theme_layouts',
++                'description' => 'List the header and footer layouts of the live Divi Theme Builder that you can edit (read-only), with the templates that use them (title, default, enabled, where they apply). Edit a header or footer with the page tools, passing its layout_id as page_id; use dry_run first because it appears on every page. Body layouts are listed but cannot be edited. Creating or assigning templates is not possible here: that is done in Divi\'s Theme Builder.',
++                'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
++            ],
+             [
+                 'name'        => 'get_page_layout',
+-                'description' => 'Get the full Divi 5 layout (Gutenberg block HTML) for a specific page by ID.',
++                'description' => 'Get the full Divi 5 layout (Gutenberg block HTML) for a specific page by ID. A header or footer layout id from list_theme_layouts also works.',
+                 'inputSchema' => [
+                     'type'       => 'object',
+-                    'properties' => ['page_id' => ['type' => 'integer', 'description' => 'WordPress page ID']],
++                    'properties' => ['page_id' => ['type' => 'integer', 'description' => 'WordPress page ID (or a header/footer layout id from list_theme_layouts)']],
+                     'required'   => ['page_id'],
+                 ],
+             ],
+@@ -151,11 +156,11 @@ final class McpHandler
+             ],
+             [
+                 'name'        => 'update_page_layout',
+-                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL. Pass dry_run=true to preview what would change (a diff plus the checker\'s verdict) without saving anything; an invalid result comes back as a normal preview with valid:false.',
++                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. A header or footer layout id from list_theme_layouts also works. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL. Pass dry_run=true to preview what would change (a diff plus the checker\'s verdict) without saving anything; an invalid result comes back as a normal preview with valid:false.',
+                 'inputSchema' => [
+                     'type'       => 'object',
+                     'properties' => [
+-                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page ID'],
++                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page ID (or a header/footer layout id from list_theme_layouts)'],
+                         'post_content' => ['type' => 'string',  'description' => 'Divi 5 Gutenberg block HTML'],
+                         'dry_run' => ['type' => 'boolean', 'description' => 'Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing.'],
+                     ],
+@@ -164,11 +169,11 @@ final class McpHandler
+             ],
+             [
+                 'name'        => 'edit_page_content',
+-                'description' => 'Make a small, surgical edit to an existing page WITHOUT re-sending the whole layout: an exact find-and-replace on the page\'s stored content. Use this for changing an email, phone number, link, price, or a line of copy — never rebuild the full page for a tiny change. "find" must match exactly once unless you set expect_count to the number of matches. The result is re-validated before saving; if "find" is empty, not found, or ambiguous, nothing is changed. Pass dry_run=true to preview the change (a diff plus the checker\'s verdict) without saving; an invalid result comes back as a normal preview with valid:false.',
++                'description' => 'Make a small, surgical edit to an existing page WITHOUT re-sending the whole layout: an exact find-and-replace on the page\'s stored content. A header or footer layout id from list_theme_layouts also works. Use this for changing an email, phone number, link, price, or a line of copy — never rebuild the full page for a tiny change. "find" must match exactly once unless you set expect_count to the number of matches. The result is re-validated before saving; if "find" is empty, not found, or ambiguous, nothing is changed. Pass dry_run=true to preview the change (a diff plus the checker\'s verdict) without saving; an invalid result comes back as a normal preview with valid:false.',
+                 'inputSchema' => [
+                     'type'       => 'object',
+                     'properties' => [
+-                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page ID'],
++                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page ID (or a header/footer layout id from list_theme_layouts)'],
+                         'find'         => ['type' => 'string',  'description' => 'Exact text to find (verbatim, including any surrounding markup needed to make it unique)'],
+                         'replace'      => ['type' => 'string',  'description' => 'Text to replace it with'],
+                         'expect_count' => ['type' => 'integer', 'description' => 'Optional: how many matches to replace (must equal the number found). Omit to require a single unique match.'],
+@@ -179,22 +184,22 @@ final class McpHandler
+             ],
+             [
+                 'name'        => 'list_page_history',
+-                'description' => 'List the saved previous versions of a page (newest first). Every AI save tries to snapshot the page\'s prior content (up to the last 10 per page, fewer for very large pages), so an AI edit can be undone when a snapshot was kept (the save result\'s history.stored says so). Returns id, saved_at, tool, actor, bytes, label for each version (no content). Use restore_page_version to undo.',
++                'description' => 'List the saved previous versions of a page (newest first). A header or footer layout id from list_theme_layouts also works. Every AI save tries to snapshot the page\'s prior content (up to the last 10 per page, fewer for very large pages), so an AI edit can be undone when a snapshot was kept (the save result\'s history.stored says so). Returns id, saved_at, tool, actor, bytes, label for each version (no content). Use restore_page_version to undo.',
+                 'inputSchema' => [
+                     'type'       => 'object',
+                     'properties' => [
+-                        'page_id' => ['type' => 'integer', 'description' => 'WordPress page ID'],
++                        'page_id' => ['type' => 'integer', 'description' => 'WordPress page ID (or a header/footer layout id from list_theme_layouts)'],
+                     ],
+                     'required' => ['page_id'],
+                 ],
+             ],
+             [
+                 'name'        => 'get_page_history_entry',
+-                'description' => 'Get the full saved content of one previous version of a page (from list_page_history), e.g. to compare it with the current layout before restoring.',
++                'description' => 'Get the full saved content of one previous version of a page (from list_page_history), e.g. to compare it with the current layout before restoring. A header or footer layout id from list_theme_layouts also works.',
+                 'inputSchema' => [
+                     'type'       => 'object',
+                     'properties' => [
+-                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page ID'],
++                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page ID (or a header/footer layout id from list_theme_layouts)'],
+                         'version_id' => ['type' => 'integer', 'description' => 'Version id from list_page_history'],
+                     ],
+                     'required' => ['page_id', 'version_id'],
+@@ -202,11 +207,11 @@ final class McpHandler
+             ],
+             [
+                 'name'        => 'restore_page_version',
+-                'description' => 'Undo: restore a page to a previous saved version. The current content is snapshotted first; the restore itself is undoable when its own history.stored is true. Restore does not block on validation (it returns the person\'s own earlier content); the result reports whether that content passes the validator.',
++                'description' => 'Undo: restore a page to a previous saved version. A header or footer layout id from list_theme_layouts also works. The current content is snapshotted first; the restore itself is undoable when its own history.stored is true. Restore does not block on validation (it returns the person\'s own earlier content); the result reports whether that content passes the validator.',
+                 'inputSchema' => [
+                     'type'       => 'object',
+                     'properties' => [
+-                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page ID'],
++                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page ID (or a header/footer layout id from list_theme_layouts)'],
+                         'version_id' => ['type' => 'integer', 'description' => 'Version id from list_page_history'],
+                     ],
+                     'required' => ['page_id', 'version_id'],
+@@ -269,6 +274,7 @@ final class McpHandler
+             'get_page_history_entry' => $this->toolGetHistoryEntry($id, $arguments),
+             'restore_page_version'   => $this->toolRestoreVersion($id, $arguments),
+             'list_media_images'  => $this->toolListMedia($id, $arguments),
++            'list_theme_layouts' => $this->toolListThemeLayouts($id),
+             'create_page'        => $this->toolCreatePage($id, $arguments),
+             default              => $this->extensionCall($id, $name, $arguments),
+         };
+@@ -341,23 +347,25 @@ final class McpHandler
+     private function toolGetLayout(mixed $id, array $args): WP_REST_Response
+     {
+         $pageId = (int) ($args['page_id'] ?? 0);
+-        $post   = $pageId ? get_post($pageId) : null;
++        $target = EditTarget::resolve($pageId);
+ 
+-        if (!$post || $post->post_type !== 'page') {
++        if ($target['error'] === EditTarget::NOT_FOUND) {
+             UsageTracker::log('get_layout', $pageId ?: null, 'error');
+             return $this->rpcError($id, -32602, "Page {$pageId} not found.");
+         }
+ 
+-        if (!current_user_can('edit_post', $pageId)) {
++        if ($target['error'] === EditTarget::FORBIDDEN) {
+             UsageTracker::log('get_layout', $pageId, 'error');
+             return $this->rpcError($id, -32602, "You do not have permission to read page {$pageId}.");
+         }
++        $post = $target['post'];
+ 
+         UsageTracker::log('get_layout', $pageId, 'read');
+ 
+         return $this->rpcResult($id, [
+             'content' => [['type' => 'text', 'text' => json_encode([
+                 'post_id'      => $post->ID,
++                'post_type'    => $post->post_type,
+                 'post_title'   => get_the_title($post),
+                 'post_status'  => $post->post_status,
+                 'post_content' => $post->post_content,
+@@ -388,7 +396,6 @@ final class McpHandler
+         $pageId  = (int) ($args['page_id'] ?? 0);
+         $content = PageAccess::stringArg($args, 'post_content');
+         $dryRun  = PageAccess::boolArg($args, 'dry_run');
+-        $post    = $pageId ? get_post($pageId) : null;
+ 
+         if ($content === null) {
+             return $this->rpcError($id, -32602, 'post_content must be a string.');
+@@ -398,13 +405,15 @@ final class McpHandler
+             return $this->rpcError($id, -32602, 'dry_run must be a boolean.');
+         }
+ 
+-        if (!$post || $post->post_type !== 'page') {
++        $target = EditTarget::resolve($pageId);
++        if ($target['error'] === EditTarget::NOT_FOUND) {
+             return $this->rpcError($id, -32602, "Page {$pageId} not found.");
+         }
+ 
+-        if (!current_user_can('edit_post', $pageId)) {
++        if ($target['error'] === EditTarget::FORBIDDEN) {
+             return $this->rpcError($id, -32602, "You do not have permission to edit page {$pageId}.");
+         }
++        $post = $target['post'];
+ 
+         if ($content === '') {
+             return $this->rpcError($id, -32602, 'post_content is required.');
+@@ -467,14 +476,15 @@ final class McpHandler
+         if ($dryRun === null) {
+             return $this->rpcError($id, -32602, 'dry_run must be a boolean.');
+         }
+-        $post = $pageId ? get_post($pageId) : null;
+ 
+-        if (!$post || $post->post_type !== 'page') {
++        $target = EditTarget::resolve($pageId);
++        if ($target['error'] === EditTarget::NOT_FOUND) {
+             return $this->rpcError($id, -32602, "Page {$pageId} not found.");
+         }
+-        if (!current_user_can('edit_post', $pageId)) {
++        if ($target['error'] === EditTarget::FORBIDDEN) {
+             return $this->rpcError($id, -32602, "You do not have permission to edit page {$pageId}.");
+         }
++        $post = $target['post'];
+ 
+         $edit = PageEditor::apply($post->post_content, $find, $replace, $expect);
+ 
+@@ -536,16 +546,16 @@ final class McpHandler
+     private function historyPage(mixed $id, array $args): \WP_Post|WP_REST_Response
+     {
+         $pageId = (int) ($args['page_id'] ?? 0);
+-        $post   = $pageId ? get_post($pageId) : null;
++        $target = EditTarget::resolve($pageId);
+ 
+-        if (!$post || $post->post_type !== 'page') {
++        if ($target['error'] === EditTarget::NOT_FOUND) {
+             return $this->rpcError($id, -32602, "Page {$pageId} not found.");
+         }
+-        if (!current_user_can('edit_post', $pageId)) {
++        if ($target['error'] === EditTarget::FORBIDDEN) {
+             return $this->rpcError($id, -32602, "You do not have permission to access page {$pageId}.");
+         }
+ 
+-        return $post;
++        return $target['post'];
+     }
+ 
+     private function toolListHistory(mixed $id, array $args): WP_REST_Response
+@@ -606,6 +616,20 @@ final class McpHandler
+         ]);
+     }
+ 
++    private function toolListThemeLayouts(mixed $id): WP_REST_Response
++    {
++        if (!current_user_can(PageAccess::CAP) || !ThemeLayouts::userMay()) {
++            UsageTracker::log('list_theme_layouts', null, 'error');
++            return $this->rpcError($id, -32602, 'You do not have permission to list theme layouts.');
++        }
++        $result = ThemeLayouts::listing();
++        UsageTracker::log('list_theme_layouts', null, 'read');
++
++        return $this->rpcResult($id, [
++            'content' => [['type' => 'text', 'text' => wp_json_encode($result)]],
++        ]);
++    }
++
+     private function toolListMedia(mixed $id, array $args): WP_REST_Response
+     {
+         if (!current_user_can('upload_files')) {
+diff --git a/wp-plugin/src/OpenApiSpec.php b/wp-plugin/src/OpenApiSpec.php
+index 2a8f0e5..bbf5c8b 100644
+--- a/wp-plugin/src/OpenApiSpec.php
++++ b/wp-plugin/src/OpenApiSpec.php
+@@ -98,6 +98,29 @@ final class OpenApiSpec
+                             'label'    => ['type' => 'string'],
+                         ],
+                     ],
++                    'ThemeLayoutRef' => [
++                        'type'       => 'object',
++                        'properties' => [
++                            'layout_id' => ['type' => 'integer', 'description' => 'Pass this as the page id to the page tools'],
++                            'title'     => ['type' => 'string'],
++                            'enabled'   => ['type' => 'boolean', 'description' => 'Whether the template shows this layout'],
++                            'editable'  => ['type' => 'boolean', 'description' => 'false for body layouts and for layouts the caller cannot edit'],
++                        ],
++                    ],
++                    'ThemeTemplate' => [
++                        'type'       => 'object',
++                        'properties' => [
++                            'template_id'  => ['type' => 'integer'],
++                            'title'        => ['type' => 'string'],
++                            'default'      => ['type' => 'boolean', 'description' => 'true when this is the default template (applies everywhere nothing else matches)'],
++                            'enabled'      => ['type' => 'boolean'],
++                            'use_on'       => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Where the template applies (Divi condition strings)'],
++                            'exclude_from' => ['type' => 'array', 'items' => ['type' => 'string']],
++                            'header'       => ['$ref' => '#/components/schemas/ThemeLayoutRef'],
++                            'footer'       => ['$ref' => '#/components/schemas/ThemeLayoutRef'],
++                            'body'         => ['$ref' => '#/components/schemas/ThemeLayoutRef'],
++                        ],
++                    ],
+                     'DryRunAttr' => [
+                         'type'       => 'object',
+                         'properties' => [
+@@ -212,6 +235,7 @@ final class OpenApiSpec
+                                 'type'       => 'object',
+                                 'properties' => [
+                                     'post_id'      => ['type' => 'integer'],
++                                    'post_type'    => ['type' => 'string', 'description' => 'page, et_header_layout or et_footer_layout'],
+                                     'post_title'   => ['type' => 'string'],
+                                     'post_status'  => ['type' => 'string'],
+                                     'post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML'],
+@@ -381,6 +405,24 @@ final class OpenApiSpec
+                         'responses'   => ['200' => ['description' => 'The guide (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]]],
+                     ],
+                 ],
++                '/theme-layouts' => [
++                    'get' => [
++                        'operationId' => 'listThemeLayouts',
++                        'summary'     => 'List editable header and footer layouts',
++                        'description' => 'Lists the header and footer layouts of the live Divi Theme Builder that you can edit (read-only), with the templates that use them. Edit one with the page tools, passing its layout_id as the page id. Body layouts are listed but not editable.',
++                        'responses'   => [
++                            '200' => ['description' => 'Live templates and their layouts', 'content' => ['application/json' => ['schema' => [
++                                'type'       => 'object',
++                                'properties' => [
++                                    'templates' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/ThemeTemplate']],
++                                    'count'     => ['type' => 'integer'],
++                                    'note'      => ['type' => ['string', 'null'], 'description' => 'Present when there is no live Theme Builder with templates; otherwise null'],
++                                ],
++                            ]]]],
++                            '403' => ['description' => 'The user may not use Divi\'s Theme Builder (needs edit_pages, edit_others_posts and Divi\'s Theme Builder permission)'],
++                        ],
++                    ],
++                ],
+                 '/media' => [
+                     'get' => [
+                         'operationId' => 'listMediaImages',
+diff --git a/wp-plugin/src/RestController.php b/wp-plugin/src/RestController.php
+index b1355a5..7c57981 100644
+--- a/wp-plugin/src/RestController.php
++++ b/wp-plugin/src/RestController.php
+@@ -36,6 +36,13 @@ final class RestController
+             'permission_callback' => [$this, 'require_edit_posts'],
+         ]);
+ 
++        // GET /theme-layouts — read-only list of the live Theme Builder's header/footer layouts
++        register_rest_route(self::NS, '/theme-layouts', [
++            'methods'             => WP_REST_Server::READABLE,
++            'callback'            => [$this, 'theme_layouts'],
++            'permission_callback' => [$this, 'require_edit_posts'],
++        ]);
++
+         // POST /pages — validate + create a new page (always a draft)
+         register_rest_route(self::NS, '/pages', [
+             'methods'             => WP_REST_Server::CREATABLE,
+@@ -221,16 +228,17 @@ final class RestController
+ 
+     public function get_page(WP_REST_Request $request): WP_REST_Response|WP_Error
+     {
+-        $id   = (int) $request->get_param('id');
+-        $post = get_post($id);
++        $id     = (int) $request->get_param('id');
++        $target = EditTarget::resolve($id);
+ 
+-        if (!$post || $post->post_type !== 'page') {
++        if ($target['error'] === EditTarget::NOT_FOUND) {
+             return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
+         }
+ 
+-        if (!current_user_can('edit_post', $id)) {
++        if ($target['error'] === EditTarget::FORBIDDEN) {
+             return new WP_Error('forbidden', "You do not have permission to read page $id.", ['status' => 403]);
+         }
++        $post = $target['post'];
+ 
+         UsageTracker::log('get_page', $id, 'read');
+ 
+@@ -241,16 +249,17 @@ final class RestController
+ 
+     public function update_page(WP_REST_Request $request): WP_REST_Response|WP_Error
+     {
+-        $id   = (int) $request->get_param('id');
+-        $post = get_post($id);
++        $id     = (int) $request->get_param('id');
++        $target = EditTarget::resolve($id);
+ 
+-        if (!$post || $post->post_type !== 'page') {
++        if ($target['error'] === EditTarget::NOT_FOUND) {
+             return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
+         }
+ 
+-        if (!current_user_can('edit_post', $id)) {
++        if ($target['error'] === EditTarget::FORBIDDEN) {
+             return new WP_Error('forbidden', "You do not have permission to edit page $id.", ['status' => 403]);
+         }
++        $post = $target['post'];
+ 
+         $body    = (array) $request->get_json_params();
+         $content = PageAccess::stringArg($body, 'post_content');
+@@ -305,17 +314,17 @@ final class RestController
+     /** @return \WP_Post|WP_Error */
+     private function history_page(WP_REST_Request $request): \WP_Post|WP_Error
+     {
+-        $id   = (int) $request->get_param('id');
+-        $post = get_post($id);
++        $id     = (int) $request->get_param('id');
++        $target = EditTarget::resolve($id);
+ 
+-        if (!$post || $post->post_type !== 'page') {
++        if ($target['error'] === EditTarget::NOT_FOUND) {
+             return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
+         }
+-        if (!current_user_can('edit_post', $id)) {
++        if ($target['error'] === EditTarget::FORBIDDEN) {
+             return new WP_Error('forbidden', "You do not have permission to access page $id.", ['status' => 403]);
+         }
+ 
+-        return $post;
++        return $target['post'];
+     }
+ 
+     public function history_list(WP_REST_Request $request): WP_REST_Response|WP_Error
+@@ -374,15 +383,16 @@ final class RestController
+ 
+     public function edit_page(WP_REST_Request $request): WP_REST_Response|WP_Error
+     {
+-        $id   = (int) $request->get_param('id');
+-        $post = get_post($id);
++        $id     = (int) $request->get_param('id');
++        $target = EditTarget::resolve($id);
+ 
+-        if (!$post || $post->post_type !== 'page') {
++        if ($target['error'] === EditTarget::NOT_FOUND) {
+             return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
+         }
+-        if (!current_user_can('edit_post', $id)) {
++        if ($target['error'] === EditTarget::FORBIDDEN) {
+             return new WP_Error('forbidden', "You do not have permission to edit page $id.", ['status' => 403]);
+         }
++        $post = $target['post'];
+ 
+         $body    = (array) $request->get_json_params();
+         $find    = PageAccess::stringArg($body, 'find');
+@@ -550,6 +560,7 @@ final class RestController
+             'format'       => 'gutenberg-blocks',
+             'divi_version' => defined('ET_CORE_VERSION') ? ET_CORE_VERSION : 'unknown',
+             'post_id'      => $post->ID,
++            'post_type'    => $post->post_type,
+             'post_title'   => get_the_title($post),
+             'post_status'  => $post->post_status,
+             'post_content' => $post->post_content,
+@@ -561,6 +572,18 @@ final class RestController
+         ];
+     }
+ 
++    public function theme_layouts(WP_REST_Request $request): WP_REST_Response|WP_Error
++    {
++        if (!current_user_can(PageAccess::CAP) || !ThemeLayouts::userMay()) {
++            UsageTracker::log('list_theme_layouts', null, 'error');
++            return new WP_Error('forbidden', 'You do not have permission to list theme layouts.', ['status' => 403]);
++        }
++        $result = ThemeLayouts::listing();
++        UsageTracker::log('list_theme_layouts', null, 'read');
++
++        return new WP_REST_Response($result, 200);
++    }
++
+     public function list_media(WP_REST_Request $request): WP_REST_Response|WP_Error
+     {
+         if (!current_user_can('upload_files')) {
+diff --git a/wp-plugin/src/SiteGuide.php b/wp-plugin/src/SiteGuide.php
+index 8ad644e..2892dfc 100644
+--- a/wp-plugin/src/SiteGuide.php
++++ b/wp-plugin/src/SiteGuide.php
+@@ -59,8 +59,11 @@ finish by telling the owner exactly what to do in WordPress:
+ List the page titles and slugs you created so the owner can tick them off.
+ 
+ ## Notes
+-- Header/footer are currently the active theme's (the nav menu drives the header).
+-  Global Divi Theme Builder header/footer templates are a later phase.
++- Header/footer: the owner's existing Theme Builder header and footer can be previewed and
++  edited (list_theme_layouts, then pass the layout_id as page_id; always `dry_run` first,
++  they appear on every page; only entries marked `editable: true` can be edited). Creating them and choosing where they apply is done by the
++  owner in Divi's Theme Builder. Otherwise they are the active theme's (the nav menu
++  drives the header).
+ - Build pages first and keep each returned page id and link, then give the owner
+   the Settings → Reading and Appearance → Menus steps above.
+ - Undo: Every save through this plugin (update_page_layout / edit_page_content) keeps the
+diff --git a/wp-plugin/src/StyleGuide.php b/wp-plugin/src/StyleGuide.php
+index db0c288..0f547e7 100644
+--- a/wp-plugin/src/StyleGuide.php
++++ b/wp-plugin/src/StyleGuide.php
+@@ -284,6 +284,18 @@ changed, then repeat the same call without `dry_run` to save. A preview of an in
+ layout still returns normally, with `valid: false` and the violations; fix them before
+ saving. A replaced or new section counts as one removed/added block; its children are
+ not listed.
++
++## Header and footer
++The owner's existing Theme Builder header and footer can be edited like pages. Call
++`list_theme_layouts` to find them (each template lists its header and footer with a
++`layout_id`), then pass that `layout_id` as `page_id` to `get_page_layout`,
++`edit_page_content` and `update_page_layout` (with `dry_run: true` first) and to the
++history tools. A header or footer appears on EVERY page, so always preview with
++`dry_run: true` first and prefer a small `edit_page_content` change. Only entries marked `editable: true` can be edited.
++Only the layouts of the live Theme Builder can be edited, and body layouts cannot. You cannot create templates or choose where they apply;
++that is the owner's job in Divi's Theme Builder. If the owner has unsaved Theme Builder
++changes open in Divi, ask them to publish or discard those first, because publishing
++them could overwrite your edit.
+ MD;
+     }
+ }
+diff --git a/wp-plugin/src/ThemeLayouts.php b/wp-plugin/src/ThemeLayouts.php
+new file mode 100644
+index 0000000..afce18b
+--- /dev/null
++++ b/wp-plugin/src/ThemeLayouts.php
+@@ -0,0 +1,187 @@
++<?php
++
++declare(strict_types=1);
++
++namespace AiEditorDivi5\WP;
++
++if ( ! defined( 'ABSPATH' ) ) {
++    exit;
++}
++
++/**
++ * A READ-ONLY view of the live Divi Theme Builder: which templates exist and which header, footer
++ * and body layout posts they use. Nothing here writes, creates or publishes anything. The meta keys
++ * are the ones Divi's own Theme Builder code stores (verified against the shipped theme).
++ */
++final class ThemeLayouts
++{
++    public const HEADER = 'et_header_layout';
++    public const FOOTER = 'et_footer_layout';
++    public const BODY   = 'et_body_layout';
++
++    private const TEMPLATE = 'et_template';
++
++    /** 'header' / 'footer' for the two editable layout post types, null for everything else. */
++    public static function kindOf( string $postType ): ?string
++    {
++        return match ( $postType ) {
++            self::HEADER => 'header',
++            self::FOOTER => 'footer',
++            default      => null,
++        };
++    }
++
++    /**
++     * Pure seam for userMay(): the user may touch Theme Builder content only with edit_others_posts AND
++     * Divi's own 'theme_builder' capability. Fails closed when Divi's capability function is missing.
++     */
++    public static function userMayWith( bool $canEditOthers, ?callable $isAllowed ): bool
++    {
++        return $canEditOthers && null !== $isAllowed && (bool) $isAllowed( 'theme_builder' );
++    }
++
++    /**
++     * The single definition of "may this user touch Theme Builder content": it mirrors Divi's own bar
++     * (edit_others_posts plus the Divi Role Editor's 'theme_builder' capability).
++     */
++    public static function userMay(): bool
++    {
++        return self::userMayWith(
++            current_user_can( 'edit_others_posts' ),
++            function_exists( 'et_pb_is_allowed' ) ? 'et_pb_is_allowed' : null
++        );
++    }
++
++    /**
++     * Template ids of the LIVE Theme Builder, read through the two given Divi functions. Both must be
++     * callable (Divi's Theme Builder present); otherwise the result is empty. The Theme Builder post is
++     * requested with $create = false: reading must never create one.
++     *
++     * @return list<int>
++     */
++    public static function liveTemplateIdsWith( ?callable $postIdFn, ?callable $idsFn ): array
++    {
++        if ( null === $postIdFn || null === $idsFn ) {
++            return [];
++        }
++        $themeBuilderId = (int) $postIdFn( true, false );
++        if ( $themeBuilderId <= 0 ) {
++            return [];
++        }
++
++        return array_values( array_filter(
++            array_map( 'intval', (array) $idsFn( true, $themeBuilderId ) ),
++            static fn ( int $id ): bool => $id > 0
++        ) );
++    }
++
++    /** @return list<int> */
++    public static function liveTemplateIds(): array
++    {
++        return self::liveTemplateIdsWith(
++            function_exists( 'et_theme_builder_get_theme_builder_post_id' ) ? 'et_theme_builder_get_theme_builder_post_id' : null,
++            function_exists( 'et_theme_builder_get_theme_builder_template_ids' ) ? 'et_theme_builder_get_theme_builder_template_ids' : null
++        );
++    }
++
++    /**
++     * The live templates with their layouts. A layout entry is null when the template has no usable
++     * layout of that kind (id 0, missing, wrong post type or not published).
++     *
++     * @return list<array<string,mixed>>
++     */
++    public static function liveTemplates(): array
++    {
++        $out = [];
++        foreach ( self::liveTemplateIds() as $templateId ) {
++            $template = get_post( $templateId );
++            if ( ! $template || self::TEMPLATE !== $template->post_type || 'publish' !== $template->post_status ) {
++                continue;
++            }
++            $out[] = [
++                'template_id'  => $templateId,
++                'title'        => (string) $template->post_title,
++                'default'      => '1' === (string) get_post_meta( $templateId, '_et_default', true ),
++                'enabled'      => '1' === (string) get_post_meta( $templateId, '_et_enabled', true ),
++                'use_on'       => self::strings( get_post_meta( $templateId, '_et_use_on', false ) ),
++                'exclude_from' => self::strings( get_post_meta( $templateId, '_et_exclude_from', false ) ),
++                'header'       => self::layout( $templateId, '_et_header_layout_id', '_et_header_layout_enabled', self::HEADER ),
++                'footer'       => self::layout( $templateId, '_et_footer_layout_id', '_et_footer_layout_enabled', self::FOOTER ),
++                'body'         => self::layout( $templateId, '_et_body_layout_id', '_et_body_layout_enabled', self::BODY ),
++            ];
++        }
++
++        return $out;
++    }
++
++    /**
++     * Layout id => 'header'|'footer' for every layout the plugin may edit (used by a live template).
++     *
++     * @return array<int,string>
++     */
++    public static function liveLayoutKinds(): array
++    {
++        $kinds = [];
++        foreach ( self::liveTemplates() as $template ) {
++            foreach ( [ 'header', 'footer' ] as $kind ) {
++                if ( null !== $template[ $kind ] ) {
++                    $kinds[ (int) $template[ $kind ]['layout_id'] ] = $kind;
++                }
++            }
++        }
++
++        return $kinds;
++    }
++
++    /**
++     * What `list_theme_layouts` returns: absent layouts are omitted, each present layout says whether
++     * the current user can edit it, and body layouts are listed but never editable.
++     *
++     * @return array{templates: list<array<string,mixed>>, count: int, note: ?string}
++     */
++    public static function listing(): array
++    {
++        $templates = [];
++        foreach ( self::liveTemplates() as $template ) {
++            foreach ( [ 'header', 'footer', 'body' ] as $kind ) {
++                if ( null === $template[ $kind ] ) {
++                    unset( $template[ $kind ] );
++                    continue;
++                }
++                $template[ $kind ]['editable'] = 'body' !== $kind && current_user_can( 'edit_post', (int) $template[ $kind ]['layout_id'] ) && self::userMay();
++            }
++            $templates[] = $template;
++        }
++
++        return [
++            'templates' => $templates,
++            'count'     => count( $templates ),
++            'note'      => [] === $templates ? 'No live Divi Theme Builder with templates was found, so there is no header or footer to edit.' : null,
++        ];
++    }
++
++    /** @return array{layout_id:int, title:string, enabled:bool}|null */
++    private static function layout( int $templateId, string $idKey, string $enabledKey, string $postType ): ?array
++    {
++        $layoutId = (int) get_post_meta( $templateId, $idKey, true );
++        $post     = $layoutId > 0 ? get_post( $layoutId ) : null;
++        if ( ! $post || $postType !== $post->post_type || 'publish' !== $post->post_status ) {
++            return null;
++        }
++
++        return [
++            'layout_id' => $layoutId,
++            'title'     => (string) $post->post_title,
++            'enabled'   => '1' === (string) get_post_meta( $templateId, $enabledKey, true ),
++        ];
++    }
++
++    /** @return list<string> */
++    private static function strings( mixed $raw ): array
++    {
++        return array_values( array_filter(
++            array_map( 'strval', (array) $raw ),
++            static fn ( string $s ): bool => '' !== $s
++        ) );
++    }
++}
+diff --git a/wp-plugin/src/autoload.php b/wp-plugin/src/autoload.php
+index 7c7c2ab..46d823c 100644
+--- a/wp-plugin/src/autoload.php
++++ b/wp-plugin/src/autoload.php
+@@ -23,6 +23,8 @@ require_once __DIR__ . '/LandingGuide.php';
+ require_once __DIR__ . '/ImageGuide.php';
+ require_once __DIR__ . '/UsageTracker.php';
+ require_once __DIR__ . '/DiviCompat.php';
++require_once __DIR__ . '/ThemeLayouts.php';
++require_once __DIR__ . '/EditTarget.php';
+ require_once __DIR__ . '/PageEditor.php';
+ require_once __DIR__ . '/LayoutDiff.php';
+ require_once __DIR__ . '/DryRun.php';
