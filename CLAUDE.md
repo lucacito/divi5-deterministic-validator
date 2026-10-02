@@ -231,7 +231,7 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   match the shipped features, distinguish activation failure reasons in the admin notice, and confirm the product
   id `ai-editor-divi5-pro` and product URL with the divi5lab server. These are the first task of Plan 3.
 - **WordPress.org review answered 2026-10-02** (issue: custom CSS/JS/PHP through layouts, `css.freeForm`/`mainElement`):
-  fixed on branch `fix/no-custom-code` (`CodePolicy` + `LayoutGate`, every write/preview path, guides/recipes cleaned,
+  fixed and merged to LOCAL main (9cb7a06; NOT uploaded, NOT pushed) (`CodePolicy` + `LayoutGate`, every write/preview path, guides/recipes cleaned,
   `NoCustomCodeTest`); the owner uploads the 4.4.0 zip, tests on Playground and sends `docs/wporg-review-reply-2-draft.md`.
   Rule: the free plugin never saves custom CSS, JavaScript or PHP, and any future layout write path (including every Pro
   write tool) must go through `LayoutGate::check()`.
