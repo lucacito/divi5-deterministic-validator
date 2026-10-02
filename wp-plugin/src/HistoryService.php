@@ -10,6 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+require_once __DIR__ . '/CodePolicy.php';
+
 /**
  * Single entry point for page history, shared by the MCP and REST transports.
  * Returns plain arrays (never WP_Error) so each transport maps them its own way.
@@ -67,6 +69,22 @@ final class HistoryService
 
         // Restore is NOT a validated write: it returns the person's own earlier content.
         // The validator's verdict is reported as information only.
+        // Content too large or too deeply nested is never walked (the walk is quadratic in depth): the restore
+        // still happens, the verdict says it could not be checked.
+        $tooBig = CodePolicy::tooLarge( (string) $target['content'] ) || CodePolicy::tooDeep( (string) $target['content'] )
+            ? CodePolicy::tooLargeViolation( (string) $target['content'] )
+            : null;
+        if ( null !== $tooBig ) {
+            return [
+                'ok'               => true,
+                'restored_version' => $versionId,
+                'snapshot'         => $snapshot,
+                'validator'        => [
+                    'valid'      => false,
+                    'violations' => [ [ 'code' => 'LAYOUT_TOO_LARGE_TO_CHECK', 'message' => $tooBig->message(), 'path' => 'post_content' ] ],
+                ],
+            ];
+        }
         $verdict = ( new Validator() )->validateContent( (string) $target['content'] );
 
         return [

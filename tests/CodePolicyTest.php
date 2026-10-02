@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\CodePolicy;
+use AiEditorDivi5\WP\LayoutDiff;
 use AiEditorDivi5\WP\LayoutGate;
+use AiEditorDivi5\WP\StyleReferences;
 use Divi5Validator\Validator;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../wp-plugin/src/CodePolicy.php';
 require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
+require_once __DIR__ . '/../wp-plugin/src/StyleReferences.php';
+require_once __DIR__ . '/../wp-plugin/src/LayoutDiff.php';
 
 /** The plugin never saves custom CSS, JavaScript or PHP through a layout. */
 class CodePolicyTest extends TestCase
@@ -719,6 +723,74 @@ class CodePolicyTest extends TestCase
         $deep = self::layout( self::CSS, self::nested( 101 ) );
         $this->assertSame( [], self::codes( self::layout( self::CSS ), self::layout( self::CSS ) ) );
         $this->assertSame( [ CodePolicy::E_CUSTOM_CSS ], self::codes( self::layout( self::CSS ), $deep ) );
+    }
+
+    // ---- the depth guard is exact: it measures the validator's own parse tree ------------------------------
+
+    /** @return array<string, array{0:string, 1:int}> label => [ shape, units ] */
+    public static function deepShapes(): array
+    {
+        $out = [];
+        foreach ( [ 3000, 4900 ] as $n ) {
+            $out[ "mismatched closers x$n" ]     = [ 'mism', $n ];
+            $out[ "block name ending in / x$n" ] = [ 'slash', $n ];
+            $out[ "<!--> prefixes x$n" ]         = [ 'gt', $n ];
+            $out[ "closer with junk x$n" ]       = [ 'junk', $n ];
+        }
+        foreach ( [ 3000, 5000 ] as $n ) {
+            $out[ "well-formed pairs x$n" ] = [ 'ok', $n ];
+        }
+
+        return $out;
+    }
+
+    private static function deepContent( string $shape, int $n ): string
+    {
+        return match ( $shape ) {
+            'mism'  => str_repeat( '<!-- wp:divi/group --><!-- /wp:divi/x -->', $n ),
+            'slash' => str_repeat( '<!-- wp:a/ -->', $n ),
+            'gt'    => str_repeat( '<!--><!-- wp:divi/group -->', $n ),
+            'junk'  => str_repeat( '<!-- wp:divi/group --><!-- /wp:divi/group y -->', $n ),
+            default => str_repeat( '<!-- wp:divi/group {"builderVersion":"5.14.0"} -->', $n ) . str_repeat( '<!-- /wp:divi/group -->', $n ),
+        };
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'deepShapes' )]
+    public function testEveryDeepShapeIsRefusedBeforeAnyWalkAndWithLittleMemory( string $shape, int $n ): void
+    {
+        $content = self::deepContent( $shape, $n );
+        $this->assertLessThanOrEqual( 10000, substr_count( $content, '<!--' ), 'under the marker limit: only the depth guard can refuse it' );
+        $this->assertTrue( CodePolicy::tooDeep( $content ) );
+        foreach ( [
+            'CodePolicy'      => static fn () => count( CodePolicy::violations( $content ) ),
+            'LayoutGate'      => static fn () => count( LayoutGate::check( $content )->violations() ),
+            'StyleReferences' => static fn () => null === StyleReferences::advise( $content, [ 'presets' => [], 'colors' => [] ] ) ? 1 : 0,
+            'LayoutDiff'      => static fn () => null === LayoutDiff::compare( self::layout(), $content )['diff'] ? 1 : 0,
+        ] as $label => $run ) {
+            $memory  = memory_get_peak_usage();
+            $start   = microtime( true );
+            $result  = $run();
+            $elapsed = microtime( true ) - $start;
+            $this->assertSame( 1, $result, $label );
+            $this->assertLessThan( 2.0, $elapsed, $label );
+            $this->assertLessThan( 64 * 1024 * 1024, memory_get_peak_usage() - $memory, $label );
+        }
+    }
+
+    public function testExactly100NestedRealShapedPairsAreNotRefusedAndOneMoreIs(): void
+    {
+        $nest = static fn ( int $n ): string => '<!-- wp:divi/placeholder -->' . str_repeat( '<!-- wp:divi/group {"builderVersion":"5.14.0"} -->', $n )
+            . '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Hi"}}},"builderVersion":"5.14.0"} /-->'
+            . str_repeat( '<!-- /wp:divi/group -->', $n ) . '<!-- /wp:divi/placeholder -->';
+        // The placeholder is level 1 and the heading one level below the innermost group: 98 groups put it at level 100.
+        $this->assertFalse( CodePolicy::tooDeep( $nest( 98 ) ) );
+        $this->assertNull( CodePolicy::tooLargeViolation( $nest( 98 ) ) );
+        $this->assertTrue( CodePolicy::tooDeep( $nest( 99 ) ) );
+        $this->assertNotNull( CodePolicy::tooLargeViolation( $nest( 99 ) ) );
+        // Bare nested pairs: 100 deep is allowed, 101 is not.
+        $this->assertFalse( CodePolicy::tooDeep( self::nested( 100 ) ) );
+        $this->assertTrue( CodePolicy::tooDeep( self::nested( 101 ) ) );
+        $this->assertFalse( CodePolicy::tooDeep( self::layout() ) );
     }
 
     // ---- the gate ------------------------------------------------------------------------------

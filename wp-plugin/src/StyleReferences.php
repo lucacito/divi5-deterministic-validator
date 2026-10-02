@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+require_once __DIR__ . '/CodePolicy.php';
+
 /**
  * Finds the preset ids and global color ids a layout cites that do not exist on this site. Divi
  * renders such a layout anyway (an unknown preset falls back to the module's default preset; an
@@ -32,6 +34,10 @@ final class StyleReferences
     public static function advise( string $content, array $known ): ?array
     {
         if ( null === $known['presets'] && null === $known['colors'] ) {
+            return null;
+        }
+        // Content too large or too deeply nested to walk safely gets no advisory (the policy refuses it anyway).
+        if ( CodePolicy::tooLarge( $content ) || CodePolicy::tooDeep( $content ) ) {
             return null;
         }
         $parsed = ( new BlockParser() )->parse( $content );

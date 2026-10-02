@@ -56,6 +56,9 @@ final class CodePolicy
     /** Blocks nested deeper than this are refused (real Divi layouts nest about 8; the validator's tree walk is quadratic in depth). */
     private const MAX_DEPTH       = 100;
 
+    /** @var array{0:string,1:int}|null the depth of the last content measured: [ strlen:md5, depth ] */
+    private static ?array $depthMemo = null;
+
     /**
      * @return list<Violation>
      */
@@ -75,7 +78,7 @@ final class CodePolicy
         $before = [ 'tree' => [], 'raw' => [], 'guard' => [] ];
         // A baseline over the limits is not scanned (that would spend the work on stored content): it counts as an
         // empty baseline, so nothing on it is preserved. That fails closed.
-        if ( null !== $baseline && '' !== $baseline && ! self::tooLarge( $baseline ) ) {
+        if ( null !== $baseline && '' !== $baseline && ! self::tooLarge( $baseline ) && ! self::tooDeep( $baseline ) ) {
             $before = self::findings( $baseline );
         }
 
@@ -110,37 +113,39 @@ final class CodePolicy
     /** True when the content is over the size or comment-marker limit (nothing is scanned or validated then). */
     public static function tooLarge( string $content ): bool
     {
-        return strlen( $content ) > self::MAX_BYTES
-            || substr_count( $content, '<!--' ) > self::MAX_MARKERS
-            || self::maxDepth( $content ) > self::MAX_DEPTH;
+        return strlen( $content ) > self::MAX_BYTES || substr_count( $content, '<!--' ) > self::MAX_MARKERS;
     }
 
     /**
-     * The deepest block nesting, in one forward pass over the comments with the block parser's own rule (a comment
-     * ends at its first `-->`), so it cannot undercount what the parser would build. Only called on content that is
-     * already within the byte and marker limits, so the pass is cheap.
+     * True when the block tree the validator's own parser builds is nested deeper than MAX_DEPTH. The depth comes
+     * from the parser's tree itself (an explicit stack, no path strings), so it cannot undercount whatever the
+     * parser does with mismatched closers, odd names or `<!-->` prefixes. Content over the byte or marker limit
+     * is not parsed (it is refused as too large first). The last result is memoised, so the several checks one
+     * request makes on the same content parse it once.
      */
-    private static function maxDepth( string $content ): int
+    public static function tooDeep( string $content ): bool
     {
-        if ( strlen( $content ) > self::MAX_BYTES || substr_count( $content, '<!--' ) > self::MAX_MARKERS ) {
-            return 0; // already too large; the caller reports that
+        return ! self::tooLarge( $content ) && self::treeDepth( $content ) > self::MAX_DEPTH;
+    }
+
+    private static function treeDepth( string $content ): int
+    {
+        $key = strlen( $content ) . ':' . md5( $content );
+        if ( null !== self::$depthMemo && self::$depthMemo[0] === $key ) {
+            return self::$depthMemo[1];
         }
-        $depth = 0;
+
         $max   = 0;
-        $at    = 0;
-        while ( false !== ( $start = strpos( $content, '<!--', $at ) ) ) {
-            $end = strpos( $content, '-->', $start + 4 );
-            if ( false === $end ) {
-                break;
-            }
-            $at   = $end + 3;
-            $text = trim( substr( $content, $start + 4, $end - $start - 4 ) );
-            if ( str_starts_with( $text, '/wp:' ) ) {
-                $depth = max( 0, $depth - 1 );
-            } elseif ( str_starts_with( $text, 'wp:' ) && ! str_ends_with( $text, '/' ) ) {
-                $max = max( $max, ++$depth );
+        $root  = ( new BlockParser() )->parse( $content )->root();
+        $stack = null === $root ? [] : [ [ $root, 0 ] ];
+        while ( [] !== $stack ) {
+            [ $block, $depth ] = array_pop( $stack );
+            $max               = max( $max, $depth );
+            foreach ( $block->children() as $child ) {
+                $stack[] = [ $child, $depth + 1 ];
             }
         }
+        self::$depthMemo = [ $key, $max ];
 
         return $max;
     }
@@ -157,7 +162,7 @@ final class CodePolicy
         if ( $markers > self::MAX_MARKERS ) {
             $hit[] = sprintf( '%s comment markers (limit %s)', number_format( $markers ), number_format( self::MAX_MARKERS ) );
         }
-        $depth = self::maxDepth( $content );
+        $depth = self::tooLarge( $content ) ? 0 : self::treeDepth( $content );
         if ( $depth > self::MAX_DEPTH ) {
             $hit[] = sprintf( '%s nested blocks (limit %s)', number_format( $depth ), number_format( self::MAX_DEPTH ) );
         }

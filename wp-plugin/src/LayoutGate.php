@@ -21,7 +21,7 @@ final class LayoutGate
     public static function check( string $content, ?string $baseline = null ): ValidationResult
     {
         // Oversized content never reaches the validator: only the policy's single "too large" violation is returned.
-        if ( CodePolicy::tooLarge( $content ) ) {
+        if ( CodePolicy::tooLarge( $content ) || CodePolicy::tooDeep( $content ) ) {
             return new ValidationResult( CodePolicy::violations( $content ) );
         }
 
@@ -33,7 +33,7 @@ final class LayoutGate
     {
         $decoded = json_decode( $json, true );
         $content = is_array( $decoded ) && isset( $decoded['post_content'] ) && is_string( $decoded['post_content'] ) ? $decoded['post_content'] : null;
-        if ( null !== $content && CodePolicy::tooLarge( $content ) ) {
+        if ( null !== $content && ( CodePolicy::tooLarge( $content ) || CodePolicy::tooDeep( $content ) ) ) {
             return new ValidationResult( CodePolicy::violations( $content ) );
         }
         $result = ( new Validator() )->validate( $json );
