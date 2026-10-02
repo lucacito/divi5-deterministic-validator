@@ -87,6 +87,34 @@ final class OpenApiSpec
                             'violations' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/Violation']],
                         ],
                     ],
+                    'GlobalPreset' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'id'       => ['type' => 'string', 'description' => 'Preset id, used as modulePreset'],
+                            'module'   => ['type' => 'string', 'description' => 'Module name, e.g. divi/button'],
+                            'name'     => ['type' => 'string'],
+                            'default'  => ['type' => 'boolean', 'description' => 'true when this is the default preset of its module (applied to every module without a modulePreset)'],
+                            'controls' => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'The attribute areas the preset sets (dotted paths)'],
+                            'renders'  => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Structural settings, e.g. headingLevel=h3'],
+                        ],
+                    ],
+                    'GlobalColor' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'id'     => ['type' => 'string', 'description' => 'Global color id (gcid-...)'],
+                            'label'  => ['type' => 'string'],
+                            'color'  => ['type' => 'string'],
+                            'source' => ['type' => 'string', 'enum' => ['theme', 'custom']],
+                        ],
+                    ],
+                    'GlobalVariable' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'id'    => ['type' => 'string'],
+                            'label' => ['type' => 'string'],
+                            'value' => ['type' => 'string'],
+                        ],
+                    ],
                     'HistoryEntry' => [
                         'type'       => 'object',
                         'properties' => [
@@ -420,6 +448,29 @@ final class OpenApiSpec
                                 ],
                             ]]]],
                             '403' => ['description' => 'The user may not use Divi\'s Theme Builder (needs edit_pages, edit_others_posts and Divi\'s Theme Builder permission)'],
+                        ],
+                    ],
+                ],
+                '/global-styles' => [
+                    'get' => [
+                        'operationId' => 'listGlobalStyles',
+                        'summary'     => 'List the site\'s presets and colors',
+                        'description' => 'Lists this site\'s own Divi 5 module presets, global colors and variables (read-only) so layouts reuse them. Filter presets with ?module=divi/button. Presets and colors are created in Divi\'s Visual Builder, not here.',
+                        'parameters'  => [['name' => 'module', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Module name to list presets for, e.g. divi/button']]],
+                        'responses'   => [
+                            '200' => ['description' => 'Presets, colors and variables', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'presets'   => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/GlobalPreset']],
+                                    'colors'    => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/GlobalColor']],
+                                    'variables' => ['type' => 'object', 'additionalProperties' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/GlobalVariable']], 'description' => 'Active variables grouped by type (numbers, strings, fonts...)'],
+                                    'counts'    => ['type' => 'object', 'properties' => ['presets' => ['type' => 'integer'], 'colors' => ['type' => 'integer'], 'variables' => ['type' => 'integer']]],
+                                    'truncated' => ['type' => 'boolean', 'description' => 'true when a list was cut to its limit; narrow presets with module'],
+                                    'notes'     => ['type' => 'array', 'items' => ['type' => 'string']],
+                                ],
+                            ]]]],
+                            '400' => ['description' => 'module is not a string'],
+                            '403' => ['description' => 'The user cannot edit pages'],
                         ],
                     ],
                 ],

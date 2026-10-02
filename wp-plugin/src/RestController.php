@@ -43,6 +43,16 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
+        // GET /global-styles — read-only list of the site's Divi presets, global colors and variables
+        register_rest_route(self::NS, '/global-styles', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'global_styles'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+            'args'                => [
+                'module' => ['type' => 'string', 'validate_callback' => fn($v) => is_string($v)],
+            ],
+        ]);
+
         // POST /pages — validate + create a new page (always a draft)
         register_rest_route(self::NS, '/pages', [
             'methods'             => WP_REST_Server::CREATABLE,
@@ -580,6 +590,22 @@ final class RestController
         }
         $result = ThemeLayouts::listing();
         UsageTracker::log('list_theme_layouts', null, 'read');
+
+        return new WP_REST_Response($result, 200);
+    }
+
+    public function global_styles(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('list_global_styles', null, 'error');
+            return new WP_Error('forbidden', 'You do not have permission to read the site styles.', ['status' => 403]);
+        }
+        $module = PageAccess::stringArg(['module' => $request->get_param('module')], 'module');
+        if ($module === null) {
+            return new WP_Error('invalid_field', '"module" must be a string.', ['status' => 400]);
+        }
+        $result = GlobalStyles::catalog($module);
+        UsageTracker::log('list_global_styles', null, 'read');
 
         return new WP_REST_Response($result, 200);
     }
