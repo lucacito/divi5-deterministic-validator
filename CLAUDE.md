@@ -214,14 +214,13 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- **4.4.0 = global styles release PLUS the free re-cut** (local branch `feat/free-recut`, NOT yet merged to main; main at
-  c3234c2/39531aa still contains the unreleased 4.3.0 header/footer code; NOT uploaded): read-only
+- **4.4.0 = global styles release PLUS the free re-cut** (merged to LOCAL main, 026a571; NOT uploaded): read-only
   `list_global_styles` (16th tool) + non-blocking style-reference advisory + guide updates (spec
   `docs/superpowers/specs/2026-10-01-global-styles-design.md`). The free re-cut removed the unreleased 4.3.0
-  header/footer code, so there are 16 tools. Ships after the first WordPress.org approval. Verified on the re-cut:
-  548 tests, `make verify-global-styles` 25/25, Plugin Check clean (dev copy and zip); the final whole-branch review
-  of the re-cut is done. The Features screenshot in `wporg-assets/` still shows the removed header/footer card:
-  regenerate it (scripts/build-wporg-art.cjs, needs an admin cookie) before upload.
+  header/footer code (it moves to the Pro add-on), so there are 16 tools. Ships after the first WordPress.org
+  approval. Verified: 548 tests, `make verify-global-styles` 25/25, Plugin Check clean (dev copy and zip), final
+  whole-branch review of the re-cut done. The Features screenshot in `wporg-assets/` was regenerated 2026-10-02 after
+  the re-cut (9 cards, no header/footer card).
 - **4.2.0 = preview-before-save release** (branch `feat/dry-run-diff`): `dry_run` on the two write
   tools/routes with a capped structured diff; spec `docs/superpowers/specs/2026-10-01-dry-run-diff-design.md`.
   Not uploaded; ships in one upload together with 4.1.0 after WordPress.org answers the 4.0.0 review.
