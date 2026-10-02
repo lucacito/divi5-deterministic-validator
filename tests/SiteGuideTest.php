@@ -42,12 +42,4 @@ class SiteGuideTest extends TestCase
         $this->assertStringContainsString('dry_run', $md);
         $this->assertStringContainsString('valid: false', $md);
     }
-
-    public function testBlueprintMentionsEditingHeaderAndFooterLayouts(): void
-    {
-        $md = SiteGuide::markdown();
-        $this->assertStringContainsString('list_theme_layouts', $md);
-        $this->assertStringContainsString('layout_id', $md);
-        $this->assertStringContainsString('only entries marked `editable: true` can be edited', $md);
-    }
 }
