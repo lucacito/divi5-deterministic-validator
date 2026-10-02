@@ -80,4 +80,12 @@ class PluginTest extends TestCase
         }
         $this->assertSame( [], $GLOBALS['__wp_http_log'], 'no licence key means no remote call' );
     }
+
+    public function testACompatibleBootRegistersTheToolHooksWithNoToolsYet(): void
+    {
+        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertArrayHasKey( 'jhmg_aied_mcp_tools', $GLOBALS['__wp_filters'] );
+        $this->assertArrayHasKey( 'jhmg_aied_mcp_call', $GLOBALS['__wp_filters'] );
+        $this->assertSame( [ [ 'name' => 'get_page_layout' ] ], apply_filters( 'jhmg_aied_mcp_tools', [ [ 'name' => 'get_page_layout' ] ] ), 'no Pro tools exist yet' );
+    }
 }

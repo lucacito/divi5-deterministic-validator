@@ -57,5 +57,8 @@ final class Plugin
                 Licensing::client()->status_notice();
             }
         } );
+
+        $registry = new ToolRegistry( Tools::all(), static fn (): bool => Licensing::isPremium() );
+        $registry->register();
     }
 }
