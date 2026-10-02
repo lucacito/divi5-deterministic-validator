@@ -1,4 +1,4 @@
-.PHONY: up down clean test validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles
+.PHONY: up down clean test test-pro validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -38,6 +38,12 @@ install:
 # ---------------------------------------------------------------
 test: install
 	@bash scripts/self-test.sh
+
+# ---------------------------------------------------------------
+# test-pro — run the Pro add-on's own PHPUnit suite
+# ---------------------------------------------------------------
+test-pro:
+	@./vendor/bin/phpunit -c pro-addon/phpunit.xml
 
 # ---------------------------------------------------------------
 # validate — run the validator against an arbitrary JSON file
