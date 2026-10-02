@@ -221,9 +221,12 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- **4.4.0 = global styles release** (branch `feat/global-styles`; NOT uploaded; merge to local main only with the owner's OK):
-  read-only `list_global_styles` (17th tool) + non-blocking style-reference advisory + guide updates (spec
-  `docs/superpowers/specs/2026-10-01-global-styles-design.md`). Ships on top of 4.3.0, after the first WordPress.org approval.
+- **4.4.0 = global styles release** (merged to LOCAL main, c3234c2; NOT uploaded): read-only `list_global_styles`
+  (17th tool) + non-blocking style-reference advisory + guide updates (spec
+  `docs/superpowers/specs/2026-10-01-global-styles-design.md`). Ships on top of 4.3.0, after the first WordPress.org
+  approval. Verified: 567 tests, `make verify-global-styles` 25/25, Plugin Check clean (dev copy + zip), whole-branch
+  review + one fix wave done. Before it ships: the Features screenshot in `wporg-assets/` predates the 4.3.0 and 4.4.0
+  cards, and a real builder-made header/footer export has still not been through `validate_layout` (4.3.0 item).
 - **4.3.0 = header/footer release** (merged to LOCAL main, 837b712; NOT uploaded): edit the existing live Theme Builder
   header/footer (spec `docs/superpowers/specs/2026-10-01-theme-layouts-design.md`). Intended to ship as its own update
   AFTER the first WordPress.org approval. 4.1.0 + 4.2.0 alone = main at commit 9e806a3 (the 4.2.0 merge); cut the upload
