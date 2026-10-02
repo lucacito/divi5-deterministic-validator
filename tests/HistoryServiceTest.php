@@ -60,6 +60,23 @@ class HistoryServiceTest extends TestCase
         $this->assertSame( $tricky, $GLOBALS['__wp_posts'][5]->post_content );
     }
 
+    public function testRestoringATooDeepSnapshotNeverWalksItAndSaysItCouldNotBeChecked(): void
+    {
+        $deep = str_repeat( '<!-- wp:divi/group {"builderVersion":"5.14.0"} -->', 3000 ) . str_repeat( '<!-- /wp:divi/group -->', 3000 );
+        $GLOBALS['__wp_posts'][5]->post_content = $deep;
+        $w = HistoryService::write( 5, 'SMALL', 'update_page_layout' );
+        $this->assertTrue( $w['snapshot']['stored'] );
+
+        $memory = memory_get_peak_usage();
+        $r      = HistoryService::restore( 5, $w['snapshot']['version_id'] );
+        $this->assertTrue( $r['ok'] );
+        $this->assertSame( $deep, $GLOBALS['__wp_posts'][5]->post_content, 'the owner\'s own content is restored' );
+        $this->assertFalse( $r['validator']['valid'] );
+        $this->assertSame( 'LAYOUT_TOO_LARGE_TO_CHECK', $r['validator']['violations'][0]['code'] );
+        $this->assertStringContainsString( '3,000 nested blocks (limit 100)', $r['validator']['violations'][0]['message'] );
+        $this->assertLessThan( 64 * 1024 * 1024, memory_get_peak_usage() - $memory );
+    }
+
     public function testOversizedPageIsStillWrittenAndResultSaysNoSnapshot(): void
     {
         $GLOBALS['__wp_posts'][5]->post_content = str_repeat( 'x', PageHistory::MAX_BYTES + 1 );

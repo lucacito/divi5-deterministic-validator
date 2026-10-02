@@ -52,8 +52,10 @@ different behaviour, it adds a new tool with its own name.
    for success and `'error' => ['code' => -32602, 'message' => '...']` for errors.
 3. **Only claim your own tool names.** Return the incoming `$response` untouched
    for any name you do not handle so other add-ons can claim theirs.
-4. **Write through the validator.** Any tool that saves Divi layout content
-   should validate it with the bundled validator before touching the database.
+4. **Write through the validator.** Write through
+   `\AiEditorDivi5\WP\LayoutGate::check( $content, $storedContent )`: the
+   structure validator alone accepts custom CSS and script, and this plugin
+   never saves custom code.
 5. **Keep OpenAPI additions compatible with the ChatGPT importer:** every
    `description` and `summary` at most 300 characters, and no bare
    `type: object` without `properties` (use `additionalProperties` or list the

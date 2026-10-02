@@ -8,7 +8,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 require_once __DIR__ . '/PageAccess.php';
 
-use Divi5Validator\Validator;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -282,7 +281,7 @@ final class RestController
         }
 
         // Validate before saving — this is the safety gate
-        $result = (new Validator())->validateContent($content);
+        $result = LayoutGate::check($content, (string) $post->post_content);
 
         if (!$result->isValid()) {
             UsageTracker::log('update_page', $id, 'invalid', count($result->violations()));
@@ -430,7 +429,7 @@ final class RestController
         }
 
         // Same safety gate as update_page — the edited content must still validate.
-        $result = (new Validator())->validateContent($edit['content']);
+        $result = LayoutGate::check($edit['content'], (string) $post->post_content);
         if (!$result->isValid()) {
             UsageTracker::log('edit_page', $id, 'invalid', count($result->violations()));
             return new WP_REST_Response([
@@ -473,7 +472,8 @@ final class RestController
         if ($title === null || $content === null || $slug === null) {
             return new WP_Error('invalid_field', '"title", "post_content" and "slug" must be strings.', ['status' => 400]);
         }
-        $title = trim($title);
+        // A title is plain text: strip markup before it is stored (many themes print it unescaped).
+        $title = trim(sanitize_text_field($title));
         $slug  = sanitize_title($slug);
 
         if ($title === '') {
@@ -483,7 +483,7 @@ final class RestController
             return new WP_Error('missing_field', 'Request body must include a non-empty string "post_content".', ['status' => 400]);
         }
 
-        $result = (new Validator())->validateContent($content);
+        $result = LayoutGate::check($content);
 
         if (!$result->isValid()) {
             UsageTracker::log('create_page', null, 'invalid', count($result->violations()));
@@ -543,9 +543,9 @@ final class RestController
             if ($content === null) {
                 return new WP_Error('invalid_field', '"post_content" must be a string.', ['status' => 400]);
             }
-            $result = (new Validator())->validateContent($content);
+            $result = LayoutGate::check($content);
         } else {
-            $result = (new Validator())->validate((string) json_encode($body));
+            $result = LayoutGate::checkJson((string) json_encode($body));
         }
 
         UsageTracker::log('validate', null, $result->isValid() ? 'read' : 'invalid', count($result->violations()));

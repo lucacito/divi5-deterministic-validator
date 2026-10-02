@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\WP;
 
-use Divi5Validator\Validator;
-
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -25,7 +23,7 @@ final class DryRun
     /** @return array<string,mixed> */
     public static function preview( string $before, string $after ): array
     {
-        $verdict = ( new Validator() )->validateContent( $after );
+        $verdict = LayoutGate::check( $after, $before );
 
         return [
             'saved'      => false,

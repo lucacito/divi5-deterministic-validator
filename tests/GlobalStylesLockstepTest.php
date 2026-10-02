@@ -21,6 +21,8 @@ require_once __DIR__ . '/../wp-plugin/src/DiviCompat.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryService.php';
 require_once __DIR__ . '/../wp-plugin/src/PageEditor.php';
 require_once __DIR__ . '/../wp-plugin/src/LayoutDiff.php';
+require_once __DIR__ . '/../wp-plugin/src/CodePolicy.php';
+require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
 require_once __DIR__ . '/../wp-plugin/src/DryRun.php';
 require_once __DIR__ . '/../wp-plugin/src/GlobalStyles.php';
 require_once __DIR__ . '/../wp-plugin/src/StyleReferences.php';

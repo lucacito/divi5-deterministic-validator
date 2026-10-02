@@ -10,7 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 require_once __DIR__ . '/ExtensionGuard.php';
 require_once __DIR__ . '/PageAccess.php';
 
-use Divi5Validator\Validator;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_Error;
@@ -387,7 +386,7 @@ final class McpHandler
             return $this->rpcError($id, -32602, 'post_content is required.');
         }
 
-        $result = (new Validator())->validateContent($content);
+        $result = LayoutGate::check($content);
         UsageTracker::log('validate', null, $result->isValid() ? 'read' : 'invalid', count($result->violations()));
 
         return $this->rpcResult($id, [
@@ -431,7 +430,7 @@ final class McpHandler
             ]);
         }
 
-        $result = (new Validator())->validateContent($content);
+        $result = LayoutGate::check($content, (string) $post->post_content);
 
         if (!$result->isValid()) {
             UsageTracker::log('update_layout', $pageId, 'invalid', count($result->violations()));
@@ -514,7 +513,7 @@ final class McpHandler
 
         // A find/replace still has to clear the deterministic validator — the
         // same gate as update_page_layout — before anything is written.
-        $result = (new Validator())->validateContent($edit['content']);
+        $result = LayoutGate::check($edit['content'], (string) $post->post_content);
         if (!$result->isValid()) {
             UsageTracker::log('edit_content', $pageId, 'invalid', count($result->violations()));
             return $this->rpcResult($id, [
@@ -665,7 +664,8 @@ final class McpHandler
         if ($title === null || $content === null || $slug === null) {
             return $this->rpcError($id, -32602, 'title, post_content and slug must be strings.');
         }
-        $title = trim($title);
+        // A title is plain text: strip markup before it is stored (many themes print it unescaped).
+        $title = trim(sanitize_text_field($title));
         $slug  = sanitize_title($slug);
 
         if ($title === '') {
@@ -675,7 +675,7 @@ final class McpHandler
             return $this->rpcError($id, -32602, 'post_content is required.');
         }
 
-        $result = (new Validator())->validateContent($content);
+        $result = LayoutGate::check($content);
 
         if (!$result->isValid()) {
             UsageTracker::log('create_page', null, 'invalid', count($result->violations()));

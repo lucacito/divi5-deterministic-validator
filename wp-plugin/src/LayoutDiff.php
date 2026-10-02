@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+require_once __DIR__ . '/CodePolicy.php';
+
 /**
  * Describes what an edit would change, block by block. Information only: it never affects what a
  * real write does. Blocks are compared by child index under the same parent, so an insertion in
@@ -38,6 +40,13 @@ final class LayoutDiff
      */
     public static function compare( string $before, string $after ): array
     {
+        // A tree too deep (or content too large) to walk is not diffed; the policy refuses such content anyway.
+        foreach ( [ 'The current page content' => $before, 'The new layout' => $after ] as $who => $content ) {
+            if ( CodePolicy::tooLarge( $content ) || CodePolicy::tooDeep( $content ) ) {
+                return [ 'diff' => null, 'diff_error' => $who . ' is too large or too deeply nested to compare.' ];
+            }
+        }
+
         $parser = new BlockParser();
 
         $a = $parser->parse( $before );
