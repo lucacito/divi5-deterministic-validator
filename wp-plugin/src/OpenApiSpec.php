@@ -85,6 +85,57 @@ final class OpenApiSpec
                         'properties' => [
                             'valid'      => ['type' => 'boolean'],
                             'violations' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/Violation']],
+                            'advisories' => ['$ref' => '#/components/schemas/Advisories'],
+                        ],
+                    ],
+                    'StyleRefCount' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'id'    => ['type' => 'string', 'description' => 'The id the layout cites'],
+                            'count' => ['type' => 'integer', 'description' => 'How many times the layout cites it'],
+                        ],
+                    ],
+                    'StyleAdvisory' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'unknown_presets' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/StyleRefCount'], 'description' => 'Preset ids that do not exist on this site (at most 20)'],
+                            'unknown_colors'  => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/StyleRefCount'], 'description' => 'Global color ids that do not exist on this site (at most 20)'],
+                            'message'         => ['type' => 'string'],
+                        ],
+                    ],
+                    'Advisories' => [
+                        'type'        => 'object',
+                        'description' => 'Present only when there is something to report. Advisories never change valid or the save.',
+                        'properties'  => [
+                            'style_references' => ['$ref' => '#/components/schemas/StyleAdvisory'],
+                        ],
+                    ],
+                    'GlobalPreset' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'id'       => ['type' => 'string', 'description' => 'Preset id, used as modulePreset'],
+                            'module'   => ['type' => 'string', 'description' => 'Module name, e.g. divi/button'],
+                            'name'     => ['type' => 'string'],
+                            'default'  => ['type' => 'boolean', 'description' => 'true when this is the default preset of its module (applied to every module without a modulePreset)'],
+                            'controls' => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'The attribute areas the preset sets (dotted paths)'],
+                            'renders'  => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Structural settings, e.g. headingLevel=h3'],
+                        ],
+                    ],
+                    'GlobalColor' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'id'     => ['type' => 'string', 'description' => 'Global color id (gcid-...)'],
+                            'label'  => ['type' => 'string'],
+                            'color'  => ['type' => 'string'],
+                            'source' => ['type' => 'string', 'enum' => ['theme', 'custom']],
+                        ],
+                    ],
+                    'GlobalVariable' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'id'    => ['type' => 'string'],
+                            'label' => ['type' => 'string'],
+                            'value' => ['type' => 'string'],
                         ],
                     ],
                     'HistoryEntry' => [
@@ -218,7 +269,15 @@ final class OpenApiSpec
                             ]]],
                         ],
                         'responses'   => [
-                            '201' => ['description' => 'Page created'],
+                            '201' => ['description' => 'Page created (advisories lists unknown preset or color ids, if any)', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'created'    => ['type' => 'boolean'],
+                                    'valid'      => ['type' => 'boolean'],
+                                    'advisories' => ['$ref' => '#/components/schemas/Advisories'],
+                                ],
+                                'additionalProperties' => true,
+                            ]]]],
                             '400' => ['description' => 'Missing title or post_content, or a field that is not a string'],
                             '422' => ['description' => 'Validation failed', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/ValidationResult']]]],
                         ],
@@ -423,6 +482,29 @@ final class OpenApiSpec
                         ],
                     ],
                 ],
+                '/global-styles' => [
+                    'get' => [
+                        'operationId' => 'listGlobalStyles',
+                        'summary'     => 'List the site\'s presets and colors',
+                        'description' => 'Lists this site\'s own Divi 5 module presets, global colors and variables (read-only) so layouts reuse them. Filter presets with ?module=divi/button. Presets and colors are created in Divi\'s Visual Builder, not here.',
+                        'parameters'  => [['name' => 'module', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Module name to list presets for, e.g. divi/button']]],
+                        'responses'   => [
+                            '200' => ['description' => 'Presets, colors and variables', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'presets'   => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/GlobalPreset']],
+                                    'colors'    => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/GlobalColor']],
+                                    'variables' => ['type' => 'object', 'additionalProperties' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/GlobalVariable']], 'description' => 'Active variables grouped by type (numbers, strings, fonts...)'],
+                                    'counts'    => ['type' => 'object', 'properties' => ['presets' => ['type' => 'integer'], 'colors' => ['type' => 'integer'], 'variables' => ['type' => 'integer']]],
+                                    'truncated' => ['type' => 'boolean', 'description' => 'true when a list was cut to its limit; narrow presets with module'],
+                                    'notes'     => ['type' => 'array', 'items' => ['type' => 'string']],
+                                ],
+                            ]]]],
+                            '400' => ['description' => 'module is not a string'],
+                            '403' => ['description' => 'The user cannot edit pages'],
+                        ],
+                    ],
+                ],
                 '/media' => [
                     'get' => [
                         'operationId' => 'listMediaImages',
@@ -535,6 +617,7 @@ final class OpenApiSpec
             'diff'       => ['$ref' => '#/components/schemas/DryRunDiff'],
             'diff_error' => ['type' => 'string', 'description' => 'Why no diff could be built (diff is then null); the verdict is still valid'],
             'message'    => ['type' => 'string'],
+            'advisories' => ['$ref' => '#/components/schemas/Advisories'],
         ];
     }
 }

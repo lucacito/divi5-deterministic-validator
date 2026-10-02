@@ -43,6 +43,16 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
+        // GET /global-styles — read-only list of the site's Divi presets, global colors and variables
+        register_rest_route(self::NS, '/global-styles', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'global_styles'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+            'args'                => [
+                'module' => ['type' => 'string', 'validate_callback' => fn($v) => is_string($v)],
+            ],
+        ]);
+
         // POST /pages — validate + create a new page (always a draft)
         register_rest_route(self::NS, '/pages', [
             'methods'             => WP_REST_Server::CREATABLE,
@@ -275,7 +285,7 @@ final class RestController
         if ($dryRun) {
             UsageTracker::log(DryRun::ENDPOINT, $id, UsageTracker::RESULT_READ);
 
-            return new WP_REST_Response(DryRun::preview((string) $post->post_content, $content), 200);
+            return new WP_REST_Response(StyleReferences::attach(DryRun::preview((string) $post->post_content, $content), $content), 200);
         }
 
         // Validate before saving — this is the safety gate
@@ -302,13 +312,13 @@ final class RestController
 
         $post->post_content = $content;
 
-        return new WP_REST_Response([
+        return new WP_REST_Response(StyleReferences::attach([
             'saved'      => true,
             'valid'      => true,
             'violations' => [],
             'history'    => $write['snapshot'],
             'page'       => $this->build_layout_envelope($post),
-        ], 200);
+        ], $content), 200);
     }
 
     /** @return \WP_Post|WP_Error */
@@ -423,7 +433,7 @@ final class RestController
         if ($dryRun) {
             UsageTracker::log(DryRun::ENDPOINT, $id, UsageTracker::RESULT_READ);
 
-            return new WP_REST_Response(DryRun::preview((string) $post->post_content, $edit['content']) + ['replaced' => $edit['count']], 200);
+            return new WP_REST_Response(StyleReferences::attach(DryRun::preview((string) $post->post_content, $edit['content']) + ['replaced' => $edit['count']], $edit['content']), 200);
         }
 
         // Same safety gate as update_page — the edited content must still validate.
@@ -447,14 +457,14 @@ final class RestController
 
         $post->post_content = $edit['content'];
 
-        return new WP_REST_Response([
+        return new WP_REST_Response(StyleReferences::attach([
             'saved'      => true,
             'valid'      => true,
             'replaced'   => $edit['count'],
             'violations' => [],
             'history'    => $write['snapshot'],
             'page'       => $this->build_layout_envelope($post),
-        ], 200);
+        ], $edit['content']), 200);
     }
 
     public function create_page(WP_REST_Request $request): WP_REST_Response|WP_Error
@@ -518,11 +528,11 @@ final class RestController
 
         UsageTracker::log('create_page', (int) $pageId, 'valid');
 
-        return new WP_REST_Response([
+        return new WP_REST_Response(StyleReferences::attach([
             'created' => true,
             'valid'   => true,
             'page'    => $this->build_layout_envelope(get_post((int) $pageId)),
-        ], 201);
+        ], $content), 201);
     }
 
     public function validate(WP_REST_Request $request): WP_REST_Response|WP_Error
@@ -534,6 +544,7 @@ final class RestController
         }
 
         // Accept either {post_content:...} or a full layout envelope
+        $content = null;
         if (isset($body['post_content'])) {
             $content = PageAccess::stringArg($body, 'post_content');
             if ($content === null) {
@@ -546,7 +557,12 @@ final class RestController
 
         UsageTracker::log('validate', null, $result->isValid() ? 'read' : 'invalid', count($result->violations()));
 
-        return new WP_REST_Response($result->toArray(), $result->isValid() ? 200 : 422);
+        $payload = $result->toArray();
+        if ($content !== null) {
+            $payload = StyleReferences::attach($payload, $content);
+        }
+
+        return new WP_REST_Response($payload, $result->isValid() ? 200 : 422);
     }
 
     // ---------------------------------------------------------------
@@ -580,6 +596,22 @@ final class RestController
         }
         $result = ThemeLayouts::listing();
         UsageTracker::log('list_theme_layouts', null, 'read');
+
+        return new WP_REST_Response($result, 200);
+    }
+
+    public function global_styles(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('list_global_styles', null, 'error');
+            return new WP_Error('forbidden', 'You do not have permission to read the site styles.', ['status' => 403]);
+        }
+        $module = PageAccess::stringArg(['module' => $request->get_param('module')], 'module');
+        if ($module === null) {
+            return new WP_Error('invalid_field', '"module" must be a string.', ['status' => 400]);
+        }
+        $result = GlobalStyles::catalog($module);
+        UsageTracker::log('list_global_styles', null, 'read');
 
         return new WP_REST_Response($result, 200);
     }

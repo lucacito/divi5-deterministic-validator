@@ -103,7 +103,7 @@ class ThemeLayoutsLockstepTest extends TestCase
         $this->assertSame( 'boolean', $spec['components']['schemas']['ThemeLayoutRef']['properties']['editable']['type'] );
     }
 
-    public function testThereAreNowSixteenOperations(): void
+    public function testThereAreNowSeventeenOperationsIncludingTheThemeLayoutsListing(): void
     {
         $spec = OpenApiSpec::spec( 'https://x.example/wp-json/ai-editor-divi5/v1', '9.9.9' );
         $ops  = [];
@@ -112,7 +112,7 @@ class ThemeLayoutsLockstepTest extends TestCase
                 $ops[] = $op['operationId'] ?? '';
             }
         }
-        $this->assertCount( 16, $ops );
+        $this->assertCount( 17, $ops );
         $this->assertContains( 'listThemeLayouts', $ops );
     }
 

@@ -77,8 +77,8 @@ PHP classes in `wp-plugin/src/`:
 | `get_image_guide` (`ImageGuide`) | which image fits each section: Media Library first, then the built-in pack |
 | `get_section_recipes` (`SectionRecipes` + `data/section-recipes.json`) | 17 proven, validated section patterns, each mapped to a persuasion stage |
 
-**16 MCP tools, all free:** `list_divi_pages`, `get_page_layout`, `list_theme_layouts`
-(read-only, `ThemeLayouts`), `validate_layout`, `update_page_layout`, `edit_page_content` (surgical find-and-replace), `create_page`
+**17 MCP tools, all free:** `list_divi_pages`, `get_page_layout`, `list_theme_layouts`
+(read-only, `ThemeLayouts`), `list_global_styles` (read-only site presets and colors, `GlobalStyles`), `validate_layout`, `update_page_layout`, `edit_page_content` (surgical find-and-replace), `create_page`
 (always a draft), `list_page_history`, `get_page_history_entry`,
 `restore_page_version`, `list_media_images` (read-only Media Library listing,
 `MediaLibrary` + `MediaService`, needs `upload_files` + per-item `read_post`) and the
@@ -121,7 +121,7 @@ Dry run (v4.2.0): `update_page_layout`, `edit_page_content`, `PUT /pages/{id}` a
 cut to 200 characters, `builderVersion` ignored) BEFORE `HistoryService::write()` is reachable;
 the page, its history and `post_modified` are never touched. A preview of an invalid layout
 is a normal 200 / `isError: false` response carrying `valid: false`. Logged as endpoint
-`dry_run`, result `read`. It is a flag, not a tool: the list stayed at 15 tools / 15 operations in 4.2.0 (4.3.0 adds the read-only `list_theme_layouts`: 16).
+`dry_run`, result `read`. It is a flag, not a tool: the list stayed at 15 tools / 15 operations in 4.2.0 (4.3.0 adds the read-only `list_theme_layouts`: 16; 4.4.0 adds the read-only `list_global_styles`: 17).
 
 Theme layouts (v4.3.0): the existing, LIVE Theme Builder header and footer layouts
 (`et_header_layout` / `et_footer_layout`, content in `post_content`) can be read, previewed,
@@ -137,6 +137,19 @@ templates or writes `_et_use_on`/`_et_default`/`_et_enabled`/`*_layout_id`/`_et_
 settings: Pro add-on territory). Unverified: that a REAL builder-made header passes the validator
 (see the spec); until a real export exists the readme claims only what the checker accepts.
 
+Global styles (v4.4.0): `list_global_styles` (MCP / `GET /global-styles` / OpenAPI `listGlobalStyles`, read-only)
+lists the site's own Divi 5 module presets, global colors and variables, read ONLY through Divi's own public
+read functions (`GlobalPreset::get_data()`, `GlobalData::get_global_colors()` / `get_global_variables()`, each behind
+`class_exists`/`is_callable` guards; a missing or throwing reader means an empty section plus a note) by `GlobalStyles`.
+`StyleReferences` adds a non-blocking `advisories.style_references` to `validate_layout`, `update_page_layout`,
+`edit_page_content`, `create_page` and every `dry_run` preview (and the REST equivalents) when a layout cites a preset id
+or `gcid-` color id the site does not have: Divi silently falls back to the module's default preset for an unknown preset
+and leaves an unknown color undefined (live-render proof, 2026-10-01). It never changes `valid`, never blocks a save and
+never rewrites content; a refused save carries violations only. The free plugin NEVER writes presets, colors or
+variables (`tests/WpOrgComplianceTest.php` bans Divi's save functions and the storage names); non-color variables are
+listed but never taught (no real export uses them). The validator stays site-agnostic. Spec:
+`docs/superpowers/specs/2026-10-01-global-styles-design.md`.
+
 Same logic is exposed three ways, kept in lockstep: MCP (`McpHandler`), REST
 (`RestController`), and the ChatGPT OpenAPI spec (`OpenApiSpec`). Add or change a
 tool → update all three.
@@ -149,7 +162,7 @@ tool → update all three.
 that save CSS/PHP or change site settings (front page, menus, users, plugins). The
 only Pro mention allowed in the plugin UI is the one dismissible Dashboard card in
 `AdminPage::proCard()`. `tests/WpOrgComplianceTest.php` enforces all of this (plus
-the URL-host allowlist, the 16-tool list and the readme's claims, including the
+the URL-host allowlist, the 17-tool list and the readme's claims, including the
 "more than N Divi 5 block types" number checked against `SchemaRules`). Never weaken
 that test to make it pass — fix the plugin, or add a justified explicit exception.
 
@@ -168,6 +181,7 @@ Docker env + validator workflows go through `make`:
 | `make verify-history` | Real-database check of the undo-history table on the Docker site (creates and deletes one throwaway draft page) |
 | `make verify-dry-run` | Real-site check of `dry_run` on the REST and MCP handlers (creates and deletes one throwaway draft page) |
 | `make verify-theme-layouts` | Real-site check of header/footer editing: builds its own Theme Builder fixtures with Divi's functions, drives the REAL handlers, removes only what it created |
+| `make verify-global-styles` | Real-site check of `list_global_styles` and the style-reference advisory on the REST and MCP handlers; proves presets, global colors and variables are byte-identical afterwards (creates and deletes one throwaway draft page) |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
 Tests run via PHPUnit (`phpunit.xml`) and cover both the validator
@@ -207,6 +221,9 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
+- **4.4.0 = global styles release** (branch `feat/global-styles`; NOT uploaded; merge to local main only with the owner's OK):
+  read-only `list_global_styles` (17th tool) + non-blocking style-reference advisory + guide updates (spec
+  `docs/superpowers/specs/2026-10-01-global-styles-design.md`). Ships on top of 4.3.0, after the first WordPress.org approval.
 - **4.3.0 = header/footer release** (merged to LOCAL main, 837b712; NOT uploaded): edit the existing live Theme Builder
   header/footer (spec `docs/superpowers/specs/2026-10-01-theme-layouts-design.md`). Intended to ship as its own update
   AFTER the first WordPress.org approval. 4.1.0 + 4.2.0 alone = main at commit 9e806a3 (the 4.2.0 merge); cut the upload
@@ -231,7 +248,5 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   that could not be verified stay rejected and are listed in docs/SCHEMA.md.
 - The old standalone `mcp-server/` (Node) was removed in 3.3.0: the plugin's
   built-in HTTP MCP endpoint is the only supported connection path.
-- Roadmap after approval: the Pro add-on (own spec/plan), then preview-before-save,
-  Theme Builder header/footer, global presets and WooCommerce template modules via
-  a real export or class map.
+- Roadmap after approval: the Pro add-on (own spec/plan), then WooCommerce template modules via a real export or class map.
 - Header/footer are the active theme's (nav menu drives the header).

@@ -108,6 +108,15 @@ final class McpHandler
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
             ],
             [
+                'name'        => 'list_global_styles',
+                'description' => 'List this site\'s own Divi 5 module presets, global colors and global variables (read-only), so layouts can reuse them instead of hard-coding colors. Call it before styling. Reference a color by its id (see get_style_guide); a module with no modulePreset already gets the site\'s default preset. Filter presets with "module" (e.g. divi/button). Creating or changing presets and colors is done in Divi\'s Visual Builder, not here.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => ['module' => ['type' => 'string', 'description' => 'Optional module name to list presets for, e.g. divi/button']],
+                    'required'   => [],
+                ],
+            ],
+            [
                 'name'        => 'get_page_layout',
                 'description' => 'Get the full Divi 5 layout (Gutenberg block HTML) for a specific page by ID. A header or footer layout id from list_theme_layouts also works.',
                 'inputSchema' => [
@@ -275,6 +284,7 @@ final class McpHandler
             'restore_page_version'   => $this->toolRestoreVersion($id, $arguments),
             'list_media_images'  => $this->toolListMedia($id, $arguments),
             'list_theme_layouts' => $this->toolListThemeLayouts($id),
+            'list_global_styles' => $this->toolListGlobalStyles($id, $arguments),
             'create_page'        => $this->toolCreatePage($id, $arguments),
             default              => $this->extensionCall($id, $name, $arguments),
         };
@@ -387,7 +397,7 @@ final class McpHandler
         UsageTracker::log('validate', null, $result->isValid() ? 'read' : 'invalid', count($result->violations()));
 
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode($result->toArray())]],
+            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($result->toArray(), $content))]],
         ]);
     }
 
@@ -423,7 +433,7 @@ final class McpHandler
             UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
 
             return $this->rpcResult($id, [
-                'content' => [['type' => 'text', 'text' => json_encode(DryRun::preview((string) $post->post_content, $content))]],
+                'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach(DryRun::preview((string) $post->post_content, $content), $content))]],
             ]);
         }
 
@@ -452,12 +462,12 @@ final class McpHandler
         UsageTracker::log('update_layout', $pageId, 'valid');
 
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode([
+            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach([
                 'saved'   => true,
                 'valid'   => true,
                 'history' => $write['snapshot'],
                 'page'    => ['id' => $pageId, 'title' => get_the_title($pageId)],
-            ])]],
+            ], $content))]],
         ]);
     }
 
@@ -504,7 +514,7 @@ final class McpHandler
             UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
 
             return $this->rpcResult($id, [
-                'content' => [['type' => 'text', 'text' => json_encode(DryRun::preview((string) $post->post_content, $edit['content']) + ['replaced' => $edit['count']])]],
+                'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach(DryRun::preview((string) $post->post_content, $edit['content']) + ['replaced' => $edit['count']], $edit['content']))]],
             ]);
         }
 
@@ -532,13 +542,13 @@ final class McpHandler
         UsageTracker::log('edit_content', $pageId, 'valid');
 
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode([
+            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach([
                 'saved'    => true,
                 'valid'    => true,
                 'replaced' => $edit['count'],
                 'history'  => $write['snapshot'],
                 'page'     => ['id' => $pageId, 'title' => get_the_title($pageId)],
-            ])]],
+            ], $edit['content']))]],
         ]);
     }
 
@@ -630,6 +640,24 @@ final class McpHandler
         ]);
     }
 
+    private function toolListGlobalStyles(mixed $id, array $args): WP_REST_Response
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('list_global_styles', null, 'error');
+            return $this->rpcError($id, -32602, 'You do not have permission to read the site styles.');
+        }
+        $module = PageAccess::stringArg($args, 'module');
+        if ($module === null) {
+            return $this->rpcError($id, -32602, 'module must be a string.');
+        }
+        $result = GlobalStyles::catalog($module);
+        UsageTracker::log('list_global_styles', null, 'read');
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => wp_json_encode($result)]],
+        ]);
+    }
+
     private function toolListMedia(mixed $id, array $args): WP_REST_Response
     {
         if (!current_user_can('upload_files')) {
@@ -709,7 +737,7 @@ final class McpHandler
         UsageTracker::log('create_page', (int) $pageId, 'valid');
 
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode([
+            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach([
                 'created' => true,
                 'valid'   => true,
                 'page'    => [
@@ -718,7 +746,7 @@ final class McpHandler
                     'status' => 'draft',
                     'link'   => get_permalink((int) $pageId),
                 ],
-            ])]],
+            ], $content))]],
         ]);
     }
 

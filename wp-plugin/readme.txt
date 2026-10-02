@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.3.0
+Stable tag:        4.4.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -28,6 +28,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * **Rules come from real Divi 5, not guesses.** The rules come from real Divi 5 page exports and, for 24 newer modules (and their child items), from Divi's own module definitions, verified by rendering them in real Divi 5.14.
 * **Small changes stay small.** Changing one phone number replaces just that text. The rest of the page is not rebuilt or touched.
 * **Preview before saving.** Your AI can ask what a change would do before it saves anything. It gets a list of the blocks and settings that would change, and the checker's verdict. Nothing is saved until it repeats the request for real.
+* **Matches your site.** Your AI can look up your site's own Divi colors and presets and reuse them, and it is told when a page uses one your site does not have. It cannot create or change presets or colors: that stays in Divi's Visual Builder.
 * **Header and footer too.** Your AI can preview and edit the content of your existing Theme Builder header and footer, for example a phone number or a link, with the same checker, preview and undo as for pages. The checker still has to accept the result, so some headers may not be editable yet. It cannot create, delete, assign or publish templates: that stays in Divi's Theme Builder.
 * **Proven building blocks.** 17 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
 * **Sensible images.** The AI looks in your Media Library first. When nothing there fits, it uses a built-in pack of 44 original images that ships with the plugin.
@@ -43,13 +44,14 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * "Add a section with our opening hours under the hero on the About page."
 * "Undo the last change you made to the Services page."
 
-= What your AI assistant can do (16 tools) =
+= What your AI assistant can do (17 tools) =
 
 Read and check:
 
 * `list_divi_pages`: list the pages built with Divi 5 that you can edit.
 * `get_page_layout`: read a page's current layout.
 * `list_theme_layouts`: list the header and footer of your Divi Theme Builder that the AI is allowed to edit (read-only).
+* `list_global_styles`: list your site's own Divi colors and presets so the AI can reuse them (read-only).
 * `validate_layout`: check a layout without saving anything.
 
 Edit and create:
@@ -125,7 +127,7 @@ This plugin does not connect to any external service. Your AI assistant connects
 
 = Does the AI get administrator access to my site? =
 
-No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages and of your existing Theme Builder header and footer, create pages (as drafts), and read Media Library images (read-only). Editing a header or footer needs a user whom Divi allows to use its Theme Builder (by default, administrators), and the tools cannot create, delete, assign or publish Theme Builder templates. They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
+No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages and of your existing Theme Builder header and footer, create pages (as drafts), read Media Library images (read-only), and read your site's Divi presets and colors (read-only). Editing a header or footer needs a user whom Divi allows to use its Theme Builder (by default, administrators), and the tools cannot create, delete, assign or publish Theme Builder templates. They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
 
 = Where do images come from? =
 
@@ -162,6 +164,11 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.4.0 =
+* New: your AI assistant can look up your site's own Divi colors and presets, so the pages it builds can match your site. A new read-only tool, `list_global_styles`, lists them.
+* New: when a page uses a color or preset your site does not have, the save and preview results now say so. The save still goes ahead, and Divi shows that part of the page with its default look.
+* It cannot create or change presets or colors.
 
 = 4.3.0 =
 * New: your AI assistant can now preview and edit the content of your existing Theme Builder header and footer, with the same checker, preview and undo as pages. The checker still has to accept the result. A new read-only tool, `list_theme_layouts`, shows which header and footer it can edit.
@@ -209,6 +216,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 4.4.0 =
+Adds a read-only look-up of your site's Divi colors and presets for your AI assistant, and a note when a page uses one your site does not have. Nothing changes unless your AI assistant uses it.
 
 = 4.3.0 =
 Adds editing of your existing Theme Builder header and footer by your AI assistant (with preview and undo). Nothing changes unless your AI assistant uses it.

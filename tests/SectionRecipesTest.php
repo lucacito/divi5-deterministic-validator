@@ -244,4 +244,11 @@ class SectionRecipesTest extends TestCase
         $this->assertNotSame('', trim((string) ($value['alt'] ?? '')), 'the portrait has meaningful alt text');
         $this->assertStringContainsString('/assets/images/avatar-1.svg', (string) SectionRecipes::recipe('testimonial'), 'the token resolves to the local pack');
     }
+
+    public function testCatalogWarnsThatRecipeIdsComeFromADemoSite(): void
+    {
+        $catalog = SectionRecipes::catalog();
+        $this->assertStringContainsString('come from a demo site and may not exist', $catalog);
+        $this->assertStringContainsString('list_global_styles', $catalog);
+    }
 }

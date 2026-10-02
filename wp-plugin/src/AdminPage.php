@@ -576,12 +576,13 @@ final class AdminPage
 
     private function viewFeatures(): void
     {
-        // [title, description, tools it covers] — the 16 tools your AI assistant can call.
+        // [title, description, tools it covers] — the 17 tools your AI assistant can call.
         $features = [
             [ __( 'Edit pages in plain English', 'jhmg-ai-editor-for-divi-5' ), __( 'Tell your AI what to change and it updates the live Divi 5 layout — no builder, no copy-paste.', 'jhmg-ai-editor-for-divi-5' ), 'update_page_layout, edit_page_content' ],
             [ __( 'Validated, safe saves', 'jhmg-ai-editor-for-divi-5' ), __( 'Every change is checked against fixed rules for more than 80 Divi 5 block types before saving. A broken layout is refused with the exact reason, so it is never saved.', 'jhmg-ai-editor-for-divi-5' ), 'validate_layout' ],
             [ __( 'Read & understand any page', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can list and read existing pages to make precise, context-aware edits.', 'jhmg-ai-editor-for-divi-5' ), 'list_divi_pages, get_page_layout' ],
             [ __( 'Edit your existing header and footer', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can preview and edit the content of your live Theme Builder header and footer, with the same checker, preview and undo as for pages. It cannot create, delete, assign or publish templates.', 'jhmg-ai-editor-for-divi-5' ), 'list_theme_layouts' ],
+            [ __( 'Match your site\'s colors and presets', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can look up your site\'s own Divi colors and presets (read-only) and reuse them, and it is told when a page uses one your site does not have.', 'jhmg-ai-editor-for-divi-5' ), 'list_global_styles' ],
             [ __( 'Undo AI edits', 'jhmg-ai-editor-for-divi-5' ), __( 'Every AI save keeps the previous version, so you or your AI can browse the history and restore an earlier one.', 'jhmg-ai-editor-for-divi-5' ), 'list_page_history, get_page_history_entry, restore_page_version' ],
             [ __( 'Create new pages (as drafts)', 'jhmg-ai-editor-for-divi-5' ), __( 'Generate brand-new pages from a prompt — always saved as a draft, validated, ready for you to review and publish.', 'jhmg-ai-editor-for-divi-5' ), 'create_page' ],
             [ __( 'Build entire websites', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in blueprint helps your AI plan a cohesive multi-page site (home, about, services, contact) with shared styling and links between the pages, then tells you how to finish setting it up yourself.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_guide' ],

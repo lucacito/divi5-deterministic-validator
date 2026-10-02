@@ -375,9 +375,10 @@ class WpOrgComplianceTest extends TestCase
         $this->assertSame([
             'create_page', 'edit_page_content', 'get_image_guide', 'get_landing_guide', 'get_page_history_entry',
             'get_page_layout', 'get_section_recipes', 'get_site_guide', 'get_style_guide', 'list_divi_pages',
-            'list_media_images', 'list_page_history', 'list_theme_layouts', 'restore_page_version', 'update_page_layout', 'validate_layout',
+            'list_global_styles', 'list_media_images', 'list_page_history', 'list_theme_layouts', 'restore_page_version', 'update_page_layout', 'validate_layout',
         ], $tools);
-        $this->assertCount(16, $tools);
+        // 4.4.0 adds one READ-ONLY tool (list_global_styles: the site's own presets and colors); nothing is gated, nothing writes a setting.
+        $this->assertCount(17, $tools);
     }
 
     public function testVisibleProductNameIsTheFullJhmgName(): void
@@ -484,5 +485,65 @@ class WpOrgComplianceTest extends TestCase
         $this->assertStringStartsNotWith('==', $short);
         $this->assertLessThanOrEqual(150, strlen($short), "short description is too long: {$short}");
         $this->assertMatchesRegularExpression('/^Tags:\s*([^,\n]+,){0,4}[^,\n]+$/m', $r, 'at most 5 tags');
+    }
+
+    // ---------------------------------------------------------------
+    // 4.4.0: the plugin READS the site's Divi presets, global colors and variables; it must never write them.
+    // ---------------------------------------------------------------
+
+    /** Divi functions that save presets, colors or variables, plus the storage names behind them. */
+    private const DIVI_STYLE_WRITES = '/\b(?:save_data|process_presets(?:_for_import)?|delete_data|merge_new_presets_with_existing|save_is_legacy_presets_imported|set_global_colors|set_global_variables|import_global_variables|et_update_option|et_global_data)\b|builder_global_presets/';
+
+    /** @param array<string,string> $files @return list<string> */
+    private function diviStyleWriteHits(array $files): array
+    {
+        $hits = [];
+        foreach ($files as $rel => $src) {
+            if (str_starts_with($rel, 'validator/') || str_ends_with($rel, 'readme.txt') || !in_array(pathinfo($rel, PATHINFO_EXTENSION), ['php', 'js'], true)) {
+                continue;
+            }
+            if (preg_match_all(self::DIVI_STYLE_WRITES, $src, $m)) {
+                foreach (array_unique($m[0]) as $hit) {
+                    $hits[] = "$rel: {$hit}";
+                }
+            }
+        }
+
+        return $hits;
+    }
+
+    public function testNothingInThePluginCanWriteDiviPresetsColorsOrVariables(): void
+    {
+        $this->assertSame([], $this->diviStyleWriteHits($this->files()));
+    }
+
+    public function testTheStyleWriteScanCatchesPlantedViolations(): void
+    {
+        $planted = [
+            'src/a.php' => "<?php \\ET\\Builder\\Packages\\GlobalData\\GlobalPreset::save_data(\$d);",
+            'src/b.php' => "<?php GlobalData::set_global_colors(\$c);",
+            'src/c.php' => "<?php GlobalData::set_global_variables(\$v); GlobalData::import_global_variables(\$v);",
+            'src/d.php' => "<?php et_update_option('x', 1);",
+            'src/e.php' => "<?php update_option('et_global_data', \$x);",
+            'src/f.php' => "<?php GlobalPreset::process_presets(\$p);",
+            'src/g.php' => "<?php get_option('et_divi_builder_global_presets_d5');",
+        ];
+        $hits = $this->diviStyleWriteHits($planted);
+        foreach (array_keys($planted) as $rel) {
+            $this->assertNotEmpty(array_filter($hits, fn($h) => str_starts_with($h, $rel)), "style-write scan missed {$rel}");
+        }
+        $this->assertSame([], $this->diviStyleWriteHits(['src/ok.php' => "<?php GlobalPreset::get_data(); GlobalData::get_global_colors(); GlobalData::get_global_variables();"]));
+    }
+
+    public function testTheStylesToolIsReadOnlyEverywhere(): void
+    {
+        $rest = (string) file_get_contents(self::ROOT . '/src/RestController.php');
+        $this->assertMatchesRegularExpression("/'\/global-styles',\s*\[\s*'methods'\s*=>\s*WP_REST_Server::READABLE/", $rest);
+        $spec = \AiEditorDivi5\WP\OpenApiSpec::spec('https://s.example/wp-json/ai-editor-divi5/v1', '4.4.0');
+        $this->assertSame(['get'], array_keys($spec['paths']['/global-styles']));
+        $r = (string) file_get_contents(self::ROOT . '/readme.txt');
+        $this->assertStringContainsString('`list_global_styles`', $r);
+        $this->assertStringContainsString('(17 tools)', $r);
+        $this->assertStringContainsString('It cannot create or change presets or colors', $r, 'the readme must say plainly that presets and colors are read-only');
     }
 }
