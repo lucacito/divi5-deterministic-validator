@@ -17,7 +17,9 @@ A throwaway spike on the Docker dev site (Divi 5.14), using Divi's own functions
 - These post types are registered with `capability_type => 'post'` and `map_meta_cap => true`, so `current_user_can( 'edit_post', $id )` works per layout; Divi's own Theme Builder requires `edit_others_posts`.
 - The spike was fully cleaned up; nothing of it is in the repository.
 
-**Not proven (stated honestly):** the spike's content was a simple layout built for the test. Divi ships no real Divi 5 header/footer content, so it is **not verified that a real builder-made header** (menu, logo, search, social icons…) passes the validator. If a real header contains a module or placement the validator does not accept, an edit to it is *refused with exact violation codes* — safe, but less useful. The validator already knows `divi/menu`, `divi/search`, `divi/social-media-follow`, `divi/breadcrumbs`, `divi/global-layout` and the verified column placements; a real export from the owner's training site (or any real Divi 5 site) is the way to close this gap, and the readme must not claim more than the validator accepts.
+**Update 2026-10-02 — now proven for one real site:** a header (menu, search, social follow), footer (text, button, social follow, code) and body layout built in Divi 5.14's own Theme Builder on the dev site all pass the validator with zero violations (`fixtures/valid/themebuilder-*.json`), and `GET /theme-layouts`, `/validate` and `PUT … dry_run` agree through the real REST handlers (body layout correctly "not found"). This is still a single site, so the readme keeps its hedge.
+
+**Was not proven at spec time (stated honestly):** the spike's content was a simple layout built for the test. Divi ships no real Divi 5 header/footer content, so it is **not verified that a real builder-made header** (menu, logo, search, social icons…) passes the validator. If a real header contains a module or placement the validator does not accept, an edit to it is *refused with exact violation codes* — safe, but less useful. The validator already knows `divi/menu`, `divi/search`, `divi/social-media-follow`, `divi/breadcrumbs`, `divi/global-layout` and the verified column placements; a real export from the owner's training site (or any real Divi 5 site) is the way to close this gap, and the readme must not claim more than the validator accepts.
 
 ## Scope
 
@@ -83,7 +85,7 @@ Built and merged locally as 4.3.0 but **not bundled with 4.1.0/4.2.0**: the firs
 
 ## Risks / things to decide
 
-1. **Validator coverage of real headers is unverified** (above). Failure mode is a safe refusal. Mitigation: a real export before the readme claims anything; the claim stays "layouts the checker accepts".
+1. **Validator coverage of real headers: proven on one real site (2026-10-02), not on all.** Failure mode is a safe refusal. Mitigation: a real export before the readme claims anything; the claim stays "layouts the checker accepts".
 2. **Blast radius.** A header/footer edit shows on every page. Mitigations: `dry_run` first (guides say so), snapshot-before-write with one-call restore, the stricter `edit_others_posts` bar, live layouts only, no template creation or assignment.
 3. **Draft Theme Builder.** If the owner has unsaved Theme Builder changes open in Divi, publishing that draft could overwrite an API edit to the live layout. History makes it recoverable; the readme and guide say to publish or discard open Theme Builder changes first. (Divi's draft/live copy behaviour is to be confirmed on the real site test; it does not change the design.)
 4. **WordPress.org perception.** Editing site-wide template content could be read as site administration. Mitigations: content-only, never assignment, documented plainly, separate release.

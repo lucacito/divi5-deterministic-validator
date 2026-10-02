@@ -1,0 +1,14 @@
+{
+    "source": "wp-divi5-export",
+    "format": "gutenberg-blocks",
+    "divi_version": "5.14.0",
+    "post_id": 224974,
+    "post_type": "et_body_layout",
+    "post_title": "All Posts Body Layout",
+    "post_status": "publish",
+    "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.14.0\"} -->\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"columnStructure\":{\"desktop\":{\"value\":\"4_4\"}},\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_1\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\"}}}}},\"builderVersion\":\"5.14.0\"} -->\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}},\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.14.0\"} -->\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"$variable({\\u0022type\\u0022:\\u0022content\\u0022,\\u0022value\\u0022:{\\u0022name\\u0022:\\u0022post_title\\u0022,\\u0022settings\\u0022:{\\u0022before\\u0022:\\u0022\\u0022,\\u0022after\\u0022:\\u0022\\u0022}}})$\"}}},\"builderVersion\":\"5.14.0\"} /-->\n<!-- /wp:divi/column -->\n<!-- /wp:divi/row -->\n<!-- /wp:divi/section -->\n\n<!-- wp:divi/section {\"builderVersion\":\"5.14.0\"} -->\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"columnStructure\":{\"desktop\":{\"value\":\"4_4\"}},\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_1\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\"}}}}},\"builderVersion\":\"5.14.0\"} -->\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}},\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.14.0\"} -->\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"$variable({\\u0022type\\u0022:\\u0022content\\u0022,\\u0022value\\u0022:{\\u0022name\\u0022:\\u0022post_categories\\u0022,\\u0022settings\\u0022:{\\u0022before\\u0022:\\u0022\\u0022,\\u0022after\\u0022:\\u0022\\u0022,\\u0022link_to_term_page\\u0022:\\u0022on\\u0022,\\u0022separator\\u0022:\\u0022 | \\u0022,\\u0022category_type\\u0022:\\u0022category\\u0022}}})$\"}}},\"builderVersion\":\"5.14.0\"} /-->\n\n<!-- wp:divi/post-content {\"builderVersion\":\"5.14.0\"} /-->\n<!-- /wp:divi/column -->\n<!-- /wp:divi/row -->\n<!-- /wp:divi/section --><!-- /wp:divi/placeholder -->",
+    "divi_meta": {
+        "_et_pb_use_divi_5": "on",
+        "_et_pb_use_builder": "on"
+    }
+}

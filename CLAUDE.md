@@ -134,8 +134,10 @@ the Theme Builder post, orphan/draft-only layouts and every other post type are 
 `list_theme_layouts` (MCP/REST/OpenAPI) is read-only. After a layout write `HistoryService`
 calls `DiviCompat::clearLayoutCaches()`. The free plugin NEVER creates/deletes/assigns/publishes
 templates or writes `_et_use_on`/`_et_default`/`_et_enabled`/`*_layout_id`/`_et_template` (site
-settings: Pro add-on territory). Unverified: that a REAL builder-made header passes the validator
-(see the spec); until a real export exists the readme claims only what the checker accepts.
+settings: Pro add-on territory). Verified 2026-10-02: a REAL builder-made header (menu, search,
+social follow), footer (text, button, social follow, code) and body layout from Divi 5.14's own Theme Builder all pass
+the validator (`fixtures/valid/themebuilder-*.json`); validate/dry_run/list through the real REST handlers agree.
+That is ONE site's layouts, so the readme keeps hedging ("some headers may not be editable yet").
 
 Global styles (v4.4.0): `list_global_styles` (MCP / `GET /global-styles` / OpenAPI `listGlobalStyles`, read-only)
 lists the site's own Divi 5 module presets, global colors and variables, read ONLY through Divi's own public
@@ -226,12 +228,13 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   `docs/superpowers/specs/2026-10-01-global-styles-design.md`). Ships on top of 4.3.0, after the first WordPress.org
   approval. Verified: 567 tests, `make verify-global-styles` 25/25, Plugin Check clean (dev copy + zip), whole-branch
   review + one fix wave done. Before it ships: the Features screenshot in `wporg-assets/` predates the 4.3.0 and 4.4.0
-  cards, and a real builder-made header/footer export has still not been through `validate_layout` (4.3.0 item).
+  cards (regenerated 2026-10-02, pending owner approval). The real header/footer proof is done (see Theme layouts).
 - **4.3.0 = header/footer release** (merged to LOCAL main, 837b712; NOT uploaded): edit the existing live Theme Builder
   header/footer (spec `docs/superpowers/specs/2026-10-01-theme-layouts-design.md`). Intended to ship as its own update
   AFTER the first WordPress.org approval. 4.1.0 + 4.2.0 alone = main at commit 9e806a3 (the 4.2.0 merge); cut the upload
-  from there if 4.3.0 must wait. Before 4.3.0 ships: a real builder-made header/footer export must be run through
-  `validate_layout` (unproven), and the Features screenshot in `wporg-assets/` predates the new card.
+  from there if 4.3.0 must wait. The real builder-made header/footer export passes `validate_layout`
+  (2026-10-02, `fixtures/valid/themebuilder-*.json`); the Features screenshot in `wporg-assets/` predates the new card
+  (regenerated 2026-10-02, pending owner approval).
 - **4.2.0 = preview-before-save release** (branch `feat/dry-run-diff`): `dry_run` on the two write
   tools/routes with a capped structured diff; spec `docs/superpowers/specs/2026-10-01-dry-run-diff-design.md`.
   Not uploaded; ships in one upload together with 4.1.0 after WordPress.org answers the 4.0.0 review.
