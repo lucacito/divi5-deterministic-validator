@@ -219,9 +219,10 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- **Pro add-on skeleton 0.1.0** (branch `feat/pro-skeleton`, local; NOT merged, NOT released): compat guard,
+- **Pro add-on skeleton 0.1.0** (merged to LOCAL main, 2d62447; NOT released, NOT pushed): compat guard,
   licensing with the updater, licence-gated `ToolRegistry` (no tools yet), Pro admin tab, safety test, zip,
-  `make verify-pro-skeleton` passing on the dev site. Next: Plan 3 (batch store, undo, the five settings tools).
+  `make verify-pro-skeleton` passing on the dev site. Next: Plan 3 (licence hardening, batch store, undo, the five settings tools), then Plan 4 (Theme Builder
+  layout tools + templates), Plan 5 (find/replace, audit, REST/OpenAPI parity, live verification).
   Release blockers before the first Pro sale (final review): (1) a non-explicit server answer (HTML 403/404, empty
   or non-JSON body) is stored by the canonical client as `invalid` and locks the tools, contradicting 'only an
   explicit verdict locks' — fix in the adapter; (2) the `admin_init` licence refresh retries on every admin/ajax
