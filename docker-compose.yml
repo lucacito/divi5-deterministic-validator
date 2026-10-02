@@ -38,6 +38,7 @@ services:
       - divi5val_wp:/var/www/html
       - ./divi:/divi-install:ro
       - ./wp-plugin:/var/www/html/wp-content/plugins/jhmg-ai-editor-for-divi-5:ro
+      - ./pro-addon:/var/www/html/wp-content/plugins/jhmg-ai-editor-for-divi-5-pro:ro
       - ./src:/validator-src:ro
 
   wpcli:
@@ -60,6 +61,7 @@ services:
       - ./scripts:/scripts:ro
       - ./fixtures:/fixtures
       - ./wp-plugin:/var/www/html/wp-content/plugins/jhmg-ai-editor-for-divi-5:ro
+      - ./pro-addon:/var/www/html/wp-content/plugins/jhmg-ai-editor-for-divi-5-pro:ro
       - ./src:/validator-src:ro
     user: "33:33"
     entrypoint: ["tail", "-f", "/dev/null"]
