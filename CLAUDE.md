@@ -228,13 +228,13 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   `docs/superpowers/specs/2026-10-01-global-styles-design.md`). Ships on top of 4.3.0, after the first WordPress.org
   approval. Verified: 567 tests, `make verify-global-styles` 25/25, Plugin Check clean (dev copy + zip), whole-branch
   review + one fix wave done. Before it ships: the Features screenshot in `wporg-assets/` predates the 4.3.0 and 4.4.0
-  cards (regenerated 2026-10-02, pending owner approval). The real header/footer proof is done (see Theme layouts).
+  cards (regenerated and approved 2026-10-02). The real header/footer proof is done (see Theme layouts).
 - **4.3.0 = header/footer release** (merged to LOCAL main, 837b712; NOT uploaded): edit the existing live Theme Builder
   header/footer (spec `docs/superpowers/specs/2026-10-01-theme-layouts-design.md`). Intended to ship as its own update
   AFTER the first WordPress.org approval. 4.1.0 + 4.2.0 alone = main at commit 9e806a3 (the 4.2.0 merge); cut the upload
   from there if 4.3.0 must wait. The real builder-made header/footer export passes `validate_layout`
   (2026-10-02, `fixtures/valid/themebuilder-*.json`); the Features screenshot in `wporg-assets/` predates the new card
-  (regenerated 2026-10-02, pending owner approval).
+  (regenerated and approved 2026-10-02).
 - **4.2.0 = preview-before-save release** (branch `feat/dry-run-diff`): `dry_run` on the two write
   tools/routes with a capped structured diff; spec `docs/superpowers/specs/2026-10-01-dry-run-diff-design.md`.
   Not uploaded; ships in one upload together with 4.1.0 after WordPress.org answers the 4.0.0 review.
