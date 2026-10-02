@@ -793,6 +793,94 @@ class CodePolicyTest extends TestCase
         $this->assertFalse( CodePolicy::tooDeep( self::layout() ) );
     }
 
+    // ---- CSS injection through ordinary style values (live proof 2026-10-02) ---------------------------------
+
+    private const INJECT = '0px;} body{display:none} .x{';
+
+    /** @return array<string, array{0:string}> real attribute paths (copied from fixtures/valid) with %V% for the value */
+    public static function styleValueShapes(): array
+    {
+        $shapes = [
+            'padding.top'            => '"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":%V%,"bottom":"10px","syncVertical":"off"}}}}}}',
+            'padding.top (phone)'    => '"module":{"decoration":{"spacing":{"phone":{"value":{"padding":{"top":%V%}}}}}}',
+            'margin.top'             => '"module":{"decoration":{"spacing":{"desktop":{"value":{"margin":{"top":%V%}}}}}}',
+            'font size'              => '"title":{"decoration":{"font":{"font":{"desktop":{"value":{"size":%V%}}}}}}',
+            'font colour'            => '"title":{"decoration":{"font":{"font":{"desktop":{"value":{"color":%V%}}}}}}',
+            'border radius'          => '"module":{"decoration":{"border":{"desktop":{"value":{"radius":{"topLeft":%V%}}}}}}',
+            'box shadow blur'        => '"module":{"decoration":{"boxShadow":{"desktop":{"value":{"horizontal":"6px","blur":%V%}}}}}',
+            'background colour'      => '"module":{"decoration":{"background":{"desktop":{"value":{"color":%V%}}}}}',
+            'background colour (hover)' => '"module":{"decoration":{"background":{"desktop":{"hover":{"color":%V%}}}}}',
+            'advanced setting'       => '"module":{"advanced":{"link":{"desktop":{"value":{"target":%V%}}}}}',
+        ];
+        $out = [];
+        foreach ( $shapes as $label => $shape ) {
+            $out[ $label ] = [ $shape ];
+        }
+
+        return $out;
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'styleValueShapes' )]
+    public function testAStyleValueWithCssControlCharactersIsRefused( string $shape ): void
+    {
+        foreach ( [ self::INJECT, 'red;color:blue', '10px}', 'a<b', 'a>b', '1px/* x */', "1px\\\n2px" ] as $payload ) {
+            $content = self::layout( ',' . str_replace( '%V%', json_encode( $payload ), $shape ) );
+            $v       = CodePolicy::violations( $content );
+            $this->assertCount( 1, $v, $payload );
+            $this->assertSame( CodePolicy::E_CUSTOM_CSS, $v[0]->code(), $payload );
+            $this->assertMatchesRegularExpression( '/\.(?:decoration|advanced)\./', $v[0]->path(), 'the exact path' );
+            $this->assertStringContainsString( 'CSS control characters', $v[0]->message() );
+        }
+        $content = self::layout( ',' . str_replace( '%V%', json_encode( self::INJECT ), $shape ) );
+        $gate    = LayoutGate::check( $content );
+        $this->assertFalse( $gate->isValid() );
+        $this->assertContains( CodePolicy::E_CUSTOM_CSS, array_map( static fn ( $x ) => $x->code(), $gate->violations() ) );
+    }
+
+    public function testPlainStyleValuesAreClean(): void
+    {
+        $shape = '"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":%V%}}}}}}';
+        foreach ( [
+            '13.37px',
+            '0px 10px 20px rgba(0,0,0,.5)',
+            'linear-gradient(90deg,#fff 0%,#000 100%)',
+            '$variable({"type":"color","value":{"name":"gcid-x","settings":{}}})$',
+            'url(data:image/png;base64,AAAA)',
+            'url("https://example.com/a.png")',
+            '&#xf658;',
+            '{{aied:image:hero-blue-1}}',
+            'calc(100% - 20px)',
+            "'Open Sans', sans-serif",
+        ] as $value ) {
+            $this->assertSame( [], self::codes( self::layout( ',' . str_replace( '%V%', json_encode( $value ), $shape ) ) ), $value );
+        }
+        // A variable token that is not plain (it hides a payload in its JSON) is checked like any other value.
+        $payload = '$variable({"type":"color","value":{"name":"x;} body{display:none}","settings":{}}})$';
+        $this->assertSame( [ CodePolicy::E_CUSTOM_CSS ], self::codes( self::layout( ',' . str_replace( '%V%', json_encode( $payload ), $shape ) ) ) );
+        // Text and content fields are not style values.
+        $this->assertSame( [], self::codes( self::layout( self::text( '<p>a { b; c } d</p>' ) ) ) );
+        $this->assertSame( [], self::codes( self::layout( ',"button":{"innerContent":{"desktop":{"value":{"text":"Go; now {x}","linkUrl":"https://example.com/?a=1;b=2"}}}}' ) ) );
+    }
+
+    public function testAnOwnersStyleValueIsKeptWhenUnchangedAndRefusedWhenChanged(): void
+    {
+        $shape = '"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":%V%}}}}}}';
+        $page  = self::layout( ',' . str_replace( '%V%', json_encode( self::INJECT ), $shape ) );
+        $this->assertSame( [], self::codes( $page, $page ) );
+        $this->assertSame( [], self::codes( str_replace( '"Hello"', '"Hello again"', $page ), $page ) );
+        $changed = self::layout( ',' . str_replace( '%V%', json_encode( self::INJECT . 'a{}' ), $shape ) );
+        $this->assertSame( [ CodePolicy::E_CUSTOM_CSS ], self::codes( $changed, $page ) );
+    }
+
+    public function testAStyleValuePayloadHiddenBehindAParserDifferentialIsStillRefused(): void
+    {
+        $members = '"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":' . json_encode( self::INJECT ) . '}}}}}}';
+        foreach ( self::disguises( 'divi/heading', $members ) as [ $how, $content ] ) {
+            $this->assertNotSame( [], self::codes( $content ), $how );
+            $this->assertFalse( LayoutGate::check( $content )->isValid(), $how );
+        }
+    }
+
     // ---- the gate ------------------------------------------------------------------------------
 
     public function testTheGateAddsPolicyViolationsToTheValidatorsAndKeepsTheValidatorFirst(): void

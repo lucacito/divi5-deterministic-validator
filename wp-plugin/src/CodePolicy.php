@@ -35,6 +35,15 @@ final class CodePolicy
 
     private const CODE_MODULES    = [ 'divi/code', 'divi/fullwidth-code' ];
     private const CSS_FIELDS      = [ 'freeForm', 'mainElement' ];
+    /**
+     * Attribute subtrees whose string values Divi copies into generated CSS declarations (spacing, sizing, colours,
+     * borders, shadows, backgrounds, fonts...: everything under `decoration`, and the `advanced` settings). A value
+     * there that carries CSS control characters can close its declaration and add rules of its own (live proof,
+     * 2026-10-02: padding.top = "0px;} body{display:none} .x{" printed a real `body{display:none}` rule). Text
+     * and content fields (innerContent, content, text, title, linkUrl, src, alt...) are NOT in scope: they are
+     * HTML or plain text, never CSS, and carry `<` `>` legitimately; markup in them is the script scan's job.
+     */
+    private const STYLE_VALUE_SCOPE = [ 'decoration', 'advanced' ];
     /** A real event handler name; ordinary words that start with "on" (onion, online, only...) are not one. */
     private const EVENT_ATTR_NAME  = '/^on[a-z]{3,}$/';
     private const NOT_EVENT_NAMES  = [ 'onion', 'onions', 'online', 'only', 'once', 'onto', 'onset', 'ongoing', 'onward', 'onwards', 'onsite', 'onboard', 'onboarding' ];
@@ -221,7 +230,7 @@ final class CodePolicy
                         sprintf( 'The %s module (raw HTML or JavaScript) is not allowed: this plugin never saves custom code.', $block->name() )
                     ) );
                 }
-                self::scan( $block->attrs(), $path, '', false, false, $tree );
+                self::scan( $block->attrs(), $path, '', false, false, false, $tree );
             } );
         }
 
@@ -233,7 +242,7 @@ final class CodePolicy
     /**
      * @param list<array{code:string, fingerprint:string, path:string, message:string}> $out
      */
-    private static function scan( mixed $value, string $path, string $key, bool $urlish, bool $inCss, array &$out ): void
+    private static function scan( mixed $value, string $path, string $key, bool $urlish, bool $inCss, bool $decor, array &$out ): void
     {
         if ( is_string( $value ) ) {
             if ( $inCss ) {
@@ -247,6 +256,14 @@ final class CodePolicy
                 }
 
                 return;
+            }
+            if ( $decor && self::styleValueHasCssControlChars( $value ) ) {
+                self::push( $out, self::finding(
+                    self::E_CUSTOM_CSS,
+                    'deco|' . $key . '|' . md5( $value ),
+                    $path,
+                    'A style value contains CSS control characters ( { } ; < > ): this plugin never saves custom CSS. Use plain values (for example 16px or #ff0000).'
+                ) );
             }
             foreach ( self::stringUnits( $value, $urlish ) as [ $kind, $unit ] ) {
                 self::push( $out, self::unitFinding( $kind, $unit, $path ) );
@@ -276,7 +293,8 @@ final class CodePolicy
             $css   = $inCss || 'css' === $k || ( is_string( $k ) && in_array( $k, self::CSS_FIELDS, true ) );
             $isUrl = $urlish || ( is_string( $k ) && 1 === preg_match( self::URL_KEY, $k ) )
                 || ( null !== $attrName && 'value' === $k && 1 === preg_match( self::URL_KEY, $attrName ) );
-            self::scan( $child, $path . '.' . $k, is_string( $k ) ? $k : $key, $isUrl, $css, $out );
+            $deco  = $decor || ( is_string( $k ) && in_array( $k, self::STYLE_VALUE_SCOPE, true ) );
+            self::scan( $child, $path . '.' . $k, is_string( $k ) ? $k : $key, $isUrl, $css, $deco, $out );
         }
     }
 
@@ -426,6 +444,54 @@ final class CodePolicy
         }
 
         return $out;
+    }
+
+    /**
+     * True when a style value holds CSS control characters (`{ } ; < >`, a comment opener or closer, a backslash
+     * before a line break). Four exact shapes of real data are set aside first, because they legitimately carry
+     * such characters: a Divi `$variable({...})$` token (its JSON braces) whose JSON is well formed and holds only
+     * plain names; a `{{aied:image:token}}` placeholder; a numeric HTML entity such as `&#xf658;` (icon codes);
+     * and one well-formed `url(...)` group (data URIs carry `;`). Anything else, including a malformed variable
+     * token, is checked as is. Fails closed if a regex fails.
+     */
+    private static function styleValueHasCssControlChars( string $value ): bool
+    {
+        $w = preg_replace_callback(
+            '/\$variable\((\{.*?\})\)\$/s',
+            static fn ( array $m ): string => self::isPlainVariableToken( $m[1] ) ? '' : $m[0],
+            $value
+        );
+        foreach ( [
+            '/\{\{aied:image:[a-z0-9_-]+\}\}/',
+            '/&#(?:[xX][0-9a-fA-F]{1,6}|[0-9]{1,7});/',
+            '/url\(\s*(?:"[^"\\\\]*"|\'[^\'\\\\]*\'|[^"\'()\s\\\\]*)\s*\)/i',
+        ] as $pattern ) {
+            if ( null === $w ) {
+                return true;
+            }
+            $w = preg_replace( $pattern, '', $w );
+        }
+
+        return null === $w || 1 === preg_match( '/[{};<>]|\/\*|\*\/|\\\r?\n/', $w );
+    }
+
+    /** A Divi variable token's JSON: a type, a plain-named value and settings that hold no control characters. */
+    private static function isPlainVariableToken( string $json ): bool
+    {
+        $d = json_decode( $json, true );
+        if ( ! is_array( $d ) || ! is_string( $d['type'] ?? null ) || 1 !== preg_match( '/^[a-z_-]+$/i', $d['type'] )
+            || ! is_array( $d['value'] ?? null ) || ! is_string( $d['value']['name'] ?? null ) || 1 !== preg_match( '/^[A-Za-z0-9_-]+$/', $d['value']['name'] ) ) {
+            return false;
+        }
+        $clean = true;
+        $settings = is_array( $d['value']['settings'] ?? null ) ? $d['value']['settings'] : [];
+        array_walk_recursive( $settings, static function ( $leaf ) use ( &$clean ): void {
+            if ( is_string( $leaf ) && 1 === preg_match( '/[{};<>]|\/\*|\*\//', $leaf ) ) {
+                $clean = false;
+            }
+        } );
+
+        return $clean;
     }
 
     private static function isEventName( string $name ): bool
