@@ -230,6 +230,11 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   or document `AIED_PRO_API_BASE`, add a readme.txt that discloses the remote calls, make the plugin Description
   match the shipped features, distinguish activation failure reasons in the admin notice, and confirm the product
   id `ai-editor-divi5-pro` and product URL with the divi5lab server. These are the first task of Plan 3.
+- **WordPress.org review answered 2026-10-02** (issue: custom CSS/JS/PHP through layouts, `css.freeForm`/`mainElement`):
+  fixed on branch `fix/no-custom-code` (`CodePolicy` + `LayoutGate`, every write/preview path, guides/recipes cleaned,
+  `NoCustomCodeTest`); the owner uploads the 4.4.0 zip, tests on Playground and sends `docs/wporg-review-reply-2-draft.md`.
+  Rule: the free plugin never saves custom CSS, JavaScript or PHP, and any future layout write path (including every Pro
+  write tool) must go through `LayoutGate::check()`.
 - **4.4.0 = global styles release PLUS the free re-cut** (merged to LOCAL main, 026a571; NOT uploaded): read-only
   `list_global_styles` (16th tool) + non-blocking style-reference advisory + guide updates (spec
   `docs/superpowers/specs/2026-10-01-global-styles-design.md`). The free re-cut removed the unreleased 4.3.0
