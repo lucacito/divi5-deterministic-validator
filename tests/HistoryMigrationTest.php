@@ -16,8 +16,6 @@ require_once __DIR__ . '/../wp-plugin/src/PageHistory.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryTable.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryMigration.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryStore.php';
-require_once __DIR__ . '/../wp-plugin/src/ThemeLayouts.php';
-require_once __DIR__ . '/../wp-plugin/src/DiviCompat.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryService.php';
 
 class HistoryMigrationTest extends TestCase

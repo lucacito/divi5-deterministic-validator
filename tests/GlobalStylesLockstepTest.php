@@ -11,13 +11,11 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/FakeWpdb.php';
 require_once __DIR__ . '/WpRestShims.php';
-require_once __DIR__ . '/DiviThemeBuilderShims.php';
 require_once __DIR__ . '/DiviGlobalDataShims.php';
 require_once __DIR__ . '/../wp-plugin/src/UsageTracker.php';
 require_once __DIR__ . '/../wp-plugin/src/PageHistory.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryTable.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryStore.php';
-require_once __DIR__ . '/../wp-plugin/src/ThemeLayouts.php';
 require_once __DIR__ . '/../wp-plugin/src/EditTarget.php';
 require_once __DIR__ . '/../wp-plugin/src/DiviCompat.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryService.php';
