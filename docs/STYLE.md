@@ -149,10 +149,8 @@ module.decoration.border.{bp}.value.styles.all.{width,color} = "1px","rgba(255,2
 module.decoration.border.{bp}.value.radius.{topLeft,topRight,bottomRight,bottomLeft} = "20px"  # set ALL four; sync alone does not propagate
 ```
 This gives the glass *look* (translucent surface + hairline border + radius).
-True frosted-glass **backdrop-blur** is NOT a native Divi attribute and appears
-in no export — achieve it with custom CSS via the top-level `css` key:
-`css.{bp}.value.mainElement` = "backdrop-filter:blur(12px);". Document as an
-advanced option only; do not assert a decoration shape we have not observed.
+True frosted-glass **backdrop-blur** is NOT a native Divi attribute and appears in no export. It needs
+CSS code, which the plugin never saves, so use the translucent surface + hairline border above.
 
 ## Aesthetic variety (general design guidance)
 Don't default to the same dark theme every time. Commit to one clear direction

@@ -65,13 +65,6 @@ class StyleGuideTest extends TestCase
         }
     }
 
-    public function testCssAttributeIsNotClaimedToBeScoped(): void
-    {
-        $md = \AiEditorDivi5\WP\StyleGuide::markdown();
-        $this->assertStringNotContainsString('ONE module only', $md);
-        $this->assertStringContainsString('is meant to style that one module', $md);
-    }
-
     public function testPreviewSectionTeachesDryRunAndThatAnInvalidPreviewStillReturns(): void
     {
         $md = StyleGuide::markdown();

@@ -117,10 +117,8 @@ subtle light border and radius on a Group/column/row:
 `module.decoration.border.{bp}.value.styles.all.{width,color}` = "1px","rgba(255,255,255,0.12)";
 `module.decoration.border.{bp}.value.radius.{topLeft,topRight,bottomRight,bottomLeft}` = "20px" (all four).
 True frosted-glass *backdrop-blur* (blurring what's behind the card) is NOT a
-standard Divi attribute — it needs the module's own `css` attribute (see
-"Per-module styling" below: `css.desktop.value.mainElement` =
-"backdrop-filter:blur(12px);"). Use the semi-transparent + border recipe for the
-glass look without any CSS.
+standard Divi attribute and needs CSS code, which this plugin never saves. Use the
+semi-transparent + border recipe above for the glass look.
 
 **Box shadow:**
 `module.decoration.boxShadow.{bp}.value.{style,horizontal,vertical,blur,color}`
@@ -216,22 +214,15 @@ module.decoration.position.{bp}.value.offset.vertical = "20px"
 module.decoration.zIndex.{bp}.value                   = 10
 ```
 
-## Per-module styling (Divi's `css` attribute)
-Every Divi 5 module can carry its own optional `css` attribute (seen in real
-exports from a 2nd production site). It is a sibling of `module`/`builderVersion`,
-NOT under `module`. It is meant to style that one module and is saved inside the page
-layout like any other module setting. Use it only for what the decoration
-attributes above can't express; the literal token `selector` targets the
-module's main element:
-```
-css.{bp}.value.mainElement = "backdrop-filter: blur(12px);"
-css.{bp}.value.freeForm    = "selector { backdrop-filter: blur(12px); } selector:after { content:''; display:block; }"
-```
-Typical uses: true frosted glass (backdrop-filter has no native Divi attribute),
-an `@keyframes` animation for that module, `::before`/`::after` decoration.
-This plugin never changes site-wide styles (Additional CSS, theme files). If a
-design needs a reusable site-wide class, tell the owner what to add in
-Appearance → Customize → Additional CSS themselves.
+## No custom code
+Never write CSS, JavaScript or PHP code, and never use a Divi Code module. This plugin refuses them:
+a layout with a CSS field (anything under a module's `css` attribute), a `divi/code` or
+`divi/fullwidth-code` module, `<script>`, `<style>`, `<iframe>`, `<object>` or `<embed>` markup, a
+`javascript:` link, an `on…=` event attribute or a PHP tag is rejected with `CUSTOM_CSS_NOT_ALLOWED`,
+`CODE_MODULE_NOT_ALLOWED` or `SCRIPT_CONTENT_NOT_ALLOWED` and the exact path. Style with the module's own
+decoration attributes above instead. Code already on a page (the owner's own) is left untouched when
+you edit that page; you cannot add or change it. If a design needs a reusable site-wide class, tell the
+owner what to add in Appearance → Customize → Additional CSS themselves.
 
 ## Full-viewport height & background blend
 ```

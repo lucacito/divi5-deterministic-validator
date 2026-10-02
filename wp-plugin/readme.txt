@@ -127,6 +127,10 @@ This plugin does not connect to any external service. Your AI assistant connects
 
 No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages, create pages (as drafts), read Media Library images (read-only), and read your site's Divi presets and colors (read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
 
+= Can the AI add custom CSS, JavaScript or PHP to my site? =
+
+No. The checker refuses any layout that contains custom CSS, a Divi Code module, script, style or iframe markup, a javascript: link or an event attribute, and the plugin has no tool that saves CSS, JavaScript or PHP or changes site settings. Anything already on a page, for example custom CSS you added in the Visual Builder, is left exactly as you made it.
+
 = Where do images come from? =
 
 From your own Media Library first. When nothing there fits, the AI uses the built-in image pack that ships inside the plugin. Nothing is downloaded from third-party websites.
@@ -164,6 +168,7 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 == Changelog ==
 
 = 4.4.0 =
+* Safer: your AI assistant can no longer save custom CSS, JavaScript or PHP through a page layout. The checker refuses custom-CSS fields, Divi Code modules, script, style and iframe markup, javascript: links and event attributes, and says exactly where. Code already on a page, for example custom CSS you added in the Visual Builder, stays as it is.
 * New: your AI assistant can look up your site's own Divi colors and presets, so the pages it builds can match your site. A new read-only tool, `list_global_styles`, lists them.
 * New: when a page uses a color or preset your site does not have, the save and preview results now say so. The save still goes ahead, and Divi shows that part of the page with its default look.
 * It cannot create or change presets or colors.
