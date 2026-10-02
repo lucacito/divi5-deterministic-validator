@@ -221,8 +221,8 @@ a layout with a CSS field (anything under a module's `css` attribute), a `divi/c
 `javascript:` link, an `on…=` event attribute or a PHP tag is rejected with `CUSTOM_CSS_NOT_ALLOWED`,
 `CODE_MODULE_NOT_ALLOWED` or `SCRIPT_CONTENT_NOT_ALLOWED` and the exact path. Style with the module's own
 decoration attributes above instead. Code already on a page (the owner's own) is left untouched when
-you edit that page; you cannot add or change it. If a design needs a reusable site-wide class, tell the
-owner what to add in Appearance → Customize → Additional CSS themselves.
+you edit that page; you cannot add or change it. If a design needs something the decoration attributes
+cannot express, tell the owner it is not possible through this plugin instead of working around it.
 
 ## Full-viewport height & background blend
 ```
