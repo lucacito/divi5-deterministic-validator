@@ -472,7 +472,8 @@ final class RestController
         if ($title === null || $content === null || $slug === null) {
             return new WP_Error('invalid_field', '"title", "post_content" and "slug" must be strings.', ['status' => 400]);
         }
-        $title = trim($title);
+        // A title is plain text: strip markup before it is stored (many themes print it unescaped).
+        $title = trim(sanitize_text_field($title));
         $slug  = sanitize_title($slug);
 
         if ($title === '') {

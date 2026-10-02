@@ -51,7 +51,8 @@ if ( ! function_exists( 'get_the_title' ) ) {
     function get_the_title( $post = 0 ) { return is_object( $post ) ? $post->post_title : 'Title'; }
 }
 if ( ! function_exists( 'sanitize_text_field' ) ) {
-    function sanitize_text_field( $s ) { return trim( strip_tags( (string) $s ) ); }
+    // Like WordPress: script and style elements are removed with their content, then the remaining tags are stripped.
+    function sanitize_text_field( $s ) { return trim( strip_tags( (string) preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', (string) $s ) ) ); }
 }
 if ( ! function_exists( 'wp_hash' ) ) {
     function wp_hash( $s ) { return hash( 'sha256', (string) $s ); }

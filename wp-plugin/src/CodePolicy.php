@@ -53,6 +53,8 @@ final class CodePolicy
     /** Work bounds: bigger content is refused without being scanned (the delimiter grammar is quadratic on crafted input). */
     private const MAX_BYTES       = 1000000;
     private const MAX_MARKERS     = 10000;
+    /** Blocks nested deeper than this are refused (real Divi layouts nest about 8; the validator's tree walk is quadratic in depth). */
+    private const MAX_DEPTH       = 100;
 
     /**
      * @return list<Violation>
@@ -108,7 +110,39 @@ final class CodePolicy
     /** True when the content is over the size or comment-marker limit (nothing is scanned or validated then). */
     public static function tooLarge( string $content ): bool
     {
-        return strlen( $content ) > self::MAX_BYTES || substr_count( $content, '<!--' ) > self::MAX_MARKERS;
+        return strlen( $content ) > self::MAX_BYTES
+            || substr_count( $content, '<!--' ) > self::MAX_MARKERS
+            || self::maxDepth( $content ) > self::MAX_DEPTH;
+    }
+
+    /**
+     * The deepest block nesting, in one forward pass over the comments with the block parser's own rule (a comment
+     * ends at its first `-->`), so it cannot undercount what the parser would build. Only called on content that is
+     * already within the byte and marker limits, so the pass is cheap.
+     */
+    private static function maxDepth( string $content ): int
+    {
+        if ( strlen( $content ) > self::MAX_BYTES || substr_count( $content, '<!--' ) > self::MAX_MARKERS ) {
+            return 0; // already too large; the caller reports that
+        }
+        $depth = 0;
+        $max   = 0;
+        $at    = 0;
+        while ( false !== ( $start = strpos( $content, '<!--', $at ) ) ) {
+            $end = strpos( $content, '-->', $start + 4 );
+            if ( false === $end ) {
+                break;
+            }
+            $at   = $end + 3;
+            $text = trim( substr( $content, $start + 4, $end - $start - 4 ) );
+            if ( str_starts_with( $text, '/wp:' ) ) {
+                $depth = max( 0, $depth - 1 );
+            } elseif ( str_starts_with( $text, 'wp:' ) && ! str_ends_with( $text, '/' ) ) {
+                $max = max( $max, ++$depth );
+            }
+        }
+
+        return $max;
     }
 
     /** The single violation for content over the limits (naming the limit and the actual number), or null. */
@@ -122,6 +156,10 @@ final class CodePolicy
         $markers = substr_count( $content, '<!--' );
         if ( $markers > self::MAX_MARKERS ) {
             $hit[] = sprintf( '%s comment markers (limit %s)', number_format( $markers ), number_format( self::MAX_MARKERS ) );
+        }
+        $depth = self::maxDepth( $content );
+        if ( $depth > self::MAX_DEPTH ) {
+            $hit[] = sprintf( '%s nested blocks (limit %s)', number_format( $depth ), number_format( self::MAX_DEPTH ) );
         }
         if ( [] === $hit ) {
             return null;
@@ -525,8 +563,8 @@ final class CodePolicy
 
     /**
      * The units of code in a piece of NORMALISED text (an attribute string or the whole raw content): whole
-     * script, style, iframe, object and embed elements, PHP tags, script URLs after a URL attribute, and whole
-     * opening tags that carry an event handler. A unit is the entire offending text, so changing any part of it
+     * script, style, iframe, object and embed elements, PHP tags, and whole opening tags that carry an event
+     * handler or a script URL value, or are link/meta/base tags (see tagUnits). A unit is the entire offending text, so changing any part of it
      * is a new finding. Returns a single "unscannable" unit when a regex fails (fail closed).
      *
      * @param ?int $cap cut units that have no natural end (unclosed element, unterminated tag) to this length
@@ -550,43 +588,34 @@ final class CodePolicy
             }
         }
 
-        // A script URL right after a URL-like attribute (the value may hide the scheme with tabs or newlines).
-        if ( false === preg_match_all( '/\b(?:href|src|action|formaction|data|poster|xlink:href)\s*=\s*["\']?([^"\'<>]*)/i', $text, $m ) ) {
-            return $fail;
-        }
-        foreach ( $m[1] as $token ) {
-            $compact = self::compact( $token );
-            if ( null === $compact ) {
-                return $fail;
-            }
-            if ( 1 === preg_match( '/^javascript:/i', $compact ) ) {
-                $units[] = [ 'jsurl', $token ];
-            }
-        }
-
-        $tags = self::handlerTags( $text, $cap );
+        $tags = self::tagUnits( $text, $cap );
         if ( null === $tags ) {
             return $fail;
         }
         foreach ( $tags as $tag ) {
-            $units[] = [ 'handler', $tag ];
+            $units[] = $tag;
         }
 
         return $units;
     }
 
     /**
-     * The opening tags that carry an event-handler attribute (`on…=`), tokenised the way HTML5 does: a quote only
-     * opens a value right after `=`, so `<a x=a"b onclick=…>` and `<a x" onclick=…>` still have an onclick
-     * attribute, while `title="Book online = save"` has none. Null if a regex failed.
+     * The opening tags that are code, tokenised the way HTML5 does (a quote only opens a value right after `=`, so
+     * `<a x=a"b onclick=…>` and `<a x" onclick=…>` still have an onclick attribute, while `title="Book online =
+     * save"` has none). A tag is a unit when it (a) carries an event-handler attribute (`on…=`), (b) has ANY
+     * attribute value that is a script URL (`javascript:…`, or a `;`-separated list holding one: SVG `values`,
+     * `to`, `from`), or (c) is a `<link>`, `<meta>` or `<base>` tag. A quoted value that itself contains a tag is
+     * scanned too, because a raw-text element (`<noscript>`, `<textarea>`, `<title>`, `<xmp>`) ends at its closing
+     * tag even inside a quote: `<p title="</noscript><img onerror=…>">`. Quotes cannot nest, so this stays linear.
+     * Null if a regex failed.
      *
-     * @return list<string>|null
+     * @return list<array{0:string, 1:string}>|null [ kind, unit ]
      */
-    private static function handlerTags( string $text, ?int $cap ): ?array
+    private static function tagUnits( string $text, ?int $cap, int $depth = 0 ): ?array
     {
-        $tags = [];
-        $pos  = 0;
-        $len  = strlen( $text );
+        $units = [];
+        $pos   = 0;
+        $len   = strlen( $text );
         while ( $pos < $len ) {
             $r = preg_match( '/<[a-z]/i', $text, $m, PREG_OFFSET_CAPTURE, $pos );
             if ( false === $r ) {
@@ -600,12 +629,13 @@ final class CodePolicy
             if ( 1 !== preg_match( '/\G[^\s\/>]*/', $text, $name, 0, $i ) ) {
                 return null;
             }
-            $i      += strlen( $name[0] );
-            $handler = false;
-            $closed  = false;
+            $i     += strlen( $name[0] );
+            $kind   = in_array( strtolower( $name[0] ), [ 'link', 'meta', 'base' ], true ) ? 'external' : null;
+            $closed = false;
+            $inner  = [];
             while ( $i < $len ) {
                 $r = preg_match(
-                    '/\G[\s\/]*+(?:(>)|((?:=|[^\s\/>=])[^\s\/>=]*+)(?:\s*+(=)\s*+(?:"[^"]*+"?|\'[^\']*+\'?|([^\s>]*+)))?)?/',
+                    '/\G[\s\/]*+(?:(>)|((?:=|[^\s\/>=])[^\s\/>=]*+)(?:\s*+(=)\s*+(?:"([^"]*+)"?|\'([^\']*+)\'?|([^\s>]*+)))?)?/',
                     $text,
                     $a,
                     PREG_UNMATCHED_AS_NULL,
@@ -625,22 +655,44 @@ final class CodePolicy
                     break;
                 }
                 if ( null !== $a[2] && null !== $a[3] && self::isEventName( strtolower( $a[2] ) ) ) {
-                    $handler = true;
+                    $kind ??= 'handler';
                 }
-                // HTML5 lets an unquoted value swallow `/onerror=…`, which no browser runs; it is refused anyway
-                // because it is only ever written to look like a handler.
-                if ( null !== $a[4] && 1 === preg_match( '/["\'\/]on[a-z]+\s*=/i', $a[4] ) ) {
-                    $handler = true;
+                $value = $a[4] ?? $a[5] ?? $a[6] ?? null;
+                if ( null === $value || '' === $value ) {
+                    continue;
+                }
+                $compact = self::compact( $value );
+                if ( null === $compact ) {
+                    return null;
+                }
+                if ( 1 === preg_match( '/(?:^|;)javascript:/i', $compact ) ) {
+                    $kind ??= 'jsattr';
+                }
+                if ( null !== $a[6] ) {
+                    // HTML5 lets an unquoted value swallow `/onerror=…`, which no browser runs; it is refused anyway
+                    // because it is only ever written to look like a handler.
+                    if ( 1 === preg_match( '/["\'\/]on[a-z]+\s*=/i', $value ) ) {
+                        $kind ??= 'handler';
+                    }
+                } elseif ( $depth < 3 && 1 === preg_match( '/<[a-z]/i', $value ) ) {
+                    $found = self::tagUnits( $value, $cap, $depth + 1 );
+                    if ( null === $found ) {
+                        return null;
+                    }
+                    $inner = array_merge( $inner, $found );
                 }
             }
-            if ( $handler ) {
-                $tag    = substr( $text, $start, $i - $start );
-                $tags[] = ( null !== $cap && ! $closed ) ? substr( $tag, 0, $cap ) : $tag;
+            if ( null !== $kind ) {
+                $tag     = substr( $text, $start, $i - $start );
+                $units[] = [ $kind, ( null !== $cap && ! $closed ) ? substr( $tag, 0, $cap ) : $tag ];
+            }
+            foreach ( $inner as $unit ) {
+                $units[] = $unit;
             }
             $pos = max( $i, $start + 1 );
         }
 
-        return $tags;
+        return $units;
     }
 
     /**

@@ -664,7 +664,8 @@ final class McpHandler
         if ($title === null || $content === null || $slug === null) {
             return $this->rpcError($id, -32602, 'title, post_content and slug must be strings.');
         }
-        $title = trim($title);
+        // A title is plain text: strip markup before it is stored (many themes print it unescaped).
+        $title = trim(sanitize_text_field($title));
         $slug  = sanitize_title($slug);
 
         if ($title === '') {

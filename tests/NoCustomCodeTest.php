@@ -76,11 +76,15 @@ class NoCustomCodeTest extends TestCase
         }
     }
 
+    /** The teaching scan: the needles of TEACHING found in a text (case-insensitive). @return list<string> */
+    private function teachingHits( string $text ): array
+    {
+        return array_values( array_filter( self::TEACHING, static fn ( string $needle ): bool => stripos( $text, $needle ) !== false ) );
+    }
+
     private function assertNoTeaching( string $label, string $text ): void
     {
-        foreach ( self::TEACHING as $needle ) {
-            $this->assertFalse( stripos( $text, $needle ) !== false, "{$label} mentions '{$needle}' (custom CSS must not be taught or shipped)" );
-        }
+        $this->assertSame( [], $this->teachingHits( $text ), "{$label} teaches or ships custom CSS (a needle was found)" );
     }
 
     public function testEveryBundledRecipeIsFreeOfCustomCode(): void
@@ -157,7 +161,11 @@ class NoCustomCodeTest extends TestCase
         $this->assertSame( [], $this->bannedWrites( "<?php // file_put_contents(\$a);\n\$x = 1;" ), 'a commented-out call' );
         $this->assertSame( [], $this->bannedWrites( "<?php /** Never call eval( or file_put_contents( here. */ \$x = 1;" ), 'a docblock mention' );
 
-        // And the teaching scan: planted text is flagged.
-        $this->assertTrue( stripos( 'css.desktop.value.freeForm = "x"', 'freeForm' ) !== false );
+        // And the teaching scan (the same helper the real scan uses): planted text is flagged, clean text is not.
+        $this->assertNotEmpty( self::TEACHING );
+        $this->assertContains( 'freeForm', $this->teachingHits( 'css.desktop.value.freeForm = "x"' ) );
+        $this->assertContains( 'mainElement', $this->teachingHits( 'set MAINELEMENT to a selector' ), 'case-insensitive' );
+        $this->assertContains( '@keyframes', $this->teachingHits( 'add @keyframes spin' ) );
+        $this->assertSame( [], $this->teachingHits( 'Use the module\'s own style settings: colors, spacing and borders.' ) );
     }
 }

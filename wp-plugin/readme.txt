@@ -129,7 +129,7 @@ No. The API key works as the WordPress user who created it, and the AI can only 
 
 = Can the AI add custom CSS, JavaScript or PHP to my site? =
 
-No. The checker refuses any layout that contains custom CSS, a Divi Code module, script, style or iframe markup, a javascript: link or an event attribute, and the plugin has no tool that saves CSS, JavaScript or PHP or changes site settings. Anything already on a page, for example custom CSS you added in the Visual Builder, is left exactly as you made it.
+No. The checker refuses any layout that contains custom CSS, a Divi Code module, script, style or iframe markup, a javascript: link or an event attribute, and the plugin has no tool that saves CSS, JavaScript or PHP or changes site settings. Anything already on a page, for example custom CSS you added in the Visual Builder, is kept: the AI cannot add or change code (it can only remove it).
 
 = Where do images come from? =
 

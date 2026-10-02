@@ -623,6 +623,104 @@ class CodePolicyTest extends TestCase
         $this->assertFalse( CodePolicy::tooLarge( self::layout() ) );
     }
 
+    // ---- raw-text elements, SVG animation values, external-resource tags ---------------------------------
+
+    /** @return array<string, array{0:string}> */
+    public static function rawTextElementTricks(): array
+    {
+        $out = [];
+        foreach ( [ 'noscript', 'textarea', 'title', 'xmp' ] as $el ) {
+            $out[ $el ] = [ '<' . $el . '><p title="</' . $el . '><img src=x onerror=alert(1)>"></' . $el . '>' ];
+        }
+        $out['single quotes'] = [ "<noscript><p title='</noscript><img src=x onerror=alert(1)>'></noscript>" ];
+        $out['javascript url inside a value'] = [ '<noscript><p title="</noscript><a href=javascript:alert(1)>x</a>"></noscript>' ];
+
+        return $out;
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'rawTextElementTricks' )]
+    public function testARawTextElementCannotHideAHandlerInsideAQuotedValue( string $html ): void
+    {
+        $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( self::text( $html ) ) ), 'in an attribute string' );
+        $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( '', $html ) ), 'between blocks' );
+    }
+
+    public function testAScriptUrlInAnyAttributeValueIsFoundIncludingSvgAnimation(): void
+    {
+        foreach ( [
+            '<svg><a><animate attributeName=href values=javascript:alert(1) /><text>Click</text></a></svg>',
+            '<svg><a><set attributeName="href" to="javascript:alert(1)"/><text>Click</text></a></svg>',
+            '<svg><a><animate attributeName="href" values="#a;java&#9;script:alert(1)" /></a></svg>',
+            '<div data-go="JAVASCRIPT:alert(1)">x</div>',
+        ] as $html ) {
+            $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( self::text( $html ) ) ), $html );
+            $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( '', $html ) ), $html . ' (between blocks)' );
+        }
+    }
+
+    public function testLinkMetaAndBaseTagsAreRefused(): void
+    {
+        foreach ( [ '<link rel=stylesheet href=https://x/y.css>', '<meta http-equiv=refresh content="0;url=x">', '<base href=//evil>', 'use the <meta> tag' ] as $html ) {
+            $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( self::text( $html ) ) ), $html );
+        }
+        $page = self::layout( self::text( '<meta name="x" content="y">' ) );
+        $this->assertSame( [], self::codes( $page, $page ), 'identical in the baseline' );
+    }
+
+    public function testQuotedValuesThatMerelyLookLikeCodeStayClean(): void
+    {
+        foreach ( [
+            '<p title="Book online = save">x</p>',
+            '<img alt="Sign up online = easy" src="/a.png">',
+            '<p title="a <b>bold</b> idea">x</p>',
+            'JavaScript: the good parts; javascript is fun',
+            '<a title="learn it" href="/x">go</a>',
+        ] as $html ) {
+            $this->assertSame( [], self::codes( self::layout( self::text( $html ) ) ), $html );
+        }
+    }
+
+    // ---- nesting depth cap -------------------------------------------------------------------------------
+
+    private static function nested( int $pairs ): string
+    {
+        return str_repeat( '<!-- wp:divi/group {"builderVersion":"5.14.0"} -->', $pairs ) . str_repeat( '<!-- /wp:divi/group -->', $pairs );
+    }
+
+    public function testDeeplyNestedBlocksAreRefusedQuicklyAndWithLittleMemory(): void
+    {
+        foreach ( [ 101, 3000 ] as $pairs ) {
+            $content = self::nested( $pairs );
+            $memory  = memory_get_peak_usage();
+            $start   = microtime( true );
+            $policy  = CodePolicy::violations( $content );
+            $gate    = LayoutGate::check( $content, $content );
+            $elapsed = microtime( true ) - $start;
+            $this->assertCount( 1, $policy, (string) $pairs );
+            $this->assertCount( 1, $gate->violations(), $pairs . ': the validator is never reached' );
+            $this->assertStringContainsString( sprintf( '%s nested blocks (limit 100)', number_format( $pairs ) ), $policy[0]->message() );
+            $this->assertLessThan( 2.0, $elapsed, (string) $pairs );
+            $this->assertLessThan( 64 * 1024 * 1024, memory_get_peak_usage() - $memory, (string) $pairs );
+        }
+    }
+
+    public function testNestingUpToTheLimitIsNotRefused(): void
+    {
+        $content = self::nested( 100 );
+        $this->assertFalse( CodePolicy::tooLarge( $content ) );
+        $this->assertNull( CodePolicy::tooLargeViolation( $content ) );
+        $this->assertFalse( CodePolicy::tooLarge( self::layout() ) );
+        // Self-closing blocks do not nest.
+        $this->assertFalse( CodePolicy::tooLarge( '<!-- wp:divi/section -->' . str_repeat( '<!-- wp:divi/heading {"a":1} /-->', 500 ) . '<!-- /wp:divi/section -->' ) );
+    }
+
+    public function testABaselineOverTheDepthLimitIsTreatedAsEmpty(): void
+    {
+        $deep = self::layout( self::CSS, self::nested( 101 ) );
+        $this->assertSame( [], self::codes( self::layout( self::CSS ), self::layout( self::CSS ) ) );
+        $this->assertSame( [ CodePolicy::E_CUSTOM_CSS ], self::codes( self::layout( self::CSS ), $deep ) );
+    }
+
     // ---- the gate ------------------------------------------------------------------------------
 
     public function testTheGateAddsPolicyViolationsToTheValidatorsAndKeepsTheValidatorFirst(): void

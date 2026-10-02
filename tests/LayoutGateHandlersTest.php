@@ -198,6 +198,37 @@ class LayoutGateHandlersTest extends TestCase
         $this->assertSame( [ 5 ], array_keys( $GLOBALS['__wp_posts'] ), 'no post was created' );
     }
 
+    public function testCreatePageStripsMarkupFromTheTitle(): void
+    {
+        $body = [ 'title' => '<script>alert(1)</script>My <b>page</b>', 'post_content' => self::layout( 'Hello' ) ];
+        [ , $m ] = $this->mcp( 'create_page', $body );
+        $this->assertTrue( $m['created'] ?? false );
+        [ $status ] = $this->rest( 'create_page', $body, [] );
+        $this->assertSame( 201, $status );
+        $this->assertCount( 2, $GLOBALS['__wp_inserts'] );
+        foreach ( $GLOBALS['__wp_inserts'] as $postId ) {
+            $title = $GLOBALS['__wp_posts'][ $postId ]->post_title;
+            $this->assertSame( 'My page', $title );
+            $this->assertStringNotContainsString( '<', $title );
+        }
+    }
+
+    public function testCreatePageRefusesATitleThatIsOnlyMarkupAndKeepsANormalTitle(): void
+    {
+        [ $code ] = $this->mcp( 'create_page', [ 'title' => '<script>alert(1)</script>', 'post_content' => self::layout( 'Hello' ) ] );
+        $this->assertSame( -32602, $code );
+        [ $status ] = $this->rest( 'create_page', [ 'title' => '<script>alert(1)</script>', 'post_content' => self::layout( 'Hello' ) ], [] );
+        $this->assertSame( 400, $status );
+        $this->assertSame( [], $GLOBALS['__wp_inserts'] );
+
+        $this->mcp( 'create_page', [ 'title' => 'Our services', 'post_content' => self::layout( 'Hello' ) ] );
+        $this->rest( 'create_page', [ 'title' => 'Our services', 'post_content' => self::layout( 'Hello' ) ], [] );
+        foreach ( $GLOBALS['__wp_inserts'] as $postId ) {
+            $this->assertSame( 'Our services', $GLOBALS['__wp_posts'][ $postId ]->post_title );
+        }
+        $this->assertCount( 2, $GLOBALS['__wp_inserts'] );
+    }
+
     public function testDryRunPreviewReportsTheViolationAndNeverWrites(): void
     {
         [ , $m ] = $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'post_content' => self::layout( 'Hello', self::CSS ), 'dry_run' => true ] );
