@@ -112,7 +112,7 @@ class CodePolicyTest extends TestCase
 
     public function testOrdinaryHtmlAndProseAreNotFalsePositives(): void
     {
-        $ok = ',"content":{"innerContent":{"desktop":{"value":"<p>Join online = fun, on Monday=best. <a href="/about" class="x">More</a></p>"}}}';
+        $ok = self::text( '<p>Join online = fun, on Monday=best. <a href="/about" class="x">More</a></p>' );
         $this->assertSame( [], self::codes( self::layout( $ok ) ) );
         $attrs = ',"module":{"decoration":{"attributes":{"desktop":{"value":{"attributes":[{"id":"a1","name":"class","value":"hero"},{"id":"a2","name":"title","value":"Hi"}]}}}}}';
         $this->assertSame( [], self::codes( self::layout( $attrs ) ) );
@@ -306,7 +306,10 @@ class CodePolicyTest extends TestCase
     {
         $this->assertSame( [], self::codes( self::layout( self::text( '<p>Never paste &lt;script&gt;alert(1)&lt;/script&gt; into a page.</p>' ) ) ) );
         $this->assertSame( [], self::codes( self::layout( ',"module":{"decoration":{"background":{"desktop":{"value":{"color":"#fff"}}}},"advanced":{"link":{"desktop":{"value":{"url":"https://example.com/?a=1&b=2","target":"_blank"}}}}},"css":{},"x":{"freeForm":""}' ) ) );
-        $this->assertSame( [], self::codes( self::layout( '', '<!-- an ordinary comment -->' ) ) );
+        // An ordinary HTML comment between blocks is a stray comment: refused when new, kept when already there.
+        $withComment = self::layout( '', '<!-- an ordinary comment -->' );
+        $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( $withComment ) );
+        $this->assertSame( [], self::codes( $withComment, $withComment ) );
     }
 
     public function testRealExportsOtherThanThePinnedFourStayClean(): void
@@ -371,6 +374,124 @@ class CodePolicyTest extends TestCase
         $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( $named ) ) );
         $this->assertSame( [], self::codes( self::layout( self::text( 'JavaScript: the good parts' ) ) ), 'prose stays prose' );
         $this->assertSame( [], self::codes( self::layout( ',"foo":"JavaScript: the good parts"' ) ) );
+    }
+
+    // ---- the structural differential guard (WordPress core's delimiter grammar as a second parser) --
+
+    private const GUARD = 'malformed or ambiguous';
+
+    /** @return array<string, array{0:string, 1:string, 2:bool}> label => [ block name, JSON attribute members, isScript ] */
+    public static function disguisedPayloads(): array
+    {
+        $long = str_repeat( 'x', 2500 );
+
+        return [
+            'code module'                    => [ 'divi/code', '"a":1', false ],
+            'css freeForm'                   => [ 'divi/heading', '"css":{"desktop":{"value":{"freeForm":"a{}"}}}', false ],
+            'I-1 value before name'          => [ 'divi/heading', '"attributes":[{"value":"alert(1)","name":"onclick"}]', true ],
+            'I-2 css field behind a brace'   => [ 'divi/heading', '"css":{"desktop":{"value":{}},"tablet":{"value":{"headingContainer":"display:none"}}}', false ],
+            'I-3 quoted css, appended'       => [ 'divi/heading', '"css":{"desktop":{"value":{"freeForm":"a{font-family:\"Open Sans\"}body{display:none}"}}}', false ],
+            'I-3 long css, appended'         => [ 'divi/heading', '"css":{"desktop":{"value":{"freeForm":"a{' . $long . '}body{display:none}"}}}', false ],
+        ];
+    }
+
+    /** A page that already holds legitimate quoted and very long CSS and a Code module, all visible to both parsers. */
+    private static function pageWithLegitCode(): string
+    {
+        $quoted = ',"css":{"desktop":{"value":{"freeForm":"a{font-family:\"Open Sans\"}"}}}';
+        $long   = ',"css":{"tablet":{"value":{"freeForm":"a{' . str_repeat( 'x', 2500 ) . '}"}}}';
+
+        return self::layout( $quoted . $long, '<!-- wp:divi/code {"a":1} /-->' );
+    }
+
+    /** @return list<array{0:string, 1:string}> [ label, content ] the same block in the two disguises */
+    private static function disguises( string $name, string $members ): array
+    {
+        return [
+            [ 'after an unclosed comment opener', self::layout( '', '<!-- x <!-- wp:' . $name . ' {' . $members . '} /-->' ) ],
+            [ 'with --> inside its JSON', self::layout( '', '<!-- wp:' . $name . ' {"x":"-->",' . $members . '} /-->' ) ],
+        ];
+    }
+
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'disguisedPayloads' )]
+    public function testAHiddenBlockIsRefusedWithAndWithoutALegitimateBaseline( string $name, string $members, bool $isScript ): void
+    {
+        foreach ( self::disguises( $name, $members ) as [ $how, $content ] ) {
+            foreach ( [ null, self::pageWithLegitCode() ] as $baseline ) {
+                $policy = CodePolicy::violations( $content, $baseline );
+                $this->assertNotSame( [], $policy, $how . ( null === $baseline ? '' : ' (with a baseline)' ) );
+                $messages = implode( ' | ', array_map( static fn ( $v ) => $v->message(), $policy ) );
+                $this->assertStringContainsString( self::GUARD, $messages, $how );
+            }
+            $gate = LayoutGate::check( $content, self::pageWithLegitCode() );
+            $this->assertFalse( $gate->isValid(), $how );
+            $this->assertContains( CodePolicy::E_SCRIPT, array_map( static fn ( $v ) => $v->code(), $gate->violations() ), $how );
+            $this->assertSame( [], self::codes( $content, $content ), $how . ': an identical situation already on the page is kept' );
+        }
+    }
+
+    public function testTheI3AttackIsRefusedWhenTheBaselineHasTheSameQuotedCss(): void
+    {
+        $baseline = self::layout( ',"css":{"desktop":{"value":{"freeForm":"a{font-family:\"Open Sans\"}"}}}' );
+        $attack   = self::layout( '', '<!-- x <!-- wp:divi/heading {"css":{"desktop":{"value":{"freeForm":"a{font-family:\"Open Sans\"}body{display:none}"}}}} /-->' );
+        $this->assertSame( [], self::codes( $baseline, $baseline ) );
+        $this->assertNotSame( [], self::codes( $attack, $baseline ) );
+        $this->assertFalse( LayoutGate::check( $attack, $baseline )->isValid() );
+    }
+
+    public function testScriptAfterAMalformedWpCommentIsRefusedThroughTheGateToo(): void
+    {
+        $content = self::layout( '', '<!-- wp:foo --!><script>x</script> -->' );
+        $this->assertContains( CodePolicy::E_SCRIPT, self::codes( $content ) );
+        $this->assertContains( CodePolicy::E_SCRIPT, array_map( static fn ( $v ) => $v->code(), LayoutGate::check( $content )->violations() ) );
+    }
+
+    public function testStrayAndMalformedCommentsAreRefusedWhenNewAndKeptWhenAlreadyThere(): void
+    {
+        foreach ( [ '<!-- a normal html comment -->', '--!>', 'text --> more', '<!-- wp:divi/text {"a":1}-->' ] as $stray ) {
+            $page = self::layout( '', $stray );
+            $this->assertNotSame( [], self::codes( $page ), $stray );
+            $this->assertSame( [], self::codes( $page, $page ), $stray . ' (identical in the baseline)' );
+            $this->assertNotSame( [], self::codes( self::layout( '', $stray . '<!-- another -->' ), $page ), $stray . ' (a different comment is new)' );
+        }
+        $this->assertSame( [], self::codes( self::layout() ) );
+    }
+
+    public function testNoRealExportAndNoBundledRecipeTripsTheGuard(): void
+    {
+        $contents = [];
+        foreach ( glob( __DIR__ . '/../fixtures/valid/*.json' ) ?: [] as $file ) {
+            $j = json_decode( (string) file_get_contents( $file ), true );
+            if ( isset( $j['post_content'] ) && is_string( $j['post_content'] ) ) {
+                $contents[ basename( $file ) ] = $j['post_content'];
+            }
+        }
+        $fixtures = count( $contents );
+        $recipes  = json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true );
+        array_walk_recursive( $recipes, static function ( $v, $k ) use ( &$contents ): void {
+            if ( is_string( $v ) && str_contains( $v, '<!-- wp:' ) ) {
+                $contents[ 'recipe-' . count( $contents ) ] = $v;
+            }
+        } );
+        $this->assertGreaterThanOrEqual( 38, $fixtures );
+        $this->assertGreaterThanOrEqual( 17, count( $contents ) - $fixtures );
+        foreach ( $contents as $label => $content ) {
+            $messages = implode( ' | ', array_map( static fn ( $v ) => $v->message(), CodePolicy::violations( $content ) ) );
+            $this->assertStringNotContainsString( self::GUARD, $messages, $label );
+        }
+    }
+
+    public function testOnlyRealEventHandlerNamesAreFlaggedAsCustomAttributes(): void
+    {
+        foreach ( [ 'onclick', 'onerror', 'onload', 'onfocus', ' OnMouseOver ', "\u{00a0}onclick" ] as $name ) {
+            $attr = ',"attributes":[{"value":"x()","name":' . json_encode( $name ) . '}]';
+            $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( $attr ) ), $name );
+        }
+        foreach ( [ 'one', 'only', 'onion', 'online', 'on', 'once' ] as $name ) {
+            $attr = ',"attributes":[{"name":' . json_encode( $name ) . ',"value":"x"}]';
+            $this->assertSame( [], self::codes( self::layout( $attr ) ), $name );
+        }
     }
 
     // ---- the gate ------------------------------------------------------------------------------

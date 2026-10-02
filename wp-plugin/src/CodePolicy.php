@@ -35,7 +35,15 @@ final class CodePolicy
 
     private const CODE_MODULES    = [ 'divi/code', 'divi/fullwidth-code' ];
     private const CSS_FIELDS      = [ 'freeForm', 'mainElement' ];
-    private const EVENT_ATTR_NAME = '/^on[a-z]+$/';
+    /** A real event handler name; ordinary words that start with "on" (onion, online, only...) are not one. */
+    private const EVENT_ATTR_NAME  = '/^on[a-z]{3,}$/';
+    private const NOT_EVENT_NAMES  = [ 'onion', 'onions', 'online', 'only', 'once', 'onto', 'onset', 'ongoing', 'onward', 'onwards', 'onsite', 'onboard', 'onboarding' ];
+    /**
+     * WordPress core's own block-delimiter grammar, copied verbatim from WP_Block_Parser::next_token() in
+     * wp-includes/class-wp-block-parser.php of the WordPress installed in the dev container (version.php says 7.1).
+     * It is the independent second parser of the structural guard: what WordPress treats as a block delimiter.
+     */
+    private const WP_DELIMITER    = '/<!--\s+(?P<closer>\/)?wp:(?P<namespace>[a-z][a-z0-9_-]*\/)?(?P<name>[a-z][a-z0-9_-]*)\s+(?P<attrs>{(?:(?:[^}]+|}+(?=})|(?!}\s+\/?-->).)*+)?}\s+)?(?P<void>\/)?-->/s';
     private const URL_KEY         = '/url|link|href|src|action|poster/i';
     private const UNSCANNABLE     = 'unscannable';
     /** Raw-backstop units that have no natural end (an unclosed element or tag) are cut here, so an edit far away cannot change them. */
@@ -49,11 +57,11 @@ final class CodePolicy
     public static function violations( string $content, ?string $baseline = null ): array
     {
         $now = self::findings( $content );
-        if ( [] === $now['tree'] && [] === $now['raw'] ) {
+        if ( [] === $now['tree'] && [] === $now['raw'] && [] === $now['guard'] ) {
             return [];
         }
 
-        $before = [ 'tree' => [], 'raw' => [] ];
+        $before = [ 'tree' => [], 'raw' => [], 'guard' => [] ];
         if ( null !== $baseline && '' !== $baseline ) {
             $before = self::findings( $baseline );
         }
@@ -62,6 +70,7 @@ final class CodePolicy
         // the text between blocks is still the same code; a second copy is caught by the raw family's own count.
         $tree = self::subtract( $now['tree'], array_merge( $before['tree'], $before['raw'] ) );
         $raw  = self::subtract( $now['raw'], $before['raw'] );
+        $grd  = self::subtract( $now['guard'], $before['guard'] );
 
         $reported = [];
         foreach ( $tree as $f ) {
@@ -69,6 +78,14 @@ final class CodePolicy
         }
         $out = $tree;
         foreach ( $raw as $f ) {
+            if ( ! isset( $reported[ $f['code'] ] ) ) {
+                $out[] = $f;
+            }
+        }
+        foreach ( $out as $f ) {
+            $reported[ $f['code'] ] = true;
+        }
+        foreach ( $grd as $f ) {
             if ( ! isset( $reported[ $f['code'] ] ) ) {
                 $out[] = $f;
             }
@@ -104,7 +121,7 @@ final class CodePolicy
     }
 
     /**
-     * @return array{tree: list<array{code:string, fingerprint:string, path:string, message:string}>, raw: list<array{code:string, fingerprint:string, path:string, message:string}>}
+     * @return array{tree: list<array{code:string, fingerprint:string, path:string, message:string}>, raw: list<array{code:string, fingerprint:string, path:string, message:string}>, guard: list<array{code:string, fingerprint:string, path:string, message:string}>}
      */
     private static function findings( string $content ): array
     {
@@ -125,7 +142,7 @@ final class CodePolicy
             } );
         }
 
-        return [ 'tree' => $tree, 'raw' => self::backstop( $content ) ];
+        return [ 'tree' => $tree, 'raw' => self::backstop( $content ), 'guard' => self::guard( $content, $root ) ];
     }
 
     // ---- the tree scan ---------------------------------------------------------------------------
@@ -161,8 +178,8 @@ final class CodePolicy
         // A custom HTML attribute entry such as {"name":"onclick","value":"..."}: the name is the field name of its value.
         $attrName = null;
         if ( isset( $value['name'] ) && is_string( $value['name'] ) && array_key_exists( 'value', $value ) ) {
-            $attrName = strtolower( trim( $value['name'] ) );
-            if ( 1 === preg_match( self::EVENT_ATTR_NAME, $attrName ) ) {
+            $attrName = strtolower( trim( $value['name'], " \t\n\r\0\x0B\xC2\xA0" ) ); // also a no-break space
+            if ( self::isEventName( $attrName ) ) {
                 self::push( $out, self::finding(
                     self::E_SCRIPT,
                     'attr|' . $attrName . '|' . md5( (string) json_encode( $value['value'] ) ),
@@ -220,6 +237,76 @@ final class CodePolicy
         }
 
         return $units;
+    }
+
+    // ---- the structural differential guard ---------------------------------------------------------
+
+    /**
+     * Content that the validator's block parser and WordPress read differently is refused at the root, instead
+     * of hunting every way code can hide in the difference. WordPress core's own delimiter grammar is run as a
+     * second parser; the guard reports (1) comment markup left over once every WordPress delimiter is removed
+     * (a stray or malformed comment: browsers end comments at `-->`, `--!>` and `<!-->`, so it can hide or expose
+     * anything) and (2) any difference between the blocks WordPress sees (names and attributes, in order) and the
+     * blocks the validator built. Run on the baseline too, so an identical situation already on the page is kept.
+     *
+     * @return list<array{code:string, fingerprint:string, path:string, message:string}>
+     */
+    private static function guard( string $content, ?Block $root ): array
+    {
+        $unscannable = [ self::unitFinding( self::UNSCANNABLE, $content, 'post_content' ) ];
+        $out         = [];
+
+        if ( false === preg_match_all( self::WP_DELIMITER, $content, $m, PREG_SET_ORDER | PREG_UNMATCHED_AS_NULL ) ) {
+            return $unscannable;
+        }
+        $wp = [];
+        foreach ( $m as $set ) {
+            if ( null !== $set['closer'] ) {
+                continue;
+            }
+            $name = (string) preg_replace( '~^core/~', '', ( $set['namespace'] ?? 'core/' ) . $set['name'] );
+            $wp[] = [ $name, null !== ( $set['attrs'] ?? null ) ? json_decode( (string) $set['attrs'], true ) : [] ];
+        }
+
+        $ours = [];
+        if ( null !== $root ) {
+            $root->walk( static function ( Block $block ) use ( &$ours ): void {
+                if ( '__root__' !== $block->name() ) {
+                    $ours[] = [ (string) preg_replace( '~^core/~', '', $block->name() ), $block->attrs() ];
+                }
+            } );
+        }
+        $wpSig  = md5( (string) json_encode( $wp ) );
+        $ourSig = md5( (string) json_encode( $ours ) );
+        if ( $wpSig !== $ourSig ) {
+            self::push( $out, self::finding(
+                self::E_SCRIPT,
+                sprintf( 'diff|%d|%d|%s|%s', count( $wp ), count( $ours ), $wpSig, $ourSig ),
+                'post_content',
+                sprintf( 'Block comment markup is malformed or ambiguous (WordPress reads %d blocks, the validator %d): this plugin never saves content that browsers and WordPress could read differently.', count( $wp ), count( $ours ) )
+            ) );
+        }
+
+        $rest = preg_replace( self::WP_DELIMITER, '', $content );
+        if ( null === $rest || false === preg_match_all( '/<!--.*?(?:-->|--!>|\z)|-->|--!>/s', $rest, $s ) ) {
+            return $unscannable;
+        }
+        foreach ( $s[0] as $stray ) {
+            $unit = substr( $stray, 0, self::LONE_UNIT_CAP );
+            self::push( $out, self::finding(
+                self::E_SCRIPT,
+                'stray|' . md5( $unit ),
+                'post_content',
+                sprintf( 'Block comment markup is malformed or ambiguous (stray comment %s): this plugin never saves content that browsers and WordPress could read differently.', substr( trim( $unit ), 0, 40 ) )
+            ) );
+        }
+
+        return $out;
+    }
+
+    private static function isEventName( string $name ): bool
+    {
+        return 1 === preg_match( self::EVENT_ATTR_NAME, $name ) && ! in_array( $name, self::NOT_EVENT_NAMES, true );
     }
 
     // ---- the raw backstop ------------------------------------------------------------------------
@@ -300,11 +387,11 @@ final class CodePolicy
                 self::push( $out, self::unitFinding( 'jsurl', $value, 'post_content' ) );
             }
         }
-        if ( false === preg_match_all( '/"name"\s*:\s*"\s*on[a-z]+\s*"[^}]{0,120}/i', $n1, $m ) ) {
+        if ( false === preg_match_all( '/"name"\s*:\s*"\s*(on[a-z]{3,})\s*"[^}]{0,120}/i', $n1, $m ) ) {
             return [ self::unitFinding( self::UNSCANNABLE, $content, 'post_content' ) ];
         }
-        foreach ( $m[0] as $unit ) {
-            if ( str_contains( $unit, '"value"' ) ) {
+        foreach ( $m[0] as $i => $unit ) {
+            if ( str_contains( $unit, '"value"' ) && self::isEventName( strtolower( $m[1][ $i ] ) ) ) {
                 self::push( $out, self::unitFinding( 'attr', $unit, 'post_content' ) );
             }
         }
@@ -456,7 +543,7 @@ final class CodePolicy
                     $closed = true;
                     break;
                 }
-                if ( null !== $a[2] && null !== $a[3] && 1 === preg_match( self::EVENT_ATTR_NAME, strtolower( $a[2] ) ) ) {
+                if ( null !== $a[2] && null !== $a[3] && self::isEventName( strtolower( $a[2] ) ) ) {
                     $handler = true;
                 }
                 // HTML5 lets an unquoted value swallow `/onerror=…`, which no browser runs; it is refused anyway
