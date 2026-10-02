@@ -44,13 +44,12 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * "Add a section with our opening hours under the hero on the About page."
 * "Undo the last change you made to the Services page."
 
-= What your AI assistant can do (17 tools) =
+= What your AI assistant can do (16 tools) =
 
 Read and check:
 
 * `list_divi_pages`: list the pages built with Divi 5 that you can edit.
 * `get_page_layout`: read a page's current layout.
-* `list_theme_layouts`: list the header and footer of your Divi Theme Builder that the AI is allowed to edit (read-only).
 * `list_global_styles`: list your site's own Divi colors and presets so the AI can reuse them (read-only).
 * `validate_layout`: check a layout without saving anything.
 

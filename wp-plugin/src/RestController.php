@@ -36,13 +36,6 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
-        // GET /theme-layouts — read-only list of the live Theme Builder's header/footer layouts
-        register_rest_route(self::NS, '/theme-layouts', [
-            'methods'             => WP_REST_Server::READABLE,
-            'callback'            => [$this, 'theme_layouts'],
-            'permission_callback' => [$this, 'require_edit_posts'],
-        ]);
-
         // GET /global-styles — read-only list of the site's Divi presets, global colors and variables
         register_rest_route(self::NS, '/global-styles', [
             'methods'             => WP_REST_Server::READABLE,
@@ -586,18 +579,6 @@ final class RestController
             ],
             'exported_at'  => gmdate('c'),
         ];
-    }
-
-    public function theme_layouts(WP_REST_Request $request): WP_REST_Response|WP_Error
-    {
-        if (!current_user_can(PageAccess::CAP) || !ThemeLayouts::userMay()) {
-            UsageTracker::log('list_theme_layouts', null, 'error');
-            return new WP_Error('forbidden', 'You do not have permission to list theme layouts.', ['status' => 403]);
-        }
-        $result = ThemeLayouts::listing();
-        UsageTracker::log('list_theme_layouts', null, 'read');
-
-        return new WP_REST_Response($result, 200);
     }
 
     public function global_styles(WP_REST_Request $request): WP_REST_Response|WP_Error
