@@ -28,3 +28,6 @@ Thumbs.db
 license-signing-key.txt
 
 .superpowers/
+
+# Built Pro add-on zip (sold from divi5lab.com)
+dist/

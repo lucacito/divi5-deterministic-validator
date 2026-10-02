@@ -1,4 +1,4 @@
-.PHONY: up down clean test validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -38,6 +38,24 @@ install:
 # ---------------------------------------------------------------
 test: install
 	@bash scripts/self-test.sh
+
+# ---------------------------------------------------------------
+# test-pro — run the Pro add-on's own PHPUnit suite
+# ---------------------------------------------------------------
+test-pro:
+	@./vendor/bin/phpunit -c pro-addon/phpunit.xml
+
+# ---------------------------------------------------------------
+# build-pro — build dist/jhmg-ai-editor-for-divi-5-pro.zip (sold from divi5lab.com; git-ignored)
+# ---------------------------------------------------------------
+build-pro:
+	@bash scripts/build-pro-zip.sh
+
+# ---------------------------------------------------------------
+# verify-pro-skeleton — real-site check of the Pro add-on (Docker site; the free and Pro plugins must be active)
+# ---------------------------------------------------------------
+verify-pro-skeleton:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-skeleton.php --user=1
 
 # ---------------------------------------------------------------
 # validate — run the validator against an arbitrary JSON file

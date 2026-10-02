@@ -15,9 +15,9 @@ validated before it touches the database, so the AI can be creative but can neve
 save a broken layout.
 
 Paid features live in a **separate Pro add-on** (a different plugin, sold and hosted
-at divi5lab.com, not on WordPress.org). Its source material is staged in `pro-addon/`
-(licence client, front page/menu, custom CSS, PHP proposals); its own spec and plan
-are still pending. The old freemium-in-one-build model (licence-gated tools inside
+at divi5lab.com, not on WordPress.org). Its spec is
+`docs/superpowers/specs/2026-10-02-pro-addon-design.md`; the skeleton is built in `pro-addon/`
+and the tool plans follow. The old freemium-in-one-build model (licence-gated tools inside
 the WP.org plugin) was **rejected by WordPress.org Guideline 5** in the 2026-10-01
 review — do not reintroduce it.
 
@@ -27,7 +27,9 @@ Three parts, one repo:
 - **The plugin** (`wp-plugin/`) — bundles a synced copy of the validator under
   `wp-plugin/validator/` and wraps it in the MCP server, REST API, AI-facing guides,
   the built-in image pack and the admin UI. No licensing, no remote calls.
-- **The Pro add-on staging area** (`pro-addon/`) — not shipped, not built, not tested
+- **The Pro add-on** (`pro-addon/`) — a separate plugin ("JHMG AI Editor for Divi 5 Pro", sold at divi5lab.com,
+  never in the WordPress.org zip). Skeleton 0.1.0: compat guard, licensing with the updater, a licence-gated tool
+  registry (no tools yet), the Pro admin tab, its own suite (`make test-pro`) and zip (`make build-pro`). Not tested
   by `make test` (see `pro-addon/README.md`).
 
 ## Hard constraints — do not violate
@@ -175,6 +177,9 @@ Docker env + validator workflows go through `make`:
 | `make verify-history` | Real-database check of the undo-history table on the Docker site (creates and deletes one throwaway draft page) |
 | `make verify-dry-run` | Real-site check of `dry_run` on the REST and MCP handlers (creates and deletes one throwaway draft page) |
 | `make verify-global-styles` | Real-site check of `list_global_styles` and the style-reference advisory on the REST and MCP handlers; proves presets, global colors and variables are byte-identical afterwards (creates and deletes one throwaway draft page) |
+| `make test-pro` | Run the Pro add-on's own PHPUnit suite (`pro-addon/phpunit.xml`) |
+| `make build-pro` | Build `dist/jhmg-ai-editor-for-divi-5-pro.zip` (sold from divi5lab.com; `dist/` is git-ignored) |
+| `make verify-pro-skeleton` | Real-site check of the Pro add-on skeleton (Docker site; the free and Pro plugins must be active) |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
 Tests run via PHPUnit (`phpunit.xml`) and cover both the validator
@@ -214,6 +219,16 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
+- **Pro add-on skeleton 0.1.0** (branch `feat/pro-skeleton`, local; NOT merged, NOT released): compat guard,
+  licensing with the updater, licence-gated `ToolRegistry` (no tools yet), Pro admin tab, safety test, zip,
+  `make verify-pro-skeleton` passing on the dev site. Next: Plan 3 (batch store, undo, the five settings tools).
+  Release blockers before the first Pro sale (final review): (1) a non-explicit server answer (HTML 403/404, empty
+  or non-JSON body) is stored by the canonical client as `invalid` and locks the tools, contradicting 'only an
+  explicit verdict locks' — fix in the adapter; (2) the `admin_init` licence refresh retries on every admin/ajax
+  request during a licence-server outage — skip `wp_doing_ajax()`/`wp_doing_cron()` and add a backoff; also guard
+  or document `AIED_PRO_API_BASE`, add a readme.txt that discloses the remote calls, make the plugin Description
+  match the shipped features, distinguish activation failure reasons in the admin notice, and confirm the product
+  id `ai-editor-divi5-pro` and product URL with the divi5lab server. These are the first task of Plan 3.
 - **4.4.0 = global styles release PLUS the free re-cut** (merged to LOCAL main, 026a571; NOT uploaded): read-only
   `list_global_styles` (16th tool) + non-blocking style-reference advisory + guide updates (spec
   `docs/superpowers/specs/2026-10-01-global-styles-design.md`). The free re-cut removed the unreleased 4.3.0
