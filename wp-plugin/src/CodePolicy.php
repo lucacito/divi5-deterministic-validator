@@ -50,19 +50,33 @@ final class CodePolicy
     private const LONE_UNIT_CAP   = 500;
     /** A scan keeps at most this many findings (memory); more than that is refused as one extra, unmatchable finding. */
     private const MAX_FINDINGS    = 2000;
+    /** Work bounds: bigger content is refused without being scanned (the delimiter grammar is quadratic on crafted input). */
+    private const MAX_BYTES       = 1000000;
+    private const MAX_MARKERS     = 10000;
 
     /**
      * @return list<Violation>
      */
     public static function violations( string $content, ?string $baseline = null ): array
     {
+        // Bound the work before any regex runs: refuse what is too big to check safely.
+        if ( self::tooBig( $content ) ) {
+            return [ new Violation(
+                self::E_SCRIPT,
+                sprintf( 'This layout is too large or has too many block comments to check safely (limit: %s bytes and %s comment markers): split it into smaller pages.', number_format( self::MAX_BYTES ), number_format( self::MAX_MARKERS ) ),
+                'post_content'
+            ) ];
+        }
+
         $now = self::findings( $content );
         if ( [] === $now['tree'] && [] === $now['raw'] && [] === $now['guard'] ) {
             return [];
         }
 
         $before = [ 'tree' => [], 'raw' => [], 'guard' => [] ];
-        if ( null !== $baseline && '' !== $baseline ) {
+        // A baseline over the limits is not scanned (that would spend the work on stored content): it counts as an
+        // empty baseline, so nothing on it is preserved. That fails closed.
+        if ( null !== $baseline && '' !== $baseline && ! self::tooBig( $baseline ) ) {
             $before = self::findings( $baseline );
         }
 
@@ -92,6 +106,11 @@ final class CodePolicy
         }
 
         return array_map( static fn ( array $f ): Violation => new Violation( $f['code'], $f['message'], $f['path'] ), $out );
+    }
+
+    private static function tooBig( string $content ): bool
+    {
+        return strlen( $content ) > self::MAX_BYTES || substr_count( $content, '<!--' ) > self::MAX_MARKERS;
     }
 
     /**
@@ -256,11 +275,40 @@ final class CodePolicy
         $unscannable = [ self::unitFinding( self::UNSCANNABLE, $content, 'post_content' ) ];
         $out         = [];
 
-        if ( false === preg_match_all( self::WP_DELIMITER, $content, $m, PREG_SET_ORDER | PREG_UNMATCHED_AS_NULL ) ) {
-            return $unscannable;
+        // An unterminated comment opener can never be part of a valid layout: refuse it without the delimiter scan.
+        $openers = substr_count( $content, '<!--' );
+        $closers = substr_count( $content, '-->' );
+        if ( $openers > $closers ) {
+            $at = (int) strrpos( $content, '<!--' );
+
+            return [ self::finding(
+                self::E_SCRIPT,
+                sprintf( 'open|%d|%d|%s', $openers, $closers, md5( substr( $content, $at, self::LONE_UNIT_CAP ) ) ),
+                'post_content',
+                sprintf( 'Block comment markup is malformed or ambiguous (%d comment openers but only %d closers): this plugin never saves content that browsers and WordPress could read differently.', $openers, $closers )
+            ) ];
         }
-        $wp = [];
-        foreach ( $m as $set ) {
+
+        // WordPress's delimiter grammar is applied to the text from each `<!--` to the next one, never to the
+        // whole content: a real delimiter never contains `<!--` (block attributes are serialised with `--`
+        // escaped), and one regex run per piece keeps the work linear on crafted input.
+        $wp    = [];
+        $first = strpos( $content, '<!--' );
+        $at    = false === $first ? strlen( $content ) : $first;
+        $rest  = substr( $content, 0, $at );
+        while ( $at < strlen( $content ) ) {
+            $next  = strpos( $content, '<!--', $at + 4 );
+            $piece = false === $next ? substr( $content, $at ) : substr( $content, $at, $next - $at );
+            $at    = false === $next ? strlen( $content ) : $next;
+            $r     = preg_match( self::WP_DELIMITER, $piece, $set, PREG_UNMATCHED_AS_NULL );
+            if ( false === $r ) {
+                return $unscannable;
+            }
+            if ( 0 === $r ) {
+                $rest .= $piece; // not a delimiter: a stray comment
+                continue;
+            }
+            $rest .= substr( $piece, strlen( $set[0] ) );
             if ( null !== $set['closer'] ) {
                 continue;
             }
@@ -287,8 +335,7 @@ final class CodePolicy
             ) );
         }
 
-        $rest = preg_replace( self::WP_DELIMITER, '', $content );
-        if ( null === $rest || false === preg_match_all( '/<!--.*?(?:-->|--!>|\z)|-->|--!>/s', $rest, $s ) ) {
+        if ( false === preg_match_all( '/<!--.*?(?:-->|--!>|\z)|-->|--!>/s', $rest, $s ) ) {
             return $unscannable;
         }
         foreach ( $s[0] as $stray ) {

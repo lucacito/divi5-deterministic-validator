@@ -494,6 +494,77 @@ class CodePolicyTest extends TestCase
         }
     }
 
+    // ---- bounded work: crafted input must be refused quickly, never scanned quadratically -----------
+
+    public function testContentOverTheSizeOrMarkerLimitIsRefusedWithoutScanning(): void
+    {
+        $tooLong   = self::layout( '', str_repeat( 'a', 1000001 ) );
+        $tooMany   = self::layout( '', str_repeat( '<!-- a -->', 10001 ) );
+        $atTheEdge = self::layout( '', str_repeat( '<p>a</p>', 100000 ) ); // 800 KB, 9 markers: not too big
+        foreach ( [ 'bytes' => $tooLong, 'markers' => $tooMany ] as $limit => $content ) {
+            $violations = CodePolicy::violations( $content );
+            $this->assertCount( 1, $violations, $limit );
+            $this->assertSame( CodePolicy::E_SCRIPT, $violations[0]->code(), $limit );
+            $this->assertStringContainsString( 'too large or has too many block comments', $violations[0]->message(), $limit );
+            $gate = LayoutGate::check( $content );
+            $this->assertFalse( $gate->isValid(), $limit );
+            $this->assertContains( CodePolicy::E_SCRIPT, array_map( static fn ( $v ) => $v->code(), $gate->violations() ), $limit );
+        }
+        $this->assertSame( [], self::codes( $atTheEdge ) );
+    }
+
+    /** @return array<string, array{0:string}> */
+    public static function crafted(): array
+    {
+        return [
+            '10,000 unterminated openers'            => [ str_repeat( '<!-- wp:a {', 10000 ) ],
+            '10,000 openers then 10,000 closers'     => [ str_repeat( '<!-- wp:a {', 10000 ) . str_repeat( '-->', 10000 ) ],
+            '9,999 openers each closed at once'      => [ str_repeat( '<!-- wp:a { -->', 9999 ) ],
+            '9,000 unterminated attrs with }'        => [ str_repeat( '<!-- wp:a {"x":"}"} ', 9000 ) ],
+            '9,999 unterminated openers, ~1 MB'      => [ str_repeat( '<!-- wp:a {' . str_repeat( 'x', 90 ), 9999 ) ],
+            '2 MB of unterminated openers'           => [ str_repeat( '<!-- wp:a {', 180000 ) ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'crafted' )]
+    public function testCraftedUnterminatedOpenersAreRefusedQuickly( string $content ): void
+    {
+        $start      = microtime( true );
+        $violations = CodePolicy::violations( $content );
+        CodePolicy::violations( $content, $content ); // with a baseline too: never slower than refusing
+        $gate    = LayoutGate::check( $content, $content );
+        $elapsed = microtime( true ) - $start;
+        $this->assertNotSame( [], $violations, 'refused' );
+        $this->assertFalse( $gate->isValid(), 'never accepted' );
+        $this->assertLessThan( 5.0, $elapsed, 'the bounded scan must not be quadratic' );
+    }
+
+    public function testALegitimateLargeLayoutUnderTheLimitsIsNotRefusedForItsSize(): void
+    {
+        $j = json_decode( (string) file_get_contents( __DIR__ . '/../fixtures/valid/page-85-layout-4.json' ), true );
+        $this->assertIsString( $j['post_content'] );
+        $big = str_repeat( $j['post_content'], 9 );
+        $this->assertGreaterThan( 500000, strlen( $big ) );
+        $this->assertLessThan( 1000000, strlen( $big ) );
+        $this->assertLessThan( 10000, substr_count( $big, '<!--' ) );
+        $start = microtime( true );
+        $this->assertSame( [], CodePolicy::violations( $big, $big ) );
+        $this->assertLessThan( 5.0, microtime( true ) - $start );
+    }
+
+    public function testABaselineOverTheLimitsIsTreatedAsEmpty(): void
+    {
+        $small = self::layout( self::CSS );
+        $huge  = self::layout( self::CSS, str_repeat( 'a', 1000001 ) );
+        $this->assertSame( [], self::codes( $small, $small ), 'control: a normal baseline preserves its CSS' );
+        $start = microtime( true );
+        $this->assertSame( [ CodePolicy::E_CUSTOM_CSS ], self::codes( $small, $huge ), 'a baseline too big to scan preserves nothing' );
+        $this->assertSame( [ CodePolicy::E_CUSTOM_CSS ], array_map( static fn ( $v ) => $v->code(), LayoutGate::check( $small, $huge )->violations() ) );
+        $this->assertLessThan( 5.0, microtime( true ) - $start );
+        $manyMarkers = self::layout( self::CSS, str_repeat( '<!-- x -->', 10001 ) );
+        $this->assertSame( [ CodePolicy::E_CUSTOM_CSS ], self::codes( $small, $manyMarkers ) );
+    }
+
     // ---- the gate ------------------------------------------------------------------------------
 
     public function testTheGateAddsPolicyViolationsToTheValidatorsAndKeepsTheValidatorFirst(): void
