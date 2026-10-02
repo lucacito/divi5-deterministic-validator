@@ -88,4 +88,12 @@ class PluginTest extends TestCase
         $this->assertArrayHasKey( 'jhmg_aied_mcp_call', $GLOBALS['__wp_filters'] );
         $this->assertSame( [ [ 'name' => 'get_page_layout' ] ], apply_filters( 'jhmg_aied_mcp_tools', [ [ 'name' => 'get_page_layout' ] ] ), 'no Pro tools exist yet' );
     }
+
+    public function testACompatibleBootRegistersTheProAdminTab(): void
+    {
+        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertSame( [ 'pro' => 'Pro' ], apply_filters( 'jhmg_aied_admin_tabs', [] ) );
+        $this->assertArrayHasKey( 'admin_post_aied_pro_activate', $GLOBALS['__wp_filters'] );
+        $this->assertArrayHasKey( 'admin_post_aied_pro_deactivate', $GLOBALS['__wp_filters'] );
+    }
 }

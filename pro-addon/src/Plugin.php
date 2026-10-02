@@ -60,5 +60,7 @@ final class Plugin
 
         $registry = new ToolRegistry( Tools::all(), static fn (): bool => Licensing::isPremium() );
         $registry->register();
+
+        ( new ProPage( $registry ) )->register();
     }
 }

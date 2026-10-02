@@ -12,4 +12,5 @@ require_once __DIR__ . '/Licensing.php';
 require_once __DIR__ . '/ProTool.php';
 require_once __DIR__ . '/ToolRegistry.php';
 require_once __DIR__ . '/Tools.php';
+require_once __DIR__ . '/ProPage.php';
 require_once __DIR__ . '/Plugin.php';
