@@ -121,7 +121,7 @@ Dry run (v4.2.0): `update_page_layout`, `edit_page_content`, `PUT /pages/{id}` a
 cut to 200 characters, `builderVersion` ignored) BEFORE `HistoryService::write()` is reachable;
 the page, its history and `post_modified` are never touched. A preview of an invalid layout
 is a normal 200 / `isError: false` response carrying `valid: false`. Logged as endpoint
-`dry_run`, result `read`. It is a flag, not a tool: the list stayed at 15 tools / 15 operations in 4.2.0 (4.3.0 adds the read-only `list_theme_layouts`: 16).
+`dry_run`, result `read`. It is a flag, not a tool: the list stayed at 15 tools / 15 operations in 4.2.0 (4.3.0 adds the read-only `list_theme_layouts`: 16; 4.4.0 adds the read-only `list_global_styles`: 17).
 
 Theme layouts (v4.3.0): the existing, LIVE Theme Builder header and footer layouts
 (`et_header_layout` / `et_footer_layout`, content in `post_content`) can be read, previewed,
@@ -248,7 +248,5 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   that could not be verified stay rejected and are listed in docs/SCHEMA.md.
 - The old standalone `mcp-server/` (Node) was removed in 3.3.0: the plugin's
   built-in HTTP MCP endpoint is the only supported connection path.
-- Roadmap after approval: the Pro add-on (own spec/plan), then preview-before-save,
-  Theme Builder header/footer, global presets and WooCommerce template modules via
-  a real export or class map.
+- Roadmap after approval: the Pro add-on (own spec/plan), then WooCommerce template modules via a real export or class map.
 - Header/footer are the active theme's (nav menu drives the header).

@@ -79,7 +79,7 @@ final class GlobalStyles
         if ( null === $presetData ) {
             $notes[] = "Divi's preset data is not available on this site.";
         } elseif ( [] === $presetList ) {
-            $notes[] = null === $module ? 'This site has no module presets yet.' : "This site has no presets for the module '{$module}'.";
+            $notes[] = null === $module ? 'This site has no module presets yet.' : "This site has no presets for the module '" . self::clip( $module ) . "'.";
         }
         if ( null === $colorData ) {
             $notes[] = "Divi's global colors are not available on this site.";
@@ -194,11 +194,11 @@ final class GlobalStyles
     {
         $out = [];
         foreach ( self::presetEntries( $data ) as [ $name, $default, $items ] ) {
-            if ( null !== $module && $module !== $name ) {
+            if ( ( null !== $module && $module !== $name ) || ! self::showable( $name ) ) {
                 continue;
             }
             foreach ( $items as $item ) {
-                if ( ! is_array( $item ) || ! is_string( $item['id'] ?? null ) || '' === $item['id'] || ! is_string( $item['name'] ?? null ) ) {
+                if ( ! is_array( $item ) || ! is_string( $item['id'] ?? null ) || '' === $item['id'] || ! is_string( $item['name'] ?? null ) || ! self::showable( $item['id'] ) ) {
                     continue;
                 }
                 $out[] = [
@@ -270,7 +270,7 @@ final class GlobalStyles
     {
         $out = [];
         foreach ( $data as $id => $color ) {
-            if ( ! is_string( $id ) || ! is_array( $color ) || ! is_string( $color['color'] ?? null ) ) {
+            if ( ! is_string( $id ) || ! self::showable( $id ) || ! is_array( $color ) || ! is_string( $color['color'] ?? null ) ) {
                 continue;
             }
             if ( 'active' !== ( $color['status'] ?? 'active' ) ) {
@@ -294,12 +294,12 @@ final class GlobalStyles
         $out = [];
         foreach ( $data as $type => $items ) {
             $items = is_object( $items ) ? get_object_vars( $items ) : $items;
-            if ( ! is_string( $type ) || ! is_array( $items ) ) {
+            if ( ! is_string( $type ) || ! self::showable( $type ) || ! is_array( $items ) ) {
                 continue;
             }
             $list = [];
             foreach ( $items as $id => $item ) {
-                if ( ! is_string( $id ) || ! is_array( $item ) || ! is_scalar( $item['value'] ?? null ) || 'active' !== ( $item['status'] ?? 'active' ) ) {
+                if ( ! is_string( $id ) || ! self::showable( $id ) || ! is_array( $item ) || ! is_scalar( $item['value'] ?? null ) || 'active' !== ( $item['status'] ?? 'active' ) ) {
                     continue;
                 }
                 $list[] = [
@@ -316,6 +316,12 @@ final class GlobalStyles
         ksort( $out );
 
         return $out;
+    }
+
+    /** An id, module name or type key is shown whole or not at all: one that is too long or not valid UTF-8 is skipped from the listing, never shown cut or garbled. */
+    private static function showable( string $id ): bool
+    {
+        return strlen( $id ) <= self::MAX_VALUE_CHARS && 1 === preg_match( '//u', $id );
     }
 
     /** Cuts a value to MAX_VALUE_CHARS characters (not bytes); a value that is not valid UTF-8 is replaced, because it would make the whole JSON response fail. */

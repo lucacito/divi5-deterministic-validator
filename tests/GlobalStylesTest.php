@@ -143,13 +143,30 @@ class GlobalStylesTest extends TestCase
         $data = [ 'module' => [ 'divi/text' => [ 'default' => '', 'items' => [
             'a' => [ 'id' => 'a', 'name' => $long ],
             'b' => [ 'id' => 'b', 'name' => "bad\xB1utf8" ],
+            "bad\xB1" => [ 'id' => "bad\xB1", 'name' => 'N' ],
         ] ] ] ];
-        $cat = $this->catalog( $data, [ 'gcid-x' => [ 'color' => "\xC3\x28", 'label' => 'x', 'status' => 'active' ] ], [] );
+        $colors = [
+            'gcid-x'        => [ 'color' => "\xC3\x28", 'label' => 'x', 'status' => 'active' ],
+            "gcid-\xB1" => [ 'color' => '#fff', 'label' => 'bad id', 'status' => 'active' ],
+        ];
+        $cat = $this->catalog( $data, $colors, [] );
         $names = array_column( $cat['presets'], 'name' );
         $this->assertContains( str_repeat( 'é', 200 ) . '…', $names );
         $this->assertContains( '[value is not valid UTF-8]', $names );
         $this->assertSame( '[value is not valid UTF-8]', $cat['colors'][0]['color'] );
         $this->assertNotFalse( json_encode( $cat ) );
+
+        // An id that is not valid UTF-8 is skipped from the listing (never shown garbled) but stays known.
+        $this->assertNotContains( "bad\xB1", array_column( $cat['presets'], 'id' ) );
+        $this->assertNotContains( "gcid-\xB1", array_column( $cat['colors'], 'id' ) );
+        $known = GlobalStyles::knownIdsWith( fn () => $data, fn () => $colors );
+        $this->assertArrayHasKey( "bad\xB1", $known['presets'] );
+        $this->assertArrayHasKey( "gcid-\xB1", $known['colors'] );
+
+        // The echoed module filter is clipped, so a bad one cannot break the JSON either.
+        $filtered = $this->catalog( $data, $colors, [], "mod\xB1" );
+        $this->assertStringContainsString( '[value is not valid UTF-8]', implode( ' ', $filtered['notes'] ) );
+        $this->assertNotFalse( json_encode( $filtered ) );
     }
 
     public function testAlwaysEndsWithTheReadOnlyNote(): void
