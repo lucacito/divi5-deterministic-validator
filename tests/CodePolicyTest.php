@@ -565,6 +565,64 @@ class CodePolicyTest extends TestCase
         $this->assertSame( [ CodePolicy::E_CUSTOM_CSS ], self::codes( $small, $manyMarkers ) );
     }
 
+    // ---- an unterminated opener already on the page must not excuse a changed block list -------------
+
+    private static function textBlock( string $text ): string
+    {
+        return '<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"' . $text . '"}}},"builderVersion":"5.14.0"} /-->';
+    }
+
+    public function testAnUnterminatedOpenerInTheBaselineDoesNotHideAChangedBlockList(): void
+    {
+        $hidden = '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Hello"}}},"css":{"desktop":{"value":{}},"tablet":{"value":{"headingContainer":"display:none"}}},"builderVersion":"5.14.0"} /-->';
+        $base   = self::layout( '', '<!-- TODO ' . self::textBlock( 'B' ) . self::textBlock( 'A' ) );
+        $new    = self::layout( '', '<!-- TODO ' . $hidden . self::textBlock( 'A' ) ); // same opener and closer counts
+        $this->assertSame( substr_count( $base, '<!--' ), substr_count( $new, '<!--' ) );
+        $this->assertSame( substr_count( $base, '-->' ), substr_count( $new, '-->' ) );
+        $this->assertNotSame( [], self::codes( $new, $base ), 'CodePolicy' );
+        $gate = LayoutGate::check( $new, $base );
+        $this->assertContains( CodePolicy::E_SCRIPT, array_map( static fn ( $v ) => $v->code(), $gate->violations() ), 'LayoutGate' );
+        $this->assertFalse( $gate->isValid() );
+
+        // The same disguise, moving the hidden CSS.
+        $moved = self::layout( '', '<!-- x ' . str_replace( 'headingContainer', 'x1', $hidden ) );
+        $this->assertNotSame( [], self::codes( $moved, self::layout( '', '<!-- x ' . $hidden ) ) );
+        $this->assertFalse( LayoutGate::check( $moved, self::layout( '', '<!-- x ' . $hidden ) )->isValid() );
+    }
+
+    public function testEditingOrdinaryTextBesideAnUnchangedStrayCommentIsAllowed(): void
+    {
+        $base   = self::layout( '', '<!-- TODO ' . self::textBlock( 'B' ) . self::textBlock( 'A' ) );
+        $edited = self::layout( '', '<!-- TODO ' . self::textBlock( 'B' ) . self::textBlock( 'A edited' ) );
+        $this->assertSame( [], self::codes( $edited, $base ) );
+        $this->assertTrue( LayoutGate::check( $edited, $base )->isValid() === LayoutGate::check( $base, $base )->isValid(), 'the gate adds nothing of its own' );
+    }
+
+    // ---- oversized content never reaches the validator, and the message names the limit -------------
+
+    public function testOversizedContentNeverReachesTheValidatorAndTheMessageNamesTheLimit(): void
+    {
+        $bytes = str_repeat( 'x', 1234567 ); // not a layout: the validator alone would report several violations
+        $r     = LayoutGate::check( $bytes );
+        $this->assertCount( 1, $r->violations() );
+        $this->assertSame( CodePolicy::E_SCRIPT, $r->violations()[0]->code() );
+        $this->assertStringContainsString( '1,234,567 bytes (limit 1,000,000)', $r->violations()[0]->message() );
+
+        $markers = str_repeat( '<!-- a -->', 12345 );
+        $r       = LayoutGate::check( $markers, $markers );
+        $this->assertCount( 1, $r->violations() );
+        $this->assertStringContainsString( '12,345 comment markers (limit 10,000)', $r->violations()[0]->message() );
+
+        $json = (string) json_encode( [ 'post_content' => $bytes ] );
+        $r    = LayoutGate::checkJson( $json );
+        $this->assertCount( 1, $r->violations() );
+        $this->assertStringContainsString( 'bytes (limit 1,000,000)', $r->violations()[0]->message() );
+
+        $this->assertTrue( CodePolicy::tooLarge( $bytes ) );
+        $this->assertTrue( CodePolicy::tooLarge( $markers ) );
+        $this->assertFalse( CodePolicy::tooLarge( self::layout() ) );
+    }
+
     // ---- the gate ------------------------------------------------------------------------------
 
     public function testTheGateAddsPolicyViolationsToTheValidatorsAndKeepsTheValidatorFirst(): void

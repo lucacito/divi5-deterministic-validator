@@ -60,12 +60,9 @@ final class CodePolicy
     public static function violations( string $content, ?string $baseline = null ): array
     {
         // Bound the work before any regex runs: refuse what is too big to check safely.
-        if ( self::tooBig( $content ) ) {
-            return [ new Violation(
-                self::E_SCRIPT,
-                sprintf( 'This layout is too large or has too many block comments to check safely (limit: %s bytes and %s comment markers): split it into smaller pages.', number_format( self::MAX_BYTES ), number_format( self::MAX_MARKERS ) ),
-                'post_content'
-            ) ];
+        $tooLarge = self::tooLargeViolation( $content );
+        if ( null !== $tooLarge ) {
+            return [ $tooLarge ];
         }
 
         $now = self::findings( $content );
@@ -76,7 +73,7 @@ final class CodePolicy
         $before = [ 'tree' => [], 'raw' => [], 'guard' => [] ];
         // A baseline over the limits is not scanned (that would spend the work on stored content): it counts as an
         // empty baseline, so nothing on it is preserved. That fails closed.
-        if ( null !== $baseline && '' !== $baseline && ! self::tooBig( $baseline ) ) {
+        if ( null !== $baseline && '' !== $baseline && ! self::tooLarge( $baseline ) ) {
             $before = self::findings( $baseline );
         }
 
@@ -108,9 +105,33 @@ final class CodePolicy
         return array_map( static fn ( array $f ): Violation => new Violation( $f['code'], $f['message'], $f['path'] ), $out );
     }
 
-    private static function tooBig( string $content ): bool
+    /** True when the content is over the size or comment-marker limit (nothing is scanned or validated then). */
+    public static function tooLarge( string $content ): bool
     {
         return strlen( $content ) > self::MAX_BYTES || substr_count( $content, '<!--' ) > self::MAX_MARKERS;
+    }
+
+    /** The single violation for content over the limits (naming the limit and the actual number), or null. */
+    public static function tooLargeViolation( string $content ): ?Violation
+    {
+        $hit   = [];
+        $bytes = strlen( $content );
+        if ( $bytes > self::MAX_BYTES ) {
+            $hit[] = sprintf( '%s bytes (limit %s)', number_format( $bytes ), number_format( self::MAX_BYTES ) );
+        }
+        $markers = substr_count( $content, '<!--' );
+        if ( $markers > self::MAX_MARKERS ) {
+            $hit[] = sprintf( '%s comment markers (limit %s)', number_format( $markers ), number_format( self::MAX_MARKERS ) );
+        }
+        if ( [] === $hit ) {
+            return null;
+        }
+
+        return new Violation(
+            self::E_SCRIPT,
+            sprintf( 'This layout is too large or has too many block comments to check safely: %s. Split it into smaller pages.', implode( ' and ', $hit ) ),
+            'post_content'
+        );
     }
 
     /**
@@ -265,8 +286,7 @@ final class CodePolicy
      * of hunting every way code can hide in the difference. WordPress core's own delimiter grammar is run as a
      * second parser; the guard reports (1) comment markup left over once every WordPress delimiter is removed
      * (a stray or malformed comment: browsers end comments at `-->`, `--!>` and `<!-->`, so it can hide or expose
-     * anything) and (2) any difference between the blocks WordPress sees (names and attributes, in order) and the
-     * blocks the validator built. Run on the baseline too, so an identical situation already on the page is kept.
+     * anything) and (2) every block (name and attributes) that only one of the two parsers sees. Run on the baseline too, so an identical situation already on the page is kept.
      *
      * @return list<array{code:string, fingerprint:string, path:string, message:string}>
      */
@@ -275,18 +295,19 @@ final class CodePolicy
         $unscannable = [ self::unitFinding( self::UNSCANNABLE, $content, 'post_content' ) ];
         $out         = [];
 
-        // An unterminated comment opener can never be part of a valid layout: refuse it without the delimiter scan.
+        // An unterminated comment opener can never be part of a valid layout. It is reported here, and the scan
+        // below still runs: its diff and stray findings bind to the real content, so a baseline that already holds
+        // an unterminated opener cannot excuse a changed block list.
         $openers = substr_count( $content, '<!--' );
         $closers = substr_count( $content, '-->' );
         if ( $openers > $closers ) {
             $at = (int) strrpos( $content, '<!--' );
-
-            return [ self::finding(
+            self::push( $out, self::finding(
                 self::E_SCRIPT,
                 sprintf( 'open|%d|%d|%s', $openers, $closers, md5( substr( $content, $at, self::LONE_UNIT_CAP ) ) ),
                 'post_content',
                 sprintf( 'Block comment markup is malformed or ambiguous (%d comment openers but only %d closers): this plugin never saves content that browsers and WordPress could read differently.', $openers, $closers )
-            ) ];
+            ) );
         }
 
         // WordPress's delimiter grammar is applied to the text from each `<!--` to the next one, never to the
@@ -324,15 +345,28 @@ final class CodePolicy
                 }
             } );
         }
-        $wpSig  = md5( (string) json_encode( $wp ) );
-        $ourSig = md5( (string) json_encode( $ours ) );
-        if ( $wpSig !== $ourSig ) {
-            self::push( $out, self::finding(
-                self::E_SCRIPT,
-                sprintf( 'diff|%d|%d|%s|%s', count( $wp ), count( $ours ), $wpSig, $ourSig ),
-                'post_content',
-                sprintf( 'Block comment markup is malformed or ambiguous (WordPress reads %d blocks, the validator %d): this plugin never saves content that browsers and WordPress could read differently.', count( $wp ), count( $ours ) )
-            ) );
+        // Blocks (name + attributes) that only one of the two parsers sees. A block both see is of no interest here:
+        // the tree scan covers it. Each unseen block is its own finding, bound to its own content, so an unterminated
+        // comment already on the page keeps excusing only the hidden blocks it already hid, never a changed one.
+        $seen = [ 'WordPress' => [], 'the validator' => [] ];
+        foreach ( [ 'WordPress' => $wp, 'the validator' => $ours ] as $who => $list ) {
+            foreach ( $list as $block ) {
+                $sig                    = md5( (string) json_encode( $block ) );
+                $seen[ $who ][ $sig ]   = [ ( $seen[ $who ][ $sig ][0] ?? 0 ) + 1, $block[0] ];
+            }
+        }
+        foreach ( [ 'WordPress' => 'the validator', 'the validator' => 'WordPress' ] as $who => $other ) {
+            foreach ( $seen[ $who ] as $sig => [ $count, $name ] ) {
+                $extra = $count - ( $seen[ $other ][ $sig ][0] ?? 0 );
+                for ( $i = 0; $i < $extra; $i++ ) {
+                    self::push( $out, self::finding(
+                        self::E_SCRIPT,
+                        'diff|' . $who . '|' . $sig,
+                        'post_content',
+                        sprintf( 'Block comment markup is malformed or ambiguous (%s reads a %s block that %s does not): this plugin never saves content that browsers and WordPress could read differently.', $who, substr( $name, 0, 40 ), $other )
+                    ) );
+                }
+            }
         }
 
         if ( false === preg_match_all( '/<!--.*?(?:-->|--!>|\z)|-->|--!>/s', $rest, $s ) ) {
