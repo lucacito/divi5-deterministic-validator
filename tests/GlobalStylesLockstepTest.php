@@ -89,6 +89,19 @@ class GlobalStylesLockstepTest extends TestCase
         }
     }
 
+    public function testTheAdvisoryIsDocumentedOnEveryResponseThatCanCarryIt(): void
+    {
+        $spec = OpenApiSpec::spec( 'https://x.example/wp-json/ai-editor-divi5/v1', '9.9.9' );
+        $ref  = '#/components/schemas/Advisories';
+        foreach ( [ 'StyleAdvisory', 'StyleRefCount', 'Advisories' ] as $name ) {
+            $this->assertArrayHasKey( $name, $spec['components']['schemas'] );
+        }
+        $this->assertSame( $ref, $spec['components']['schemas']['ValidationResult']['properties']['advisories']['$ref'] );
+        $this->assertSame( $ref, $spec['paths']['/pages/{id}']['put']['responses']['200']['content']['application/json']['schema']['properties']['advisories']['$ref'] );
+        $this->assertSame( $ref, $spec['paths']['/pages/{id}/edit']['post']['responses']['200']['content']['application/json']['schema']['properties']['advisories']['$ref'] );
+        $this->assertSame( $ref, $spec['paths']['/pages']['post']['responses']['201']['content']['application/json']['schema']['properties']['advisories']['$ref'] );
+    }
+
     private function mcpCall( array $args = [] ): array
     {
         $req = new \WP_REST_Request( [ 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => [ 'name' => 'list_global_styles', 'arguments' => $args ?: new \stdClass() ] ] );

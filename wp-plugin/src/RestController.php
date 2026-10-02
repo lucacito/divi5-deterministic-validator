@@ -285,7 +285,7 @@ final class RestController
         if ($dryRun) {
             UsageTracker::log(DryRun::ENDPOINT, $id, UsageTracker::RESULT_READ);
 
-            return new WP_REST_Response(DryRun::preview((string) $post->post_content, $content), 200);
+            return new WP_REST_Response(StyleReferences::attach(DryRun::preview((string) $post->post_content, $content), $content), 200);
         }
 
         // Validate before saving — this is the safety gate
@@ -312,13 +312,13 @@ final class RestController
 
         $post->post_content = $content;
 
-        return new WP_REST_Response([
+        return new WP_REST_Response(StyleReferences::attach([
             'saved'      => true,
             'valid'      => true,
             'violations' => [],
             'history'    => $write['snapshot'],
             'page'       => $this->build_layout_envelope($post),
-        ], 200);
+        ], $content), 200);
     }
 
     /** @return \WP_Post|WP_Error */
@@ -433,7 +433,7 @@ final class RestController
         if ($dryRun) {
             UsageTracker::log(DryRun::ENDPOINT, $id, UsageTracker::RESULT_READ);
 
-            return new WP_REST_Response(DryRun::preview((string) $post->post_content, $edit['content']) + ['replaced' => $edit['count']], 200);
+            return new WP_REST_Response(StyleReferences::attach(DryRun::preview((string) $post->post_content, $edit['content']) + ['replaced' => $edit['count']], $edit['content']), 200);
         }
 
         // Same safety gate as update_page — the edited content must still validate.
@@ -457,14 +457,14 @@ final class RestController
 
         $post->post_content = $edit['content'];
 
-        return new WP_REST_Response([
+        return new WP_REST_Response(StyleReferences::attach([
             'saved'      => true,
             'valid'      => true,
             'replaced'   => $edit['count'],
             'violations' => [],
             'history'    => $write['snapshot'],
             'page'       => $this->build_layout_envelope($post),
-        ], 200);
+        ], $edit['content']), 200);
     }
 
     public function create_page(WP_REST_Request $request): WP_REST_Response|WP_Error
@@ -528,11 +528,11 @@ final class RestController
 
         UsageTracker::log('create_page', (int) $pageId, 'valid');
 
-        return new WP_REST_Response([
+        return new WP_REST_Response(StyleReferences::attach([
             'created' => true,
             'valid'   => true,
             'page'    => $this->build_layout_envelope(get_post((int) $pageId)),
-        ], 201);
+        ], $content), 201);
     }
 
     public function validate(WP_REST_Request $request): WP_REST_Response|WP_Error
@@ -544,6 +544,7 @@ final class RestController
         }
 
         // Accept either {post_content:...} or a full layout envelope
+        $content = null;
         if (isset($body['post_content'])) {
             $content = PageAccess::stringArg($body, 'post_content');
             if ($content === null) {
@@ -556,7 +557,12 @@ final class RestController
 
         UsageTracker::log('validate', null, $result->isValid() ? 'read' : 'invalid', count($result->violations()));
 
-        return new WP_REST_Response($result->toArray(), $result->isValid() ? 200 : 422);
+        $payload = $result->toArray();
+        if ($content !== null) {
+            $payload = StyleReferences::attach($payload, $content);
+        }
+
+        return new WP_REST_Response($payload, $result->isValid() ? 200 : 422);
     }
 
     // ---------------------------------------------------------------

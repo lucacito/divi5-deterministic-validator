@@ -85,6 +85,29 @@ final class OpenApiSpec
                         'properties' => [
                             'valid'      => ['type' => 'boolean'],
                             'violations' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/Violation']],
+                            'advisories' => ['$ref' => '#/components/schemas/Advisories'],
+                        ],
+                    ],
+                    'StyleRefCount' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'id'    => ['type' => 'string', 'description' => 'The id the layout cites'],
+                            'count' => ['type' => 'integer', 'description' => 'How many times the layout cites it'],
+                        ],
+                    ],
+                    'StyleAdvisory' => [
+                        'type'       => 'object',
+                        'properties' => [
+                            'unknown_presets' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/StyleRefCount'], 'description' => 'Preset ids that do not exist on this site (at most 20)'],
+                            'unknown_colors'  => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/StyleRefCount'], 'description' => 'Global color ids that do not exist on this site (at most 20)'],
+                            'message'         => ['type' => 'string'],
+                        ],
+                    ],
+                    'Advisories' => [
+                        'type'        => 'object',
+                        'description' => 'Present only when there is something to report. Advisories never change valid or the save.',
+                        'properties'  => [
+                            'style_references' => ['$ref' => '#/components/schemas/StyleAdvisory'],
                         ],
                     ],
                     'GlobalPreset' => [
@@ -246,7 +269,15 @@ final class OpenApiSpec
                             ]]],
                         ],
                         'responses'   => [
-                            '201' => ['description' => 'Page created'],
+                            '201' => ['description' => 'Page created (advisories lists unknown preset or color ids, if any)', 'content' => ['application/json' => ['schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'created'    => ['type' => 'boolean'],
+                                    'valid'      => ['type' => 'boolean'],
+                                    'advisories' => ['$ref' => '#/components/schemas/Advisories'],
+                                ],
+                                'additionalProperties' => true,
+                            ]]]],
                             '400' => ['description' => 'Missing title or post_content, or a field that is not a string'],
                             '422' => ['description' => 'Validation failed', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/ValidationResult']]]],
                         ],
@@ -586,6 +617,7 @@ final class OpenApiSpec
             'diff'       => ['$ref' => '#/components/schemas/DryRunDiff'],
             'diff_error' => ['type' => 'string', 'description' => 'Why no diff could be built (diff is then null); the verdict is still valid'],
             'message'    => ['type' => 'string'],
+            'advisories' => ['$ref' => '#/components/schemas/Advisories'],
         ];
     }
 }

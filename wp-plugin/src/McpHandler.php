@@ -397,7 +397,7 @@ final class McpHandler
         UsageTracker::log('validate', null, $result->isValid() ? 'read' : 'invalid', count($result->violations()));
 
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode($result->toArray())]],
+            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($result->toArray(), $content))]],
         ]);
     }
 
@@ -433,7 +433,7 @@ final class McpHandler
             UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
 
             return $this->rpcResult($id, [
-                'content' => [['type' => 'text', 'text' => json_encode(DryRun::preview((string) $post->post_content, $content))]],
+                'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach(DryRun::preview((string) $post->post_content, $content), $content))]],
             ]);
         }
 
@@ -462,12 +462,12 @@ final class McpHandler
         UsageTracker::log('update_layout', $pageId, 'valid');
 
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode([
+            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach([
                 'saved'   => true,
                 'valid'   => true,
                 'history' => $write['snapshot'],
                 'page'    => ['id' => $pageId, 'title' => get_the_title($pageId)],
-            ])]],
+            ], $content))]],
         ]);
     }
 
@@ -514,7 +514,7 @@ final class McpHandler
             UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
 
             return $this->rpcResult($id, [
-                'content' => [['type' => 'text', 'text' => json_encode(DryRun::preview((string) $post->post_content, $edit['content']) + ['replaced' => $edit['count']])]],
+                'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach(DryRun::preview((string) $post->post_content, $edit['content']) + ['replaced' => $edit['count']], $edit['content']))]],
             ]);
         }
 
@@ -542,13 +542,13 @@ final class McpHandler
         UsageTracker::log('edit_content', $pageId, 'valid');
 
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode([
+            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach([
                 'saved'    => true,
                 'valid'    => true,
                 'replaced' => $edit['count'],
                 'history'  => $write['snapshot'],
                 'page'     => ['id' => $pageId, 'title' => get_the_title($pageId)],
-            ])]],
+            ], $edit['content']))]],
         ]);
     }
 
@@ -737,7 +737,7 @@ final class McpHandler
         UsageTracker::log('create_page', (int) $pageId, 'valid');
 
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode([
+            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach([
                 'created' => true,
                 'valid'   => true,
                 'page'    => [
@@ -746,7 +746,7 @@ final class McpHandler
                     'status' => 'draft',
                     'link'   => get_permalink((int) $pageId),
                 ],
-            ])]],
+            ], $content))]],
         ]);
     }
 
