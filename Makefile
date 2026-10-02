@@ -1,4 +1,4 @@
-.PHONY: up down clean test validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-theme-layouts
+.PHONY: up down clean test validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-theme-layouts verify-global-styles
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -92,6 +92,12 @@ verify-dry-run:
 # ---------------------------------------------------------------
 verify-theme-layouts:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-theme-layouts.php --user=1
+
+# ---------------------------------------------------------------
+# verify-global-styles — real-site check of list_global_styles and the style-reference advisory (Docker site; read-only; one throwaway draft page)
+# ---------------------------------------------------------------
+verify-global-styles:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-global-styles.php --user=1
 
 # ---------------------------------------------------------------
 # shell helpers
