@@ -254,6 +254,125 @@ class CodePolicyTest extends TestCase
         $this->assertStringContainsString( 'could not be scanned', $v[0]->message() );
     }
 
+    // ---- the raw backstop: the parser and the browser disagree about comments and delimiters --------
+
+    /** @return array<string, array{0:string, 1:string}> label => [ content, expected code ] */
+    public static function parserDifferentials(): array
+    {
+        $heading = '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"B"}}},"builderVersion":"5.14.0"';
+
+        return [
+            'code module after an unclosed comment opener' => [ self::layout( '', '<!-- x <!-- wp:divi/code {"a":1} /-->' ), CodePolicy::E_CODE_MODULE ],
+            'css after an unclosed comment opener'         => [ self::layout( '', '<!-- x ' . $heading . self::CSS . '} /-->' ), CodePolicy::E_CUSTOM_CSS ],
+            'code module with --> inside its JSON'         => [ self::layout( '', '<!-- wp:divi/code {"x":"-->"} /-->' ), CodePolicy::E_CODE_MODULE ],
+            'css after --> inside a JSON string'           => [ self::layout( '', '<!-- wp:divi/heading {"x":"-->"' . self::CSS . '} /-->' ), CodePolicy::E_CUSTOM_CSS ],
+            'entity-encoded code module in raw text'       => [ self::layout( '', '&lt;!-- wp:divi/code {"a":1} /--&gt;' ), CodePolicy::E_CODE_MODULE ],
+            'fullwidth code, mixed case, spaced'           => [ self::layout( '', '<!--   wp:divi/FULLWIDTH-code   {"a":1} /-->' ), CodePolicy::E_CODE_MODULE ],
+            'script after --!> in a wp comment'            => [ self::layout( '', '<!-- wp:foo --!><script>alert(1)</script> -->' ), CodePolicy::E_SCRIPT ],
+            'unicode-escaped css key'                      => [ self::layout( '', '<!-- x <!-- wp:divi/heading {"css":{"desktop":{"value":{"freeForm":"a{}"}}}} /-->' ), CodePolicy::E_CUSTOM_CSS ],
+            'script URL in a plain JSON value'             => [ self::layout( '', '<!-- x <!-- wp:divi/button {"linkUrl":"javascript:alert(1)"} /-->' ), CodePolicy::E_SCRIPT ],
+            'onclick attribute entry in a hidden block'    => [ self::layout( '', '<!-- x <!-- wp:divi/text {"attributes":[{"name":"onclick","value":"x()"}]} /-->' ), CodePolicy::E_SCRIPT ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'parserDifferentials' )]
+    public function testWhatTheParserDoesNotSeeIsStillRefused( string $content, string $code ): void
+    {
+        $this->assertContains( $code, self::codes( $content ), 'CodePolicy' );
+        $gate = array_map( static fn ( $v ) => $v->code(), LayoutGate::check( $content )->violations() );
+        $this->assertContains( $code, $gate, 'LayoutGate' );
+        $this->assertFalse( LayoutGate::check( $content )->isValid() );
+    }
+
+    public function testAnUnchangedPageWithCodeIsCleanAndEditsNextToItAreToo(): void
+    {
+        $code = '<!-- wp:divi/code {"builderVersion":"5.14.0","content":{"innerContent":{"desktop":{"value":"<script>run()<\/script>"}}}} /-->';
+        $page = self::layout( self::CSS . self::text( '<style>a{}</style><a onclick=go()>x</a>', 'text' ), $code . '<script>raw()</script>' );
+        $this->assertSame( [], self::codes( $page, $page ), 'identical content is clean' );
+        $this->assertSame( [], self::codes( str_replace( '"Hello"', '"Hello, edited"', $page ), $page ), 'editing text beside the code is clean' );
+        $moved = self::layout( str_replace( 'desktop', 'phone', self::CSS ) );
+        $this->assertSame( [], self::codes( $moved, self::layout( self::CSS ) ), 'the same CSS on another breakpoint is the same CSS' );
+        $this->assertSame( [], self::codes( self::layout( self::text( '<script>safe()</script>' ) ), self::layout( '', '<script>safe()</script>' ) ), 'the same script moved between an attribute and the text between blocks' );
+    }
+
+    public function testNewCodeNextToUnchangedCodeIsStillRefused(): void
+    {
+        $page = self::layout( self::CSS );
+        $this->assertContains( CodePolicy::E_CUSTOM_CSS, self::codes( self::layout( self::CSS, '<!-- x <!-- wp:divi/heading {"css":{"desktop":{"value":{"freeForm":"b{}"}}}} /-->' ), $page ) );
+        $this->assertContains( CodePolicy::E_CODE_MODULE, self::codes( self::layout( self::CSS, '<!-- x <!-- wp:divi/code {"a":1} /-->' ), $page ) );
+    }
+
+    public function testProseAboutScriptsAndOrdinaryAttributesStayClean(): void
+    {
+        $this->assertSame( [], self::codes( self::layout( self::text( '<p>Never paste &lt;script&gt;alert(1)&lt;/script&gt; into a page.</p>' ) ) ) );
+        $this->assertSame( [], self::codes( self::layout( ',"module":{"decoration":{"background":{"desktop":{"value":{"color":"#fff"}}}},"advanced":{"link":{"desktop":{"value":{"url":"https://example.com/?a=1&b=2","target":"_blank"}}}}},"css":{},"x":{"freeForm":""}' ) ) );
+        $this->assertSame( [], self::codes( self::layout( '', '<!-- an ordinary comment -->' ) ) );
+    }
+
+    public function testRealExportsOtherThanThePinnedFourStayClean(): void
+    {
+        $n = 0;
+        foreach ( glob( __DIR__ . '/../fixtures/valid/*.json' ) ?: [] as $file ) {
+            if ( in_array( basename( $file ), self::EXPECTED_FLAGGED_FIXTURES, true ) ) {
+                continue;
+            }
+            $j = json_decode( (string) file_get_contents( $file ), true );
+            if ( isset( $j['post_content'] ) && is_string( $j['post_content'] ) ) {
+                $this->assertSame( [], self::codes( $j['post_content'] ), basename( $file ) );
+                ++$n;
+            }
+        }
+        $this->assertGreaterThan( 10, $n );
+    }
+
+    public function testAHugeNumberOfFindingsIsRefusedNotTruncated(): void
+    {
+        $many = str_repeat( '<script>x</script>', 2100 );
+        $page = self::layout( '', $many );
+        $this->assertSame( [], self::codes( $page, $page ), 'unchanged' );
+        $this->assertNotSame( [], self::codes( self::layout( '', $many . '<script>y</script>' ), $page ), 'one more is new code' );
+        $this->assertNotSame( [], self::codes( $page ), 'without a baseline it is refused' );
+    }
+
+    // ---- tag tokenizing, entities and attribute names -----------------------------------------
+
+    public function testQuoteConfusionCannotHideAnEventHandler(): void
+    {
+        foreach ( [
+            '<a x=a"b onclick=alert(1) c="d">z</a>',
+            "<img alt=a'b onerror=alert(1) c='d' src=x>",
+            '<a x" onclick=alert(1) y="z">q</a>',
+        ] as $tag ) {
+            $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( self::text( $tag ) ) ), $tag );
+        }
+        $this->assertSame( [], self::codes( self::layout( self::text( '<a title="a b" data-x=\'c d\' href="/x">ok</a>' ) ) ) );
+    }
+
+    public function testNumericEntitiesNeedNoSemicolonAndAnyNumberOfZeros(): void
+    {
+        foreach ( [ '&#106avascript:alert(1)', '&#000000000106;avascript:alert(1)', '&#x0000006a;avascript:alert(1)', 'java&#10script:alert(1)', 'java&#9script:alert(1)', 'java&#x0A;script:alert(1)' ] as $url ) {
+            $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( self::text( '<a href="' . $url . '">x</a>' ) ) ), $url );
+        }
+    }
+
+    public function testPaddedCustomAttributeNamesAreStillEventHandlers(): void
+    {
+        foreach ( [ ' onclick', 'onclick ', "\tonclick", 'ONCLICK', "onclick\n" ] as $name ) {
+            $attr = ',"module":{"decoration":{"attributes":{"desktop":{"value":{"attributes":[{"id":"a1","name":' . json_encode( $name ) . ',"value":"x()"}]}}}}}';
+            $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( $attr ) ), json_encode( $name ) );
+        }
+    }
+
+    public function testAScriptUrlInAUrlLikeAncestorOrNamedAttributeIsFound(): void
+    {
+        $ancestor = ',"x":{"url":{"desktop":{"value":"javascript: alert(1)"}}}';
+        $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( $ancestor ) ) );
+        $named = ',"module":{"decoration":{"attributes":{"desktop":{"value":{"attributes":[{"id":"a1","name":"href","value":"javascript: alert(1)"}]}}}}}';
+        $this->assertSame( [ CodePolicy::E_SCRIPT ], self::codes( self::layout( $named ) ) );
+        $this->assertSame( [], self::codes( self::layout( self::text( 'JavaScript: the good parts' ) ) ), 'prose stays prose' );
+        $this->assertSame( [], self::codes( self::layout( ',"foo":"JavaScript: the good parts"' ) ) );
+    }
+
     // ---- the gate ------------------------------------------------------------------------------
 
     public function testTheGateAddsPolicyViolationsToTheValidatorsAndKeepsTheValidatorFirst(): void
