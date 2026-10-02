@@ -33,6 +33,7 @@ final class Licensing
             self::$client = new LicenseClient(
                 AIED_PRO_PRODUCT,
                 AIED_PRO_VERSION,
+                // Dev/test override only. Never define it in production: the licence key is sent to this host.
                 defined( 'AIED_PRO_API_BASE' ) ? (string) AIED_PRO_API_BASE : 'https://divi5lab.com',
                 plugin_basename( AIED_PRO_FILE ),
                 'ai-editor-divi5',

@@ -222,6 +222,13 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 - **Pro add-on skeleton 0.1.0** (branch `feat/pro-skeleton`, local; NOT merged, NOT released): compat guard,
   licensing with the updater, licence-gated `ToolRegistry` (no tools yet), Pro admin tab, safety test, zip,
   `make verify-pro-skeleton` passing on the dev site. Next: Plan 3 (batch store, undo, the five settings tools).
+  Release blockers before the first Pro sale (final review): (1) a non-explicit server answer (HTML 403/404, empty
+  or non-JSON body) is stored by the canonical client as `invalid` and locks the tools, contradicting 'only an
+  explicit verdict locks' — fix in the adapter; (2) the `admin_init` licence refresh retries on every admin/ajax
+  request during a licence-server outage — skip `wp_doing_ajax()`/`wp_doing_cron()` and add a backoff; also guard
+  or document `AIED_PRO_API_BASE`, add a readme.txt that discloses the remote calls, make the plugin Description
+  match the shipped features, distinguish activation failure reasons in the admin notice, and confirm the product
+  id `ai-editor-divi5-pro` and product URL with the divi5lab server. These are the first task of Plan 3.
 - **4.4.0 = global styles release PLUS the free re-cut** (merged to LOCAL main, 026a571; NOT uploaded): read-only
   `list_global_styles` (16th tool) + non-blocking style-reference advisory + guide updates (spec
   `docs/superpowers/specs/2026-10-01-global-styles-design.md`). The free re-cut removed the unreleased 4.3.0

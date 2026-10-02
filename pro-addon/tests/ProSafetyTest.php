@@ -9,8 +9,10 @@ use PHPUnit\Framework\TestCase;
 require_once __DIR__ . '/ProSafetyScanner.php';
 
 /**
- * The add-on is not on WordPress.org, but its promises are the same: it never runs code it did not ship,
- * never writes users, plugins or Divi presets, and only talks to the licence host, from one file.
+ * A TRIPWIRE, not a proof. It is a regex scan over the add-on's PHP that bans the common constructs for running
+ * code the add-on did not ship, writing users, plugins or Divi presets, and calling out to a host other than the
+ * licence host (from one file). It cannot see dynamic tricks (backticks, variable functions, call_user_func with
+ * a string, runtime-built hosts), so code review stays the real control.
  */
 class ProSafetyTest extends TestCase
 {
@@ -71,6 +73,16 @@ class ProSafetyTest extends TestCase
         $this->assertContains( 'manage plugins', ProSafetyScanner::violations( '<?php deactivate_plugins( "x" );' ) );
         $this->assertContains( 'divi presets', ProSafetyScanner::violations( "<?php update_option( 'et_divi_builder_global_presets_d5', [] );" ) );
         $this->assertContains( 'divi presets', ProSafetyScanner::violations( '<?php GlobalPreset::save( 1 );' ) );
+        $this->assertContains( 'exec family', ProSafetyScanner::violations( "<?php popen( 'ls', 'r' );" ) );
+        $this->assertContains( 'create_function', ProSafetyScanner::violations( "<?php create_function( '', '' );" ) );
+        $this->assertContains( 'write users', ProSafetyScanner::violations( "<?php wp_create_user( 'a', 'b' );" ) );
+        $this->assertContains( 'write users', ProSafetyScanner::violations( '<?php wp_update_user( [] );' ) );
+        $this->assertContains( 'manage plugins', ProSafetyScanner::violations( "<?php activate_plugin( 'x' );" ) );
+        $this->assertContains( 'manage plugins', ProSafetyScanner::violations( '<?php activate_plugins( [] );' ) );
+        $this->assertContains( 'manage plugins', ProSafetyScanner::violations( '<?php delete_plugins( [] );' ) );
+        $this->assertContains( 'manage plugins', ProSafetyScanner::violations( "<?php plugins_api( 'x' );" ) );
+        $this->assertContains( 'divi presets', ProSafetyScanner::violations( "<?php get_option( 'et_global_data' );" ) );
+        $this->assertContains( 'divi presets', ProSafetyScanner::violations( "<?php get_option( 'et_divi_global_variables' );" ) );
     }
 
     public function testTheScannerIgnoresCommentsAndCleanCode(): void

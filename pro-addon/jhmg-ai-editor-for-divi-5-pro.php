@@ -7,6 +7,7 @@
  * Requires PHP:      8.1
  * Author:            JHMG
  * Author URI:        https://divi5lab.com
+ * Update URI:         https://divi5lab.com/plugins/divi-5-ai-editor
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       jhmg-ai-editor-for-divi-5-pro

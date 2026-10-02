@@ -20,6 +20,11 @@ class MainFileTest extends TestCase
         $this->assertMatchesRegularExpression( '/^\s*\*\s*Version:\s+' . preg_quote( $m[1], '/' ) . '\s*$/m', $h );
     }
 
+    public function testItDeclaresAnUpdateUriOnTheLicenceHost(): void
+    {
+        $this->assertMatchesRegularExpression( '/^\s*\*\s*Update URI:\s+https:\/\/divi5lab\.com\//m', $this->header() );
+    }
+
     public function testTheIdentityIsExactlyAsSpecified(): void
     {
         $h = $this->header();

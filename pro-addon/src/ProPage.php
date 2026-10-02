@@ -165,6 +165,7 @@ final class ProPage
             'no_key'   => __( 'No licence activated', 'jhmg-ai-editor-for-divi-5-pro' ),
             'active'   => __( 'Active', 'jhmg-ai-editor-for-divi-5-pro' ),
             'expired'  => __( 'Expired (your Pro tools keep working; updates and support stop)', 'jhmg-ai-editor-for-divi-5-pro' ),
+            'past_due' => __( 'Past due (your Pro tools keep working; updates and support stop)', 'jhmg-ai-editor-for-divi-5-pro' ),
             'canceled' => __( 'Cancelled (your Pro tools keep working; updates and support stop)', 'jhmg-ai-editor-for-divi-5-pro' ),
             'revoked'  => __( 'Revoked (the Pro tools are locked)', 'jhmg-ai-editor-for-divi-5-pro' ),
             'invalid'  => __( 'Invalid (the Pro tools are locked)', 'jhmg-ai-editor-for-divi-5-pro' ),

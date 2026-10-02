@@ -136,6 +136,16 @@ class ProPageTest extends TestCase
         $this->assertStringContainsString( '<code>fake_pro_tool</code>', $html, 'a lapse never locks' );
     }
 
+    public function testAPastDueLicenceIsLabelledHonestlyAndKeepsTheToolsListed(): void
+    {
+        $this->activated();
+        update_option( 'aied_pro_license_state', [ 'status' => 'past_due', 'expires' => '2026-01-01T00:00:00.000Z', 'checked_at' => time() ] );
+        Licensing::resetForTests();
+        $html = $this->render( $this->page( [ new FakeTool() ] ) );
+        $this->assertStringContainsString( 'Past due', $html );
+        $this->assertStringContainsString( '<code>fake_pro_tool</code>', $html, 'a lapse never locks' );
+    }
+
     public function testANoticeFromTheRedirectIsShownAndEscaped(): void
     {
         $_GET['aied_pro_notice'] = 'activated';
