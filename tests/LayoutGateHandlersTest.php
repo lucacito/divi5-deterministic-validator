@@ -64,6 +64,7 @@ class LayoutGateHandlersTest extends TestCase
         $GLOBALS['__wp_postmeta']     = [];
         $GLOBALS['__wp_update_fail']  = false;
         $GLOBALS['__wp_update_calls'] = 0;
+        $GLOBALS['__wp_inserts']      = [];
         $GLOBALS['__wp_can']          = true;
         unset( $GLOBALS['__wp_caps'] );
         $this->page( self::layout() );
@@ -130,8 +131,27 @@ class LayoutGateHandlersTest extends TestCase
         $this->assertSame( 422, $status );
         $this->assertSame( [ 'CUSTOM_CSS_NOT_ALLOWED' ], self::codes( $r ) );
 
-        [ , $env ] = $this->rest( 'validate', [ 'post_content' => self::layout( 'Hello', self::CSS ), 'extra' => 'x' ], [] );
-        $this->assertSame( [ 'CUSTOM_CSS_NOT_ALLOWED' ], self::codes( $env ), 'the same content gives the same violations' );
+        [ , $again ] = $this->rest( 'validate', [ 'post_content' => self::layout( 'Hello', self::CSS ), 'extra' => 'x' ], [] );
+        $this->assertSame( [ 'CUSTOM_CSS_NOT_ALLOWED' ], self::codes( $again ), 'the same content gives the same violations' );
+    }
+
+    public function testTheEnvelopeBranchOfRestValidateIsTheOneTakenWithoutPostContent(): void
+    {
+        // RestController::validate takes its envelope branch only when the body has `layout` and no
+        // `post_content`; json_encode of that body has no post_content, so the structure validator
+        // answers MISSING_POST_CONTENT (a full envelope with a string post_content always takes the
+        // first branch). Proven here so the branch is not silently dropped or rewired.
+        [ $status, $r ] = $this->rest( 'validate', [ 'layout' => [ 'source' => 'x' ] ], [] );
+        $this->assertSame( 422, $status );
+        $this->assertSame( [ 'MISSING_POST_CONTENT' ], self::codes( $r ) );
+    }
+
+    public function testCheckJsonRefusesTheCssInAFullEnvelope(): void
+    {
+        $envelope = (string) json_encode( [ 'source' => 'x', 'format' => 'gutenberg-blocks', 'post_content' => self::layout( 'Hello', self::CSS ) ] );
+        $result   = \AiEditorDivi5\WP\LayoutGate::checkJson( $envelope );
+        $this->assertFalse( $result->isValid() );
+        $this->assertSame( [ 'CUSTOM_CSS_NOT_ALLOWED' ], array_map( static fn ( $v ) => $v->code(), $result->violations() ) );
     }
 
     public function testUpdateRefusesNewCssOverMcpAndRestAndSavesNothing(): void
@@ -173,6 +193,9 @@ class LayoutGateHandlersTest extends TestCase
         [ $status, $r ] = $this->rest( 'create_page', [ 'title' => 'New', 'post_content' => self::layout( 'Hello', self::CSS ) ], [] );
         $this->assertSame( 422, $status );
         $this->assertSame( [ 'CUSTOM_CSS_NOT_ALLOWED' ], self::codes( $r ) );
+
+        $this->assertSame( [], $GLOBALS['__wp_inserts'], 'wp_insert_post was never called' );
+        $this->assertSame( [ 5 ], array_keys( $GLOBALS['__wp_posts'] ), 'no post was created' );
     }
 
     public function testDryRunPreviewReportsTheViolationAndNeverWrites(): void
@@ -192,8 +215,12 @@ class LayoutGateHandlersTest extends TestCase
     {
         $text = '<script>alert(1)</script>';
         $bad  = self::layout( $text );
+        $before = $this->content();
         [ , $m ] = $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'post_content' => $bad ] );
+        $this->assertFalse( $m['saved'] );
         $this->assertSame( [ 'SCRIPT_CONTENT_NOT_ALLOWED' ], self::codes( $m ) );
+        $this->assertSame( $before, $this->content() );
+        $this->assertSame( 0, $GLOBALS['__wp_update_calls'] );
     }
 
     // ---- a page that already has custom CSS stays editable ------------------------------------
@@ -223,5 +250,126 @@ class LayoutGateHandlersTest extends TestCase
         $this->assertTrue( $m['saved'] );
         $this->assertStringContainsString( 'Brand new text', $this->content() );
         $this->assertSame( 1, $this->historyRows() );
+    }
+
+    // ---- the baseline reaches every write and preview path -------------------------------------
+
+    private function cssPage(): void
+    {
+        $this->page( self::layout( 'Hello', self::CSS ) );
+    }
+
+    private function noWriteHappened( int $historyBefore = 0 ): void
+    {
+        $this->assertSame( 0, $GLOBALS['__wp_update_calls'] );
+        $this->assertSame( $historyBefore, $this->historyRows() );
+    }
+
+    public function testRestUpdateOnAPageWithCssSavesUntouchedCssAndRefusesChangedCss(): void
+    {
+        $this->cssPage();
+        [ $status ] = $this->rest( 'update_page', [ 'post_content' => self::layout( 'Hello again', self::CSS ) ] );
+        $this->assertSame( 200, $status );
+        $this->assertStringContainsString( 'Hello again', $this->content() );
+        $this->assertStringContainsString( 'selector{color:red}', $this->content() );
+
+        $this->cssPage();
+        $calls = $GLOBALS['__wp_update_calls'];
+        $bad   = str_replace( 'color:red', 'color:blue', self::layout( 'Hello', self::CSS ) );
+        [ $status, $r ] = $this->rest( 'update_page', [ 'post_content' => $bad ] );
+        $this->assertSame( 422, $status );
+        $this->assertSame( [ 'CUSTOM_CSS_NOT_ALLOWED' ], self::codes( $r ) );
+        $this->assertSame( self::layout( 'Hello', self::CSS ), $this->content() );
+        $this->assertSame( $calls, $GLOBALS['__wp_update_calls'], 'no wp_update_post call for the refused write' );
+    }
+
+    public function testEditContentOnAPageWithCssSavesATextEditAndRefusesACssEdit(): void
+    {
+        // MCP
+        $this->cssPage();
+        [ , $m ] = $this->mcp( 'edit_page_content', [ 'page_id' => 5, 'find' => 'Hello', 'replace' => 'Goodbye' ] );
+        $this->assertTrue( $m['saved'] );
+        $this->assertStringContainsString( 'Goodbye', $this->content() );
+        $this->assertStringContainsString( 'selector{color:red}', $this->content() );
+
+        $this->cssPage();
+        $calls = $GLOBALS['__wp_update_calls'];
+        [ , $m ] = $this->mcp( 'edit_page_content', [ 'page_id' => 5, 'find' => 'color:red', 'replace' => 'color:blue' ] );
+        $this->assertFalse( $m['saved'] );
+        $this->assertSame( [ 'CUSTOM_CSS_NOT_ALLOWED' ], self::codes( $m ) );
+        $this->assertStringContainsString( 'color:red', $this->content() );
+        $this->assertSame( $calls, $GLOBALS['__wp_update_calls'] );
+
+        // REST
+        $this->cssPage();
+        [ $status ] = $this->rest( 'edit_page', [ 'find' => 'Hello', 'replace' => 'Goodbye' ] );
+        $this->assertSame( 200, $status );
+        $this->assertStringContainsString( 'Goodbye', $this->content() );
+        $this->assertStringContainsString( 'selector{color:red}', $this->content() );
+
+        $this->cssPage();
+        $calls = $GLOBALS['__wp_update_calls'];
+        [ $status, $r ] = $this->rest( 'edit_page', [ 'find' => 'color:red', 'replace' => 'color:blue' ] );
+        $this->assertSame( 422, $status );
+        $this->assertSame( [ 'CUSTOM_CSS_NOT_ALLOWED' ], self::codes( $r ) );
+        $this->assertStringContainsString( 'color:red', $this->content() );
+        $this->assertSame( $calls, $GLOBALS['__wp_update_calls'] );
+    }
+
+    /** @return array<string,array{0:string}> */
+    public static function dryRunPaths(): array
+    {
+        return [ 'mcp update' => [ 'mcp_update' ], 'mcp edit' => [ 'mcp_edit' ], 'rest update' => [ 'rest_update' ] ];
+    }
+
+    /**
+     * One call on one path. $css false = leave the CSS untouched (text edit), true = change the CSS value.
+     *
+     * @return array<string,mixed> the decoded payload (MCP) or response data (REST)
+     */
+    private function callPath( string $path, bool $changeCss, bool $dry ): array
+    {
+        $flag = $dry ? [ 'dry_run' => true ] : [];
+        switch ( $path ) {
+            case 'mcp_update':
+                $content = $changeCss ? str_replace( 'color:red', 'color:blue', self::layout( 'Hello', self::CSS ) ) : self::layout( 'Hello again', self::CSS );
+                return $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'post_content' => $content ] + $flag )[1];
+            case 'mcp_edit':
+                $args = $changeCss ? [ 'find' => 'color:red', 'replace' => 'color:blue' ] : [ 'find' => 'Hello', 'replace' => 'Hello again' ];
+                return $this->mcp( 'edit_page_content', [ 'page_id' => 5 ] + $args + $flag )[1];
+            default:
+                $content = $changeCss ? str_replace( 'color:red', 'color:blue', self::layout( 'Hello', self::CSS ) ) : self::layout( 'Hello again', self::CSS );
+                return $this->rest( 'update_page', [ 'post_content' => $content ] + $flag )[1];
+        }
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'dryRunPaths' )]
+    public function testDryRunOnAPageWithCssAgreesWithTheRealWrite( string $path ): void
+    {
+        // Untouched CSS: the preview is valid with no CSS violation, writes nothing, and the real write is saved.
+        $this->cssPage();
+        $preview = $this->callPath( $path, false, true );
+        $this->assertTrue( $preview['valid'], $path );
+        $this->assertSame( [], self::codes( $preview ), $path );
+        $this->noWriteHappened();
+        $this->assertSame( self::layout( 'Hello', self::CSS ), $this->content() );
+
+        $real = $this->callPath( $path, false, false );
+        $this->assertTrue( $real['saved'] ?? false, $path . ': the real write agrees with the preview' );
+
+        // Changed CSS: the preview reports the CSS violation, writes nothing, and the real write is refused with the same codes.
+        $this->cssPage();
+        $GLOBALS['__wp_update_calls'] = 0;
+        $history = $this->historyRows();
+        $preview = $this->callPath( $path, true, true );
+        $this->assertFalse( $preview['valid'], $path );
+        $this->assertSame( [ 'CUSTOM_CSS_NOT_ALLOWED' ], self::codes( $preview ), $path );
+        $this->noWriteHappened( $history );
+        $this->assertSame( self::layout( 'Hello', self::CSS ), $this->content() );
+
+        $real = $this->callPath( $path, true, false );
+        $this->assertFalse( $real['saved'] ?? true, $path );
+        $this->assertSame( self::codes( $preview ), self::codes( $real ), $path . ': preview and real write give the same violations' );
+        $this->noWriteHappened( $history );
     }
 }
