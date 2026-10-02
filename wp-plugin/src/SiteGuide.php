@@ -59,11 +59,8 @@ finish by telling the owner exactly what to do in WordPress:
 List the page titles and slugs you created so the owner can tick them off.
 
 ## Notes
-- Header/footer: the owner's existing Theme Builder header and footer can be previewed and
-  edited (list_theme_layouts, then pass the layout_id as page_id; always `dry_run` first,
-  they appear on every page; only entries marked `editable: true` can be edited). Creating them and choosing where they apply is done by the
-  owner in Divi's Theme Builder. Otherwise they are the active theme's (the nav menu
-  drives the header).
+- The header, footer and navigation come from the active theme's own templates (the
+  nav menu drives the header); this plugin does not change them.
 - Build pages first and keep each returned page id and link, then give the owner
   the Settings → Reading and Appearance → Menus steps above.
 - Undo: Every save through this plugin (update_page_layout / edit_page_content) keeps the

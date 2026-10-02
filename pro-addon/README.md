@@ -20,10 +20,13 @@ This folder holds the source that was removed from the WordPress.org plugin
 | `src/CustomCss.php` | backing code for `set_custom_css` (managed Additional CSS block) |
 | `src/PhpProposals.php` | backing code for `propose_php_snippet` (stored for human review, never executed) |
 | `tests/LicensingTest.php`, `tests/PhpProposalsTest.php` | their tests |
+| `staged-4.3.0/` | the 4.3.0 header/footer editing (`ThemeLayouts`, the layout half of `EditTarget`, their tests, `verify-theme-layouts.php`, and `4.3.0-free-plugin.diff`, the exact hunks that were in the free plugin's handlers, OpenAPI and guides). Removed from the free plugin in the free re-cut because it moves to the Pro add-on. The `src` and `tests` files are verbatim copies of the 4.4.0-tree files; `4.3.0-free-plugin.diff` is the original 4.3.0 merge diff (837b712) whose handler/guide hunks predate the 4.4.0 edits to the same files, so also use the free re-cut's own removal commits (5cf40c0, fd4e50d, cd5fffe on branch `feat/free-recut`) as the exact current removal hunks. Not run, not shipped. |
 
 Also removed from the plugin and to be rebuilt in the add-on: the `set_front_page`,
 `set_primary_menu`, `set_custom_css` and `propose_php_snippet` MCP/REST/OpenAPI tools,
 and the licence/upgrade/code-proposal admin UI.
+
+`staged-4.3.0/tests/` need their own bootstrap (they use `tests/WpRestShims.php` and the other shims of the main suite) before they can run; `phpunit.xml` only scans `tests/`, so they are not run today.
 
 ## Contract
 

@@ -117,6 +117,6 @@ class DryRunLockstepTest extends TestCase
                 $ops[] = $op['operationId'] ?? '';
             }
         }
-        $this->assertCount( 17, $ops, 'dry_run is a flag, not a new operation (the 16th and 17th operations are the read-only list_theme_layouts and list_global_styles)' );
+        $this->assertCount( 16, $ops, 'dry_run is a flag, not a new operation (the 16th operation is the read-only list_global_styles)' );
     }
 }

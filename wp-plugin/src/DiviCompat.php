@@ -52,21 +52,6 @@ final class DiviCompat
         return null;
     }
 
-    /**
-     * After an edit to a Theme Builder layout: clear Divi's own caches the way Divi's Theme Builder
-     * does when it saves (the layout is used by many pages). Each call is guarded, so nothing happens
-     * when Divi (or that part of it) is not available.
-     */
-    public static function clearLayoutCaches(): void
-    {
-        if ( function_exists( 'et_theme_builder_clear_wp_cache' ) ) {
-            et_theme_builder_clear_wp_cache( 'all' );
-        }
-        if ( class_exists( 'ET_Core_PageResource' ) ) {
-            \ET_Core_PageResource::remove_static_resources( 'all', 'all' );
-        }
-    }
-
     private static function majorMinor( ?string $version ): ?string
     {
         if ( null === $version || 1 !== preg_match( '/^(\d+)\.(\d+)/', $version, $m ) ) {

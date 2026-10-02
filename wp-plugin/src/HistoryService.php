@@ -33,7 +33,6 @@ final class HistoryService
         if ( is_wp_error( $updated ) ) {
             return [ 'ok' => false, 'error' => 'update_failed', 'message' => $updated->get_error_message(), 'snapshot' => $snapshot ];
         }
-        self::afterWrite( $post );
 
         return [ 'ok' => true, 'snapshot' => $snapshot ];
     }
@@ -65,7 +64,6 @@ final class HistoryService
         if ( is_wp_error( $updated ) ) {
             return [ 'ok' => false, 'error' => 'update_failed', 'message' => $updated->get_error_message(), 'snapshot' => $snapshot ];
         }
-        self::afterWrite( $post );
 
         // Restore is NOT a validated write: it returns the person's own earlier content.
         // The validator's verdict is reported as information only.
@@ -83,28 +81,17 @@ final class HistoryService
     }
 
     /**
-     * @return list<array{page_id:int, title:string, kind:string, version_id:int, saved_at:mixed, tool:mixed}>
+     * @return list<array{page_id:int, title:string, version_id:int, saved_at:mixed, tool:mixed}>
      */
     public static function recent( int $limit = 5 ): array
     {
         $rows = [];
         foreach ( HistoryStore::recent( $limit ) as $row ) {
             $post   = get_post( $row['page_id'] );
-            $rows[] = $row + [
-                'title' => $post ? (string) ( $post->post_title ?? '' ) : '',
-                'kind'  => $post ? ( ThemeLayouts::kindOf( (string) $post->post_type ) ?? 'page' ) : 'page',
-            ];
+            $rows[] = $row + [ 'title' => $post ? (string) ( $post->post_title ?? '' ) : '' ];
         }
 
         return $rows;
-    }
-
-    /** A header/footer layout appears on every page, so Divi's caches are cleared after it changes. */
-    private static function afterWrite( ?object $post ): void
-    {
-        if ( null !== $post && null !== ThemeLayouts::kindOf( (string) $post->post_type ) ) {
-            DiviCompat::clearLayoutCaches();
-        }
     }
 
     /** @return array{stored:bool, version_id:?int, reason:?string} */
