@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../wp-plugin/src/PageAccess.php';
 require_once __DIR__ . '/../wp-plugin/src/LayoutDiff.php';
+require_once __DIR__ . '/../wp-plugin/src/CodePolicy.php';
+require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
 require_once __DIR__ . '/../wp-plugin/src/DryRun.php';
 
 class DryRunTest extends TestCase
