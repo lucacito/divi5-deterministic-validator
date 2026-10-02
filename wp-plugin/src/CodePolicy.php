@@ -36,14 +36,24 @@ final class CodePolicy
     private const CODE_MODULES    = [ 'divi/code', 'divi/fullwidth-code' ];
     private const CSS_FIELDS      = [ 'freeForm', 'mainElement' ];
     /**
-     * Attribute subtrees whose string values Divi copies into generated CSS declarations (spacing, sizing, colours,
-     * borders, shadows, backgrounds, fonts...: everything under `decoration`, and the `advanced` settings). A value
-     * there that carries CSS control characters can close its declaration and add rules of its own (live proof,
-     * 2026-10-02: padding.top = "0px;} body{display:none} .x{" printed a real `body{display:none}` rule). Text
-     * and content fields (innerContent, content, text, title, linkUrl, src, alt...) are NOT in scope: they are
-     * HTML or plain text, never CSS, and carry `<` `>` legitimately; markup in them is the script scan's job.
+     * Attribute subtrees whose string values Divi copies into generated CSS declarations. Live proof, 2026-10-02:
+     * padding.top = "0px;} body{display:none} .x{" printed a real `body{display:none}` rule in Divi's CSS.
+     * `decoration` and `advanced` cover spacing, sizing, colours, borders, shadows, backgrounds and fonts. The other
+     * names are the families Divi 5.14's shipped PHP also writes raw into CSS (a progress bar's width, an icon's
+     * weight, colour and size, an overlay or marker icon, an icon list); `imageIcon` is covered by STYLE_VALUE_LEAVES
+     * because it also carries image URLs. Text and content fields (innerContent of
+     * text, content, title, text, heading, button text, quote, author, description, linkUrl, src, alt...) are NOT in
+     * scope: they are HTML or plain text and carry `<` `>` legitimately; markup in them is the script scan's job.
+     *
+     * THIS IS A NAMED LIST derived from the real exports (fixtures/valid, the recipes) and from Divi's shipped
+     * code, not a proof of completeness. When a new module family that feeds CSS is found, add it here.
      */
-    private const STYLE_VALUE_SCOPE = [ 'decoration', 'advanced' ];
+    private const STYLE_VALUE_SCOPE = [ 'decoration', 'advanced', 'barProgress', 'icon', 'overlay', 'marker', 'iconList' ];
+    /** Leaves that carry a CSS value wherever they sit (font-weight, size, colour, an icon's code and type, a width or height): checked on every path, so `imageIcon` (which also holds image URLs, not CSS) is covered by its leaves, not as a whole. */
+    private const STYLE_VALUE_LEAVES = [ 'weight', 'size', 'color', 'unicode', 'type', 'width', 'height' ];
+    /** The only `$variable(...)$` token that is set aside: Divi's own shape, with no brackets, parentheses, `$`, `;` or angle brackets in its settings. All 158 real tokens in decoration paths match it. */
+    private const VARIABLE_TOKEN = '/\$variable\(\{"type":"[a-z_-]+","value":\{"name":"[A-Za-z0-9_-]+","settings":\{[^{}()$;<>]*\}\}\}\)\$/';
+    private const CSS_CONTROL    = '/[{};<>]|\/\*|\*\/|\\\r?\n/';
     /** A real event handler name; ordinary words that start with "on" (onion, online, only...) are not one. */
     private const EVENT_ATTR_NAME  = '/^on[a-z]{3,}$/';
     private const NOT_EVENT_NAMES  = [ 'onion', 'onions', 'online', 'only', 'once', 'onto', 'onset', 'ongoing', 'onward', 'onwards', 'onsite', 'onboard', 'onboarding' ];
@@ -257,7 +267,7 @@ final class CodePolicy
 
                 return;
             }
-            if ( $decor && self::styleValueHasCssControlChars( $value ) ) {
+            if ( ( $decor || in_array( $key, self::STYLE_VALUE_LEAVES, true ) ) && self::styleValueHasCssControlChars( $value ) ) {
                 self::push( $out, self::finding(
                     self::E_CUSTOM_CSS,
                     'deco|' . $key . '|' . md5( $value ),
@@ -294,6 +304,14 @@ final class CodePolicy
             $isUrl = $urlish || ( is_string( $k ) && 1 === preg_match( self::URL_KEY, $k ) )
                 || ( null !== $attrName && 'value' === $k && 1 === preg_match( self::URL_KEY, $attrName ) );
             $deco  = $decor || ( is_string( $k ) && in_array( $k, self::STYLE_VALUE_SCOPE, true ) );
+            if ( $decor && is_string( $k ) && 1 === preg_match( self::CSS_CONTROL, $k ) ) {
+                self::push( $out, self::finding(
+                    self::E_CUSTOM_CSS,
+                    'decokey|' . md5( $k ),
+                    $path . '.' . $k,
+                    'A style setting name contains CSS control characters ( { } ; < > ): this plugin never saves custom CSS.'
+                ) );
+            }
             self::scan( $child, $path . '.' . $k, is_string( $k ) ? $k : $key, $isUrl, $css, $deco, $out );
         }
     }
@@ -448,50 +466,21 @@ final class CodePolicy
 
     /**
      * True when a style value holds CSS control characters (`{ } ; < >`, a comment opener or closer, a backslash
-     * before a line break). Four exact shapes of real data are set aside first, because they legitimately carry
-     * such characters: a Divi `$variable({...})$` token (its JSON braces) whose JSON is well formed and holds only
-     * plain names; a `{{aied:image:token}}` placeholder; a numeric HTML entity such as `&#xf658;` (icon codes);
-     * and one well-formed `url(...)` group (data URIs carry `;`). Anything else, including a malformed variable
-     * token, is checked as is. Fails closed if a regex fails.
+     * before a line break), or tries to look like a Divi variable token without being exactly one. Only two exact
+     * shapes are set aside, because real data carries them: a whole-value numeric HTML entity (`&#xf658;`, an icon
+     * code) and Divi's plain `$variable({...})$` token (VARIABLE_TOKEN). There is no `url(...)` exclusion: a quoted
+     * group could hide a payload behind a string opened earlier in the value (use a plain URL value; a data: URI
+     * under a style setting is refused). Divi ends a token at the FIRST `)$`, so what is left after the strict
+     * token is removed must hold no `$variable(` or `)$`. Fails closed if a regex fails.
      */
     private static function styleValueHasCssControlChars( string $value ): bool
     {
-        $w = preg_replace_callback(
-            '/\$variable\((\{.*?\})\)\$/s',
-            static fn ( array $m ): string => self::isPlainVariableToken( $m[1] ) ? '' : $m[0],
-            $value
-        );
-        foreach ( [
-            '/\{\{aied:image:[a-z0-9_-]+\}\}/',
-            '/&#(?:[xX][0-9a-fA-F]{1,6}|[0-9]{1,7});/',
-            '/url\(\s*(?:"[^"\\\\]*"|\'[^\'\\\\]*\'|[^"\'()\s\\\\]*)\s*\)/i',
-        ] as $pattern ) {
-            if ( null === $w ) {
-                return true;
-            }
-            $w = preg_replace( $pattern, '', $w );
-        }
-
-        return null === $w || 1 === preg_match( '/[{};<>]|\/\*|\*\/|\\\r?\n/', $w );
-    }
-
-    /** A Divi variable token's JSON: a type, a plain-named value and settings that hold no control characters. */
-    private static function isPlainVariableToken( string $json ): bool
-    {
-        $d = json_decode( $json, true );
-        if ( ! is_array( $d ) || ! is_string( $d['type'] ?? null ) || 1 !== preg_match( '/^[a-z_-]+$/i', $d['type'] )
-            || ! is_array( $d['value'] ?? null ) || ! is_string( $d['value']['name'] ?? null ) || 1 !== preg_match( '/^[A-Za-z0-9_-]+$/', $d['value']['name'] ) ) {
+        if ( 1 === preg_match( '/^&#(?:[xX][0-9a-fA-F]{1,6}|[0-9]{1,7});$/', $value ) ) {
             return false;
         }
-        $clean = true;
-        $settings = is_array( $d['value']['settings'] ?? null ) ? $d['value']['settings'] : [];
-        array_walk_recursive( $settings, static function ( $leaf ) use ( &$clean ): void {
-            if ( is_string( $leaf ) && 1 === preg_match( '/[{};<>]|\/\*|\*\//', $leaf ) ) {
-                $clean = false;
-            }
-        } );
+        $w = preg_replace( self::VARIABLE_TOKEN, '', $value );
 
-        return $clean;
+        return null === $w || str_contains( $w, '$variable(' ) || str_contains( $w, ')$' ) || 1 === preg_match( self::CSS_CONTROL, $w );
     }
 
     private static function isEventName( string $name ): bool

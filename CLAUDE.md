@@ -235,6 +235,8 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   `NoCustomCodeTest`); the owner uploads the 4.4.0 zip, tests on Playground and sends `docs/wporg-review-reply-2-draft.md`.
   Rule: the free plugin never saves custom CSS, JavaScript or PHP, and any future layout write path (including every Pro
   write tool) must go through `LayoutGate::check()`.
+  Style-value guard scope is a named list (decoration/advanced + listed families), not a proof of completeness; add new
+  CSS-bearing families when found.
 - **4.4.0 = global styles release PLUS the free re-cut** (merged to LOCAL main, 026a571; NOT uploaded): read-only
   `list_global_styles` (16th tool) + non-blocking style-reference advisory + guide updates (spec
   `docs/superpowers/specs/2026-10-01-global-styles-design.md`). The free re-cut removed the unreleased 4.3.0

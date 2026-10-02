@@ -89,11 +89,14 @@ class NoCustomCodeTest extends TestCase
 
     public function testEveryBundledRecipeIsFreeOfCustomCode(): void
     {
-        $recipes = json_decode( (string) file_get_contents( self::ROOT . '/data/section-recipes.json' ), true );
-        $this->assertIsArray( $recipes );
-        $this->assertNotEmpty( $recipes );
-        foreach ( $recipes as $recipe ) {
-            $this->assertSame( [], array_map( static fn ( $v ) => $v->code() . ' ' . $v->path(), CodePolicy::violations( (string) $recipe['markup'] ) ), (string) $recipe['name'] );
+        $GLOBALS['__wp_filters'] = [];
+        $names = SectionRecipes::names();
+        $this->assertGreaterThanOrEqual( 17, count( $names ) );
+        foreach ( $names as $name ) {
+            // The markup the AI is actually handed: image tokens resolved to site URLs, like SectionRecipes::recipe() serves it.
+            $markup = (string) SectionRecipes::recipe( $name );
+            $this->assertNotSame( '', $markup, $name );
+            $this->assertSame( [], array_map( static fn ( $v ) => $v->code() . ' ' . $v->path(), CodePolicy::violations( $markup ) ), $name );
         }
     }
 

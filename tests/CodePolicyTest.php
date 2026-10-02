@@ -845,21 +845,75 @@ class CodePolicyTest extends TestCase
             '0px 10px 20px rgba(0,0,0,.5)',
             'linear-gradient(90deg,#fff 0%,#000 100%)',
             '$variable({"type":"color","value":{"name":"gcid-x","settings":{}}})$',
-            'url(data:image/png;base64,AAAA)',
+            '$variable({"type":"color","value":{"name":"gcid-x","settings":{"opacity":"0.5"}}})$',
             'url("https://example.com/a.png")',
+            'https://example.com/wp-content/uploads/a.jpg?x=1&y=2',
             '&#xf658;',
-            '{{aied:image:hero-blue-1}}',
             'calc(100% - 20px)',
+            'var(--my-gap)',
             "'Open Sans', sans-serif",
         ] as $value ) {
             $this->assertSame( [], self::codes( self::layout( ',' . str_replace( '%V%', json_encode( $value ), $shape ) ) ), $value );
         }
-        // A variable token that is not plain (it hides a payload in its JSON) is checked like any other value.
-        $payload = '$variable({"type":"color","value":{"name":"x;} body{display:none}","settings":{}}})$';
-        $this->assertSame( [ CodePolicy::E_CUSTOM_CSS ], self::codes( self::layout( ',' . str_replace( '%V%', json_encode( $payload ), $shape ) ) ) );
         // Text and content fields are not style values.
         $this->assertSame( [], self::codes( self::layout( self::text( '<p>a { b; c } d</p>' ) ) ) );
         $this->assertSame( [], self::codes( self::layout( ',"button":{"innerContent":{"desktop":{"value":{"text":"Go; now {x}","linkUrl":"https://example.com/?a=1;b=2"}}}}' ) ) );
+    }
+
+    /** @return array<string, array{0:string}> */
+    public static function styleValueBypasses(): array
+    {
+        return [
+            'variable token with )$ inside a junk key'  => [ '$variable({"type":"color","value":{"name":"a","settings":{}},"junk":"y)$;} body{display:none} .x{"})$' ],
+            'variable token with a payload in its name' => [ '$variable({"type":"color","value":{"name":"x;} body{display:none}","settings":{}}})$' ],
+            'variable token with a payload in settings' => [ '$variable({"type":"color","value":{"name":"x","settings":{"a":"1;} body{display:none}"}}})$' ],
+            'a leftover $variable('                     => [ '$variable(x' ],
+            'a leftover )$'                             => [ 'x)$' ],
+            'quote parity, double quotes'               => [ 'x url(" ;} body{display:none} .y{ ")' ],
+            'quote parity, single quotes'               => [ "x url(' ;} body{display:none} .y{ ')" ],
+            'unquoted url swallowing'                   => [ 'url(a ;} body{display:none} .y{ )' ],
+            'identifier before url'                     => [ 'xurl(" ;} body{display:none} .y{ ")' ],
+            'a data: URI is not excluded any more'      => [ 'url(data:image/png;base64,AAAA)' ],
+            'an image placeholder is not excluded'      => [ '{{aied:image:hero-blue-1}}' ],
+            'an entity in front of a payload'           => [ '&#x24;;} body{display:none}' ],
+            'an entity behind a payload'                => [ '1px;} body{display:none} .x{&#x24;' ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'styleValueBypasses' )]
+    public function testKnownBypassShapesOfTheStyleValueRuleAreRefused( string $value ): void
+    {
+        $shape = '"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":%V%}}}}}}';
+        $this->assertSame( [ CodePolicy::E_CUSTOM_CSS ], self::codes( self::layout( ',' . str_replace( '%V%', json_encode( $value ), $shape ) ) ), $value );
+    }
+
+    public function testModulesThatWriteContentFieldsIntoCssAreCovered(): void
+    {
+        $P = self::INJECT;
+        $between = static fn ( string $block ): string => self::layout( '', $block );
+        // Real shapes from fixtures/valid (barProgress "50", icon unicode/type/weight), with the payload in the CSS-bearing leaf.
+        foreach ( [
+            'counter bar width'      => '<!-- wp:divi/counter {"barProgress":{"innerContent":{"desktop":{"value":' . json_encode( '50%;} body{display:none} .x{' ) . '}}}} /-->',
+            'icon weight'            => '<!-- wp:divi/icon {"icon":{"innerContent":{"desktop":{"value":{"unicode":"&#xf10d;","type":"fa","weight":' . json_encode( $P ) . '}}}}} /-->',
+            'icon colour'            => '<!-- wp:divi/icon {"icon":{"innerContent":{"desktop":{"value":{"unicode":"&#xf10d;","type":"fa","weight":"900","color":' . json_encode( $P ) . '}}}}} /-->',
+            'icon size'              => '<!-- wp:divi/icon {"icon":{"innerContent":{"desktop":{"hover":{"value":{"size":' . json_encode( $P ) . '}}}}}} /-->',
+            'icon code quote break'  => '<!-- wp:divi/icon {"icon":{"innerContent":{"desktop":{"value":{"unicode":' . json_encode( "x';} body{display:none} .x{content:'" ) . ',"type":"fa","weight":"900"}}}}} /-->',
+            'blurb image icon weight' => '<!-- wp:divi/blurb {"imageIcon":{"innerContent":{"desktop":{"value":{"useIcon":"on","icon":{"unicode":"&#xf10d;","type":"fa","weight":' . json_encode( $P ) . '}}}}}} /-->',
+            'gallery overlay'        => '<!-- wp:divi/gallery {"overlay":{"innerContent":{"desktop":{"value":{"icon":{"weight":' . json_encode( $P ) . '}}}}}} /-->',
+            'a style setting name'   => '<!-- wp:divi/heading {"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top;} body{display:none}":"1px"}}}}}}} /-->',
+        ] as $label => $block ) {
+            $v = CodePolicy::violations( $between( $block ) );
+            $this->assertNotSame( [], $v, $label );
+            $this->assertSame( CodePolicy::E_CUSTOM_CSS, $v[0]->code(), $label );
+        }
+        // The real, harmless shapes stay clean.
+        foreach ( [
+            '<!-- wp:divi/counter {"barProgress":{"innerContent":{"desktop":{"value":"50"}}}} /-->',
+            '<!-- wp:divi/icon {"icon":{"innerContent":{"desktop":{"value":{"unicode":"&#xf10d;","type":"fa","weight":"900","color":"#ff0000","size":"32px"}}}}} /-->',
+            '<!-- wp:divi/blurb {"imageIcon":{"innerContent":{"desktop":{"value":{"useIcon":"on","icon":{"unicode":"%%45%%","type":"divi","weight":"400"},"src":"data:image/svg+xml;base64,AAAA","width":"66"}}}}} /-->',
+        ] as $block ) {
+            $this->assertSame( [], CodePolicy::violations( $between( $block ) ), $block );
+        }
     }
 
     public function testAnOwnersStyleValueIsKeptWhenUnchangedAndRefusedWhenChanged(): void
