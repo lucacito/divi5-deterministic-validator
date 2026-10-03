@@ -59,6 +59,14 @@ class LinkScannerTest extends TestCase
             'escaped slashes decode'        => [ self::button( 'https:\/\/example.com\/escaped\/' ), [ '/escaped/' ] ],
             'href in escaped html'          => [ self::html( 'a href=' . self::q() . '/in-text/' . self::q() ), [ '/in-text/' ] ],
             'external href in html'         => [ self::html( 'a href=' . self::q() . 'https://elsewhere.org/' . self::q() ), [] ],
+            'subdirectory uploads'          => [ self::button( '/blog/wp-content/uploads/2026/a.png' ), [] ],
+            'subdirectory wp-includes'      => [ self::button( '/blog/wp-includes/x' ), [] ],
+            'file download'                 => [ self::button( '/files/x.pdf' ), [] ],
+            'sitemap file'                  => [ self::button( '/sitemap.xml' ), [] ],
+            'robots file'                   => [ self::button( '/robots.txt' ), [] ],
+            'search link'                   => [ self::button( '/?s=x' ), [] ],
+            'subdirectory feed'             => [ self::button( '/blog/feed/' ), [] ],
+            'no extension stays'            => [ self::button( '/about/index' ), [ '/about/index' ] ],
             'no links at all'               => [ '<!-- wp:divi/section /-->', [] ],
             'empty'                         => [ '', [] ],
         ];
@@ -78,6 +86,13 @@ class LinkScannerTest extends TestCase
             $content .= self::button( "/page-{$i}/" );
         }
         $this->assertCount( LinkScanner::MAX_LINKS, LinkScanner::internalPaths( $content, 'example.com' ) );
+    }
+
+    public function testAVeryLongValueDoesNotHideTheLinksAfterIt(): void
+    {
+        $long    = 'data:image/png;base64,' . str_repeat( 'QUJD', 150000 );
+        $content = '<!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"url":"' . $long . '"}}}}} /-->' . self::button( '/about/' );
+        $this->assertSame( [ '/about/' ], LinkScanner::internalPaths( $content, 'example.com' ) );
     }
 
     public function testItMakesNoRemoteRequest(): void

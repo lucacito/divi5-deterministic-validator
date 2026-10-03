@@ -37,6 +37,7 @@ class AuditSiteTest extends TestCase
 
     protected function tearDown(): void
     {
+        $GLOBALS['__wp_home_url'] = 'https://example.com';
         $this->tearDownThemeBuilder();
     }
 
@@ -112,7 +113,21 @@ class AuditSiteTest extends TestCase
         $this->assertStringContainsString( '/missing/', $a['LINK_NO_POST'][0]['detail'] );
         $this->assertSame( 1, $a['LINK_NOT_PUBLISHED'][0]['count'] );
         $this->assertStringContainsString( '/draft-page/ (draft)', $a['LINK_NOT_PUBLISHED'][0]['detail'] );
-        $this->assertArrayNotHasKey( 'LINK_NO_POST', array_diff_key( $a, [ 'LINK_NO_POST' => 1 ] ) );
+        $codes = array_keys( $a );
+        sort( $codes );
+        $this->assertSame( [ 'LINK_NOT_PUBLISHED', 'LINK_NO_POST' ], $codes );
+    }
+
+    public function testASubdirectoryInstallResolvesLinksRelativeToTheHostRoot(): void
+    {
+        $GLOBALS['__wp_home_url'] = 'https://example.com/blog';
+        $this->divi( 11, self::page( '/blog/about/' ) );
+        $this->divi( 12, self::page( '/blog/missing/' ) );
+        $r = $this->tool->run( [ 'scope' => 'pages' ] );
+        $this->assertSame( [], self::byItem( $r, 11 ) );
+        $b = self::byItem( $r, 12 );
+        $this->assertSame( 1, $b['LINK_NO_POST'][0]['count'] );
+        $this->assertStringContainsString( '/blog/missing/', $b['LINK_NO_POST'][0]['detail'] );
     }
 
     public function testItIsPaginatedTwentyFivePerCall(): void

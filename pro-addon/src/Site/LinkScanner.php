@@ -20,20 +20,25 @@ final class LinkScanner
 {
     public const MAX_LINKS = 200;
 
-    private const ATTRIBUTE = '/"[A-Za-z]*(?:[Uu]rl|[Ll]ink|[Hh]ref)"\s*:\s*"((?:[^"\\\\]|\\\\.)*)"/';
+    private const ATTRIBUTE = '/"[A-Za-z]*(?:[Uu]rl|[Ll]ink|[Hh]ref)"\s*:\s*"((?:[^"\\\\]++|\\\\.)*+)"/';
     private const HTML_HREF = '/href=\\\\u0022(.*?)\\\\u0022/s';
-    private const SKIPPED   = '#^/(?:wp-content|wp-includes|wp-admin|wp-json|wp-login\.php|feed)(?:/|$|\?)#i';
+    // WordPress's own paths anywhere in the path (a subdirectory install keeps them under its home path); `feed` only as the last segment.
+    private const SKIPPED   = '#/(?:wp-content|wp-includes|wp-admin|wp-json|wp-login\.php)(?:/|$|\?)|/feed/?(?:\?|$)#i';
+    // A file, not a page: the last segment (before any query string) ends in a 1-5 character extension (no trailing slash).
+    private const FILE      = '#/[^/]*\.[A-Za-z0-9]{1,5}$#';
 
     /** @return list<string> root-relative paths (with their query string), unique, at most MAX_LINKS */
     public static function internalPaths( string $content, string $siteHost ): array
     {
         $values = [];
-        if ( preg_match_all( self::ATTRIBUTE, $content, $m ) ) {
+        $m = [];
+        if ( false !== preg_match_all( self::ATTRIBUTE, $content, $m ) ) {
             foreach ( $m[1] as $raw ) {
                 $values[] = self::decode( $raw );
             }
         }
-        if ( preg_match_all( self::HTML_HREF, $content, $m ) ) {
+        $m = [];
+        if ( false !== preg_match_all( self::HTML_HREF, $content, $m ) ) {
             foreach ( $m[1] as $raw ) {
                 $values[] = self::decode( $raw );
             }
@@ -59,6 +64,12 @@ final class LinkScanner
         return is_string( $decoded ) ? $decoded : $raw;
     }
 
+    /** The path without its query string, for the file-extension check (a trailing slash means a page, not a file). */
+    private static function pathOnly( string $value ): string
+    {
+        return (string) strtok( $value, '?' );
+    }
+
     private static function toInternalPath( string $value, string $host ): ?string
     {
         if ( '' === $value || '#' === $value[0] || str_starts_with( $value, '$variable(' ) || 1 === preg_match( '/^(?:mailto|tel|sms|javascript|data):/i', $value ) ) {
@@ -75,8 +86,16 @@ final class LinkScanner
             return null;
         }
         $value = (string) preg_replace( '/#.*$/', '', $value );
-        if ( '/' === $value || '' === $value || 1 === preg_match( self::SKIPPED, $value ) ) {
+        if ( '/' === $value || '' === $value || 1 === preg_match( self::SKIPPED, $value ) || 1 === preg_match( self::FILE, self::pathOnly( $value ) ) ) {
             return null;
+        }
+        // A search link (`/?s=x`, `/blog/?q=1&s=x`) is a query, not a page.
+        $query = (string) parse_url( $value, PHP_URL_QUERY );
+        if ( '' !== $query ) {
+            parse_str( $query, $params );
+            if ( array_key_exists( 's', $params ) ) {
+                return null;
+            }
         }
 
         return $value;

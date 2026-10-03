@@ -49,7 +49,12 @@ if ( ! function_exists( 'url_to_postid' ) ) {
                 return (int) $q[ $k ];
             }
         }
-        $slug = trim( (string) ( $parts['path'] ?? '' ), '/' );
+        $path = (string) ( $parts['path'] ?? '' );
+        $home = rtrim( (string) ( parse_url( function_exists( 'home_url' ) ? (string) home_url() : '', PHP_URL_PATH ) ?? '' ), '/' );
+        if ( '' !== $home && ( $path === $home || str_starts_with( $path, $home . '/' ) ) ) {
+            $path = substr( $path, strlen( $home ) );
+        }
+        $slug = trim( $path, '/' );
         foreach ( $GLOBALS['__wp_posts'] ?? [] as $id => $p ) {
             if ( '' !== $slug && ( $p->post_name ?? '' ) === $slug ) {
                 return (int) $id;

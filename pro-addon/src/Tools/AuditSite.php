@@ -152,7 +152,9 @@ final class AuditSite implements ProTool
         // 3. Internal links to nothing, or to something that is not published. Read from the content; nothing is requested.
         $missing = [];
         $draft   = [];
-        $base    = rtrim( home_url(), '/' );
+        // Root-relative links are relative to the host root, not to the WordPress home path (a subdirectory install).
+        $home    = (array) wp_parse_url( home_url() );
+        $base    = ( $home['scheme'] ?? 'https' ) . '://' . ( $home['host'] ?? $host ) . ( isset( $home['port'] ) ? ':' . $home['port'] : '' );
         foreach ( LinkScanner::internalPaths( $content, $host ) as $path ) {
             $id = (int) url_to_postid( $base . $path );
             if ( 0 === $id ) {
