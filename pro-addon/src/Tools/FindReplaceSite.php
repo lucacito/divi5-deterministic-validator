@@ -121,8 +121,15 @@ final class FindReplaceSite implements ProTool
                 $candidates[] = $item + [ 'content' => $content, 'occurrences' => $count, 'hash' => substr( Canon::hash( $content ), 0, 16 ) ];
             }
         }
-        $extra = null === $set['layouts_note'] ? [] : [ 'layouts_note' => $set['layouts_note'] ];
+        $extra    = null === $set['layouts_note'] ? [] : [ 'layouts_note' => $set['layouts_note'] ];
+        $argsHash = Canon::hash( [ 'find' => $find, 'replace' => $replace, 'scope' => $scope, 'ids' => $ids ] );
         if ( [] === $candidates ) {
+            // A real run whose every previewed item has since stopped matching: report them, do not stay silent.
+            $gone = $dry || null === $token ? null : PreviewToken::open( $token, $argsHash, ( $this->clock )() );
+            if ( null !== $gone && [] !== $gone ) {
+                return [ 'changed' => false, 'dry_run' => false, 'replaced_in' => 0, 'skipped' => self::dropped( $gone, [] ), 'message' => 'Nothing was saved.' ] + $extra;
+            }
+
             return [ 'changed' => false, 'dry_run' => $dry, 'matched' => 0, 'message' => 'The text was not found in any of the pages or layouts in scope. Nothing changed.' ] + $extra;
         }
         if ( count( $candidates ) > self::MAX_ITEMS ) {
@@ -137,7 +144,6 @@ final class FindReplaceSite implements ProTool
             $gate = LayoutGate::check( $new, $c['content'] );
             $plan[] = $c + [ 'new' => $new, 'valid' => $edit['ok'] && $gate->isValid(), 'codes' => self::codes( $gate ) ];
         }
-        $argsHash = Canon::hash( [ 'find' => $find, 'replace' => $replace, 'scope' => $scope, 'ids' => $ids ] );
 
         if ( $dry ) {
             return $this->preview( $plan, $argsHash ) + $extra;
@@ -228,6 +234,7 @@ final class FindReplaceSite implements ProTool
         if ( $layouts ) {
             LayoutCaches::clear();
         }
+        $skipped = array_merge( $skipped, self::dropped( $map, $plan ) );
         if ( [] === $items ) {
             return [ 'changed' => false, 'dry_run' => false, 'replaced_in' => 0, 'skipped' => $skipped, 'message' => 'Nothing was saved.' ];
         }
@@ -235,6 +242,27 @@ final class FindReplaceSite implements ProTool
         $batch = $this->log->record( self::NAME, 'Replaced "' . $short . '" in ' . count( $items ) . ' item(s)', $items );
 
         return BatchLog::attach( [ 'changed' => true, 'dry_run' => false, 'replaced_in' => count( $items ), 'skipped' => $skipped ], $batch );
+    }
+
+    /**
+     * Items the preview saw that are no longer candidates (edited so the text is gone, trashed, or no longer editable
+     * by this user). Only the id and the reason: the item may not be readable any more.
+     *
+     * @param array<int,string> $map id => content hash the preview saw
+     * @param list<array<string,mixed>> $plan
+     * @return list<array{id:int, reason:string}>
+     */
+    private static function dropped( array $map, array $plan ): array
+    {
+        $planned = array_column( $plan, 'id' );
+        $rows    = [];
+        foreach ( array_keys( $map ) as $id ) {
+            if ( ! in_array( $id, $planned, true ) ) {
+                $rows[] = [ 'id' => $id, 'reason' => 'changed_since_preview' ];
+            }
+        }
+
+        return $rows;
     }
 
     /** @return list<string> */

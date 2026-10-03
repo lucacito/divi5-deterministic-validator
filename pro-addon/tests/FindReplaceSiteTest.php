@@ -181,13 +181,62 @@ class FindReplaceSiteTest extends TestCase
 
     public function testAnInvalidItemNeverStopsTheOthers(): void
     {
-        // page 11 would become invalid; page 12 stays fine
-        $GLOBALS['__wp_posts'][11]->post_content = str_replace( 'Hello AIED-OLD world', 'X AIED-OLD', self::text( 'x' ) );
-        $args = [ 'find' => 'wp:divi/heading', 'replace' => 'wp:divi/not-a-module', 'page_ids' => [ 11 ] ];
-        $p    = $this->tool->run( $args + [ 'dry_run' => true ] );
+        // ONE run, the same find/replace for every item: page 11 holds a module whose name contains the needle (the
+        // replacement would turn it into an unknown module), page 12 holds the needle only in plain heading text.
+        $needle = 'wp:divi/divider';
+        $with   = str_replace( '<!-- /wp:divi/column -->', '<!-- ' . $needle . ' {"builderVersion":"5.14.0"} /--><!-- /wp:divi/column -->', self::text( 'x' ) );
+        $GLOBALS['__wp_posts'][11]->post_content = $with;
+        $GLOBALS['__wp_posts'][12]->post_content = self::text( 'see ' . $needle . ' here' );
+        $GLOBALS['__wp_posts'][13]->post_content = '';
+        $GLOBALS['__wp_posts'][14]->post_content = '';
+        $args = [ 'find' => $needle, 'replace' => 'wp:divi/not-a-module' ];
+
+        $p = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $this->assertSame( 2, $p['matched'] );
         $this->assertSame( 1, $p['would_skip'] );
-        $this->apply();
-        $this->assertSame( self::text( 'Hello AIED-NEW world' ), $this->layoutContent( 12 ) );
+        $this->assertSame( 1, $p['would_change'] );
+        $r = $this->tool->run( $args + [ 'token' => $p['token'] ] );
+
+        $this->assertTrue( $r['changed'] );
+        $this->assertSame( 1, $r['replaced_in'] );
+        $this->assertCount( 1, $r['skipped'] );
+        $this->assertSame( [ 11, 'invalid_result' ], [ $r['skipped'][0]['id'], $r['skipped'][0]['reason'] ] );
+        $this->assertSame( $with, $this->layoutContent( 11 ), 'the invalid item is never saved' );
+        $this->assertSame( self::text( 'see wp:divi/not-a-module here' ), $this->layoutContent( 12 ) );
+        $this->assertCount( 1, $this->repo->rows );
+        $this->assertCount( 1, $this->repo->rows[ $r['batch']['id'] ]['items'] );
+    }
+
+    public function testAnItemThatNoLongerMatchesSinceThePreviewIsReportedNotDropped(): void
+    {
+        $p = $this->tool->run( $this->args( [ 'dry_run' => true ] ) );
+        $GLOBALS['__wp_posts'][12]->post_content = self::text( 'Edited in the builder, no match' );
+        $r = $this->tool->run( $this->args( [ 'token' => $p['token'] ] ) );
+        $this->assertSame( 3, $r['replaced_in'] );
+        $this->assertSame( [ [ 'id' => 12, 'reason' => 'changed_since_preview' ] ], $r['skipped'] );
+        $this->assertSame( self::text( 'Edited in the builder, no match' ), $this->layoutContent( 12 ), 'never overwritten' );
+        $this->assertSame( self::text( 'Hello AIED-NEW world' ), $this->layoutContent( 11 ) );
+    }
+
+    public function testAPreviewedItemThatWasTrashedSinceThePreviewIsReportedToo(): void
+    {
+        $p = $this->tool->run( $this->args( [ 'dry_run' => true ] ) );
+        $GLOBALS['__wp_posts'][13]->post_status = 'trash';
+        $r = $this->tool->run( $this->args( [ 'token' => $p['token'] ] ) );
+        $this->assertSame( 3, $r['replaced_in'] );
+        $this->assertSame( [ [ 'id' => 13, 'reason' => 'changed_since_preview' ] ], $r['skipped'] );
+    }
+
+    public function testWhenEveryPreviewedItemStoppedMatchingTheyAreAllReported(): void
+    {
+        $p = $this->tool->run( $this->args( [ 'dry_run' => true, 'page_ids' => [ 11, 12 ] ] ) );
+        $GLOBALS['__wp_posts'][11]->post_content = self::text( 'gone' );
+        $GLOBALS['__wp_posts'][12]->post_content = self::text( 'gone' );
+        $r = $this->tool->run( $this->args( [ 'page_ids' => [ 11, 12 ], 'token' => $p['token'] ] ) );
+        $this->assertFalse( $r['changed'] );
+        $this->assertSame( 0, $r['replaced_in'] );
+        $this->assertSame( [ [ 'id' => 11, 'reason' => 'changed_since_preview' ], [ 'id' => 12, 'reason' => 'changed_since_preview' ] ], $r['skipped'] );
+        $this->assertSame( [], $this->repo->rows );
     }
 
     public function testMoreThanFiftyItemsAreRefusedWithTheCountNotTruncated(): void
