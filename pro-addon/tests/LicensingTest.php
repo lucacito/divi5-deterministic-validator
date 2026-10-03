@@ -366,4 +366,15 @@ class LicensingTest extends TestCase
         Licensing::clear();
         $this->assertArrayNotHasKey( Licensing::REFRESH_BACKOFF_TRANSIENT, $GLOBALS['__wp_transients'] );
     }
+
+    public function testTheApiBaseOverrideIsHonouredOnlyOnALocalOrDevelopmentSite(): void
+    {
+        $this->assertSame( 'http://localhost:3000', Licensing::apiBaseFor( 'http://localhost:3000/', 'local' ) );
+        $this->assertSame( 'http://localhost:3000', Licensing::apiBaseFor( 'http://localhost:3000', 'development' ) );
+        foreach ( [ 'production', 'staging', '' ] as $env ) {
+            $this->assertSame( 'https://divi5lab.com', Licensing::apiBaseFor( 'https://evil.example', $env ), "env: {$env}" );
+        }
+        $this->assertSame( 'https://divi5lab.com', Licensing::apiBaseFor( null, 'local' ) );
+        $this->assertSame( 'https://divi5lab.com', Licensing::apiBaseFor( '', 'local' ) );
+    }
 }

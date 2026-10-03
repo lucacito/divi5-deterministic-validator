@@ -229,7 +229,50 @@ class ProPageTest extends TestCase
         $this->asPost( 'aied_pro_activate', [ 'license_key' => self::KEY ] );
         $this->page()->handleActivate();
         $this->assertFalse( Licensing::isPremium() );
-        $this->assertStringContainsString( 'aied_pro_notice=activate_failed', $GLOBALS['__wp_redirects'][0] );
+        $this->assertStringContainsString( 'aied_pro_notice=key_invalid', $GLOBALS['__wp_redirects'][0] );
+    }
+
+    /** @return array<string,array{?string,string}> */
+    public static function activationErrors(): array
+    {
+        return [
+            'invalid key'      => [ 'invalid_key', 'key_invalid' ],
+            'wrong product'    => [ 'product_mismatch', 'key_wrong_product' ],
+            'not usable'       => [ 'license_not_usable', 'key_not_usable' ],
+            'rate limited'     => [ 'rate_limited', 'rate_limited' ],
+            'offline'          => [ 'network_error', 'offline' ],
+            'something else'   => [ 'http_500', 'activate_failed' ],
+            'no error at all'  => [ null, 'activate_failed' ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'activationErrors' )]
+    public function testEachActivationFailureHasItsOwnNotice( ?string $error, string $notice ): void
+    {
+        $this->assertSame( $notice, ProPage::failureNotice( $error ) );
+    }
+
+    public function testTheOfflineAndRateLimitedFailuresReachTheRedirect(): void
+    {
+        $GLOBALS['__wp_http_queue'][] = 'network_error';
+        $this->asPost( 'aied_pro_activate', [ 'license_key' => self::KEY ] );
+        $this->page()->handleActivate();
+        $this->assertStringContainsString( 'aied_pro_notice=offline', $GLOBALS['__wp_redirects'][0] );
+
+        $GLOBALS['__wp_http_queue'][] = [ 'code' => 429, 'body' => [ 'error' => 'rate_limited' ] ];
+        $this->asPost( 'aied_pro_activate', [ 'license_key' => self::KEY ] );
+        $this->page()->handleActivate();
+        $this->assertStringContainsString( 'aied_pro_notice=rate_limited', $GLOBALS['__wp_redirects'][1] );
+    }
+
+    public function testEveryFailureNoticeHasAnExplanatoryMessage(): void
+    {
+        foreach ( [ 'key_invalid' => 'not recognised', 'key_wrong_product' => 'different product', 'key_not_usable' => 'not active', 'rate_limited' => 'Too many', 'offline' => 'divi5lab.com' ] as $notice => $text ) {
+            $_GET['aied_pro_notice'] = $notice;
+            $html                    = $this->render( $this->page() );
+            $this->assertStringContainsString( 'notice-error', $html, $notice );
+            $this->assertStringContainsString( $text, $html, $notice );
+        }
     }
 
     public function testDeactivationReleasesTheLicenceAndLocks(): void

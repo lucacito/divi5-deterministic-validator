@@ -26,12 +26,27 @@ final class Licensing
     /** Answers that are a decision about this licence. Anything else (an HTML error page, an empty or non-JSON body, `invalid_request`) is a fault. */
     private const VERDICT_ERRORS  = [ 'invalid_key', 'product_mismatch', 'license_not_usable' ];
 
+    private const DEFAULT_API_BASE = 'https://divi5lab.com';
+
     public const UPGRADE_URL = 'https://divi5lab.com/plugins/divi-5-ai-editor';
 
     public const REFRESH_BACKOFF_TRANSIENT = 'aied_pro_refresh_backoff';
     public const REFRESH_BACKOFF_SECONDS   = 900;
 
     private static ?LicenseClient $client = null;
+
+    /**
+     * The licence key is sent to this host, so an override is honoured only on a local or development site
+     * (`wp_get_environment_type()`); on any other site the constant is ignored and divi5lab.com is used.
+     */
+    public static function apiBaseFor( ?string $override, string $envType ): string
+    {
+        if ( null !== $override && '' !== $override && in_array( $envType, [ 'local', 'development' ], true ) ) {
+            return rtrim( $override, '/' );
+        }
+
+        return self::DEFAULT_API_BASE;
+    }
 
     public static function client(): LicenseClient
     {
@@ -40,7 +55,7 @@ final class Licensing
                 AIED_PRO_PRODUCT,
                 AIED_PRO_VERSION,
                 // Dev/test override only. Never define it in production: the licence key is sent to this host.
-                defined( 'AIED_PRO_API_BASE' ) ? (string) AIED_PRO_API_BASE : 'https://divi5lab.com',
+                self::apiBaseFor( defined( 'AIED_PRO_API_BASE' ) ? (string) AIED_PRO_API_BASE : null, wp_get_environment_type() ),
                 plugin_basename( AIED_PRO_FILE ),
                 'ai-editor-divi5',
                 self::UPGRADE_URL,
