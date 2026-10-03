@@ -50,3 +50,25 @@ if ( ! function_exists( 'wp_die' ) ) {
 if ( ! function_exists( 'wp_safe_redirect' ) ) {
     function wp_safe_redirect( $url ) { $GLOBALS['__wp_redirects'][] = (string) $url; return true; }
 }
+if ( ! function_exists( 'remove_filter' ) ) {
+    function remove_filter( $tag, $fn, $priority = 10 ) {
+        foreach ( $GLOBALS['__wp_filters'][ $tag ] ?? [] as $i => $f ) {
+            if ( $f === $fn ) {
+                unset( $GLOBALS['__wp_filters'][ $tag ][ $i ] );
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+if ( ! function_exists( 'wp_doing_ajax' ) ) {
+    function wp_doing_ajax(): bool { return (bool) ( $GLOBALS['__wp_doing_ajax'] ?? false ); }
+}
+if ( ! function_exists( 'wp_doing_cron' ) ) {
+    function wp_doing_cron(): bool { return (bool) ( $GLOBALS['__wp_doing_cron'] ?? false ); }
+}
+if ( ! function_exists( 'wp_get_environment_type' ) ) {
+    function wp_get_environment_type(): string { return (string) ( $GLOBALS['__wp_env_type'] ?? 'production' ); }
+}

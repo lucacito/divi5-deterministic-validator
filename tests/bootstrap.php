@@ -91,7 +91,9 @@ if ( ! function_exists( '__wp_http_next' ) ) {
         $GLOBALS['__wp_http_log'][] = [ 'url' => $url, 'payload' => $payload ];
         $next = array_shift( $GLOBALS['__wp_http_queue'] );
         if ( $next === null || $next === 'network_error' ) return new WP_Error();
-        return [ 'response' => [ 'code' => $next['code'] ], 'body' => json_encode( $next['body'] ) ];
+        // A string body is sent as-is (an HTML error page, an empty body); an array is JSON-encoded.
+        $res = [ 'response' => [ 'code' => $next['code'] ], 'body' => is_string( $next['body'] ) ? $next['body'] : json_encode( $next['body'] ) ];
+        return apply_filters( 'http_response', $res, [], $url );
     }
 }
 if ( ! function_exists( 'wp_remote_post' ) ) {

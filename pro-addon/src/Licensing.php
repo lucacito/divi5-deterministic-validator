@@ -22,6 +22,9 @@ final class Licensing
 {
     private const UNLOCKED_OPTION = 'aied_pro_premium_unlocked';
     private const LOCKING         = [ 'revoked', 'invalid' ];
+    private const STATE_OPTION    = 'aied_pro_license_state';
+    /** Answers that are a decision about this licence. Anything else (an HTML error page, an empty or non-JSON body, `invalid_request`) is a fault. */
+    private const VERDICT_ERRORS  = [ 'invalid_key', 'product_mismatch', 'license_not_usable' ];
 
     public const UPGRADE_URL = 'https://divi5lab.com/plugins/divi-5-ai-editor';
 
@@ -80,7 +83,56 @@ final class Licensing
 
     public static function refresh( bool $force = false ): void
     {
-        self::client()->refresh( $force );
+        $client = self::client();
+        if ( null === $client->get_key() ) {
+            return;
+        }
+        $before  = $client->get_state();
+        $seen    = null;
+        $capture = static function ( $response, $args = [], $url = '' ) use ( &$seen ) {
+            if ( is_array( $response ) && is_string( $url ) && str_contains( $url, '/api/license/validate' ) ) {
+                $seen = [ 'code' => (int) wp_remote_retrieve_response_code( $response ), 'body' => (string) wp_remote_retrieve_body( $response ) ];
+            }
+
+            return $response;
+        };
+        add_filter( 'http_response', $capture, 10, 3 );
+        try {
+            $client->refresh( $force );
+        } finally {
+            remove_filter( 'http_response', $capture, 10 );
+        }
+
+        // The generated client files any definitive-looking non-200 answer as `invalid`. Only an answer that
+        // really is a decision about this licence may keep that; after a fault the previous state comes back.
+        $after = $client->get_state();
+        if ( in_array( $after['status'] ?? '', self::LOCKING, true ) && ! self::isVerdict( $seen ) ) {
+            if ( null === $before ) {
+                delete_option( self::STATE_OPTION );
+            } else {
+                update_option( self::STATE_OPTION, $before, false );
+            }
+        }
+    }
+
+    /** @param array{code:int, body:string}|null $seen the raw validate answer */
+    private static function isVerdict( ?array $seen ): bool
+    {
+        if ( null === $seen ) {
+            return false;
+        }
+        $body = json_decode( $seen['body'], true );
+        if ( ! is_array( $body ) ) {
+            return false;
+        }
+        if ( 200 === $seen['code'] ) {
+            return is_string( $body['status'] ?? null ) && in_array( $body['status'], self::LOCKING, true );
+        }
+        if ( ! in_array( $seen['code'], [ 403, 404 ], true ) ) {
+            return false;
+        }
+
+        return is_string( $body['error'] ?? null ) && in_array( $body['error'], self::VERDICT_ERRORS, true );
     }
 
     /**

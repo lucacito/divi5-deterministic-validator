@@ -29,7 +29,7 @@ class LicensingTest extends TestCase
         Licensing::resetForTests();
     }
 
-    private function queue( int $code, array $body ): void
+    private function queue( int $code, array|string $body ): void
     {
         $GLOBALS['__wp_http_queue'][] = [ 'code' => $code, 'body' => $body ];
     }
@@ -142,6 +142,58 @@ class LicensingTest extends TestCase
         $res = Licensing::activate( 'JHMG-NEWK-NEWK-NEWK-NEWK' );
         $this->assertTrue( $res['ok'] );
         $this->assertTrue( Licensing::isPremium() );
+    }
+
+    /** @return array<string,array{int,array|string}> */
+    public static function serverFaults(): array
+    {
+        return [
+            'html 403 from a proxy'                      => [ 403, '<html><body>Forbidden</body></html>' ],
+            'html 404 from a broken deploy'              => [ 404, '<h1>Not Found</h1>' ],
+            'empty 404'                                  => [ 404, '' ],
+            'empty json 404'                             => [ 404, [] ],
+            'invalid_request is our fault, not a verdict' => [ 400, [ 'error' => 'invalid_request' ] ],
+            '403 with an unknown error code'             => [ 403, [ 'error' => 'teapot' ] ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'serverFaults' )]
+    public function testAServerFaultNeverLocksAndLeavesTheStoredStateAlone( int $code, array|string $body ): void
+    {
+        $this->activatePremium();
+        $this->ageState();
+        $stored = $GLOBALS['__wp_options']['aied_pro_license_state'];
+        $this->queue( $code, $body );
+        Licensing::refresh();
+        $this->assertTrue( Licensing::isPremium(), 'a fault is not a verdict' );
+        $this->assertSame( $stored, $GLOBALS['__wp_options']['aied_pro_license_state'], 'the stored state is exactly what it was' );
+    }
+
+    public function testAnExplicit200RevokedVerdictLocks(): void
+    {
+        $this->activatePremium();
+        $this->ageState();
+        $this->queue( 200, [ 'status' => 'revoked', 'expires' => null ] );
+        Licensing::refresh();
+        $this->assertFalse( Licensing::isPremium() );
+    }
+
+    public function testProductMismatchIsAnExplicitVerdictAndLocks(): void
+    {
+        $this->activatePremium();
+        $this->ageState();
+        $this->queue( 403, [ 'error' => 'product_mismatch' ] );
+        Licensing::refresh();
+        $this->assertFalse( Licensing::isPremium() );
+    }
+
+    public function testAFaultDoesNotUndoAnEarlierExplicitRevocation(): void
+    {
+        $this->testRevokedVerdictLocksPremium();
+        $this->ageState();
+        $this->queue( 403, '<html>Forbidden</html>' );
+        Licensing::refresh();
+        $this->assertFalse( Licensing::isPremium(), 'a fault changes nothing, in either direction' );
     }
 
     public function testDeactivateClearsPremium(): void
