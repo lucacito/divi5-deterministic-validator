@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace AiEditorDivi5\Pro;
 
 use AiEditorDivi5\Pro\Batch\Batches;
+use AiEditorDivi5\Pro\Tools\ListBatches;
 use AiEditorDivi5\Pro\Tools\ProposePhpSnippet;
 use AiEditorDivi5\Pro\Tools\PublishPage;
 use AiEditorDivi5\Pro\Tools\SetCustomCss;
 use AiEditorDivi5\Pro\Tools\SetFrontPage;
 use AiEditorDivi5\Pro\Tools\SetPrimaryMenu;
+use AiEditorDivi5\Pro\Tools\UndoBatch;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -29,6 +31,8 @@ final class Tools
             new SetPrimaryMenu( $log ),
             new PublishPage( $log ),
             new ProposePhpSnippet(),
+            new ListBatches( $log ),
+            new UndoBatch( $log, Batches::undo() ),
         ];
     }
 }
