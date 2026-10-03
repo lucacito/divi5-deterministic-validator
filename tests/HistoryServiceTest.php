@@ -293,13 +293,36 @@ class HistoryServiceTest extends TestCase
         $this->assertSame( [ 6, 7 ], array_column( $rows, 'page_id' ) );
     }
 
-    public function testRecentMissingPostYieldsEmptyTitleWithoutWarning(): void
+    public function testRecentHidesRowsThatRestoreCouldNeverRestore(): void
     {
-        $this->seedHistory( 99, '2026-01-01T00:00:00Z' );
+        // Header/footer layouts (edited by an add-on), a page this user may not edit, and a post that no longer exists.
+        $GLOBALS['__wp_posts'][20] = (object) [ 'ID' => 20, 'post_type' => 'et_header_layout', 'post_title' => 'Header', 'post_content' => 'h' ];
+        $GLOBALS['__wp_posts'][21] = (object) [ 'ID' => 21, 'post_type' => 'et_footer_layout', 'post_title' => 'Footer', 'post_content' => 'f' ];
+        $GLOBALS['__wp_posts'][6]  = (object) [ 'ID' => 6, 'post_type' => 'page', 'post_title' => 'Locked', 'post_content' => 'l' ];
+        $GLOBALS['__wp_caps']      = [ 'edit_post' => true, 'edit_post:6' => false ];
+        $GLOBALS['__wp_posts'][5]->post_title = 'Home';
+        foreach ( [ 5 => '2026-01-01T00:00:00Z', 6 => '2026-02-01T00:00:00Z', 20 => '2026-03-01T00:00:00Z', 21 => '2026-04-01T00:00:00Z', 99 => '2026-05-01T00:00:00Z' ] as $id => $at ) {
+            $this->seedHistory( $id, $at );
+        }
         $rows = HistoryService::recent( 5 );
-        $this->assertCount( 1, $rows );
-        $this->assertSame( '', $rows[0]['title'] );
-        $this->assertSame( 99, $rows[0]['page_id'] );
+        $this->assertSame( [ 5 ], array_column( $rows, 'page_id' ) );
+        $this->assertSame( 'Home', $rows[0]['title'] );
+        unset( $GLOBALS['__wp_caps'] );
+    }
+
+    public function testRecentStillFillsItsLimitWhenTheNewestRowsAreHidden(): void
+    {
+        foreach ( [ 6, 7 ] as $id ) {
+            $GLOBALS['__wp_posts'][ $id ] = (object) [ 'ID' => $id, 'post_type' => 'page', 'post_title' => "P{$id}", 'post_content' => 'x' ];
+        }
+        $this->seedHistory( 6, '2026-01-01T00:00:00Z' );
+        $this->seedHistory( 7, '2026-01-02T00:00:00Z' );
+        foreach ( [ 30, 31, 32, 33, 34 ] as $n => $id ) {
+            $GLOBALS['__wp_posts'][ $id ] = (object) [ 'ID' => $id, 'post_type' => 'et_header_layout', 'post_title' => "H{$id}", 'post_content' => 'h' ];
+            $this->seedHistory( $id, '2026-02-0' . ( $n + 1 ) . 'T00:00:00Z' );
+        }
+        $rows = HistoryService::recent( 2 );
+        $this->assertSame( [ 7, 6 ], array_column( $rows, 'page_id' ), 'five newer header rows must not push the pages out of a limit of 2' );
     }
 
     public function testRecentOnAnEmptyTableIsEmpty(): void

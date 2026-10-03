@@ -263,6 +263,12 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   write tool) must go through `LayoutGate::check()`.
   Style-value guard scope is a named list (decoration/advanced + listed families), not a proof of completeness; add new
   CSS-bearing families when found.
+- **4.5.0 = dashboard recent-edits fix** (branch `feat/free-4-5-0`; local only, NOT merged, NOT uploaded; ships after the
+  WordPress.org answer together with whatever else is pending): `HistoryService::recent()` now keeps only rows
+  `EditTarget::resolve()` accepts (the Restore handler's own rule), filtered BEFORE the limit (it scans the newest 200
+  rows), so header/footer edits made by the Pro add-on and deleted or non-editable pages no longer show a Restore button
+  that always fails. A "use the Pro tab" label was rejected: the only Pro mention allowed in the free UI is the one
+  dismissible card. 727 tests. Rebuilding `jhmg-ai-editor-for-divi-5.zip` replaces the tracked 4.4.0 build (583a54c).
 - **4.4.0 = global styles release PLUS the free re-cut** (merged to LOCAL main, 026a571; NOT uploaded): read-only
   `list_global_styles` (16th tool) + non-blocking style-reference advisory + guide updates (spec
   `docs/superpowers/specs/2026-10-01-global-styles-design.md`). The free re-cut removed the unreleased 4.3.0

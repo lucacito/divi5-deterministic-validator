@@ -98,15 +98,28 @@ final class HistoryService
         ];
     }
 
+    /** How many newest-per-page rows are looked at to find $limit restorable ones. */
+    private const RECENT_SCAN = 200;
+
     /**
+     * The newest snapshot of each page the current user can restore, newest first. A row whose post is not a page
+     * this user may edit (for example a header or footer layout saved by an add-on, or a deleted post) is left out:
+     * restoring it would always be refused, and the filter runs before the limit so hidden rows never use up a slot.
+     *
      * @return list<array{page_id:int, title:string, version_id:int, saved_at:mixed, tool:mixed}>
      */
     public static function recent( int $limit = 5 ): array
     {
         $rows = [];
-        foreach ( HistoryStore::recent( $limit ) as $row ) {
-            $post   = get_post( $row['page_id'] );
-            $rows[] = $row + [ 'title' => $post ? (string) ( $post->post_title ?? '' ) : '' ];
+        foreach ( HistoryStore::recent( max( $limit, self::RECENT_SCAN ) ) as $row ) {
+            if ( count( $rows ) >= $limit ) {
+                break;
+            }
+            $target = EditTarget::resolve( $row['page_id'] );
+            if ( null === $target['post'] ) {
+                continue;
+            }
+            $rows[] = $row + [ 'title' => (string) ( $target['post']->post_title ?? '' ) ];
         }
 
         return $rows;
