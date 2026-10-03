@@ -24,6 +24,7 @@ final class Compat
         'AiEditorDivi5\\WP\\DryRun',
         'AiEditorDivi5\\WP\\StyleReferences',
         'AiEditorDivi5\\WP\\ExtensionGuard',
+        'AiEditorDivi5\\WP\\LayoutGate',
     ];
 
     /**

@@ -27,6 +27,7 @@ class FreeApiCompatTest extends TestCase
             [ $w . 'HistoryService', 'listFor', [ 'pageId' => 'int' ], 'array' ],
             [ $w . 'PageEditor', 'apply', [ 'content' => 'string', 'find' => 'string', 'replace' => 'string', 'expectCount' => '?int' ], 'array' ],
             [ $w . 'EditTarget', 'resolve', [ 'id' => 'int' ], 'array' ],
+            [ $w . 'LayoutGate', 'check', [ 'content' => 'string', 'baseline' => '?string' ], 'Divi5Validator\\ValidationResult' ],
             [ $w . 'DryRun', 'preview', [ 'before' => 'string', 'after' => 'string' ], 'array' ],
             [ $w . 'StyleReferences', 'attach', [ 'payload' => 'array', 'content' => 'string' ], 'array' ],
             [ $w . 'StyleReferences', 'advise', [ 'content' => 'string', 'known' => 'array' ], '?array' ],
