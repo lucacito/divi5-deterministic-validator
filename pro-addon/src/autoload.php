@@ -54,6 +54,8 @@ require_once __DIR__ . '/Tools/ManageThemeTemplate.php';
 require_once __DIR__ . '/Site/SiteItems.php';
 require_once __DIR__ . '/Site/PreviewToken.php';
 require_once __DIR__ . '/Tools/FindReplaceSite.php';
+require_once __DIR__ . '/Site/LinkScanner.php';
+require_once __DIR__ . '/Tools/AuditSite.php';
 require_once __DIR__ . '/Admin/AdminActions.php';
 require_once __DIR__ . '/Admin/ProposalsPanel.php';
 require_once __DIR__ . '/Admin/BatchesPanel.php';

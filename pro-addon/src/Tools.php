@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AiEditorDivi5\Pro;
 
 use AiEditorDivi5\Pro\Batch\Batches;
+use AiEditorDivi5\Pro\Tools\AuditSite;
 use AiEditorDivi5\Pro\Tools\EditThemeLayout;
 use AiEditorDivi5\Pro\Tools\FindReplaceSite;
 use AiEditorDivi5\Pro\Tools\ListBatches;
@@ -43,6 +44,7 @@ final class Tools
             new EditThemeLayout( $log ),
             new ManageThemeTemplate( $log ),
             new FindReplaceSite( $log ),
+            new AuditSite(),
         ];
     }
 }
