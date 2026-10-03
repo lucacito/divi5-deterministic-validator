@@ -43,7 +43,7 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 
 == Uninstall ==
 
-Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS or page statuses: undo those first if you want them back.
+Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
 

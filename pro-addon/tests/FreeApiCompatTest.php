@@ -50,6 +50,28 @@ class FreeApiCompatTest extends TestCase
         $this->assertSame( $returns, (string) $m->getReturnType(), "{$class}::{$method} return type changed" );
     }
 
+    /** The validator types LayoutWriter::refusal() reads off the verdict LayoutGate::check() returns. */
+    public function testTheValidatorTypesTheAddOnReadsKeepTheirShape(): void
+    {
+        $isValid = new \ReflectionMethod( \Divi5Validator\ValidationResult::class, 'isValid' );
+        $this->assertTrue( $isValid->isPublic() && ! $isValid->isStatic() );
+        $this->assertSame( 0, $isValid->getNumberOfParameters() );
+        $this->assertSame( 'bool', (string) $isValid->getReturnType() );
+
+        $violations = new \ReflectionMethod( \Divi5Validator\ValidationResult::class, 'violations' );
+        $this->assertTrue( $violations->isPublic() && ! $violations->isStatic() );
+        $this->assertSame( 0, $violations->getNumberOfParameters() );
+        $this->assertSame( 'array', (string) $violations->getReturnType() );
+
+        $toArray = new \ReflectionMethod( \Divi5Validator\Violation::class, 'toArray' );
+        $this->assertTrue( $toArray->isPublic() && ! $toArray->isStatic() );
+        $this->assertSame( 0, $toArray->getNumberOfParameters() );
+        $this->assertSame( 'array', (string) $toArray->getReturnType() );
+
+        $this->assertSame( [ 'code', 'message', 'path' ], array_keys( ( new \Divi5Validator\Violation( 'c', 'm', 'p' ) )->toArray() ) );
+        $this->assertTrue( ( new \Divi5Validator\ValidationResult( [] ) )->isValid() );
+    }
+
     public function testTheEditTargetErrorConstantsStayTheSame(): void
     {
         $this->assertSame( 'not_found', \AiEditorDivi5\WP\EditTarget::NOT_FOUND );
