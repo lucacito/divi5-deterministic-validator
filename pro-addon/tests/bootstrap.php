@@ -72,3 +72,4 @@ if ( ! function_exists( 'wp_doing_cron' ) ) {
 if ( ! function_exists( 'wp_get_environment_type' ) ) {
     function wp_get_environment_type(): string { return (string) ( $GLOBALS['__wp_env_type'] ?? 'production' ); }
 }
+require_once __DIR__ . '/WpSettingsShims.php';

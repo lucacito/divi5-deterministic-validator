@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\Pro\Batch;
 
+use AiEditorDivi5\Pro\Kinds\CssKind;
 use AiEditorDivi5\Pro\Kinds\FrontPageKind;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,6 +27,7 @@ final class Batches
     {
         $kinds = [
             new FrontPageKind(),
+            new CssKind(),
         ];
         $out = [];
         foreach ( $kinds as $kind ) {
