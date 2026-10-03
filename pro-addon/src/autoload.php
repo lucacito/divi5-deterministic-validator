@@ -23,4 +23,7 @@ require_once __DIR__ . '/Batch/Item.php';
 require_once __DIR__ . '/Batch/ItemKind.php';
 require_once __DIR__ . '/Batch/ValueKind.php';
 require_once __DIR__ . '/Batch/BatchUndo.php';
+require_once __DIR__ . '/Kinds/FrontPageKind.php';
+require_once __DIR__ . '/Batch/Batches.php';
+require_once __DIR__ . '/Tools/SetFrontPage.php';
 require_once __DIR__ . '/Plugin.php';
