@@ -66,6 +66,10 @@ final class ProRest
             return new \WP_Error( 'pro_locked', 'The Pro tools are not unlocked on this site.', [ 'status' => 403 ] );
         }
         $body = $request->get_json_params();
+        // A body WordPress did not parse as JSON (sent as a form, or as text/plain) must not run the tool with its defaults.
+        if ( null === $body && '' !== trim( (string) $request->get_body() ) ) {
+            return new \WP_Error( 'invalid_argument', 'The request body must be a JSON object of arguments, sent with Content-Type: application/json.', [ 'status' => 400 ] );
+        }
         if ( null !== $body && ( ! is_array( $body ) || ( [] !== $body && array_is_list( $body ) ) ) ) {
             return new \WP_Error( 'invalid_argument', 'The request body must be a JSON object of arguments.', [ 'status' => 400 ] );
         }

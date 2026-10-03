@@ -19,9 +19,14 @@ if ( ! class_exists( 'WP_Post' ) ) {
 }
 if ( ! class_exists( 'WP_REST_Request' ) ) {
     class WP_REST_Request {
-        /** @param array<string,mixed> $json @param array<string,mixed> $params */
-        public function __construct( private array $json = [], private array $params = [] ) {}
+        /**
+         * @param array<string,mixed>|null $json what WordPress parsed from a JSON body (null: no JSON, as for a body sent without a JSON Content-Type)
+         * @param array<string,mixed> $params
+         * @param string|null $body the raw body (default: the JSON encoded again, or empty)
+         */
+        public function __construct( private ?array $json = [], private array $params = [], private ?string $body = null ) {}
         public function get_json_params() { return $this->json; }
+        public function get_body() { return $this->body ?? ( [] === $this->json || null === $this->json ? '' : json_encode( $this->json ) ); }
         public function get_param( $key ) { return $this->params[ $key ] ?? null; }
         public function get_header( $key ) { return null; }
     }
