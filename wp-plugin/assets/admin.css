@@ -88,6 +88,10 @@
 .aied-progress { height: 8px; background: #eceef4; border-radius: 999px; overflow: hidden; margin: 4px 0 14px; }
 .aied-progress > span { display: block; height: 100%; border-radius: 999px;
     background: linear-gradient(90deg, var(--aied-accent), var(--aied-accent-2)); transition: width .4s ease; }
+.aied-progress--33 > span { width: 33%; }
+.aied-progress--67 > span { width: 67%; }
+.aied-progress--100 > span { width: 100%; }
+.aied-inline-form { display: inline; }
 .aied-checklist { margin: 0; }
 .aied-checklist li { display: flex; align-items: center; gap: 10px; font-size: 13.5px; padding: 5px 0; color: var(--aied-muted); }
 .aied-checklist li.is-done { color: var(--aied-ink); }

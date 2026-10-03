@@ -492,7 +492,7 @@ final class AdminPage
                     <h3><?php esc_html_e( 'Setup progress', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
                     <span class="aied-muted"><?php echo esc_html( $progress['done'] . '/' . $progress['total'] ); ?></span>
                 </div>
-                <div class="aied-progress"><span style="width:<?php echo esc_attr( $progress['pct'] ); ?>%"></span></div>
+                <div class="aied-progress aied-progress--<?php echo esc_attr( (string) $progress['pct'] ); ?>"><span></span></div>
                 <ul class="aied-checklist">
                     <?php foreach ( $progress['steps'] as $s ) : ?>
                         <li class="<?php echo $s['done'] ? 'is-done' : ''; ?>">
@@ -610,7 +610,7 @@ final class AdminPage
                 <code class="aied-key" id="aied-api-key" data-key="<?php echo esc_attr( $key ); ?>">••••••••••••••••••••••••</code>
                 <button type="button" class="button" id="aied-toggle-key"><?php esc_html_e( 'Show', 'jhmg-ai-editor-for-divi-5' ); ?></button>
                 <button type="button" class="button button-primary" data-copy="<?php echo esc_attr( $key ); ?>"><?php esc_html_e( 'Copy', 'jhmg-ai-editor-for-divi-5' ); ?></button>
-                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline"
+                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="aied-inline-form"
                       data-confirm="<?php echo esc_attr__( 'Regenerate the key? You will need to update your AI assistant.', 'jhmg-ai-editor-for-divi-5' ); ?>">
                     <input type="hidden" name="action" value="ai_editor_divi5_regenerate_key">
                     <?php wp_nonce_field( 'ai_editor_divi5_regenerate_key' ); ?>
