@@ -10,6 +10,7 @@ use AiEditorDivi5\Pro\Kinds\MenuKind;
 use AiEditorDivi5\Pro\Kinds\PostContentKind;
 use AiEditorDivi5\Pro\Kinds\PostStatusKind;
 use AiEditorDivi5\Pro\Kinds\ThemeLayoutKind;
+use AiEditorDivi5\Pro\Kinds\ThemeTemplateKind;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -36,6 +37,7 @@ final class Batches
             new PostStatusKind(),
             new PostContentKind(),
             new ThemeLayoutKind(),
+            new ThemeTemplateKind(),
         ];
         $out = [];
         foreach ( $kinds as $kind ) {

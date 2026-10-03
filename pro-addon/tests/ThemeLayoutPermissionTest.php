@@ -8,6 +8,7 @@ use AiEditorDivi5\Pro\ProTool;
 use AiEditorDivi5\Pro\ToolRegistry;
 use AiEditorDivi5\Pro\Tools\EditThemeLayout;
 use AiEditorDivi5\Pro\Tools\ListThemeLayouts;
+use AiEditorDivi5\Pro\Tools\ManageThemeTemplate;
 use AiEditorDivi5\Pro\Tools\UpdateThemeLayout;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -25,6 +26,7 @@ class ThemeLayoutPermissionTest extends TestCase
     protected function setUp(): void
     {
         $this->setUpThemeBuilder();
+        $GLOBALS['__divi_tb_store_calls'] = [];
     }
 
     protected function tearDown(): void
@@ -38,6 +40,7 @@ class ThemeLayoutPermissionTest extends TestCase
         return [
             'list_theme_layouts'  => [ ListThemeLayouts::NAME, [ 'layout_id' => 201 ] ],
             'update_theme_layout' => [ UpdateThemeLayout::NAME, [ 'layout_id' => 201, 'content' => '__OTHER__' ] ],
+            'manage_theme_template' => [ ManageThemeTemplate::NAME, [ 'template_id' => 200, 'action' => 'disable', 'dry_run' => true ] ],
             'edit_theme_layout'   => [ EditThemeLayout::NAME, [ 'layout_id' => 201, 'find' => '"builderVersion":"5.14.0"', 'replace' => '"builderVersion":"5.14.1"', 'expect_count' => 4 ] ],
         ];
     }
@@ -45,7 +48,7 @@ class ThemeLayoutPermissionTest extends TestCase
     /** @return list<ProTool> */
     private function tools(): array
     {
-        return [ new ListThemeLayouts(), new UpdateThemeLayout( $this->log ), new EditThemeLayout( $this->log ) ];
+        return [ new ListThemeLayouts(), new UpdateThemeLayout( $this->log ), new EditThemeLayout( $this->log ), new ManageThemeTemplate( $this->log ) ];
     }
 
     /** @param array<string,mixed> $args @return array<string,mixed> */
@@ -64,6 +67,8 @@ class ThemeLayoutPermissionTest extends TestCase
         $this->assertArrayHasKey( 'error', $data, $why );
         $this->assertSame( -32602, $data['error']['code'], $why );
         $this->assertSame( self::header(), $this->layoutContent( 201 ), $why );
+        $this->assertSame( '1', $GLOBALS['__wp_postmeta'][200]['_et_enabled'], $why );
+        $this->assertSame( [], $GLOBALS['__divi_tb_store_calls'] ?? [], $why );
         $this->assertSame( 0, $GLOBALS['__wp_update_calls'], $why );
         $this->assertSame( [], $this->repo->rows, $why );
     }

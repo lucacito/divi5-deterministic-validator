@@ -43,7 +43,7 @@ class ToolsTest extends TestCase
     public function testThisReleaseShipsExactlyTheseTools(): void
     {
         $this->assertSame(
-            [ 'set_front_page', 'set_custom_css', 'set_primary_menu', 'publish_page', 'propose_php_snippet', 'list_batches', 'undo_batch', 'list_theme_layouts', 'update_theme_layout', 'edit_theme_layout' ],
+            [ 'set_front_page', 'set_custom_css', 'set_primary_menu', 'publish_page', 'propose_php_snippet', 'list_batches', 'undo_batch', 'list_theme_layouts', 'update_theme_layout', 'edit_theme_layout', 'manage_theme_template' ],
             array_map( static fn ( ProTool $t ): string => $t->name(), Tools::all() )
         );
     }
@@ -51,7 +51,7 @@ class ToolsTest extends TestCase
     public function testEveryKindARecordedItemUsesIsRegisteredForUndo(): void
     {
         $this->assertEqualsCanonicalizing(
-            [ 'front_page', 'custom_css', 'menu', 'post_status', 'post_content', 'theme_layout_content' ],
+            [ 'front_page', 'custom_css', 'menu', 'post_status', 'post_content', 'theme_layout_content', 'theme_template' ],
             array_keys( \AiEditorDivi5\Pro\Batch\Batches::kinds() )
         );
     }

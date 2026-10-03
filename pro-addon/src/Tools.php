@@ -8,6 +8,7 @@ use AiEditorDivi5\Pro\Batch\Batches;
 use AiEditorDivi5\Pro\Tools\EditThemeLayout;
 use AiEditorDivi5\Pro\Tools\ListBatches;
 use AiEditorDivi5\Pro\Tools\ListThemeLayouts;
+use AiEditorDivi5\Pro\Tools\ManageThemeTemplate;
 use AiEditorDivi5\Pro\Tools\ProposePhpSnippet;
 use AiEditorDivi5\Pro\Tools\PublishPage;
 use AiEditorDivi5\Pro\Tools\SetCustomCss;
@@ -39,6 +40,7 @@ final class Tools
             new ListThemeLayouts(),
             new UpdateThemeLayout( $log ),
             new EditThemeLayout( $log ),
+            new ManageThemeTemplate( $log ),
         ];
     }
 }
