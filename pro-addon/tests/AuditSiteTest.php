@@ -29,6 +29,7 @@ class AuditSiteTest extends TestCase
         $this->setUpThemeBuilder();
         $this->tool = new AuditSite();
         $GLOBALS['__wp_caps']['edit_posts'] = true;
+        $GLOBALS['__wp_caps']['read_post']  = true;
         $GLOBALS['__wp_posts'][5]->post_content = '';
         // link targets (plain objects: the WP_Post shim has no post_name property)
         $GLOBALS['__wp_posts'][90] = (object) [ 'ID' => 90, 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'About', 'post_content' => '', 'post_name' => 'about' ];
@@ -130,19 +131,101 @@ class AuditSiteTest extends TestCase
         $this->assertStringContainsString( '/blog/missing/', $b['LINK_NO_POST'][0]['detail'] );
     }
 
-    public function testItIsPaginatedTwentyFivePerCall(): void
+    public function testItIsPaginatedTwentyFivePerCallWithTheLastAuditedIdAsTheCursor(): void
     {
         for ( $i = 100; $i < 160; $i++ ) {
             $this->divi( $i, self::page() );
         }
         $r = $this->tool->run( [ 'scope' => 'pages' ] );
-        $this->assertSame( [ 60, 25, 25 ], [ $r['total_items'], $r['scanned'], $r['next_cursor'] ] );
-        $r = $this->tool->run( [ 'scope' => 'pages', 'cursor' => 25 ] );
-        $this->assertSame( [ 25, 50 ], [ $r['scanned'], $r['next_cursor'] ] );
-        $r = $this->tool->run( [ 'scope' => 'pages', 'cursor' => 50 ] );
+        $this->assertSame( [ 60, 25, 124 ], [ $r['total_items'], $r['scanned'], $r['next_cursor'] ] );
+        $r = $this->tool->run( [ 'scope' => 'pages', 'cursor' => 124 ] );
+        $this->assertSame( [ 25, 149 ], [ $r['scanned'], $r['next_cursor'] ] );
+        $r = $this->tool->run( [ 'scope' => 'pages', 'cursor' => 149 ] );
         $this->assertSame( [ 10, null ], [ $r['scanned'], $r['next_cursor'] ] );
         $r = $this->tool->run( [ 'scope' => 'pages', 'cursor' => 500 ] );
         $this->assertSame( [ 0, null ], [ $r['scanned'], $r['next_cursor'] ] );
+    }
+
+    public function testPagesCreatedOrDeletedBetweenCallsCannotShiftTheWindow(): void
+    {
+        for ( $i = 100; $i < 160; $i++ ) {
+            $this->divi( $i, self::page() );
+        }
+        $r = $this->tool->run( [ 'scope' => 'pages' ] );
+        $this->assertSame( 124, $r['next_cursor'] );
+        // Between the calls a page with a LOWER id appears and an already audited page is deleted: an index offset
+        // would now skip or repeat pages, the id cursor continues exactly after page 124.
+        $this->divi( 50, self::page( '/gone/' ) );
+        unset( $GLOBALS['__wp_posts'][100] );
+        $r = $this->tool->run( [ 'scope' => 'pages', 'cursor' => 124 ] );
+        $this->assertSame( [ 25, 149 ], [ $r['scanned'], $r['next_cursor'] ] );
+        $this->assertSame( [], $r['findings'] );
+        $r = $this->tool->run( [ 'scope' => 'pages', 'cursor' => 149 ] );
+        $this->assertSame( [ 10, null ], [ $r['scanned'], $r['next_cursor'] ] );
+    }
+
+    public function testPagesAndLayoutsShareOneIdOrder(): void
+    {
+        $GLOBALS['__wp_posts'][201]->post_content = str_replace( 'wp:divi/shop', 'wp:divi/not-a-module', self::header() );
+        $this->divi( 11, self::page() );
+        for ( $i = 301; $i <= 330; $i++ ) {
+            $this->divi( $i, self::page() );
+        }
+        $r = $this->tool->run( [] );
+        $this->assertSame( [ 33, 25, 322 ], [ $r['total_items'], $r['scanned'], $r['next_cursor'] ], 'ids 11, 201, 202 then 301..322' );
+        $this->assertNotEmpty( self::byItem( $r, 201 ), 'the layout with an id below the pages is in the first window' );
+        $r = $this->tool->run( [ 'cursor' => 322 ] );
+        $this->assertSame( [ 8, null ], [ $r['scanned'], $r['next_cursor'] ] );
+    }
+
+    public function testLinkLookupsAreMemoisedWithinOneCallButNotAcrossCalls(): void
+    {
+        $this->divi( 11, self::page( '/about/' ) . self::page( '/missing/' ) );
+        $this->divi( 12, self::page( '/about/' ) . self::page( '/missing/' ) );
+        $this->divi( 13, self::page( '/about/' ) );
+        $GLOBALS['__url_to_postid_calls'] = 0;
+        $r = $this->tool->run( [ 'scope' => 'pages' ] );
+        $this->assertSame( 2, $GLOBALS['__url_to_postid_calls'], 'one lookup per distinct link, not per item' );
+        $this->assertSame( 1, self::byItem( $r, 11 )['LINK_NO_POST'][0]['count'] );
+        $this->assertSame( 1, self::byItem( $r, 12 )['LINK_NO_POST'][0]['count'] );
+        $this->assertSame( [], self::byItem( $r, 13 ) );
+        $this->tool->run( [ 'scope' => 'pages' ] );
+        $this->assertSame( 4, $GLOBALS['__url_to_postid_calls'], 'a second call looks again: the site may have changed' );
+    }
+
+    public function testTheSitesKnownStyleIdsAreReadOncePerCall(): void
+    {
+        $reads = 0;
+        $known = static function () use ( &$reads ): array {
+            $reads++;
+
+            return [ 'presets' => [ 'preset-ok' => true ], 'colors' => [ 'gcid-ok' => true ] ];
+        };
+        $tool    = new AuditSite( null, AuditSite::MAX_FINDINGS, $known );
+        $content = str_replace( 'wp:divi/button {', 'wp:divi/button {"modulePreset":["preset-x"],', self::page( '/about/' ) );
+        foreach ( [ 11, 12, 13 ] as $id ) {
+            $this->divi( $id, $content );
+        }
+        $r = $tool->run( [ 'scope' => 'pages' ] );
+        $this->assertSame( 1, $reads, 'one read of the site\'s presets and colors for all three items' );
+        foreach ( [ 11, 12, 13 ] as $id ) {
+            $this->assertSame( 'preset-x', self::byItem( $r, $id )['UNKNOWN_PRESET_ID'][0]['detail'] );
+        }
+        $tool->run( [ 'scope' => 'pages' ] );
+        $this->assertSame( 2, $reads );
+    }
+
+    public function testTheStatusOfALinkedPostTheUserCannotReadIsNotRevealed(): void
+    {
+        $this->divi( 11, self::page( '/draft-page/' ) );
+        $r = $this->tool->run( [ 'scope' => 'pages' ] );
+        $this->assertStringContainsString( '/draft-page/ (draft)', self::byItem( $r, 11 )['LINK_NOT_PUBLISHED'][0]['detail'] );
+        $GLOBALS['__wp_caps']['read_post:91'] = false;
+        $r = $this->tool->run( [ 'scope' => 'pages' ] );
+        $a = self::byItem( $r, 11 );
+        $this->assertSame( 1, $a['LINK_NOT_PUBLISHED'][0]['count'], 'it is still a link that does not work for visitors' );
+        $this->assertStringContainsString( '/draft-page/ (not visible to you)', $a['LINK_NOT_PUBLISHED'][0]['detail'] );
+        $this->assertStringNotContainsString( '(draft)', $a['LINK_NOT_PUBLISHED'][0]['detail'] );
     }
 
     public function testFindingsAreCappedButTheTotalsStayComplete(): void
@@ -274,5 +357,6 @@ class AuditSiteTest extends TestCase
         $d = $this->tool->definition();
         $this->assertLessThanOrEqual( 300, strlen( $d['description'] ) );
         $this->assertSame( [], $d['inputSchema']['required'] );
+        $this->assertStringContainsString( 'id of the last item', $d['inputSchema']['properties']['cursor']['description'] );
     }
 }

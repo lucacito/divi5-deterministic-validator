@@ -9,6 +9,7 @@ use AiEditorDivi5\Pro\ProTool;
 use AiEditorDivi5\Pro\Site\LinkScanner;
 use AiEditorDivi5\Pro\Site\SiteItems;
 use AiEditorDivi5\Pro\ThemeBuilder\ThemeLayouts;
+use AiEditorDivi5\WP\GlobalStyles;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\StyleReferences;
 
@@ -20,8 +21,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * A read-only, deterministic audit of the site's Divi 5 pages and live header/footer: layout checker violations
  * (including custom code the plugin will not save), preset and global-color ids the site does not have, and internal
  * links that point at no page or at an unpublished one (codes LINK_NO_POST, LINK_NOT_PUBLISHED, UNKNOWN_PRESET_ID,
- * UNKNOWN_COLOR_ID, and LINKS_NOT_ALL_CHECKED when an item has more links than the scanner reads). 25 items per call with a cursor. No AI, no remote request,
- * nothing is ever written.
+ * UNKNOWN_COLOR_ID, and LINKS_NOT_ALL_CHECKED when an item has more links than the scanner reads). 25 items per call; the
+ * items are in post-id order and the cursor is the id of the last item audited, so pages created or deleted between two
+ * calls cannot shift the window. No AI, no remote request, nothing is ever written.
  */
 final class AuditSite implements ProTool
 {
@@ -37,12 +39,23 @@ final class AuditSite implements ProTool
 
     private \Closure $styleAdvisor;
 
+    /** @var \Closure():array{presets: ?array<string,true>, colors: ?array<string,true>} */
+    private \Closure $knownIds;
+
+    /** @var array{presets: ?array<string,true>, colors: ?array<string,true>}|null the site's ids, read once per run() */
+    private ?array $known = null;
+
+    /** @var array<string,array{id:int, status:string, readable:bool}> link path => what it resolves to, for one run() */
+    private array $links = [];
+
     /**
      * @param (\Closure(string):?array<string,mixed>)|null $styleAdvisor fn(content): the free plugin's style-reference advisory or null
+     * @param (\Closure():array{presets: ?array<string,true>, colors: ?array<string,true>})|null $knownIds fn(): the preset and color ids the site has
      */
-    public function __construct( ?\Closure $styleAdvisor = null, private int $maxFindings = self::MAX_FINDINGS )
+    public function __construct( ?\Closure $styleAdvisor = null, private int $maxFindings = self::MAX_FINDINGS, ?\Closure $knownIds = null )
     {
-        $this->styleAdvisor = $styleAdvisor ?? static fn ( string $content ): ?array => StyleReferences::attach( [], $content )['advisories']['style_references'] ?? null;
+        $this->knownIds     = $knownIds ?? static fn (): array => GlobalStyles::knownIds();
+        $this->styleAdvisor = $styleAdvisor ?? fn ( string $content ): ?array => StyleReferences::advise( $content, $this->known ??= ( $this->knownIds )() );
     }
 
     public function name(): string
@@ -59,12 +72,12 @@ final class AuditSite implements ProTool
     {
         return [
             'name'        => self::NAME,
-            'description' => 'Read-only audit of Divi 5 pages and the live header/footer: layout check violations, unknown preset or color ids, and internal links to missing or unpublished pages. 25 items per call; pass the returned next_cursor to continue. Makes no remote request.',
+            'description' => 'Read-only audit of Divi 5 pages and the live header/footer: layout check violations, unknown preset or color ids, and internal links to missing or unpublished pages. 25 items per call in id order; pass the returned next_cursor to continue. Makes no remote request.',
             'inputSchema' => [
                 'type'       => 'object',
                 'properties' => [
                     'scope'  => [ 'type' => 'string', 'description' => 'pages, layouts or all (default all)', 'enum' => SiteItems::SCOPES ],
-                    'cursor' => [ 'type' => 'integer', 'description' => 'Where to continue: the next_cursor of the previous call (default 0)' ],
+                    'cursor' => [ 'type' => 'integer', 'description' => 'Where to continue: the next_cursor of the previous call, the id of the last item audited (default 0 = from the start)' ],
                 ],
                 'required'   => [],
             ],
@@ -82,10 +95,16 @@ final class AuditSite implements ProTool
             throw new \InvalidArgumentException( 'You do not have permission to read header and footer layouts (edit_theme_options and Divi\'s Theme Builder permission).' );
         }
 
+        $this->known = null;
+        $this->links = [];
+
         $set   = SiteItems::collect( $scope, SiteItems::AUDIT_STATUSES, null );
-        $total = count( $set['items'] );
-        $slice = array_slice( $set['items'], $cursor, self::PAGE_SIZE );
-        $host  = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+        $items = $set['items'];
+        usort( $items, static fn ( array $a, array $b ): int => $a['id'] <=> $b['id'] );
+        $total     = count( $items );
+        $remaining = array_values( array_filter( $items, static fn ( array $item ): bool => $item['id'] > $cursor ) );
+        $slice     = array_slice( $remaining, 0, self::PAGE_SIZE );
+        $host      = (string) wp_parse_url( home_url(), PHP_URL_HOST );
 
         $findings = [];
         $totals   = [];
@@ -111,7 +130,7 @@ final class AuditSite implements ProTool
             'findings'           => array_slice( $findings, 0, $this->maxFindings ),
             'findings_truncated' => $truncated,
             'totals_by_code'     => $totals,
-            'next_cursor'        => $cursor + self::PAGE_SIZE < $total ? $cursor + self::PAGE_SIZE : null,
+            'next_cursor'        => count( $remaining ) > self::PAGE_SIZE ? $slice[ self::PAGE_SIZE - 1 ]['id'] : null,
         ];
         if ( $set['truncated'] ) {
             $out['note'] = 'This site has more than ' . SiteItems::PAGE_LIMIT . ' Divi 5 pages; only the first ' . SiteItems::PAGE_LIMIT . ' (by id) are audited.';
@@ -160,14 +179,16 @@ final class AuditSite implements ProTool
         $base    = ( $home['scheme'] ?? 'https' ) . '://' . ( $home['host'] ?? $host ) . ( isset( $home['port'] ) ? ':' . $home['port'] : '' );
         $paths   = LinkScanner::internalPaths( $content, $host );
         foreach ( $paths as $path ) {
-            $id = (int) url_to_postid( $base . $path );
-            if ( 0 === $id ) {
+            // One lookup per distinct link in a run: menus and footers repeat the same links on every page.
+            $this->links[ $path ] ??= self::resolve( $base . $path );
+            $link = $this->links[ $path ];
+            if ( 0 === $link['id'] ) {
                 $missing[] = $path;
                 continue;
             }
-            $status = (string) get_post_status( $id );
-            if ( 'publish' !== $status ) {
-                $draft[] = $path . ' (' . ( '' === $status ? 'unknown' : $status ) . ')';
+            if ( 'publish' !== $link['status'] ) {
+                $label   = $link['readable'] ? ( '' === $link['status'] ? 'unknown' : $link['status'] ) : 'not visible to you';
+                $draft[] = $path . ' (' . $label . ')';
             }
         }
         if ( [] !== $missing ) {
@@ -181,5 +202,21 @@ final class AuditSite implements ProTool
         }
 
         return $findings;
+    }
+
+    /**
+     * What an internal address points at. The status of a post the user may not read is not told: it is still a link
+     * that does not work for visitors, but who has a private draft is not the audit's to say.
+     *
+     * @return array{id:int, status:string, readable:bool}
+     */
+    private static function resolve( string $url ): array
+    {
+        $id = (int) url_to_postid( $url );
+        if ( 0 === $id ) {
+            return [ 'id' => 0, 'status' => '', 'readable' => false ];
+        }
+
+        return [ 'id' => $id, 'status' => (string) get_post_status( $id ), 'readable' => current_user_can( 'read_post', $id ) ];
     }
 }

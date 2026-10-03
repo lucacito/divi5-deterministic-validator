@@ -42,6 +42,7 @@ if ( ! function_exists( 'get_posts' ) ) {
 if ( ! function_exists( 'url_to_postid' ) ) {
     /** Resolves `?p=ID`, `?page_id=ID` and `/slug/` against the stored posts' `post_name`; 0 when nothing matches. */
     function url_to_postid( $url ) {
+        $GLOBALS['__url_to_postid_calls'] = ( $GLOBALS['__url_to_postid_calls'] ?? 0 ) + 1;
         $parts = parse_url( (string) $url );
         parse_str( (string) ( $parts['query'] ?? '' ), $q );
         foreach ( [ 'p', 'page_id' ] as $k ) {
