@@ -61,12 +61,23 @@ final class SiteItems
                 $truncated = true;
                 $found     = array_slice( $found, 0, self::PAGE_LIMIT );
             }
-            foreach ( $found as $id ) {
-                $post = get_post( $id );
-                if ( ! $post || ! current_user_can( 'edit_post', $id ) ) {
-                    continue;
+            // Do not keep every page of a big site in the object cache just because it was looked at once.
+            $suspend = function_exists( 'wp_suspend_cache_addition' );
+            if ( $suspend ) {
+                wp_suspend_cache_addition( true );
+            }
+            try {
+                foreach ( $found as $id ) {
+                    $post = get_post( $id );
+                    if ( ! $post || ! current_user_can( 'edit_post', $id ) ) {
+                        continue;
+                    }
+                    $items[] = [ 'kind' => 'page', 'id' => $id, 'title' => (string) $post->post_title, 'status' => (string) $post->post_status ];
                 }
-                $items[] = [ 'kind' => 'page', 'id' => $id, 'title' => (string) $post->post_title, 'status' => (string) $post->post_status ];
+            } finally {
+                if ( $suspend ) {
+                    wp_suspend_cache_addition( false );
+                }
             }
         }
 

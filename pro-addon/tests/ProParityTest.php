@@ -77,7 +77,7 @@ class ProParityTest extends TestCase
         foreach ( $this->registry->definitions( [] ) as $def ) {
             $op     = $this->spec['paths']['/pro/' . $def['name']]['post'];
             $schema = $op['requestBody']['content']['application/json']['schema'];
-            $this->assertSame( array_keys( $def['inputSchema']['properties'] ), array_keys( $schema['properties'] ), $def['name'] );
+            $this->assertSame( $def['inputSchema']['properties'], $schema['properties'], $def['name'] );
             $this->assertSame( $def['inputSchema']['required'] ?? [], $schema['required'] ?? [], $def['name'] );
             $this->assertSame( $def['description'], $op['description'], $def['name'] );
             $this->assertSame( [] !== ( $def['inputSchema']['required'] ?? [] ), $op['requestBody']['required'], $def['name'] );

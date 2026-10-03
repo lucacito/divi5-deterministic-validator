@@ -19,7 +19,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * A read-only, deterministic audit of the site's Divi 5 pages and live header/footer: layout checker violations
  * (including custom code the plugin will not save), preset and global-color ids the site does not have, and internal
- * links that point at no page or at an unpublished one. 25 items per call with a cursor. No AI, no remote request,
+ * links that point at no page or at an unpublished one (codes LINK_NO_POST, LINK_NOT_PUBLISHED, UNKNOWN_PRESET_ID,
+ * UNKNOWN_COLOR_ID, and LINKS_NOT_ALL_CHECKED when an item has more links than the scanner reads). 25 items per call with a cursor. No AI, no remote request,
  * nothing is ever written.
  */
 final class AuditSite implements ProTool
@@ -32,6 +33,7 @@ final class AuditSite implements ProTool
     public const LINK_NOT_PUBLISHED = 'LINK_NOT_PUBLISHED';
     public const UNKNOWN_PRESET     = 'UNKNOWN_PRESET_ID';
     public const UNKNOWN_COLOR      = 'UNKNOWN_COLOR_ID';
+    public const LINKS_NOT_ALL      = 'LINKS_NOT_ALL_CHECKED';
 
     private \Closure $styleAdvisor;
 
@@ -156,7 +158,8 @@ final class AuditSite implements ProTool
         // Root-relative links are relative to the host root, not to the WordPress home path (a subdirectory install).
         $home    = (array) wp_parse_url( home_url() );
         $base    = ( $home['scheme'] ?? 'https' ) . '://' . ( $home['host'] ?? $host ) . ( isset( $home['port'] ) ? ':' . $home['port'] : '' );
-        foreach ( LinkScanner::internalPaths( $content, $host ) as $path ) {
+        $paths   = LinkScanner::internalPaths( $content, $host );
+        foreach ( $paths as $path ) {
             $id = (int) url_to_postid( $base . $path );
             if ( 0 === $id ) {
                 $missing[] = $path;
@@ -172,6 +175,9 @@ final class AuditSite implements ProTool
         }
         if ( [] !== $draft ) {
             $findings[] = [ 'code' => self::LINK_NOT_PUBLISHED, 'count' => count( $draft ), 'detail' => implode( ', ', array_slice( $draft, 0, 5 ) ) ];
+        }
+        if ( count( $paths ) >= LinkScanner::MAX_LINKS ) {
+            $findings[] = [ 'code' => self::LINKS_NOT_ALL, 'count' => count( $paths ), 'detail' => 'Only the first ' . LinkScanner::MAX_LINKS . ' links of this item were checked.' ];
         }
 
         return $findings;

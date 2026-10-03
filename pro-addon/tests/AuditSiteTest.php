@@ -232,6 +232,23 @@ class AuditSiteTest extends TestCase
         }
     }
 
+    public function testAnItemWithMoreLinksThanTheScannerReadsSaysSo(): void
+    {
+        $many = '';
+        for ( $i = 0; $i < 250; $i++ ) {
+            $many .= self::page( "/about/?n={$i}" );
+        }
+        $this->divi( 11, $many );
+        $this->divi( 12, self::page( '/about/' ) . self::page( '/about/?x=1' ) );
+        $r = $this->tool->run( [ 'scope' => 'pages' ] );
+        $a = self::byItem( $r, 11 );
+        $this->assertCount( 1, $a['LINKS_NOT_ALL_CHECKED'] );
+        $this->assertSame( \AiEditorDivi5\Pro\Site\LinkScanner::MAX_LINKS, $a['LINKS_NOT_ALL_CHECKED'][0]['count'] );
+        $this->assertSame( 'Only the first ' . \AiEditorDivi5\Pro\Site\LinkScanner::MAX_LINKS . ' links of this item were checked.', $a['LINKS_NOT_ALL_CHECKED'][0]['detail'] );
+        $this->assertArrayNotHasKey( 'LINKS_NOT_ALL_CHECKED', self::byItem( $r, 12 ) );
+        $this->assertSame( 1, $r['totals_by_code']['LINKS_NOT_ALL_CHECKED'] );
+    }
+
     public function testBadArgumentsAreRejectedNotCast(): void
     {
         foreach ( [

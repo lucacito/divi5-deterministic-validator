@@ -89,6 +89,13 @@ final class LinkScanner
         if ( '/' === $value || '' === $value || 1 === preg_match( self::SKIPPED, $value ) || 1 === preg_match( self::FILE, self::pathOnly( $value ) ) ) {
             return null;
         }
+        // A query-only root link (`/?utm_source=x`, `/?lang=fr`) is the home page; only `/?p=ID` and `/?page_id=ID` name a post.
+        if ( str_starts_with( $value, '/?' ) ) {
+            parse_str( substr( $value, 2 ), $rootParams );
+            if ( ! array_key_exists( 'p', $rootParams ) && ! array_key_exists( 'page_id', $rootParams ) ) {
+                return null;
+            }
+        }
         // A search link (`/?s=x`, `/blog/?q=1&s=x`) is a query, not a page.
         $query = (string) parse_url( $value, PHP_URL_QUERY );
         if ( '' !== $query ) {
