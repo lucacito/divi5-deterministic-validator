@@ -34,6 +34,9 @@ foreach ( [ 'et_theme_builder_get_theme_builder_post_id', 'et_theme_builder_inse
 
 global $wpdb;
 
+require_once __DIR__ . '/dev-guard.php';
+aied_require_dev_site();
+
 $failures = [];
 $check    = static function ( bool $ok, string $label ) use ( &$failures ): void {
     WP_CLI::log( ( $ok ? 'PASS  ' : 'FAIL  ' ) . $label );

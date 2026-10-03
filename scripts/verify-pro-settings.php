@@ -28,6 +28,9 @@ if ( ! class_exists( \AiEditorDivi5\Pro\Plugin::class ) ) {
     WP_CLI::error( 'Activate jhmg-ai-editor-for-divi-5-pro on this site first.' );
 }
 
+require_once __DIR__ . '/dev-guard.php';
+aied_require_dev_site();
+
 $failures = [];
 $check    = static function ( bool $ok, string $label ) use ( &$failures ): void {
     WP_CLI::log( ( $ok ? 'PASS  ' : 'FAIL  ' ) . $label );
