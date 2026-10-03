@@ -8,6 +8,8 @@ use AiEditorDivi5\Pro\Admin\BatchesPanel;
 use AiEditorDivi5\Pro\Admin\ProposalsPanel;
 use AiEditorDivi5\Pro\Batch\Batches;
 use AiEditorDivi5\Pro\Batch\BatchTable;
+use AiEditorDivi5\Pro\Rest\ProOpenApi;
+use AiEditorDivi5\Pro\Rest\ProRest;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -65,6 +67,8 @@ final class Plugin
 
         $registry = new ToolRegistry( Tools::all(), static fn (): bool => Licensing::isPremium() );
         $registry->register();
+        ( new ProRest( $registry ) )->register();
+        ( new ProOpenApi( $registry ) )->register();
 
         ( new ProPage( $registry ) )->register();
 
