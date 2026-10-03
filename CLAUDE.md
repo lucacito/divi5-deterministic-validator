@@ -265,19 +265,19 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   divi5lab.com (product id `ai-editor-divi5-pro` and `/plugins/divi-5-ai-editor` were confirmed against the layoutlab repo on
   2026-10-02), and confirm the licence server's `validate` answers have the shapes `Licensing::isVerdict` expects.
 - **WordPress.org review answered 2026-10-02** (issue: custom CSS/JS/PHP through layouts, `css.freeForm`/`mainElement`):
-  fixed and merged to LOCAL main (9cb7a06; NOT uploaded, NOT pushed) (`CodePolicy` + `LayoutGate`, every write/preview path, guides/recipes cleaned,
-  `NoCustomCodeTest`); the owner uploads the 4.4.0 zip, tests on Playground and sends `docs/wporg-review-reply-2-draft.md`.
+  fixed and merged to LOCAL main (9cb7a06; NOT pushed) (`CodePolicy` + `LayoutGate`, every write/preview path, guides/recipes cleaned,
+  `NoCustomCodeTest`); the owner UPLOADED the 4.4.0 zip (2026-10-03, with the round-3 reply) and the WordPress.org answer is pending.
   Rule: the free plugin never saves custom CSS, JavaScript or PHP, and any future layout write path (including every Pro
   write tool) must go through `LayoutGate::check()`.
   Style-value guard scope is a named list (decoration/advanced + listed families), not a proof of completeness; add new
   CSS-bearing families when found.
-- **4.5.0 = dashboard recent-edits fix** (branch `feat/free-4-5-0`; local only, NOT merged, NOT uploaded; ships after the
-  WordPress.org answer together with whatever else is pending): `HistoryService::recent()` now keeps only rows
+- **4.5.0 = dashboard recent-edits fix** (merged to LOCAL main e635d58 on the owner's go; NOT uploaded, NOT pushed; ships after the
+  WordPress.org answer together with whatever else is pending; if they ask for changes to the uploaded 4.4.0, branch from 583a54c): `HistoryService::recent()` now keeps only rows
   `EditTarget::resolve()` accepts (the Restore handler's own rule), filtered BEFORE the limit (it scans the newest 200
   rows), so header/footer edits made by the Pro add-on and deleted or non-editable pages no longer show a Restore button
   that always fails. A "use the Pro tab" label was rejected: the only Pro mention allowed in the free UI is the one
-  dismissible card. 727 tests. Rebuilding `jhmg-ai-editor-for-divi-5.zip` replaces the tracked 4.4.0 build (583a54c).
-- **4.4.0 = global styles release PLUS the free re-cut** (merged to LOCAL main, 026a571; NOT uploaded): read-only
+  dismissible card. 727 tests. The tracked `jhmg-ai-editor-for-divi-5.zip` is now the 4.5.0 build; the uploaded 4.4.0 build is commit 583a54c.
+- **4.4.0 = global styles release PLUS the free re-cut** (merged to LOCAL main, 026a571; UPLOADED to WordPress.org 2026-10-03, answer pending): read-only
   `list_global_styles` (16th tool) + non-blocking style-reference advisory + guide updates (spec
   `docs/superpowers/specs/2026-10-01-global-styles-design.md`). The free re-cut removed the unreleased 4.3.0
   header/footer code (it moves to the Pro add-on), so there are 16 tools. Ships after the first WordPress.org
