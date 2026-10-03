@@ -7,6 +7,7 @@ namespace AiEditorDivi5\Pro;
 use AiEditorDivi5\Pro\Batch\Batches;
 use AiEditorDivi5\Pro\Tools\SetCustomCss;
 use AiEditorDivi5\Pro\Tools\SetFrontPage;
+use AiEditorDivi5\Pro\Tools\SetPrimaryMenu;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -23,6 +24,7 @@ final class Tools
         return [
             new SetFrontPage( $log ),
             new SetCustomCss( $log ),
+            new SetPrimaryMenu( $log ),
         ];
     }
 }

@@ -6,6 +6,7 @@ namespace AiEditorDivi5\Pro\Batch;
 
 use AiEditorDivi5\Pro\Kinds\CssKind;
 use AiEditorDivi5\Pro\Kinds\FrontPageKind;
+use AiEditorDivi5\Pro\Kinds\MenuKind;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -28,6 +29,7 @@ final class Batches
         $kinds = [
             new FrontPageKind(),
             new CssKind(),
+            new MenuKind(),
         ];
         $out = [];
         foreach ( $kinds as $kind ) {
