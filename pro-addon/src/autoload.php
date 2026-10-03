@@ -19,4 +19,8 @@ require_once __DIR__ . '/Batch/BatchRepository.php';
 require_once __DIR__ . '/Batch/BatchTable.php';
 require_once __DIR__ . '/Batch/WpdbBatchRepository.php';
 require_once __DIR__ . '/Batch/BatchLog.php';
+require_once __DIR__ . '/Batch/Item.php';
+require_once __DIR__ . '/Batch/ItemKind.php';
+require_once __DIR__ . '/Batch/ValueKind.php';
+require_once __DIR__ . '/Batch/BatchUndo.php';
 require_once __DIR__ . '/Plugin.php';
