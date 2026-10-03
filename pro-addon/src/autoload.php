@@ -13,4 +13,6 @@ require_once __DIR__ . '/ProTool.php';
 require_once __DIR__ . '/ToolRegistry.php';
 require_once __DIR__ . '/Tools.php';
 require_once __DIR__ . '/ProPage.php';
+require_once __DIR__ . '/Args.php';
+require_once __DIR__ . '/Canon.php';
 require_once __DIR__ . '/Plugin.php';
