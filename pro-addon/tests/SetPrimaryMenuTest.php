@@ -30,6 +30,8 @@ class SetPrimaryMenuTest extends TestCase
         $GLOBALS['__wp_menus']            = [];
         $GLOBALS['__wp_menu_items']       = [];
         $GLOBALS['__wp_theme_mods']       = [];
+        $GLOBALS['__wp_menu_item_fail_at'] = 0;
+        $GLOBALS['__wp_menu_item_calls']   = 0;
         $GLOBALS['__wp_registered_menus'] = [ 'primary-menu' => 'Primary Menu' ];
         $GLOBALS['__wp_posts']            = [
             5 => (object) [ 'ID' => 5, 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'Home', 'post_content' => '' ],
@@ -138,6 +140,45 @@ class SetPrimaryMenuTest extends TestCase
         $second = $this->undo()->undo( $first['undo_batch']['id'] );
         $this->assertTrue( $second['fully_undone'], 'an undo is itself undoable' );
         $this->assertSame( $built, MenuBuilder::canonical( MenuBuilder::snapshot( 'primary-menu' ) ) );
+    }
+
+    public function testUndoOfAnUndoSucceedsWhenTheMenuHasCustomLinksWhoseObjectIdIsTheirOwnPostId(): void
+    {
+        $id = wp_create_nav_menu( MenuBuilder::MENU_NAME );
+        wp_update_nav_menu_item( $id, 0, [ 'menu-item-title' => 'Old A', 'menu-item-type' => 'custom', 'menu-item-url' => 'https://old.example/a' ] );
+        wp_update_nav_menu_item( $id, 0, [ 'menu-item-title' => 'Old B', 'menu-item-type' => 'custom', 'menu-item-url' => 'https://old.example/b' ] );
+        set_theme_mod( 'nav_menu_locations', [ 'primary-menu' => $id ] );
+        $old = MenuBuilder::canonical( MenuBuilder::snapshot( 'primary-menu' ) );
+        $this->assertSame( [ 0, 0 ], array_column( $old['items'], 'object_id' ), 'a custom link carries no database id' );
+
+        $r     = $this->tool->run( [ 'items' => [ [ 'title' => 'Shop', 'url' => 'https://example.com/shop' ], [ 'title' => 'Home', 'page_id' => 5 ] ] ] );
+        $built = MenuBuilder::canonical( MenuBuilder::snapshot( 'primary-menu' ) );
+
+        $first = $this->undo()->undo( $r['batch']['id'] );
+        $this->assertTrue( $first['fully_undone'] );
+        $this->assertSame( $old, MenuBuilder::canonical( MenuBuilder::snapshot( 'primary-menu' ) ) );
+
+        $second = $this->undo()->undo( $first['undo_batch']['id'] );
+        $this->assertTrue( $second['fully_undone'], 'undoing the undo works although the recreated custom items have new ids' );
+        $this->assertSame( $built, MenuBuilder::canonical( MenuBuilder::snapshot( 'primary-menu' ) ) );
+    }
+
+    public function testUndoThatCannotRestoreEveryItemIsReportedFailedNotFullyUndone(): void
+    {
+        $id = wp_create_nav_menu( MenuBuilder::MENU_NAME );
+        wp_update_nav_menu_item( $id, 0, [ 'menu-item-title' => 'Old A', 'menu-item-type' => 'custom', 'menu-item-url' => 'https://old.example/a' ] );
+        wp_update_nav_menu_item( $id, 0, [ 'menu-item-title' => 'Old B', 'menu-item-type' => 'custom', 'menu-item-url' => 'https://old.example/b' ] );
+        set_theme_mod( 'nav_menu_locations', [ 'primary-menu' => $id ] );
+
+        $r = $this->tool->run( [ 'items' => $this->items() ] );
+        $GLOBALS['__wp_menu_item_calls']   = 0;
+        $GLOBALS['__wp_menu_item_fail_at'] = 2; // the second item of the restore is refused
+        $undo                              = $this->undo()->undo( $r['batch']['id'] );
+        $GLOBALS['__wp_menu_item_fail_at'] = 0;
+
+        $this->assertFalse( $undo['fully_undone'] );
+        $this->assertSame( 'failed', $undo['items'][0]['result'] );
+        $this->assertSame( 'menu_failed', $undo['items'][0]['reason'] );
     }
 
     public function testUndoSkipsAMenuTheOwnerEditedSince(): void

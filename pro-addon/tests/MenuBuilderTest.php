@@ -16,6 +16,8 @@ class MenuBuilderTest extends TestCase
         $GLOBALS['__wp_menus']            = [];
         $GLOBALS['__wp_menu_items']       = [];
         $GLOBALS['__wp_theme_mods']       = [];
+        $GLOBALS['__wp_menu_item_fail_at'] = 0;
+        $GLOBALS['__wp_menu_item_calls']   = 0;
         $GLOBALS['__wp_registered_menus'] = [ 'primary-menu' => 'Primary Menu' ];
     }
 

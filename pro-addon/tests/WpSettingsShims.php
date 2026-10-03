@@ -28,6 +28,8 @@ if ( ! function_exists( 'wp_update_custom_css_post' ) ) {
 $GLOBALS['__wp_menus']            = [];                                   // term_id => name
 $GLOBALS['__wp_menu_items']       = [];                                   // menu_id => [ item_id => object ]
 $GLOBALS['__wp_menu_seq']         = 100;
+$GLOBALS['__wp_menu_item_fail_at'] = 0;                                   // 1-based call number of wp_update_nav_menu_item that fails; 0 = never
+$GLOBALS['__wp_menu_item_calls']   = 0;
 $GLOBALS['__wp_theme_mods']       = [];
 $GLOBALS['__wp_registered_menus'] = [ 'primary-menu' => 'Primary Menu' ];
 
@@ -78,6 +80,9 @@ if ( ! function_exists( 'wp_get_nav_menu_items' ) ) {
 }
 if ( ! function_exists( 'wp_update_nav_menu_item' ) ) {
     function wp_update_nav_menu_item( $menuId, $itemId = 0, $args = [] ) {
+        if ( $GLOBALS['__wp_menu_item_fail_at'] > 0 && ++$GLOBALS['__wp_menu_item_calls'] === $GLOBALS['__wp_menu_item_fail_at'] ) {
+            return new WP_Error( 'item_failed', 'simulated menu item failure' );
+        }
         $id   = ++$GLOBALS['__wp_menu_seq'];
         $type = $args['menu-item-type'] ?? 'custom';
         $oid  = (int) ( $args['menu-item-object-id'] ?? 0 );
@@ -86,7 +91,7 @@ if ( ! function_exists( 'wp_update_nav_menu_item' ) ) {
             'title'            => $args['menu-item-title'] ?? '',
             'type'             => $type,
             'object'           => $args['menu-item-object'] ?? 'custom',
-            'object_id'        => $oid,
+            'object_id'        => 'custom' === $type ? $id : $oid, // like core: a custom item's object id is its own post id
             'url'              => 'custom' === $type ? (string) ( $args['menu-item-url'] ?? '' ) : 'https://example.com/?p=' . $oid,
             'menu_item_parent' => (int) ( $args['menu-item-parent-id'] ?? 0 ),
             'menu_order'       => $id,

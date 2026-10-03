@@ -58,7 +58,8 @@ final class MenuBuilder
                 'title'       => (string) $o->title,
                 'type'        => $type,
                 'object'      => (string) $o->object,
-                'object_id'   => (int) $o->object_id,
+                // A custom link's object_id is its own post id in core: a database id, kept out of the snapshot.
+                'object_id'   => 'custom' === $type ? 0 : (int) $o->object_id,
                 'url'         => 'custom' === $type ? (string) $o->url : '',
                 'parent'      => $index[ (int) $o->menu_item_parent ] ?? -1,
                 'classes'     => implode( ' ', array_filter( (array) $o->classes ) ),
@@ -131,7 +132,10 @@ final class MenuBuilder
             throw new \RuntimeException( $menuId->get_error_message() );
         }
         self::clearItems( (int) $menuId );
-        self::addItems( (int) $menuId, $snap['items'] );
+        $added = self::addItems( (int) $menuId, $snap['items'] );
+        if ( $added < count( $snap['items'] ) ) {
+            throw new \RuntimeException( 'Only ' . $added . ' of ' . count( $snap['items'] ) . ' menu items could be restored.' );
+        }
         $pointed = (int) $snap['location_menu_id'];
         self::pointLocation( (string) $snap['location'], $pointed === (int) $snap['menu_id'] ? (int) $menuId : $pointed );
     }
