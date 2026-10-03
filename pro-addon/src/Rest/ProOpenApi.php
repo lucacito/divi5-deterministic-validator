@@ -17,6 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class ProOpenApi
 {
+    private const SUMMARY_MAX = 120;
+
     public function __construct( private ToolRegistry $registry )
     {
     }
@@ -47,7 +49,9 @@ final class ProOpenApi
                 'responses'   => [
                     '200' => [ 'description' => 'Success', 'content' => [ 'application/json' => [ 'schema' => [ '$ref' => '#/components/schemas/ProResult' ] ] ] ],
                     '400' => [ 'description' => 'A missing or invalid argument (the message says which)', 'content' => [ 'application/json' => [ 'schema' => [ '$ref' => '#/components/schemas/ProError' ] ] ] ],
+                    '401' => [ 'description' => 'Not authenticated: use the plugin API key or an Application Password' ],
                     '403' => [ 'description' => 'The user lacks the permission this tool needs, or the Pro tools are not unlocked' ],
+                    '500' => [ 'description' => 'The tool failed unexpectedly; nothing is leaked, so try again or check the site', 'content' => [ 'application/json' => [ 'schema' => [ '$ref' => '#/components/schemas/ProError' ] ] ] ],
                 ],
             ];
             $paths[ ProRest::PREFIX . $def['name'] ] = [ 'post' => $op ];
@@ -104,10 +108,67 @@ final class ProOpenApi
         return lcfirst( str_replace( ' ', '', ucwords( str_replace( '_', ' ', $toolName ) ) ) );
     }
 
-    private static function summary( string $description ): string
+    /** At most 120 characters: the first sentence, cut at a word boundary, never inside brackets or quotes. */
+    public static function summary( string $description ): string
     {
-        $first = trim( (string) preg_replace( '/\s+/', ' ', strtok( $description, '.' ) ?: $description ) );
+        $first = trim( self::firstSentence( trim( (string) preg_replace( '/\s+/', ' ', $description ) ) ) );
+        if ( strlen( $first ) <= self::SUMMARY_MAX ) {
+            return $first;
+        }
+        $cut = substr( $first, 0, self::SUMMARY_MAX - 3 );
+        if ( ' ' !== $first[ self::SUMMARY_MAX - 3 ] ) {
+            $space = strrpos( $cut, ' ' );
+            $cut   = false === $space || 0 === $space ? $cut : substr( $cut, 0, $space );
+        }
+        // Drop a fragment that opens a bracket or a quote and never closes it.
+        $open = self::unclosedAt( $cut );
+        while ( null !== $open && $open > 0 ) {
+            $cut  = substr( $cut, 0, $open );
+            $open = self::unclosedAt( rtrim( $cut ) );
+        }
+        $cut = rtrim( $cut, " ,;:-" );
 
-        return strlen( $first ) > 120 ? substr( $first, 0, 117 ) . '...' : $first;
+        return ( '' === $cut || null !== self::unclosedAt( $cut ) ? substr( $first, 0, self::SUMMARY_MAX - 3 ) : $cut ) . '...';
+    }
+
+    /** The text before the first full stop, question mark or exclamation mark outside brackets (an ellipsis is not one). */
+    private static function firstSentence( string $text ): string
+    {
+        $depth = 0;
+        $len   = strlen( $text );
+        for ( $i = 0; $i < $len; $i++ ) {
+            $c = $text[ $i ];
+            if ( '(' === $c ) {
+                ++$depth;
+            } elseif ( ')' === $c && $depth > 0 ) {
+                --$depth;
+            } elseif ( 0 === $depth && ( '.' === $c || '!' === $c || '?' === $c ) && ( 0 === $i || '.' !== $text[ $i - 1 ] ) && ( $i + 1 === $len || ' ' === $text[ $i + 1 ] ) ) {
+                return substr( $text, 0, $i );
+            }
+        }
+
+        return $text;
+    }
+
+    /** Where the outermost unclosed "(" starts, else the last quote of an odd number of them, else null. */
+    private static function unclosedAt( string $text ): ?int
+    {
+        $stack = [];
+        $len   = strlen( $text );
+        for ( $i = 0; $i < $len; $i++ ) {
+            if ( '(' === $text[ $i ] ) {
+                $stack[] = $i;
+            } elseif ( ')' === $text[ $i ] ) {
+                array_pop( $stack );
+            }
+        }
+        if ( [] !== $stack ) {
+            return $stack[0];
+        }
+        if ( 1 === substr_count( $text, '"' ) % 2 ) {
+            return (int) strrpos( $text, '"' );
+        }
+
+        return null;
     }
 }
