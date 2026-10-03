@@ -41,4 +41,5 @@ require_once __DIR__ . '/Tools/ListBatches.php';
 require_once __DIR__ . '/Tools/UndoBatch.php';
 require_once __DIR__ . '/Admin/AdminActions.php';
 require_once __DIR__ . '/Admin/ProposalsPanel.php';
+require_once __DIR__ . '/Admin/BatchesPanel.php';
 require_once __DIR__ . '/Plugin.php';

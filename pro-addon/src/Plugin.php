@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\Pro;
 
+use AiEditorDivi5\Pro\Admin\BatchesPanel;
 use AiEditorDivi5\Pro\Admin\ProposalsPanel;
+use AiEditorDivi5\Pro\Batch\Batches;
 use AiEditorDivi5\Pro\Batch\BatchTable;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -68,6 +70,7 @@ final class Plugin
 
         $unlocked = static fn (): bool => Licensing::isPremium();
         ( new ProposalsPanel( $unlocked ) )->register();
+        ( new BatchesPanel( $unlocked, Batches::log(), Batches::undo() ) )->register();
 
         add_action( 'init', [ BatchTable::class, 'ensureReady' ] );
         add_filter( 'wpmu_drop_tables', [ BatchTable::class, 'dropTablesFilter' ] );

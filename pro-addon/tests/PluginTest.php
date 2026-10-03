@@ -109,4 +109,10 @@ class PluginTest extends TestCase
         $this->assertArrayHasKey( 'init', $GLOBALS['__wp_filters'] );
         $this->assertArrayHasKey( 'wpmu_drop_tables', $GLOBALS['__wp_filters'] );
     }
+
+    public function testACompatibleBootRegistersTheRecentChangesPanel(): void
+    {
+        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertArrayHasKey( 'admin_post_aied_pro_undo_batch', $GLOBALS['__wp_filters'] );
+    }
 }
