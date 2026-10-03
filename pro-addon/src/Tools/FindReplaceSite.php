@@ -70,7 +70,7 @@ final class FindReplaceSite implements ProTool
                     'scope'    => [ 'type' => 'string', 'description' => 'pages (default), layouts or all', 'enum' => SiteItems::SCOPES ],
                     'page_ids' => [ 'type' => 'array', 'items' => [ 'type' => 'integer' ], 'description' => 'Optional. Only these page or layout ids' ],
                     'dry_run'  => [ 'type' => 'boolean', 'description' => 'Preview only; returns the token a real run needs' ],
-                    'token'    => [ 'type' => 'string', 'description' => 'The token from the dry run of the same arguments' ],
+                    'token'    => [ 'type' => 'string', 'description' => 'The token from your dry run of the same arguments; it works once, within 30 minutes' ],
                 ],
                 'required'   => [ 'find', 'replace' ],
             ],
@@ -126,8 +126,10 @@ final class FindReplaceSite implements ProTool
         $argsHash = Canon::hash( [ 'find' => $find, 'replace' => $replace, 'scope' => $scope, 'ids' => $ids ] );
         if ( [] === $candidates ) {
             // A real run whose every previewed item has since stopped matching: report them, do not stay silent.
-            $gone = $dry || null === $token ? null : PreviewToken::open( $token, $argsHash, ( $this->clock )() );
+            $gone = $dry || null === $token ? null : PreviewToken::open( $token, $argsHash, ( $this->clock )(), (int) get_current_user_id() );
             if ( null !== $gone && [] !== $gone ) {
+                PreviewToken::spend( (string) $token );
+
                 return [ 'changed' => false, 'dry_run' => false, 'replaced_in' => 0, 'skipped' => self::dropped( $gone, [] ), 'message' => 'Nothing was saved.' ] + $extra;
             }
 
@@ -150,10 +152,11 @@ final class FindReplaceSite implements ProTool
             return $this->preview( $plan, $argsHash ) + $extra;
         }
 
-        $map = null === $token ? null : PreviewToken::open( $token, $argsHash, ( $this->clock )() );
+        $map = null === $token ? null : PreviewToken::open( $token, $argsHash, ( $this->clock )(), (int) get_current_user_id() );
         if ( null === $map ) {
-            throw new \InvalidArgumentException( 'A real run needs the token from a dry run of the same arguments, made in the last 30 minutes. Call again with dry_run=true.' );
+            throw new \InvalidArgumentException( 'A real run needs the token from a dry run of the same arguments, made by you in the last 30 minutes and not used before. Call again with dry_run=true.' );
         }
+        PreviewToken::spend( (string) $token );
 
         return $this->apply( $plan, $map, $find ) + $extra;
     }
@@ -187,7 +190,7 @@ final class FindReplaceSite implements ProTool
             'would_change' => count( $map ),
             'would_skip'   => $skip,
             'items'        => $items,
-            'token'        => PreviewToken::make( $argsHash, $map, ( $this->clock )() ),
+            'token'        => PreviewToken::make( $argsHash, $map, ( $this->clock )(), (int) get_current_user_id() ),
             'message'      => 'Preview only. Nothing was changed. Repeat the call without dry_run and with this token to apply it.',
         ];
     }

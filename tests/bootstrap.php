@@ -226,7 +226,7 @@ if ( ! function_exists( 'wp_cache_delete' ) ) {
     function wp_cache_delete( $key, $group = '' ) { $GLOBALS['__wp_cache_deleted'][] = [ $key, $group ]; return true; }
 }
 if ( ! function_exists( 'get_current_user_id' ) ) {
-    function get_current_user_id() { return 7; }
+    function get_current_user_id() { return $GLOBALS['__wp_current_user_id'] ?? 7; }
 }
 
 // ---- Hook shims (filters/actions) ------------------------------------------------------
