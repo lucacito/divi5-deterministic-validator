@@ -70,6 +70,12 @@ verify-pro-theme-layouts:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-theme-layouts.php --user=1
 
 # ---------------------------------------------------------------
+# verify-pro-theme-templates — real-site evidence gate for manage_theme_template (self-cleaning; free + Pro plugins must be active; dev site only)
+# ---------------------------------------------------------------
+verify-pro-theme-templates:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-theme-templates.php --user=1
+
+# ---------------------------------------------------------------
 # validate — run the validator against an arbitrary JSON file
 # Usage: make validate FILE=fixtures/valid/my-layout.json
 # ---------------------------------------------------------------
