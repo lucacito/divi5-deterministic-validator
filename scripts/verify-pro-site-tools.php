@@ -362,9 +362,17 @@ try {
     } while ( null !== $cursor && $calls < 200 );
     $diviPages = count( get_posts( [ 'post_type' => 'page', 'post_status' => [ 'publish', 'draft', 'pending', 'private', 'future' ], 'fields' => 'ids', 'posts_per_page' => -1, 'meta_query' => [ [ 'key' => '_et_pb_use_divi_5', 'value' => 'on' ] ] ] ) );
     $check( $total === $diviPages && $maxScanned <= 25 && $calls === (int) ceil( $diviPages / 25 ), "audit pages through the whole site: {$diviPages} Divi 5 pages in {$calls} calls of at most 25" );
-    $sorted = $cursors;
-    sort( $sorted );
-    $check( $cursors === $sorted && count( $cursors ) === count( array_unique( $cursors ) ) && ( [] === $cursors || get_post( end( $cursors ) ) instanceof WP_Post ), 'the audit cursor is the id of the last audited page: strictly increasing, and each one is a real page id' );
+    // The audit orders items by post id and 25 make a call, so the cursor after call k is the id of the (25*k)-th Divi 5 page.
+    $pageIds         = array_map( 'intval', get_posts( [ 'post_type' => 'page', 'post_status' => [ 'publish', 'draft', 'pending', 'private', 'future' ], 'fields' => 'ids', 'orderby' => 'ID', 'order' => 'ASC', 'posts_per_page' => -1, 'meta_query' => [ [ 'key' => '_et_pb_use_divi_5', 'value' => 'on' ] ] ] ) );
+    $expectedCursors = [];
+    for ( $k = 25; $k < count( $pageIds ); $k += 25 ) {
+        $expectedCursors[] = $pageIds[ $k - 1 ];
+    }
+    if ( count( $pageIds ) > 25 ) {
+        $check( array_map( 'intval', $cursors ) === $expectedCursors, 'the audit cursor after each call is the id of the last page audited (' . implode( ', ', $expectedCursors ) . '), not an offset' );
+    } else {
+        WP_CLI::log( 'SKIP  the cursor check needs more than 25 Divi 5 pages (this site has ' . count( $pageIds ) . ')' );
+    }
     $check( empty( $all[ $AOK ] ) && empty( $all[ $PUB ] ), 'a page with a valid layout and a link to a published page has no findings' );
     $check( ! empty( $all[ $ABAD ] ), 'a page with an unknown module has layout violations' );
     $check( isset( $all[ $ACSS ]['CUSTOM_CSS_NOT_ALLOWED'] ), 'custom CSS already stored is reported (CUSTOM_CSS_NOT_ALLOWED)' );
