@@ -58,7 +58,7 @@ class ReadmeTest extends TestCase
     public function testTheHeaderDescriptionClaimsNothingThatIsNotShipped(): void
     {
         $this->assertSame( 1, preg_match( '/^\s*\*\s*Description:\s*(.+)$/m', (string) file_get_contents( AIED_PRO_FILE ), $m ) );
-        foreach ( [ 'Theme Builder', 'site-wide', 'audit', 'find and replace', 'find/replace' ] as $unshipped ) {
+        foreach ( [ 'site-wide', 'audit', 'find and replace', 'find/replace' ] as $unshipped ) {
             $this->assertStringNotContainsStringIgnoringCase( $unshipped, $m[1], "not shipped yet: {$unshipped}" );
         }
         $this->assertStringContainsString( 'free plugin', $m[1] );

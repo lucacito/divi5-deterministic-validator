@@ -13,6 +13,7 @@ use AiEditorDivi5\Pro\Tools\SetCustomCss;
 use AiEditorDivi5\Pro\Tools\SetFrontPage;
 use AiEditorDivi5\Pro\Tools\SetPrimaryMenu;
 use AiEditorDivi5\Pro\Tools\UndoBatch;
+use AiEditorDivi5\Pro\Tools\UpdateThemeLayout;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -35,6 +36,7 @@ final class Tools
             new ListBatches( $log ),
             new UndoBatch( $log, Batches::undo() ),
             new ListThemeLayouts(),
+            new UpdateThemeLayout( $log ),
         ];
     }
 }

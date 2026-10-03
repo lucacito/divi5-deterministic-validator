@@ -6,7 +6,7 @@ Stable tag:        0.2.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Pro add-on for JHMG AI Editor for Divi 5. Lets your AI assistant set the front page and menu, publish pages and add CSS, and lets you undo each change in one step.
+Pro add-on for JHMG AI Editor for Divi 5. Lets your AI assistant set the front page and menu, publish pages, add CSS and edit the live Divi header and footer, and lets you undo each change in one step.
 
 == Description ==
 
@@ -22,6 +22,7 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `set_custom_css` - add CSS inside one clearly marked block of WordPress Additional CSS. Your own CSS is never touched.
 * `propose_php_snippet` - store PHP for you to review. Nothing is ever run, saved as a file or loaded by the plugin.
 * `list_theme_layouts` - list the live Divi Theme Builder templates and their header, footer and body layouts (read-only); with a header or footer id it also returns that layout's content.
+* `update_theme_layout` - replace the content of a live Divi header or footer with a new, checked Divi 5 layout. It shows on every page, so preview with `dry_run` first; undo restores the previous content.
 * `list_batches` - list recent Pro changes.
 * `undo_batch` - undo one batch.
 
