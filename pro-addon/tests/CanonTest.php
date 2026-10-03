@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AiEditorDivi5\Pro\Tests;
 
 use AiEditorDivi5\Pro\Canon;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/autoload.php';
@@ -45,5 +46,39 @@ class CanonTest extends TestCase
     public function testAValidStringsHashIsUnchanged(): void
     {
         $this->assertSame( hash( 'sha256', '"héllo"' ), Canon::hash( 'héllo' ) );
+    }
+
+    /** @return array<string, array{string}> */
+    public static function invalidUtf8(): array
+    {
+        return [
+            'lone continuation byte' => [ "\x80" ],
+            'truncated 3-byte sequence' => [ "ab\xe2\x82" ],
+            'overlong slash' => [ "\xc0\xaf" ],
+            'utf-16 surrogate' => [ "\xed\xa0\x80" ],
+            'above U+10FFFF' => [ "\xf4\x90\x80\x80" ],
+            'invalid byte after valid text' => [ "héllo\xff" ],
+        ];
+    }
+
+    #[DataProvider( 'invalidUtf8' )]
+    public function testInvalidUtf8IsHashedAsItsBytesNotAsNull( string $bad ): void
+    {
+        $expected = hash( 'sha256', '{"__bytes":"' . base64_encode( $bad ) . '"}' );
+        $this->assertSame( $expected, Canon::hash( $bad ) );
+        $this->assertNotSame( Canon::hash( null ), Canon::hash( $bad ) );
+    }
+
+    public function testValidMultibyteAndEmptyStringsAreNotTreatedAsInvalid(): void
+    {
+        $this->assertSame( hash( 'sha256', '"日本語 😀"' ), Canon::hash( '日本語 😀' ) );
+        $this->assertSame( hash( 'sha256', '""' ), Canon::hash( '' ) );
+    }
+
+    public function testItDoesNotNeedTheMbstringExtension(): void
+    {
+        // Hosts without ext-mbstring would fatal on mb_check_encoding(); the check must be PCRE-only.
+        $source = (string) file_get_contents( __DIR__ . '/../src/Canon.php' );
+        $this->assertDoesNotMatchRegularExpression( '/\bmb_[a-z_]+\s*\(/', $source );
     }
 }

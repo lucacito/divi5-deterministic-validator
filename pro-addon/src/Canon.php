@@ -18,7 +18,7 @@ final class Canon
 
     private static function normalize( mixed $value ): mixed
     {
-        if ( is_string( $value ) && ! mb_check_encoding( $value, 'UTF-8' ) ) {
+        if ( is_string( $value ) && 1 !== preg_match( '//u', $value ) ) {
             // JSON_PARTIAL_OUTPUT_ON_ERROR would turn every invalid string into null, so different values would hash alike.
             return [ '__bytes' => base64_encode( $value ) ];
         }
