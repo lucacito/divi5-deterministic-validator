@@ -224,7 +224,7 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- **Pro add-on 0.4.1** (hardening; branch `feat/pro-0-4-1`; NOT released, NOT pushed): preview tokens are bound to the user,
+- **Pro add-on 0.4.1** (hardening; merged to LOCAL main da340e3; NOT released, NOT pushed): preview tokens are bound to the user,
   single-use (a transient marks a spent nonce) and 30 minutes for BOTH `find_replace_site` and `manage_theme_template`
   (`PreviewToken` v2); `audit_site` pages by the id of the last audited item (pages and layouts in one id order), memoises link
   lookups and the site's known style ids per call and hides the status of a linked post the user cannot `read_post`; REST
