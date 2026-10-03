@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-theme-layouts verify-pro-theme-templates validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-theme-layouts verify-pro-theme-templates verify-pro-site-tools verify-pro-rest validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -74,6 +74,18 @@ verify-pro-theme-layouts:
 # ---------------------------------------------------------------
 verify-pro-theme-templates:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-theme-templates.php --user=1
+
+# ---------------------------------------------------------------
+# verify-pro-site-tools — real-site check of find_replace_site and audit_site through the real registry (self-cleaning; free + Pro plugins must be active; dev site only: it evicts old batch rows)
+# ---------------------------------------------------------------
+verify-pro-site-tools:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-site-tools.php --user=1
+
+# ---------------------------------------------------------------
+# verify-pro-rest — real-site check of the Pro REST routes and the live OpenAPI spec (read-only; free + Pro plugins must be active)
+# ---------------------------------------------------------------
+verify-pro-rest:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-rest.php --user=1
 
 # ---------------------------------------------------------------
 # validate — run the validator against an arbitrary JSON file
