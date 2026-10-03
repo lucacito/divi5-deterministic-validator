@@ -25,12 +25,35 @@ class ToolsTest extends TestCase
 
     public function testEveryToolIsAProToolWithAMatchingDefinition(): void
     {
+        $this->assertNotSame( [], Tools::all() );
         foreach ( Tools::all() as $tool ) {
             $this->assertInstanceOf( ProTool::class, $tool );
-            $this->assertSame( $tool->name(), $tool->definition()['name'] );
+            $d = $tool->definition();
+            $this->assertSame( $tool->name(), $d['name'] );
             $this->assertNotSame( '', $tool->capability() );
+            $this->assertMatchesRegularExpression( '/^[a-z_]+$/', $tool->name() );
+            $this->assertLessThanOrEqual( 300, strlen( $d['description'] ), $tool->name() . ': the ChatGPT importer caps descriptions at 300 characters' );
+            $this->assertSame( 'object', $d['inputSchema']['type'] );
+            foreach ( $d['inputSchema']['required'] ?? [] as $field ) {
+                $this->assertArrayHasKey( $field, $d['inputSchema']['properties'], $tool->name() . ": required field {$field}" );
+            }
         }
-        $this->assertTrue( true, 'the list may be empty before the tool plans land' );
+    }
+
+    public function testThisReleaseShipsExactlyTheSevenSettingsAndBatchTools(): void
+    {
+        $this->assertSame(
+            [ 'set_front_page', 'set_custom_css', 'set_primary_menu', 'publish_page', 'propose_php_snippet', 'list_batches', 'undo_batch' ],
+            array_map( static fn ( ProTool $t ): string => $t->name(), Tools::all() )
+        );
+    }
+
+    public function testEveryKindARecordedItemUsesIsRegisteredForUndo(): void
+    {
+        $this->assertEqualsCanonicalizing(
+            [ 'front_page', 'custom_css', 'menu', 'post_status', 'post_content' ],
+            array_keys( \AiEditorDivi5\Pro\Batch\Batches::kinds() )
+        );
     }
 
     public function testNoToolShadowsABuiltInOrAnotherProTool(): void

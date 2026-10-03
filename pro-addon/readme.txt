@@ -17,7 +17,7 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 = Tools =
 
 * `set_front_page` - set a published page as the site's front page.
-* `set_primary_menu` - build the primary menu from pages and links, and assign it to the theme's menu location.
+* `set_primary_menu` - build the primary menu from pages and links, and assign it to the theme's menu location. Undo restores titles, links, nesting, CSS classes, link target, title attribute, XFN and description, but not custom meta that other plugins add to menu items.
 * `publish_page` - publish or schedule a draft; preview first with `dry_run`.
 * `set_custom_css` - add CSS inside one clearly marked block of WordPress Additional CSS. Your own CSS is never touched.
 * `propose_php_snippet` - store PHP for you to review. Nothing is ever run, saved as a file or loaded by the plugin.

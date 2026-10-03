@@ -28,8 +28,8 @@ Three parts, one repo:
   `wp-plugin/validator/` and wraps it in the MCP server, REST API, AI-facing guides,
   the built-in image pack and the admin UI. No licensing, no remote calls.
 - **The Pro add-on** (`pro-addon/`) — a separate plugin ("JHMG AI Editor for Divi 5 Pro", sold at divi5lab.com,
-  never in the WordPress.org zip). Skeleton 0.1.0: compat guard, licensing with the updater, a licence-gated tool
-  registry (no tools yet), the Pro admin tab, its own suite (`make test-pro`) and zip (`make build-pro`). Not tested
+  never in the WordPress.org zip). 0.2.0: compat guard, licensing with the updater, a licence-gated tool
+  registry with 7 tools, batches and one-step undo, the Pro admin tab, its own suite (`make test-pro`) and zip (`make build-pro`). Not tested
   by `make test` (see `pro-addon/README.md`).
 
 ## Hard constraints — do not violate
@@ -180,6 +180,7 @@ Docker env + validator workflows go through `make`:
 | `make test-pro` | Run the Pro add-on's own PHPUnit suite (`pro-addon/phpunit.xml`) |
 | `make build-pro` | Build `dist/jhmg-ai-editor-for-divi-5-pro.zip` (sold from divi5lab.com; `dist/` is git-ignored) |
 | `make verify-pro-skeleton` | Real-site check of the Pro add-on skeleton (Docker site; the free and Pro plugins must be active) |
+| `make verify-pro-settings` | Real-site check of the Pro settings tools and batch undo on the Docker site; restores every setting and deletes everything it created (the free and Pro plugins must be active) |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
 Tests run via PHPUnit (`phpunit.xml`) and cover both the validator
@@ -219,17 +220,18 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- **Pro add-on skeleton 0.1.0** (merged to LOCAL main, 2d62447; NOT released, NOT pushed): compat guard,
-  licensing with the updater, licence-gated `ToolRegistry` (no tools yet), Pro admin tab, safety test, zip,
-  `make verify-pro-skeleton` passing on the dev site. Next: Plan 3 (licence hardening, batch store, undo, the five settings tools), then Plan 4 (Theme Builder
-  layout tools + templates), Plan 5 (find/replace, audit, REST/OpenAPI parity, live verification).
-  Release blockers before the first Pro sale (final review): (1) a non-explicit server answer (HTML 403/404, empty
-  or non-JSON body) is stored by the canonical client as `invalid` and locks the tools, contradicting 'only an
-  explicit verdict locks' — fix in the adapter; (2) the `admin_init` licence refresh retries on every admin/ajax
-  request during a licence-server outage — skip `wp_doing_ajax()`/`wp_doing_cron()` and add a backoff; also guard
-  or document `AIED_PRO_API_BASE`, add a readme.txt that discloses the remote calls, make the plugin Description
-  match the shipped features, distinguish activation failure reasons in the admin notice, and confirm the product
-  id `ai-editor-divi5-pro` and product URL with the divi5lab server. These are the first task of Plan 3.
+- **Pro add-on 0.2.0** (branch `feat/pro-settings-batches`; NOT merged, NOT released, NOT pushed): licence hardening
+  (only an explicit server verdict can lock; refresh skips ajax/cron and backs off 15 minutes after a fault; the API-base
+  override only on local/dev sites; activation failures say why; `readme.txt` discloses the divi5lab.com calls), the batch
+  store (`{prefix}aied_pro_batches`, last 20) with honest undo (`BatchUndo`: changed-since rule, per-item capability,
+  "fully undone" only when every item restored) and 7 MCP tools: `set_front_page`, `set_primary_menu`, `publish_page`,
+  `set_custom_css`, `propose_php_snippet`, `list_batches`, `undo_batch`, plus the "Recent Pro changes" and "Code proposals"
+  panels on the Pro tab. MCP + admin only: REST/OpenAPI for the Pro tools is Plan 5. Plan:
+  `docs/superpowers/plans/2026-10-02-pro-addon-settings-batches.md`. Verified: `make test-pro`, `make test`,
+  `make verify-pro-settings`. Next: Plan 4 (Theme Builder layout tools + templates), Plan 5 (find/replace, audit, REST/OpenAPI
+  parity, live verification). Before the first Pro sale: an end-to-end activation and update check against the real
+  divi5lab.com (product id `ai-editor-divi5-pro` and `/plugins/divi-5-ai-editor` were confirmed against the layoutlab repo on
+  2026-10-02), and confirm the licence server's `validate` answers have the shapes `Licensing::isVerdict` expects.
 - **WordPress.org review answered 2026-10-02** (issue: custom CSS/JS/PHP through layouts, `css.freeForm`/`mainElement`):
   fixed and merged to LOCAL main (9cb7a06; NOT uploaded, NOT pushed) (`CodePolicy` + `LayoutGate`, every write/preview path, guides/recipes cleaned,
   `NoCustomCodeTest`); the owner uploads the 4.4.0 zip, tests on Playground and sends `docs/wporg-review-reply-2-draft.md`.

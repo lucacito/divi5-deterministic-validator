@@ -44,6 +44,17 @@ class ReadmeTest extends TestCase
         }
     }
 
+    public function testItListsNoToolThatIsNotShipped(): void
+    {
+        $this->assertSame( 1, preg_match( '/^= Tools =\s*$(.*?)^==\s/ms', $this->readme(), $section ), 'the readme has a "= Tools =" list' );
+        preg_match_all( '/^\*\s+`([a-z_]+)`/m', $section[1], $listed );
+        $this->assertNotSame( [], $listed[1], 'the Tools list names at least one tool' );
+        $shipped = array_map( static fn ( \AiEditorDivi5\Pro\ProTool $t ): string => $t->name(), Tools::all() );
+        foreach ( $listed[1] as $name ) {
+            $this->assertContains( $name, $shipped, "the readme lists {$name}, which Tools::all() does not ship" );
+        }
+    }
+
     public function testTheHeaderDescriptionClaimsNothingThatIsNotShipped(): void
     {
         $this->assertSame( 1, preg_match( '/^\s*\*\s*Description:\s*(.+)$/m', (string) file_get_contents( AIED_PRO_FILE ), $m ) );
