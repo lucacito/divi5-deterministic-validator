@@ -297,6 +297,57 @@ class ManageThemeTemplateTest extends TestCase
         $this->assertSame( '0', $this->meta( 200 )['_et_enabled'] );
     }
 
+    public function testForcedUndoRestoresOnlyTheFieldsTheBatchChanged(): void
+    {
+        $r = $this->apply( [ 'template_id' => 200, 'action' => 'disable' ] );
+        // Behind the tool's back (Divi's builder): another header layout and a new title.
+        $GLOBALS['__wp_postmeta'][200]['_et_header_layout_id'] = 204;
+        $GLOBALS['__wp_posts'][200]->post_title               = 'Renamed in Divi';
+
+        $this->assertSame( 'changed_since', $this->undo()->undo( $r['batch']['id'] )['items'][0]['result'] );
+        $undo = $this->undo()->undo( $r['batch']['id'], true );
+        $this->assertTrue( $undo['fully_undone'] );
+        $this->assertSame( '1', $this->meta( 200 )['_et_enabled'], 'the field the batch changed is back' );
+        $this->assertSame( 204, $this->meta( 200 )['_et_header_layout_id'], 'the new header layout is kept' );
+        $this->assertSame( 'Renamed in Divi', $GLOBALS['__wp_posts'][200]->post_title, 'the new title is kept' );
+        $this->assertSame( '0', $this->meta( 200 )['_et_default'] );
+    }
+
+    public function testForcedUndoOfAnAssignLeavesAnExcludeListEditedSinceAlone(): void
+    {
+        $r = $this->apply( [ 'template_id' => 200, 'action' => 'assign', 'use_on' => [ 'singular:all' ] ] );
+        $GLOBALS['__wp_postmeta'][200]['_et_exclude_from'] = [ 'archive:all' ];
+        $undo = $this->undo()->undo( $r['batch']['id'], true );
+        $this->assertTrue( $undo['fully_undone'] );
+        $this->assertSame( [ 'singular:post_type:page:all' ], $this->meta( 200 )['_et_use_on'] );
+        $this->assertSame( [ 'archive:all' ], $this->meta( 200 )['_et_exclude_from'], 'the batch never changed this list, so undo does not touch it' );
+        foreach ( $GLOBALS['__divi_tb_store_calls'] as $call ) {
+            $this->assertArrayNotHasKey( '_fields', $call[1], 'the bookkeeping key is never passed to Divi' );
+        }
+    }
+
+    public function testANormalUndoStillRestoresEverythingTheBatchChanged(): void
+    {
+        $before = $this->meta( 200 );
+        $r      = $this->apply( [ 'template_id' => 200, 'action' => 'assign', 'use_on' => [ 'singular:all' ], 'exclude_from' => [ 'archive:all' ] ] );
+        $this->assertTrue( $this->undo()->undo( $r['batch']['id'] )['fully_undone'] );
+        $after = $this->meta( 200 );
+        unset( $after['_et_onboarding_created'], $before['_et_onboarding_created'] );
+        $this->assertSame( $before, $after );
+    }
+
+    public function testAnItemRecordedWithoutAFieldListRestoresAllThreeFields(): void
+    {
+        $r    = $this->apply( [ 'template_id' => 200, 'action' => 'assign', 'use_on' => [ 'singular:all' ] ] );
+        $item = $this->log->find( $r['batch']['id'] )['items'][0];
+        $this->assertSame( [ 'use_on' ], $item['before']['_fields'] );
+        unset( $item['before']['_fields'] );
+        $kind = new ThemeTemplateKind();
+        $res  = $kind->restore( $item );
+        $this->assertTrue( $res['ok'] );
+        $this->assertSame( [ 'singular:post_type:page:all' ], $this->meta( 200 )['_et_use_on'] );
+    }
+
     public function testItIsRegisteredAndNeedsEditThemeOptions(): void
     {
         $this->assertContains( 'manage_theme_template', array_map( static fn ( $t ) => $t->name(), \AiEditorDivi5\Pro\Tools::all() ) );

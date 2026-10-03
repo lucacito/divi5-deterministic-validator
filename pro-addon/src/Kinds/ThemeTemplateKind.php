@@ -21,6 +21,9 @@ final class ThemeTemplateKind implements ItemKind
 {
     public const NAME = 'theme_template';
 
+    /** The only fields the tool ever changes. */
+    private const FIELDS = [ 'enabled', 'use_on', 'exclude_from' ];
+
     public function name(): string
     {
         return self::NAME;
@@ -33,7 +36,15 @@ final class ThemeTemplateKind implements ItemKind
      */
     public static function itemFor( array $before, array $after ): array
     {
-        return Item::make( self::NAME, (string) $after['id'], 'Theme Builder template "' . (string) $after['title'] . '" (#' . (string) $after['id'] . ')', $before, $after );
+        // Which fields this change touched: a forced undo puts back only these, onto the template's CURRENT state.
+        $fields = [];
+        foreach ( self::FIELDS as $field ) {
+            if ( ( $before[ $field ] ?? null ) !== ( $after[ $field ] ?? null ) ) {
+                $fields[] = $field;
+            }
+        }
+
+        return Item::make( self::NAME, (string) $after['id'], 'Theme Builder template "' . (string) $after['title'] . '" (#' . (string) $after['id'] . ')', $before + [ '_fields' => $fields ], $after );
     }
 
     public function current( array $item ): mixed
@@ -53,7 +64,16 @@ final class ThemeTemplateKind implements ItemKind
         if ( ! is_array( $before ) || null === $now ) {
             return [ 'ok' => false, 'reason' => 'no_previous_state' ];
         }
-        $after = TemplateStore::write( $before );
+        // Only the fields the batch changed are put back, onto the template as it is now: a forced undo must not revert
+        // anything else (a header swapped or the title changed in Divi's builder since). Older items have no list: all three.
+        $fields = is_array( $before['_fields'] ?? null ) ? $before['_fields'] : self::FIELDS;
+        $state  = $now;
+        foreach ( $fields as $field ) {
+            if ( in_array( $field, self::FIELDS, true ) && array_key_exists( $field, $before ) ) {
+                $state[ $field ] = $before[ $field ];
+            }
+        }
+        $after = TemplateStore::write( $state );
         if ( null === $after ) {
             return [ 'ok' => false, 'reason' => 'divi_refused' ];
         }
