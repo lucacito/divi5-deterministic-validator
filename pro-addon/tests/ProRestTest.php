@@ -134,6 +134,30 @@ class ProRestTest extends TestCase
         $this->assertSame( 0, $tool->runs );
     }
 
+    public function testABodyThatWasNotParsedAsJsonIsA400EvenForAToolThatNeedsNoArguments(): void
+    {
+        $tool = new FakeTool();
+        $rest = $this->rest( [ $tool ] );
+        // Sent as a form or as text/plain: WordPress parses no JSON, so the tool would have run with its defaults.
+        foreach ( [ 'scope=layouts&cursor=3', '{"scope":"layouts"}', 'null', 'x' ] as $raw ) {
+            $r = $rest->handle( 'fake_pro_tool', new \WP_REST_Request( null, [], $raw ) );
+            $this->assertSame( 400, $r->data['status'], $raw );
+            $this->assertSame( 'invalid_argument', $r->code, $raw );
+            $this->assertStringContainsString( 'application/json', $r->get_error_message(), $raw );
+        }
+        $this->assertSame( 0, $tool->runs );
+    }
+
+    public function testAnEmptyOrBlankBodyWithoutJsonIsNoArguments(): void
+    {
+        $tool = new FakeTool();
+        foreach ( [ '', "  \n" ] as $raw ) {
+            $r = $this->rest( [ $tool ] )->handle( 'fake_pro_tool', new \WP_REST_Request( null, [], $raw ) );
+            $this->assertSame( 200, $r->get_status(), json_encode( $raw ) );
+        }
+        $this->assertSame( 2, $tool->runs );
+    }
+
     public function testAnEmptyBodyIsNoArguments(): void
     {
         $tool = new FakeTool();

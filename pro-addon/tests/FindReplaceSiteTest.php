@@ -27,6 +27,7 @@ class FindReplaceSiteTest extends TestCase
     protected function setUp(): void
     {
         $this->setUpThemeBuilder();
+        $GLOBALS['__wp_transients'] = [];
         $this->tool = new FindReplaceSite( $this->log, null, fn (): int => $this->now );
         $GLOBALS['__wp_caps']['edit_posts'] = true;
         foreach ( [ 11, 12, 13 ] as $id ) {
@@ -44,6 +45,7 @@ class FindReplaceSiteTest extends TestCase
 
     protected function tearDown(): void
     {
+        unset( $GLOBALS['__wp_current_user_id'] );
         $this->tearDownThemeBuilder();
     }
 
@@ -133,6 +135,43 @@ class FindReplaceSiteTest extends TestCase
         $this->refused( $this->args( [ 'token' => $p['token'], 'scope' => 'all' ] ), 'needs the token' );
         $this->refused( $this->args( [ 'token' => $p['token'], 'page_ids' => [ 11 ] ] ), 'needs the token' );
         $this->refused( $this->args( [ 'token' => $p['token'] . 'x' ] ), 'needs the token' );
+    }
+
+    public function testATokenWorksOnlyOnceEvenWhenAnUndoPutTheContentBack(): void
+    {
+        $p     = $this->tool->run( $this->args( [ 'dry_run' => true ] ) );
+        $first = $this->tool->run( $this->args( [ 'token' => $p['token'] ] ) );
+        $this->assertTrue( $first['changed'] );
+        // What undo_batch does: the previewed content is back. The old token must not apply the change a second time.
+        foreach ( [ 11, 12, 13, 14, 201, 202 ] as $id ) {
+            $GLOBALS['__wp_posts'][ $id ]->post_content = str_replace( 'AIED-NEW', 'AIED-OLD', $this->layoutContent( $id ) );
+        }
+        $this->refused( $this->args( [ 'token' => $p['token'] ] ), 'needs the token' );
+    }
+
+    public function testATokenOnlyWorksForTheUserWhoPreviewed(): void
+    {
+        $GLOBALS['__wp_current_user_id'] = 7;
+        $p                               = $this->tool->run( $this->args( [ 'dry_run' => true ] ) );
+        $GLOBALS['__wp_current_user_id'] = 8;
+        $this->refused( $this->args( [ 'token' => $p['token'] ] ), 'needs the token' );
+        $GLOBALS['__wp_current_user_id'] = 7;
+        $r                               = $this->tool->run( $this->args( [ 'token' => $p['token'] ] ) );
+        $this->assertTrue( $r['changed'], 'the refusal for another user did not use the token up' );
+    }
+
+    public function testARunThatSavesNothingStillSpendsItsToken(): void
+    {
+        $p = $this->tool->run( $this->args( [ 'dry_run' => true ] ) );
+        foreach ( [ 11, 12, 13, 14, 201, 202 ] as $id ) {
+            $GLOBALS['__wp_posts'][ $id ]->post_content = self::text( 'Edited away' );
+        }
+        $r = $this->tool->run( $this->args( [ 'token' => $p['token'] ] ) );
+        $this->assertFalse( $r['changed'] );
+        $this->assertNotEmpty( $r['skipped'], 'the previewed items are reported as gone' );
+        // The text comes back: the spent token does not report the old items again and cannot apply anything.
+        $GLOBALS['__wp_posts'][11]->post_content = self::text( 'Back AIED-OLD' );
+        $this->refused( $this->args( [ 'token' => $p['token'] ] ), 'needs the token' );
     }
 
     public function testATokenExpires(): void

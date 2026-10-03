@@ -2131,3 +2131,14 @@ Expected: `[build-pro] Packaging jhmg-ai-editor-for-divi-5-pro version 0.4.1`, t
 git status --short && git log --oneline main..HEAD
 ```
 Expected: no `git status` output; eight commits (Tasks 1 to 8; Task 0 makes none) on `feat/pro-0-4-1`. Do not merge: the final whole-branch review (opus) comes first, then the owner decides.
+
+## As built (deviations from the text above)
+
+Recorded at the end of execution on 2026-10-03; the code in the repo is authoritative where it differs from the plan text.
+
+- **Test counts are +10 from Task 4 on.** Task 4's review found two Important defects in the `summary()` algorithm that the plan's code contained (a leading bracket or quote kept unclosed; a full stop inside quotes ended the summary; a multibyte character could be split; degenerate inputs). Fix round 1 (492beae) added 10 tests, so every Pro count after Task 3 in this plan is 10 higher: the end state is `make test-pro` = `OK (766 tests, 18286 assertions)`, `make test` = `OK (726 tests, 5241 assertions)`.
+- **Task 7 fix round (2ab37f5):** CLAUDE.md said 756 (copied from this plan); token-eviction wording corrected in `README.md`, the `PreviewToken` docblock and the spec (if the object cache evicts the spent mark, a replay within 30 minutes by the same user with the same arguments is possible; a content change since the preview is still caught, a replay after an `undo_batch` that restored the previewed content is not); the verify-script and changelog wording narrowed.
+- **Task 8 fix round (a6ada4b):** the live audit-cursor check compares against the real page ids (it logs SKIP on 25 or fewer pages) instead of "strictly increasing". Live results from the main checkout on Divi 5.14: site-tools 49, rest 21, theme-templates 60 PASS, 0 FAIL; the Pro add-on was deactivated afterwards.
+- **Final-review wave:** the spent-mark TTL is now asserted (mutation-checked), the `DevGuardTest` order check anchors on `$failures = [];`, CLAUDE.md states the live results, this section.
+- **Commits:** 11 plus the wave (the plan expected 8): three fix rounds.
+- **Deferred on purpose (accepted by the final review):** `open()` + `spend()` are not atomic (changed-since, capability checks and `LayoutGate` still apply); the template token is spent before a write Divi may refuse; both tools sign under the same `aied-site|` prefix (different argument sets); `audit_site` still tells that a non-public post exists at a linked address (status hidden); the no-op template branch compares three fields (undo restores only those); the no-change dry run lacks the `saved`/diff/advisory keys; the alias-guard regex misses rare `use` forms; the `uninstall.php` does not delete the short-lived spent marks.

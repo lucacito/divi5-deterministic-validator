@@ -28,7 +28,7 @@ Three parts, one repo:
   `wp-plugin/validator/` and wraps it in the MCP server, REST API, AI-facing guides,
   the built-in image pack and the admin UI. No licensing, no remote calls.
 - **The Pro add-on** (`pro-addon/`) — a separate plugin ("JHMG AI Editor for Divi 5 Pro", sold at divi5lab.com,
-  never in the WordPress.org zip). 0.4.0: compat guard, licensing with the updater, a licence-gated tool
+  never in the WordPress.org zip). 0.4.1: compat guard, licensing with the updater, a licence-gated tool
   registry with 13 tools (settings, batches and undo, Theme Builder header/footer and template tools, site-wide find/replace and audit), REST and ChatGPT parity for all of them, the Pro admin tab, its own suite (`make test-pro`) and zip (`make build-pro`). Not tested
   by `make test` (see `pro-addon/README.md`).
 
@@ -224,7 +224,15 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- **Pro add-on 0.4.0** (branch `feat/pro-site-tools`; NOT merged, NOT released, NOT pushed): `find_replace_site` (literal;
+- **Pro add-on 0.4.1** (hardening; branch `feat/pro-0-4-1`; NOT released, NOT pushed): preview tokens are bound to the user,
+  single-use (a transient marks a spent nonce) and 30 minutes for BOTH `find_replace_site` and `manage_theme_template`
+  (`PreviewToken` v2); `audit_site` pages by the id of the last audited item (pages and layouts in one id order), memoises link
+  lookups and the site's known style ids per call and hides the status of a linked post the user cannot `read_post`; REST
+  refuses a body WordPress did not parse as JSON (400); OpenAPI summaries are cut at a word, never inside brackets, and 401/500
+  are documented; no-change layout dry runs carry `valid`/`violations`; a template write that changes nothing reports
+  `changed:false`; the `verify-pro-*` scripts refuse non-local sites (`scripts/dev-guard.php`). Plan:
+  `docs/superpowers/plans/2026-10-03-pro-0-4-1-hardening.md`. `make test-pro` 766 tests, `make test` 726; live gates passed on the Docker dev site (Divi 5.14, Pro activated only for the runs): `make verify-pro-site-tools` 49, `make verify-pro-rest` 21, `make verify-pro-theme-templates` 60 PASS, 0 FAIL.
+- **Pro add-on 0.4.0** (merged to LOCAL main 6ce824d; NOT released, NOT pushed): `find_replace_site` (literal;
   Divi 5 pages, the live header/footer only with scope and the Theme Builder permission; ONE batch of at most 50 items; a signed
   30-minute preview token carries the id => content-hash map so an item changed since the preview, or dropped out of it, is skipped and reported; every result
   through `LayoutGate::check($new, $stored)`, an invalid one skipped, never saved), `audit_site` (read-only: layout violations

@@ -17,6 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class ProOpenApi
 {
+    private const SUMMARY_MAX = 120;
+
     public function __construct( private ToolRegistry $registry )
     {
     }
@@ -47,7 +49,9 @@ final class ProOpenApi
                 'responses'   => [
                     '200' => [ 'description' => 'Success', 'content' => [ 'application/json' => [ 'schema' => [ '$ref' => '#/components/schemas/ProResult' ] ] ] ],
                     '400' => [ 'description' => 'A missing or invalid argument (the message says which)', 'content' => [ 'application/json' => [ 'schema' => [ '$ref' => '#/components/schemas/ProError' ] ] ] ],
+                    '401' => [ 'description' => 'Not authenticated: use the plugin API key or an Application Password' ],
                     '403' => [ 'description' => 'The user lacks the permission this tool needs, or the Pro tools are not unlocked' ],
+                    '500' => [ 'description' => 'The tool failed unexpectedly; nothing is leaked, so try again or check the site', 'content' => [ 'application/json' => [ 'schema' => [ '$ref' => '#/components/schemas/ProError' ] ] ] ],
                 ],
             ];
             $paths[ ProRest::PREFIX . $def['name'] ] = [ 'post' => $op ];
@@ -104,10 +108,107 @@ final class ProOpenApi
         return lcfirst( str_replace( ' ', '', ucwords( str_replace( '_', ' ', $toolName ) ) ) );
     }
 
-    private static function summary( string $description ): string
+    /** At most 120 bytes: the first sentence, cut at a word boundary, never ending inside brackets or quotes, always valid UTF-8. */
+    public static function summary( string $description ): string
     {
-        $first = trim( (string) preg_replace( '/\s+/', ' ', strtok( $description, '.' ) ?: $description ) );
+        $text  = trim( (string) preg_replace( '/\s+/', ' ', $description ) );
+        $first = trim( self::firstSentence( $text ) );
+        if ( '' === $first ) {
+            $first = $text;
+        }
+        $ellipsis = false;
+        // Every pass only makes the text shorter, so this ends: cut to fit, drop an unclosed fragment, check again.
+        for ( ;; ) {
+            if ( strlen( $first ) + ( $ellipsis ? 3 : 0 ) > self::SUMMARY_MAX ) {
+                $first    = self::wordCut( $first, self::SUMMARY_MAX - 3 );
+                $ellipsis = true;
+            }
+            $clean = self::closeOff( $first );
+            if ( $clean === $first ) {
+                break;
+            }
+            $first    = $clean;
+            $ellipsis = true;
+        }
 
-        return strlen( $first ) > 120 ? substr( $first, 0, 117 ) . '...' : $first;
+        return '' === $first ? '' : $first . ( $ellipsis ? '...' : '' );
+    }
+
+    /** At most $max bytes, valid UTF-8, ending at a word boundary where there is one. */
+    private static function wordCut( string $text, int $max ): string
+    {
+        $head = self::utf8Prefix( substr( $text, 0, $max ) );
+        if ( ' ' !== substr( $text, strlen( $head ), 1 ) ) {
+            $space = strrpos( $head, ' ' );
+            if ( false !== $space && $space > 0 ) {
+                $head = substr( $head, 0, $space );
+            }
+        }
+
+        return rtrim( $head, " ,;:-" );
+    }
+
+    /** Drops every fragment that opens a bracket or a quote and never closes it (at the very start: just that character). */
+    private static function closeOff( string $text ): string
+    {
+        for ( $open = self::unclosedAt( $text ); null !== $open; $open = self::unclosedAt( $text ) ) {
+            $text = rtrim( trim( 0 === $open ? substr( $text, 1 ) : substr( $text, 0, $open ) ), " ,;:-" );
+        }
+
+        return $text;
+    }
+
+    /** The longest prefix that is valid UTF-8 (a multibyte character is never split). */
+    private static function utf8Prefix( string $text ): string
+    {
+        while ( '' !== $text && 1 !== preg_match( '//u', $text ) ) {
+            $text = substr( $text, 0, -1 );
+        }
+
+        return $text;
+    }
+
+    /** The text before the first full stop, question mark or exclamation mark outside brackets and quotes (an ellipsis is not one). */
+    private static function firstSentence( string $text ): string
+    {
+        $depth = 0;
+        $quote = false;
+        $len   = strlen( $text );
+        for ( $i = 0; $i < $len; $i++ ) {
+            $c = $text[ $i ];
+            if ( '"' === $c ) {
+                $quote = ! $quote;
+            } elseif ( '(' === $c && ! $quote ) {
+                ++$depth;
+            } elseif ( ')' === $c && ! $quote && $depth > 0 ) {
+                --$depth;
+            } elseif ( 0 === $depth && ! $quote && $i > 0 && ( '.' === $c || '!' === $c || '?' === $c ) && '.' !== $text[ $i - 1 ] && ( $i + 1 === $len || ' ' === $text[ $i + 1 ] ) ) {
+                return substr( $text, 0, $i );
+            }
+        }
+
+        return $text;
+    }
+
+    /** Where the outermost unclosed "(" starts, else the last quote of an odd number of them, else null. */
+    private static function unclosedAt( string $text ): ?int
+    {
+        $stack = [];
+        $len   = strlen( $text );
+        for ( $i = 0; $i < $len; $i++ ) {
+            if ( '(' === $text[ $i ] ) {
+                $stack[] = $i;
+            } elseif ( ')' === $text[ $i ] ) {
+                array_pop( $stack );
+            }
+        }
+        if ( [] !== $stack ) {
+            return $stack[0];
+        }
+        if ( 1 === substr_count( $text, '"' ) % 2 ) {
+            return (int) strrpos( $text, '"' );
+        }
+
+        return null;
     }
 }

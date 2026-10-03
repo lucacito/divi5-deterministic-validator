@@ -84,4 +84,43 @@ class ThemeBuilderGuardTest extends TestCase
             $this->assertContains( $class, \AiEditorDivi5\Pro\Compat::REQUIRED_CLASSES, "{$where} references {$class}, which Compat::REQUIRED_CLASSES does not list" );
         }
     }
+
+    /** @return array<string,array{string,bool}> */
+    public static function aliasForms(): array
+    {
+        return [
+            'a namespace import'              => [ 'use AiEditorDivi5\\WP;', true ],
+            'a leading backslash'             => [ 'use \\AiEditorDivi5\\WP;', true ],
+            'an alias of the namespace'       => [ 'use AiEditorDivi5\\WP as Free;', true ],
+            'a group use'                     => [ 'use AiEditorDivi5\\WP\\{HistoryService, EditTarget};', true ],
+            'a normal class import'           => [ 'use AiEditorDivi5\\WP\\HistoryService;', false ],
+            'the Pro namespace'               => [ 'use AiEditorDivi5\\Pro\\Compat;', false ],
+            'a longer namespace name'         => [ 'use AiEditorDivi5\\WPX;', false ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'aliasForms' )]
+    public function testTheAliasScanRecognisesTheFormsThatHideAFreeClassName( string $code, bool $hidden ): void
+    {
+        $this->assertSame( $hidden, self::hidesFreeClasses( $code ) );
+    }
+
+    /** The scan above sees only fully written names, so a namespace import, alias or group use would let a class slip past it. */
+    public function testNoAddOnFileHidesAFreePluginClassBehindANamespaceImportAliasOrGroupUse(): void
+    {
+        $scanned = 0;
+        foreach ( new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( self::root(), \FilesystemIterator::SKIP_DOTS ) ) as $file ) {
+            if ( 'php' !== $file->getExtension() ) {
+                continue;
+            }
+            ++$scanned;
+            $this->assertFalse( self::hidesFreeClasses( self::code( (string) file_get_contents( $file->getPathname() ) ) ), $file->getFilename() . ' imports the free plugin namespace as a whole; write each class with its full name so Compat::REQUIRED_CLASSES can see it' );
+        }
+        $this->assertGreaterThan( 20, $scanned );
+    }
+
+    private static function hidesFreeClasses( string $code ): bool
+    {
+        return 1 === preg_match( '/\buse\s+\\\\?AiEditorDivi5\\\\WP(?:\s*;|\s+as\b|\\\\\{)/i', $code );
+    }
 }

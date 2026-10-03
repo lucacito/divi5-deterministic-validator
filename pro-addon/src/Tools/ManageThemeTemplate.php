@@ -9,6 +9,7 @@ use AiEditorDivi5\Pro\Batch\BatchLog;
 use AiEditorDivi5\Pro\Canon;
 use AiEditorDivi5\Pro\Kinds\ThemeTemplateKind;
 use AiEditorDivi5\Pro\ProTool;
+use AiEditorDivi5\Pro\Site\PreviewToken;
 use AiEditorDivi5\Pro\ThemeBuilder\LayoutTarget;
 use AiEditorDivi5\Pro\ThemeBuilder\TemplateStore;
 
@@ -19,8 +20,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Enable, disable or re-target (where it applies) ONE existing template of the live Theme Builder. It never creates,
  * duplicates or deletes a template and never changes which layouts a template uses. Every real run needs the token
- * from a dry run of the same arguments, and the token is bound to the template's current state, so a template that
- * changed since the preview is refused.
+ * from a dry run of the same arguments: it is bound to the template's state at the preview (a template that changed
+ * since is refused), to the user who previewed, and to 30 minutes, and it works once.
  */
 final class ManageThemeTemplate implements ProTool
 {
@@ -30,8 +31,12 @@ final class ManageThemeTemplate implements ProTool
     private const MAX_RULES = 50;
     private const CONDITION = '/^[A-Za-z0-9_:\-]{1,200}$/D';
 
-    public function __construct( private BatchLog $log )
+    private \Closure $clock;
+
+    /** @param (\Closure():int)|null $clock the time in seconds (the tests move it) */
+    public function __construct( private BatchLog $log, ?\Closure $clock = null )
     {
+        $this->clock = $clock ?? static fn (): int => time();
     }
 
     public function name(): string
@@ -57,7 +62,7 @@ final class ManageThemeTemplate implements ProTool
                     'use_on'       => [ 'type' => 'array', 'items' => [ 'type' => 'string' ], 'description' => 'assign only: where the template applies (replaces the current list)' ],
                     'exclude_from' => [ 'type' => 'array', 'items' => [ 'type' => 'string' ], 'description' => 'assign only: where it must not apply (replaces the current list)' ],
                     'dry_run'      => [ 'type' => 'boolean', 'description' => 'Preview only; returns the token a real run needs' ],
-                    'token'        => [ 'type' => 'string', 'description' => 'The token from the dry run of the same arguments' ],
+                    'token'        => [ 'type' => 'string', 'description' => 'The token from your dry run of the same arguments; it works once, within 30 minutes' ],
                 ],
                 'required'   => [ 'template_id', 'action' ],
             ],
@@ -73,7 +78,7 @@ final class ManageThemeTemplate implements ProTool
             throw new \InvalidArgumentException( '"action" must be one of: ' . implode( ', ', self::ACTIONS ) . '.' );
         }
         $dry   = Args::bool( $arguments, 'dry_run' );
-        $token = Args::string( $arguments, 'token', false, 200 );
+        $token = Args::string( $arguments, 'token', false, 8000 );
         $rules = self::rules( $arguments, $action );
 
         $before = TemplateStore::read( $id );
@@ -90,21 +95,29 @@ final class ManageThemeTemplate implements ProTool
         if ( [] === $diff ) {
             return [ 'changed' => false, 'dry_run' => $dry, 'template' => $label, 'message' => 'The template already is exactly like that; nothing changed.' ];
         }
-        $expected = self::token( $id, $action, $rules, $before );
+        $argsHash  = Canon::hash( [ 'id' => $id, 'action' => $action, 'rules' => $rules ] );
+        $stateHash = Canon::hash( $before );
+        $userId    = (int) get_current_user_id();
         if ( $dry ) {
-            return [ 'changed' => false, 'dry_run' => true, 'template' => $label, 'would_change' => $diff, 'token' => $expected, 'message' => 'Preview only. Nothing was changed. Repeat the call without dry_run and with this token to apply it; it affects the whole site.' ];
+            return [ 'changed' => false, 'dry_run' => true, 'template' => $label, 'would_change' => $diff, 'token' => PreviewToken::make( $argsHash, [ $id => $stateHash ], ( $this->clock )(), $userId ), 'message' => 'Preview only. Nothing was changed. Repeat the call without dry_run and with this token to apply it; it affects the whole site.' ];
         }
-        if ( null === $token || ! hash_equals( $expected, $token ) ) {
-            throw new \InvalidArgumentException( 'A real run needs the token from a dry run of the same arguments, taken while the template was in its current state. Call again with dry_run=true.' );
+        $map = null === $token ? null : PreviewToken::open( $token, $argsHash, ( $this->clock )(), $userId );
+        if ( null === $map || ! isset( $map[ $id ] ) || ! hash_equals( $map[ $id ], $stateHash ) ) {
+            throw new \InvalidArgumentException( 'A real run needs the token from a dry run of the same arguments, made by you in the last 30 minutes, not used before and taken while the template was in its current state. Call again with dry_run=true.' );
         }
+        PreviewToken::spend( (string) $token );
 
         $written = TemplateStore::write( $after );
         if ( null === $written ) {
             // Divi refused, or the template is no longer a live one: nothing was changed.
             throw new \RuntimeException( 'Divi did not save the template as requested, so nothing is recorded. Check list_theme_layouts for its current state.' );
         }
-        // Divi accepted the write, so record what it REALLY wrote (a normal, undoable batch), even if that differs from the request.
         $differs = self::diff( $after, $written );
+        if ( [] === self::diff( $before, $written ) ) {
+            // Divi accepted the write but the template is as it was: nothing changed, so there is nothing to undo or record.
+            return [ 'changed' => false, 'dry_run' => false, 'template' => $label, 'differs_from_request' => $differs, 'message' => 'Divi accepted the write, but the template is exactly as it was; nothing changed and nothing is recorded. See differs_from_request.' ];
+        }
+        // Divi accepted the write, so record what it REALLY wrote (a normal, undoable batch), even if that differs from the request.
         $batch   = $this->log->record( self::NAME, ucfirst( $action ) . " Theme Builder template \"{$before['title']}\" (#{$id})", [ ThemeTemplateKind::itemFor( $before, $written ) ] );
         $result  = [ 'changed' => true, 'dry_run' => false, 'template' => $label, 'changed_fields' => self::diff( $before, $written ), 'note' => 'This applies to the whole site. Divi\'s caches were cleared.' ];
         if ( [] !== $differs ) {
@@ -184,14 +197,5 @@ final class ManageThemeTemplate implements ProTool
         }
 
         return $out;
-    }
-
-    /**
-     * @param array{use_on:?list<string>, exclude_from:?list<string>} $rules
-     * @param array<string,mixed> $state
-     */
-    private static function token( int $id, string $action, array $rules, array $state ): string
-    {
-        return wp_hash( 'aied-template|' . Canon::hash( [ 'id' => $id, 'action' => $action, 'rules' => $rules, 'state' => $state ] ) );
     }
 }

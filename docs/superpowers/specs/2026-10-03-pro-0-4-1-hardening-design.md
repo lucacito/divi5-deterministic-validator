@@ -24,7 +24,7 @@ of the importer's 30 stay as they are) and without touching the free plugin or t
    arguments, the user who previewed, the state it saw (item content hashes, or the template's state hash), 30 minutes, and a one-time
    nonce. The first real run spends the nonce (a transient); a token cannot be replayed, for example after `undo_batch` put the
    previewed content back. A refusal for another user does not spend it. Best effort: an object cache that evicts the transient can
-   only make a spent token usable again inside its 30 minutes, where the changed-since check still protects every item.
+   make a spent token usable again inside its 30 minutes (same user, same arguments); a content change since the preview is still caught by the changed-since check, a replay after an undo that restored the previewed content is not (every capability check and LayoutGate still run).
 3. **REST.** A body that WordPress did not parse as JSON (sent as a form or as text/plain) is refused with 400 instead of running
    the tool with its defaults (broader than "tools with no required argument"). Malformed JSON under `application/json` is already
    refused by WordPress core.
@@ -50,6 +50,6 @@ checking, anything licence related.
 
 ## Verification
 
-`make test-pro` (702 to 756 tests), `make test` (726, unchanged), and on the Docker dev site with the Pro add-on activated only for
+`make test-pro` (702 to 766 tests), `make test` (726, unchanged), and on the Docker dev site with the Pro add-on activated only for
 the runs: `make verify-pro-site-tools`, `make verify-pro-rest`, `make verify-pro-theme-templates`; `make build-pro` produces a zip that
 contains no tests or scripts. Opus reviews the token task and the whole branch.
