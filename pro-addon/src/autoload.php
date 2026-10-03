@@ -34,4 +34,8 @@ require_once __DIR__ . '/Tools/SetCustomCss.php';
 require_once __DIR__ . '/Tools/SetPrimaryMenu.php';
 require_once __DIR__ . '/Kinds/PostStatusKind.php';
 require_once __DIR__ . '/Tools/PublishPage.php';
+require_once __DIR__ . '/Settings/PhpProposals.php';
+require_once __DIR__ . '/Tools/ProposePhpSnippet.php';
+require_once __DIR__ . '/Admin/AdminActions.php';
+require_once __DIR__ . '/Admin/ProposalsPanel.php';
 require_once __DIR__ . '/Plugin.php';

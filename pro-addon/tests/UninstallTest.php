@@ -23,6 +23,7 @@ class UninstallTest extends TestCase
             'aied_pro_premium_unlocked' => 1,
             'aied_pro_update_blocked'   => '1',
             'aied_pro_batches_db_version' => 1,
+            'aied_pro_php_proposals'    => [ [ 'id' => 'php_x' ] ],
             'unrelated_option'          => 'keep',
         ];
         $GLOBALS['__wp_transients'] = [ 'aied_pro_refresh_backoff' => 1, 'aied_pro_batches_backoff' => 1 ];

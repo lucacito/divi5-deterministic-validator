@@ -89,6 +89,12 @@ class PluginTest extends TestCase
         $this->assertSame( [ [ 'name' => 'get_page_layout' ] ], apply_filters( 'jhmg_aied_mcp_tools', [ [ 'name' => 'get_page_layout' ] ] ), 'no Pro tools exist yet' );
     }
 
+    public function testACompatibleBootRegistersTheCodeProposalsPanel(): void
+    {
+        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertArrayHasKey( 'admin_post_aied_pro_delete_proposal', $GLOBALS['__wp_filters'] );
+    }
+
     public function testACompatibleBootRegistersTheProAdminTab(): void
     {
         $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
