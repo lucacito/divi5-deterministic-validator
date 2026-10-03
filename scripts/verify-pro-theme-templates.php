@@ -177,6 +177,7 @@ try {
     if ( is_array( $liveBackupBefore ) ) {
         update_option( $backupOption( $tb ), array_merge( array_map( 'intval', $liveBackupBefore ), [ $T ] ) );
     }
+    $liveBackupAfterFix = get_option( $backupOption( $tb ), null );
 
     // draft-only: a layout used only by a template of the DRAFT Theme Builder
     $draftTb        = (int) et_theme_builder_get_theme_builder_post_id( false, true );
@@ -238,6 +239,22 @@ try {
     $check( $errHas( $call( 'manage_theme_template', [ 'template_id' => $T, 'action' => 'assign', 'use_on' => [ $cond ] ] ), 'needs the token' ), 'a real run without a token is refused' );
     $check( $errHas( $call( 'manage_theme_template', [ 'template_id' => $T, 'action' => 'assign', 'use_on' => [ $cond . '2' ], 'token' => $d['result']['token'] ] ), 'needs the token' ), 'a token for other arguments is refused' );
     $check( $metaSnapshot( $T ) === $metaT0, 'the refused calls changed nothing' );
+
+    // a token is bound to the template's STATE: change the template behind the tool's back, the old token is refused
+    $d = $call( 'manage_theme_template', [ 'template_id' => $T, 'action' => 'assign', 'use_on' => [ $cond ], 'dry_run' => true ] );
+    delete_post_meta( $T, '_et_exclude_from' );
+    add_post_meta( $T, '_et_exclude_from', 'archive:all' );
+    clean_post_cache( $T );
+    $stale = $call( 'manage_theme_template', [ 'template_id' => $T, 'action' => 'assign', 'use_on' => [ $cond ], 'token' => $d['result']['token'] ?? '' ] );
+    clean_post_cache( $T );
+    $check( $errHas( $stale, 'needs the token' ) && get_post_meta( $T, '_et_use_on', false ) === array_values( (array) ( $metaT0['_et_use_on'] ?? [] ) ), 'a token taken before the template changed is refused and _et_use_on is unchanged' );
+    delete_post_meta( $T, '_et_exclude_from' );
+    foreach ( (array) ( $metaT0['_et_exclude_from'] ?? [] ) as $v ) {
+        add_post_meta( $T, '_et_exclude_from', $v );
+    }
+    clean_post_cache( $T );
+    $check( $metaSnapshot( $T ) === $metaT0, 'the template is restored to its original state after the stale-token probe' );
+    $d = $call( 'manage_theme_template', [ 'template_id' => $T, 'action' => 'assign', 'use_on' => [ $cond ], 'dry_run' => true ] );
 
     // assign
     $a = $call( 'manage_theme_template', [ 'template_id' => $T, 'action' => 'assign', 'use_on' => [ $cond ], 'token' => $d['result']['token'] ] );
@@ -350,7 +367,7 @@ try {
     // nothing outside the one template changed
     $check( $metaSnapshot( $DT ) === $metaDT, 'the draft template meta is identical' );
     $check( get_post_meta( $tb, '_et_template', false ) === $tbSnapshot && get_post_meta( $draftTb, '_et_template', false ) === $draftTbSnap, 'the Theme Builder posts still link exactly the same templates' );
-    $check( $liveBackupBefore === get_option( $backupOption( $tb ), null ), 'Divi\'s template-mapping backup option was never touched' );
+    $check( $liveBackupAfterFix === get_option( $backupOption( $tb ), null ), 'Divi\'s template-mapping backup option was never touched by the tool' );
 } catch ( \Throwable $e ) {
     $failures[] = 'aborted by ' . get_class( $e ) . ': ' . $e->getMessage();
     WP_CLI::log( 'FAIL  aborted by ' . get_class( $e ) . ': ' . $e->getMessage() );
@@ -425,6 +442,14 @@ foreach ( [ $H, $F ] as $id ) {
     }
 }
 $check( $finalCount === $baselineCount && 0 === $leftover, "cleanup: Theme Builder post count {$finalCount} equals the baseline {$baselineCount} and no post titled 'aied verify ...' remains ({$leftover})" );
+if ( $liveTbBefore > 0 ) {
+    $check( get_post_meta( $liveTbBefore, '_et_template', false ) === $tbTemplatesBefore, 'cleanup: the pre-existing live Theme Builder links exactly its starting templates' );
+    $check( get_option( $backupOption( $liveTbBefore ), null ) === $liveBackupBefore, 'cleanup: the live template-mapping backup option equals its baseline' );
+}
+if ( $draftTbBefore > 0 ) {
+    $check( get_post_meta( $draftTbBefore, '_et_template', false ) === $draftTemplatesBefore, 'cleanup: the pre-existing draft Theme Builder links exactly its starting templates' );
+    $check( get_option( $backupOption( $draftTbBefore ), null ) === $draftBackupBefore, 'cleanup: the draft template-mapping backup option equals its baseline' );
+}
 $check( $historyGone, 'cleanup: no history rows remain for the throwaway layouts' );
 $left = [] === $batchIds ? 0 : (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . BatchTable::name() . ' WHERE id IN (' . implode( ',', array_map( 'intval', $batchIds ) ) . ')' ); // phpcs:ignore
 $check( 0 === $left, "cleanup: none of the batch rows this run created remain ({$left} left)" );
