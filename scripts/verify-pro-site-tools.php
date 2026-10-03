@@ -260,6 +260,8 @@ try {
     $check( 1 === $rows( $A1 ) && 1 === $rows( $A2 ), 'each replaced page has exactly one history snapshot' );
     $u = $call( 'undo_batch', [ 'batch_id' => (int) $r['result']['batch']['id'] ] );
     $check( true === ( $u['result']['fully_undone'] ?? null ) && $read( $A1 ) === $c0[ $A1 ] && $read( $A2 ) === $c0[ $A2 ] && $read( $A3 ) === $c0[ $A3 ], 'undo_batch puts all three pages back byte for byte, fully undone' );
+    $replay = $call( 'find_replace_site', $find + [ 'token' => $d['result']['token'] ] );
+    $check( $errHas( $replay, 'needs the token' ) && $read( $A1 ) === $c0[ $A1 ] && $read( $A2 ) === $c0[ $A2 ] && $read( $A3 ) === $c0[ $A3 ], 'the spent token cannot apply the change again after the undo put the content back' );
 
     // ---- 5b. an item changed since the preview is skipped -----------------------------------------------------
     $d = $call( 'find_replace_site', $find + [ 'dry_run' => true ] );
@@ -340,6 +342,7 @@ try {
     $calls = 0;
     $total = null;
     $maxScanned = 0;
+    $cursors = [];
     do {
         $a = $call( 'audit_site', [ 'scope' => 'pages', 'cursor' => $cursor ] );
         if ( null !== $a['error'] ) {
@@ -353,9 +356,15 @@ try {
             $all[ $f['id'] ][ $f['code'] ] = $f;
         }
         $cursor = $a['result']['next_cursor'];
+        if ( null !== $cursor ) {
+            $cursors[] = $cursor;
+        }
     } while ( null !== $cursor && $calls < 200 );
     $diviPages = count( get_posts( [ 'post_type' => 'page', 'post_status' => [ 'publish', 'draft', 'pending', 'private', 'future' ], 'fields' => 'ids', 'posts_per_page' => -1, 'meta_query' => [ [ 'key' => '_et_pb_use_divi_5', 'value' => 'on' ] ] ] ) );
     $check( $total === $diviPages && $maxScanned <= 25 && $calls === (int) ceil( $diviPages / 25 ), "audit pages through the whole site: {$diviPages} Divi 5 pages in {$calls} calls of at most 25" );
+    $sorted = $cursors;
+    sort( $sorted );
+    $check( $cursors === $sorted && count( $cursors ) === count( array_unique( $cursors ) ) && ( [] === $cursors || get_post( end( $cursors ) ) instanceof WP_Post ), 'the audit cursor is the id of the last audited page: strictly increasing, and each one is a real page id' );
     $check( empty( $all[ $AOK ] ) && empty( $all[ $PUB ] ), 'a page with a valid layout and a link to a published page has no findings' );
     $check( ! empty( $all[ $ABAD ] ), 'a page with an unknown module has layout violations' );
     $check( isset( $all[ $ACSS ]['CUSTOM_CSS_NOT_ALLOWED'] ), 'custom CSS already stored is reported (CUSTOM_CSS_NOT_ALLOWED)' );

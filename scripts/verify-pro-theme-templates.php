@@ -260,7 +260,8 @@ try {
     $d = $call( 'manage_theme_template', [ 'template_id' => $T, 'action' => 'assign', 'use_on' => [ $cond ], 'dry_run' => true ] );
 
     // assign
-    $a = $call( 'manage_theme_template', [ 'template_id' => $T, 'action' => 'assign', 'use_on' => [ $cond ], 'token' => $d['result']['token'] ] );
+    $assignToken = $d['result']['token'];
+    $a = $call( 'manage_theme_template', [ 'template_id' => $T, 'action' => 'assign', 'use_on' => [ $cond ], 'token' => $assignToken ] );
     $check( null === $a['error'] && true === ( $a['result']['changed'] ?? null ) && true === ( $a['result']['batch']['undoable'] ?? null ), 'assign: changed, batch undoable' );
     clean_post_cache( $T );
     $metaA = $metaSnapshot( $T );
@@ -298,6 +299,9 @@ try {
     clean_post_cache( $T );
     $check( true === ( $u['result']['fully_undone'] ?? null ) && $sameExcept( $metaT0, $metaSnapshot( $T ), [] ) && get_post( $T )->post_title === $titleT0, 'undo of the assign: the template is identical to its state before this script touched it' );
     $check( $headerOf() !== $H, 'after undo: Divi no longer applies the template to the throwaway page' );
+    $replay = $call( 'manage_theme_template', [ 'template_id' => $T, 'action' => 'assign', 'use_on' => [ $cond ], 'token' => $assignToken ] );
+    clean_post_cache( $T );
+    $check( $errHas( $replay, 'needs the token' ) && $sameExcept( $metaT0, $metaSnapshot( $T ), [] ), 'the spent token cannot assign again after the undo put the template back' );
     $diff = array_diff_key( $metaSnapshot( $T ), $metaT0 );
     WP_CLI::log( 'INFO  meta keys Divi\'s own function added that were not there before: ' . ( [] === $diff ? 'none' : implode( ', ', array_keys( $diff ) ) ) );
 

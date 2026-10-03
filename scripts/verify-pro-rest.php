@@ -40,9 +40,9 @@ $registry = new ToolRegistry( Tools::all(), static fn (): bool => true );
 $GLOBALS['wp_rest_server'] = null;
 
 $ns   = '/ai-editor-divi5/v1';
-$send = static function ( string $route, array $body = [], ?string $rawBody = null, string $method = 'POST' ) use ( $ns ): array {
+$send = static function ( string $route, array $body = [], ?string $rawBody = null, string $method = 'POST', string $contentType = 'application/json' ) use ( $ns ): array {
     $req = new WP_REST_Request( $method, $ns . $route );
-    $req->set_header( 'content-type', 'application/json' );
+    $req->set_header( 'content-type', $contentType );
     $req->set_body( $rawBody ?? wp_json_encode( $body ) );
     $res  = rest_do_request( $req );
     $data = (array) $res->get_data();
@@ -80,6 +80,22 @@ $proPaths = array_filter( array_keys( $paths ), static fn ( string $p ): bool =>
 $check( count( $proPaths ) === count( $names ) && [] === array_diff( array_map( static fn ( string $n ): string => '/pro/' . $n, $names ), array_keys( $paths ) ), 'the live spec has one /pro/ operation for each of the ' . count( $names ) . ' Pro tools' );
 $check( $ops <= 30 && 0 === $long && count( $ids ) === count( array_unique( $ids ) ), "the live spec has {$ops} operations (limit 30), every description at most 300 characters, unique operationIds" );
 $check( isset( $spec['data']['components']['schemas']['ProResult'], $spec['data']['components']['schemas']['ProError'] ), 'the ProResult and ProError schemas are in the spec' );
+$undocumented = 0;
+foreach ( $paths as $path => $methods ) {
+    if ( 0 === strpos( (string) $path, '/pro/' ) ) {
+        $codes         = array_map( 'strval', array_keys( (array) ( $methods['post']['responses'] ?? [] ) ) );
+        $undocumented += [] === array_diff( [ '200', '400', '401', '403', '500' ], $codes ) ? 0 : 1;
+    }
+}
+$check( 0 === $undocumented, 'every Pro operation in the live spec documents 200, 400, 401, 403 and 500' );
+$badSummaries = 0;
+foreach ( $paths as $path => $methods ) {
+    if ( 0 === strpos( (string) $path, '/pro/' ) ) {
+        $sum           = (string) ( $methods['post']['summary'] ?? '' );
+        $badSummaries += ( '' === $sum || substr_count( $sum, '(' ) !== substr_count( $sum, ')' ) || strlen( $sum ) > 120 ) ? 1 : 0;
+    }
+}
+$check( 0 === $badSummaries, 'every Pro summary in the live spec is non-empty, at most 120 characters and has balanced brackets' );
 
 // ---- authentication -------------------------------------------------------------------------------------------------
 wp_set_current_user( 0 );
@@ -106,6 +122,12 @@ $nf = $send( '/pro/undo_batch', [ 'batch_id' => 987654321 ] );
 $check( 400 === $nf['status'] && false !== strpos( (string) ( $nf['data']['message'] ?? '' ), 'not found' ), 'undo_batch of a batch that does not exist is 400 "not found"' );
 $arr = $send( '/pro/list_batches', [], '[1,2,3]' );
 $check( 400 === $arr['status'], 'a JSON body that is a list, not an object, is 400' );
+$form = $send( '/pro/list_batches', [], 'scope=layouts', 'POST', 'application/x-www-form-urlencoded' );
+$check( 400 === $form['status'] && 'invalid_argument' === ( $form['data']['code'] ?? '' ), 'a body sent without a JSON content type is refused with 400 (a tool with no required argument does not run with its defaults)' );
+$broken = $send( '/pro/list_batches', [], '{"scope":' );
+$check( 400 === $broken['status'], 'a broken JSON body is refused with 400' );
+$none = $send( '/pro/list_batches', [], '' );
+$check( 200 === $none['status'], 'an empty body is no arguments and still works' );
 
 // ---- the tool's own capability, same gate as MCP ----------------------------------------------------------------------
 $strip = static fn ( $caps ) => array_merge( (array) $caps, [ 'edit_theme_options' => false ] );
