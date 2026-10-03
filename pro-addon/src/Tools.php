@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AiEditorDivi5\Pro;
 
 use AiEditorDivi5\Pro\Batch\Batches;
+use AiEditorDivi5\Pro\Tools\EditThemeLayout;
 use AiEditorDivi5\Pro\Tools\ListBatches;
 use AiEditorDivi5\Pro\Tools\ListThemeLayouts;
 use AiEditorDivi5\Pro\Tools\ProposePhpSnippet;
@@ -37,6 +38,7 @@ final class Tools
             new UndoBatch( $log, Batches::undo() ),
             new ListThemeLayouts(),
             new UpdateThemeLayout( $log ),
+            new EditThemeLayout( $log ),
         ];
     }
 }
