@@ -92,6 +92,10 @@ Read-only; deterministic; no AI.
 - Pagination: 25 items per call with a cursor; findings capped at 200 per call, grouped by code.
 - **Missing image alt text is NOT in v1.** The only `alt` shape in the real fixtures is the Menu module's logo; there is no Image-module evidence. It can be added once a real Image-module export is captured.
 
+## REST and ChatGPT parity (built in 0.4.0)
+
+Every Pro tool is also exposed as `POST /wp-json/ai-editor-divi5/v1/pro/<tool_name>` (the tool's arguments as the JSON body) and as one operation in the free plugin's OpenAPI spec, both generated from the tool list so MCP, REST and the spec cannot drift. Authentication is the free plugin's own (`RestController::require_edit_posts`: plugin API key, Application Password or a logged-in editor); the tool's own capability, argument checks and error mapping are one shared `ToolRunner` (bad argument 400, missing capability 403, anything else a generic 500). While the licence is locked no route and no operation is registered. The spec stays at 29 of the importer's 30 operations (16 free + 13 Pro), every description at most 300 characters, no bare object schema.
+
 ## Licensing and distribution
 
 - Reuses the staged `Licensing` adapter and the canonical `LicenseClient` **including its updater** (allowed: the add-on is distributed from divi5lab.com, not WordPress.org). Server contract unchanged: `/api/license/{activate,validate,deactivate}` and the update check.
@@ -120,8 +124,9 @@ Live, on the Docker dev site, as self-cleaning scripts in the style of the free 
 
 - Settings tools: front page, menu, CSS, publish; each restored afterwards (menu creation is unproven today).
 - Templates: assign, enable, disable and undo on a throwaway template, with Divi's own resolver proving the effect (`make verify-pro-theme-templates`, run 2026-10-03: passed).
-- Batches: find/replace across throwaway pages and a layout, then undo, including a changed-since case.
-- Audit over the real dev pages and the fixtures.
+- Batches: find/replace across throwaway pages and a layout, then undo, including a changed-since case (`make verify-pro-site-tools`, run 2026-10-03: passed).
+- Audit over the real dev pages and the fixtures, paged through the whole site (same script).
+- REST and the live OpenAPI spec on the real REST server (`make verify-pro-rest`, run 2026-10-03: passed).
 
 Unit tests for the pure logic (batch store, token binding, replace planner, audit checks, licensing); contract tests for the hooks (no built-in tool shadowed) and for the free-class compatibility; a `ProSafetyTest` that bans `eval`/exec-family functions, PHP execution of stored snippets and writes to users/presets, and allowlists remote hosts to divi5lab.com.
 

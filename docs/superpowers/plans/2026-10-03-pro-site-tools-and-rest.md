@@ -3338,3 +3338,13 @@ Expected: the last command prints the subject and the `Co-Authored-By: Claude So
 - [ ] **Step 7: Final whole-branch review on the most capable model (opus)**
 
 Dispatch one reviewer over `git diff main...feat/pro-site-tools` with the Review Focus list above and "What the research settled" as the brief. Verify its claims with grep before acting. Fix real findings in ONE dispatch, then one scoped re-review. Do not merge, push or release until asked.
+
+---
+
+## As built (deviations from the text above)
+
+Recorded during execution on 2026-10-03; the code in the repo is authoritative where it differs from the plan text.
+
+- **Task 3 fix round:** the audit link check hands `url_to_postid` the ORIGIN of `home_url()` plus the root-relative path (the plan built `rtrim( home_url(), '/' ) . $path`, which doubled the path on subdirectory installs and reported every internal link as LINK_NO_POST); `LinkScanner` skips WordPress paths (`wp-content`, `wp-includes`, `wp-admin`, `wp-json`, `wp-login.php`) as a segment anywhere in the path, a final `feed` segment, paths whose last segment has a file extension, and search links; the attribute regex is possessive (a very long value no longer silently disables the scan); the test shim strips the home path like WordPress; `AuditSiteTest` and `LinkScannerTest` gained the matching cases. End state: `make test-pro` 689 tests, `make test` 726.
+- **Gate results:** `make verify-pro-site-tools` and `make verify-pro-rest` passed on the Docker dev site (Divi 5.14; Pro add-on activated only for the runs and deactivated afterwards).
+- **Deferred on purpose (reviews):** the preview token is not tied to the user and can be replayed within 30 minutes after an `undo_batch` restores the previewed content; an item that loses the text since the preview is not reported; `audit_site` does not report that more than 200 links in one item were not checked and does not memoise `url_to_postid` / the style-id lookup across items; generated OpenAPI summaries cut at the first period and 401/500 responses are not documented; `ProParityTest` compares property keys only; one operation of ChatGPT headroom is left (29 of 30), so a 14th Pro operation needs an explicit decision; the live scripts keep a few vacuous or weak checks (listed in the review ledger, dev-only).
