@@ -60,6 +60,15 @@ different behaviour, it adds a new tool with its own name.
    `description` and `summary` at most 300 characters, and no bare
    `type: object` without `properties` (use `additionalProperties` or list the
    fields).
+6. **Offer a tool on every face from one definition.** MCP (`jhmg_aied_mcp_tools` +
+   `jhmg_aied_mcp_call`), REST (`jhmg_aied_register_rest_routes`, one `POST` route per
+   tool, authenticated with `RestController::require_edit_posts()` plus the tool's own
+   capability) and OpenAPI (`jhmg_aied_openapi_paths` + `jhmg_aied_openapi_schemas`) should
+   be generated from the same tool list, so they cannot drift. The ChatGPT importer
+   accepts at most 30 operations in total, so budget them: the base plugin has 16 and
+   the Pro add-on 13 (29 of 30). Document the 400, 401, 403 and 500 answers of each
+   operation, and refuse a request body that is not a JSON object with a 400 instead of
+   running with defaults.
 
 ## Image tokens
 
