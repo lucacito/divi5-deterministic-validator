@@ -96,4 +96,11 @@ class PluginTest extends TestCase
         $this->assertArrayHasKey( 'admin_post_aied_pro_activate', $GLOBALS['__wp_filters'] );
         $this->assertArrayHasKey( 'admin_post_aied_pro_deactivate', $GLOBALS['__wp_filters'] );
     }
+
+    public function testACompatibleBootCreatesTheBatchTableOnInitAndDropsItWithAMultisiteSite(): void
+    {
+        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertArrayHasKey( 'init', $GLOBALS['__wp_filters'] );
+        $this->assertArrayHasKey( 'wpmu_drop_tables', $GLOBALS['__wp_filters'] );
+    }
 }

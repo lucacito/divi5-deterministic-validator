@@ -15,4 +15,8 @@ require_once __DIR__ . '/Tools.php';
 require_once __DIR__ . '/ProPage.php';
 require_once __DIR__ . '/Args.php';
 require_once __DIR__ . '/Canon.php';
+require_once __DIR__ . '/Batch/BatchRepository.php';
+require_once __DIR__ . '/Batch/BatchTable.php';
+require_once __DIR__ . '/Batch/WpdbBatchRepository.php';
+require_once __DIR__ . '/Batch/BatchLog.php';
 require_once __DIR__ . '/Plugin.php';

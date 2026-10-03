@@ -1,0 +1,100 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AiEditorDivi5\Pro\Tests;
+
+use AiEditorDivi5\Pro\Batch\WpdbBatchRepository;
+use PHPUnit\Framework\TestCase;
+
+require_once __DIR__ . '/../src/autoload.php';
+require_once __DIR__ . '/BatchStubWpdb.php';
+
+class WpdbBatchRepositoryTest extends TestCase
+{
+    private WpdbBatchRepository $repo;
+
+    protected function setUp(): void
+    {
+        $GLOBALS['wpdb'] = new BatchStubWpdb();
+        $this->repo      = new WpdbBatchRepository();
+    }
+
+    protected function tearDown(): void
+    {
+        $GLOBALS['wpdb'] = null;
+    }
+
+    /** @return array<string,mixed> */
+    private function row( string $summary = 's' ): array
+    {
+        return [ 'user_id' => 7, 'tool' => 't', 'created_at' => '2026-10-02 10:00:00', 'summary' => $summary, 'status' => 'applied', 'items' => [ [ 'kind' => 'k', 'before' => 'é "q" \\ </p>' ] ] ];
+    }
+
+    public function testInsertEncodesTheItemsAndReturnsTheId(): void
+    {
+        $id = $this->repo->insert( $this->row() );
+        $this->assertSame( 1, $id );
+        $stored = $GLOBALS['wpdb']->rows[1];
+        $this->assertSame( [ [ 'kind' => 'k', 'before' => 'é "q" \\ </p>' ] ], json_decode( $stored['items'], true ) );
+        $this->assertSame( 'wp_aied_pro_batches', $GLOBALS['wpdb']->calls[0][1] );
+    }
+
+    public function testInsertReturnsNullWhenTheDatabaseRefuses(): void
+    {
+        $GLOBALS['wpdb']->failInsert = true;
+        $this->assertNull( $this->repo->insert( $this->row() ) );
+    }
+
+    public function testInsertReturnsNullWhenTheItemsCannotBeEncoded(): void
+    {
+        $row                      = $this->row();
+        $row['items'][0]['before'] = "\xB1\x31";   // invalid UTF-8
+        $this->assertNull( $this->repo->insert( $row ) );
+        $this->assertSame( [], $GLOBALS['wpdb']->rows, 'nothing half-written' );
+    }
+
+    public function testFindDecodesTheRowIntoTypedValues(): void
+    {
+        $this->repo->insert( $this->row( 'hello' ) );
+        $b = $this->repo->find( 1 );
+        $this->assertSame( 1, $b['id'] );
+        $this->assertSame( 7, $b['user_id'] );
+        $this->assertSame( 'hello', $b['summary'] );
+        $this->assertSame( 'k', $b['items'][0]['kind'] );
+        $this->assertNull( $this->repo->find( 99 ) );
+    }
+
+    public function testRecentReturnsNewestFirst(): void
+    {
+        $this->repo->insert( $this->row( 'one' ) );
+        $this->repo->insert( $this->row( 'two' ) );
+        $this->assertSame( [ 'two', 'one' ], array_column( $this->repo->recent( 10 ), 'summary' ) );
+    }
+
+    public function testUpdateWritesStatusAndItems(): void
+    {
+        $this->repo->insert( $this->row() );
+        $this->assertTrue( $this->repo->update( 1, 'undone', [ [ 'state' => 'undone' ] ] ) );
+        $b = $this->repo->find( 1 );
+        $this->assertSame( 'undone', $b['status'] );
+        $this->assertSame( 'undone', $b['items'][0]['state'] );
+        $this->assertFalse( $this->repo->update( 99, 'undone', [] ) );
+    }
+
+    public function testTrimDeletesOnlyTheRowsBeyondTheNewestN(): void
+    {
+        $GLOBALS['wpdb']->col = [ '5', '3', '1' ];
+        $this->repo->trim( 20 );
+        $queries = array_values( array_filter( $GLOBALS['wpdb']->calls, static fn ( array $c ): bool => 'query' === $c[0] ) );
+        $this->assertSame( 'DELETE FROM wp_aied_pro_batches WHERE id IN (5,3,1)', $queries[0][1] );
+        $this->assertStringContainsString( 'OFFSET 20', $GLOBALS['wpdb']->calls[0][1] );
+    }
+
+    public function testTrimWithNothingToTrimRunsNoDelete(): void
+    {
+        $GLOBALS['wpdb']->col = [];
+        $this->repo->trim( 20 );
+        $this->assertSame( [], array_filter( $GLOBALS['wpdb']->calls, static fn ( array $c ): bool => 'query' === $c[0] ) );
+    }
+}

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\Pro;
 
+use AiEditorDivi5\Pro\Batch\BatchTable;
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -62,5 +64,8 @@ final class Plugin
         $registry->register();
 
         ( new ProPage( $registry ) )->register();
+
+        add_action( 'init', [ BatchTable::class, 'ensureReady' ] );
+        add_filter( 'wpmu_drop_tables', [ BatchTable::class, 'dropTablesFilter' ] );
     }
 }
