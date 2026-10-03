@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.4.0
+Stable tag:        4.5.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -167,6 +167,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 
 == Changelog ==
 
+= 4.5.0 =
+* Fixed: the "Recent AI edits" list on the dashboard now shows only pages you can restore. Edits to other kinds of layouts, such as a header or footer saved by an add-on, no longer appear there with a Restore button that cannot work.
+
 = 4.4.0 =
 * Safer: your AI assistant can no longer save custom CSS, JavaScript or PHP through a page layout. The checker refuses custom-CSS fields, Divi Code modules, script, style and iframe markup, javascript: links and event attributes, and says exactly where. Code already on a page, for example custom CSS you added in the Visual Builder, stays as it is.
 * New: your AI assistant can look up your site's own Divi colors and presets, so the pages it builds can match your site. A new read-only tool, `list_global_styles`, lists them.
@@ -215,6 +218,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 4.5.0 =
+The dashboard's recent-edits list only shows pages you can restore. Nothing else changes.
 
 = 4.4.0 =
 Adds a read-only look-up of your site's Divi colors and presets for your AI assistant, and a note when a page uses one your site does not have. Nothing changes unless your AI assistant uses it.
