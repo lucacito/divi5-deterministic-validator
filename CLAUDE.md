@@ -226,14 +226,14 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 - **Pro add-on 0.4.0** (branch `feat/pro-site-tools`; NOT merged, NOT released, NOT pushed): `find_replace_site` (literal;
   Divi 5 pages, the live header/footer only with scope and the Theme Builder permission; ONE batch of at most 50 items; a signed
-  30-minute preview token carries the id => content-hash map so an item changed since the preview is skipped; every result
+  30-minute preview token carries the id => content-hash map so an item changed since the preview, or dropped out of it, is skipped and reported; every result
   through `LayoutGate::check($new, $stored)`, an invalid one skipped, never saved), `audit_site` (read-only: layout violations
   including stored custom code, unknown preset/color ids via the free advisory, internal links to nothing or to unpublished posts
-  read from the content, 25 items per call with a cursor, no remote request; the link check reads links relative to the host
+  read from the content, 25 items per call with a cursor, no remote request; `scope=layouts` needs `edit_theme_options` and Divi's Theme Builder permission; an item with 200 or more links gets a LINKS_NOT_ALL_CHECKED finding; the link check reads links relative to the host
   root, so it works on subdirectory installs, and skips file and WordPress paths), `ToolRunner` (one call path for MCP and REST),
   REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`, auth = the free plugin's `require_edit_posts` plus the tool's own
   capability) and ChatGPT OpenAPI parity generated from the tool list (16 free + 13 Pro = 29 of the importer's 30 operations);
-  the plan `docs/superpowers/plans/2026-10-03-pro-site-tools-and-rest.md`; verified by `make test-pro` (689 tests),
+  the plan `docs/superpowers/plans/2026-10-03-pro-site-tools-and-rest.md`; verified by `make test-pro` (702 tests),
   `make test` (726), `make verify-pro-site-tools`, `make verify-pro-rest`; known limit: the audit's link check cannot tell a
   missing page from an archive or custom route (the finding says so).
 - **Pro add-on 0.3.0** (merged to LOCAL main d20c22d; NOT released, NOT pushed): four Theme Builder tools
