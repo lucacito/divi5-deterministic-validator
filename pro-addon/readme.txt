@@ -2,11 +2,11 @@
 Contributors:      lucaslopvet
 Requires at least: 6.0
 Requires PHP:      8.1
-Stable tag:        0.3.0
+Stable tag:        0.4.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Pro add-on for JHMG AI Editor for Divi 5. Lets your AI assistant set the front page and menu, publish pages, add CSS and edit the live Divi header and footer, and lets you undo each change in one step.
+Pro add-on for JHMG AI Editor for Divi 5. Lets your AI assistant set the front page and menu, publish pages, add CSS, edit the live Divi header and footer, find and replace text across your pages and audit them for layout problems and broken links, and lets you undo each change in one step.
 
 == Description ==
 
@@ -25,8 +25,12 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `update_theme_layout` - replace the content of a live Divi header or footer with a new, checked Divi 5 layout. It shows on every page, so preview with `dry_run` first; undo restores the previous content.
 * `edit_theme_layout` - find and replace literal text inside a live Divi header or footer, with the same checks, `dry_run` preview and undo as `update_theme_layout`.
 * `manage_theme_template` - enable or disable one live Divi Theme Builder template, or change where it applies. It affects the whole site, so every real run needs the token from a preview (`dry_run`). It cannot create or delete templates.
+* `find_replace_site` - replace literal text across your Divi 5 pages (and, with Theme Builder permission, the header and footer) as one undoable batch. You must preview first (`dry_run`) and repeat with the token; pages whose result would fail the layout checks are skipped; at most 50 items per run.
+* `audit_site` - a read-only check of your Divi 5 pages and header/footer: layout check violations (including custom code the plugin would not save), unknown preset or color ids, and internal links to missing or unpublished pages. 25 items per call. It never makes a remote request and never changes anything.
 * `list_batches` - list recent Pro changes.
 * `undo_batch` - undo one batch.
+
+Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked.
 
 Each tool checks the permission it really needs (for example `manage_options` to set the front page), not only that the request is authenticated.
 
@@ -46,6 +50,10 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
+
+= 0.4.0 =
+* New: `find_replace_site` (literal find and replace across your Divi 5 pages as one previewed, undoable batch) and `audit_site` (a read-only check for layout problems, unknown preset or color ids and links to missing or unpublished pages).
+* New: every Pro tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and in the free plugin's ChatGPT OpenAPI spec, with the same permission checks as the MCP tools.
 
 = 0.3.0 =
 * New: edit the live Divi header and footer (`list_theme_layouts`, `update_theme_layout`, `edit_theme_layout`): checked like every page write, previewed with `dry_run`, undoable.

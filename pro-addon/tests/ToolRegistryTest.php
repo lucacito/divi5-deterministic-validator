@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../../wp-plugin/src/autoload.php';
 require_once __DIR__ . '/../src/ProTool.php';
+require_once __DIR__ . '/../src/ToolRunner.php';
 require_once __DIR__ . '/../src/ToolRegistry.php';
 require_once __DIR__ . '/FakeTool.php';
 

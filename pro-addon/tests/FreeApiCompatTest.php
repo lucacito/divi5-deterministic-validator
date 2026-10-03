@@ -28,6 +28,7 @@ class FreeApiCompatTest extends TestCase
             [ $w . 'PageEditor', 'apply', [ 'content' => 'string', 'find' => 'string', 'replace' => 'string', 'expectCount' => '?int' ], 'array' ],
             [ $w . 'EditTarget', 'resolve', [ 'id' => 'int' ], 'array' ],
             [ $w . 'LayoutGate', 'check', [ 'content' => 'string', 'baseline' => '?string' ], 'Divi5Validator\\ValidationResult' ],
+            [ $w . 'LayoutDiff', 'compare', [ 'before' => 'string', 'after' => 'string' ], 'array' ],
             [ $w . 'DryRun', 'preview', [ 'before' => 'string', 'after' => 'string' ], 'array' ],
             [ $w . 'StyleReferences', 'attach', [ 'payload' => 'array', 'content' => 'string' ], 'array' ],
             [ $w . 'StyleReferences', 'advise', [ 'content' => 'string', 'known' => 'array' ], '?array' ],
@@ -70,6 +71,16 @@ class FreeApiCompatTest extends TestCase
 
         $this->assertSame( [ 'code', 'message', 'path' ], array_keys( ( new \Divi5Validator\Violation( 'c', 'm', 'p' ) )->toArray() ) );
         $this->assertTrue( ( new \Divi5Validator\ValidationResult( [] ) )->isValid() );
+    }
+
+    public function testTheRestAuthenticationMethodTheProRoutesUseKeepsItsShape(): void
+    {
+        $m = new \ReflectionMethod( \AiEditorDivi5\WP\RestController::class, 'require_edit_posts' );
+        $this->assertTrue( $m->isPublic() && ! $m->isStatic(), 'RestController::require_edit_posts must stay a public instance method' );
+        $this->assertSame( [], $m->getParameters() );
+        $this->assertSame( 'WP_Error|bool', (string) $m->getReturnType() );
+        $s = new \ReflectionMethod( \AiEditorDivi5\WP\OpenApiSpec::class, 'spec' );
+        $this->assertTrue( $s->isStatic() && $s->isPublic() );
     }
 
     public function testTheEditTargetErrorConstantsStayTheSame(): void

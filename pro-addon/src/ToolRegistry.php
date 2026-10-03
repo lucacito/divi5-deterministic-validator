@@ -28,6 +28,23 @@ final class ToolRegistry
         }
     }
 
+    /** The tool with this name, or null (no licence check: callers that serve a request check `isUnlocked()`). */
+    public function get( string $name ): ?ProTool
+    {
+        return $this->tools[ $name ] ?? null;
+    }
+
+    /** @return list<ProTool> */
+    public function tools(): array
+    {
+        return array_values( $this->tools );
+    }
+
+    public function isUnlocked(): bool
+    {
+        return ( $this->unlocked )();
+    }
+
     /** @return list<string> */
     public function names(): array
     {
@@ -63,17 +80,11 @@ final class ToolRegistry
         if ( null !== $response || ! isset( $this->tools[ $name ] ) || ! ( $this->unlocked )() ) {
             return $response;
         }
-        $tool = $this->tools[ $name ];
-        if ( ! current_user_can( $tool->capability() ) ) {
-            return self::error( $rpcId, -32602, "You do not have permission to use {$name}." );
+        $run = ToolRunner::run( $this->tools[ $name ], $arguments );
+        if ( ! $run['ok'] ) {
+            return self::error( $rpcId, 500 === $run['status'] ? -32603 : -32602, $run['message'] );
         }
-        try {
-            $payload = $tool->run( $arguments );
-        } catch ( \InvalidArgumentException $e ) {
-            return self::error( $rpcId, -32602, $e->getMessage() );
-        } catch ( \Throwable $e ) {
-            return self::error( $rpcId, -32603, 'The tool failed unexpectedly.' );
-        }
+        $payload = $run['payload'];
 
         return new \WP_REST_Response(
             [ 'jsonrpc' => '2.0', 'id' => $rpcId, 'result' => [ 'content' => [ [ 'type' => 'text', 'text' => wp_json_encode( $payload ) ] ] ] ],

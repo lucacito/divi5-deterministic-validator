@@ -25,6 +25,8 @@ final class Compat
         'AiEditorDivi5\\WP\\StyleReferences',
         'AiEditorDivi5\\WP\\ExtensionGuard',
         'AiEditorDivi5\\WP\\LayoutGate',
+        'AiEditorDivi5\\WP\\LayoutDiff',
+        'AiEditorDivi5\\WP\\RestController',
     ];
 
     /**

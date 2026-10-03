@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       JHMG AI Editor for Divi 5 Pro
- * Description:       Pro add-on for JHMG AI Editor for Divi 5: set the front page and menu, publish or schedule pages, add managed custom CSS, edit the live Divi header and footer, file PHP snippets for human review, and undo each Pro change in one step. Requires the free plugin.
- * Version:           0.3.0
+ * Description:       Pro add-on for JHMG AI Editor for Divi 5: set the front page and menu, publish or schedule pages, add managed custom CSS, edit the live Divi header and footer, find and replace text across your pages in one undoable batch, audit pages for layout problems and broken links, file PHP snippets for human review, and undo each Pro change in one step. Requires the free plugin.
+ * Version:           0.4.0
  * Requires at least: 6.0
  * Requires PHP:      8.1
  * Author:            JHMG
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'AIED_PRO_VERSION', '0.3.0' );
+define( 'AIED_PRO_VERSION', '0.4.0' );
 define( 'AIED_PRO_FILE', __FILE__ );
 define( 'AIED_PRO_PRODUCT', 'ai-editor-divi5-pro' );
 define( 'AIED_PRO_MIN_PHP', '8.1' );
