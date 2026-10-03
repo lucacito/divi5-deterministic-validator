@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AiEditorDivi5\Pro;
 
 use AiEditorDivi5\Pro\Batch\Batches;
+use AiEditorDivi5\Pro\Tools\PublishPage;
 use AiEditorDivi5\Pro\Tools\SetCustomCss;
 use AiEditorDivi5\Pro\Tools\SetFrontPage;
 use AiEditorDivi5\Pro\Tools\SetPrimaryMenu;
@@ -25,6 +26,7 @@ final class Tools
             new SetFrontPage( $log ),
             new SetCustomCss( $log ),
             new SetPrimaryMenu( $log ),
+            new PublishPage( $log ),
         ];
     }
 }

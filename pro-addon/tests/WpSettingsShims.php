@@ -131,3 +131,11 @@ if ( ! function_exists( 'esc_url_raw' ) ) {
         return 1 === preg_match( '#^(https?://|/|\#)#i', $url ) ? $url : '';
     }
 }
+
+// ---- Posts ---------------------------------------------------------------------------------
+if ( ! function_exists( 'get_permalink' ) ) {
+    function get_permalink( $post = 0 ) { return 'https://example.com/?p=' . ( is_object( $post ) ? $post->ID : (int) $post ); }
+}
+if ( ! function_exists( 'get_date_from_gmt' ) ) {
+    function get_date_from_gmt( $gmt, $format = 'Y-m-d H:i:s' ) { return (string) $gmt; }
+}

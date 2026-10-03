@@ -196,7 +196,11 @@ if ( ! function_exists( 'wp_update_post' ) ) {
         if ( ! isset( $GLOBALS['__wp_posts'][ $id ] ) ) {
             return new WP_Error( 'invalid_post', 'Invalid post ID.' );
         }
-        $GLOBALS['__wp_posts'][ $id ]->post_content = (string) $arr['post_content'];
+        foreach ( $arr as $field => $value ) {
+            if ( 'ID' !== $field ) {
+                $GLOBALS['__wp_posts'][ $id ]->$field = 'post_content' === $field ? (string) $value : $value;
+            }
+        }
         $GLOBALS['__wp_update_calls'] = ( $GLOBALS['__wp_update_calls'] ?? 0 ) + 1; // lets a test prove no save happened
         return $id;
     }
