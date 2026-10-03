@@ -81,12 +81,31 @@ class PluginTest extends TestCase
         $this->assertSame( [], $GLOBALS['__wp_http_log'], 'no licence key means no remote call' );
     }
 
-    public function testACompatibleBootRegistersTheToolHooksWithNoToolsYet(): void
+    public function testWhileLockedNoProToolIsAdvertised(): void
     {
         $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
         $this->assertArrayHasKey( 'jhmg_aied_mcp_tools', $GLOBALS['__wp_filters'] );
         $this->assertArrayHasKey( 'jhmg_aied_mcp_call', $GLOBALS['__wp_filters'] );
-        $this->assertSame( [ [ 'name' => 'get_page_layout' ] ], apply_filters( 'jhmg_aied_mcp_tools', [ [ 'name' => 'get_page_layout' ] ] ), 'no Pro tools exist yet' );
+        $this->assertSame( [ [ 'name' => 'get_page_layout' ] ], apply_filters( 'jhmg_aied_mcp_tools', [ [ 'name' => 'get_page_layout' ] ] ), 'no Pro tool while locked' );
+    }
+
+    public function testWhileUnlockedTheSevenProToolsAreAdvertised(): void
+    {
+        $GLOBALS['__wp_options'] = [ 'aied_pro_premium_unlocked' => 1 ];
+        \AiEditorDivi5\Pro\Licensing::resetForTests();
+        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $names = array_column( apply_filters( 'jhmg_aied_mcp_tools', [ [ 'name' => 'get_page_layout' ] ] ), 'name' );
+        $this->assertSame( 'get_page_layout', $names[0], 'built-ins stay first' );
+        $this->assertCount( 8, $names );
+        $this->assertContains( 'undo_batch', $names );
+        $GLOBALS['__wp_options'] = [];
+        \AiEditorDivi5\Pro\Licensing::resetForTests();
+    }
+
+    public function testACompatibleBootRegistersTheCodeProposalsPanel(): void
+    {
+        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertArrayHasKey( 'admin_post_aied_pro_delete_proposal', $GLOBALS['__wp_filters'] );
     }
 
     public function testACompatibleBootRegistersTheProAdminTab(): void
@@ -95,5 +114,18 @@ class PluginTest extends TestCase
         $this->assertSame( [ 'pro' => 'Pro' ], apply_filters( 'jhmg_aied_admin_tabs', [] ) );
         $this->assertArrayHasKey( 'admin_post_aied_pro_activate', $GLOBALS['__wp_filters'] );
         $this->assertArrayHasKey( 'admin_post_aied_pro_deactivate', $GLOBALS['__wp_filters'] );
+    }
+
+    public function testACompatibleBootCreatesTheBatchTableOnInitAndDropsItWithAMultisiteSite(): void
+    {
+        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertArrayHasKey( 'init', $GLOBALS['__wp_filters'] );
+        $this->assertArrayHasKey( 'wpmu_drop_tables', $GLOBALS['__wp_filters'] );
+    }
+
+    public function testACompatibleBootRegistersTheRecentChangesPanel(): void
+    {
+        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertArrayHasKey( 'admin_post_aied_pro_undo_batch', $GLOBALS['__wp_filters'] );
     }
 }

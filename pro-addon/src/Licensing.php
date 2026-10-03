@@ -22,10 +22,31 @@ final class Licensing
 {
     private const UNLOCKED_OPTION = 'aied_pro_premium_unlocked';
     private const LOCKING         = [ 'revoked', 'invalid' ];
+    private const STATE_OPTION    = 'aied_pro_license_state';
+    /** Answers that are a decision about this licence. Anything else (an HTML error page, an empty or non-JSON body, `invalid_request`) is a fault. */
+    private const VERDICT_ERRORS  = [ 'invalid_key', 'product_mismatch', 'license_not_usable' ];
+
+    private const DEFAULT_API_BASE = 'https://divi5lab.com';
 
     public const UPGRADE_URL = 'https://divi5lab.com/plugins/divi-5-ai-editor';
 
+    public const REFRESH_BACKOFF_TRANSIENT = 'aied_pro_refresh_backoff';
+    public const REFRESH_BACKOFF_SECONDS   = 900;
+
     private static ?LicenseClient $client = null;
+
+    /**
+     * The licence key is sent to this host, so an override is honoured only on a local or development site
+     * (`wp_get_environment_type()`); on any other site the constant is ignored and divi5lab.com is used.
+     */
+    public static function apiBaseFor( ?string $override, string $envType ): string
+    {
+        if ( null !== $override && '' !== $override && in_array( $envType, [ 'local', 'development' ], true ) ) {
+            return rtrim( $override, '/' );
+        }
+
+        return self::DEFAULT_API_BASE;
+    }
 
     public static function client(): LicenseClient
     {
@@ -34,7 +55,7 @@ final class Licensing
                 AIED_PRO_PRODUCT,
                 AIED_PRO_VERSION,
                 // Dev/test override only. Never define it in production: the licence key is sent to this host.
-                defined( 'AIED_PRO_API_BASE' ) ? (string) AIED_PRO_API_BASE : 'https://divi5lab.com',
+                self::apiBaseFor( defined( 'AIED_PRO_API_BASE' ) ? (string) AIED_PRO_API_BASE : null, wp_get_environment_type() ),
                 plugin_basename( AIED_PRO_FILE ),
                 'ai-editor-divi5',
                 self::UPGRADE_URL,
@@ -80,7 +101,93 @@ final class Licensing
 
     public static function refresh( bool $force = false ): void
     {
-        self::client()->refresh( $force );
+        $client = self::client();
+        if ( null === $client->get_key() ) {
+            return;
+        }
+        $before = $client->get_state();
+        if ( ! $force && ! self::refreshDue( $before ) ) {
+            return;
+        }
+        $seen    = null;
+        $capture = static function ( $response, $args = [], $url = '' ) use ( &$seen ) {
+            if ( is_array( $response ) && is_string( $url ) && str_contains( $url, '/api/license/validate' ) ) {
+                $seen = [ 'code' => (int) wp_remote_retrieve_response_code( $response ), 'body' => (string) wp_remote_retrieve_body( $response ) ];
+            }
+
+            return $response;
+        };
+        add_filter( 'http_response', $capture, 10, 3 );
+        try {
+            $client->refresh( $force );
+        } finally {
+            remove_filter( 'http_response', $capture, 10 );
+        }
+
+        // The generated client files any definitive-looking non-200 answer as `invalid`, and a 200 with an empty or
+        // non-JSON body (a proxy or captive-portal page) as `unknown`, losing `expires`. Only an answer that really
+        // is a decision about this licence may change the stored state; after a fault the previous state comes back.
+        $after = $client->get_state();
+        if ( $after !== $before && ! self::isVerdict( $seen ) && ! self::isStatusAnswer( $seen ) ) {
+            if ( null === $before ) {
+                delete_option( self::STATE_OPTION );
+            } else {
+                update_option( self::STATE_OPTION, $before, false );
+            }
+        }
+
+        // A refresh that stored nothing new (network error, 429, 5xx, or a reverted fault) must not be retried on
+        // every request while the licence server is down.
+        $now = $client->get_state();
+        if ( (int) ( $now['checked_at'] ?? 0 ) !== (int) ( $before['checked_at'] ?? 0 ) ) {
+            delete_transient( self::REFRESH_BACKOFF_TRANSIENT );
+        } else {
+            set_transient( self::REFRESH_BACKOFF_TRANSIENT, 1, self::REFRESH_BACKOFF_SECONDS );
+        }
+    }
+
+    /** Not on ajax or cron requests, not during a backoff, and only once the one-day cache window has passed. */
+    private static function refreshDue( ?array $state ): bool
+    {
+        if ( wp_doing_ajax() || wp_doing_cron() ) {
+            return false;
+        }
+        if ( false !== get_transient( self::REFRESH_BACKOFF_TRANSIENT ) ) {
+            return false;
+        }
+
+        return time() - (int) ( $state['checked_at'] ?? 0 ) >= DAY_IN_SECONDS;
+    }
+
+    /** A 200 whose JSON body carries a non-empty string `status`: a real answer about this licence (active, expired...). */
+    private static function isStatusAnswer( ?array $seen ): bool
+    {
+        if ( null === $seen || 200 !== $seen['code'] ) {
+            return false;
+        }
+        $body = json_decode( $seen['body'], true );
+
+        return is_array( $body ) && is_string( $body['status'] ?? null ) && '' !== $body['status'];
+    }
+
+    /** @param array{code:int, body:string}|null $seen the raw validate answer */
+    private static function isVerdict( ?array $seen ): bool
+    {
+        if ( null === $seen ) {
+            return false;
+        }
+        $body = json_decode( $seen['body'], true );
+        if ( ! is_array( $body ) ) {
+            return false;
+        }
+        if ( 200 === $seen['code'] ) {
+            return is_string( $body['status'] ?? null ) && in_array( $body['status'], self::LOCKING, true );
+        }
+        if ( ! in_array( $seen['code'], [ 403, 404 ], true ) ) {
+            return false;
+        }
+
+        return is_string( $body['error'] ?? null ) && in_array( $body['error'], self::VERDICT_ERRORS, true );
     }
 
     /**
@@ -108,5 +215,6 @@ final class Licensing
         foreach ( [ self::UNLOCKED_OPTION, 'aied_pro_license_key', 'aied_pro_license_state', 'aied_pro_update_blocked' ] as $option ) {
             delete_option( $option );
         }
+        delete_transient( self::REFRESH_BACKOFF_TRANSIENT );
     }
 }

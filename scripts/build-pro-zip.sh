@@ -2,7 +2,7 @@
 #
 # Build the installable Pro add-on zip: dist/jhmg-ai-editor-for-divi-5-pro.zip. It is sold from
 # divi5lab.com, never uploaded to WordPress.org, and `dist/` is git-ignored. Only the main file,
-# uninstall.php and src/ ship; tests, staged files and docs stay out.
+# uninstall.php, readme.txt and src/ ship; tests, staged files and docs stay out.
 #
 set -euo pipefail
 
@@ -26,7 +26,7 @@ echo "[build-pro] Packaging $SLUG version $VERSION"
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 mkdir -p "$STAGE/$SLUG"
-cp "$SRC/$MAIN" "$SRC/uninstall.php" "$STAGE/$SLUG/"
+cp "$SRC/$MAIN" "$SRC/uninstall.php" "$SRC/readme.txt" "$STAGE/$SLUG/"
 cp -R "$SRC/src" "$STAGE/$SLUG/src"
 find "$STAGE" -name '.DS_Store' -delete
 

@@ -4,16 +4,35 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\Pro;
 
+use AiEditorDivi5\Pro\Batch\Batches;
+use AiEditorDivi5\Pro\Tools\ListBatches;
+use AiEditorDivi5\Pro\Tools\ProposePhpSnippet;
+use AiEditorDivi5\Pro\Tools\PublishPage;
+use AiEditorDivi5\Pro\Tools\SetCustomCss;
+use AiEditorDivi5\Pro\Tools\SetFrontPage;
+use AiEditorDivi5\Pro\Tools\SetPrimaryMenu;
+use AiEditorDivi5\Pro\Tools\UndoBatch;
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-/** The list of Pro tools. Empty in this release of the skeleton; the tool plans add to it. */
+/** The list of Pro tools. */
 final class Tools
 {
     /** @return list<ProTool> */
     public static function all(): array
     {
-        return [];
+        $log = Batches::log();
+
+        return [
+            new SetFrontPage( $log ),
+            new SetCustomCss( $log ),
+            new SetPrimaryMenu( $log ),
+            new PublishPage( $log ),
+            new ProposePhpSnippet(),
+            new ListBatches( $log ),
+            new UndoBatch( $log, Batches::undo() ),
+        ];
     }
 }
