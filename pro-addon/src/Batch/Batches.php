@@ -7,6 +7,7 @@ namespace AiEditorDivi5\Pro\Batch;
 use AiEditorDivi5\Pro\Kinds\CssKind;
 use AiEditorDivi5\Pro\Kinds\FrontPageKind;
 use AiEditorDivi5\Pro\Kinds\MenuKind;
+use AiEditorDivi5\Pro\Kinds\PostContentKind;
 use AiEditorDivi5\Pro\Kinds\PostStatusKind;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -32,6 +33,7 @@ final class Batches
             new CssKind(),
             new MenuKind(),
             new PostStatusKind(),
+            new PostContentKind(),
         ];
         $out = [];
         foreach ( $kinds as $kind ) {
