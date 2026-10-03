@@ -112,8 +112,12 @@ final class ManageThemeTemplate implements ProTool
             // Divi refused, or the template is no longer a live one: nothing was changed.
             throw new \RuntimeException( 'Divi did not save the template as requested, so nothing is recorded. Check list_theme_layouts for its current state.' );
         }
-        // Divi accepted the write, so record what it REALLY wrote (a normal, undoable batch), even if that differs from the request.
         $differs = self::diff( $after, $written );
+        if ( [] === self::diff( $before, $written ) ) {
+            // Divi accepted the write but the template is as it was: nothing changed, so there is nothing to undo or record.
+            return [ 'changed' => false, 'dry_run' => false, 'template' => $label, 'differs_from_request' => $differs, 'message' => 'Divi accepted the write, but the template is exactly as it was; nothing changed and nothing is recorded. See differs_from_request.' ];
+        }
+        // Divi accepted the write, so record what it REALLY wrote (a normal, undoable batch), even if that differs from the request.
         $batch   = $this->log->record( self::NAME, ucfirst( $action ) . " Theme Builder template \"{$before['title']}\" (#{$id})", [ ThemeTemplateKind::itemFor( $before, $written ) ] );
         $result  = [ 'changed' => true, 'dry_run' => false, 'template' => $label, 'changed_fields' => self::diff( $before, $written ), 'note' => 'This applies to the whole site. Divi\'s caches were cleared.' ];
         if ( [] !== $differs ) {

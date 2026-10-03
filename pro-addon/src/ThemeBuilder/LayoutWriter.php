@@ -52,7 +52,15 @@ final class LayoutWriter
         $layout = [ 'layout_id' => $layoutId, 'kind' => $kind, 'title' => $title ];
 
         if ( $new === $stored ) {
-            return [ 'changed' => false, 'dry_run' => $dry, 'layout' => $layout, 'message' => 'The layout already holds exactly this content; nothing changed.' ] + $extra;
+            $same = [ 'changed' => false, 'dry_run' => $dry, 'layout' => $layout, 'message' => 'The layout already holds exactly this content; nothing changed.' ];
+            if ( $dry ) {
+                // Same verdict fields as the preview of a change, so a client reads one shape.
+                $verdict            = LayoutGate::check( $new, $stored );
+                $same['valid']      = $verdict->isValid();
+                $same['violations'] = array_map( static fn ( $v ) => $v->toArray(), $verdict->violations() );
+            }
+
+            return $same + $extra;
         }
         if ( $dry ) {
             // DryRun::preview runs the same gate and returns valid:false as a normal preview; it never writes.

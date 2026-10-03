@@ -55,6 +55,31 @@ class UpdateThemeLayoutTest extends TestCase
         $this->assertSame( self::header(), $this->layoutContent( 202 ), 'other layouts are untouched' );
     }
 
+    public function testADryRunOfContentThatIsAlreadyStoredStillReportsTheVerdict(): void
+    {
+        $r = $this->tool->run( [ 'layout_id' => 201, 'content' => self::header(), 'dry_run' => true ] );
+        $this->assertFalse( $r['changed'] );
+        $this->assertTrue( $r['dry_run'] );
+        $this->assertTrue( $r['valid'] );
+        $this->assertSame( [], $r['violations'] );
+
+        // A stored layout that already fails the checks says so in the same shape (the preview of a change does).
+        $GLOBALS['__wp_posts'][201]->post_content = self::invalid();
+        $r = $this->tool->run( [ 'layout_id' => 201, 'content' => self::invalid(), 'dry_run' => true ] );
+        $this->assertFalse( $r['changed'] );
+        $this->assertFalse( $r['valid'] );
+        $this->assertNotEmpty( $r['violations'] );
+        $this->assertArrayHasKey( 'code', $r['violations'][0] );
+    }
+
+    public function testARealRunOfContentThatIsAlreadyStoredHasNoVerdictFields(): void
+    {
+        $r = $this->tool->run( [ 'layout_id' => 201, 'content' => self::header() ] );
+        $this->assertFalse( $r['changed'] );
+        $this->assertArrayNotHasKey( 'valid', $r );
+        $this->assertArrayNotHasKey( 'violations', $r );
+    }
+
     public function testAFooterWorksToo(): void
     {
         $r = $this->tool->run( [ 'layout_id' => 202, 'content' => self::otherHeader() ] );

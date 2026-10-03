@@ -415,6 +415,28 @@ class ManageThemeTemplateTest extends TestCase
         $this->assertSame( '1', $this->meta( 200 )['_et_enabled'] );
     }
 
+    public function testADiviWriteThatLeavesTheTemplateAsItWasIsReportedAsNoChangeAndRecordsNothing(): void
+    {
+        $GLOBALS['__divi_store_mutate'] = static function ( array $template ): array {
+            $template['enabled'] = '1';   // Divi keeps it enabled although the request disabled it
+
+            return $template;
+        };
+        $preview = $this->tool->run( [ 'template_id' => 200, 'action' => 'disable', 'dry_run' => true ] );
+        $rows    = count( $this->repo->rows );
+        $r       = $this->tool->run( [ 'template_id' => 200, 'action' => 'disable', 'token' => $preview['token'] ] );
+        unset( $GLOBALS['__divi_store_mutate'] );
+
+        $this->assertFalse( $r['changed'] );
+        $this->assertFalse( $r['dry_run'] );
+        $this->assertSame( [ 'enabled' => [ 'from' => '0', 'to' => '1' ] ], $r['differs_from_request'] );
+        $this->assertStringContainsString( 'exactly as it was', $r['message'] );
+        $this->assertArrayNotHasKey( 'changed_fields', $r );
+        $this->assertArrayNotHasKey( 'batch', $r );
+        $this->assertSame( $rows, count( $this->repo->rows ), 'nothing to undo, so nothing is recorded' );
+        $this->assertSame( '1', $this->meta( 200 )['_et_enabled'] );
+    }
+
     public function testAnExactWriteHasNoDiffersFromRequestKey(): void
     {
         $r = $this->apply( [ 'template_id' => 200, 'action' => 'disable' ] );
