@@ -173,6 +173,67 @@ class BatchUndoTest extends TestCase
         $this->assertStringNotContainsString( 'secret', (string) json_encode( $r ) );
     }
 
+    /** A kind over the fake store whose current() or allowed() throws for ref "a" (the item processed second). */
+    private function throwingKind( string $where ): \AiEditorDivi5\Pro\Batch\ValueKind
+    {
+        return new class( $where ) extends \AiEditorDivi5\Pro\Batch\ValueKind {
+            public function __construct( private string $where )
+            {
+            }
+            public function name(): string { return 'fake'; }
+            public function current( array $item ): mixed
+            {
+                if ( 'current' === $this->where && 'a' === $item['ref'] ) {
+                    throw new \RuntimeException( 'secret path /var/www' );
+                }
+                return $GLOBALS['__fake_store'][ $item['ref'] ] ?? null;
+            }
+            public function allowed( array $item ): bool
+            {
+                if ( 'allowed' === $this->where && 'a' === $item['ref'] ) {
+                    throw new \RuntimeException( 'secret path /var/www' );
+                }
+                return true;
+            }
+            protected function write( array $item, mixed $value ): bool
+            {
+                $GLOBALS['__fake_store'][ $item['ref'] ] = $value;
+                $GLOBALS['__fake_writes'][]               = $item['ref'];
+                return true;
+            }
+        };
+    }
+
+    /** @return array<string,array{string}> */
+    public static function checkThrowers(): array
+    {
+        return [ 'current() throws' => [ 'current' ], 'allowed() throws' => [ 'allowed' ] ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'checkThrowers' )]
+    public function testAKindThatThrowsWhileCheckingAnItemIsReportedFailedAndTheRestIsStillRecorded( string $where ): void
+    {
+        $undo                    = new BatchUndo( [ 'fake' => $this->throwingKind( $where ) ], $this->log );
+        $GLOBALS['__fake_store'] = [ 'a' => 'a1', 'b' => 'b1' ];
+        $batch                   = $this->log->record( 'multi', 'two things', [ Item::make( 'fake', 'a', 'A', 'a1', 'a2' ), Item::make( 'fake', 'b', 'B', 'b1', 'b2' ) ] );
+        $GLOBALS['__fake_store'] = [ 'a' => 'a2', 'b' => 'b2' ];
+
+        $r = $undo->undo( $batch['id'] );
+
+        $this->assertSame( [ 'failed', 'restored' ], array_column( $r['items'], 'result' ), 'b (processed first) is restored, a (processed second) failed' );
+        $this->assertSame( 'exception', $r['items'][0]['reason'] );
+        $this->assertSame( 1, $r['restored'] );
+        $this->assertFalse( $r['fully_undone'] );
+        $this->assertSame( 'b1', $GLOBALS['__fake_store']['b'] );
+        $this->assertSame( 'a2', $GLOBALS['__fake_store']['a'], 'the failed item was not touched' );
+        $this->assertSame( 'partly_undone', $this->repo->rows[ $batch['id'] ]['status'] );
+        $this->assertSame( 'applied', $this->repo->rows[ $batch['id'] ]['items'][0]['state'] );
+        $this->assertSame( 'undone', $this->repo->rows[ $batch['id'] ]['items'][1]['state'] );
+        $this->assertNotNull( $r['undo_batch'], 'the restored item is recorded so it can be undone' );
+        $this->assertSame( 'undo_batch', $this->repo->rows[ $r['undo_batch']['id'] ]['tool'] );
+        $this->assertStringNotContainsString( 'secret', (string) json_encode( $r ) );
+    }
+
     public function testDryRunWritesAndRecordsNothing(): void
     {
         $GLOBALS['__fake_store']['a'] = 'one';

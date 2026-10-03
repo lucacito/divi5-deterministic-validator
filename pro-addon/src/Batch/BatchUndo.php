@@ -39,7 +39,12 @@ final class BatchUndo
             $item  = $items[ $i ];
             $row   = [ 'kind' => (string) ( $item['kind'] ?? '' ), 'label' => (string) ( $item['label'] ?? '' ) ];
             $kind  = $this->kinds[ $row['kind'] ] ?? null;
-            $check = $this->check( $item, $kind, $force );
+            try {
+                $check = $this->check( $item, $kind, $force );
+            } catch ( \Throwable $e ) {
+                // A kind that cannot even read its target (e.g. a menu deleted since) fails this item only; the loop goes on.
+                $check = [ 'result' => 'failed', 'reason' => 'exception' ];
+            }
             if ( null !== $check ) {
                 $report[ $i ] = $row + $check;
                 continue;
