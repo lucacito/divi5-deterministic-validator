@@ -99,12 +99,20 @@ final class ManageThemeTemplate implements ProTool
         }
 
         $written = TemplateStore::write( $after );
-        if ( null === $written || [] !== self::diff( $after, $written ) ) {
+        if ( null === $written ) {
+            // Divi refused, or the template is no longer a live one: nothing was changed.
             throw new \RuntimeException( 'Divi did not save the template as requested, so nothing is recorded. Check list_theme_layouts for its current state.' );
         }
-        $batch = $this->log->record( self::NAME, ucfirst( $action ) . " Theme Builder template \"{$before['title']}\" (#{$id})", [ ThemeTemplateKind::itemFor( $before, $written ) ] );
+        // Divi accepted the write, so record what it REALLY wrote (a normal, undoable batch), even if that differs from the request.
+        $differs = self::diff( $after, $written );
+        $batch   = $this->log->record( self::NAME, ucfirst( $action ) . " Theme Builder template \"{$before['title']}\" (#{$id})", [ ThemeTemplateKind::itemFor( $before, $written ) ] );
+        $result  = [ 'changed' => true, 'dry_run' => false, 'template' => $label, 'changed_fields' => self::diff( $before, $written ), 'note' => 'This applies to the whole site. Divi\'s caches were cleared.' ];
+        if ( [] !== $differs ) {
+            $result['differs_from_request'] = $differs;
+            $result['note']                 = 'Divi saved the template differently than requested (see differs_from_request); what Divi saved is recorded, and undo_batch can put the previous state back. This applies to the whole site. Divi\'s caches were cleared.';
+        }
 
-        return BatchLog::attach( [ 'changed' => true, 'dry_run' => false, 'template' => $label, 'changed_fields' => $diff, 'note' => 'This applies to the whole site. Divi\'s caches were cleared.' ], $batch );
+        return BatchLog::attach( $result, $batch );
     }
 
     /**

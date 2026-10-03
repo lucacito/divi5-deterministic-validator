@@ -43,6 +43,7 @@ class ManageThemeTemplateTest extends TestCase
     {
         $this->tearDownThemeBuilder();
         $GLOBALS['__divi_store_fail'] = false;
+        unset( $GLOBALS['__divi_store_mutate'] );
     }
 
     /** @return array<string,mixed> */
@@ -346,6 +347,37 @@ class ManageThemeTemplateTest extends TestCase
         $res  = $kind->restore( $item );
         $this->assertTrue( $res['ok'] );
         $this->assertSame( [ 'singular:post_type:page:all' ], $this->meta( 200 )['_et_use_on'] );
+    }
+
+    public function testADiviWriteThatReadsBackDifferentlyIsStillRecordedAndUndoable(): void
+    {
+        $GLOBALS['__divi_store_mutate'] = static function ( array $template ): array {
+            $template['use_on'] = [ 'archive:all' ];
+
+            return $template;
+        };
+        $preview = $this->tool->run( [ 'template_id' => 200, 'action' => 'disable', 'dry_run' => true ] );
+        $r       = $this->tool->run( [ 'template_id' => 200, 'action' => 'disable', 'token' => $preview['token'] ] );
+        unset( $GLOBALS['__divi_store_mutate'] );
+
+        $this->assertTrue( $r['changed'] );
+        $this->assertSame( [ 'use_on' => [ 'from' => [ 'singular:post_type:page:all' ], 'to' => [ 'archive:all' ] ] ], $r['differs_from_request'] );
+        $this->assertSame( [ 'archive:all' ], $this->meta( 200 )['_et_use_on'], 'Divi really wrote it' );
+        $this->assertStringContainsString( 'differently than requested', $r['note'] );
+        $this->assertArrayHasKey( 'enabled', $r['changed_fields'] );
+        $this->assertArrayHasKey( 'use_on', $r['changed_fields'] );
+        $this->assertTrue( $r['batch']['undoable'] );
+
+        $undo = $this->undo()->undo( $r['batch']['id'] );
+        $this->assertTrue( $undo['fully_undone'] );
+        $this->assertSame( [ 'singular:post_type:page:all' ], $this->meta( 200 )['_et_use_on'] );
+        $this->assertSame( '1', $this->meta( 200 )['_et_enabled'] );
+    }
+
+    public function testAnExactWriteHasNoDiffersFromRequestKey(): void
+    {
+        $r = $this->apply( [ 'template_id' => 200, 'action' => 'disable' ] );
+        $this->assertArrayNotHasKey( 'differs_from_request', $r );
     }
 
     public function testItIsRegisteredAndNeedsEditThemeOptions(): void
