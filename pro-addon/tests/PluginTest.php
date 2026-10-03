@@ -89,14 +89,14 @@ class PluginTest extends TestCase
         $this->assertSame( [ [ 'name' => 'get_page_layout' ] ], apply_filters( 'jhmg_aied_mcp_tools', [ [ 'name' => 'get_page_layout' ] ] ), 'no Pro tool while locked' );
     }
 
-    public function testWhileUnlockedTheSevenProToolsAreAdvertised(): void
+    public function testWhileUnlockedEveryProToolIsAdvertised(): void
     {
         $GLOBALS['__wp_options'] = [ 'aied_pro_premium_unlocked' => 1 ];
         \AiEditorDivi5\Pro\Licensing::resetForTests();
         $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
         $names = array_column( apply_filters( 'jhmg_aied_mcp_tools', [ [ 'name' => 'get_page_layout' ] ] ), 'name' );
         $this->assertSame( 'get_page_layout', $names[0], 'built-ins stay first' );
-        $this->assertCount( 8, $names );
+        $this->assertCount( 1 + count( \AiEditorDivi5\Pro\Tools::all() ), $names, 'the built-in plus every Pro tool' );
         $this->assertContains( 'undo_batch', $names );
         $GLOBALS['__wp_options'] = [];
         \AiEditorDivi5\Pro\Licensing::resetForTests();

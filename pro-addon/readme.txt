@@ -21,6 +21,7 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `publish_page` - publish or schedule a draft; preview first with `dry_run`.
 * `set_custom_css` - add CSS inside one clearly marked block of WordPress Additional CSS. Your own CSS is never touched.
 * `propose_php_snippet` - store PHP for you to review. Nothing is ever run, saved as a file or loaded by the plugin.
+* `list_theme_layouts` - list the live Divi Theme Builder templates and their header, footer and body layouts (read-only); with a header or footer id it also returns that layout's content.
 * `list_batches` - list recent Pro changes.
 * `undo_batch` - undo one batch.
 

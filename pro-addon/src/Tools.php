@@ -6,6 +6,7 @@ namespace AiEditorDivi5\Pro;
 
 use AiEditorDivi5\Pro\Batch\Batches;
 use AiEditorDivi5\Pro\Tools\ListBatches;
+use AiEditorDivi5\Pro\Tools\ListThemeLayouts;
 use AiEditorDivi5\Pro\Tools\ProposePhpSnippet;
 use AiEditorDivi5\Pro\Tools\PublishPage;
 use AiEditorDivi5\Pro\Tools\SetCustomCss;
@@ -33,6 +34,7 @@ final class Tools
             new ProposePhpSnippet(),
             new ListBatches( $log ),
             new UndoBatch( $log, Batches::undo() ),
+            new ListThemeLayouts(),
         ];
     }
 }

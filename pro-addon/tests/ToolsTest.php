@@ -40,10 +40,10 @@ class ToolsTest extends TestCase
         }
     }
 
-    public function testThisReleaseShipsExactlyTheSevenSettingsAndBatchTools(): void
+    public function testThisReleaseShipsExactlyTheseTools(): void
     {
         $this->assertSame(
-            [ 'set_front_page', 'set_custom_css', 'set_primary_menu', 'publish_page', 'propose_php_snippet', 'list_batches', 'undo_batch' ],
+            [ 'set_front_page', 'set_custom_css', 'set_primary_menu', 'publish_page', 'propose_php_snippet', 'list_batches', 'undo_batch', 'list_theme_layouts' ],
             array_map( static fn ( ProTool $t ): string => $t->name(), Tools::all() )
         );
     }
