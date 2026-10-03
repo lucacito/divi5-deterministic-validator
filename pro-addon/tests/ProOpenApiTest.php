@@ -30,6 +30,13 @@ class ProOpenApiTest extends TestCase
             'a cut inside quotes drops the fragment'     => [ 'Rename the page called "' . str_repeat( 'very long title ', 10 ) . '" to something else.', 'Rename the page called...' ],
             'text with no space is cut hard'             => [ str_repeat( 'x', 200 ), str_repeat( 'x', 117 ) . '...' ],
             'whitespace is collapsed'                    => [ "Replace  text\n across   pages.", 'Replace text across pages' ],
+            'a full stop inside quotes is not an end'    => [ 'Set the label to "Done. Next" for the page. More text.', 'Set the label to "Done. Next" for the page' ],
+            'an unclosed bracket in a short sentence'    => [ 'Hello (', 'Hello...' ],
+            'an unclosed quote and bracket'              => [ 'Say "Hi" (now.', 'Say "Hi"...' ],
+            'a leading stop is kept, not emptied'        => [ '. Foo', '. Foo' ],
+            'nothing but an opener is nothing'           => [ '(', '' ],
+            'an empty description'                       => [ '', '' ],
+            'dropping a fragment never passes 120 bytes' => [ str_repeat( 'a', 118 ) . ' (', str_repeat( 'a', 117 ) . '...' ],
         ];
     }
 
@@ -37,6 +44,60 @@ class ProOpenApiTest extends TestCase
     public function testSummaries( string $description, string $expected ): void
     {
         $this->assertSame( $expected, ProOpenApi::summary( $description ) );
+    }
+
+    /** A summary never ends inside an opened bracket or quote, is valid UTF-8 and is at most 120 bytes. */
+    private static function assertClean( string $summary, string $input ): void
+    {
+        $depth = 0;
+        for ( $i = 0, $n = strlen( $summary ); $i < $n; $i++ ) {
+            if ( '(' === $summary[ $i ] ) {
+                ++$depth;
+            } elseif ( ')' === $summary[ $i ] && $depth > 0 ) {
+                --$depth;
+            }
+        }
+        $label = json_encode( $input );
+        self::assertSame( 0, $depth, "unclosed bracket in the summary of {$label}" );
+        self::assertSame( 0, substr_count( $summary, '"' ) % 2, "unclosed quote in the summary of {$label}" );
+        self::assertLessThanOrEqual( 120, strlen( $summary ), "too long for {$label}" );
+        self::assertNotFalse( json_encode( $summary ), "invalid UTF-8 in the summary of {$label}" );
+    }
+
+    public function testASentenceThatOpensWithABracketOrQuoteDoesNotKeepTheOpener(): void
+    {
+        foreach ( [
+            '(' . str_repeat( 'word ', 30 ) . ') tail',
+            '"' . str_repeat( 'word ', 30 ) . '" tail',
+            '(a (b) ' . str_repeat( 'w ', 70 ) . ')',
+        ] as $input ) {
+            $summary = ProOpenApi::summary( $input );
+            self::assertClean( $summary, $input );
+            $this->assertStringEndsWith( '...', $summary, $input );
+            $this->assertNotSame( '...', $summary );
+        }
+    }
+
+    public function testAMultibyteCharacterIsNeverSplit(): void
+    {
+        foreach ( [ str_repeat( 'é', 100 ), str_repeat( 'a', 116 ) . 'é' . str_repeat( 'b', 20 ), str_repeat( '日本語 ', 40 ) ] as $input ) {
+            $summary = ProOpenApi::summary( $input );
+            self::assertClean( $summary, $input );
+            $this->assertStringEndsWith( '...', $summary );
+        }
+    }
+
+    public function testNoInputCanProduceAnUncleanSummary(): void
+    {
+        mt_srand( 7 );
+        $alphabet = [ 'a', 'b', ' ', ' ', '(', ')', '"', '.', '!', '?', 'é', '…', 'word', "\n", ',' ];
+        for ( $n = 0; $n < 3000; $n++ ) {
+            $input = '';
+            for ( $k = mt_rand( 0, 170 ); $k > 0; $k-- ) {
+                $input .= $alphabet[ mt_rand( 0, count( $alphabet ) - 1 ) ];
+            }
+            self::assertClean( ProOpenApi::summary( $input ), $input );
+        }
     }
 
     public function testEveryRealSummaryIsShortCleanAndAPrefixOfItsDescription(): void

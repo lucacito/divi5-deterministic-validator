@@ -108,41 +108,81 @@ final class ProOpenApi
         return lcfirst( str_replace( ' ', '', ucwords( str_replace( '_', ' ', $toolName ) ) ) );
     }
 
-    /** At most 120 characters: the first sentence, cut at a word boundary, never inside brackets or quotes. */
+    /** At most 120 bytes: the first sentence, cut at a word boundary, never ending inside brackets or quotes, always valid UTF-8. */
     public static function summary( string $description ): string
     {
-        $first = trim( self::firstSentence( trim( (string) preg_replace( '/\s+/', ' ', $description ) ) ) );
-        if ( strlen( $first ) <= self::SUMMARY_MAX ) {
-            return $first;
+        $text  = trim( (string) preg_replace( '/\s+/', ' ', $description ) );
+        $first = trim( self::firstSentence( $text ) );
+        if ( '' === $first ) {
+            $first = $text;
         }
-        $cut = substr( $first, 0, self::SUMMARY_MAX - 3 );
-        if ( ' ' !== $first[ self::SUMMARY_MAX - 3 ] ) {
-            $space = strrpos( $cut, ' ' );
-            $cut   = false === $space || 0 === $space ? $cut : substr( $cut, 0, $space );
+        $ellipsis = false;
+        // Every pass only makes the text shorter, so this ends: cut to fit, drop an unclosed fragment, check again.
+        for ( ;; ) {
+            if ( strlen( $first ) + ( $ellipsis ? 3 : 0 ) > self::SUMMARY_MAX ) {
+                $first    = self::wordCut( $first, self::SUMMARY_MAX - 3 );
+                $ellipsis = true;
+            }
+            $clean = self::closeOff( $first );
+            if ( $clean === $first ) {
+                break;
+            }
+            $first    = $clean;
+            $ellipsis = true;
         }
-        // Drop a fragment that opens a bracket or a quote and never closes it.
-        $open = self::unclosedAt( $cut );
-        while ( null !== $open && $open > 0 ) {
-            $cut  = substr( $cut, 0, $open );
-            $open = self::unclosedAt( rtrim( $cut ) );
-        }
-        $cut = rtrim( $cut, " ,;:-" );
 
-        return ( '' === $cut || null !== self::unclosedAt( $cut ) ? substr( $first, 0, self::SUMMARY_MAX - 3 ) : $cut ) . '...';
+        return '' === $first ? '' : $first . ( $ellipsis ? '...' : '' );
     }
 
-    /** The text before the first full stop, question mark or exclamation mark outside brackets (an ellipsis is not one). */
+    /** At most $max bytes, valid UTF-8, ending at a word boundary where there is one. */
+    private static function wordCut( string $text, int $max ): string
+    {
+        $head = self::utf8Prefix( substr( $text, 0, $max ) );
+        if ( ' ' !== substr( $text, strlen( $head ), 1 ) ) {
+            $space = strrpos( $head, ' ' );
+            if ( false !== $space && $space > 0 ) {
+                $head = substr( $head, 0, $space );
+            }
+        }
+
+        return rtrim( $head, " ,;:-" );
+    }
+
+    /** Drops every fragment that opens a bracket or a quote and never closes it (at the very start: just that character). */
+    private static function closeOff( string $text ): string
+    {
+        for ( $open = self::unclosedAt( $text ); null !== $open; $open = self::unclosedAt( $text ) ) {
+            $text = rtrim( trim( 0 === $open ? substr( $text, 1 ) : substr( $text, 0, $open ) ), " ,;:-" );
+        }
+
+        return $text;
+    }
+
+    /** The longest prefix that is valid UTF-8 (a multibyte character is never split). */
+    private static function utf8Prefix( string $text ): string
+    {
+        while ( '' !== $text && 1 !== preg_match( '//u', $text ) ) {
+            $text = substr( $text, 0, -1 );
+        }
+
+        return $text;
+    }
+
+    /** The text before the first full stop, question mark or exclamation mark outside brackets and quotes (an ellipsis is not one). */
     private static function firstSentence( string $text ): string
     {
         $depth = 0;
+        $quote = false;
         $len   = strlen( $text );
         for ( $i = 0; $i < $len; $i++ ) {
             $c = $text[ $i ];
-            if ( '(' === $c ) {
+            if ( '"' === $c ) {
+                $quote = ! $quote;
+            } elseif ( '(' === $c && ! $quote ) {
                 ++$depth;
-            } elseif ( ')' === $c && $depth > 0 ) {
+            } elseif ( ')' === $c && ! $quote && $depth > 0 ) {
                 --$depth;
-            } elseif ( 0 === $depth && ( '.' === $c || '!' === $c || '?' === $c ) && ( 0 === $i || '.' !== $text[ $i - 1 ] ) && ( $i + 1 === $len || ' ' === $text[ $i + 1 ] ) ) {
+            } elseif ( 0 === $depth && ! $quote && $i > 0 && ( '.' === $c || '!' === $c || '?' === $c ) && '.' !== $text[ $i - 1 ] && ( $i + 1 === $len || ' ' === $text[ $i + 1 ] ) ) {
                 return substr( $text, 0, $i );
             }
         }
