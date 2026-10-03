@@ -4403,3 +4403,13 @@ Expected: the last command prints the subject and the `Co-Authored-By: Claude So
 - [ ] **Step 7: Final whole-branch review on the most capable model (opus)**
 
 Dispatch one reviewer over `git diff main...feat/pro-theme-layouts` with the Review Focus list above and the "What the research settled" section as the brief. Verify its claims with grep before acting. Fix real findings in small commits; then hand the branch to the owner. Do not merge, push or release.
+
+---
+
+## As built (deviations from the text above)
+
+Recorded during execution on 2026-10-03; the code in the repo is authoritative where it differs from the plan text.
+
+- **Task 6:** `ManageThemeTemplate::CONDITION` is `'/^[A-Za-z0-9_:\-]{1,200}$/D'` (the `D` modifier was added in a fix round: without it `$` matches before a trailing newline, so an id like "singular:all\n" passed validation, Divi stripped the newline, the read-back differed, and the tool threw "nothing is recorded" after a site-wide write). `ManageThemeTemplateTest` has two extra newline cases.
+- **Task 7:** `scripts/verify-pro-theme-templates.php` was hardened after review: the backup-option check compares against the value captured after the fixtures were built (`$liveBackupAfterFix`), a stale-token live check was added (token taken, template changed behind the tool's back, real call refused, template restored and asserted), and the final block asserts the live (and, when pre-existing, draft) Theme Builder's `_et_template` list and backup option equal their baselines.
+- **Gate result:** `make verify-pro-theme-layouts` and `make verify-pro-theme-templates` passed on the Docker dev site (Divi 5.14, Pro add-on activated only for the runs and deactivated afterwards).
