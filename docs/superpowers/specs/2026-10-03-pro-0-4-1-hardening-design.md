@@ -50,6 +50,6 @@ checking, anything licence related.
 
 ## Verification
 
-`make test-pro` (702 to 756 tests), `make test` (726, unchanged), and on the Docker dev site with the Pro add-on activated only for
+`make test-pro` (702 to 766 tests), `make test` (726, unchanged), and on the Docker dev site with the Pro add-on activated only for
 the runs: `make verify-pro-site-tools`, `make verify-pro-rest`, `make verify-pro-theme-templates`; `make build-pro` produces a zip that
 contains no tests or scripts. Opus reviews the token task and the whole branch.

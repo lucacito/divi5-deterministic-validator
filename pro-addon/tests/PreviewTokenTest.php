@@ -14,6 +14,7 @@ class PreviewTokenTest extends TestCase
     protected function setUp(): void
     {
         $GLOBALS['__wp_transients'] = [];
+        $GLOBALS['__wp_transient_ttl'] = [];
     }
 
     /** A token's payload (base64url JSON) re-signed as the site would sign it. @param array<string,mixed> $data */
@@ -71,6 +72,7 @@ class PreviewTokenTest extends TestCase
         $t = PreviewToken::make( 'a', [ 1 => 'x' ], 1000, 7 );
         PreviewToken::spend( $t );
         $this->assertCount( 1, $GLOBALS['__wp_transients'] );
+        $this->assertSame( [ PreviewToken::TTL ], array_values( $GLOBALS['__wp_transient_ttl'] ), 'the spent mark must live for the token\'s whole 30 minutes' );
     }
 
     public function testSpendingATamperedOrMalformedTokenRecordsNothing(): void

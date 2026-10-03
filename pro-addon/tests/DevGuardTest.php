@@ -45,9 +45,11 @@ class DevGuardTest extends TestCase
             $code = (string) file_get_contents( $script );
             $this->assertStringContainsString( "require_once __DIR__ . '/dev-guard.php';", $code, basename( $script ) );
             $this->assertStringContainsString( 'aied_require_dev_site();', $code, basename( $script ) );
+            // Every script's real work starts at its `$failures = [];` line (all six declare it first): the guard must come before it.
             $guard  = strpos( $code, 'aied_require_dev_site();' );
-            $effect = min( array_filter( [ strpos( $code, 'wp_insert_post' ), strpos( $code, 'update_option' ), strpos( $code, 'wp_delete_post' ), strpos( $code, '->run(' ) ], static fn ( $p ): bool => false !== $p ) ?: [ PHP_INT_MAX ] );
-            $this->assertLessThan( $effect, $guard, basename( $script ) . ' must run the guard before it changes anything' );
+            $anchor = strpos( $code, '$failures = [];' );
+            $this->assertNotFalse( $anchor, basename( $script ) . ' no longer declares $failures: update this test' );
+            $this->assertLessThan( $anchor, $guard, basename( $script ) . ' must run the guard before its work starts' );
         }
     }
 }
