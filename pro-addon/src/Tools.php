@@ -6,6 +6,7 @@ namespace AiEditorDivi5\Pro;
 
 use AiEditorDivi5\Pro\Batch\Batches;
 use AiEditorDivi5\Pro\Tools\EditThemeLayout;
+use AiEditorDivi5\Pro\Tools\FindReplaceSite;
 use AiEditorDivi5\Pro\Tools\ListBatches;
 use AiEditorDivi5\Pro\Tools\ListThemeLayouts;
 use AiEditorDivi5\Pro\Tools\ManageThemeTemplate;
@@ -41,6 +42,7 @@ final class Tools
             new UpdateThemeLayout( $log ),
             new EditThemeLayout( $log ),
             new ManageThemeTemplate( $log ),
+            new FindReplaceSite( $log ),
         ];
     }
 }
