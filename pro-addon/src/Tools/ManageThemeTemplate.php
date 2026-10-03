@@ -28,7 +28,7 @@ final class ManageThemeTemplate implements ProTool
 
     private const ACTIONS   = [ 'assign', 'enable', 'disable' ];
     private const MAX_RULES = 50;
-    private const CONDITION = '/^[A-Za-z0-9_:\-]{1,200}$/';
+    private const CONDITION = '/^[A-Za-z0-9_:\-]{1,200}$/D';
 
     public function __construct( private BatchLog $log )
     {

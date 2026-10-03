@@ -215,6 +215,8 @@ class ManageThemeTemplateTest extends TestCase
         $this->refused( [ 'template_id' => 200, 'action' => 'assign', 'use_on' => [ 5 ] ], 'condition ids');
         $this->refused( [ 'template_id' => 200, 'action' => 'assign', 'use_on' => [ 'a b' ] ], 'condition ids');
         $this->refused( [ 'template_id' => 200, 'action' => 'assign', 'use_on' => [ '<script>' ] ], 'condition ids');
+        $this->refused( [ 'template_id' => 200, 'action' => 'assign', 'use_on' => [ "singular:all\n" ] ], 'condition ids');
+        $this->refused( [ 'template_id' => 200, 'action' => 'assign', 'exclude_from' => [ "archive:all\n" ] ], 'condition ids');
         $this->refused( [ 'template_id' => 200, 'action' => 'assign', 'use_on' => [ str_repeat( 'a', 201 ) ] ], 'condition ids');
         $this->refused( [ 'template_id' => 200, 'action' => 'assign', 'use_on' => array_fill( 0, 51, 'a' ) ], 'at most 50');
     }
