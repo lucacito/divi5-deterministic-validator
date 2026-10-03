@@ -112,7 +112,7 @@ final class PublishPage implements ProTool
     private static function parseFuture( string $at ): string
     {
         $invalid = 'publish_at must be an ISO 8601 date and time with a timezone, for example 2026-12-01T09:00:00+01:00 or 2026-12-01T09:00:00Z.';
-        if ( 1 !== preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:\d{2})$/', $at ) ) {
+        if ( 1 !== preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:Z|[+-](?:0\d|1[0-4]):[0-5]\d)$/', $at ) ) {
             throw new \InvalidArgumentException( $invalid );
         }
         $norm = preg_replace( '/Z$/', '+00:00', $at );

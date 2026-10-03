@@ -124,10 +124,11 @@ final class Licensing
             remove_filter( 'http_response', $capture, 10 );
         }
 
-        // The generated client files any definitive-looking non-200 answer as `invalid`. Only an answer that
-        // really is a decision about this licence may keep that; after a fault the previous state comes back.
+        // The generated client files any definitive-looking non-200 answer as `invalid`, and a 200 with an empty or
+        // non-JSON body (a proxy or captive-portal page) as `unknown`, losing `expires`. Only an answer that really
+        // is a decision about this licence may change the stored state; after a fault the previous state comes back.
         $after = $client->get_state();
-        if ( in_array( $after['status'] ?? '', self::LOCKING, true ) && ! self::isVerdict( $seen ) ) {
+        if ( $after !== $before && ! self::isVerdict( $seen ) && ! self::isStatusAnswer( $seen ) ) {
             if ( null === $before ) {
                 delete_option( self::STATE_OPTION );
             } else {
@@ -156,6 +157,17 @@ final class Licensing
         }
 
         return time() - (int) ( $state['checked_at'] ?? 0 ) >= DAY_IN_SECONDS;
+    }
+
+    /** A 200 whose JSON body carries a non-empty string `status`: a real answer about this licence (active, expired...). */
+    private static function isStatusAnswer( ?array $seen ): bool
+    {
+        if ( null === $seen || 200 !== $seen['code'] ) {
+            return false;
+        }
+        $body = json_decode( $seen['body'], true );
+
+        return is_array( $body ) && is_string( $body['status'] ?? null ) && '' !== $body['status'];
     }
 
     /** @param array{code:int, body:string}|null $seen the raw validate answer */

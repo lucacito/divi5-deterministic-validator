@@ -32,7 +32,7 @@ final class PostStatusKind extends ValueKind
 
     protected function write( array $item, mixed $value ): bool
     {
-        if ( ! is_string( $value ) || '' === $value ) {
+        if ( ! is_string( $value ) || ! in_array( $value, [ 'draft', 'pending', 'future', 'publish' ], true ) ) {
             return false;
         }
 

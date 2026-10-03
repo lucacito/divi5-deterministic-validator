@@ -33,4 +33,17 @@ class CanonTest extends TestCase
         $this->assertSame( hash( 'sha256', '"abc"' ), Canon::hash( 'abc' ) );
         $this->assertSame( hash( 'sha256', 'null' ), Canon::hash( null ) );
     }
+
+    public function testDifferentInvalidUtf8StringsDoNotCollide(): void
+    {
+        $this->assertNotSame( Canon::hash( "a\xff" ), Canon::hash( "b\xfe" ) );
+        $this->assertNotSame( Canon::hash( [ 'k' => "\xff" ] ), Canon::hash( [ 'k' => "\xfe" ] ) );
+        $this->assertSame( Canon::hash( "a\xff" ), Canon::hash( "a\xff" ), 'still deterministic' );
+        $this->assertNotSame( Canon::hash( "\xff" ), Canon::hash( null ) );
+    }
+
+    public function testAValidStringsHashIsUnchanged(): void
+    {
+        $this->assertSame( hash( 'sha256', '"héllo"' ), Canon::hash( 'héllo' ) );
+    }
 }

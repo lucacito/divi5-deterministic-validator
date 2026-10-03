@@ -4,6 +4,9 @@
  * WordPress's own functions. Self-cleaning: it restores the front page, Additional CSS, the Main Menu and its
  * location and the code proposals to exactly what they were, and deletes every page, batch row and proposal it created.
  *
+ * WARNING: it records about 19 batches and the batch store keeps only the newest 20, so on a site that already has
+ * batches it evicts the oldest real ones. Run it on a throwaway dev site only.
+ *
  * Run: make verify-pro-settings   (needs `make up`, the free plugin and the Pro add-on active; no licence is needed:
  * the tools are called directly, not through the licence-gated registry)
  */
@@ -71,7 +74,8 @@ $trackUndo = static function ( array $r ) use ( &$batchIds ): array {
 $makePage = static function ( string $title, string $status ) use ( &$pages ): int {
     $id = wp_insert_post( [ 'post_type' => 'page', 'post_status' => $status, 'post_title' => $title, 'post_content' => '' ], true );
     if ( is_wp_error( $id ) ) {
-        WP_CLI::error( 'Could not create a throwaway page: ' . $id->get_error_message() );
+        // Not WP_CLI::error(): it exits at once and would skip the cleanup in the `finally` below.
+        throw new \RuntimeException( 'Could not create a throwaway page: ' . $id->get_error_message() );
     }
     $pages[] = (int) $id;
 

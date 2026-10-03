@@ -154,6 +154,9 @@ class LicensingTest extends TestCase
             'empty json 404'                             => [ 404, [] ],
             'invalid_request is our fault, not a verdict' => [ 400, [ 'error' => 'invalid_request' ] ],
             '403 with an unknown error code'             => [ 403, [ 'error' => 'teapot' ] ],
+            'empty 200'                                  => [ 200, '' ],
+            'html 200 from a captive portal'             => [ 200, '<html>proxy page</html>' ],
+            '401 json with some status'                  => [ 401, [ 'status' => 'x' ] ],
         ];
     }
 
@@ -194,6 +197,17 @@ class LicensingTest extends TestCase
         $this->queue( 403, '<html>Forbidden</html>' );
         Licensing::refresh();
         $this->assertFalse( Licensing::isPremium(), 'a fault changes nothing, in either direction' );
+    }
+
+    public function testAnExplicitlyRevokedLicenceStaysLockedWhenALaterRefreshGetsAnHtml200(): void
+    {
+        $this->testAnExplicit200RevokedVerdictLocks();
+        $this->ageState();
+        $stored = $GLOBALS['__wp_options']['aied_pro_license_state'];
+        $this->queue( 200, '<html>proxy page</html>' );
+        Licensing::refresh();
+        $this->assertFalse( Licensing::isPremium(), 'a fault must not un-revoke a licence' );
+        $this->assertSame( $stored, $GLOBALS['__wp_options']['aied_pro_license_state'] );
     }
 
     public function testDeactivateClearsPremium(): void

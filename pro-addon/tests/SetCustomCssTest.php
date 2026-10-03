@@ -145,6 +145,17 @@ class SetCustomCssTest extends TestCase
         $this->assertSame( '.b{ color: green }', CustomCss::extract( wp_get_custom_css() ) );
     }
 
+    public function testUndoNeverDeletesTheOwnersCssBelowADanglingBegin(): void
+    {
+        $owner = ".owner-a{}\n" . CustomCss::BEGIN . "\n.old{}\n.owner-b{color:red}";
+        $GLOBALS['__wp_custom_css'] = $owner;
+        $r    = $this->tool->run( [ 'css' => '.new{}' ] );
+        $this->assertStringContainsString( '.owner-b{color:red}', wp_get_custom_css() );
+        $undo = $this->undo()->undo( $r['batch']['id'] );
+        $this->assertTrue( $undo['fully_undone'] );
+        $this->assertSame( $owner, rtrim( wp_get_custom_css() ), 'every owner byte is back' );
+    }
+
     public function testItIsRegisteredAndNeedsEditCss(): void
     {
         $this->assertContains( 'set_custom_css', array_map( static fn ( $t ) => $t->name(), Tools::all() ) );

@@ -44,24 +44,45 @@ final class CustomCss
         return null;
     }
 
+    /**
+     * Where the complete managed block sits: the first END that has a BEGIN before it, paired with the LAST BEGIN
+     * before that END. A dangling BEGIN (its END was deleted by the owner) or an orphan END is owner text and is
+     * never part of the block, so CSS the owner wrote after it can never be swallowed.
+     *
+     * @return array{0:int,1:int}|null [ begin offset, end offset ]
+     */
+    private static function locate( string $all ): ?array
+    {
+        $offset = 0;
+        while ( false !== ( $e = strpos( $all, self::END, $offset ) ) ) {
+            $b = strrpos( substr( $all, 0, $e ), self::BEGIN );
+            if ( false !== $b ) {
+                return [ $b, $e ];
+            }
+            $offset = $e + strlen( self::END );
+        }
+
+        return null;
+    }
+
     /** The CSS inside the managed block, or null when there is no complete block. */
     public static function extract( string $all ): ?string
     {
-        $b = strpos( $all, self::BEGIN );
-        if ( false === $b ) {
+        $at = self::locate( $all );
+        if ( null === $at ) {
             return null;
         }
-        $start = $b + strlen( self::BEGIN );
-        $e     = strpos( $all, self::END, $start );
+        $start = $at[0] + strlen( self::BEGIN );
 
-        return false === $e ? null : trim( substr( $all, $start, $e - $start ) );
+        return trim( substr( $all, $start, $at[1] - $start ) );
     }
 
     /** Put $css in the managed block (created or replaced in place); null removes the block. Everything else is kept as it was. */
     public static function apply( string $all, ?string $css ): string
     {
-        $b = strpos( $all, self::BEGIN );
-        $e = false === $b ? false : strpos( $all, self::END, $b + strlen( self::BEGIN ) );
+        $at = self::locate( $all );
+        $b  = $at[0] ?? false;
+        $e  = $at[1] ?? false;
 
         if ( null === $css ) {
             if ( false === $e ) {

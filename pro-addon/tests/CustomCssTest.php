@@ -64,6 +64,58 @@ class CustomCssTest extends TestCase
         $this->assertSame( '', CustomCss::extract( CustomCss::BEGIN . "\n" . CustomCss::END ) );
     }
 
+    public function testADanglingBeginIsIgnoredAndAnOwnerRuleBelowItIsNeverSwallowed(): void
+    {
+        $all = ".owner-a{}\n" . CustomCss::BEGIN . "\n.old{}\n.owner-b{color:red}";
+        $this->assertNull( CustomCss::extract( $all ), 'no END anywhere: there is no complete block' );
+
+        $out = CustomCss::apply( $all, '.new{}' );
+        $this->assertStringStartsWith( $all, $out, 'every owner byte stays; the orphan BEGIN is just owner text' );
+        $this->assertSame( '.new{}', CustomCss::extract( $out ) );
+        $this->assertStringContainsString( '.owner-b{color:red}', $out );
+
+        // removing the new block puts back exactly the owner text
+        $this->assertSame( $all, CustomCss::apply( $out, null ) );
+    }
+
+    public function testADanglingBeginBeforeAProperBlockOnlyTheProperBlockIsTouched(): void
+    {
+        $all = ".a{}\n" . CustomCss::BEGIN . "\n.orphan{}\n.b{}\n\n" . CustomCss::BEGIN . "\n.managed{}\n" . CustomCss::END . "\n.c{}";
+        $this->assertSame( '.managed{}', CustomCss::extract( $all ) );
+
+        $out = CustomCss::apply( $all, '.next{}' );
+        $this->assertStringContainsString( ".orphan{}\n.b{}", $out );
+        $this->assertStringNotContainsString( '.managed{}', $out );
+        $this->assertSame( '.next{}', CustomCss::extract( $out ) );
+        $this->assertSame( 2, substr_count( $out, CustomCss::BEGIN ) );
+
+        $removed = CustomCss::apply( $all, null );
+        $this->assertStringContainsString( ".orphan{}\n.b{}", $removed );
+        $this->assertStringContainsString( '.c{}', $removed );
+        $this->assertStringNotContainsString( '.managed{}', $removed );
+    }
+
+    public function testAnOrphanEndBeforeAProperBlockIsLeftAloneAndTheProperBlockIsStillFound(): void
+    {
+        $all = ".a{}\n" . CustomCss::END . "\n.b{}\n" . CustomCss::BEGIN . "\n.managed{}\n" . CustomCss::END . "\n.c{}";
+        $this->assertSame( '.managed{}', CustomCss::extract( $all ) );
+
+        $out = CustomCss::apply( $all, '.x{}' );
+        $this->assertSame( '.x{}', CustomCss::extract( $out ) );
+        $this->assertStringStartsWith( ".a{}\n" . CustomCss::END . "\n.b{}\n" . CustomCss::BEGIN . "\n.x{}\n" . CustomCss::END, $out );
+        $this->assertStringEndsWith( "\n.c{}", $out );
+
+        $removed = CustomCss::apply( $all, null );
+        $this->assertSame( ".a{}\n" . CustomCss::END . "\n.b{}\n\n.c{}", $removed );
+    }
+
+    public function testAnEndWithoutAnyBeginMeansNoBlock(): void
+    {
+        $all = '.a{}' . CustomCss::END . '.b{}';
+        $this->assertNull( CustomCss::extract( $all ) );
+        $this->assertSame( $all, CustomCss::apply( $all, null ) );
+    }
+
     /** @return array<string,array{string}> */
     public static function badCss(): array
     {

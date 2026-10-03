@@ -88,17 +88,41 @@ class PublishPageTest extends TestCase
         $this->assertSame( 'future', $r2['page']['status'] );
     }
 
+    public function testTheEdgesOfTheValidOffsetRangeAreAccepted(): void
+    {
+        $r = $this->tool->run( [ 'page_id' => 5, 'publish_at' => '2099-01-01T12:00:00+14:00' ] );
+        $this->assertSame( '2098-12-31 22:00:00', $GLOBALS['__wp_posts'][5]->post_date_gmt );
+        $this->assertSame( 'future', $r['page']['status'] );
+        $r2 = $this->tool->run( [ 'page_id' => 6, 'publish_at' => '2099-01-01T12:00:00-12:00' ] );
+        $this->assertSame( '2099-01-02 00:00:00', $GLOBALS['__wp_posts'][6]->post_date_gmt );
+        $this->assertSame( 'future', $r2['page']['status'] );
+    }
+
     public function testBadArgumentsAreRejectedBeforeAnythingIsSaved(): void
     {
         $this->fails( [], '"page_id" is required.' );
         $this->fails( [ 'page_id' => '5' ], '"page_id" must be an integer.' );
         $this->fails( [ 'page_id' => 5, 'dry_run' => 'no' ], '"dry_run" must be true or false.' );
         $this->fails( [ 'page_id' => 5, 'publish_at' => 20990101 ], '"publish_at" must be a string.' );
-        foreach ( [ '', 'tomorrow', '2099-01-01', '2099-01-01 12:00:00', '2099-01-01T12:00:00', '2099-02-31T10:00:00Z', '2099-13-01T10:00:00Z' ] as $bad ) {
+        foreach ( [ '', 'tomorrow', '2099-01-01', '2099-01-01 12:00:00', '2099-01-01T12:00:00', '2099-02-31T10:00:00Z', '2099-13-01T10:00:00Z', '2099-01-01T12:00:00+15:00', '2099-01-01T12:00:00+99:99', '2099-01-01T12:00:00+14:75', '2099-01-01T12:00:00-15:00' ] as $bad ) {
             $this->fails( [ 'page_id' => 5, 'publish_at' => $bad ], 'publish_at' );
         }
         $this->fails( [ 'page_id' => 5, 'publish_at' => '2020-01-01T00:00:00Z' ], 'in the future' );
         $this->fails( [ 'page_id' => 5, 'publish_at' => gmdate( 'Y-m-d\TH:i:s\Z', time() + 10 ) ], 'in the future' );
+    }
+
+    public function testThePostStatusKindWritesOnlyARealPublishingStatus(): void
+    {
+        $kind = new PostStatusKind();
+        foreach ( [ 'trash', '', 'private', 'auto-draft', 'inherit', 'nonsense' ] as $bad ) {
+            $r = $kind->restore( [ 'ref' => '5', 'label' => 'x', 'before' => $bad ] );
+            $this->assertFalse( $r['ok'], "'{$bad}' is refused" );
+        }
+        $this->assertSame( 0, $GLOBALS['__wp_update_calls'], 'wp_update_post was never called' );
+        $this->assertSame( 'draft', $GLOBALS['__wp_posts'][5]->post_status );
+        foreach ( [ 'draft', 'pending', 'future', 'publish' ] as $good ) {
+            $this->assertTrue( $kind->restore( [ 'ref' => '5', 'label' => 'x', 'before' => $good ] )['ok'] );
+        }
     }
 
     public function testOnlyAnEditableDraftOrPendingPageIsAccepted(): void
