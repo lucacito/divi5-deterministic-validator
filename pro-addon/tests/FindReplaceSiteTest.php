@@ -239,6 +239,20 @@ class FindReplaceSiteTest extends TestCase
         $this->assertSame( [], $this->repo->rows );
     }
 
+    public function testLayoutsAreRefusedWithoutDivisThemeBuilderPermission(): void
+    {
+        $GLOBALS['__divi_role_allowed'] = false;
+        try {
+            $this->refused( $this->args( [ 'scope' => 'layouts' ] ), 'permission' );
+            $this->refused( $this->args( [ 'scope' => 'layouts', 'dry_run' => true ] ), 'permission' );
+            $r = $this->tool->run( $this->args( [ 'scope' => 'all', 'dry_run' => true ] ) );
+            $this->assertSame( [ 11, 12, 13, 14 ], array_column( $r['items'], 'id' ) );
+            $this->assertStringContainsString( 'skipped', $r['layouts_note'] );
+        } finally {
+            unset( $GLOBALS['__divi_role_allowed'] );
+        }
+    }
+
     public function testMoreThanFiftyItemsAreRefusedWithTheCountNotTruncated(): void
     {
         for ( $i = 100; $i < 151; $i++ ) {

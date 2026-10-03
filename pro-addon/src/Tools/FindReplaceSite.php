@@ -13,6 +13,7 @@ use AiEditorDivi5\Pro\ProTool;
 use AiEditorDivi5\Pro\Site\PreviewToken;
 use AiEditorDivi5\Pro\Site\SiteItems;
 use AiEditorDivi5\Pro\ThemeBuilder\LayoutCaches;
+use AiEditorDivi5\Pro\ThemeBuilder\ThemeLayouts;
 use AiEditorDivi5\WP\HistoryService;
 use AiEditorDivi5\WP\LayoutDiff;
 use AiEditorDivi5\WP\LayoutGate;
@@ -104,7 +105,7 @@ final class FindReplaceSite implements ProTool
         }
         $dry   = Args::bool( $arguments, 'dry_run' );
         $token = Args::string( $arguments, 'token', false, 8000 );
-        if ( 'layouts' === $scope && ! current_user_can( 'edit_theme_options' ) ) {
+        if ( 'layouts' === $scope && ! ( current_user_can( 'edit_theme_options' ) && ThemeLayouts::userMay() ) ) {
             throw new \InvalidArgumentException( 'You do not have permission to change header and footer layouts (edit_theme_options and Divi\'s Theme Builder permission).' );
         }
 

@@ -213,6 +213,25 @@ class AuditSiteTest extends TestCase
         $this->tool->run( [ 'scope' => 'layouts' ] );
     }
 
+    public function testLayoutsAreRefusedWithoutDivisThemeBuilderPermission(): void
+    {
+        $GLOBALS['__divi_role_allowed'] = false;
+        try {
+            try {
+                $this->tool->run( [ 'scope' => 'layouts' ] );
+                $this->fail( 'scope layouts must be refused' );
+            } catch ( \InvalidArgumentException $e ) {
+                $this->assertStringContainsString( 'permission', $e->getMessage() );
+            }
+            $this->divi( 11, self::page() );
+            $r = $this->tool->run( [ 'scope' => 'all' ] );
+            $this->assertSame( 1, $r['total_items'] );
+            $this->assertStringContainsString( 'skipped', $r['layouts_note'] );
+        } finally {
+            unset( $GLOBALS['__divi_role_allowed'] );
+        }
+    }
+
     public function testBadArgumentsAreRejectedNotCast(): void
     {
         foreach ( [

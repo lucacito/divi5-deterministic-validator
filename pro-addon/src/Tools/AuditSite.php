@@ -8,6 +8,7 @@ use AiEditorDivi5\Pro\Args;
 use AiEditorDivi5\Pro\ProTool;
 use AiEditorDivi5\Pro\Site\LinkScanner;
 use AiEditorDivi5\Pro\Site\SiteItems;
+use AiEditorDivi5\Pro\ThemeBuilder\ThemeLayouts;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\StyleReferences;
 
@@ -75,7 +76,7 @@ final class AuditSite implements ProTool
             throw new \InvalidArgumentException( '"scope" must be one of: ' . implode( ', ', SiteItems::SCOPES ) . '.' );
         }
         $cursor = (int) Args::int( $arguments, 'cursor', false, 0 );
-        if ( 'layouts' === $scope && ! current_user_can( 'edit_theme_options' ) ) {
+        if ( 'layouts' === $scope && ! ( current_user_can( 'edit_theme_options' ) && ThemeLayouts::userMay() ) ) {
             throw new \InvalidArgumentException( 'You do not have permission to read header and footer layouts (edit_theme_options and Divi\'s Theme Builder permission).' );
         }
 
