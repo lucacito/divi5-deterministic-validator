@@ -56,7 +56,7 @@ Deleting the plugin removes its own data (licence state, batch history, saved co
 * `audit_site` continues by page id, so pages added or deleted between two calls can no longer make it skip or repeat a page; it looks up each distinct link once per call, and it no longer says whether a draft or private post you cannot read is a draft or private.
 * REST: a request body that was not sent as JSON is refused with 400 instead of running the tool with its defaults.
 * ChatGPT spec: operation summaries are cut at a word and never inside brackets, and the 401 and 500 answers are documented.
-* A preview that changes nothing now also reports whether the stored layout passes the checks, and a Theme Builder template write that Divi accepts without changing anything is reported as no change.
+* A header or footer preview that changes nothing now also reports whether the stored layout passes the checks, and a Theme Builder template write that Divi accepts without changing anything is reported as no change.
 
 = 0.4.0 =
 * New: `find_replace_site` (literal find and replace across your Divi 5 pages as one previewed, undoable batch) and `audit_site` (a read-only check for layout problems, unknown preset or color ids and links to missing or unpublished pages).

@@ -231,7 +231,7 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   refuses a body WordPress did not parse as JSON (400); OpenAPI summaries are cut at a word, never inside brackets, and 401/500
   are documented; no-change layout dry runs carry `valid`/`violations`; a template write that changes nothing reports
   `changed:false`; the `verify-pro-*` scripts refuse non-local sites (`scripts/dev-guard.php`). Plan:
-  `docs/superpowers/plans/2026-10-03-pro-0-4-1-hardening.md`. `make test-pro` 756 tests, `make test` 726; live gates
+  `docs/superpowers/plans/2026-10-03-pro-0-4-1-hardening.md`. `make test-pro` 766 tests, `make test` 726; live gates
   `make verify-pro-site-tools`, `make verify-pro-rest`, `make verify-pro-theme-templates` before merge.
 - **Pro add-on 0.4.0** (merged to LOCAL main 6ce824d; NOT released, NOT pushed): `find_replace_site` (literal;
   Divi 5 pages, the live header/footer only with scope and the Theme Builder permission; ONE batch of at most 50 items; a signed

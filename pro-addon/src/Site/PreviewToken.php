@@ -14,8 +14,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * it and a one-time nonce. A real run must present it: it only opens for that user, for those arguments, within
  * `TTL` seconds and before it was spent, and items whose content changed since the preview are skipped, never
  * overwritten. `spend()` records the nonce in a transient, so a token cannot be replayed (for example after an
- * `undo_batch` put the previewed content back). The record is best effort: an object cache that evicts it can only
- * forget a spent token inside its 30 minutes, where the changed-since check still applies.
+ * `undo_batch` put the previewed content back). The record is best effort: an object cache that evicts it can make
+ * a spent token usable again inside its 30 minutes (same user, same arguments); the changed-since check still catches
+ * a content change since the preview, but not a replay after an undo that restored the previewed content.
  */
 final class PreviewToken
 {

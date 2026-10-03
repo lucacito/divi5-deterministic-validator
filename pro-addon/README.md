@@ -31,14 +31,14 @@ Spec: `docs/superpowers/specs/2026-10-02-pro-addon-design.md`. Plans: `docs/supe
 
 ## Preview tokens
 
-`find_replace_site` and `manage_theme_template` need the token of a dry run of the same arguments (`src/Site/PreviewToken.php`): signed, bound to the arguments, the items' content hashes (or the template's state) and the user who previewed, valid 30 minutes, and spent by the first real run, so an `undo_batch` that puts the previewed content back cannot be followed by a replay. The spent mark is a transient: an object cache that evicts it can only make a spent token usable again inside its 30 minutes, where the changed-since check still protects every item.
+`find_replace_site` and `manage_theme_template` need the token of a dry run of the same arguments (`src/Site/PreviewToken.php`): signed, bound to the arguments, the items' content hashes (or the template's state) and the user who previewed, valid 30 minutes, and spent by the first real run, so an `undo_batch` that puts the previewed content back cannot be followed by a replay. The spent mark is a transient: an object cache that evicts it can make a spent token usable again inside its 30 minutes, for the same user and the same arguments only. A content change since the preview is still caught (the changed-since check), but a replay after an `undo_batch` that restored the previewed content is not; every capability check and `LayoutGate` still run on a replay.
 
 ## Known limits
 
 - The audit's link check cannot tell a missing page from an archive or custom route (the finding says so), and reads at most 200 links per item (`LINKS_NOT_ALL_CHECKED`).
 - On a site with more than 1000 Divi 5 pages `audit_site` audits the first 1000 (by id) and says so, and `find_replace_site` refuses and asks for `page_ids`.
 - The ChatGPT importer allows 30 operations in total: 16 free + 13 Pro = 29, so a 14th Pro operation needs an explicit decision.
-- The `verify-pro-*` scripts create and delete content: they refuse to run unless the site host is localhost, 127.0.0.1, `*.local`, `*.test` or `*.localhost` (`scripts/dev-guard.php`).
+- The `verify-pro-*` scripts create and delete throwaway content (`verify-pro-rest` is read-only): all six refuse to run unless the site host is localhost, 127.0.0.1, ::1, `*.local`, `*.test` or `*.localhost` (`scripts/dev-guard.php`).
 
 ## Dev override of the licence server
 
