@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       JHMG AI Editor for Divi 5 Pro
- * Description:       Pro add-on for JHMG AI Editor for Divi 5: site-level control, Theme Builder templates and site-wide changes with one-step undo. Requires the free plugin.
- * Version:           0.1.0
+ * Description:       Pro add-on for JHMG AI Editor for Divi 5: set the front page and menu, publish or schedule pages, add managed custom CSS, file PHP snippets for human review, and undo each Pro change in one step. Requires the free plugin.
+ * Version:           0.2.0
  * Requires at least: 6.0
  * Requires PHP:      8.1
  * Author:            JHMG
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'AIED_PRO_VERSION', '0.1.0' );
+define( 'AIED_PRO_VERSION', '0.2.0' );
 define( 'AIED_PRO_FILE', __FILE__ );
 define( 'AIED_PRO_PRODUCT', 'ai-editor-divi5-pro' );
 define( 'AIED_PRO_MIN_PHP', '8.1' );
@@ -37,5 +37,9 @@ if ( version_compare( PHP_VERSION, AIED_PRO_MIN_PHP, '<' ) ) {
 }
 
 require_once __DIR__ . '/src/autoload.php';
+
+register_activation_hook( __FILE__, static function (): void {
+    AiEditorDivi5\Pro\Batch\BatchTable::ensureReady( true );
+} );
 
 add_action( 'plugins_loaded', [ AiEditorDivi5\Pro\Plugin::class, 'boot' ], 20 );
