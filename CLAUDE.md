@@ -229,9 +229,8 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   Role Editor `theme_builder`) plus `edit_post` on the target, re-checked by the item kinds at undo. Layout writes go through
   `LayoutGate::check($new, $stored)`, the free `HistoryService`, and a Divi cache clear; templates only through
   `et_theme_builder_store_template()` with the template's complete state; every template run needs a preview token. Plan:
-  `docs/superpowers/plans/2026-10-03-pro-theme-builder-tools.md`. Verified: `make test-pro` (561), `make test` (726),
-  `make verify-pro-theme-layouts`, `make verify-pro-theme-templates` (real Divi 5.14; Task 5's and Task 7's live scripts each
-  hardened after review). Next: Plan 5 (`find_replace_site`,
+  `docs/superpowers/plans/2026-10-03-pro-theme-builder-tools.md`. Verified: `make test-pro` (571), `make test` (726),
+  `make verify-pro-theme-layouts`, `make verify-pro-theme-templates` (real Divi 5.14). Next: Plan 5 (`find_replace_site`,
   `audit_site`, REST/OpenAPI parity: Pro = 13 tools, 29 of 30 ChatGPT operations).
 - **Pro add-on 0.2.0** (branch `feat/pro-settings-batches`; NOT merged, NOT released, NOT pushed): licence hardening
   (only an explicit server verdict can lock; refresh skips ajax/cron and backs off 15 minutes after a fault; the API-base
