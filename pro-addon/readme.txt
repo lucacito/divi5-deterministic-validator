@@ -2,11 +2,11 @@
 Contributors:      lucaslopvet
 Requires at least: 6.0
 Requires PHP:      8.1
-Stable tag:        0.2.0
+Stable tag:        0.3.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Pro add-on for JHMG AI Editor for Divi 5. Lets your AI assistant set the front page and menu, publish pages and add CSS, and lets you undo each change in one step.
+Pro add-on for JHMG AI Editor for Divi 5. Lets your AI assistant set the front page and menu, publish pages, add CSS and edit the live Divi header and footer, and lets you undo each change in one step.
 
 == Description ==
 
@@ -21,6 +21,10 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `publish_page` - publish or schedule a draft; preview first with `dry_run`.
 * `set_custom_css` - add CSS inside one clearly marked block of WordPress Additional CSS. Your own CSS is never touched.
 * `propose_php_snippet` - store PHP for you to review. Nothing is ever run, saved as a file or loaded by the plugin.
+* `list_theme_layouts` - list the live Divi Theme Builder templates and their header, footer and body layouts (read-only); with a header or footer id it also returns that layout's content.
+* `update_theme_layout` - replace the content of a live Divi header or footer with a new, checked Divi 5 layout. It shows on every page, so preview with `dry_run` first; undo restores the previous content.
+* `edit_theme_layout` - find and replace literal text inside a live Divi header or footer, with the same checks, `dry_run` preview and undo as `update_theme_layout`.
+* `manage_theme_template` - enable or disable one live Divi Theme Builder template, or change where it applies. It affects the whole site, so every real run needs the token from a preview (`dry_run`). It cannot create or delete templates.
 * `list_batches` - list recent Pro changes.
 * `undo_batch` - undo one batch.
 
@@ -39,9 +43,13 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 
 == Uninstall ==
 
-Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS or page statuses: undo those first if you want them back.
+Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
+
+= 0.3.0 =
+* New: edit the live Divi header and footer (`list_theme_layouts`, `update_theme_layout`, `edit_theme_layout`): checked like every page write, previewed with `dry_run`, undoable.
+* New: `manage_theme_template` enables, disables or re-targets one existing Theme Builder template (preview token required, undoable). It cannot create or delete templates.
 
 = 0.2.0 =
 * Licence checks: a server error page can no longer lock your Pro tools; refreshes back off during an outage.

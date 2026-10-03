@@ -4403,3 +4403,16 @@ Expected: the last command prints the subject and the `Co-Authored-By: Claude So
 - [ ] **Step 7: Final whole-branch review on the most capable model (opus)**
 
 Dispatch one reviewer over `git diff main...feat/pro-theme-layouts` with the Review Focus list above and the "What the research settled" section as the brief. Verify its claims with grep before acting. Fix real findings in small commits; then hand the branch to the owner. Do not merge, push or release.
+
+---
+
+## As built (deviations from the text above)
+
+Recorded during execution on 2026-10-03; the code in the repo is authoritative where it differs from the plan text.
+
+- **Task 6:** `ManageThemeTemplate::CONDITION` is `'/^[A-Za-z0-9_:\-]{1,200}$/D'` (the `D` modifier was added in a fix round: without it `$` matches before a trailing newline, so an id like "singular:all\n" passed validation, Divi stripped the newline, the read-back differed, and the tool threw "nothing is recorded" after a site-wide write). `ManageThemeTemplateTest` has two extra newline cases.
+- **Task 7:** `scripts/verify-pro-theme-templates.php` was hardened after review: the backup-option check compares against the value captured after the fixtures were built (`$liveBackupAfterFix`), a stale-token live check was added (token taken, template changed behind the tool's back, real call refused, template restored and asserted), and the final block asserts the live (and, when pre-existing, draft) Theme Builder's `_et_template` list and backup option equal their baselines.
+- **Gate result:** `make verify-pro-theme-layouts` and `make verify-pro-theme-templates` passed on the Docker dev site (Divi 5.14, Pro add-on activated only for the runs and deactivated afterwards).
+- **Final-review fix wave (opus review of the whole branch, 2026-10-03):** `ThemeTemplateKind` records which fields a batch changed (`_fields` in the item's `before`) and a forced `undo_batch` restores only those fields onto the CURRENT template state (previously it wrote the whole stale snapshot back, which would also revert a header or title changed in Divi since); `ManageThemeTemplate` now always records a batch for a template write Divi accepted, and returns `differs_from_request` plus a note when Divi saved it differently than requested (previously it threw after the site-wide write with no undo record); the Divi store shim gained a `__divi_store_mutate` hook; `FreeApiCompatTest` pins the validator result types; `ThemeBuilderGuardTest` enforces "no raw post meta writes in the Theme Builder code" and "every free-plugin class the add-on references is in Compat::REQUIRED_CLASSES". End state: `make test-pro` 571 tests, `make test` 726.
+- **Known limitation (free plugin, not fixed here):** the free dashboard's "recent versions" list (`HistoryService::recent()`, unfiltered) also shows header/footer edits made by these tools, and its Restore button only works for pages (`EditTarget` is page-only); undo those with `undo_batch`. Follow-up for the next free release: filter that list to ids `EditTarget` can resolve, or label the rows.
+- **Deferred on purpose:** the template preview token has no time limit (after an undo restores the state, an old token validates again); dev scripts have no environment guard; `LayoutWriter` no-change dry runs lack `valid`/`violations`.

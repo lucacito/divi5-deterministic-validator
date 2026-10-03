@@ -89,7 +89,7 @@ final class PostContentKind implements ItemKind
      * @param array<string,mixed> $snapshot
      * @return array{available:bool, reason:?string, version_id:?int}
      */
-    private static function undoPoint( array $snapshot ): array
+    public static function undoPoint( array $snapshot ): array
     {
         return [
             'available'  => (bool) ( $snapshot['stored'] ?? false ),

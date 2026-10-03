@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace AiEditorDivi5\Pro;
 
 use AiEditorDivi5\Pro\Batch\Batches;
+use AiEditorDivi5\Pro\Tools\EditThemeLayout;
 use AiEditorDivi5\Pro\Tools\ListBatches;
+use AiEditorDivi5\Pro\Tools\ListThemeLayouts;
+use AiEditorDivi5\Pro\Tools\ManageThemeTemplate;
 use AiEditorDivi5\Pro\Tools\ProposePhpSnippet;
 use AiEditorDivi5\Pro\Tools\PublishPage;
 use AiEditorDivi5\Pro\Tools\SetCustomCss;
 use AiEditorDivi5\Pro\Tools\SetFrontPage;
 use AiEditorDivi5\Pro\Tools\SetPrimaryMenu;
 use AiEditorDivi5\Pro\Tools\UndoBatch;
+use AiEditorDivi5\Pro\Tools\UpdateThemeLayout;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -33,6 +37,10 @@ final class Tools
             new ProposePhpSnippet(),
             new ListBatches( $log ),
             new UndoBatch( $log, Batches::undo() ),
+            new ListThemeLayouts(),
+            new UpdateThemeLayout( $log ),
+            new EditThemeLayout( $log ),
+            new ManageThemeTemplate( $log ),
         ];
     }
 }

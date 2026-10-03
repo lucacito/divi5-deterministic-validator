@@ -54,10 +54,10 @@ The ChatGPT OpenAPI importer caps a spec at 30 operations. The free plugin has 1
 | 3 | `publish_page` | Publish or schedule a draft; `dry_run` | `publish_pages` + `edit_post` |
 | 4 | `set_custom_css` | Managed Additional CSS block; never touches the person's own CSS (staged `CustomCss`) | `edit_css` |
 | 5 | `propose_php_snippet` | Store PHP for human review; never executed (staged `PhpProposals`) | `edit_pages` |
-| 6 | `list_theme_layouts` | Moved from free. With `layout_id`, also returns that layout's content | Theme Builder permission |
-| 7 | `update_theme_layout` | Replace a header/footer; validated, snapshotted; `dry_run` | Theme Builder + `edit_post` |
-| 8 | `edit_theme_layout` | Find/replace inside a header/footer; `dry_run` | same |
-| 9 | `manage_theme_template` | `create`, `assign`, `duplicate`, `enable`/`disable` a Theme Builder template; `dry_run` | same |
+| 6 | `list_theme_layouts` | Moved from free. With `layout_id`, also returns that layout's content | `edit_theme_options` + Divi's Theme Builder bar + `edit_post` |
+| 7 | `update_theme_layout` | Replace a header/footer; validated, snapshotted; `dry_run` | `edit_theme_options` + Divi's Theme Builder bar + `edit_post` |
+| 8 | `edit_theme_layout` | Find/replace inside a header/footer; `dry_run` | `edit_theme_options` + Divi's Theme Builder bar + `edit_post` |
+| 9 | `manage_theme_template` | `assign` (where it applies), `enable`, `disable` an EXISTING live Theme Builder template; every real run needs a preview token (`create`/`duplicate` cut: Divi maps templates onto the Theme Builder post only inside its own save request, so they would need a raw meta write) | `edit_theme_options` + Divi's Theme Builder bar + `edit_post` |
 | 10 | `find_replace_site` | Find/replace across pages and layouts; preview token required | `edit_pages` + `edit_post` per item |
 | 11 | `audit_site` | Read-only deterministic scan | `edit_pages` |
 | 12 | `list_batches` | Recent Pro changes | `edit_pages` |
@@ -72,7 +72,7 @@ The ChatGPT OpenAPI importer caps a spec at 30 operations. The free plugin has 1
 - **Changed-since rule.** An item is restored only if its current content/value still matches the hash the batch wrote. A page edited afterwards is skipped and reported, never overwritten. A strict boolean `force` overrides this per call.
 - **Undo is itself a batch.** The free `restore` snapshots the current content first, so an undo can be undone.
 - **Settings tools** (1-4) store the previous value; undo restores it under the same changed-since rule. `publish_page` undo returns the page to its previous status.
-- **Template tools:** `assign` and `enable`/`disable` record the previous assignment and undo restores it; `create`/`duplicate` undo removes only what that batch created. Everything is written through Divi's own Theme Builder functions, never raw meta. Hard delete is not offered in v1.
+- **Template tools:** `assign`, `enable` and `disable` record the template's previous full state and undo restores it under the changed-since rule. Written only through Divi's own `et_theme_builder_store_template()` with the template's complete current state (that function resets every field it is not given). Hard delete, create and duplicate are not offered in v1.
 
 ## `find_replace_site`
 
@@ -119,7 +119,7 @@ Header/footer editing leaves `wp-plugin/`. 4.3.0 was never uploaded, so this rem
 Live, on the Docker dev site, as self-cleaning scripts in the style of the free plugin's `verify-*` (real handlers, Divi's own functions, remove exactly what they created):
 
 - Settings tools: front page, menu, CSS, publish; each restored afterwards (menu creation is unproven today).
-- Templates: create, assign, duplicate, enable/disable on throwaway templates (the 4.3.0 spike proved layouts, not template creation/assignment as a whole).
+- Templates: assign, enable, disable and undo on a throwaway template, with Divi's own resolver proving the effect (`make verify-pro-theme-templates`, run 2026-10-03: passed).
 - Batches: find/replace across throwaway pages and a layout, then undo, including a changed-since case.
 - Audit over the real dev pages and the fixtures.
 
@@ -127,7 +127,7 @@ Unit tests for the pure logic (batch store, token binding, replace planner, audi
 
 ## Risks
 
-1. Menu creation and template create/assign are unproven on a real site; a failed live check cuts that tool from v1 rather than shipping a guess.
+1. Menu creation is unproven on a real site; a failed live check cuts that tool from v1 rather than shipping a guess. (Template create/duplicate were cut on source evidence; assign/enable/disable were proven live.)
 2. The add-on depends on the free plugin's internal classes; the minimum-version check and compatibility test are the mitigation, not a guarantee.
 3. 29 of 30 OpenAPI operations leaves one spare.
 4. Free history keeps 10 snapshots per page, so a very old batch may be only partly undoable; the product says so.

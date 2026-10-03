@@ -28,8 +28,8 @@ Three parts, one repo:
   `wp-plugin/validator/` and wraps it in the MCP server, REST API, AI-facing guides,
   the built-in image pack and the admin UI. No licensing, no remote calls.
 - **The Pro add-on** (`pro-addon/`) — a separate plugin ("JHMG AI Editor for Divi 5 Pro", sold at divi5lab.com,
-  never in the WordPress.org zip). 0.2.0: compat guard, licensing with the updater, a licence-gated tool
-  registry with 7 tools, batches and one-step undo, the Pro admin tab, its own suite (`make test-pro`) and zip (`make build-pro`). Not tested
+  never in the WordPress.org zip). 0.3.0: compat guard, licensing with the updater, a licence-gated tool
+  registry with 11 tools (settings, batches and undo, Theme Builder header/footer and template tools), the Pro admin tab, its own suite (`make test-pro`) and zip (`make build-pro`). Not tested
   by `make test` (see `pro-addon/README.md`).
 
 ## Hard constraints — do not violate
@@ -181,6 +181,8 @@ Docker env + validator workflows go through `make`:
 | `make build-pro` | Build `dist/jhmg-ai-editor-for-divi-5-pro.zip` (sold from divi5lab.com; `dist/` is git-ignored) |
 | `make verify-pro-skeleton` | Real-site check of the Pro add-on skeleton (Docker site; the free and Pro plugins must be active) |
 | `make verify-pro-settings` | Real-site check of the Pro settings tools and batch undo on the Docker site; restores every setting and deletes everything it created (the free and Pro plugins must be active) |
+| `make verify-pro-theme-layouts` | Real-site check of the Pro header/footer tools through the real registry (self-cleaning; free + Pro plugins active; dev site only) |
+| `make verify-pro-theme-templates` | Real-site evidence gate for manage_theme_template (self-cleaning; dev site only) |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
 Tests run via PHPUnit (`phpunit.xml`) and cover both the validator
@@ -220,6 +222,16 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
+- **Pro add-on 0.3.0** (branch `feat/pro-theme-layouts`; NOT merged, NOT released, NOT pushed): four Theme Builder tools
+  (`list_theme_layouts`, `update_theme_layout`, `edit_theme_layout`, `manage_theme_template` = assign/enable/disable of an
+  EXISTING live template; create/duplicate were cut because Divi maps templates onto the Theme Builder post only inside its own
+  AJAX save, so they would need a raw meta write). Registry capability `edit_theme_options` plus Divi's bar (`edit_others_posts` +
+  Role Editor `theme_builder`) plus `edit_post` on the target, re-checked by the item kinds at undo. Layout writes go through
+  `LayoutGate::check($new, $stored)`, the free `HistoryService`, and a Divi cache clear; templates only through
+  `et_theme_builder_store_template()` with the template's complete state; every template run needs a preview token. Plan:
+  `docs/superpowers/plans/2026-10-03-pro-theme-builder-tools.md`. Verified: `make test-pro` (571), `make test` (726),
+  `make verify-pro-theme-layouts`, `make verify-pro-theme-templates` (real Divi 5.14). Next: Plan 5 (`find_replace_site`,
+  `audit_site`, REST/OpenAPI parity: Pro = 13 tools, 29 of 30 ChatGPT operations).
 - **Pro add-on 0.2.0** (branch `feat/pro-settings-batches`; NOT merged, NOT released, NOT pushed): licence hardening
   (only an explicit server verdict can lock; refresh skips ajax/cron and backs off 15 minutes after a fault; the API-base
   override only on local/dev sites; activation failures say why; `readme.txt` discloses the divi5lab.com calls), the batch
@@ -228,7 +240,7 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   `set_custom_css`, `propose_php_snippet`, `list_batches`, `undo_batch`, plus the "Recent Pro changes" and "Code proposals"
   panels on the Pro tab. MCP + admin only: REST/OpenAPI for the Pro tools is Plan 5. Plan:
   `docs/superpowers/plans/2026-10-02-pro-addon-settings-batches.md`. Verified: `make test-pro`, `make test`,
-  `make verify-pro-settings`. Next: Plan 4 (Theme Builder layout tools + templates), Plan 5 (find/replace, audit, REST/OpenAPI
+  `make verify-pro-settings`. Next: Plan 5 (find/replace, audit, REST/OpenAPI
   parity, live verification). Before the first Pro sale: an end-to-end activation and update check against the real
   divi5lab.com (product id `ai-editor-divi5-pro` and `/plugins/divi-5-ai-editor` were confirmed against the layoutlab repo on
   2026-10-02), and confirm the licence server's `validate` answers have the shapes `Licensing::isVerdict` expects.
