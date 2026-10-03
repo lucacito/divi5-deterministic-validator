@@ -28,6 +28,9 @@ final class Licensing
 
     public const UPGRADE_URL = 'https://divi5lab.com/plugins/divi-5-ai-editor';
 
+    public const REFRESH_BACKOFF_TRANSIENT = 'aied_pro_refresh_backoff';
+    public const REFRESH_BACKOFF_SECONDS   = 900;
+
     private static ?LicenseClient $client = null;
 
     public static function client(): LicenseClient
@@ -87,7 +90,10 @@ final class Licensing
         if ( null === $client->get_key() ) {
             return;
         }
-        $before  = $client->get_state();
+        $before = $client->get_state();
+        if ( ! $force && ! self::refreshDue( $before ) ) {
+            return;
+        }
         $seen    = null;
         $capture = static function ( $response, $args = [], $url = '' ) use ( &$seen ) {
             if ( is_array( $response ) && is_string( $url ) && str_contains( $url, '/api/license/validate' ) ) {
@@ -113,6 +119,28 @@ final class Licensing
                 update_option( self::STATE_OPTION, $before, false );
             }
         }
+
+        // A refresh that stored nothing new (network error, 429, 5xx, or a reverted fault) must not be retried on
+        // every request while the licence server is down.
+        $now = $client->get_state();
+        if ( (int) ( $now['checked_at'] ?? 0 ) !== (int) ( $before['checked_at'] ?? 0 ) ) {
+            delete_transient( self::REFRESH_BACKOFF_TRANSIENT );
+        } else {
+            set_transient( self::REFRESH_BACKOFF_TRANSIENT, 1, self::REFRESH_BACKOFF_SECONDS );
+        }
+    }
+
+    /** Not on ajax or cron requests, not during a backoff, and only once the one-day cache window has passed. */
+    private static function refreshDue( ?array $state ): bool
+    {
+        if ( wp_doing_ajax() || wp_doing_cron() ) {
+            return false;
+        }
+        if ( false !== get_transient( self::REFRESH_BACKOFF_TRANSIENT ) ) {
+            return false;
+        }
+
+        return time() - (int) ( $state['checked_at'] ?? 0 ) >= DAY_IN_SECONDS;
     }
 
     /** @param array{code:int, body:string}|null $seen the raw validate answer */
@@ -160,5 +188,6 @@ final class Licensing
         foreach ( [ self::UNLOCKED_OPTION, 'aied_pro_license_key', 'aied_pro_license_state', 'aied_pro_update_blocked' ] as $option ) {
             delete_option( $option );
         }
+        delete_transient( self::REFRESH_BACKOFF_TRANSIENT );
     }
 }

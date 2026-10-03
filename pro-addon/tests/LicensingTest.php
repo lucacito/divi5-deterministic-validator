@@ -268,4 +268,102 @@ class LicensingTest extends TestCase
         $this->assertIsObject( $t );
         $this->assertSame( [], (array) $t->response );
     }
+
+    public function testNoKeyMeansNoRemoteCallEvenWhenForced(): void
+    {
+        Licensing::refresh( true );
+        $this->assertSame( [], $GLOBALS['__wp_http_log'] );
+    }
+
+    public function testAFreshStateIsNotRefreshedAgain(): void
+    {
+        $this->activatePremium();
+        $GLOBALS['__wp_http_log'] = [];
+        Licensing::refresh();
+        $this->assertSame( [], $GLOBALS['__wp_http_log'], 'the client cache window is one day' );
+    }
+
+    public function testAnAjaxOrCronRequestNeverRefreshes(): void
+    {
+        $this->activatePremium();
+        $this->ageState();
+        $GLOBALS['__wp_http_log'] = [];
+        $GLOBALS['__wp_doing_ajax'] = true;
+        Licensing::refresh();
+        $GLOBALS['__wp_doing_ajax'] = false;
+        $GLOBALS['__wp_doing_cron'] = true;
+        Licensing::refresh();
+        $GLOBALS['__wp_doing_cron'] = false;
+        $this->assertSame( [], $GLOBALS['__wp_http_log'] );
+    }
+
+    public function testAFaultStartsABackoffSoTheNextLoadsDoNotRetry(): void
+    {
+        $this->activatePremium();
+        $this->ageState();
+        $GLOBALS['__wp_http_log'] = [];
+        $this->queue( 503, [] );
+        Licensing::refresh();
+        $this->assertCount( 1, $GLOBALS['__wp_http_log'] );
+        $this->assertArrayHasKey( Licensing::REFRESH_BACKOFF_TRANSIENT, $GLOBALS['__wp_transients'] );
+        Licensing::refresh();
+        Licensing::refresh();
+        $this->assertCount( 1, $GLOBALS['__wp_http_log'], 'backed off: no further request' );
+        $this->assertTrue( Licensing::isPremium() );
+    }
+
+    public function testANetworkErrorAlsoBacksOff(): void
+    {
+        $this->activatePremium();
+        $this->ageState();
+        $GLOBALS['__wp_http_log']     = [];
+        $GLOBALS['__wp_http_queue'][] = 'network_error';
+        Licensing::refresh();
+        Licensing::refresh();
+        $this->assertCount( 1, $GLOBALS['__wp_http_log'] );
+    }
+
+    public function testAnExpiredBackoffRetriesAndASuccessClearsIt(): void
+    {
+        $this->activatePremium();
+        $this->ageState();
+        $this->queue( 503, [] );
+        Licensing::refresh();
+        $GLOBALS['__wp_transients'] = [];   // the backoff has expired
+        $GLOBALS['__wp_http_log']   = [];
+        $this->queue( 200, [ 'status' => 'active', 'expires' => null ] );
+        Licensing::refresh();
+        $this->assertCount( 1, $GLOBALS['__wp_http_log'] );
+        $this->assertArrayNotHasKey( Licensing::REFRESH_BACKOFF_TRANSIENT, $GLOBALS['__wp_transients'] );
+    }
+
+    public function testForceBypassesTheBackoffAndTheAgeCheck(): void
+    {
+        $this->activatePremium();
+        $this->ageState();
+        $this->queue( 503, [] );
+        Licensing::refresh();
+        $GLOBALS['__wp_http_log'] = [];
+        $this->queue( 200, [ 'status' => 'active', 'expires' => null ] );
+        Licensing::refresh( true );
+        $this->assertCount( 1, $GLOBALS['__wp_http_log'] );
+    }
+
+    public function testAFaultThatIsRevertedAlsoBacksOff(): void
+    {
+        $this->activatePremium();
+        $this->ageState();
+        $GLOBALS['__wp_http_log'] = [];
+        $this->queue( 403, '<html>Forbidden</html>' );
+        Licensing::refresh();
+        Licensing::refresh();
+        $this->assertCount( 1, $GLOBALS['__wp_http_log'] );
+    }
+
+    public function testClearAlsoRemovesTheBackoff(): void
+    {
+        set_transient( Licensing::REFRESH_BACKOFF_TRANSIENT, 1, 900 );
+        Licensing::clear();
+        $this->assertArrayNotHasKey( Licensing::REFRESH_BACKOFF_TRANSIENT, $GLOBALS['__wp_transients'] );
+    }
 }
