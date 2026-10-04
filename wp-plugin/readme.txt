@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.5.0
+Stable tag:        4.5.1
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -32,7 +32,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * **Proven building blocks.** 17 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
 * **Sensible images.** The AI looks in your Media Library first. When nothing there fits, it uses a built-in pack of 44 original images that ships with the plugin.
 * **One-click undo.** The previous version of each page the AI changes is kept (up to the last 10). Restore it from the plugin's Dashboard with one click, or just ask your AI to undo.
-* **Works with the AI assistant you already use.** Claude, ChatGPT, Cursor, VS Code Copilot, or any assistant that supports MCP.
+* **Works with the AI assistant you already use.** Claude, ChatGPT, Gemini, Cursor, VS Code Copilot, or any assistant that supports MCP.
 * **Nothing leaves your site through the plugin.** It uses no third-party services. Your AI assistant talks directly to your own site.
 
 = Examples to try =
@@ -84,7 +84,8 @@ A separate Pro add-on is planned (details and waitlist at https://divi5lab.com/p
 
 = Compatible AI assistants =
 
-* Claude (Desktop and Claude Code), through MCP
+* Claude (Desktop and Claude Code), through MCP (Claude Desktop needs Node.js installed)
+* Gemini CLI, through MCP
 * Cursor and Windsurf, through MCP
 * VS Code with GitHub Copilot, through MCP
 * ChatGPT, through a custom GPT Action (OpenAPI)
@@ -119,6 +120,7 @@ This plugin does not connect to any external service. Your AI assistant connects
 * PHP 8.1 or later
 * The Divi 5 theme (Divi 4 and its shortcode format are not supported)
 * Pretty permalinks (Settings → Permalinks, any option except "Plain")
+* For Claude Desktop: Node.js (free, from nodejs.org)
 * For ChatGPT: your site must be reachable over public HTTPS
 
 == Frequently Asked Questions ==
@@ -147,6 +149,38 @@ The AI can make mistakes, but a broken page is never saved by an AI edit. The ch
 
 The key is a long random code stored in your WordPress database and shown only to administrators on the plugin's Settings screen. Keep it private, like a password. You can make a new one at any time with the Regenerate button, which stops the old one from working.
 
+= Is it dangerous to let AI edit my site? Is there an approval step? =
+
+Every save is checked by a fixed set of rules (no AI is involved in the check) and a broken layout is refused. You can ask your assistant for a preview first (a dry run shows what would change and saves nothing), new pages are always drafts, and every save can be undone from the Dashboard. The plugin cannot change your site settings, users or plugins, and cannot add custom code.
+
+= Why do I need this if Claude can already control a browser? =
+
+The plugin edits the Divi 5 layout data directly, so it is faster and more precise, every change is checked before it is saved, and every save can be undone. An assistant that drives a browser works from screenshots and clicks, and nothing stops it from saving a broken layout.
+
+= Does the checking use up my AI tokens? =
+
+No. The check runs in PHP on your own server. Your assistant only receives a short list of error codes when a layout is refused.
+
+= Does it work with Gemini? =
+
+Yes. It has been tested with Gemini CLI: copy the one command from the Gemini tab on the Settings screen. Any assistant that supports remote MCP servers can connect.
+
+= Can it read my ACF fields, custom post types or functions.php? =
+
+No. It reads your Divi 5 pages, your global colors, variables and presets (read-only) and your Media Library images.
+
+= Can it create global colors and presets? =
+
+No. It reads the ones you already have, reuses them, and warns when a layout uses one your site does not have. It never creates, changes or deletes them.
+
+= Does it work on a local site? =
+
+Assistants that run on your own computer (Claude Code, Claude Desktop, Cursor, VS Code, Gemini CLI) should be able to reach a local site. Use the exact http:// address your local site shows, and turn on pretty permalinks. ChatGPT and other assistants that run in the cloud cannot reach a local site; they need a public https:// address.
+
+= I get an error on my Mac when I connect Claude Desktop =
+
+Claude Desktop connects through a small helper that needs Node.js. Install the LTS version from nodejs.org, then fully quit Claude Desktop (Cmd+Q) and open it again. The Claude tab on the Settings screen has the details.
+
 = Does this work with Divi 4? =
 
 No. Divi 4 stores pages as shortcodes. This plugin is made for the Divi 5 page format.
@@ -162,10 +196,14 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 == Screenshots ==
 
 1. The Dashboard: your setup progress and your results.
-2. Settings: one API key and a copy-and-paste setup for Claude, Cursor, VS Code, ChatGPT or any MCP client.
+2. Settings: one API key and a copy-and-paste setup for Claude, Cursor, VS Code, Gemini, ChatGPT or any MCP client.
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.5.1 =
+* Improved: clearer setup on the Settings screen. Claude Desktop now gets the working setup (it connects through a small Node.js helper, so the screen says Node.js is needed and what to do if Mac or Windows reports a missing `npx`), Gemini CLI has its own tab, and there is a note on which assistants can reach a local site. The Features screen says that your global colors, variables and presets are read-only.
+* New: FAQ entries on safety, token use, Gemini, local sites and the Mac connection error.
 
 = 4.5.0 =
 * Fixed: the "Recent AI edits" list on the dashboard now shows only pages you can restore. Edits to other kinds of layouts, such as a header or footer saved by an add-on, no longer appear there with a Restore button that cannot work.
@@ -209,7 +247,7 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Surgical edits: change one piece of text without rebuilding the page (`edit_page_content`).
 
 = 3.1.0 =
-* A guided connection screen for Claude, Cursor, VS Code, ChatGPT and other MCP clients.
+* A guided connection screen for Claude, Cursor, VS Code, Gemini, ChatGPT and other MCP clients.
 
 = 2.0.0 to 3.0.0 =
 * MCP server and REST API, OpenAPI spec for ChatGPT, the deterministic Divi 5 checker, the style, site, landing and image guides, the section pattern library and the admin screens.
@@ -218,6 +256,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 4.5.1 =
+Clearer setup instructions on the Settings screen (Claude Desktop, Gemini CLI, local sites). Nothing else changes.
 
 = 4.5.0 =
 The dashboard's recent-edits list only shows pages you can restore. Nothing else changes.
