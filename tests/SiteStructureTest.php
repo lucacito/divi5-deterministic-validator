@@ -151,6 +151,65 @@ class SiteStructureTest extends TestCase
         $this->assertTrue( $d['truncated'] );
     }
 
+    public function testAThrowingAcfGroupReaderMeansAnInactiveSectionWithANoteNotAnError(): void
+    {
+        $r = $this->readers( [ 'acf_groups' => static function () { throw new \RuntimeException( 'boom' ); } ] );
+        $d = SiteStructure::catalogWith( $r, [ 'acf' ] );
+        $this->assertSame( [ 'active' => false, 'groups' => [] ], $d['acf'], 'a throwing group reader is treated like ACF being absent' );
+        $this->assertNotEmpty( $d['notes'] );
+    }
+
+    public function testAThrowingAcfFieldReaderKeepsTheGroupWithAnEmptyFieldList(): void
+    {
+        $r   = $this->readers( [
+            'acf_groups' => static fn () => [ [ 'key' => 'group_a', 'title' => 'A' ] ],
+            'acf_fields' => static function () { throw new \RuntimeException( 'boom' ); },
+        ] );
+        $acf = SiteStructure::catalogWith( $r, [ 'acf' ] )['acf'];
+        $this->assertTrue( $acf['active'], 'ACF is still active when only the field reader fails' );
+        $this->assertCount( 1, $acf['groups'] );
+        $this->assertSame( [], $acf['groups'][0]['fields'], 'the group is listed with no fields, no exception' );
+    }
+
+    public function testAcfGroupsAreCappedAtTheLimitAndOnlyAnExtraOneFlagsTruncated(): void
+    {
+        $groups = static function ( int $n ): array {
+            $g = [];
+            for ( $i = 1; $i <= $n; $i++ ) {
+                $g[] = [ 'key' => 'group_' . $i, 'title' => 'G' . $i ];
+            }
+
+            return $g;
+        };
+        $over = SiteStructure::catalogWith( $this->readers( [ 'acf_groups' => static fn () => $groups( SiteStructure::MAX_ITEMS + 1 ) ] ), [ 'acf' ] );
+        $this->assertCount( SiteStructure::MAX_ITEMS, $over['acf']['groups'] );
+        $this->assertTrue( $over['truncated'] );
+
+        $exact = SiteStructure::catalogWith( $this->readers( [ 'acf_groups' => static fn () => $groups( SiteStructure::MAX_ITEMS ) ] ), [ 'acf' ] );
+        $this->assertCount( SiteStructure::MAX_ITEMS, $exact['acf']['groups'] );
+        $this->assertFalse( $exact['truncated'], 'exactly the limit is not truncated' );
+    }
+
+    public function testAcfFieldsInOneGroupAreCappedAtTheLimitAndOnlyAnExtraOneFlagsTruncated(): void
+    {
+        $fields = static function ( int $n ): array {
+            $f = [];
+            for ( $i = 1; $i <= $n; $i++ ) {
+                $f[] = [ 'name' => 'f' . $i, 'label' => 'F' . $i, 'type' => 'text' ];
+            }
+
+            return $f;
+        };
+        $one  = static fn () => [ [ 'key' => 'group_a', 'title' => 'A' ] ];
+        $over = SiteStructure::catalogWith( $this->readers( [ 'acf_groups' => $one, 'acf_fields' => static fn () => $fields( SiteStructure::MAX_FIELDS + 1 ) ] ), [ 'acf' ] );
+        $this->assertCount( SiteStructure::MAX_FIELDS, $over['acf']['groups'][0]['fields'] );
+        $this->assertTrue( $over['truncated'] );
+
+        $exact = SiteStructure::catalogWith( $this->readers( [ 'acf_groups' => $one, 'acf_fields' => static fn () => $fields( SiteStructure::MAX_FIELDS ) ] ), [ 'acf' ] );
+        $this->assertCount( SiteStructure::MAX_FIELDS, $exact['acf']['groups'][0]['fields'] );
+        $this->assertFalse( $exact['truncated'], 'exactly the limit is not truncated' );
+    }
+
     public function testTextValuesAreCutAndNonScalarsBecomeEmpty(): void
     {
         $r = $this->readers( [ 'post_types' => static fn () => [ 'x' => [ 'label' => str_repeat( 'é', 300 ), 'supports' => [ [ 'nested' ], 'title' ] ] ] ] );

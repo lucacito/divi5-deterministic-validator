@@ -653,7 +653,7 @@ final class AdminPage
         ?>
         <div class="aied-card">
             <h3><?php esc_html_e( 'Approval mode', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
-            <p class="aied-muted"><?php esc_html_e( 'When this is on, your AI assistant must preview every edit to a page\'s content before it can save it: it asks for a preview (nothing is saved), shows you the result, and only then repeats the change to save it. New pages are always drafts and every save can still be undone. Off by default.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <p class="aied-muted"><?php esc_html_e( 'When this is on, your AI assistant must preview every edit to a page\'s content before it can save it: it asks for a preview (nothing is saved), shows you the result, and only then repeats the change to save it. New pages are always drafts, and restoring an earlier version is the undo and needs no preview. Every save can still be undone. Off by default.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <input type="hidden" name="action" value="ai_editor_divi5_toggle_approval">
                 <?php wp_nonce_field( 'ai_editor_divi5_toggle_approval' ); ?>

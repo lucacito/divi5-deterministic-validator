@@ -6,10 +6,12 @@ namespace AiEditorDivi5\Pro\Tests;
 
 use AiEditorDivi5\Pro\ProTool;
 use AiEditorDivi5\Pro\Tools;
+use AiEditorDivi5\WP\OpenApiSpec;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/ProTool.php';
 require_once __DIR__ . '/../src/Tools.php';
+require_once __DIR__ . '/../../wp-plugin/src/OpenApiSpec.php';
 
 /** Guards the tool list as the next plans fill it: no shadowing, consistent names, and the OpenAPI operation budget. */
 class ToolsTest extends TestCase
@@ -65,7 +67,15 @@ class ToolsTest extends TestCase
 
     public function testTheChatGptOperationBudgetIsRespected(): void
     {
-        // The ChatGPT importer caps an OpenAPI spec at 30 operations: free built-ins plus Pro tools must fit.
-        $this->assertLessThanOrEqual( 30, count( $this->builtInToolNames() ) + count( Tools::all() ) );
+        // The ChatGPT importer caps an OpenAPI spec at 30 operations: the free plugin's REAL spec operations plus the
+        // Pro tools must fit. Count OpenApiSpec, not the MCP tool list: get_site_structure (4.6.0) is MCP + REST only
+        // and deliberately NOT in the spec (owner decision 2026-10-04: the 16 free + 14 Pro operations use all 30).
+        $free = 0;
+        foreach ( OpenApiSpec::spec( 'https://example.com/wp-json/ai-editor-divi5/v1', '9.9.9' )['paths'] as $path => $methods ) {
+            if ( ! str_starts_with( (string) $path, '/pro/' ) ) { // a Pro-registered filter may already have added its operations
+                $free += count( $methods );
+            }
+        }
+        $this->assertLessThanOrEqual( 30, $free + count( Tools::all() ) );
     }
 }

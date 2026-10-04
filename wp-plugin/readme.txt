@@ -128,7 +128,7 @@ This plugin does not connect to any external service. Your AI assistant connects
 
 = Does the AI get administrator access to my site? =
 
-No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages, create pages (as drafts), read Media Library images (read-only), and read your site's Divi presets and colors (read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
+No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages, create pages (as drafts), read Media Library images (read-only), read your site's Divi presets and colors (read-only), and read how your site is set up (post types, taxonomies, image sizes and ACF field definitions, read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
 
 = Can the AI add custom CSS, JavaScript or PHP to my site? =
 
@@ -152,7 +152,7 @@ The key is a long random code stored in your WordPress database and shown only t
 
 = Is it dangerous to let AI edit my site? Is there an approval step? =
 
-Every save is checked by a fixed set of rules (no AI is involved in the check) and a broken layout is refused. You can ask your assistant for a preview first (a dry run shows what would change and saves nothing), new pages are always drafts, and every save can be undone from the Dashboard. The plugin cannot change your site settings, users or plugins, and cannot add custom code. If you want a stricter rule, turn on Approval mode in Settings ("Require a preview before every save"): your assistant must then preview every edit to a page's content before it can save it.
+Every save is checked by a fixed set of rules (no AI is involved in the check) and a broken layout is refused. You can ask your assistant for a preview first (a dry run shows what would change and saves nothing), new pages are always drafts, and every save can be undone from the Dashboard. The plugin cannot change your site settings, users or plugins, and cannot add custom code. If you want a stricter rule, turn on Approval mode in Settings ("Require a preview before every save"): your assistant must then preview every edit to a page's content before it can save it. Restoring an earlier version is the undo and needs no preview.
 
 = Why do I need this if Claude can already control a browser? =
 
@@ -197,7 +197,7 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 == Screenshots ==
 
 1. The Dashboard: your setup progress and your results.
-2. Settings: one API key and a copy-and-paste setup for Claude, Cursor, VS Code, Gemini, ChatGPT or any MCP client.
+2. Settings: one API key and a copy-and-paste setup for Claude, Cursor, VS Code, ChatGPT or any MCP client.
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==

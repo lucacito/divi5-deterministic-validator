@@ -61,8 +61,14 @@ $mcp = static function ( string $tool, array $args ) use ( $rpc ): array {
     return [ 'error' => null, 'isError' => (bool) ( $data['result']['isError'] ?? false ), 'result' => json_decode( (string) $text, true ) ];
 };
 
+global $wpdb;
+$usageTable    = \AiEditorDivi5\WP\UsageTracker::tableName();
+$readsNow      = static fn (): int => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$usageTable} WHERE endpoint = %s AND result = %s", 'site_structure', 'read' ) ); // phpcs:ignore
+$readsBefore   = $readsNow();
 $settingBefore = get_option( ApprovalMode::OPTION, null );
 $pageId        = 0;
+$createdIds    = []; // every throwaway page this run made; cleanup touches only these
+$createdTitle  = 'AIED verify created (temporary)';
 
 try {
     // ---- 1. MCP protocol fixes ---------------------------------------------------------------------
@@ -86,7 +92,10 @@ try {
 
     // ---- 3. approval mode ----------------------------------------------------------------------------
     $pageId = wp_insert_post( [ 'post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'AIED verify (temporary)', 'post_content' => wp_slash( $layout( 'One' ) ) ] );
-    $check( $pageId > 0, 'a throwaway draft page exists' );
+    $check( is_int( $pageId ) && $pageId > 0, 'a throwaway draft page exists' );
+    if ( is_int( $pageId ) && $pageId > 0 ) {
+        $createdIds[] = $pageId;
+    }
 
     ApprovalMode::set( false );
     $two = $layout( 'Two' );
@@ -118,14 +127,15 @@ try {
     $m = $mcp( 'edit_page_content', $edit );
     $check( ! $m['isError'] && true === ( $m['result']['saved'] ?? null ) && str_contains( get_post( $pageId )->post_content, 'Five' ), 'MCP edit: saved after the preview' );
 
-    $c = $rest( 'POST', '/pages', [ 'title' => 'AIED verify created (temporary)', 'post_content' => $layout( 'Created' ) ] );
+    $c = $rest( 'POST', '/pages', [ 'title' => $createdTitle, 'post_content' => $layout( 'Created' ) ] );
     $check( 201 === $c['status'], 'create_page is exempt: a new draft needs no preview' );
+    // the created draft is found by its EXACT title (and the page type), never by a broad search
+    $made = get_posts( [ 'post_type' => 'page', 'post_status' => 'draft', 'numberposts' => -1, 'fields' => 'ids', 'title' => $createdTitle ] );
+    $createdIds = array_merge( $createdIds, array_map( 'intval', $made ) );
 
     // ---- 4. usage log ----------------------------------------------------------------------------------
-    global $wpdb;
-    $usage = \AiEditorDivi5\WP\UsageTracker::tableName();
-    $n     = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$usage} WHERE endpoint = %s AND result = %s", 'site_structure', 'read' ) ); // phpcs:ignore
-    $check( $n >= 3, "site_structure reads appear in the usage log ({$n})" );
+    $added = $readsNow() - $readsBefore;
+    $check( $added >= 3, "this run added site_structure reads to the usage log ({$added})" );
 } catch ( \Throwable $e ) {
     $failures[] = 'aborted by ' . get_class( $e ) . ': ' . $e->getMessage();
     WP_CLI::log( 'FAIL  aborted by ' . get_class( $e ) . ': ' . $e->getMessage() );
@@ -135,14 +145,13 @@ try {
     } else {
         update_option( ApprovalMode::OPTION, $settingBefore, false );
     }
-    $temp = get_posts( [ 'post_type' => 'page', 'post_status' => 'any', 'numberposts' => -1, 'fields' => 'ids', 's' => 'AIED verify' ] );
-    foreach ( $temp as $id ) {
+    foreach ( array_unique( $createdIds ) as $id ) {
         wp_delete_post( (int) $id, true );
     }
 }
 
 $check( get_option( ApprovalMode::OPTION, null ) === $settingBefore, 'the approval-mode setting is back to what it was' );
-$check( [] === get_posts( [ 'post_type' => 'page', 'post_status' => 'any', 'numberposts' => -1, 'fields' => 'ids', 's' => 'AIED verify' ] ), 'the throwaway pages are gone' );
+$check( [] === array_filter( $createdIds, static fn ( $id ): bool => null !== get_post( (int) $id ) ), 'the throwaway pages are gone' );
 
 if ( [] !== $failures ) {
     WP_CLI::error( count( $failures ) . ' check(s) failed: ' . implode( '; ', $failures ) );
