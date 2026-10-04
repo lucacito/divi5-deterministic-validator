@@ -93,10 +93,10 @@ final class ProPage
             <?php endif; ?>
             <p>
                 <strong><?php echo esc_html( self::statusLabel( $status['reason'] ) ); ?></strong>
-                <?php if ( null !== ( $extras['tier_label'] ?? null ) ) : ?>
+                <?php if ( null !== $key && null !== ( $extras['tier_label'] ?? null ) ) : ?>
                     &middot; <?php echo esc_html( $extras['tier_label'] ); ?>
                 <?php endif; ?>
-                <?php if ( null !== ( $extras['sites_used'] ?? null ) ) : ?>
+                <?php if ( null !== $key && null !== ( $extras['sites_used'] ?? null ) ) : ?>
                     &middot;
                     <?php
                     if ( null === ( $extras['sites_allowed'] ?? null ) ) {
@@ -115,7 +115,7 @@ final class ProPage
                     &middot; <span title="<?php esc_attr_e( 'Founding price locked at renewal', 'jhmg-ai-editor-for-divi-5-pro' ); ?>"><?php esc_html_e( 'Founding', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
                 <?php endif; ?>
             </p>
-            <?php if ( Licensing::siteLimitHit() && ! empty( $extras['sites_allowed'] ) ) : ?>
+            <?php if ( null !== $key && Licensing::siteLimitHit() && ! empty( $extras['sites_allowed'] ) ) : ?>
                 <div class="notice notice-warning inline"><p><?php echo esc_html( sprintf( /* translators: %d: site limit */ __( 'You have reached the site limit for this licence (%d sites). Upgrade to add more, or free up a site from your account.', 'jhmg-ai-editor-for-divi-5-pro' ), $extras['sites_allowed'] ) ); ?></p></div>
             <?php endif; ?>
             <?php if ( null !== $key ) : ?>

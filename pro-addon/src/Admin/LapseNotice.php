@@ -67,7 +67,7 @@ final class LapseNotice
         );
         printf(
             '<div class="notice notice-warning"><p>%1$s <a href="%2$s">%3$s</a> &middot; <a href="%4$s">%5$s</a></p></div>',
-            \esc_html__( 'Your licence has ended. Everything keeps working; updates and support stop.', 'jhmg-ai-editor-for-divi-5-pro' ),
+            \esc_html__( 'Your licence has ended. Everything keeps working; updates and support stop. Renew to get them back.', 'jhmg-ai-editor-for-divi-5-pro' ),
             \esc_url( $this->manageUrl() ),
             \esc_html__( 'Renew', 'jhmg-ai-editor-for-divi-5-pro' ),
             \esc_url( $dismissUrl ),

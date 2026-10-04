@@ -132,8 +132,7 @@ class LapseNoticeTest extends TestCase
         );
         $notice->register();
         $output = $this->capture( $notice );
-        // The output should contain a form or link to dismiss, with a nonce
-        $this->assertStringContainsString( 'nonce', $output );
+        $this->assertStringContainsString( '_wpnonce=nonce-for-aied_pro_dismiss_lapse_notice', $output );
     }
 
     public function testNoticeIsNotShownWhenAlreadyDismissed(): void
@@ -235,9 +234,16 @@ class LapseNoticeTest extends TestCase
             $this->assertStringContainsString( 'check_admin_referer', $e->getMessage() );
         }
 
+        // A valid nonce is not enough without the capability.
+        $_GET     = [ 'lapse_key' => 'expired|1234567890', '_wpnonce' => 'nonce-for-aied_pro_dismiss_lapse_notice' ];
+        $_REQUEST = $_GET;
         $GLOBALS['__wp_can'] = false;
-        $this->expectException( \RuntimeException::class );
-        $this->expiredNotice()->handleDismiss();
+        try {
+            $this->expiredNotice()->handleDismiss();
+            $this->fail( 'a user without manage_options must be refused' );
+        } catch ( \RuntimeException $e ) {
+            $this->assertStringContainsString( 'wp_die', $e->getMessage() );
+        }
     }
 
     public function testTheRenewLinkNeverPointsAtAMalformedAddress(): void

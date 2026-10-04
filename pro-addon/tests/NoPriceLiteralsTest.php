@@ -52,28 +52,33 @@ class NoPriceLiteralsTest extends TestCase
         $this->assertEmpty( $foundMatches, "Found price literals in pro-addon/src:\n" . implode( "\n", $foundMatches ) );
     }
 
-    public function testNoPriceLiteralsInReadme(): void
+    /** @return array<string,array{0:string}> */
+    public static function files(): array
     {
-        $readmeFile = __DIR__ . '/../readme.txt';
-        $this->assertFileExists( $readmeFile );
-
-        $content = file_get_contents( $readmeFile );
-
-        $pricePatterns = [
-            '\\$\\s?4900',
-            '\\$\\s?9900',
-            '\\$\\s?14900',
-            '\\$\\s?44900',
-        ];
-
-        $foundMatches = [];
-
-        foreach ( $pricePatterns as $pattern ) {
-            if ( preg_match( "/$pattern/", $content ) ) {
-                $foundMatches[] = "Pattern: $pattern";
+        $out = [ 'readme.txt' => [ __DIR__ . '/../readme.txt' ], 'README.md' => [ __DIR__ . '/../README.md' ] ];
+        $it  = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( __DIR__ . '/../src' ) );
+        foreach ( $it as $f ) {
+            if ( $f->isFile() && 'php' === $f->getExtension() ) {
+                $out[ 'src/' . substr( $f->getPathname(), strlen( realpath( __DIR__ . '/../src' ) ) + 1 ) ] = [ $f->getPathname() ];
             }
         }
 
-        $this->assertEmpty( $foundMatches, "Found price literals in pro-addon/readme.txt:\n" . implode( "\n", $foundMatches ) );
+        return $out;
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'files' )]
+    public function testNoPriceIsTypedAnywhereInTheAddOn( string $file ): void
+    {
+        $content = (string) file_get_contents( $file );
+        // A dollar sign followed by a 2+ digit amount ($49, $ 149, $4900), or one of the price numbers next to a price word.
+        $this->assertSame( 0, preg_match( '/\$\s?\d{2,}/', $content ), "{$file} types a dollar price" );
+        $this->assertSame( 0, preg_match( '/\b(49|99|149|449)\s?(\/\s?(yr|year)|per year|USD|a year)/i', $content ), "{$file} types a yearly price" );
+    }
+
+    public function testTheMatcherCatchesWhatItIsMeantTo(): void
+    {
+        $this->assertSame( 1, preg_match( '/\$\s?\d{2,}/', 'Personal is $49/year' ) );
+        $this->assertSame( 1, preg_match( '/\b(49|99|149|449)\s?(\/\s?(yr|year)|per year|USD|a year)/i', 'only 149 per year' ) );
+        $this->assertSame( 0, preg_match( '/\$\s?\d{2,}/', "preg_replace( '/x/', '\$1', \$s ) and \$wpdb" ) );
     }
 }

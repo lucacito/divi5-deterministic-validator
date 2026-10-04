@@ -7,6 +7,7 @@ namespace AiEditorDivi5\Pro\Tests;
 use AiEditorDivi5\Pro\Licensing;
 use AiEditorDivi5\Pro\Tools;
 use AiEditorDivi5\Pro\ToolRegistry;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/bootstrap.php';
@@ -52,94 +53,85 @@ class ExpiryKeepsAllToolsTest extends TestCase
         $this->assertTrue( Licensing::isPremium() );
     }
 
-    /** @return array<string,ProTool> */
-    private function getToolsByName(): array
+    /** @return list<string> */
+    private static function allToolNames(): array
     {
-        $tools = [];
-        foreach ( Tools::all() as $tool ) {
-            $tools[ $tool->name() ] = $tool;
-        }
-
-        return $tools;
+        return array_map( static fn ( $t ): string => $t->name(), Tools::all() );
     }
 
-    /** Verify all 14 tools are claimed for an expired licence. */
-    public function testAllToolsClaimableWhenExpired(): void
+    private function registry(): ToolRegistry
+    {
+        return new ToolRegistry( Tools::all(), static fn (): bool => Licensing::isPremium() );
+    }
+
+    /** @return array<string,array{0:string}> */
+    public static function lapsedStatuses(): array
+    {
+        return [ 'expired' => [ 'expired' ], 'canceled' => [ 'canceled' ], 'past_due' => [ 'past_due' ] ];
+    }
+
+    #[DataProvider( 'lapsedStatuses' )]
+    public function testALapsedLicenceKeepsEveryProToolAdvertisedAndClaimable( string $status ): void
     {
         $this->activatePremium();
         $this->ageState();
-        $this->queue( 403, [ 'error' => 'license_not_usable', 'status' => 'expired' ] );
+        $this->queue( 403, [ 'error' => 'license_not_usable', 'status' => $status ] );
         Licensing::refresh();
-        $this->assertTrue( Licensing::isPremium() ); // lapse never locks
 
-        $registry = new ToolRegistry( Tools::all(), static fn (): bool => Licensing::isPremium() );
-        $tools    = $this->getToolsByName();
-
-        $this->assertCount( 14, $tools, 'Expected 14 Pro tools' );
-
-        foreach ( $tools as $name => $tool ) {
-            $this->assertNotNull( $registry->get( $name ), "Tool {$name} not in registry" );
-            $this->assertTrue( $registry->isUnlocked(), "Registry not unlocked for tool {$name}" );
-        }
+        $this->assertSame( $status, Licensing::status()['status'], 'the add-on really holds the lapsed status' );
+        $this->assertTrue( Licensing::isPremium(), 'a lapse never locks' );
+        $this->assertKeepsAllTools();
     }
 
-    /** Verify all 14 tools are claimed for a canceled licence. */
-    public function testAllToolsClaimableWhenCanceled(): void
+    public function testALifetimeLicenceKeepsEveryProTool(): void
     {
-        $this->activatePremium();
-        $this->ageState();
-        $this->queue( 403, [ 'error' => 'license_not_usable', 'status' => 'canceled' ] );
-        Licensing::refresh();
-        $this->assertTrue( Licensing::isPremium() );
-
-        $registry = new ToolRegistry( Tools::all(), static fn (): bool => Licensing::isPremium() );
-        $tools    = $this->getToolsByName();
-
-        $this->assertCount( 14, $tools );
-
-        foreach ( $tools as $name => $tool ) {
-            $this->assertNotNull( $registry->get( $name ) );
-            $this->assertTrue( $registry->isUnlocked() );
-        }
-    }
-
-    /** Verify all 14 tools are claimed for a past_due licence. */
-    public function testAllToolsClaimableWhenPastDue(): void
-    {
-        $this->activatePremium();
-        $this->ageState();
-        $this->queue( 403, [ 'error' => 'license_not_usable', 'status' => 'past_due' ] );
-        Licensing::refresh();
-        $this->assertTrue( Licensing::isPremium() );
-
-        $registry = new ToolRegistry( Tools::all(), static fn (): bool => Licensing::isPremium() );
-        $tools    = $this->getToolsByName();
-
-        $this->assertCount( 14, $tools );
-
-        foreach ( $tools as $name => $tool ) {
-            $this->assertNotNull( $registry->get( $name ) );
-            $this->assertTrue( $registry->isUnlocked() );
-        }
-    }
-
-    /** Verify all 14 tools are claimed for a lifetime licence. */
-    public function testAllToolsClaimableWhenLifetime(): void
-    {
-        // A lifetime licence is active with no expiry
         $this->queue( 200, [ 'status' => 'active', 'product' => 'ai-editor-divi5-pro', 'expires' => null, 'lifetime' => true ] );
-        $res = Licensing::activate( self::KEY );
-        $this->assertTrue( $res['ok'] );
-        $this->assertTrue( Licensing::isPremium() );
+        $this->assertTrue( Licensing::activate( self::KEY )['ok'] );
+        $this->assertTrue( Licensing::extras()['lifetime'] );
+        $this->assertKeepsAllTools();
+    }
 
-        $registry = new ToolRegistry( Tools::all(), static fn (): bool => Licensing::isPremium() );
-        $tools    = $this->getToolsByName();
+    public function testASiteLimitAnswerOnRefreshKeepsEveryProTool(): void
+    {
+        $this->activatePremium();
+        $this->ageState();
+        $this->queue( 403, [ 'error' => 'site_limit_reached', 'tier' => 'personal', 'tier_label' => 'Personal', 'sites_used' => 1, 'sites_allowed' => 1 ] );
+        Licensing::refresh();
+        $this->assertSame( 'active', Licensing::status()['status'] );
+        $this->assertKeepsAllTools();
+    }
 
-        $this->assertCount( 14, $tools );
+    public function testARevokedLicenceDoesLockEveryProTool(): void
+    {
+        $this->activatePremium();
+        $this->ageState();
+        $this->queue( 200, [ 'status' => 'revoked' ] );
+        Licensing::refresh();
 
-        foreach ( $tools as $name => $tool ) {
-            $this->assertNotNull( $registry->get( $name ) );
-            $this->assertTrue( $registry->isUnlocked() );
-        }
+        $this->assertFalse( Licensing::isPremium() );
+        $this->assertSame( [], $this->advertised( [] ), 'nothing is advertised' );
+        $this->assertNull( $this->registry()->claim( null, 'propose_php_snippet', [], 1 ), 'nothing is claimed' );
+    }
+
+    /** @param list<array<string,mixed>> $builtIn @return list<string> */
+    private function advertised( array $builtIn ): array
+    {
+        $out = $this->registry()->definitions( $builtIn );
+
+        return array_values( array_map( static fn ( array $d ): string => (string) $d['name'], $out ) );
+    }
+
+    private function assertKeepsAllTools(): void
+    {
+        $names = self::allToolNames();
+        $this->assertCount( 14, $names );
+        $listed = $this->advertised( [] );
+        sort( $listed );
+        $sorted = $names;
+        sort( $sorted );
+        $this->assertSame( $sorted, $listed, 'all 14 Pro tools are advertised' );
+
+        $response = $this->registry()->claim( null, 'propose_php_snippet', [], 1 );
+        $this->assertNotNull( $response, 'a Pro tool call is claimed (not passed through) while unlocked' );
     }
 }

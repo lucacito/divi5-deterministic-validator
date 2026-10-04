@@ -81,18 +81,35 @@ class LicensingTest extends TestCase
         $this->assertSame( 1, Licensing::extras()['sites_allowed'] );
     }
 
-    public function testASiteLimitAnswerOnRefreshNeverLocksOrChangesTheStoredState(): void
+    public function testASiteLimitAnswerOnRefreshNeverLocksOrChangesTheLicenceItself(): void
     {
         $this->queue( 200, self::TIER_BODY );
         Licensing::activate( self::KEY );
         $before = $GLOBALS['__wp_options']['aied_pro_license_state'];
         $this->ageState();
-        $before['checked_at'] = $GLOBALS['__wp_options']['aied_pro_license_state']['checked_at'];
         $this->queue( 403, [ 'error' => 'site_limit_reached', 'tier' => 'freelancer', 'tier_label' => 'Freelancer', 'sites_used' => 10, 'sites_allowed' => 10 ] );
         Licensing::refresh();
         $this->assertTrue( Licensing::isPremium() );
-        $this->assertSame( $before, $GLOBALS['__wp_options']['aied_pro_license_state'] );
+        $after = $GLOBALS['__wp_options']['aied_pro_license_state'];
+        $this->assertSame( $before['status'], $after['status'] );
+        $this->assertSame( $before['expires'], $after['expires'] );
         $this->assertTrue( Licensing::siteLimitHit() );
+    }
+
+    public function testASiteLimitAnswerIsAskedAgainTomorrowNotEveryFifteenMinutes(): void
+    {
+        $this->queue( 200, self::TIER_BODY );
+        Licensing::activate( self::KEY );
+        $this->ageState();
+        $this->queue( 403, [ 'error' => 'site_limit_reached', 'sites_used' => 10, 'sites_allowed' => 10 ] );
+        Licensing::refresh();
+        $calls = count( $GLOBALS['__wp_http_log'] );
+
+        // The 15-minute backoff has passed, but the licence was checked just now: no new request until the day is up.
+        delete_transient( Licensing::REFRESH_BACKOFF_TRANSIENT );
+        Licensing::refresh();
+        $this->assertSame( $calls, count( $GLOBALS['__wp_http_log'] ), 'no second validate call within the day' );
+        $this->assertTrue( Licensing::isPremium() );
     }
 
     public function testAGoodRefreshClearsTheSiteLimitFlag(): void

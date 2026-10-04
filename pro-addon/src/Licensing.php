@@ -158,6 +158,11 @@ final class Licensing
             if ( null === $before ) {
                 delete_option( self::STATE_OPTION );
             } else {
+                // A site-limit refusal is a real, definitive answer about THIS site, not a fault of the server: keep
+                // the licence as it was and count the check as done, so it is asked again tomorrow, not every 15 minutes.
+                if ( self::isSiteLimitAnswer( $seen ) ) {
+                    $before['checked_at'] = time();
+                }
                 update_option( self::STATE_OPTION, $before, false );
             }
         }
@@ -194,6 +199,17 @@ final class Licensing
         $body = json_decode( $seen['body'], true );
 
         return is_array( $body ) && is_string( $body['status'] ?? null ) && '' !== $body['status'];
+    }
+
+    /** @param array{code:int, body:string}|null $seen */
+    private static function isSiteLimitAnswer( ?array $seen ): bool
+    {
+        if ( null === $seen || 403 !== $seen['code'] ) {
+            return false;
+        }
+        $body = json_decode( $seen['body'], true );
+
+        return is_array( $body ) && 'site_limit_reached' === ( $body['error'] ?? null );
     }
 
     /** @param array{code:int, body:string}|null $seen the raw validate answer */

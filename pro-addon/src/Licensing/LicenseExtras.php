@@ -51,18 +51,18 @@ final class LicenseExtras
         }
 
         // tier_label: string or null
-        if ( isset( $decoded['tier_label'] ) && is_string( $decoded['tier_label'] ) ) {
+        if ( isset( $decoded['tier_label'] ) && is_string( $decoded['tier_label'] ) && '' !== $decoded['tier_label'] && strlen( $decoded['tier_label'] ) <= 40 ) {
             $extras['tier_label'] = $decoded['tier_label'];
         }
 
         // sites_used: integer or null
-        if ( isset( $decoded['sites_used'] ) && is_int( $decoded['sites_used'] ) ) {
+        if ( isset( $decoded['sites_used'] ) && is_int( $decoded['sites_used'] ) && $decoded['sites_used'] >= 0 ) {
             $extras['sites_used'] = $decoded['sites_used'];
         }
 
         // sites_allowed: integer or null (can be null for unlimited)
         if ( isset( $decoded['sites_allowed'] ) ) {
-            if ( is_int( $decoded['sites_allowed'] ) ) {
+            if ( is_int( $decoded['sites_allowed'] ) && $decoded['sites_allowed'] >= 1 ) {
                 $extras['sites_allowed'] = $decoded['sites_allowed'];
             } elseif ( null === $decoded['sites_allowed'] ) {
                 $extras['sites_allowed'] = null;
@@ -97,8 +97,8 @@ final class LicenseExtras
      */
     private static function sanitizeUrl( string $url, string $apiBase ): ?string
     {
-        // Must start with https://
-        if ( ! str_starts_with( $url, 'https://' ) ) {
+        // Must start with https:// and carry no backslash or userinfo (those are how a URL says one host and means another).
+        if ( ! str_starts_with( $url, 'https://' ) || str_contains( $url, '\\' ) ) {
             return null;
         }
 
@@ -108,6 +108,10 @@ final class LicenseExtras
 
         $apiHost = $apiParsed['host'] ?? '';
         $urlHost = $urlParsed['host'] ?? '';
+
+        if ( isset( $urlParsed['user'] ) || isset( $urlParsed['pass'] ) ) {
+            return null;
+        }
 
         // Hosts must match (a leading "www." on either side does not make it another host)
         $bare = static fn ( string $h ): string => str_starts_with( strtolower( $h ), 'www.' ) ? substr( strtolower( $h ), 4 ) : strtolower( $h );

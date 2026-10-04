@@ -5,7 +5,8 @@
  * It proves, end to end: a Personal licence activates and shows its tier and 1-of-1 site; a second site is refused with
  * the site-limit answer and is NOT unlocked; an Agency licence shows unlimited sites and unlocks all 14 tools; after the
  * server reports the licence EXPIRED, every Pro tool is still advertised and callable and the lapse notice is shown once
- * and can be dismissed. Self-cleaning: every aied_pro_* option is restored.
+ * and can be dismissed. Self-cleaning: run the stages in order and finish with `cleanup`, which restores every aied_pro_* option
+ * the dev site had before the first stage (a licence already activated there comes back).
  *
  * Run: make verify-pro-licence-tiers LICENCE_BASE=http://host.docker.internal:3010 STAGE=<limit|agency|expired>
  * (the stages need the server-side state described in docs/superpowers/plans/2026-10-04-pricing-tiers.md; the lead runs them in order).
@@ -51,6 +52,19 @@ $wipe = static function (): void {
     }
     delete_transient( \AiEditorDivi5\Pro\Licensing::REFRESH_BACKOFF_TRANSIENT );
 };
+
+// Remember what the dev site had before the first stage, so `cleanup` can put it back.
+$optionNames = [ 'aied_pro_premium_unlocked', 'aied_pro_license_key', 'aied_pro_license_state', 'aied_pro_update_blocked', 'aied_pro_license_extras', 'aied_pro_site_limit' ];
+if ( 'cleanup' !== $stage && false === get_option( 'aied_gate_saved', false ) ) {
+    $saved = [];
+    foreach ( $optionNames as $o ) {
+        $v = get_option( $o, '__absent__' );
+        if ( '__absent__' !== $v ) {
+            $saved[ $o ] = $v;
+        }
+    }
+    update_option( 'aied_gate_saved', [ 'options' => $saved ], false );
+}
 
 $registryCount = static function (): int {
     $tools = apply_filters( 'jhmg_aied_mcp_tools', [] );
@@ -134,7 +148,15 @@ if ( 'expired' === $stage ) {
 
 if ( 'cleanup' === $stage ) {
     $wipe();
-    $check( false === \AiEditorDivi5\Pro\Licensing::isPremium(), 'cleaned: locked again with no licence stored' );
+    $saved = get_option( 'aied_gate_saved', false );
+    if ( is_array( $saved ) ) {
+        foreach ( (array) ( $saved['options'] ?? [] ) as $name => $value ) {
+            update_option( $name, $value, false );
+        }
+        delete_option( 'aied_gate_saved' );
+    }
+    \AiEditorDivi5\Pro\Licensing::resetForTests();
+    $check( ! is_array( $saved ) || ( [] === ( $saved['options'] ?? [] ) ) === ( null === \AiEditorDivi5\Pro\Licensing::client()->get_key() ), 'cleaned: the dev site is back to what it had before (a licence it had is restored; none stays none)' );
 }
 
 if ( [] !== $failures ) {

@@ -1,5 +1,5 @@
 <!--
-DRAFT. Not on the live site. Every price, site limit and cap is a {{token}} read from layoutlab/config/pricing.json.
+DRAFT. Not on the live site. Every price, site limit, cap and reminder day is a {{token}} read from layoutlab/config/pricing.json ({{reminders}} = the renewalReminderDays joined with "and"; {{tier:lifetime}} = the label of the Lifetime tier).
 Competitor facts are third-party and dated "as of October 2026"; each has its source URL in a comment.
 TODO(owner) markers are decisions or facts I could not verify.
 -->
@@ -10,7 +10,7 @@ TODO(owner) markers are decisions or facts I could not verify.
 
 Your AI assistant can be creative. Nothing it writes reaches your database until a deterministic validator has checked every block against the real Divi 5 schema. Same layout in, same verdict out, no AI in the check. If a layout is invalid, the assistant gets the exact violation codes and fixes its own mistake.
 
-- **Undo for every change.** Each edit the plugin makes is snapshotted first, so you can restore the previous version of a page.
+- **Undo for your AI's edits.** Before the plugin saves an edit it keeps a snapshot of the page, so you can restore the previous version. (A page too large to snapshot says so in the response; creating a new page has nothing to undo.)
 - **Theme Builder editing.** Change the live Divi header and footer, with a preview first.
 - **Whole-site build, one-step undo.** Build a site page by page as drafts, launch it in one previewed step, and take it all away again with one undo.
 - **Works with Claude, ChatGPT, Cursor and VS Code Copilot.** Over MCP and REST. You bring your own assistant.
@@ -26,12 +26,12 @@ Pick by the number of sites you manage. Every plan has the same Pro tools.
 
 | | Personal | Freelancer | Agency |
 |---|---|---|---|
-| Sites | {{sites:personal}} | {{sites:freelancer}} | Unlimited |
+| Sites | {{sites:personal}} | {{sites:freelancer}} | {{sites:agency}} |
 | Price per year | {{price:personal}} | {{price:freelancer}} | {{price:agency}} |
 
 **Founding offer.** The first {{cap:founding}} buyers get {{percent:founding}}% off any plan. The discounted renewal price is locked for as long as your licence stays active.
 
-**Lifetime.** Agency (unlimited sites), one payment of {{price:lifetime}}, no renewal. Limited to {{cap:lifetime}} sales, then it is removed. <!-- TODO(owner): confirm what Lifetime includes: updates and support for life, or a fixed period. -->
+**Lifetime.** {{tier:lifetime}} ({{sites:agency}}), one payment of {{price:lifetime}}, no renewal. Limited to {{cap:lifetime}} sales, then it is removed. <!-- TODO(owner): confirm what Lifetime includes: updates and support for life, or a fixed period. -->
 
 **Free trial.** {{trial:days}} days of Personal, no card needed.
 
@@ -39,7 +39,7 @@ Pick by the number of sites you manage. Every plan has the same Pro tools.
 
 ## If your licence expires
 
-Nothing breaks. All 14 Pro tools and the free plugin keep working on every site where the licence was activated. Only updates and support stop. You will get one email 30 days and one 7 days before your renewal date, and one dismissible notice in wp-admin if it lapses.
+Nothing breaks. All 14 Pro tools and the free plugin keep working on every site where the licence was activated. Only updates and support stop. You will get an email {{reminders}} days before your renewal date, and one dismissible notice in wp-admin if it lapses.
 
 ## How it compares
 
@@ -48,10 +48,10 @@ Facts are taken from each product's own pricing page, as of October 2026. "Not s
 | | JHMG AI Editor Pro | AI Engine Pro | WPVibe | Divi Pro |
 |---|---|---|---|---|
 | What it is | Divi 5 layout editing for your own AI assistant | WordPress AI toolkit (Meow Apps) | WordPress admin through MCP | Divi theme bundle from Elegant Themes with Divi AI |
-| Entry price | {{price:personal}}/year | $79/year <!-- source: https://meowapps.com/products/ai-engine-pro/ --> | Free; Pro $99/year <!-- source: https://mcp.wpvibe.ai/pricing --> | $89/year Divi; $277/year Divi Pro <!-- source: https://www.elegantthemes.com/join/ --> |
+| Entry price | {{price:personal}}/year | $79/year <!-- source: https://meowapps.com/products/ai-engine-pro/ --> | Free; Pro $99/year <!-- source: https://mcp.wpvibe.ai/pricing --> | Divi Pro $277/year (Divi alone is $89/year) <!-- source: https://www.elegantthemes.com/join/ --> |
 | Sites on the entry plan | {{sites:personal}} | 1 <!-- source: https://meowapps.com/products/ai-engine-pro/ --> | Not limited by site; limited by daily tool calls <!-- source: https://mcp.wpvibe.ai/pricing --> | Unlimited <!-- source: https://www.elegantthemes.com/join/ --> |
 | Usage model | Bring your own assistant; no meter | Not stated | Daily tool calls: 100 free, 500 on Pro, 2,000 on Power <!-- source: https://mcp.wpvibe.ai/pricing --> | Divi AI included; agent usage has a yearly complimentary budget <!-- source: https://www.elegantthemes.com/join/ --> |
-| Lifetime option | {{price:lifetime}}, Agency only, {{cap:lifetime}} sales | Yes, from $499 <!-- source: https://meowapps.com/products/ai-engine-pro/ --> | Not stated | Yes, Divi Lifetime $249 <!-- source: https://www.elegantthemes.com/join/ --> |
+| Lifetime option | {{price:lifetime}}, {{tier:lifetime}} only, {{cap:lifetime}} sales | Yes, from $499 <!-- source: https://meowapps.com/products/ai-engine-pro/ --> | Not stated | Divi Lifetime + Pro: $297 once, then $212/year for the Pro services <!-- source: https://www.elegantthemes.com/join/ --> |
 | MCP | Yes | Yes, a WordPress MCP server <!-- source: https://meowapps.com/products/ai-engine-pro/ --> | Yes <!-- source: https://mcp.wpvibe.ai/pricing --> | Not stated <!-- source: https://www.elegantthemes.com/join/ --> |
 | Divi mentioned | Divi 5 only, validated against the Divi 5 schema | Not stated | Divi listed among page builders it works with <!-- source: https://mcp.wpvibe.ai/pricing --> | It is Divi |
 | Approval or preview before changes | Preview (dry run) and one-step undo | Not stated | Asks approval with a preview for destructive actions <!-- source: https://mcp.wpvibe.ai/pricing --> | Not stated |
