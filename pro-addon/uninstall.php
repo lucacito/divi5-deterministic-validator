@@ -15,3 +15,9 @@ require_once __DIR__ . '/src/Settings/PhpProposals.php';
 AiEditorDivi5\Pro\Licensing::clear();
 AiEditorDivi5\Pro\Settings\PhpProposals::clear();
 AiEditorDivi5\Pro\Batch\BatchTable::drop();
+
+// Build locks are rows of the options table; a crashed request can leave one behind.
+global $wpdb;
+if ( isset( $wpdb ) && is_object( $wpdb ) ) {
+    $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( 'aied_pro_buildlock_' ) . '%' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+}

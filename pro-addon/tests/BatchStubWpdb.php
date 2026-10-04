@@ -11,6 +11,7 @@ namespace AiEditorDivi5\Pro\Tests;
 final class BatchStubWpdb
 {
     public string $prefix = 'wp_';
+    public string $options = 'wp_options';
     public int $insert_id = 0;
     /** @var list<array<int,mixed>> */
     public array $calls = [];
@@ -30,6 +31,11 @@ final class BatchStubWpdb
     public function prepare( string $query, mixed ...$args ): string
     {
         return vsprintf( str_replace( '%s', "'%s'", $query ), $args );
+    }
+
+    public function esc_like( string $text ): string
+    {
+        return addcslashes( $text, '_%\\\\' );
     }
 
     public function suppress_errors( bool $on = true ): bool

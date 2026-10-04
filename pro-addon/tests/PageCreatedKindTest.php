@@ -96,6 +96,30 @@ class PageCreatedKindTest extends TestCase
         $this->assertSame( [ 'in_menu' => true, 'is_front' => false, 'menu_label' => 'About' ], $r['inverse']['meta'], 'what the menu needs travels with the page' );
     }
 
+    public function testRestoreRefusesAPageThatIsNoLongerADraftEvenWhenForced(): void
+    {
+        $item = $this->item();
+        $GLOBALS['__wp_posts'][50]->post_status = 'publish';
+        $this->assertSame( [ 'ok' => false, 'reason' => 'not_draft' ], ( new PageCreatedKind() )->restore( $item ) );
+        $this->assertSame( 'publish', $GLOBALS['__wp_posts'][50]->post_status );
+        $log = $this->log;
+        $id  = $log->record( 'build_site', 'Site build', [ $item ] )['id'];
+        $u   = $this->undo()->undo( (int) $id, true );
+        $this->assertFalse( $u['fully_undone'], 'force overrides the changed-since rule only' );
+        $this->assertSame( 'publish', $GLOBALS['__wp_posts'][50]->post_status, 'a published page is never trashed, forced or not' );
+    }
+
+    public function testWithTrashSwitchedOffAnEditedPageIsNeverDeletedEvenWhenForced(): void
+    {
+        PageCreatedKind::$trashEnabled = static fn (): bool => false;
+        $item = $this->item();
+        $GLOBALS['__wp_posts'][50]->post_content = 'owner edit';
+        $this->assertSame( [ 'ok' => false, 'reason' => 'would_delete_permanently' ], ( new PageCreatedKind() )->restore( $item ) );
+        $this->assertSame( 'draft', $GLOBALS['__wp_posts'][50]->post_status, 'nothing was trashed (a trash is a permanent delete here)' );
+        $GLOBALS['__wp_posts'][50]->post_content = 'C0';
+        $this->assertTrue( ( new PageCreatedKind() )->restore( $item )['ok'], 'an untouched draft is still undone' );
+    }
+
     public function testRestoreOfAMissingPageOrAFailedTrashIsReported(): void
     {
         $GLOBALS['__wp_trash_fail'] = true;

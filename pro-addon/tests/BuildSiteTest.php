@@ -41,7 +41,7 @@ class BuildSiteTest extends TestCase
         $GLOBALS['__wp_insert_fail']  = false;
         $GLOBALS['__wp_inserts']      = [];
         $GLOBALS['__wp_current_user_id'] = 7;
-        $GLOBALS['__wp_caps']         = [ 'publish_pages' => true, 'edit_post' => true, 'delete_post' => true ];
+        $GLOBALS['__wp_caps']         = [ 'publish_pages' => true, 'edit_post' => true, 'delete_post' => true, 'edit_theme_options' => true, 'manage_options' => true ];
     }
 
     protected function tearDown(): void
@@ -211,9 +211,10 @@ class BuildSiteTest extends TestCase
         $GLOBALS['__wp_insert_fail'] = true;
         try {
             $this->tool->run( $this->page( 'Home', 'home' ) );
-            $this->fail( 'expected a RuntimeException' );
-        } catch ( \RuntimeException $e ) {
-            $this->assertStringContainsString( 'simulated failure', $e->getMessage() );
+            $this->fail( 'expected an InvalidArgumentException' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'WordPress could not create the page', $e->getMessage() );
+            $this->assertStringNotContainsString( 'simulated failure', $e->getMessage(), 'core error text stays out of the answer' );
         }
         $this->assertSame( [], $GLOBALS['__wp_posts'] );
         $this->assertSame( 'undone', $this->repo->rows[1]['status'], 'the empty build is not left open' );
@@ -224,7 +225,7 @@ class BuildSiteTest extends TestCase
         $GLOBALS['__wp_insert_fail'] = true;
         try {
             $this->tool->run( $this->page( 'About', 'about', [ 'build_id' => 2 ] ) );
-        } catch ( \RuntimeException $e ) {
+        } catch ( \InvalidArgumentException $e ) {
         }
         $this->assertSame( 'building', $this->repo->rows[2]['status'], 'an existing build stays open when one page fails' );
         $this->assertCount( 1, $this->repo->rows[2]['items'] );
@@ -236,11 +237,29 @@ class BuildSiteTest extends TestCase
         $this->repo->failAppend = true;
         try {
             $this->tool->run( $this->page( 'About', 'about', [ 'build_id' => 1 ] ) );
-            $this->fail( 'expected a RuntimeException' );
-        } catch ( \RuntimeException $e ) {
+            $this->fail( 'expected an InvalidArgumentException' );
+        } catch ( \InvalidArgumentException $e ) {
             $this->assertStringContainsString( 'could not be recorded', $e->getMessage() );
         }
         $this->assertCount( 1, $GLOBALS['__wp_posts'], 'only the first page exists: the unrecorded one was deleted' );
+    }
+
+    public function testAUserWhoCannotEditMenusOrSettingsCannotAddPagesThatCouldNeverBeLaunched(): void
+    {
+        $GLOBALS['__wp_caps'] = [ 'publish_pages' => true, 'edit_post' => true, 'delete_post' => true ];
+        $this->refused( $this->page( 'Home', 'home', [ 'in_menu' => true ] ), 'edit_theme_options' );
+        $this->refused( $this->page( 'Home', 'home', [ 'is_front' => true, 'in_menu' => false ] ), 'manage_options' );
+
+        $r = $this->tool->run( $this->page( 'Home', 'home' ) );
+        $this->assertSame( 0, $r['build']['in_menu'], 'without the right to edit menus a page is not in the menu unless asked' );
+        $this->assertSame( [ 'in_menu' => false, 'is_front' => false, 'menu_label' => 'Home' ], $this->repo->rows[1]['items'][0]['meta'] );
+        $r = $this->tool->run( $this->page( 'About', 'about', [ 'build_id' => 1, 'in_menu' => false, 'is_front' => false ] ) );
+        $this->assertSame( 2, $r['build']['pages'] );
+
+        $GLOBALS['__wp_caps']['edit_theme_options'] = true;
+        $GLOBALS['__wp_caps']['manage_options']     = true;
+        $r = $this->tool->run( $this->page( 'Team', 'team', [ 'build_id' => 1 ] ) );
+        $this->assertSame( 1, $r['build']['in_menu'], 'with the right, the default stays: in the menu' );
     }
 
     public function testBadArgumentsAreRejectedNotCast(): void

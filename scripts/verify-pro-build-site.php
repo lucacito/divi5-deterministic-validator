@@ -15,8 +15,10 @@
 
 use AiEditorDivi5\Pro\Batch\Batches;
 use AiEditorDivi5\Pro\Batch\BatchTable;
+use AiEditorDivi5\Pro\Batch\Item;
 use AiEditorDivi5\Pro\Kinds\FrontPageKind;
 use AiEditorDivi5\Pro\Settings\MenuBuilder;
+use AiEditorDivi5\Pro\Site\BuildLock;
 use AiEditorDivi5\Pro\Tools\BuildSite;
 
 if ( ! class_exists( \AiEditorDivi5\Pro\Plugin::class ) || ! class_exists( BuildSite::class ) ) {
@@ -166,6 +168,45 @@ try {
         $batchIds[] = (int) $u['undo_batch']['id'];
     }
     $check( true === $u['fully_undone'], 'and it can be abandoned' );
+
+    // ---- the build lock, on the REAL database (the unit tests only prove the calls) -----------------------------------------
+    $lockUser = 999999;
+    $one      = new BuildLock( 0 );
+    $two      = new BuildLock( 0 );
+    $check( true === $one->acquire( $lockUser ), 'lock: the first holder gets it' );
+    $check( false === $two->acquire( $lockUser ), 'lock: a second holder is refused while it is held' );
+    $two->release( $lockUser );
+    $check( false === ( new BuildLock( 0 ) )->acquire( $lockUser ), 'lock: a release by someone who does not hold it changes nothing' );
+    $one->release( $lockUser );
+    $check( true === $two->acquire( $lockUser ), 'lock: free again after the holder released it' );
+    $stale = new BuildLock( 0, 0 );
+    $check( true === $stale->acquire( $lockUser ), 'lock: an expired lock is taken over (compare-and-swap)' );
+    $check( true === ( new BuildLock( 0, 0 ) )->acquire( $lockUser ), 'lock: and again, atomically' );
+    $stale->release( $lockUser );
+    ( new BuildLock( 0 ) )->release( $lockUser );
+    delete_option( 'aied_pro_buildlock_' . $lockUser );
+
+    // ---- an open build survives the trim of the batch store; append works over the real longtext column -----------------------
+    $h = $add( 'AIED Verify Trim', 'aied-verify-trim' );
+    for ( $i = 0; $i < 22; $i++ ) {
+        $filler = $log->record( 'verify_filler', 'filler ' . $i, [ Item::make( 'verify_filler', 'x', 'filler', null, 'x' ) ] );
+        if ( null !== $filler ) {
+            $batchIds[] = (int) $filler['id'];
+        }
+    }
+    $open = $log->openBuild( get_current_user_id() );
+    $check( null !== $open && (int) $open['id'] === (int) $h['build']['id'], 'an open build is still there after 22 newer batches were recorded (the trim never removes it)' );
+    $i2 = $add( 'AIED Verify Trim Two', 'aied-verify-trim-two', [ 'build_id' => $h['build']['id'] ] );
+    $check( 2 === $i2['build']['pages'], 'append over the real table adds a second page to that build' );
+
+    // an open build whose pages were all edited is still closed by undo, so the owner can start another
+    wp_update_post( wp_slash( [ 'ID' => $h['page']['id'], 'post_content' => $layout( 'edited 1' ) ] ) );
+    wp_update_post( wp_slash( [ 'ID' => $i2['page']['id'], 'post_content' => $layout( 'edited 2' ) ] ) );
+    $u = $undo->undo( (int) $h['build']['id'] );
+    if ( isset( $u['undo_batch']['id'] ) ) {
+        $batchIds[] = (int) $u['undo_batch']['id'];
+    }
+    $check( 0 === $u['restored'] && 'partly_undone' === $log->find( (int) $h['build']['id'] )['status'] && null === $log->openBuild( get_current_user_id() ), 'undo of an open build whose pages were all edited restores nothing but closes the build' );
 } catch ( \Throwable $ex ) {
     $check( false, 'unexpected error: ' . get_class( $ex ) . ': ' . $ex->getMessage() );
 } finally {
@@ -179,6 +220,7 @@ try {
         $wpdb->query( 'DELETE FROM ' . BatchTable::name() . ' WHERE id IN (' . implode( ',', array_map( 'intval', array_unique( $batchIds ) ) ) . ')' ); // phpcs:ignore
     }
     delete_option( 'aied_pro_buildlock_' . get_current_user_id() );
+    delete_option( 'aied_pro_buildlock_999999' );
 }
 
 $check( FrontPageKind::read() === $orig['front_val'], 'cleanup: the front page settings are as before (show_on_front and page_on_front, as the plugin reads them)' );

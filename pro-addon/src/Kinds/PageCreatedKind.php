@@ -6,6 +6,7 @@ namespace AiEditorDivi5\Pro\Kinds;
 
 use AiEditorDivi5\Pro\Batch\Item;
 use AiEditorDivi5\Pro\Batch\ItemKind;
+use AiEditorDivi5\Pro\Canon;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -79,6 +80,14 @@ final class PageCreatedKind implements ItemKind
         $post = get_post( $id );
         if ( ! $post || 'page' !== $post->post_type ) {
             return [ 'ok' => false, 'reason' => 'missing' ];
+        }
+        // `force` skips the changed-since rule, never this one: a page that is live (or private, or pending) is not the draft the build left.
+        if ( 'draft' !== $post->post_status ) {
+            return [ 'ok' => false, 'reason' => 'not_draft' ];
+        }
+        // With EMPTY_TRASH_DAYS 0 the trash is a permanent delete, so a page the owner changed is never deleted, forced or not.
+        if ( ! self::trashEnabled() && Canon::hash( self::snapshot( $post ) ) !== (string) ( $item['after_hash'] ?? '' ) ) {
+            return [ 'ok' => false, 'reason' => 'would_delete_permanently' ];
         }
         if ( ! wp_trash_post( $id ) ) {
             return [ 'ok' => false, 'reason' => 'trash_failed' ];

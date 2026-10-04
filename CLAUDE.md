@@ -234,8 +234,8 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   `page_created` -> trash, inverse `page_trashed` -> untrash as a draft). Spike facts that shaped it (live, WP 7.1): a menu item
   pointing at a draft shows a DEAD link to visitors (so the menu is built only at launch), drafts get no unique slug (clash resolved at
   publish: refused at add_page), untrash returns a draft. Spec `docs/superpowers/specs/2026-10-03-build-site-design.md`; plan
-  `docs/superpowers/plans/2026-10-03-build-site.md`; `make test-pro` 841 tests, `make test` 727; live gates `make verify-pro-build-site`
-  and `make verify-pro-rest` (30 operations) passed on the Docker dev site.
+  `docs/superpowers/plans/2026-10-03-build-site.md`; `make test-pro` 874 tests, `make test` 727; live gates `make verify-pro-build-site` (44 PASS, incl. the real-database build lock, an open build surviving the batch trim, and undo of an all-edited open build)
+  and `make verify-pro-rest` (30 operations) passed on the Docker dev site. Whole-branch review fixes: a real `undo_batch` always closes an open build; `force` never trashes a page that is no longer a draft nor deletes an edited one when `EMPTY_TRASH_DAYS` is 0; `add_page` refuses `in_menu`/`is_front` the user could never launch (default `in_menu` follows `edit_theme_options`); the launch re-reads each page's status right before publishing. Known limits (README): `undo_batch` takes no build lock, an abandoned build never expires, the 15 s lock expiry can be exceeded by a very slow call.
 - **Pro add-on 0.4.1** (hardening; merged to LOCAL main da340e3; NOT released, NOT pushed): preview tokens are bound to the user,
   single-use (a transient marks a spent nonce) and 30 minutes for BOTH `find_replace_site` and `manage_theme_template`
   (`PreviewToken` v2); `audit_site` pages by the id of the last audited item (pages and layouts in one id order), memoises link

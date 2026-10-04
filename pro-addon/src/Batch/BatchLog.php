@@ -76,12 +76,26 @@ final class BatchLog
         return $this->repo->append( $id, $items );
     }
 
-    /** Sets the status of a batch (an open build becomes `applied`) and keeps its items. */
-    public function close( int $id, string $status ): bool
+    /**
+     * Sets the status of a batch (an open build becomes `applied`) and keeps its items. `$pageHashes` (page id => hash) replaces the
+     * recorded after_hash of those `page_created` items: a slug WordPress changed at publish time is then the slug the undo expects.
+     *
+     * @param array<int,string> $pageHashes
+     */
+    public function close( int $id, string $status, array $pageHashes = [] ): bool
     {
         $batch = $this->repo->find( $id );
+        if ( null === $batch ) {
+            return false;
+        }
+        $items = $batch['items'];
+        foreach ( $items as $i => $item ) {
+            if ( 'page_created' === ( $item['kind'] ?? '' ) && isset( $pageHashes[ (int) ( $item['ref'] ?? 0 ) ] ) ) {
+                $items[ $i ]['after_hash'] = $pageHashes[ (int) $item['ref'] ];
+            }
+        }
 
-        return null !== $batch && $this->repo->update( $id, $status, $batch['items'] );
+        return $this->repo->update( $id, $status, $items );
     }
 
     /** @return array<string,mixed>|null the user's open build */

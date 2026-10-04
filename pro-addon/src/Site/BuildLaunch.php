@@ -8,6 +8,7 @@ use AiEditorDivi5\Pro\Batch\BatchLog;
 use AiEditorDivi5\Pro\Batch\Item;
 use AiEditorDivi5\Pro\Canon;
 use AiEditorDivi5\Pro\Kinds\FrontPageKind;
+use AiEditorDivi5\Pro\Kinds\PageCreatedKind;
 use AiEditorDivi5\Pro\Settings\MenuBuilder;
 use AiEditorDivi5\Pro\Tools\BuildSite;
 
@@ -179,6 +180,7 @@ final class BuildLaunch
         $published = [];
         $skipped   = [];
         $live      = [];
+        $hashes    = [];
         foreach ( $plan as $p ) {
             $base = [ 'id' => $p['id'], 'title' => $p['title'] ];
             if ( ! $p['will'] ) {
@@ -193,6 +195,13 @@ final class BuildLaunch
                 $skipped[] = $base + [ 'reason' => 'changed_since_preview' ];
                 continue;
             }
+            // Read again just before publishing: an undo (or the owner) may have trashed or changed the page since the plan was made, and a
+            // page must never be published out of the trash.
+            $current = get_post( $p['id'] );
+            if ( ! $current || 'draft' !== $current->post_status ) {
+                $skipped[] = $base + [ 'reason' => 'not_available' ];
+                continue;
+            }
             if ( is_wp_error( wp_update_post( [ 'ID' => $p['id'], 'post_status' => 'publish' ], true ) ) ) {
                 $skipped[] = $base + [ 'reason' => 'publish_failed' ];
                 continue;
@@ -203,6 +212,10 @@ final class BuildLaunch
             $line     = $base + [ 'slug' => $realSlug, 'status' => $status, 'link' => get_permalink( $p['id'] ) ];
             if ( $realSlug !== $p['slug'] ) {
                 $line['slug_changed'] = [ 'planned' => $p['slug'], 'real' => $realSlug ];
+                // The page now has this slug; the build's record of it must say so, or an undo would see a changed page and keep it.
+                if ( $now ) {
+                    $hashes[ $p['id'] ] = Canon::hash( PageCreatedKind::snapshot( $now ) );
+                }
             }
             if ( 'publish' !== $status ) {
                 $line['note'] = 'WordPress left this page as "' . $status . '": it is not live, and it is not in the menu or the front page.';
@@ -230,7 +243,7 @@ final class BuildLaunch
                 'menu'       => null,
                 'build'      => BuildSite::summary( (array) ( $this->log->find( $buildId ) ?? $row ) ),
                 'batch'      => [ 'id' => null, 'undoable' => false, 'note' => 'The publishing could not be recorded, so undo_batch cannot take it back.' ],
-                'message'    => 'The pages were published, but this could not be recorded, so the front page and the menu were NOT changed and undo_batch cannot take the publishing back. Check the pages under Pages.',
+                'message'    => 'The pages were published, but this could not be recorded, so the front page and the menu were NOT changed and undo_batch cannot take the publishing back. The build stays open. Check the pages under Pages.',
             ];
         }
         $frontId = null;
@@ -268,14 +281,18 @@ final class BuildLaunch
             } catch ( \Throwable $e ) {
                 // The pages are live and recorded: say so instead of letting a generic error hide it. The build is finished (a second
                 // launch could only skip pages that are no longer drafts); the menu can be set with set_primary_menu.
-                $menuError = $e->getMessage();
-                $message  .= ' The menu could not be built (' . $menuError . '): the pages are live and the front page is set. Set the menu with set_primary_menu, or take everything back with undo_batch ' . $buildId . '.';
+                // An unexpected error (a TypeError, a database error) may carry paths: only an exception the menu code throws on purpose is shown.
+                $menuError = $e instanceof \RuntimeException ? $e->getMessage() : 'an unexpected error';
+                $message  .= ' The menu could not be built (' . $menuError . '): the pages are live' . ( null === $frontId ? '' : ' and the front page is set' ) . '. Set the menu with set_primary_menu, or take everything back with undo_batch ' . $buildId . '.';
             }
         }
 
-        $stored = $stored && $this->log->close( $buildId, 'applied' );
+        $recordedAll = $stored;
+        $stored      = $stored && $this->log->close( $buildId, 'applied', $hashes );
         if ( $stored ) {
             $batch = BatchLog::describe( (array) $this->log->find( $buildId ) );
+        } elseif ( $recordedAll ) {
+            $batch = BatchLog::describe( (array) $this->log->find( $buildId ) ) + [ 'note' => 'Everything was recorded, but the build could not be marked finished; undo_batch still takes it all back.' ];
         } elseif ( $any ) {
             $batch = BatchLog::describe( (array) $this->log->find( $buildId ) ) + [ 'note' => 'Not every step could be recorded, so undo_batch may not take everything back.' ];
         } else {

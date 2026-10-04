@@ -129,6 +129,16 @@ class BatchToolsTest extends TestCase
         $this->assertSame( 'edited since', $GLOBALS['__fake_store']['a'] );
     }
 
+    public function testThePartialUndoMessageExplainsWhyAnItemWasSkipped(): void
+    {
+        $GLOBALS['__fake_store']['a'] = 'one';
+        $id                           = $this->change( 'a', 'two' );
+        $GLOBALS['__fake_fail']       = true;
+        $r                            = $this->undo->run( [ 'batch_id' => $id ] );
+        $this->assertSame( 'failed', $r['items'][0]['result'] );
+        $this->assertStringContainsString( 'failed: write_failed', $r['message'], 'the reason is part of the message' );
+    }
+
     public function testForceOverridesTheChangedSinceRule(): void
     {
         $GLOBALS['__fake_store']['a'] = 'one';

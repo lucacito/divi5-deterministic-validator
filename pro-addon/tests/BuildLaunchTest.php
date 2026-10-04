@@ -52,12 +52,12 @@ class BuildLaunchTest extends TestCase
         $GLOBALS['__wp_update_fail']      = false;
         $GLOBALS['__wp_current_user_id']  = 7;
         $GLOBALS['__wp_caps']             = [ 'publish_pages' => true, 'edit_post' => true, 'delete_post' => true, 'edit_theme_options' => true, 'manage_options' => true ];
-        unset( $GLOBALS['__wp_update_hook'], $GLOBALS['__wp_menu_create_fail'] );
+        unset( $GLOBALS['__wp_update_hook'], $GLOBALS['__wp_menu_create_fail'], $GLOBALS['__wp_menu_throw'] );
     }
 
     protected function tearDown(): void
     {
-        unset( $GLOBALS['__wp_caps'], $GLOBALS['__wp_current_user_id'], $GLOBALS['__wp_update_hook'], $GLOBALS['__wp_menu_create_fail'] );
+        unset( $GLOBALS['__wp_caps'], $GLOBALS['__wp_current_user_id'], $GLOBALS['__wp_update_hook'], $GLOBALS['__wp_menu_create_fail'], $GLOBALS['__wp_menu_throw'] );
         $GLOBALS['__wp_update_fail'] = false;
     }
 
@@ -449,6 +449,7 @@ class BuildLaunchTest extends TestCase
         $this->assertNull( $r['batch']['id'] );
         $this->assertFalse( $r['batch']['undoable'] );
         $this->assertStringContainsString( 'could not be recorded', $r['message'] );
+        $this->assertStringContainsString( 'build stays open', $r['message'] );
         $this->assertSame( 'building', $this->repo->rows[1]['status'] );
     }
 
@@ -464,5 +465,80 @@ class BuildLaunchTest extends TestCase
         $this->assertSame( 'building', $this->repo->rows[1]['status'], 'the build is not closed while a step is missing' );
         $this->assertContains( 'menu', array_column( $this->repo->rows[1]['items'], 'kind' ) );
         $this->assertNotContains( 'front_page', array_column( $this->repo->rows[1]['items'], 'kind' ) );
+    }
+
+    public function testAnOpenBuildWhoseOnlyPageWasEditedIsStillClosedByUndoSoANewBuildCanStart(): void
+    {
+        $r = $this->tool->run( [ 'action' => 'add_page', 'title' => 'Home', 'slug' => 'home', 'content' => self::layout( 'Home' ) ] );
+        $GLOBALS['__wp_posts'][ $r['page']['id'] ]->post_content = 'owner edit in the builder';
+        $dry = $this->undo()->undo( 1, false, true );
+        $this->assertSame( 'building', $this->repo->rows[1]['status'], 'a preview closes nothing' );
+        $this->assertSame( 0, $dry['would_restore'] );
+        $u = $this->undo()->undo( 1 );
+        $this->assertSame( 0, $u['restored'] );
+        $this->assertFalse( $u['fully_undone'] );
+        $this->assertSame( 'partly_undone', $this->repo->rows[1]['status'], 'abandoned: the build is closed even though nothing could be restored' );
+        $this->assertNull( $this->log->openBuild( 7 ), 'the user is not locked out of new builds' );
+        $this->assertSame( 'draft', $GLOBALS['__wp_posts'][ $r['page']['id'] ]->post_status, 'the edited page is kept' );
+        $this->assertNull( $u['undo_batch'], 'nothing was restored, so there is no undo batch' );
+    }
+
+    public function testAPageTrashedBetweenThePreviewAndThePublishingIsSkippedNotPublishedOutOfTheTrash(): void
+    {
+        $ids = $this->build();
+        $p   = $this->preview();
+        $GLOBALS['__wp_update_hook'] = static function ( int $id, array $arr ) use ( $ids ): void {
+            if ( 'publish' === ( $arr['post_status'] ?? '' ) && $id === $ids['home'] ) {
+                $GLOBALS['__wp_posts'][ $ids['about'] ]->post_status = 'trash';
+            }
+        };
+        $r = $this->launch( $p );
+        $this->assertSame( 'trash', $GLOBALS['__wp_posts'][ $ids['about'] ]->post_status, 'never published out of the trash' );
+        $this->assertSame( [ [ 'id' => $ids['about'], 'title' => 'About', 'reason' => 'not_available' ] ], $r['skipped'] );
+        $this->assertSame( [ 'Home' ], $this->menuTitles(), 'and not in the menu' );
+    }
+
+    public function testASlugCoreChangedAtPublishTimeDoesNotStopTheUndoFromTrashingThePage(): void
+    {
+        $ids = $this->build();
+        $p   = $this->preview();
+        $GLOBALS['__wp_update_hook'] = static function ( int $id, array $arr ): void {
+            if ( 'publish' === ( $arr['post_status'] ?? '' ) && 'about' === $GLOBALS['__wp_posts'][ $id ]->post_name ) {
+                $GLOBALS['__wp_posts'][ $id ]->post_name = 'about-2';
+            }
+        };
+        $this->launch( $p );
+        unset( $GLOBALS['__wp_update_hook'] );
+        $u = $this->undo()->undo( 1 );
+        $this->assertTrue( $u['fully_undone'], 'the item records the slug the page really has' );
+        $this->assertSame( 'trash', $GLOBALS['__wp_posts'][ $ids['about'] ]->post_status, 'no draft is left behind' );
+    }
+
+    public function testTheMenuFailureMessageDoesNotClaimAFrontPageThatWasNotSetAndHidesUnexpectedDetail(): void
+    {
+        $this->build( false );
+        $p = $this->preview();
+        $GLOBALS['__wp_menu_throw'] = true;
+        $r = $this->launch( $p );
+        $this->assertTrue( $r['changed'] );
+        $this->assertNull( $r['front_page'] );
+        $this->assertStringNotContainsString( 'front page is set', $r['message'] );
+        $this->assertStringNotContainsString( '/var/www', $r['message'] . $r['menu_error'], 'an unexpected error shows no file path or internals' );
+        $this->assertStringContainsString( 'set_primary_menu', $r['message'] );
+    }
+
+    public function testWhenEverythingWasRecordedButTheBuildCannotBeClosedTheNoteSaysSoAndUndoStillWorks(): void
+    {
+        $this->build();
+        $p = $this->preview();
+        $this->repo->failUpdate = true;
+        $r = $this->launch( $p );
+        $this->repo->failUpdate = false;
+        $this->assertTrue( $r['changed'] );
+        $this->assertSame( 1, $r['batch']['id'] );
+        $this->assertStringContainsString( 'could not be marked finished', $r['batch']['note'] );
+        $this->assertStringNotContainsString( 'cannot undo', $r['batch']['note'] );
+        $this->assertSame( 8, count( $this->repo->rows[1]['items'] ) );
+        $this->assertTrue( $this->undo()->undo( 1 )['fully_undone'] );
     }
 }

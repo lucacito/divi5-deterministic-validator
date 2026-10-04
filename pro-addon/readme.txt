@@ -54,7 +54,7 @@ Deleting the plugin removes its own data (licence state, batch history, saved co
 
 = 0.5.0 =
 * New: `build_site` builds a whole Divi 5 site as one undoable build. `add_page` creates one checked draft page per call: a page that fails the layout checks, or whose slug another page already uses, is refused with the exact reason and the pages already added are kept. `status` lists the build. `launch` publishes the pages, sets the front page and rebuilds the primary menu in one step, after a preview (`dry_run`) and with its single-use token; pages that changed or lost their slug since the preview are skipped and the rest goes live. Nothing is visible on the live site before the launch.
-* One `undo_batch` takes the whole build away again (the menu and the front page come back, the pages go to the trash); a page you edited in the Divi builder afterwards is skipped and reported, never trashed behind your back. An unfinished build can be abandoned the same way.
+* One `undo_batch` takes the whole build away again (the menu and the front page come back, the pages go to the trash, unless your menu or front page still uses them); a page you edited in the Divi builder afterwards is skipped and reported, never trashed behind your back, even with the force option. An unfinished build can be abandoned the same way, and the undo closes it even when nothing could be restored.
 * `build_site` uses the last of the 30 operations the ChatGPT importer accepts (16 free + 14 Pro).
 
 = 0.4.1 =

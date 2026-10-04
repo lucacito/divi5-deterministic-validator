@@ -77,7 +77,7 @@ reserved keys `-1` and `-2` a hash of the live front-page options and of the liv
    (`MenuBuilder::targetLocation()`; without a location it is built unassigned and the result says so).
 4. If the live front page or the live menu changed since the preview, the whole real run is refused (a new preview is needed); site settings are
    not "partially" applied against a stale picture.
-5. The dry run returns what would happen: pages with the link each would have, `would_publish`, `would_skip` with reasons, the front-page change
+5. The dry run returns what would happen: pages with the slug each would have, `would_publish`, `would_skip` with reasons, the front-page change
    (current to new), the menu change (replaces N items with M), and the token. The real run returns the published pages with their REAL
    final slug and permalink, the skipped pages, the menu result, and the batch.
 6. WordPress can still change a slug at publish time (reserved or newly taken slugs). The result reports every page whose final slug differs from

@@ -66,7 +66,7 @@ final class BuildSite implements ProTool
                     'slug'       => [ 'type' => 'string', 'description' => 'add_page: the page slug; it must not be used by another page' ],
                     'content'    => [ 'type' => 'string', 'description' => 'add_page: the Divi 5 layout (it must pass every check)' ],
                     'menu_label' => [ 'type' => 'string', 'description' => 'add_page: the menu label (default: the title), at most 100 bytes' ],
-                    'in_menu'    => [ 'type' => 'boolean', 'description' => 'add_page: put the page in the primary menu at launch (default true)' ],
+                    'in_menu'    => [ 'type' => 'boolean', 'description' => 'add_page: put the page in the primary menu at launch (default true if you may edit menus, else false)' ],
                     'is_front'   => [ 'type' => 'boolean', 'description' => 'add_page: make this the front page at launch (one page per build)' ],
                     'build_id'   => [ 'type' => 'integer', 'description' => 'The build to use: returned by the first add_page; required for later pages and for launch' ],
                     'dry_run'    => [ 'type' => 'boolean', 'description' => 'launch: preview only; returns the token a real launch needs' ],
@@ -107,9 +107,18 @@ final class BuildSite implements ProTool
         }
         $content = (string) Args::string( $a, 'content', true, self::MAX_CONTENT );
         $label   = array_key_exists( 'menu_label', $a ) && null !== $a['menu_label'] ? trim( sanitize_text_field( (string) Args::string( $a, 'menu_label', true, 100 ) ) ) : '';
-        $inMenu  = ! array_key_exists( 'in_menu', $a ) || null === $a['in_menu'] ? true : Args::bool( $a, 'in_menu' );
+        $canMenu = current_user_can( 'edit_theme_options' );
+        // The default is "in the menu" only for someone who may launch a menu: a page flagged for a menu or the front page that its
+        // owner may not change could never be launched, and no action edits a page's flags afterwards.
+        $inMenu  = ! array_key_exists( 'in_menu', $a ) || null === $a['in_menu'] ? $canMenu : Args::bool( $a, 'in_menu' );
         $isFront = Args::bool( $a, 'is_front' );
         $buildId = Args::int( $a, 'build_id', false );
+        if ( $inMenu && ! $canMenu ) {
+            throw new \InvalidArgumentException( 'Putting a page in the primary menu needs the edit_theme_options permission, which you do not have. Pass "in_menu": false.' );
+        }
+        if ( $isFront && ! current_user_can( 'manage_options' ) ) {
+            throw new \InvalidArgumentException( 'Making a page the front page needs the manage_options permission, which you do not have. Leave out "is_front".' );
+        }
 
         $verdict = LayoutGate::check( $content );
         if ( ! $verdict->isValid() ) {
@@ -152,7 +161,7 @@ final class BuildSite implements ProTool
         if ( $fresh ) {
             $opened = $this->log->open( self::NAME, 'Site build' );
             if ( null === $opened ) {
-                throw new \RuntimeException( 'The build could not be started.' );
+                throw new \InvalidArgumentException( 'The build could not be started. Try again.' );
             }
             $buildId = (int) $opened['id'];
         } else {
@@ -172,7 +181,8 @@ final class BuildSite implements ProTool
             if ( $fresh ) {
                 $this->log->close( $buildId, 'undone' );
             }
-            throw new \RuntimeException( $id->get_error_message() );
+            // WordPress's own error text stays out of the answer.
+            throw new \InvalidArgumentException( 'WordPress could not create the page. Nothing was changed; try again.' );
         }
         $post = get_post( (int) $id );
         $item = PageCreatedKind::itemFor( $post, [ 'in_menu' => $inMenu, 'is_front' => $isFront, 'menu_label' => $label ] );
@@ -181,7 +191,7 @@ final class BuildSite implements ProTool
             if ( $fresh ) {
                 $this->log->close( $buildId, 'undone' );
             }
-            throw new \RuntimeException( 'The page could not be recorded in the build, so it was removed again. Try again.' );
+            throw new \InvalidArgumentException( 'The page could not be recorded in the build, so it was removed again. Try again.' );
         }
 
         return StyleReferences::attach( [

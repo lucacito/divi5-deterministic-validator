@@ -82,7 +82,7 @@ final class UndoBatch implements ProTool
         $skipped = [];
         foreach ( $r['items'] as $item ) {
             if ( ! in_array( $item['result'], [ 'restored', 'already_undone' ], true ) ) {
-                $skipped[] = $item['label'] . ' (' . $item['result'] . ')';
+                $skipped[] = $item['label'] . ' (' . $item['result'] . ( isset( $item['reason'] ) && '' !== (string) $item['reason'] ? ': ' . $item['reason'] : '' ) . ')';
             }
         }
 
