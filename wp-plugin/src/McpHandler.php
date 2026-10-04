@@ -72,8 +72,8 @@ final class McpHandler
 
         return match ($method) {
             'initialize'               => $this->onInitialize($id),
-            'notifications/initialized' => $this->noContent(),
-            'ping'                     => $this->rpcResult($id, []),
+            'notifications/initialized' => $this->accepted(),
+            'ping'                     => $this->rpcResult($id, new \stdClass()),
             'tools/list'               => $this->onToolsList($id),
             'tools/call'               => $this->onToolsCall($id, $params),
             default                    => $this->rpcError($id, -32601, "Method not found: {$method}"),
@@ -734,7 +734,7 @@ final class McpHandler
     // JSON-RPC helpers
     // ---------------------------------------------------------------
 
-    private function rpcResult(mixed $id, array $result): WP_REST_Response
+    private function rpcResult(mixed $id, array|\stdClass $result): WP_REST_Response
     {
         return new WP_REST_Response(['jsonrpc' => '2.0', 'id' => $id, 'result' => $result], 200);
     }
@@ -744,8 +744,9 @@ final class McpHandler
         return new WP_REST_Response(['jsonrpc' => '2.0', 'id' => $id, 'error' => ['code' => $code, 'message' => $message]], 200);
     }
 
-    private function noContent(): WP_REST_Response
+    /** The MCP HTTP transport answers a notification with 202 Accepted and no body. */
+    private function accepted(): WP_REST_Response
     {
-        return new WP_REST_Response(null, 204);
+        return new WP_REST_Response(null, 202);
     }
 }
