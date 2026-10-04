@@ -1,7 +1,7 @@
 <!--
 DRAFT. Not on the live site. Every price, site limit, cap and reminder day is a {{token}} read from layoutlab/config/pricing.json ({{reminders}} = the renewalReminderDays joined with "and"; {{tier:lifetime}} = the label of the Lifetime tier).
 Competitor facts are third-party and dated "as of October 2026"; each has its source URL in a comment.
-TODO(owner) markers are decisions or facts I could not verify.
+TODO(owner) markers are decisions or facts I could not verify. {{refund:days}} = refundWindowDays.
 -->
 
 # JHMG AI Editor for Divi 5: pricing
@@ -67,7 +67,7 @@ Different tools do different jobs. If you want an AI to run a wide range of Word
 All Pro tools keep working. Updates and support stop. Renewing brings them back.
 
 **Can I get a refund?**
-TODO(owner): refund policy.
+You have a {{trial:days}}-day free trial first, so a purchase is final once you have bought a plan. We do refund in full if you write to support within {{refund:days}} days of the charge and you were charged twice or in error, the add-on cannot be activated or does not work on a supported setup and we cannot fix it, or a yearly renewal was charged and you want to stop (we refund that renewal and cancel the plan). You can cancel at any time and keep the plan until the end of the period you paid for. The full text is on the licence page (kept in layoutlab `lib/legal/refund.ts`, `aiEditorRefundPolicy()`).
 
 **The code is GPL. What am I paying for?**
 Updates (including compatibility with new Divi and WordPress versions), support, and the licence service that handles activation and renewal. You may read and modify the code under the GPL.
