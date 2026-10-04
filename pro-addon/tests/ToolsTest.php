@@ -51,7 +51,7 @@ class ToolsTest extends TestCase
     public function testEveryKindARecordedItemUsesIsRegisteredForUndo(): void
     {
         $this->assertEqualsCanonicalizing(
-            [ 'front_page', 'custom_css', 'menu', 'post_status', 'post_content', 'theme_layout_content', 'theme_template' ],
+            [ 'front_page', 'custom_css', 'menu', 'post_status', 'page_created', 'page_trashed', 'post_content', 'theme_layout_content', 'theme_template' ],
             array_keys( \AiEditorDivi5\Pro\Batch\Batches::kinds() )
         );
     }
