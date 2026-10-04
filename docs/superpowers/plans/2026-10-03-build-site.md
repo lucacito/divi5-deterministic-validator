@@ -3497,3 +3497,16 @@ Expected: `[build-pro] Packaging jhmg-ai-editor-for-divi-5-pro version 0.5.0`, t
 git status --short && git log --oneline main..HEAD
 ```
 Expected: no `git status` output; seven commits (Tasks 1 to 7) plus any fix commits on `feat/pro-0-5-0`. Do not merge: the final whole-branch review (opus) comes first, then the owner decides.
+
+## As built (2026-10-03)
+
+Executed by subagent-driven development on `feat/pro-0-5-0` (merged to LOCAL main 749dc86; not released, not pushed). The plan's code was replayed byte for byte; review rounds then changed it (numbers in the tasks above are plan-time, the real ones are Pro 875 tests, main 727, `make verify-pro-build-site` 44 PASS, `make verify-pro-rest` 30 operations).
+
+Changes made by review fix rounds (each was prototyped test-first and applied from exact patches):
+- Task 2: `PageCreatedKind::current()` requires a draft page of type `page`; untrash of a vanished page reports it.
+- Task 3: `BuildLock` is atomic on the database (core's `add_option` is not); `append` only lands on an open build; slug length and id disclosure rules.
+- Task 4: `guard_in_use` (undo never unpublishes a page the live menu or front page still points at), real status on published lines, preview `front_page.from`.
+- Task 5: `launch` takes the lock BEFORE it reads the build; a throwing menu step is reported (`menu_error`) instead of a generic 500; a failed record stops the front page and menu; honest notes for partial records.
+- Final wave (whole-branch opus review): a real `undo_batch` always closes an open build; `force` never trashes a page that is no longer a draft nor deletes an edited one when `EMPTY_TRASH_DAYS` is 0; `add_page` refuses `in_menu`/`is_front` the user could never launch (default `in_menu` follows `edit_theme_options`); the launch re-reads each page right before publishing; a slug WordPress changed at publish is written into the build record so undo still works; user-facing exception texts; uninstall removes leftover build-lock rows; the live gate also proves the real-database lock, an open build surviving the trim and an all-edited open build being closed.
+
+Accepted limits (README "Known limits"): `undo_batch` takes no build lock (and `BatchLog::close` is a read-modify-write), an abandoned build never expires, a call longer than the 15 s lock expiry can overlap the next, a menu location repointed after the preview is not detected as stale, a throw inside `MenuBuilder` after it started changing the menu is not recorded, a forced undo preview is optimistic about pages the real run refuses, and the slug rehash is saved only when the build closes.
