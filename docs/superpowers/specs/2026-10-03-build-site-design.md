@@ -37,7 +37,7 @@ Description at most 300 characters. Input: `action` (`add_page` | `status` | `la
 
 | Action | Arguments | Capability checked |
 |---|---|---|
-| `add_page` | `title`, `slug`, `content` (required strings); `build_id` (integer, optional); `menu_label` (string, at most 100 bytes, default the title); `in_menu` (boolean, default true); `is_front` (boolean, default false) | `publish_pages` |
+| `add_page` | `title`, `slug`, `content` (required strings); `build_id` (integer, optional); `menu_label` (string, at most 100 bytes, default the title); `in_menu` (boolean, default true when the user may edit menus, else false; true or `is_front` without `edit_theme_options` / `manage_options` is refused at `add_page`); `is_front` (boolean, default false) | `publish_pages` |
 | `status` | `build_id` (optional: the user's open build) | `publish_pages` |
 | `launch` | `build_id`; `dry_run` (boolean); `token` (string) | `publish_pages` for the status change, `edit_theme_options` for the menu, `manage_options` only when a page is flagged `is_front`; `edit_post` on every page |
 

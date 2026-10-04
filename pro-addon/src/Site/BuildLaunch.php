@@ -197,6 +197,9 @@ final class BuildLaunch
             }
             // Read again just before publishing: an undo (or the owner) may have trashed or changed the page since the plan was made, and a
             // page must never be published out of the trash.
+            if ( function_exists( 'clean_post_cache' ) ) {
+                clean_post_cache( $p['id'] );   // get_post() would answer from the object cache the plan filled
+            }
             $current = get_post( $p['id'] );
             if ( ! $current || 'draft' !== $current->post_status ) {
                 $skipped[] = $base + [ 'reason' => 'not_available' ];
