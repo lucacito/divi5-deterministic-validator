@@ -90,6 +90,7 @@ class WpOrgComplianceTest extends TestCase
         'src/ApiKey.php'       => 'stores the plugin API key and its user (ai_editor_divi5_api_key / _api_user_id)',
         'src/UsageTracker.php' => 'stores the usage-log table schema version (ai_editor_divi5_db_version)',
         'src/HistoryTable.php' => 'stores the history table stage: created / old history migrated (ai_editor_divi5_history_db_version)',
+        'src/ApprovalMode.php' => 'stores the site owner\'s own approval-mode setting (ai_editor_divi5_require_preview); changed only from the nonce-protected admin form, never by the AI (owner-approved exception 2026-10-04)',
     ];
 
     /** @return array<string,string> relative path => contents */
@@ -216,7 +217,7 @@ class WpOrgComplianceTest extends TestCase
                     $hits[] = "$rel:" . ($i + 1) . " ({$m[0]})";
                 }
                 if (preg_match('/\b(?:update_option|add_option|update_site_option|add_site_option)\s*\(/', $line, $m)
-                    && !(isset(self::OPTION_WRITERS[$rel]) && preg_match('/\(\s*self::(?:OPTION_KEY|OPTION_USER|DB_VERSION_OPTION)\s*,/', $line))) {
+                    && !(isset(self::OPTION_WRITERS[$rel]) && preg_match('/\(\s*self::(?:OPTION_KEY|OPTION_USER|DB_VERSION_OPTION|OPTION)\s*,/', $line))) {
                     $hits[] = "$rel:" . ($i + 1) . " ({$m[0]}) writes an option";
                 }
             }
