@@ -166,6 +166,12 @@ final class BuildLaunch
     private function apply( array $row, array $plan, array $opened, array $frontBefore, array $menuBefore, string $location ): array
     {
         $buildId   = (int) $row['id'];
+        $stored    = true;
+        // Each step is written to the build's batch as soon as it has happened: if a later step fails, what already went live
+        // is recorded and `undo_batch` can still take it back (the build then simply stays open).
+        $record    = function ( array $items ) use ( $buildId, &$stored ): void {
+            $stored = $this->log->append( $buildId, $items ) && $stored;
+        };
         $recorded  = [];
         $published = [];
         $skipped   = [];
@@ -209,6 +215,7 @@ final class BuildLaunch
             return [ 'changed' => false, 'dry_run' => false, 'published' => [], 'skipped' => $skipped, 'build' => BuildSite::summary( $row ), 'message' => 'Nothing was published; the build is still open. Pages skipped now stay drafts.' ];
         }
 
+        $record( $recorded );
         $frontId = null;
         foreach ( $live as $p ) {
             if ( ! empty( $p['meta']['is_front'] ) ) {
@@ -218,7 +225,7 @@ final class BuildLaunch
         }
         if ( null !== $frontId ) {
             FrontPageKind::set( 'page', $frontId );
-            $recorded[] = Item::make( 'front_page', 'front_page', 'Front page', $frontBefore, FrontPageKind::read() );
+            $record( [ Item::make( 'front_page', 'front_page', 'Front page', $frontBefore, FrontPageKind::read() ) ] );
         }
 
         $menu    = null;
@@ -231,7 +238,7 @@ final class BuildLaunch
             ], $menuIn );
             $added     = MenuBuilder::build( $menuItems, $location );
             $after     = MenuBuilder::snapshot( $location );
-            $recorded[] = Item::make( 'menu', $location, 'Main Menu (primary navigation)', $menuBefore, MenuBuilder::canonical( $after ) );
+            $record( [ Item::make( 'menu', $location, 'Main Menu (primary navigation)', $menuBefore, MenuBuilder::canonical( $after ) ) ] );
             $menu      = [ 'items' => $added, 'location' => '' === $location ? null : $location ];
             if ( '' === $location ) {
                 $message .= ' The menu "' . MenuBuilder::MENU_NAME . '" was built, but this theme has no menu location, so it was not assigned. Assign it under Appearance > Menus.';
@@ -241,7 +248,7 @@ final class BuildLaunch
             }
         }
 
-        $stored = $this->log->append( $buildId, $recorded ) && $this->log->close( $buildId, 'applied' );
+        $stored = $stored && $this->log->close( $buildId, 'applied' );
         $batch  = $stored ? BatchLog::describe( (array) $this->log->find( $buildId ) ) : [ 'id' => null, 'undoable' => false, 'note' => 'The build went live, but this could not be recorded, so undo_batch cannot undo it.' ];
 
         return [

@@ -46,6 +46,9 @@ if ( ! function_exists( 'wp_get_nav_menu_object' ) ) {
 }
 if ( ! function_exists( 'wp_create_nav_menu' ) ) {
     function wp_create_nav_menu( $name ) {
+        if ( ! empty( $GLOBALS['__wp_menu_create_fail'] ) ) {
+            return new WP_Error( 'menu_failed', 'simulated menu failure' );
+        }
         if ( false !== wp_get_nav_menu_object( $name ) ) {
             return new WP_Error( 'menu_exists', 'The menu name already exists.' );
         }

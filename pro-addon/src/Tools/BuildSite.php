@@ -227,12 +227,20 @@ final class BuildSite implements ProTool
         $buildId = (int) Args::int( $a, 'build_id' );
         $dry     = Args::bool( $a, 'dry_run' );
         $token   = Args::string( $a, 'token', false, 8000 );
-        $row     = $this->owned( $buildId, (int) get_current_user_id() );
+        $userId  = (int) get_current_user_id();
+        $row     = $this->owned( $buildId, $userId );
         if ( BatchLog::BUILDING !== $row['status'] ) {
             throw new \InvalidArgumentException( "Build {$buildId} is finished (" . self::state( $row ) . ') and cannot be launched again.' );
         }
-
-        return ( new BuildLaunch( $this->log, $this->clock ) )->run( $row, $dry, $token );
+        // The same per-user lock as add_page: a page must not be appended to a build while it is being launched and closed.
+        if ( ! $this->lock->acquire( $userId ) ) {
+            throw new \InvalidArgumentException( 'Another build_site call is still running for you. Wait a moment and call again.' );
+        }
+        try {
+            return ( new BuildLaunch( $this->log, $this->clock ) )->run( $row, $dry, $token );
+        } finally {
+            $this->lock->release( $userId );
+        }
     }
 
     /** The user's own build by id, whatever its state; anything else is "not found" (nothing leaks about other users' batches). @return array<string,mixed> */

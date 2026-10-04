@@ -52,12 +52,12 @@ class BuildLaunchTest extends TestCase
         $GLOBALS['__wp_update_fail']      = false;
         $GLOBALS['__wp_current_user_id']  = 7;
         $GLOBALS['__wp_caps']             = [ 'publish_pages' => true, 'edit_post' => true, 'delete_post' => true, 'edit_theme_options' => true, 'manage_options' => true ];
-        unset( $GLOBALS['__wp_update_hook'] );
+        unset( $GLOBALS['__wp_update_hook'], $GLOBALS['__wp_menu_create_fail'] );
     }
 
     protected function tearDown(): void
     {
-        unset( $GLOBALS['__wp_caps'], $GLOBALS['__wp_current_user_id'], $GLOBALS['__wp_update_hook'] );
+        unset( $GLOBALS['__wp_caps'], $GLOBALS['__wp_current_user_id'], $GLOBALS['__wp_update_hook'], $GLOBALS['__wp_menu_create_fail'] );
         $GLOBALS['__wp_update_fail'] = false;
     }
 
@@ -370,5 +370,50 @@ class BuildLaunchTest extends TestCase
     {
         $this->log->open( 'build_site', 'Site build' );
         $this->refused( [ 'action' => 'launch', 'build_id' => 1, 'dry_run' => true ], 'has no pages' );
+    }
+
+    public function testALaunchWhileAnotherBuildCallIsRunningIsRefusedAndTheLockIsReleasedAfterwards(): void
+    {
+        $this->build();
+        $GLOBALS['__wp_options']['aied_pro_buildlock_7'] = (string) time();
+        $this->refused( [ 'action' => 'launch', 'build_id' => 1, 'dry_run' => true ], 'still running' );
+        unset( $GLOBALS['__wp_options']['aied_pro_buildlock_7'] );
+        $p = $this->preview();
+        $this->assertArrayNotHasKey( 'aied_pro_buildlock_7', $GLOBALS['__wp_options'], 'released after a preview' );
+        $this->launch( $p );
+        $this->assertArrayNotHasKey( 'aied_pro_buildlock_7', $GLOBALS['__wp_options'], 'released after the real run' );
+        try {
+            $this->tool->run( [ 'action' => 'launch', 'build_id' => 1, 'dry_run' => true ] );
+        } catch ( \InvalidArgumentException $e ) {
+            // finished
+        }
+        $this->assertArrayNotHasKey( 'aied_pro_buildlock_7', $GLOBALS['__wp_options'], 'released after a refusal' );
+    }
+
+    public function testWhatWasPublishedIsRecordedEvenWhenALaterStepFailsSoItCanStillBeUndone(): void
+    {
+        $ids = $this->build();
+        $p   = $this->preview();
+        $GLOBALS['__wp_menu_create_fail'] = true;
+        try {
+            $this->launch( $p );
+            $this->fail( 'expected the menu failure to surface' );
+        } catch ( \RuntimeException $e ) {
+            $this->assertStringContainsString( 'simulated menu failure', $e->getMessage() );
+        }
+        $GLOBALS['__wp_menu_create_fail'] = false;
+        foreach ( $ids as $id ) {
+            $this->assertSame( 'publish', $GLOBALS['__wp_posts'][ $id ]->post_status, 'the pages did go live before the menu step failed' );
+        }
+        $row = $this->repo->rows[1];
+        $this->assertSame( 'building', $row['status'], 'the build is not marked launched' );
+        $this->assertSame( [ 'page_created', 'page_created', 'page_created', 'post_status', 'post_status', 'post_status', 'front_page' ], array_column( $row['items'], 'kind' ), 'the publishes and the front page were recorded as they happened' );
+
+        $u = $this->undo()->undo( 1 );
+        $this->assertTrue( $u['fully_undone'] );
+        $this->assertSame( [ 'posts', 0 ], [ $GLOBALS['__wp_options']['show_on_front'], $GLOBALS['__wp_options']['page_on_front'] ] );
+        foreach ( $ids as $id ) {
+            $this->assertSame( 'trash', $GLOBALS['__wp_posts'][ $id ]->post_status );
+        }
     }
 }
