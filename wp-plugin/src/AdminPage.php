@@ -27,6 +27,7 @@ final class AdminPage
         add_action('admin_post_ai_editor_divi5_clear_usage',        [$this, 'handleClearUsage']);
         add_action('admin_post_ai_editor_divi5_restore_page',       [$this, 'handleRestorePage']);
         add_action('admin_post_ai_editor_divi5_dismiss_pro_card',   [$this, 'handleDismissProCard']);
+        add_action('admin_post_ai_editor_divi5_toggle_approval', [$this, 'handleToggleApproval']);
     }
 
     public function addMenu(): void
@@ -85,6 +86,15 @@ final class AdminPage
         $this->guard('ai_editor_divi5_clear_usage');
         UsageTracker::clear();
         $this->redirect('dashboard', 'usage_cleared');
+    }
+
+    public function handleToggleApproval(): void
+    {
+        $this->guard('ai_editor_divi5_toggle_approval'); // guard() verifies the nonce via check_admin_referer().
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() verified the nonce above.
+        $on = '1' === sanitize_text_field( wp_unslash( $_POST['require_preview'] ?? '' ) );
+        ApprovalMode::set( $on );
+        $this->redirect('settings', $on ? 'approval_on' : 'approval_off');
     }
 
     public function handleDismissProCard(): void
@@ -432,6 +442,8 @@ final class AdminPage
         $map = [
             'key_regenerated'    => __( 'API key regenerated. Update your AI assistant configuration.', 'jhmg-ai-editor-for-divi-5' ),
             'usage_cleared'      => __( 'Activity log cleared.', 'jhmg-ai-editor-for-divi-5' ),
+            'approval_on'        => __( 'Approval mode is on. Your AI assistant must preview every change before it can save it.', 'jhmg-ai-editor-for-divi-5' ),
+            'approval_off'       => __( 'Approval mode is off.', 'jhmg-ai-editor-for-divi-5' ),
             'version_restored'   => __( 'Previous version restored. The version it replaced was saved too, so you can undo this.', 'jhmg-ai-editor-for-divi-5' ),
         ];
         if ( isset( $map[ $notice ] ) ) {
@@ -609,6 +621,7 @@ final class AdminPage
             [ __( 'Match your site\'s colors and presets', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can look up your site\'s own Divi colors, variables and presets and reuse them, and it is told when a page uses one your site does not have. This is read-only: it never creates, changes or deletes your global colors, variables or presets.', 'jhmg-ai-editor-for-divi-5' ), 'list_global_styles' ],
             [ __( 'Fit your site (post types, image sizes, ACF)', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can look up your custom post types, taxonomies, image sizes and Advanced Custom Fields field groups (read-only), so pages match how your site is set up. It never reads field values or your theme files.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_structure' ],
             [ __( 'Undo AI edits', 'jhmg-ai-editor-for-divi-5' ), __( 'Every AI save keeps the previous version, so you or your AI can browse the history and restore an earlier one.', 'jhmg-ai-editor-for-divi-5' ), 'list_page_history, get_page_history_entry, restore_page_version' ],
+            [ __( 'Approval mode (optional)', 'jhmg-ai-editor-for-divi-5' ), __( 'Turn on "Require a preview before every save" in Settings and your AI must show a preview of every change before it can save it. Off by default.', 'jhmg-ai-editor-for-divi-5' ), 'dry_run' ],
             [ __( 'Create new pages (as drafts)', 'jhmg-ai-editor-for-divi-5' ), __( 'Generate brand-new pages from a prompt — always saved as a draft, validated, ready for you to review and publish.', 'jhmg-ai-editor-for-divi-5' ), 'create_page' ],
             [ __( 'Build entire websites', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in blueprint helps your AI plan a cohesive multi-page site (home, about, services, contact) with shared styling and links between the pages, then tells you how to finish setting it up yourself.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_guide' ],
             [ __( 'Conversion-focused page generation', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in landing-page blueprint, design vocabulary and proven section patterns guide the AI to produce polished, on-brand pages with a strategic structure built to convert.', 'jhmg-ai-editor-for-divi-5' ), 'get_landing_guide, get_style_guide, get_section_recipes' ],
@@ -632,6 +645,27 @@ final class AdminPage
     // ---------------------------------------------------------------
     // View: Settings
     // ---------------------------------------------------------------
+
+    /** The Settings card for the optional "Require a preview before every save" mode. */
+    public function approvalCard(): void
+    {
+        $on = ApprovalMode::enabled();
+        ?>
+        <div class="aied-card">
+            <h3><?php esc_html_e( 'Approval mode', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
+            <p class="aied-muted"><?php esc_html_e( 'When this is on, your AI assistant must preview every change before it can save it: it asks for a preview (nothing is saved), shows you the result, and only then repeats the change to save it. New pages are always drafts and every save can still be undone. Off by default.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                <input type="hidden" name="action" value="ai_editor_divi5_toggle_approval">
+                <?php wp_nonce_field( 'ai_editor_divi5_toggle_approval' ); ?>
+                <label>
+                    <input type="checkbox" name="require_preview" value="1"<?php checked( $on ); ?>>
+                    <?php esc_html_e( 'Require a preview before every save', 'jhmg-ai-editor-for-divi-5' ); ?>
+                </label>
+                <button type="submit" class="button"><?php esc_html_e( 'Save', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+            </form>
+        </div>
+        <?php
+    }
 
     private function viewSettings(): void
     {
@@ -663,6 +697,8 @@ final class AdminPage
             </div>
             <?php $this->connectCard( self::connectClients( rtrim( get_site_url(), '/' ), $key ) ); ?>
         </div>
+
+        <?php $this->approvalCard(); ?>
 
         <!-- Activity log -->
         <?php $recent = UsageTracker::getRecent(10); if ( ! empty( $recent ) ) : ?>

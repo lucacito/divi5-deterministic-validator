@@ -152,7 +152,7 @@ The key is a long random code stored in your WordPress database and shown only t
 
 = Is it dangerous to let AI edit my site? Is there an approval step? =
 
-Every save is checked by a fixed set of rules (no AI is involved in the check) and a broken layout is refused. You can ask your assistant for a preview first (a dry run shows what would change and saves nothing), new pages are always drafts, and every save can be undone from the Dashboard. The plugin cannot change your site settings, users or plugins, and cannot add custom code.
+Every save is checked by a fixed set of rules (no AI is involved in the check) and a broken layout is refused. You can ask your assistant for a preview first (a dry run shows what would change and saves nothing), new pages are always drafts, and every save can be undone from the Dashboard. The plugin cannot change your site settings, users or plugins, and cannot add custom code. If you want a stricter rule, turn on Approval mode in Settings ("Require a preview before every save"): your assistant must then preview every change before it can save it.
 
 = Why do I need this if Claude can already control a browser? =
 
