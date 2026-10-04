@@ -116,6 +116,7 @@ final class BatchesPanel
         return match ( $status ) {
             'undone'        => __( 'undone', 'jhmg-ai-editor-for-divi-5-pro' ),
             'partly_undone' => __( 'partly undone', 'jhmg-ai-editor-for-divi-5-pro' ),
+            'building'      => __( 'building', 'jhmg-ai-editor-for-divi-5-pro' ),
             default         => __( 'applied', 'jhmg-ai-editor-for-divi-5-pro' ),
         };
     }

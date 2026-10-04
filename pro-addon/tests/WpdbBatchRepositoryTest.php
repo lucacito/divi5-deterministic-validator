@@ -97,4 +97,40 @@ class WpdbBatchRepositoryTest extends TestCase
         $this->repo->trim( 20 );
         $this->assertSame( [], array_filter( $GLOBALS['wpdb']->calls, static fn ( array $c ): bool => 'query' === $c[0] ) );
     }
+
+    public function testAppendAddsToTheStoredItemsAndKeepsTheStatus(): void
+    {
+        $row           = $this->row();
+        $row['status'] = 'building';
+        $this->repo->insert( $row );
+        $this->assertTrue( $this->repo->append( 1, [ [ 'kind' => 'second' ], [ 'kind' => 'third' ] ] ) );
+        $b = $this->repo->find( 1 );
+        $this->assertSame( 'building', $b['status'] );
+        $this->assertSame( [ 'k', 'second', 'third' ], array_column( $b['items'], 'kind' ) );
+        $this->assertFalse( $this->repo->append( 99, [ [ 'kind' => 'x' ] ] ) );
+    }
+
+    public function testOpenBuildAsksForTheUsersNewestBuildingBatch(): void
+    {
+        $open           = $this->row( 'older build' );
+        $open['status'] = 'building';
+        $this->repo->insert( $open );
+        $this->repo->insert( $this->row( 'applied' ) );
+        $newer           = $this->row( 'newer build' );
+        $newer['status'] = 'building';
+        $this->repo->insert( $newer );
+        $found = $this->repo->openBuild( 7 );
+        $this->assertSame( 'newer build', $found['summary'] );
+        $last = end( $GLOBALS['wpdb']->calls );
+        $this->assertStringContainsString( "status = 'building'", $last[1] );
+        $this->assertStringContainsString( 'user_id = 7', $last[1] );
+        $this->assertNull( $this->repo->openBuild( 8 ) );
+    }
+
+    public function testTrimNeverSelectsAnOpenBuildForDeletion(): void
+    {
+        $GLOBALS['wpdb']->col = [ '5' ];
+        $this->repo->trim( 20 );
+        $this->assertStringContainsString( "status <> 'building'", $GLOBALS['wpdb']->calls[0][1] );
+    }
 }

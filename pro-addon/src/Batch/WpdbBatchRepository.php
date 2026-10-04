@@ -67,12 +67,32 @@ final class WpdbBatchRepository implements BatchRepository
         return false !== $wpdb->update( BatchTable::name(), [ 'status' => $status, 'items' => $json ], [ 'id' => $id ], [ '%s', '%s' ], [ '%d' ] );
     }
 
+    public function append( int $id, array $items ): bool
+    {
+        $row = $this->find( $id );
+        if ( null === $row ) {
+            return false;
+        }
+
+        return $this->update( $id, (string) $row['status'], array_merge( $row['items'], array_values( $items ) ) );
+    }
+
+    public function openBuild( int $userId ): ?array
+    {
+        global $wpdb;
+
+        $table = BatchTable::name();
+        $row   = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE status = %s AND user_id = %d ORDER BY id DESC LIMIT 1", 'building', $userId ), ARRAY_A );
+
+        return is_array( $row ) ? self::hydrate( $row ) : null;
+    }
+
     public function trim( int $keep ): void
     {
         global $wpdb;
 
         $table = BatchTable::name();
-        $ids   = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM {$table} ORDER BY id DESC LIMIT 1000 OFFSET %d", max( 0, $keep ) ) );
+        $ids   = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM {$table} WHERE status <> %s ORDER BY id DESC LIMIT 1000 OFFSET %d", 'building', max( 0, $keep ) ) );
         if ( ! is_array( $ids ) || [] === $ids ) {
             return;
         }

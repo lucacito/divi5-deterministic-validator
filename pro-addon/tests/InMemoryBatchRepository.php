@@ -48,10 +48,33 @@ final class InMemoryBatchRepository implements BatchRepository
         return true;
     }
 
+    public function append( int $id, array $items ): bool
+    {
+        if ( ! isset( $this->rows[ $id ] ) ) {
+            return false;
+        }
+        $this->rows[ $id ]['items'] = array_merge( $this->rows[ $id ]['items'], array_values( $items ) );
+
+        return true;
+    }
+
+    public function openBuild( int $userId ): ?array
+    {
+        foreach ( array_reverse( $this->rows, true ) as $row ) {
+            if ( 'building' === $row['status'] && (int) $row['user_id'] === $userId ) {
+                return $row;
+            }
+        }
+
+        return null;
+    }
+
     public function trim( int $keep ): void
     {
-        while ( count( $this->rows ) > $keep ) {
-            unset( $this->rows[ array_key_first( $this->rows ) ] );
+        // Like the real store: an open build is never removed and does not count towards the kept batches.
+        $closed = array_keys( array_filter( $this->rows, static fn ( array $r ): bool => 'building' !== $r['status'] ) );
+        while ( count( $closed ) > $keep ) {
+            unset( $this->rows[ array_shift( $closed ) ] );
         }
     }
 }

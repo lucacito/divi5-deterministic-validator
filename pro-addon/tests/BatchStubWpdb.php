@@ -59,7 +59,17 @@ final class BatchStubWpdb
     public function get_row( string $query, mixed $output = null ): ?array
     {
         $this->calls[] = [ 'get_row', $query ];
-        preg_match( '/id = (\d+)/', $query, $m );
+        if ( str_contains( $query, "status = 'building'" ) ) {
+            preg_match( '/user_id = (\d+)/', $query, $u );
+            foreach ( array_reverse( $this->rows, true ) as $row ) {
+                if ( 'building' === $row['status'] && (int) $row['user_id'] === (int) ( $u[1] ?? 0 ) ) {
+                    return $row;
+                }
+            }
+
+            return null;
+        }
+        preg_match( '/WHERE id = (\d+)/', $query, $m );
 
         return $this->rows[ (int) ( $m[1] ?? 0 ) ] ?? null;
     }
