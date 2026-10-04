@@ -121,7 +121,7 @@ class ProOpenApiTest extends TestCase
     {
         $registry = new ToolRegistry( Tools::all(), static fn (): bool => true );
         $paths    = ( new ProOpenApi( $registry ) )->paths( [], 'https://example.com' );
-        $this->assertCount( 13, $paths );
+        $this->assertCount( 14, $paths );
         foreach ( $paths as $path => $methods ) {
             $responses = $methods['post']['responses'];
             $this->assertSame( [ '200', '400', '401', '403', '500' ], array_map( 'strval', array_keys( $responses ) ), $path );

@@ -37,6 +37,8 @@ require_once __DIR__ . '/Kinds/PostStatusKind.php';
 require_once __DIR__ . '/Kinds/PageCreatedKind.php';
 require_once __DIR__ . '/Kinds/PageTrashedKind.php';
 require_once __DIR__ . '/Tools/PublishPage.php';
+require_once __DIR__ . '/Site/BuildLock.php';
+require_once __DIR__ . '/Tools/BuildSite.php';
 require_once __DIR__ . '/Settings/PhpProposals.php';
 require_once __DIR__ . '/Tools/ProposePhpSnippet.php';
 require_once __DIR__ . '/Kinds/PostContentKind.php';

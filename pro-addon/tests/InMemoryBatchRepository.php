@@ -14,6 +14,7 @@ final class InMemoryBatchRepository implements BatchRepository
     /** @var array<int,array<string,mixed>> */
     public array $rows = [];
     public bool $failInsert = false;
+    public bool $failAppend = false;
     private int $next = 1;
 
     public function insert( array $row ): ?int
@@ -50,7 +51,7 @@ final class InMemoryBatchRepository implements BatchRepository
 
     public function append( int $id, array $items ): bool
     {
-        if ( ! isset( $this->rows[ $id ] ) ) {
+        if ( $this->failAppend || ! isset( $this->rows[ $id ] ) ) {
             return false;
         }
         $this->rows[ $id ]['items'] = array_merge( $this->rows[ $id ]['items'], array_values( $items ) );

@@ -8,6 +8,9 @@ declare(strict_types=1);
  */
 if ( ! function_exists( 'wp_insert_post' ) ) {
     function wp_insert_post( $arr, $wp_error = false ) {
+        if ( ! empty( $GLOBALS['__wp_insert_fail'] ) ) {
+            return new WP_Error( 'db_insert_error', 'simulated failure' );
+        }
         $arr          = wp_unslash( $arr );
         $id           = max( array_merge( [ 100 ], array_keys( $GLOBALS['__wp_posts'] ?? [] ) ) ) + 1;
         $p            = new WP_Post();
@@ -16,6 +19,10 @@ if ( ! function_exists( 'wp_insert_post' ) ) {
         $p->post_status  = (string) ( $arr['post_status'] ?? 'draft' );
         $p->post_title   = (string) ( $arr['post_title'] ?? '' );
         $p->post_content = (string) ( $arr['post_content'] ?? '' );
+        $p->post_name    = (string) ( $arr['post_name'] ?? '' );
+        foreach ( (array) ( $arr['meta_input'] ?? [] ) as $k => $v ) {
+            $GLOBALS['__wp_postmeta'][ $id ][ $k ] = $v;
+        }
         $GLOBALS['__wp_posts'][ $id ] = $p;
         $GLOBALS['__wp_inserts'][]    = $id;
 
