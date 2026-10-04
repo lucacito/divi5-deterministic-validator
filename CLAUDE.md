@@ -225,7 +225,7 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- **Pro add-on 0.5.0** (whole-site generation; branch `feat/pro-0-5-0`; NOT merged, NOT released, NOT pushed): the 14th and LAST Pro tool
+- **Pro add-on 0.5.0** (whole-site generation; merged to LOCAL main 749dc86; NOT released, NOT pushed): the 14th and LAST Pro tool
   `build_site` (16 free + 14 Pro = 30 of the importer's 30 operations: the budget is used up). `add_page` creates ONE validated DRAFT
   page per call (invalid layout or taken slug: refused with the reasons, the build keeps its valid pages) and appends it to ONE growing
   batch (status `building`; one open build per user; `BatchRepository::append`/`openBuild`, `BatchLog::open`/`append`/`close`; an open build is
