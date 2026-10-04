@@ -16,6 +16,6 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 
 A refusal can be long because it lists the allowed block types; shortening it would be a separate small fix.
 
-Tokens the assistant WRITES also count: sending a whole layout to update_page_layout costs roughly the size of the page read. edit_page_content and dry_run avoid that.
+Tokens the assistant WRITES also count: sending a whole layout to update_page_layout costs roughly the size of the page read. edit_page_content avoids that (and a dry_run of it sends only the find-and-replace pair).
 
 The Pro add-on adds its own tool definitions on top of the first row.

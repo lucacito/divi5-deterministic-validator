@@ -38,7 +38,7 @@ final class SiteStructure
         if ( is_string( $value ) ) {
             $value = array_map( 'trim', explode( ',', $value ) );
         }
-        if ( ! is_array( $value ) || ! array_is_list( $value ) ) {
+        if ( ! is_array( $value ) || array_values( $value ) !== $value ) {
             return null;
         }
         $wanted = [];

@@ -77,7 +77,7 @@ foreach ( $rows as [ $what, $detail, $bytes, $tokens ] ) {
     $md .= "| {$what} | {$detail} | " . number_format( $bytes ) . ' | ' . number_format( $tokens ) . " |\n";
 }
 $md .= "\nA refusal can be long because it lists the allowed block types; shortening it would be a separate small fix.\n";
-$md .= "\nTokens the assistant WRITES also count: sending a whole layout to update_page_layout costs roughly the size of the page read. edit_page_content and dry_run avoid that.\n";
+$md .= "\nTokens the assistant WRITES also count: sending a whole layout to update_page_layout costs roughly the size of the page read. edit_page_content avoids that (and a dry_run of it sends only the find-and-replace pair).\n";
 $md .= "\nThe Pro add-on adds its own tool definitions on top of the first row.\n";
 file_put_contents( __DIR__ . '/../docs/token-usage.md', $md );
 echo $md;

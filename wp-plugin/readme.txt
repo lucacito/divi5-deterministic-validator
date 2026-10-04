@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.5.1
+Stable tag:        4.6.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -152,7 +152,7 @@ The key is a long random code stored in your WordPress database and shown only t
 
 = Is it dangerous to let AI edit my site? Is there an approval step? =
 
-Every save is checked by a fixed set of rules (no AI is involved in the check) and a broken layout is refused. You can ask your assistant for a preview first (a dry run shows what would change and saves nothing), new pages are always drafts, and every save can be undone from the Dashboard. The plugin cannot change your site settings, users or plugins, and cannot add custom code. If you want a stricter rule, turn on Approval mode in Settings ("Require a preview before every save"): your assistant must then preview every change before it can save it.
+Every save is checked by a fixed set of rules (no AI is involved in the check) and a broken layout is refused. You can ask your assistant for a preview first (a dry run shows what would change and saves nothing), new pages are always drafts, and every save can be undone from the Dashboard. The plugin cannot change your site settings, users or plugins, and cannot add custom code. If you want a stricter rule, turn on Approval mode in Settings ("Require a preview before every save"): your assistant must then preview every edit to a page's content before it can save it.
 
 = Why do I need this if Claude can already control a browser? =
 
@@ -202,8 +202,11 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 
 == Changelog ==
 
-= 4.5.1 =
+= 4.6.0 =
+* New: your AI assistant can look up how your site is set up with `get_site_structure`: custom post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices; never field values). Read-only.
+* New: Approval mode (Settings screen, off by default). When it is on, your AI assistant must preview every edit to a page's content before it can save it.
 * Improved: clearer setup on the Settings screen. Claude Desktop now gets the working setup (it connects through a small Node.js helper, so the screen says Node.js is needed and what to do if Mac or Windows reports a missing `npx`), Gemini CLI has its own tab, and there is a note on which assistants can reach a local site. The Features screen says that your global colors, variables and presets are read-only.
+* Fixed: the connection check (`ping`) now answers exactly as the MCP specification asks, which strict clients require.
 * New: FAQ entries on safety, token use, Gemini, local sites and the Mac connection error.
 
 = 4.5.0 =
@@ -258,8 +261,8 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 
 == Upgrade Notice ==
 
-= 4.5.1 =
-Clearer setup instructions on the Settings screen (Claude Desktop, Gemini CLI, local sites). Nothing else changes.
+= 4.6.0 =
+Adds a read-only look-up of your site's post types, taxonomies, image sizes and ACF fields for your AI assistant, an optional Approval mode, and clearer setup instructions. Nothing changes unless your AI assistant uses it or you turn Approval mode on.
 
 = 4.5.0 =
 The dashboard's recent-edits list only shows pages you can restore. Nothing else changes.

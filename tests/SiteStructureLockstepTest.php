@@ -141,6 +141,27 @@ class SiteStructureLockstepTest extends TestCase
         $this->assertSame( $before, [ $GLOBALS['__wp_options'], $GLOBALS['__wp_posts'], $GLOBALS['__wp_postmeta'] ] );
     }
 
+    public function testToolsListDeclaresAGeminiSafeSchema(): void
+    {
+        $req  = new \WP_REST_Request( [ 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list', 'params' => new \stdClass() ] );
+        $data = (array) ( new McpHandler() )->handle( $req )->get_data();
+        $tool = null;
+        foreach ( $data['result']['tools'] as $t ) {
+            if ( 'get_site_structure' === $t['name'] ) {
+                $tool = $t;
+            }
+        }
+        $this->assertNotNull( $tool, 'get_site_structure is listed' );
+        $include = $tool['inputSchema']['properties']['include'];
+        $this->assertSame( 'array', $include['type'] );
+        $this->assertSame( 'string', $include['items']['type'] );
+        $this->assertSame( [ 'post_types', 'taxonomies', 'image_sizes', 'acf' ], $include['items']['enum'] );
+        $json = (string) json_encode( $tool['inputSchema'] );
+        foreach ( [ 'additionalProperties', '$ref', 'oneOf' ] as $banned ) {
+            $this->assertStringNotContainsString( $banned, $json );
+        }
+    }
+
     public function testTheStyleGuideTellsTheAiToCallIt(): void
     {
         $this->assertStringContainsString( '`get_site_structure`', $this->src( 'StyleGuide.php' ) );

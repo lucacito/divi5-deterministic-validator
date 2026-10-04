@@ -46,7 +46,7 @@ class ApprovalModeTest extends TestCase
     /** @return list<array{mixed}> */
     public static function notOne(): array
     {
-        return [ [ 'yes' ], [ 'true' ], [ '' ], [ 0 ], [ '0' ], [ false ], [ [ '1' ] ] ];
+        return [ [ 'yes' ], [ 'true' ], [ '' ], [ 0 ], [ '0' ], [ false ], [ [ '1' ] ], [ 1 ], [ true ] ];
     }
 
     public function testWhenOffNothingIsRecordedAndEverySaveIsAllowed(): void
