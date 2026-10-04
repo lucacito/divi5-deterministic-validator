@@ -160,7 +160,7 @@ The plugin edits the Divi 5 layout data directly, so it is faster and more preci
 
 = Does the checking use up my AI tokens? =
 
-No. The check runs in PHP on your own server. Your assistant only receives a short list of error codes when a layout is refused.
+No. The check runs in PHP on your own server. Your assistant only reads what the plugin sends back: the tool list it loads once per conversation (about 2,900 tokens), the page it is editing, and a short list of error codes when a layout is refused (about 400 tokens for a typical mistake). These are estimates; the real count depends on the model.
 
 = Does it work with Gemini? =
 
