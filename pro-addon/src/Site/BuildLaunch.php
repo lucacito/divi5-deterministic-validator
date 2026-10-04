@@ -148,7 +148,7 @@ final class BuildLaunch
             'would_publish' => $publish,
             'would_skip'    => count( $plan ) - $publish,
             'pages'         => $pages,
-            'front_page'    => null === $front ? null : [ 'from' => $frontBefore['page_on_front'], 'to' => $front ],
+            'front_page'    => null === $front ? null : [ 'from' => 'page' === $frontBefore['show_on_front'] ? $frontBefore['page_on_front'] : 0, 'to' => $front ],
             'menu'          => 0 === $menu ? null : [ 'location' => '' === $location ? null : $location, 'replaces_items' => count( (array) $menuBefore['items'] ), 'new_items' => $menu ],
             'token'         => $token,
             'message'       => 'Preview only. Nothing was changed. Repeat the call without dry_run and with this token to publish these pages' . ( null === $front ? '' : ', set the front page' ) . ( 0 === $menu ? '' : ' and rebuild the menu' ) . '. Pages skipped now stay drafts.',
@@ -191,12 +191,15 @@ final class BuildLaunch
             $now      = get_post( $p['id'] );
             $status   = $now ? (string) $now->post_status : 'publish';
             $realSlug = $now ? (string) ( $now->post_name ?? '' ) : $p['slug'];
-            $line     = $base + [ 'slug' => $realSlug, 'link' => get_permalink( $p['id'] ) ];
+            $line     = $base + [ 'slug' => $realSlug, 'status' => $status, 'link' => get_permalink( $p['id'] ) ];
             if ( $realSlug !== $p['slug'] ) {
                 $line['slug_changed'] = [ 'planned' => $p['slug'], 'real' => $realSlug ];
             }
+            if ( 'publish' !== $status ) {
+                $line['note'] = 'WordPress left this page as "' . $status . '": it is not live, and it is not in the menu or the front page.';
+            }
             $published[] = $line;
-            $recorded[]  = Item::make( 'post_status', (string) $p['id'], 'Status of "' . $p['title'] . '" (#' . $p['id'] . ')', 'draft', $status );
+            $recorded[]  = Item::make( 'post_status', (string) $p['id'], 'Status of "' . $p['title'] . '" (#' . $p['id'] . ')', 'draft', $status ) + [ 'meta' => [ 'guard_in_use' => true ] ];
             if ( 'publish' === $status ) {
                 $live[] = $p;
             }
