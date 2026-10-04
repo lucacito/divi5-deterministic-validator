@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once __DIR__ . '/Compat.php';
 require_once __DIR__ . '/Licensing/LicenseClient.php';
+require_once __DIR__ . '/Licensing/LicenseExtras.php';
 require_once __DIR__ . '/Licensing.php';
 require_once __DIR__ . '/ProTool.php';
 require_once __DIR__ . '/ToolRunner.php';
@@ -66,4 +67,5 @@ require_once __DIR__ . '/Rest/ProOpenApi.php';
 require_once __DIR__ . '/Admin/AdminActions.php';
 require_once __DIR__ . '/Admin/ProposalsPanel.php';
 require_once __DIR__ . '/Admin/BatchesPanel.php';
+require_once __DIR__ . '/Admin/LapseNotice.php';
 require_once __DIR__ . '/Plugin.php';
