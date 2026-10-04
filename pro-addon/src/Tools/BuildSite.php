@@ -8,6 +8,7 @@ use AiEditorDivi5\Pro\Args;
 use AiEditorDivi5\Pro\Batch\BatchLog;
 use AiEditorDivi5\Pro\Kinds\PageCreatedKind;
 use AiEditorDivi5\Pro\ProTool;
+use AiEditorDivi5\Pro\Site\BuildLaunch;
 use AiEditorDivi5\Pro\Site\BuildLock;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\StyleReferences;
@@ -28,13 +29,18 @@ final class BuildSite implements ProTool
     public const MAX_PAGES   = 30;
     public const MAX_CONTENT = 1000000;
 
-    private const ACTIONS = [ 'add_page', 'status' ];
+    private const ACTIONS = [ 'add_page', 'status', 'launch' ];
 
     private BuildLock $lock;
 
-    public function __construct( private BatchLog $log, ?BuildLock $lock = null )
+    /** @var \Closure():int */
+    private \Closure $clock;
+
+    /** @param (\Closure():int)|null $clock the time in seconds (the tests move it) */
+    public function __construct( private BatchLog $log, ?BuildLock $lock = null, ?\Closure $clock = null )
     {
-        $this->lock = $lock ?? new BuildLock();
+        $this->lock  = $lock ?? new BuildLock();
+        $this->clock = $clock ?? static fn (): int => time();
     }
 
     public function name(): string
@@ -51,18 +57,20 @@ final class BuildSite implements ProTool
     {
         return [
             'name'        => self::NAME,
-            'description' => 'Build a whole Divi 5 site as one undoable build. add_page creates one checked DRAFT page per call (an invalid page or a taken slug is refused, the build continues); status lists the build. Nothing goes live while pages are added. Undo it all with undo_batch.',
+            'description' => 'Build a whole Divi 5 site as one undoable build. add_page creates one checked DRAFT page per call (an invalid page or a taken slug is refused, the build continues); status lists it; launch publishes it (dry_run first, then repeat with the token). Undo it all: undo_batch.',
             'inputSchema' => [
                 'type'       => 'object',
                 'properties' => [
-                    'action'     => [ 'type' => 'string', 'description' => 'add_page or status', 'enum' => self::ACTIONS ],
+                    'action'     => [ 'type' => 'string', 'description' => 'add_page, status or launch', 'enum' => self::ACTIONS ],
                     'title'      => [ 'type' => 'string', 'description' => 'add_page: the page title (plain text)' ],
                     'slug'       => [ 'type' => 'string', 'description' => 'add_page: the page slug; it must not be used by another page' ],
                     'content'    => [ 'type' => 'string', 'description' => 'add_page: the Divi 5 layout (it must pass every check)' ],
                     'menu_label' => [ 'type' => 'string', 'description' => 'add_page: the menu label (default: the title), at most 100 bytes' ],
                     'in_menu'    => [ 'type' => 'boolean', 'description' => 'add_page: put the page in the primary menu at launch (default true)' ],
                     'is_front'   => [ 'type' => 'boolean', 'description' => 'add_page: make this the front page at launch (one page per build)' ],
-                    'build_id'   => [ 'type' => 'integer', 'description' => 'The build to use: returned by the first add_page; required for later pages' ],
+                    'build_id'   => [ 'type' => 'integer', 'description' => 'The build to use: returned by the first add_page; required for later pages and for launch' ],
+                    'dry_run'    => [ 'type' => 'boolean', 'description' => 'launch: preview only; returns the token a real launch needs' ],
+                    'token'      => [ 'type' => 'string', 'description' => 'launch: the token from your dry run of the same build; it works once, within 30 minutes' ],
                 ],
                 'required'   => [ 'action' ],
             ],
@@ -76,7 +84,11 @@ final class BuildSite implements ProTool
             throw new \InvalidArgumentException( '"action" must be one of: ' . implode( ', ', self::ACTIONS ) . '.' );
         }
 
-        return 'add_page' === $action ? $this->addPage( $arguments ) : $this->status( $arguments );
+        return match ( $action ) {
+            'add_page' => $this->addPage( $arguments ),
+            'status'   => $this->status( $arguments ),
+            default    => $this->launch( $arguments ),
+        };
     }
 
     /** @param array<string,mixed> $a @return array<string,mixed> */
@@ -207,6 +219,20 @@ final class BuildSite implements ProTool
         }
 
         return [ 'build' => self::summary( $row ), 'pages' => $pages ];
+    }
+
+    /** @param array<string,mixed> $a @return array<string,mixed> */
+    private function launch( array $a ): array
+    {
+        $buildId = (int) Args::int( $a, 'build_id' );
+        $dry     = Args::bool( $a, 'dry_run' );
+        $token   = Args::string( $a, 'token', false, 8000 );
+        $row     = $this->owned( $buildId, (int) get_current_user_id() );
+        if ( BatchLog::BUILDING !== $row['status'] ) {
+            throw new \InvalidArgumentException( "Build {$buildId} is finished (" . self::state( $row ) . ') and cannot be launched again.' );
+        }
+
+        return ( new BuildLaunch( $this->log, $this->clock ) )->run( $row, $dry, $token );
     }
 
     /** The user's own build by id, whatever its state; anything else is "not found" (nothing leaks about other users' batches). @return array<string,mixed> */

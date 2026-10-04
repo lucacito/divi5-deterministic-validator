@@ -76,7 +76,7 @@ class BuildSiteTest extends TestCase
         $this->assertSame( 'build_site', $d['name'] );
         $this->assertSame( 'publish_pages', $this->tool->capability() );
         $this->assertLessThanOrEqual( 300, strlen( $d['description'] ) );
-        $this->assertSame( [ 'add_page', 'status' ], $d['inputSchema']['properties']['action']['enum'] );
+        $this->assertSame( [ 'add_page', 'status', 'launch' ], $d['inputSchema']['properties']['action']['enum'] );
         $this->assertSame( [ 'action' ], $d['inputSchema']['required'] );
         foreach ( [ 'title', 'slug', 'content', 'menu_label', 'in_menu', 'is_front', 'build_id' ] as $p ) {
             $this->assertArrayHasKey( $p, $d['inputSchema']['properties'], $p );
@@ -247,7 +247,7 @@ class BuildSiteTest extends TestCase
     {
         foreach ( [
             [ [ 'title' => 'x' ], '"action" is required.' ],
-            [ [ 'action' => 'launch' ], '"action" must be one of: add_page, status.' ],
+            [ [ 'action' => 'explode' ], '"action" must be one of: add_page, status, launch.' ],
             [ [ 'action' => 5 ], '"action" must be a string.' ],
             [ $this->page( 'x', 'x', [ 'title' => 5 ] ), '"title" must be a string.' ],
             [ $this->page( 'x', 'x', [ 'content' => '' ] ), '"content" must not be empty.' ],
