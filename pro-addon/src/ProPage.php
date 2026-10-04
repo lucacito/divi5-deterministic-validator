@@ -121,12 +121,8 @@ final class ProPage
             <?php if ( null !== $key ) : ?>
                 <p><?php esc_html_e( 'Licence key:', 'jhmg-ai-editor-for-divi-5-pro' ); ?> <code><?php echo esc_html( self::maskKey( $key ) ); ?></code></p>
                 <p>
-                    <?php if ( ! empty( $extras['manage_url'] ) ) : ?>
-                        <a href="<?php echo esc_url( $extras['manage_url'] ); ?>" class="button"><?php esc_html_e( 'Manage sites', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
-                    <?php endif; ?>
-                    <?php if ( ! empty( $extras['upgrade_url'] ) ) : ?>
-                        <a href="<?php echo esc_url( $extras['upgrade_url'] ); ?>" class="button"><?php esc_html_e( 'Upgrade', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
-                    <?php endif; ?>
+                    <a href="<?php echo esc_url( ! empty( $extras['manage_url'] ) ? $extras['manage_url'] : Licensing::MANAGE_URL ); ?>" class="button"><?php esc_html_e( 'Manage sites', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
+                    <a href="<?php echo esc_url( ! empty( $extras['upgrade_url'] ) ? $extras['upgrade_url'] : Licensing::UPGRADE_URL ); ?>" class="button"><?php esc_html_e( 'Upgrade', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
                 </p>
                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                     <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_DEACTIVATE ); ?>">

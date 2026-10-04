@@ -31,6 +31,8 @@ final class Licensing
     private const DEFAULT_API_BASE = 'https://divi5lab.com';
 
     public const UPGRADE_URL = 'https://divi5lab.com/plugins/divi-5-ai-editor';
+    /** Where the licence holder manages sites, plan and renewal; used when the server did not send a link we could trust. */
+    public const MANAGE_URL = 'https://divi5lab.com/account/licenses';
 
     public const REFRESH_BACKOFF_TRANSIENT = 'aied_pro_refresh_backoff';
     public const REFRESH_BACKOFF_SECONDS   = 900;

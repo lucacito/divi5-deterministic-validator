@@ -121,6 +121,6 @@ final class LapseNotice
             return (string) $extras['manage_url'];
         }
 
-        return 'https://divi5lab.com/account/licenses';
+        return \AiEditorDivi5\Pro\Licensing::MANAGE_URL;
     }
 }

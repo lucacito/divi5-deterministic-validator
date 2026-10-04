@@ -40,6 +40,23 @@ class ProPageTest extends TestCase
         unset( $GLOBALS['__wp_caps'] );
     }
 
+    public function testTheLicenceCardAlwaysOffersManageAndUpgradeLinks(): void
+    {
+        $this->activated();
+        $html = $this->render( $this->page() );
+        $this->assertStringContainsString( 'href="' . Licensing::MANAGE_URL . '"', $html );
+        $this->assertStringContainsString( 'href="' . Licensing::UPGRADE_URL . '"', $html );
+    }
+
+    public function testTheServersLinksWinWhenTheyAreTrusted(): void
+    {
+        $this->activated();
+        update_option( 'aied_pro_license_extras', [ 'manage_url' => 'https://divi5lab.com/account/x', 'upgrade_url' => 'https://divi5lab.com/pricing' ], false );
+        $html = $this->render( $this->page() );
+        $this->assertStringContainsString( 'href="https://divi5lab.com/account/x"', $html );
+        $this->assertStringContainsString( 'href="https://divi5lab.com/pricing"', $html );
+    }
+
     /** @param list<FakeTool> $tools */
     private function page( array $tools = [] ): ProPage
     {

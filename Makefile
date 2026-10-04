@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-theme-layouts verify-pro-theme-templates verify-pro-site-tools verify-pro-rest verify-pro-build-site validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-theme-layouts verify-pro-theme-templates verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -56,6 +56,14 @@ build-pro:
 # ---------------------------------------------------------------
 verify-pro-skeleton:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-skeleton.php --user=1
+
+# ---------------------------------------------------------------
+# verify-pro-licence-tiers — real-site check of the tier display, site limit and expiry against a LOCAL layoutlab licence server
+#   make verify-pro-licence-tiers STAGE=limit|agency|expired|cleanup LICENCE_BASE=http://host.docker.internal:3010
+# (self-cleaning; dev site only; the free and Pro plugins must be active; see the script header)
+# ---------------------------------------------------------------
+verify-pro-licence-tiers:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-licence-tiers.php $(STAGE) $(LICENCE_BASE) --user=1
 
 # ---------------------------------------------------------------
 # verify-pro-settings — real-site check of the Pro settings tools and batch undo (self-cleaning; free + Pro plugins must be active)

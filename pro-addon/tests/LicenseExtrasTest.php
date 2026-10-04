@@ -130,6 +130,14 @@ class LicenseExtrasTest extends TestCase
         $this->assertSame( 'https://divi5lab.com/account', $extras['manage_url'] );
     }
 
+    public function testAWwwPrefixOnEitherSideIsTheSameHost(): void
+    {
+        $body = [ 'upgrade_url' => 'https://www.divi5lab.com/pricing', 'manage_url' => 'https://divi5lab.com/account/licenses' ];
+        $this->assertSame( 'https://www.divi5lab.com/pricing', LicenseExtras::fromBody( $body, 'https://divi5lab.com' )['upgrade_url'] );
+        $this->assertSame( 'https://divi5lab.com/account/licenses', LicenseExtras::fromBody( $body, 'https://www.divi5lab.com' )['manage_url'] );
+        $this->assertNull( LicenseExtras::fromBody( [ 'upgrade_url' => 'https://www.divi5lab.com.evil.test/pricing' ], 'https://divi5lab.com' )['upgrade_url'] );
+    }
+
     public function testFromBodyHandlesDifferentApiBase(): void
     {
         $body = [

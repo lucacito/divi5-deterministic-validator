@@ -186,6 +186,7 @@ Docker env + validator workflows go through `make`:
 | `make verify-pro-site-tools` | Real-site check of find_replace_site and audit_site through the real registry (self-cleaning; dev site only: it evicts old batch rows) |
 | `make verify-pro-rest` | Real-site check of the Pro REST routes and the live OpenAPI spec (read-only) |
 | `make verify-pro-build-site` | Real-site check of `build_site` (build, launch, anonymous menu render, undo, abandon; self-cleaning; dev site only: it evicts old batch rows) |
+| `make verify-pro-licence-tiers` | Real-site check of the Pro tier display, site limit and expiry against a LOCAL layoutlab licence server (`STAGE=limit|agency|expired|cleanup LICENCE_BASE=http://host.docker.internal:3010`; self-cleaning; dev site only; see the script header) |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
 Tests run via PHPUnit (`phpunit.xml`) and cover both the validator

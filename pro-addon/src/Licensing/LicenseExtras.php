@@ -109,8 +109,9 @@ final class LicenseExtras
         $apiHost = $apiParsed['host'] ?? '';
         $urlHost = $urlParsed['host'] ?? '';
 
-        // Hosts must match
-        if ( $apiHost !== $urlHost ) {
+        // Hosts must match (a leading "www." on either side does not make it another host)
+        $bare = static fn ( string $h ): string => str_starts_with( strtolower( $h ), 'www.' ) ? substr( strtolower( $h ), 4 ) : strtolower( $h );
+        if ( $bare( (string) $apiHost ) !== $bare( (string) $urlHost ) ) {
             return null;
         }
 
