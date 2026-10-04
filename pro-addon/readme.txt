@@ -2,7 +2,7 @@
 Contributors:      lucaslopvet
 Requires at least: 6.0
 Requires PHP:      8.1
-Stable tag:        0.5.0
+Stable tag:        0.6.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,12 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
+
+= 0.6.0 =
+* New: licence tiers (Personal, Freelancer, Agency) with per-tier site limits shown on the Pro tab.
+* Expiry notice: a dismissible admin notice shows when your licence has ended (expired, canceled, or past due), but all 14 Pro tools keep working.
+* Licence server: site-limit errors are caught and shown on the Pro tab so you can upgrade or free up a slot.
+* No prices in the plugin; all tier and site information comes from the licence server.
 
 = 0.5.0 =
 * New: `build_site` builds a whole Divi 5 site as one undoable build. `add_page` creates one checked draft page per call: a page that fails the layout checks, or whose slug another page already uses, is refused with the exact reason and the pages already added are kept. `status` lists the build. `launch` publishes the pages, sets the front page and rebuilds the primary menu in one step, after a preview (`dry_run`) and with its single-use token; pages that changed or lost their slug since the preview are skipped and the rest goes live. Nothing is visible on the live site before the launch.
