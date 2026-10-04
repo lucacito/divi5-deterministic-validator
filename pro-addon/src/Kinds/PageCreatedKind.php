@@ -14,8 +14,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * A page a site build created. `ref` is the page id, `before` is null (there was nothing), `after_hash` is a hash of the
  * title, content and slug read back after the insert, and `meta` carries what the launch needs (menu label, in the menu,
- * front page). Undo trashes the page, but only while it still looks the way the build left it (the changed-since rule), so a
- * page the owner edited in the Divi builder is skipped and reported, never trashed behind their back. The inverse is a
+ * front page). Undo trashes the page, but only while it still looks the way the build left it (the changed-since rule): the
+ * title, content and slug are unchanged AND it is still a draft, so a page the owner edited in the Divi builder, published or
+ * made private by hand is skipped and reported, never trashed behind their back. (Divi keeps the layout in the content; a change of
+ * parent, menu order, template or meta is not noticed.) Only a page is ever touched. The inverse is a
  * `page_trashed` item; with `EMPTY_TRASH_DAYS` 0 the trash is a permanent delete, so that inverse has no undo point.
  */
 final class PageCreatedKind implements ItemKind
@@ -61,7 +63,7 @@ final class PageCreatedKind implements ItemKind
     {
         $post = get_post( (int) $item['ref'] );
 
-        return $post && 'trash' !== $post->post_status ? self::snapshot( $post ) : null;
+        return $post && 'page' === $post->post_type && 'draft' === $post->post_status ? self::snapshot( $post ) : null;
     }
 
     public function allowed( array $item ): bool
@@ -73,8 +75,9 @@ final class PageCreatedKind implements ItemKind
 
     public function restore( array $item ): array
     {
-        $id = (int) $item['ref'];
-        if ( ! get_post( $id ) ) {
+        $id   = (int) $item['ref'];
+        $post = get_post( $id );
+        if ( ! $post || 'page' !== $post->post_type ) {
             return [ 'ok' => false, 'reason' => 'missing' ];
         }
         if ( ! wp_trash_post( $id ) ) {

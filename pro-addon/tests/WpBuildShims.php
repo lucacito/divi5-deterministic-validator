@@ -29,6 +29,9 @@ if ( ! function_exists( 'wp_untrash_post' ) ) {
         }
         $p->post_status = 'draft';
         $p->post_name   = (string) preg_replace( '/__trashed$/', '', (string) ( $p->post_name ?? '' ) );
+        if ( ! empty( $GLOBALS['__wp_untrash_vanish'] ) ) {
+            unset( $GLOBALS['__wp_posts'][ (int) $id ] ); // untrashed, then gone before anyone can read it
+        }
 
         return $p;
     }

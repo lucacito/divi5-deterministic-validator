@@ -30,13 +30,14 @@ class PageCreatedKindTest extends TestCase
         $GLOBALS['__wp_caps']  = [ 'edit_post' => true, 'delete_post' => true ];
         $GLOBALS['__wp_trash_fail']   = false;
         $GLOBALS['__wp_untrash_fail'] = false;
+        $GLOBALS['__wp_untrash_vanish'] = false;
         PageCreatedKind::$trashEnabled = null;
     }
 
     protected function tearDown(): void
     {
         PageCreatedKind::$trashEnabled = null;
-        unset( $GLOBALS['__wp_caps'], $GLOBALS['__wp_trash_fail'], $GLOBALS['__wp_untrash_fail'] );
+        unset( $GLOBALS['__wp_caps'], $GLOBALS['__wp_trash_fail'], $GLOBALS['__wp_untrash_fail'], $GLOBALS['__wp_untrash_vanish'] );
     }
 
     /** @return array<string,mixed> */
@@ -168,5 +169,44 @@ class PageCreatedKindTest extends TestCase
         $this->assertTrue( $kind->allowed( $item ) );
         $GLOBALS['__wp_caps'] = [ 'edit_post' => true ];
         $this->assertFalse( $kind->allowed( $item ) );
+    }
+
+    public function testAPagePublishedOrMadePrivateByHandIsSkippedNotTrashed(): void
+    {
+        foreach ( [ 'publish', 'private', 'pending', 'future' ] as $status ) {
+            $GLOBALS['__wp_posts'][50]->post_status = 'draft';
+            $batch = $this->log->record( 'build_site', 'Site build', [ $this->item() ] );
+            $GLOBALS['__wp_posts'][50]->post_status = $status;
+            $this->assertNull( ( new PageCreatedKind() )->current( $this->item() ), $status );
+            $u = $this->undo()->undo( $batch['id'] );
+            $this->assertFalse( $u['fully_undone'], $status );
+            $this->assertSame( 'changed_since', $u['items'][0]['result'], $status );
+            $this->assertSame( $status, $GLOBALS['__wp_posts'][50]->post_status, "a {$status} page is never trashed behind the owner's back" );
+        }
+    }
+
+    public function testOnlyAPageIsEverTouched(): void
+    {
+        $GLOBALS['__wp_posts'][51] = (object) [ 'ID' => 51, 'post_type' => 'post', 'post_status' => 'draft', 'post_title' => 'A post', 'post_content' => 'P', 'post_name' => 'a-post' ];
+        $created = PageCreatedKind::itemFor( $GLOBALS['__wp_posts'][51], [] );
+        $this->assertNull( ( new PageCreatedKind() )->current( $created ), 'a post is not a page' );
+        $this->assertSame( [ 'ok' => false, 'reason' => 'missing' ], ( new PageCreatedKind() )->restore( $created ), 'even with force a post is never trashed' );
+        $this->assertSame( 'draft', $GLOBALS['__wp_posts'][51]->post_status );
+
+        $GLOBALS['__wp_posts'][51]->post_status = 'trash';
+        $trashed = Item::make( 'page_trashed', '51', 'x', null, 'trash' );
+        $this->assertNull( ( new PageTrashedKind() )->current( $trashed ) );
+        $this->assertSame( [ 'ok' => false, 'reason' => 'missing' ], ( new PageTrashedKind() )->restore( $trashed ), 'and a post in the trash is never untrashed' );
+        $this->assertSame( 'trash', $GLOBALS['__wp_posts'][51]->post_status );
+    }
+
+    public function testAnUntrashedPageThatVanishesAtOnceStillGivesAnInverseThatSaysSo(): void
+    {
+        $item = Item::make( 'page_trashed', '50', 'Created page "About us" (#50)', null, 'trash' ) + [ 'meta' => [ 'in_menu' => true ] ];
+        wp_trash_post( 50 );
+        $GLOBALS['__wp_untrash_vanish'] = true;
+        $r = ( new PageTrashedKind() )->restore( $item );
+        $this->assertTrue( $r['ok'] );
+        $this->assertSame( [ 'available' => false, 'reason' => 'missing' ], $r['inverse']['undo'] );
     }
 }

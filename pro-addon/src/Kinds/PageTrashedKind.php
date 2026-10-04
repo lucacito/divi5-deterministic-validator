@@ -28,7 +28,7 @@ final class PageTrashedKind implements ItemKind
     {
         $post = get_post( (int) $item['ref'] );
 
-        return $post ? (string) $post->post_status : null;
+        return $post && 'page' === $post->post_type ? (string) $post->post_status : null;
     }
 
     public function allowed( array $item ): bool
@@ -40,14 +40,19 @@ final class PageTrashedKind implements ItemKind
 
     public function restore( array $item ): array
     {
-        $id = (int) $item['ref'];
-        if ( ! get_post( $id ) ) {
+        $id   = (int) $item['ref'];
+        $post = get_post( $id );
+        if ( ! $post || 'page' !== $post->post_type ) {
             return [ 'ok' => false, 'reason' => 'missing' ];
         }
         if ( ! wp_untrash_post( $id ) ) {
             return [ 'ok' => false, 'reason' => 'untrash_failed' ];
         }
         $post = get_post( $id );
+        if ( ! is_object( $post ) ) {
+            // Untrashed, but gone again before it could be read: nothing to take away a second time.
+            return [ 'ok' => true, 'inverse' => Item::make( PageCreatedKind::NAME, (string) $id, (string) $item['label'], null, null, [ 'available' => false, 'reason' => 'missing' ] ) ];
+        }
 
         return [ 'ok' => true, 'inverse' => PageCreatedKind::itemFor( $post, is_array( $item['meta'] ?? null ) ? $item['meta'] : [] ) ];
     }
