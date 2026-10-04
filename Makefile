@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-theme-layouts verify-pro-theme-templates verify-pro-site-tools verify-pro-rest validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-theme-layouts verify-pro-theme-templates verify-pro-site-tools verify-pro-rest verify-pro-build-site validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -86,6 +86,12 @@ verify-pro-site-tools:
 # ---------------------------------------------------------------
 verify-pro-rest:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-rest.php --user=1
+
+# ---------------------------------------------------------------
+# verify-pro-build-site — real-site check of build_site (build, launch, anonymous menu, undo; self-cleaning; free + Pro plugins must be active; dev site only: it evicts old batch rows)
+# ---------------------------------------------------------------
+verify-pro-build-site:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-build-site.php --user=1
 
 # ---------------------------------------------------------------
 # validate — run the validator against an arbitrary JSON file

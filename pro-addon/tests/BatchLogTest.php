@@ -109,4 +109,75 @@ class BatchLogTest extends TestCase
         $this->assertFalse( $out['batch']['undoable'] );
         $this->assertStringContainsString( 'could not be recorded', $out['batch']['note'] );
     }
+
+    public function testOpenStoresAnEmptyBuildingBatch(): void
+    {
+        $d = $this->log->open( 'build_site', 'Site build' );
+        $this->assertSame( [ 1, 'build_site', 'building', 0, false ], [ $d['id'], $d['tool'], $d['status'], $d['items'], $d['undoable'] ] );
+        $this->assertSame( [], $this->repo->rows[1]['items'] );
+        $this->assertSame( 7, $this->repo->rows[1]['user_id'] );
+        $this->assertSame( 'Site build', $this->repo->rows[1]['summary'] );
+    }
+
+    public function testOpenReturnsNullWhenTheStoreFails(): void
+    {
+        $this->repo->failInsert = true;
+        $this->assertNull( $this->log->open( 'build_site', 'Site build' ) );
+    }
+
+    public function testAppendAddsItemsAfterTheExistingOnesAndKeepsTheStatus(): void
+    {
+        $this->log->open( 'build_site', 'Site build' );
+        $this->assertTrue( $this->log->append( 1, [ $this->item() ] ) );
+        $this->assertTrue( $this->log->append( 1, [ $this->item( false ), $this->item() ] ) );
+        $this->assertTrue( $this->log->append( 1, [] ), 'appending nothing is fine' );
+        $row = $this->repo->rows[1];
+        $this->assertSame( 'building', $row['status'] );
+        $this->assertCount( 3, $row['items'] );
+        $this->assertSame( [ true, false, true ], array_map( static fn ( array $i ): bool => $i['undo']['available'], $row['items'] ), 'in the order appended' );
+        $this->assertFalse( $this->log->append( 99, [ $this->item() ] ) );
+    }
+
+    public function testCloseSetsTheStatusAndKeepsTheItems(): void
+    {
+        $this->log->open( 'build_site', 'Site build' );
+        $this->log->append( 1, [ $this->item() ] );
+        $this->assertTrue( $this->log->close( 1, 'applied' ) );
+        $this->assertSame( 'applied', $this->repo->rows[1]['status'] );
+        $this->assertCount( 1, $this->repo->rows[1]['items'] );
+        $this->assertFalse( $this->log->close( 99, 'applied' ) );
+    }
+
+    public function testTheUsersOpenBuildIsFoundAndOnlyTheirs(): void
+    {
+        $this->assertNull( $this->log->openBuild( 7 ) );
+        $this->log->record( 'set_front_page', 'not a build', [ $this->item() ] );
+        $this->assertNull( $this->log->openBuild( 7 ), 'an applied batch is not an open build' );
+        $this->log->open( 'build_site', 'Site build' );
+        $this->assertSame( 2, $this->log->openBuild( 7 )['id'] );
+        $this->assertNull( $this->log->openBuild( 8 ) );
+        $this->log->close( 2, 'applied' );
+        $this->assertNull( $this->log->openBuild( 7 ), 'a closed build is not open' );
+    }
+
+    public function testAnOpenBuildIsNeverTrimmed(): void
+    {
+        $this->log->open( 'build_site', 'Site build' );
+        for ( $i = 1; $i <= 25; $i++ ) {
+            $this->log->record( 't', "batch {$i}", [ $this->item() ] );
+        }
+        $this->assertArrayHasKey( 1, $this->repo->rows, 'the open build survives although 25 newer batches were recorded' );
+        $this->assertCount( 21, $this->repo->rows, 'the 20 newest closed batches and the open build' );
+        $this->assertSame( 7, array_key_first( array_diff_key( $this->repo->rows, [ 1 => 1 ] ) ) );
+    }
+
+    public function testNothingIsAppendedToAClosedBatch(): void
+    {
+        $this->log->open( 'build_site', 'Site build' );
+        $this->log->close( 1, 'applied' );
+        $this->assertFalse( $this->log->append( 1, [ $this->item() ] ), 'a build an undo or a launch closed must not get a page it can no longer reach' );
+        $this->assertSame( [], $this->repo->rows[1]['items'] );
+        $this->log->record( 'set_front_page', 'not a build', [ $this->item() ] );
+        $this->assertFalse( $this->log->append( 2, [ $this->item() ] ), 'only an open build grows' );
+    }
 }

@@ -66,6 +66,9 @@ final class UndoBatch implements ProTool
             throw new \InvalidArgumentException( (string) ( $result['message'] ?? "Batch {$id} not found." ) );
         }
         $result['message'] = self::message( $id, $result );
+        if ( ! $dry && ! $result['fully_undone'] && BatchLog::BUILDING === ( $batch['status'] ?? '' ) ) {
+            $result['message'] .= ' The build is closed; call add_page without build_id to start a new one. Pages that were kept stay as drafts.';
+        }
 
         return $result;
     }
@@ -82,7 +85,7 @@ final class UndoBatch implements ProTool
         $skipped = [];
         foreach ( $r['items'] as $item ) {
             if ( ! in_array( $item['result'], [ 'restored', 'already_undone' ], true ) ) {
-                $skipped[] = $item['label'] . ' (' . $item['result'] . ')';
+                $skipped[] = $item['label'] . ' (' . $item['result'] . ( isset( $item['reason'] ) && '' !== (string) $item['reason'] ? ': ' . $item['reason'] : '' ) . ')';
             }
         }
 

@@ -37,6 +37,8 @@ class UninstallTest extends TestCase
         $this->assertSame( [], $GLOBALS['__wp_transients'] );
         $this->assertSame( [], $GLOBALS['__wp_http_log'] );
         $this->assertContains( [ 'query', 'DROP TABLE IF EXISTS wp_aied_pro_batches' ], $GLOBALS['wpdb']->calls );
+        $deletes = array_filter( $GLOBALS['wpdb']->calls, static fn ( array $c ): bool => 'query' === $c[0] && str_contains( (string) $c[1], 'DELETE FROM wp_options' ) && str_contains( (string) $c[1], 'aied\\_pro\\_buildlock\\_' ) );
+        $this->assertCount( 1, $deletes, 'leftover build-lock rows of a crashed request are removed too' );
         $GLOBALS['wpdb'] = null;
     }
 }

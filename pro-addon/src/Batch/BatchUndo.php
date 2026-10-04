@@ -78,10 +78,14 @@ final class BatchUndo
         }
 
         $undoBatch = null;
-        if ( $restored > 0 ) {
+        // An open build is closed by every real undo, even one that restored nothing: otherwise a build whose pages were all edited
+        // since would stay open for ever and its owner could never start another.
+        if ( ! $dryRun && ( $restored > 0 || BatchLog::BUILDING === ( $batch['status'] ?? '' ) ) ) {
             // Mark the original first: recording the undo trims to the newest 20 and may remove the oldest batch.
             $this->log->markUndone( $batchId, $allUndone ? 'undone' : 'partly_undone', $items );
-            $undoBatch = $this->log->record( 'undo_batch', 'Undo of batch #' . $batchId . ': ' . $batch['summary'], $inverse );
+            if ( $restored > 0 ) {
+                $undoBatch = $this->log->record( 'undo_batch', 'Undo of batch #' . $batchId . ': ' . $batch['summary'], $inverse );
+            }
         }
 
         return [

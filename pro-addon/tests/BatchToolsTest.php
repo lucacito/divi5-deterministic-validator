@@ -129,6 +129,29 @@ class BatchToolsTest extends TestCase
         $this->assertSame( 'edited since', $GLOBALS['__fake_store']['a'] );
     }
 
+    public function testThePartialUndoMessageExplainsWhyAnItemWasSkipped(): void
+    {
+        $GLOBALS['__fake_store']['a'] = 'one';
+        $id                           = $this->change( 'a', 'two' );
+        $GLOBALS['__fake_fail']       = true;
+        $r                            = $this->undo->run( [ 'batch_id' => $id ] );
+        $this->assertSame( 'failed', $r['items'][0]['result'] );
+        $this->assertStringContainsString( 'failed: write_failed', $r['message'], 'the reason is part of the message' );
+    }
+
+    public function testUndoingAnOpenBuildThatCouldNotBeRestoredSaysTheBuildIsClosed(): void
+    {
+        $GLOBALS['__fake_store']['a'] = 'two';
+        $open = $this->log->open( 'build_site', 'Site build' );
+        $this->log->append( (int) $open['id'], [ Item::make( 'fake', 'a', 'Thing a', 'one', 'two' ) ] );
+        $this->repo->rows[ $open['id'] ]['user_id'] = 7;
+        $GLOBALS['__fake_store']['a'] = 'edited since';
+        $r = $this->undo->run( [ 'batch_id' => (int) $open['id'] ] );
+        $this->assertSame( 0, $r['restored'] );
+        $this->assertStringContainsString( 'The build is closed', $r['message'] );
+        $this->assertNull( $this->log->openBuild( 7 ) );
+    }
+
     public function testForceOverridesTheChangedSinceRule(): void
     {
         $GLOBALS['__fake_store']['a'] = 'one';

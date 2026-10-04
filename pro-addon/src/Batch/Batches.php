@@ -7,6 +7,8 @@ namespace AiEditorDivi5\Pro\Batch;
 use AiEditorDivi5\Pro\Kinds\CssKind;
 use AiEditorDivi5\Pro\Kinds\FrontPageKind;
 use AiEditorDivi5\Pro\Kinds\MenuKind;
+use AiEditorDivi5\Pro\Kinds\PageCreatedKind;
+use AiEditorDivi5\Pro\Kinds\PageTrashedKind;
 use AiEditorDivi5\Pro\Kinds\PostContentKind;
 use AiEditorDivi5\Pro\Kinds\PostStatusKind;
 use AiEditorDivi5\Pro\Kinds\ThemeLayoutKind;
@@ -35,6 +37,8 @@ final class Batches
             new CssKind(),
             new MenuKind(),
             new PostStatusKind(),
+            new PageCreatedKind(),
+            new PageTrashedKind(),
             new PostContentKind(),
             new ThemeLayoutKind(),
             new ThemeTemplateKind(),

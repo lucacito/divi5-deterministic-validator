@@ -13,6 +13,9 @@ final class BatchLog
 {
     public const MAX = 20;
 
+    /** The status of a batch that is still growing (an open build). */
+    public const BUILDING = 'building';
+
     public function __construct( private BatchRepository $repo )
     {
     }
@@ -41,6 +44,64 @@ final class BatchLog
         $this->repo->trim( self::MAX );
 
         return self::describe( [ 'id' => $id ] + $row );
+    }
+
+    /**
+     * Opens a batch that will grow: status `building`, no items yet. Closed with close() (or by an undo).
+     *
+     * @return array<string,mixed>|null the described batch, or null when it could not be stored
+     */
+    public function open( string $tool, string $summary ): ?array
+    {
+        $row = [
+            'user_id'    => (int) get_current_user_id(),
+            'tool'       => $tool,
+            'created_at' => gmdate( 'Y-m-d H:i:s' ),
+            'summary'    => mb_substr( $summary, 0, 255 ),
+            'status'     => self::BUILDING,
+            'items'      => [],
+        ];
+        $id = $this->repo->insert( $row );
+        if ( null === $id ) {
+            return null;
+        }
+        $this->repo->trim( self::MAX );
+
+        return self::describe( [ 'id' => $id ] + $row );
+    }
+
+    /** @param list<array<string,mixed>> $items */
+    public function append( int $id, array $items ): bool
+    {
+        return $this->repo->append( $id, $items );
+    }
+
+    /**
+     * Sets the status of a batch (an open build becomes `applied`) and keeps its items. `$pageHashes` (page id => hash) replaces the
+     * recorded after_hash of those `page_created` items: a slug WordPress changed at publish time is then the slug the undo expects.
+     *
+     * @param array<int,string> $pageHashes
+     */
+    public function close( int $id, string $status, array $pageHashes = [] ): bool
+    {
+        $batch = $this->repo->find( $id );
+        if ( null === $batch ) {
+            return false;
+        }
+        $items = $batch['items'];
+        foreach ( $items as $i => $item ) {
+            if ( 'page_created' === ( $item['kind'] ?? '' ) && isset( $pageHashes[ (int) ( $item['ref'] ?? 0 ) ] ) ) {
+                $items[ $i ]['after_hash'] = $pageHashes[ (int) $item['ref'] ];
+            }
+        }
+
+        return $this->repo->update( $id, $status, $items );
+    }
+
+    /** @return array<string,mixed>|null the user's open build */
+    public function openBuild( int $userId ): ?array
+    {
+        return $this->repo->openBuild( $userId );
     }
 
     /** @return array<string,mixed>|null */

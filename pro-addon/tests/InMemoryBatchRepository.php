@@ -14,6 +14,11 @@ final class InMemoryBatchRepository implements BatchRepository
     /** @var array<int,array<string,mixed>> */
     public array $rows = [];
     public bool $failInsert = false;
+    public bool $failAppend = false;
+    public bool $failUpdate = false;
+    /** Fail only the Nth append call (1-based; 0 = never): a build whose later step could not be recorded. */
+    public int $failAppendAt = 0;
+    private int $appends = 0;
     private int $next = 1;
 
     public function insert( array $row ): ?int
@@ -39,7 +44,7 @@ final class InMemoryBatchRepository implements BatchRepository
 
     public function update( int $id, string $status, array $items ): bool
     {
-        if ( ! isset( $this->rows[ $id ] ) ) {
+        if ( $this->failUpdate || ! isset( $this->rows[ $id ] ) ) {
             return false;
         }
         $this->rows[ $id ]['status'] = $status;
@@ -48,10 +53,33 @@ final class InMemoryBatchRepository implements BatchRepository
         return true;
     }
 
+    public function append( int $id, array $items ): bool
+    {
+        if ( $this->failAppend || ( $this->failAppendAt > 0 && ++$this->appends === $this->failAppendAt ) || ! isset( $this->rows[ $id ] ) || 'building' !== $this->rows[ $id ]['status'] ) {
+            return false;
+        }
+        $this->rows[ $id ]['items'] = array_merge( $this->rows[ $id ]['items'], array_values( $items ) );
+
+        return true;
+    }
+
+    public function openBuild( int $userId ): ?array
+    {
+        foreach ( array_reverse( $this->rows, true ) as $row ) {
+            if ( 'building' === $row['status'] && (int) $row['user_id'] === $userId ) {
+                return $row;
+            }
+        }
+
+        return null;
+    }
+
     public function trim( int $keep ): void
     {
-        while ( count( $this->rows ) > $keep ) {
-            unset( $this->rows[ array_key_first( $this->rows ) ] );
+        // Like the real store: an open build is never removed and does not count towards the kept batches.
+        $closed = array_keys( array_filter( $this->rows, static fn ( array $r ): bool => 'building' !== $r['status'] ) );
+        while ( count( $closed ) > $keep ) {
+            unset( $this->rows[ array_shift( $closed ) ] );
         }
     }
 }

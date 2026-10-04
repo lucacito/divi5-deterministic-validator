@@ -202,6 +202,9 @@ if ( ! function_exists( 'wp_update_post' ) ) {
             }
         }
         $GLOBALS['__wp_update_calls'] = ( $GLOBALS['__wp_update_calls'] ?? 0 ) + 1; // lets a test prove no save happened
+        if ( isset( $GLOBALS['__wp_update_hook'] ) && is_callable( $GLOBALS['__wp_update_hook'] ) ) {
+            ( $GLOBALS['__wp_update_hook'] )( $id, $arr ); // a test can make core change something the caller did not ask for
+        }
         return $id;
     }
 }

@@ -37,7 +37,7 @@ Description at most 300 characters. Input: `action` (`add_page` | `status` | `la
 
 | Action | Arguments | Capability checked |
 |---|---|---|
-| `add_page` | `title`, `slug`, `content` (required strings); `build_id` (integer, optional); `menu_label` (string, at most 100 bytes, default the title); `in_menu` (boolean, default true); `is_front` (boolean, default false) | `publish_pages` |
+| `add_page` | `title`, `slug`, `content` (required strings); `build_id` (integer, optional); `menu_label` (string, at most 100 bytes, default the title); `in_menu` (boolean, default true when the user may edit menus, else false; true or `is_front` without `edit_theme_options` / `manage_options` is refused at `add_page`); `is_front` (boolean, default false) | `publish_pages` |
 | `status` | `build_id` (optional: the user's open build) | `publish_pages` |
 | `launch` | `build_id`; `dry_run` (boolean); `token` (string) | `publish_pages` for the status change, `edit_theme_options` for the menu, `manage_options` only when a page is flagged `is_front`; `edit_post` on every page |
 
@@ -77,7 +77,7 @@ reserved keys `-1` and `-2` a hash of the live front-page options and of the liv
    (`MenuBuilder::targetLocation()`; without a location it is built unassigned and the result says so).
 4. If the live front page or the live menu changed since the preview, the whole real run is refused (a new preview is needed); site settings are
    not "partially" applied against a stale picture.
-5. The dry run returns what would happen: pages with the link each would have, `would_publish`, `would_skip` with reasons, the front-page change
+5. The dry run returns what would happen: pages with the slug each would have, `would_publish`, `would_skip` with reasons, the front-page change
    (current to new), the menu change (replaces N items with M), and the token. The real run returns the published pages with their REAL
    final slug and permalink, the skipped pages, the menu result, and the batch.
 6. WordPress can still change a slug at publish time (reserved or newly taken slugs). The result reports every page whose final slug differs from

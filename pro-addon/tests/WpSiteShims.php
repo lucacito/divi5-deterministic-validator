@@ -12,6 +12,7 @@ if ( ! function_exists( 'get_posts' ) ) {
         $types    = (array) ( $args['post_type'] ?? 'post' );
         $statuses = (array) ( $args['post_status'] ?? 'publish' );
         $in       = isset( $args['post__in'] ) ? array_map( 'intval', (array) $args['post__in'] ) : null;
+        $name     = $args['name'] ?? null;
         $meta     = $args['meta_query'][0] ?? null;
         $out      = [];
         $posts    = $GLOBALS['__wp_posts'] ?? [];
@@ -24,6 +25,9 @@ if ( ! function_exists( 'get_posts' ) ) {
                 continue;
             }
             if ( null !== $in && ! in_array( (int) $id, $in, true ) ) {
+                continue;
+            }
+            if ( null !== $name && ( $p->post_name ?? '' ) !== $name ) {
                 continue;
             }
             if ( null !== $meta && (string) ( $GLOBALS['__wp_postmeta'][ $id ][ $meta['key'] ] ?? '' ) !== (string) $meta['value'] ) {

@@ -66,7 +66,7 @@ different behaviour, it adds a new tool with its own name.
    capability) and OpenAPI (`jhmg_aied_openapi_paths` + `jhmg_aied_openapi_schemas`) should
    be generated from the same tool list, so they cannot drift. The ChatGPT importer
    accepts at most 30 operations in total, so budget them: the base plugin has 16 and
-   the Pro add-on 13 (29 of 30). Document the 400, 401, 403 and 500 answers of each
+   the Pro add-on 14 (30 of 30: the budget is used up). Document the 400, 401, 403 and 500 answers of each
    operation, and refuse a request body that is not a JSON object with a 400 instead of
    running with defaults.
 

@@ -9,9 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The five storage operations the batch log needs. A row is
+ * The seven storage operations the batch log needs. A row is
  * ['id'=>int, 'user_id'=>int, 'tool'=>string, 'created_at'=>'Y-m-d H:i:s' (UTC), 'summary'=>string,
- *  'status'=>'applied'|'undone'|'partly_undone', 'items'=>list<array>].
+ *  'status'=>'applied'|'undone'|'partly_undone'|'building', 'items'=>list<array>]. A `building` row is an OPEN
+ * build (a batch that still grows): it is never trimmed and does not count towards the kept batches.
  */
 interface BatchRepository
 {
@@ -27,6 +28,12 @@ interface BatchRepository
     /** @param list<array<string,mixed>> $items */
     public function update( int $id, string $status, array $items ): bool;
 
-    /** Delete everything but the newest $keep rows. */
+    /** Add items after the stored ones, only to a batch that is still `building`. False when it does not exist, is closed or the write failed. @param list<array<string,mixed>> $items */
+    public function append( int $id, array $items ): bool;
+
+    /** The newest `building` batch of this user, or null. @return array<string,mixed>|null */
+    public function openBuild( int $userId ): ?array;
+
+    /** Delete everything but the newest $keep rows that are not open builds. */
     public function trim( int $keep ): void;
 }

@@ -46,6 +46,12 @@ if ( ! function_exists( 'wp_get_nav_menu_object' ) ) {
 }
 if ( ! function_exists( 'wp_create_nav_menu' ) ) {
     function wp_create_nav_menu( $name ) {
+        if ( ! empty( $GLOBALS['__wp_menu_throw'] ) ) {
+            throw new \TypeError( 'secret detail in /var/www/file.php:12' );
+        }
+        if ( ! empty( $GLOBALS['__wp_menu_create_fail'] ) ) {
+            return new WP_Error( 'menu_failed', 'simulated menu failure' );
+        }
         if ( false !== wp_get_nav_menu_object( $name ) ) {
             return new WP_Error( 'menu_exists', 'The menu name already exists.' );
         }
@@ -76,6 +82,16 @@ if ( ! function_exists( 'wp_get_nav_menu_items' ) ) {
         usort( $items, static fn ( $a, $b ) => $a->menu_order <=> $b->menu_order );
 
         return $items;
+    }
+}
+if ( ! function_exists( 'wp_get_nav_menus' ) ) {
+    function wp_get_nav_menus( $args = [] ) {
+        $out = [];
+        foreach ( $GLOBALS['__wp_menus'] as $id => $name ) {
+            $out[] = (object) [ 'term_id' => $id, 'name' => $name ];
+        }
+
+        return $out;
     }
 }
 if ( ! function_exists( 'wp_update_nav_menu_item' ) ) {

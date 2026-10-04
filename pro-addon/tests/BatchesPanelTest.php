@@ -111,6 +111,12 @@ class BatchesPanelTest extends TestCase
         $this->assertStringContainsString( 'nonce-for-aied_pro_undo_batch', $html );
     }
 
+    public function testAnOpenBuildIsListedAsBuilding(): void
+    {
+        $this->log->open( 'build_site', 'Site build' );
+        $this->assertStringContainsString( 'building', $this->render() );
+    }
+
     public function testAnUndoneBatchHasNoUndoButton(): void
     {
         $GLOBALS['__fake_store']['a'] = 'one';

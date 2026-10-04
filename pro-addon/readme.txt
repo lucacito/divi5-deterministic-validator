@@ -2,11 +2,11 @@
 Contributors:      lucaslopvet
 Requires at least: 6.0
 Requires PHP:      8.1
-Stable tag:        0.4.1
+Stable tag:        0.5.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Pro add-on for JHMG AI Editor for Divi 5. Lets your AI assistant set the front page and menu, publish pages, add CSS, edit the live Divi header and footer, find and replace text across your pages and audit them for layout problems and broken links, and lets you undo each change in one step.
+Pro add-on for JHMG AI Editor for Divi 5. Lets your AI assistant set the front page and menu, publish pages, add CSS, edit the live Divi header and footer, find and replace text across your pages, audit them for layout problems and broken links, build a whole site page by page and launch it in one undoable step, and lets you undo each change in one step.
 
 == Description ==
 
@@ -27,6 +27,7 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `manage_theme_template` - enable or disable one live Divi Theme Builder template, or change where it applies. It affects the whole site, so every real run needs the token from a preview (`dry_run`). It cannot create or delete templates.
 * `find_replace_site` - replace literal text across your Divi 5 pages (and, with Theme Builder permission, the header and footer) as one undoable batch. You must preview first (`dry_run`) and repeat with the token; pages whose result would fail the layout checks are skipped; at most 50 items per run.
 * `audit_site` - a read-only check of your Divi 5 pages and header/footer: layout check violations (including custom code the plugin would not save), unknown preset or color ids, and internal links to missing or unpublished pages. 25 items per call. It never makes a remote request and never changes anything.
+* `build_site` - build a whole Divi 5 site as one undoable build: `add_page` creates one checked draft page per call (a page that fails the checks, or reuses a slug, is refused and the rest are kept), then the build is launched in one previewed step. Nothing goes live while pages are added, and `undo_batch` takes the whole build away again.
 * `list_batches` - list recent Pro changes.
 * `undo_batch` - undo one batch.
 
@@ -50,6 +51,11 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
+
+= 0.5.0 =
+* New: `build_site` builds a whole Divi 5 site as one undoable build. `add_page` creates one checked draft page per call: a page that fails the layout checks, or whose slug another page already uses, is refused with the exact reason and the pages already added are kept. `status` lists the build. `launch` publishes the pages, sets the front page and rebuilds the primary menu in one step, after a preview (`dry_run`) and with its single-use token; pages that changed or lost their slug since the preview are skipped and the rest goes live. Nothing is visible on the live site before the launch.
+* One `undo_batch` takes the whole build away again (the menu and the front page come back, the pages go to the trash, unless your menu or front page still uses them); a page you edited in the Divi builder afterwards is skipped and reported, never trashed behind your back, even with the force option. An unfinished build can be abandoned the same way, and the undo closes it even when nothing could be restored.
+* `build_site` uses the last of the 30 operations the ChatGPT importer accepts (16 free + 14 Pro).
 
 = 0.4.1 =
 * Safer previews: the token a preview returns now only works for the person who made it, only once, and only within 30 minutes. A preview of a Theme Builder template change has the same rules (it used to have no time limit).
