@@ -59,11 +59,7 @@ final class Plugin
         add_action( 'admin_init', static function (): void {
             Licensing::refresh();
         } );
-        add_action( 'admin_notices', static function (): void {
-            if ( 'ai-editor-divi5' === sanitize_key( wp_unslash( (string) ( $_GET['page'] ?? '' ) ) ) ) {
-                Licensing::client()->status_notice();
-            }
-        } );
+        ( new Admin\LapseNotice( static fn (): array => Licensing::status() ) )->register();
 
         $registry = new ToolRegistry( Tools::all(), static fn (): bool => Licensing::isPremium() );
         $registry->register();

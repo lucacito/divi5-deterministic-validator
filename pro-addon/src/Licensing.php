@@ -23,12 +23,16 @@ final class Licensing
     private const UNLOCKED_OPTION = 'aied_pro_premium_unlocked';
     private const LOCKING         = [ 'revoked', 'invalid' ];
     private const STATE_OPTION    = 'aied_pro_license_state';
+    private const EXTRAS_OPTION   = 'aied_pro_license_extras';
+    private const SITE_LIMIT_OPTION = 'aied_pro_site_limit';
     /** Answers that are a decision about this licence. Anything else (an HTML error page, an empty or non-JSON body, `invalid_request`) is a fault. */
     private const VERDICT_ERRORS  = [ 'invalid_key', 'product_mismatch', 'license_not_usable' ];
 
     private const DEFAULT_API_BASE = 'https://divi5lab.com';
 
     public const UPGRADE_URL = 'https://divi5lab.com/plugins/divi-5-ai-editor';
+    /** Where the licence holder manages sites, plan and renewal; used when the server did not send a link we could trust. */
+    public const MANAGE_URL = 'https://divi5lab.com/account/licenses';
 
     public const REFRESH_BACKOFF_TRANSIENT = 'aied_pro_refresh_backoff';
     public const REFRESH_BACKOFF_SECONDS   = 900;
@@ -85,10 +89,27 @@ final class Licensing
     /** @return array{ok: bool, error: ?string} */
     public static function activate( string $key ): array
     {
-        $res = self::client()->activate( trim( $key ) );
+        $seen    = null;
+        $capture = static function ( $response, $args = [], $url = '' ) use ( &$seen ) {
+            if ( is_array( $response ) && is_string( $url ) && str_contains( $url, '/api/license/' ) ) {
+                $seen = [ 'code' => (int) wp_remote_retrieve_response_code( $response ), 'body' => (string) wp_remote_retrieve_body( $response ) ];
+            }
+
+            return $response;
+        };
+        add_filter( 'http_response', $capture, 10, 3 );
+        try {
+            $res = self::client()->activate( trim( $key ) );
+        } finally {
+            remove_filter( 'http_response', $capture, 10 );
+        }
+
         if ( $res['ok'] ) {
             update_option( self::UNLOCKED_OPTION, 1, false );
         }
+        // A 200 stores the tier details; a refused activation for the site limit stores them too (and the flag) so
+        // the notice can name the limit. Any other failure leaves them alone.
+        self::storeExtrasAndSiteLimit( $seen );
 
         return [ 'ok' => (bool) $res['ok'], 'error' => $res['error'] ];
     }
@@ -97,6 +118,8 @@ final class Licensing
     {
         self::client()->deactivate();
         delete_option( self::UNLOCKED_OPTION );
+        delete_option( self::EXTRAS_OPTION );
+        delete_option( self::SITE_LIMIT_OPTION );
     }
 
     public static function refresh( bool $force = false ): void
@@ -111,7 +134,7 @@ final class Licensing
         }
         $seen    = null;
         $capture = static function ( $response, $args = [], $url = '' ) use ( &$seen ) {
-            if ( is_array( $response ) && is_string( $url ) && str_contains( $url, '/api/license/validate' ) ) {
+            if ( is_array( $response ) && is_string( $url ) && str_contains( $url, '/api/license/' ) ) {
                 $seen = [ 'code' => (int) wp_remote_retrieve_response_code( $response ), 'body' => (string) wp_remote_retrieve_body( $response ) ];
             }
 
@@ -124,6 +147,9 @@ final class Licensing
             remove_filter( 'http_response', $capture, 10 );
         }
 
+        // Store extras and site limit status from the response
+        self::storeExtrasAndSiteLimit( $seen );
+
         // The generated client files any definitive-looking non-200 answer as `invalid`, and a 200 with an empty or
         // non-JSON body (a proxy or captive-portal page) as `unknown`, losing `expires`. Only an answer that really
         // is a decision about this licence may change the stored state; after a fault the previous state comes back.
@@ -132,6 +158,11 @@ final class Licensing
             if ( null === $before ) {
                 delete_option( self::STATE_OPTION );
             } else {
+                // A site-limit refusal is a real, definitive answer about THIS site, not a fault of the server: keep
+                // the licence as it was and count the check as done, so it is asked again tomorrow, not every 15 minutes.
+                if ( self::isSiteLimitAnswer( $seen ) ) {
+                    $before['checked_at'] = time();
+                }
                 update_option( self::STATE_OPTION, $before, false );
             }
         }
@@ -168,6 +199,17 @@ final class Licensing
         $body = json_decode( $seen['body'], true );
 
         return is_array( $body ) && is_string( $body['status'] ?? null ) && '' !== $body['status'];
+    }
+
+    /** @param array{code:int, body:string}|null $seen */
+    private static function isSiteLimitAnswer( ?array $seen ): bool
+    {
+        if ( null === $seen || 403 !== $seen['code'] ) {
+            return false;
+        }
+        $body = json_decode( $seen['body'], true );
+
+        return is_array( $body ) && 'site_limit_reached' === ( $body['error'] ?? null );
     }
 
     /** @param array{code:int, body:string}|null $seen the raw validate answer */
@@ -212,9 +254,50 @@ final class Licensing
     /** Local-only wipe (uninstall). Never performs HTTP. */
     public static function clear(): void
     {
-        foreach ( [ self::UNLOCKED_OPTION, 'aied_pro_license_key', 'aied_pro_license_state', 'aied_pro_update_blocked' ] as $option ) {
+        foreach ( [ self::UNLOCKED_OPTION, 'aied_pro_license_key', 'aied_pro_license_state', 'aied_pro_update_blocked', self::EXTRAS_OPTION, self::SITE_LIMIT_OPTION ] as $option ) {
             delete_option( $option );
         }
         delete_transient( self::REFRESH_BACKOFF_TRANSIENT );
+    }
+
+    /** @return array{tier:?string,tier_label:?string,sites_used:?int,sites_allowed:?int,founding:bool,lifetime:bool,upgrade_url:?string,manage_url:?string} */
+    public static function extras(): array
+    {
+        return (array) get_option( self::EXTRAS_OPTION, Licensing\LicenseExtras::empty() );
+    }
+
+    /** Check if the site limit was hit on the last activation/refresh. */
+    public static function siteLimitHit(): bool
+    {
+        return (bool) get_option( self::SITE_LIMIT_OPTION, false );
+    }
+
+    /** Capture extras and site limit from an HTTP response. */
+    private static function storeExtrasAndSiteLimit( ?array $seen ): void
+    {
+        if ( null === $seen ) {
+            return;
+        }
+
+        $code = $seen['code'] ?? 0;
+        $body = json_decode( $seen['body'] ?? '', true );
+
+        if ( ! is_array( $body ) ) {
+            return;
+        }
+
+        $apiBase = self::apiBaseFor( defined( 'AIED_PRO_API_BASE' ) ? (string) AIED_PRO_API_BASE : null, wp_get_environment_type() );
+
+        if ( 200 === $code && isset( $body['status'] ) && is_string( $body['status'] ) ) {
+            // 200 response: store extras and clear site limit flag
+            $extras = Licensing\LicenseExtras::fromBody( $body, $apiBase );
+            update_option( self::EXTRAS_OPTION, $extras, false );
+            delete_option( self::SITE_LIMIT_OPTION );
+        } elseif ( 403 === $code && ( $body['error'] ?? null ) === 'site_limit_reached' ) {
+            // 403 site_limit_reached: store extras from the error body and set the flag
+            $extras = Licensing\LicenseExtras::fromBody( $body, $apiBase );
+            update_option( self::EXTRAS_OPTION, $extras, false );
+            update_option( self::SITE_LIMIT_OPTION, 1, false );
+        }
     }
 }

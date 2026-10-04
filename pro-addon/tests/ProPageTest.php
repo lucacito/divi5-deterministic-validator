@@ -40,6 +40,23 @@ class ProPageTest extends TestCase
         unset( $GLOBALS['__wp_caps'] );
     }
 
+    public function testTheLicenceCardAlwaysOffersManageAndUpgradeLinks(): void
+    {
+        $this->activated();
+        $html = $this->render( $this->page() );
+        $this->assertStringContainsString( 'href="' . Licensing::MANAGE_URL . '"', $html );
+        $this->assertStringContainsString( 'href="' . Licensing::UPGRADE_URL . '"', $html );
+    }
+
+    public function testTheServersLinksWinWhenTheyAreTrusted(): void
+    {
+        $this->activated();
+        update_option( 'aied_pro_license_extras', [ 'manage_url' => 'https://divi5lab.com/account/x', 'upgrade_url' => 'https://divi5lab.com/pricing' ], false );
+        $html = $this->render( $this->page() );
+        $this->assertStringContainsString( 'href="https://divi5lab.com/account/x"', $html );
+        $this->assertStringContainsString( 'href="https://divi5lab.com/pricing"', $html );
+    }
+
     /** @param list<FakeTool> $tools */
     private function page( array $tools = [] ): ProPage
     {
@@ -239,6 +256,8 @@ class ProPageTest extends TestCase
             'invalid key'      => [ 'invalid_key', 'key_invalid' ],
             'wrong product'    => [ 'product_mismatch', 'key_wrong_product' ],
             'not usable'       => [ 'license_not_usable', 'key_not_usable' ],
+            'site limit'       => [ 'site_limit_reached', 'site_limit' ],
+            'trial used'       => [ 'trial_not_available', 'trial_used' ],
             'rate limited'     => [ 'rate_limited', 'rate_limited' ],
             'offline'          => [ 'network_error', 'offline' ],
             'something else'   => [ 'http_500', 'activate_failed' ],

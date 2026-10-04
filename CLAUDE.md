@@ -186,6 +186,7 @@ Docker env + validator workflows go through `make`:
 | `make verify-pro-site-tools` | Real-site check of find_replace_site and audit_site through the real registry (self-cleaning; dev site only: it evicts old batch rows) |
 | `make verify-pro-rest` | Real-site check of the Pro REST routes and the live OpenAPI spec (read-only) |
 | `make verify-pro-build-site` | Real-site check of `build_site` (build, launch, anonymous menu render, undo, abandon; self-cleaning; dev site only: it evicts old batch rows) |
+| `make verify-pro-licence-tiers` | Real-site check of the Pro tier display, site limit and expiry against a LOCAL layoutlab licence server (`STAGE=limit|agency|expired|cleanup LICENCE_BASE=http://host.docker.internal:3010`; self-cleaning; dev site only; see the script header) |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
 Tests run via PHPUnit (`phpunit.xml`) and cover both the validator
@@ -225,6 +226,8 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
+- **Free plugin 4.5.0 is PUBLISHED on WordPress.org** (2026-10-04; SVN `https://plugins.svn.wordpress.org/jhmg-ai-editor-for-divi-5`, user `lucaslopvet`, revisions r3727421..r3727426, tags 4.4.0 and 4.5.0; the directory page and API show 4.5.0, the icon, both banners and 3 screenshots). Release routine: sync trunk from the tracked zip, commit, `svn copy trunk tags/<version>`. The SVN password is never stored in the repo or in memory; ask the owner each time.
+- **Pro pricing tiers (Pro add-on 0.6.0, branch `feat/pro-0-6-0-tiers`; spec/plan `docs/superpowers/plans/2026-10-04-pricing-tiers.md`)**: annual licences priced by site count (Personal / Freelancer / Agency, a founding offer for the first buyers, a capped Lifetime, prorated upgrades, renewal reminders 30 and 7 days ahead). EVERY price, tier name, site limit and cap lives in ONE file, `layoutlab/config/pricing.json` (the divi5lab.com store repo); the add-on carries NO price and shows only what the licence server returns (`LicenseExtras`: tier, sites used/allowed, founding, lifetime, upgrade and manage URLs). Enforcement is SERVER-side only (the add-on is GPL): the site cap is checked at activate and validate in the store (`lib/license-server`), the founding and lifetime caps at checkout (plus a Stripe coupon redemption limit), proration by Stripe. An expired, cancelled or past-due licence never disables any Pro tool (only `revoked`/`invalid` lock; `ExpiryKeepsAllToolsTest`); one dismissible `LapseNotice` replaces the shared client's notice. The no-card 45-day trial is Personal only and never takes the founding coupon. The shared licence client is untouched. Draft page copy: `docs/pricing-page.md` (price tokens, competitor facts dated October 2026, `TODO(owner)` markers).
 - **Pro add-on 0.5.0** (whole-site generation; merged to LOCAL main 749dc86; NOT released, NOT pushed): the 14th and LAST Pro tool
   `build_site` (16 free + 14 Pro = 30 of the importer's 30 operations: the budget is used up). `add_page` creates ONE validated DRAFT
   page per call (invalid layout or taken slug: refused with the reasons, the build keeps its valid pages) and appends it to ONE growing
@@ -278,18 +281,17 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   2026-10-02), and confirm the licence server's `validate` answers have the shapes `Licensing::isVerdict` expects.
 - **WordPress.org review answered 2026-10-02** (issue: custom CSS/JS/PHP through layouts, `css.freeForm`/`mainElement`):
   fixed and merged to LOCAL main (9cb7a06; NOT pushed) (`CodePolicy` + `LayoutGate`, every write/preview path, guides/recipes cleaned,
-  `NoCustomCodeTest`); the owner UPLOADED the 4.4.0 zip (2026-10-03, with the round-3 reply) and the WordPress.org answer is pending.
+  `NoCustomCodeTest`); the WordPress.org review was answered and the plugin is APPROVED and published (see the first bullet).
   Rule: the free plugin never saves custom CSS, JavaScript or PHP, and any future layout write path (including every Pro
   write tool) must go through `LayoutGate::check()`.
   Style-value guard scope is a named list (decoration/advanced + listed families), not a proof of completeness; add new
   CSS-bearing families when found.
-- **4.5.0 = dashboard recent-edits fix** (merged to LOCAL main e635d58 on the owner's go; NOT uploaded, NOT pushed; ships after the
-  WordPress.org answer together with whatever else is pending; if they ask for changes to the uploaded 4.4.0, branch from 583a54c): `HistoryService::recent()` now keeps only rows
+- **4.5.0 = dashboard recent-edits fix** (published to WordPress.org 2026-10-04): `HistoryService::recent()` now keeps only rows
   `EditTarget::resolve()` accepts (the Restore handler's own rule), filtered BEFORE the limit (it scans the newest 200
   rows), so header/footer edits made by the Pro add-on and deleted or non-editable pages no longer show a Restore button
   that always fails. A "use the Pro tab" label was rejected: the only Pro mention allowed in the free UI is the one
   dismissible card. 727 tests. The tracked `jhmg-ai-editor-for-divi-5.zip` is now the 4.5.0 build; the uploaded 4.4.0 build is commit 583a54c.
-- **4.4.0 = global styles release PLUS the free re-cut** (merged to LOCAL main, 026a571; UPLOADED to WordPress.org 2026-10-03, answer pending): read-only
+- **4.4.0 = global styles release PLUS the free re-cut** (merged to LOCAL main, 026a571; published to WordPress.org 2026-10-04): read-only
   `list_global_styles` (16th tool) + non-blocking style-reference advisory + guide updates (spec
   `docs/superpowers/specs/2026-10-01-global-styles-design.md`). The free re-cut removed the unreleased 4.3.0
   header/footer code (it moves to the Pro add-on), so there are 16 tools. Ships after the first WordPress.org

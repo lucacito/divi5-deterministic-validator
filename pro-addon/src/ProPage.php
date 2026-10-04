@@ -66,6 +66,7 @@ final class ProPage
         }
 
         $status  = Licensing::status();
+        $extras  = Licensing::extras();
         $key     = Licensing::client()->get_key();
         $premium = Licensing::isPremium();
         $names   = $this->registry->names();
@@ -74,6 +75,10 @@ final class ProPage
             'activate_failed' => [ 'error', __( 'The licence could not be activated. Check the key and try again.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'key_invalid'       => [ 'error', __( 'That licence key was not recognised. Check it for typos and try again.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'key_wrong_product' => [ 'error', __( 'That key belongs to a different product. Use the key for JHMG AI Editor for Divi 5 Pro.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
+            'site_limit'        => [ 'error', null !== ( $extras['sites_allowed'] ?? null )
+                ? sprintf( /* translators: %d: site limit */ __( 'This licence is already active on all %d of its sites. Free a site in your divi5lab.com account, or upgrade for more.', 'jhmg-ai-editor-for-divi-5-pro' ), $extras['sites_allowed'] )
+                : __( 'This licence is already active on all of its sites. Free a site in your divi5lab.com account, or upgrade for more.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
+            'trial_used'        => [ 'error', __( 'A free trial can only start on a site that has never had a licence for this plugin. Buy a plan to use it on this site.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'key_not_usable'    => [ 'error', __( 'That licence is not active (expired, cancelled, or every site activation is in use). Check your divi5lab.com account.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'rate_limited'      => [ 'error', __( 'Too many attempts. Wait a few minutes and try again.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'offline'           => [ 'error', __( 'Could not reach divi5lab.com. Check that this site can make outgoing requests, then try again.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
@@ -89,12 +94,37 @@ final class ProPage
             <?php endif; ?>
             <p>
                 <strong><?php echo esc_html( self::statusLabel( $status['reason'] ) ); ?></strong>
-                <?php if ( null !== $status['expires'] ) : ?>
-                    &middot; <?php echo esc_html( sprintf( /* translators: %s: date */ __( 'renews or expires %s', 'jhmg-ai-editor-for-divi-5-pro' ), gmdate( 'Y-m-d', $status['expires'] ) ) ); ?>
+                <?php if ( null !== $key && null !== ( $extras['tier_label'] ?? null ) ) : ?>
+                    &middot; <?php echo esc_html( $extras['tier_label'] ); ?>
+                <?php endif; ?>
+                <?php if ( null !== $key && null !== ( $extras['sites_used'] ?? null ) ) : ?>
+                    &middot;
+                    <?php
+                    if ( null === ( $extras['sites_allowed'] ?? null ) ) {
+                        echo esc_html( sprintf( /* translators: %d: number of sites */ __( 'Sites: %d (unlimited)', 'jhmg-ai-editor-for-divi-5-pro' ), $extras['sites_used'] ) );
+                    } else {
+                        echo esc_html( sprintf( /* translators: 1: sites used 2: sites allowed */ __( 'Sites: %1$d of %2$d', 'jhmg-ai-editor-for-divi-5-pro' ), $extras['sites_used'], $extras['sites_allowed'] ) );
+                    }
+                    ?>
+                <?php endif; ?>
+                <?php if ( $extras['lifetime'] ?? false ) : ?>
+                    &middot; <?php esc_html_e( 'Lifetime', 'jhmg-ai-editor-for-divi-5-pro' ); ?>
+                <?php elseif ( null !== $status['expires'] ) : ?>
+                    &middot; <?php echo esc_html( sprintf( /* translators: %s: date */ __( 'expires %s', 'jhmg-ai-editor-for-divi-5-pro' ), gmdate( 'Y-m-d', $status['expires'] ) ) ); ?>
+                <?php endif; ?>
+                <?php if ( $extras['founding'] ?? false ) : ?>
+                    &middot; <span title="<?php esc_attr_e( 'Founding price locked at renewal', 'jhmg-ai-editor-for-divi-5-pro' ); ?>"><?php esc_html_e( 'Founding', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
                 <?php endif; ?>
             </p>
+            <?php if ( null !== $key && Licensing::siteLimitHit() && ! empty( $extras['sites_allowed'] ) ) : ?>
+                <div class="notice notice-warning inline"><p><?php echo esc_html( sprintf( /* translators: %d: site limit */ __( 'You have reached the site limit for this licence (%d sites). Upgrade to add more, or free up a site from your account.', 'jhmg-ai-editor-for-divi-5-pro' ), $extras['sites_allowed'] ) ); ?></p></div>
+            <?php endif; ?>
             <?php if ( null !== $key ) : ?>
                 <p><?php esc_html_e( 'Licence key:', 'jhmg-ai-editor-for-divi-5-pro' ); ?> <code><?php echo esc_html( self::maskKey( $key ) ); ?></code></p>
+                <p>
+                    <a href="<?php echo esc_url( ! empty( $extras['manage_url'] ) ? $extras['manage_url'] : Licensing::MANAGE_URL ); ?>" class="button"><?php esc_html_e( 'Manage sites', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
+                    <a href="<?php echo esc_url( ! empty( $extras['upgrade_url'] ) ? $extras['upgrade_url'] : Licensing::UPGRADE_URL ); ?>" class="button"><?php esc_html_e( 'Upgrade', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
+                </p>
                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                     <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_DEACTIVATE ); ?>">
                     <?php wp_nonce_field( self::ACTION_DEACTIVATE ); ?>
@@ -147,6 +177,8 @@ final class ProPage
             'invalid_key'        => 'key_invalid',
             'product_mismatch'   => 'key_wrong_product',
             'license_not_usable' => 'key_not_usable',
+            'site_limit_reached' => 'site_limit',
+            'trial_not_available' => 'trial_used',
             'rate_limited'       => 'rate_limited',
             'network_error'      => 'offline',
             default              => 'activate_failed',
