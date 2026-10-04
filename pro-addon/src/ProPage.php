@@ -66,6 +66,7 @@ final class ProPage
         }
 
         $status  = Licensing::status();
+        $extras  = Licensing::extras();
         $key     = Licensing::client()->get_key();
         $premium = Licensing::isPremium();
         $names   = $this->registry->names();
@@ -89,12 +90,41 @@ final class ProPage
             <?php endif; ?>
             <p>
                 <strong><?php echo esc_html( self::statusLabel( $status['reason'] ) ); ?></strong>
-                <?php if ( null !== $status['expires'] ) : ?>
-                    &middot; <?php echo esc_html( sprintf( /* translators: %s: date */ __( 'renews or expires %s', 'jhmg-ai-editor-for-divi-5-pro' ), gmdate( 'Y-m-d', $status['expires'] ) ) ); ?>
+                <?php if ( null !== ( $extras['tier_label'] ?? null ) ) : ?>
+                    &middot; <?php echo esc_html( $extras['tier_label'] ); ?>
+                <?php endif; ?>
+                <?php if ( null !== ( $extras['sites_used'] ?? null ) ) : ?>
+                    &middot;
+                    <?php
+                    if ( null === ( $extras['sites_allowed'] ?? null ) ) {
+                        echo esc_html( sprintf( /* translators: %d: number of sites */ __( 'Sites: %d (unlimited)', 'jhmg-ai-editor-for-divi-5-pro' ), $extras['sites_used'] ) );
+                    } else {
+                        echo esc_html( sprintf( /* translators: 1: sites used 2: sites allowed */ __( 'Sites: %1$d of %2$d', 'jhmg-ai-editor-for-divi-5-pro' ), $extras['sites_used'], $extras['sites_allowed'] ) );
+                    }
+                    ?>
+                <?php endif; ?>
+                <?php if ( $extras['lifetime'] ?? false ) : ?>
+                    &middot; <?php esc_html_e( 'Lifetime', 'jhmg-ai-editor-for-divi-5-pro' ); ?>
+                <?php elseif ( null !== $status['expires'] ) : ?>
+                    &middot; <?php echo esc_html( sprintf( /* translators: %s: date */ __( 'expires %s', 'jhmg-ai-editor-for-divi-5-pro' ), gmdate( 'Y-m-d', $status['expires'] ) ) ); ?>
+                <?php endif; ?>
+                <?php if ( $extras['founding'] ?? false ) : ?>
+                    &middot; <span title="<?php esc_attr_e( 'Founding price locked at renewal', 'jhmg-ai-editor-for-divi-5-pro' ); ?>"><?php esc_html_e( 'Founding', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
                 <?php endif; ?>
             </p>
+            <?php if ( Licensing::siteLimitHit() && ! empty( $extras['sites_allowed'] ) ) : ?>
+                <div class="notice notice-warning inline"><p><?php echo esc_html( sprintf( /* translators: %d: site limit */ __( 'You have reached the site limit for this licence (%d sites). Upgrade to add more, or free up a site from your account.', 'jhmg-ai-editor-for-divi-5-pro' ), $extras['sites_allowed'] ) ); ?></p></div>
+            <?php endif; ?>
             <?php if ( null !== $key ) : ?>
                 <p><?php esc_html_e( 'Licence key:', 'jhmg-ai-editor-for-divi-5-pro' ); ?> <code><?php echo esc_html( self::maskKey( $key ) ); ?></code></p>
+                <p>
+                    <?php if ( ! empty( $extras['manage_url'] ) ) : ?>
+                        <a href="<?php echo esc_url( $extras['manage_url'] ); ?>" class="button"><?php esc_html_e( 'Manage sites', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
+                    <?php endif; ?>
+                    <?php if ( ! empty( $extras['upgrade_url'] ) ) : ?>
+                        <a href="<?php echo esc_url( $extras['upgrade_url'] ); ?>" class="button"><?php esc_html_e( 'Upgrade', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
+                    <?php endif; ?>
+                </p>
                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                     <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_DEACTIVATE ); ?>">
                     <?php wp_nonce_field( self::ACTION_DEACTIVATE ); ?>
