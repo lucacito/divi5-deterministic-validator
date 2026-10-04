@@ -49,7 +49,7 @@ uasort( $sizes, static fn ( string $a, string $b ): int => strlen( $a ) <=> strl
 $names  = array_keys( $sizes );
 $median = $names[ intdiv( count( $names ), 2 ) ];
 foreach ( [ 'smallest' => $names[0], 'median' => $median, 'largest' => $names[ count( $names ) - 1 ] ] as $label => $name ) {
-    $add( "Reading a page ({$label})", 'the layout get_page_layout returns, from ' . $name, $sizes[ $name ] );
+    $add( "Reading a page ({$label})", 'the page\'s layout content (get_page_layout adds a little wrapper), from ' . $name, $sizes[ $name ] );
 }
 
 // 3. A refusal: what the assistant reads when the checker says no.
@@ -60,9 +60,9 @@ $refusal = static function ( string $content ): array {
     return [ count( $r->violations() ), (string) json_encode( [ 'saved' => false, 'valid' => false, 'violations' => array_map( static fn ( $v ) => $v->toArray(), $r->violations() ) ] ) ];
 };
 [ $n, $body ] = $refusal( str_replace( 'divi/shop', 'divi/not-a-module', $small ) );
-$add( 'A refusal: one mistake', "{$n} violation, e.g. an unknown block type", $body );
+$add( 'A refusal: one unknown block', "{$n} " . ( 1 === $n ? 'violation' : 'violations' ) . ' (the second lists the allowed child types)', $body );
 [ $n, $body ] = $refusal( str_replace( '"builderVersion"', '"builderVers1on"', $sizes[ $median ] ) );
-$add( 'A refusal: every block wrong (worst case)', "{$n} violations on the median page", $body );
+$add( 'A refusal: every block wrong (worst case)', "{$n} " . ( 1 === $n ? 'violation' : 'violations' ) . ' on the median page', $body );
 
 // 4. A preview (dry run): the diff the assistant reads before a save in approval mode.
 $changed = (string) preg_replace( '/"value":"([^"]{3,})"/', '"value":"Changed text"', $sizes[ $median ], 1 );
@@ -76,6 +76,8 @@ $md .= "| What | Detail | Bytes | Approx. tokens |\n| --- | --- | ---: | ---: |\
 foreach ( $rows as [ $what, $detail, $bytes, $tokens ] ) {
     $md .= "| {$what} | {$detail} | " . number_format( $bytes ) . ' | ' . number_format( $tokens ) . " |\n";
 }
+$md .= "\nA refusal can be long because it lists the allowed block types; shortening it would be a separate small fix.\n";
+$md .= "\nTokens the assistant WRITES also count: sending a whole layout to update_page_layout costs roughly the size of the page read. edit_page_content and dry_run avoid that.\n";
 $md .= "\nThe Pro add-on adds its own tool definitions on top of the first row.\n";
 file_put_contents( __DIR__ . '/../docs/token-usage.md', $md );
 echo $md;
