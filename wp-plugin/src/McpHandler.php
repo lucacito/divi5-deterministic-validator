@@ -111,6 +111,15 @@ final class McpHandler
                 ],
             ],
             [
+                'name'        => 'get_site_structure',
+                'description' => 'List how this site is set up (read-only): public post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices; never field values). Call it before building a page that lists custom post types, uses a given image size or should refer to ACF fields. Pass "include" to get only some sections: post_types, taxonomies, image_sizes, acf.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => ['include' => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => ['post_types', 'taxonomies', 'image_sizes', 'acf']], 'description' => 'Optional. Sections to return; default all.']],
+                    'required'   => [],
+                ],
+            ],
+            [
                 'name'        => 'get_page_layout',
                 'description' => 'Get the full Divi 5 layout (Gutenberg block HTML) for a specific page by ID.',
                 'inputSchema' => [
@@ -278,6 +287,7 @@ final class McpHandler
             'restore_page_version'   => $this->toolRestoreVersion($id, $arguments),
             'list_media_images'  => $this->toolListMedia($id, $arguments),
             'list_global_styles' => $this->toolListGlobalStyles($id, $arguments),
+            'get_site_structure' => $this->toolSiteStructure($id, $arguments),
             'create_page'        => $this->toolCreatePage($id, $arguments),
             default              => $this->extensionCall($id, $name, $arguments),
         };
@@ -631,6 +641,24 @@ final class McpHandler
         }
         $result = GlobalStyles::catalog($module);
         UsageTracker::log('list_global_styles', null, 'read');
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => wp_json_encode($result)]],
+        ]);
+    }
+
+    private function toolSiteStructure(mixed $id, array $args): WP_REST_Response
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('site_structure', null, 'error');
+            return $this->rpcError($id, -32602, 'You do not have permission to read the site structure.');
+        }
+        $include = SiteStructure::parseInclude($args['include'] ?? null);
+        if ($include === null) {
+            return $this->rpcError($id, -32602, 'include must be a list of: ' . implode(', ', SiteStructure::SECTIONS) . '.');
+        }
+        $result = SiteStructure::catalog($include);
+        UsageTracker::log('site_structure', null, 'read');
 
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => wp_json_encode($result)]],

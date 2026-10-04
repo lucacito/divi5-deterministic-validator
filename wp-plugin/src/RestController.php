@@ -45,6 +45,13 @@ final class RestController
             ],
         ]);
 
+        // GET /site-structure — read-only post types, taxonomies, image sizes and ACF field groups
+        register_rest_route(self::NS, '/site-structure', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'site_structure'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
         // POST /pages — validate + create a new page (always a draft)
         register_rest_route(self::NS, '/pages', [
             'methods'             => WP_REST_Server::CREATABLE,
@@ -593,6 +600,22 @@ final class RestController
         }
         $result = GlobalStyles::catalog($module);
         UsageTracker::log('list_global_styles', null, 'read');
+
+        return new WP_REST_Response($result, 200);
+    }
+
+    public function site_structure(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('site_structure', null, 'error');
+            return new WP_Error('forbidden', 'You do not have permission to read the site structure.', ['status' => 403]);
+        }
+        $include = SiteStructure::parseInclude($request->get_param('include'));
+        if ($include === null) {
+            return new WP_Error('invalid_field', '"include" must be a list of: ' . implode(', ', SiteStructure::SECTIONS) . '.', ['status' => 400]);
+        }
+        $result = SiteStructure::catalog($include);
+        UsageTracker::log('site_structure', null, 'read');
 
         return new WP_REST_Response($result, 200);
     }

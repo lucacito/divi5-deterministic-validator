@@ -43,13 +43,14 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * "Add a section with our opening hours under the hero on the About page."
 * "Undo the last change you made to the Services page."
 
-= What your AI assistant can do (16 tools) =
+= What your AI assistant can do (17 tools) =
 
 Read and check:
 
 * `list_divi_pages`: list the pages built with Divi 5 that you can edit.
 * `get_page_layout`: read a page's current layout.
 * `list_global_styles`: list your site's own Divi colors and presets so the AI can reuse them (read-only).
+* `get_site_structure`: list your site's custom post types, taxonomies, image sizes and Advanced Custom Fields field groups so pages fit your site (read-only: never field values or theme files; available over MCP and the REST API, not in the ChatGPT Action).
 * `validate_layout`: check a layout without saving anything.
 
 Edit and create:
@@ -167,7 +168,7 @@ Yes. It has been tested with Gemini CLI: copy the one command from the Gemini ta
 
 = Can it read my ACF fields, custom post types or functions.php? =
 
-No. It reads your Divi 5 pages, your global colors, variables and presets (read-only) and your Media Library images.
+It can read how your site is set up: custom post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices). It never reads field values, your theme files or `functions.php`. This is available to assistants that connect over MCP or the REST API, not to the ChatGPT Action.
 
 = Can it create global colors and presets? =
 

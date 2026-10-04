@@ -374,13 +374,11 @@ class WpOrgComplianceTest extends TestCase
         sort($tools);
         $this->assertSame([
             'create_page', 'edit_page_content', 'get_image_guide', 'get_landing_guide', 'get_page_history_entry',
-            'get_page_layout', 'get_section_recipes', 'get_site_guide', 'get_style_guide', 'list_divi_pages',
+            'get_page_layout', 'get_section_recipes', 'get_site_guide', 'get_site_structure', 'get_style_guide', 'list_divi_pages',
             'list_global_styles', 'list_media_images', 'list_page_history', 'restore_page_version', 'update_page_layout', 'validate_layout',
         ], $tools);
-        // 16 tools: 4.4.0 adds one READ-ONLY tool (list_global_styles: the site's own presets and colors) and header/footer
-        // editing (list_theme_layouts, never released) moved out to the separate Pro add-on, so the pinned list shrinks by one.
-        // Nothing is gated and nothing writes a setting; no rule of this test is loosened.
-        $this->assertCount(16, $tools);
+        // 17 tools: 4.6.0 adds the READ-ONLY get_site_structure (post types, taxonomies, image sizes, ACF). Nothing is gated and nothing writes a setting; no rule of this test is loosened.
+        $this->assertCount(17, $tools);
     }
 
     public function testVisibleProductNameIsTheFullJhmgName(): void
@@ -545,7 +543,7 @@ class WpOrgComplianceTest extends TestCase
         $this->assertSame(['get'], array_keys($spec['paths']['/global-styles']));
         $r = (string) file_get_contents(self::ROOT . '/readme.txt');
         $this->assertStringContainsString('`list_global_styles`', $r);
-        $this->assertStringContainsString('(16 tools)', $r);
+        $this->assertStringContainsString('(17 tools)', $r);
         $this->assertStringContainsString('It cannot create or change presets or colors', $r, 'the readme must say plainly that presets and colors are read-only');
     }
 }
