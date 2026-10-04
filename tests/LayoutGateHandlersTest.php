@@ -27,6 +27,7 @@ require_once __DIR__ . '/../wp-plugin/src/StyleReferences.php';
 require_once __DIR__ . '/../wp-plugin/src/CodePolicy.php';
 require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
 require_once __DIR__ . '/../wp-plugin/src/DryRun.php';
+require_once __DIR__ . '/../wp-plugin/src/ApprovalMode.php';
 require_once __DIR__ . '/../wp-plugin/src/StyleGuide.php';
 require_once __DIR__ . '/../wp-plugin/src/RestController.php';
 require_once __DIR__ . '/../wp-plugin/src/McpHandler.php';
