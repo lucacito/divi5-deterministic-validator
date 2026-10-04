@@ -228,15 +228,17 @@ final class BuildSite implements ProTool
         $dry     = Args::bool( $a, 'dry_run' );
         $token   = Args::string( $a, 'token', false, 8000 );
         $userId  = (int) get_current_user_id();
-        $row     = $this->owned( $buildId, $userId );
-        if ( BatchLog::BUILDING !== $row['status'] ) {
-            throw new \InvalidArgumentException( "Build {$buildId} is finished (" . self::state( $row ) . ') and cannot be launched again.' );
-        }
-        // The same per-user lock as add_page: a page must not be appended to a build while it is being launched and closed.
+        // The same per-user lock as add_page, taken BEFORE the build is read: a page appended while this call waited must be in
+        // the build the launch plans, or it would be sealed into a launched build without ever having been launched.
         if ( ! $this->lock->acquire( $userId ) ) {
             throw new \InvalidArgumentException( 'Another build_site call is still running for you. Wait a moment and call again.' );
         }
         try {
+            $row = $this->owned( $buildId, $userId );
+            if ( BatchLog::BUILDING !== $row['status'] ) {
+                throw new \InvalidArgumentException( "Build {$buildId} is finished (" . self::state( $row ) . ') and cannot be launched again.' );
+            }
+
             return ( new BuildLaunch( $this->log, $this->clock ) )->run( $row, $dry, $token );
         } finally {
             $this->lock->release( $userId );

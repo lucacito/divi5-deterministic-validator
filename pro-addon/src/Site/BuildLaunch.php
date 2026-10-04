@@ -167,10 +167,13 @@ final class BuildLaunch
     {
         $buildId   = (int) $row['id'];
         $stored    = true;
+        $any       = false;
         // Each step is written to the build's batch as soon as it has happened: if a later step fails, what already went live
-        // is recorded and `undo_batch` can still take it back (the build then simply stays open).
-        $record    = function ( array $items ) use ( $buildId, &$stored ): void {
-            $stored = $this->log->append( $buildId, $items ) && $stored;
+        // is recorded and `undo_batch` can still take it back.
+        $record    = function ( array $items ) use ( $buildId, &$stored, &$any ): void {
+            $ok     = $this->log->append( $buildId, $items );
+            $any    = $any || $ok;
+            $stored = $ok && $stored;
         };
         $recorded  = [];
         $published = [];
@@ -216,6 +219,20 @@ final class BuildLaunch
         }
 
         $record( $recorded );
+        if ( ! $stored ) {
+            // The publishing itself could not be written to the batch. Do not go on to the front page and the menu: they could not be undone either.
+            return [
+                'changed'    => true,
+                'dry_run'    => false,
+                'published'  => $published,
+                'skipped'    => $skipped,
+                'front_page' => null,
+                'menu'       => null,
+                'build'      => BuildSite::summary( (array) ( $this->log->find( $buildId ) ?? $row ) ),
+                'batch'      => [ 'id' => null, 'undoable' => false, 'note' => 'The publishing could not be recorded, so undo_batch cannot take it back.' ],
+                'message'    => 'The pages were published, but this could not be recorded, so the front page and the menu were NOT changed and undo_batch cannot take the publishing back. Check the pages under Pages.',
+            ];
+        }
         $frontId = null;
         foreach ( $live as $p ) {
             if ( ! empty( $p['meta']['is_front'] ) ) {
@@ -228,30 +245,43 @@ final class BuildLaunch
             $record( [ Item::make( 'front_page', 'front_page', 'Front page', $frontBefore, FrontPageKind::read() ) ] );
         }
 
-        $menu    = null;
-        $message = 'The build was launched.';
+        $menu      = null;
+        $menuError = null;
+        $message   = 'The build was launched.';
         $menuIn  = array_values( array_filter( $live, static fn ( array $p ): bool => ! empty( $p['meta']['in_menu'] ) ) );
         if ( [] !== $menuIn ) {
             $menuItems = array_map( static fn ( array $p ): array => [
                 'title' => '' !== (string) ( $p['meta']['menu_label'] ?? '' ) ? (string) $p['meta']['menu_label'] : $p['title'], 'type' => 'post_type', 'object' => 'page', 'object_id' => $p['id'], 'url' => '',
                 'parent' => -1, 'classes' => '', 'target' => '', 'attr_title' => '', 'xfn' => '', 'description' => '',
             ], $menuIn );
-            $added     = MenuBuilder::build( $menuItems, $location );
-            $after     = MenuBuilder::snapshot( $location );
-            $record( [ Item::make( 'menu', $location, 'Main Menu (primary navigation)', $menuBefore, MenuBuilder::canonical( $after ) ) ] );
-            $menu      = [ 'items' => $added, 'location' => '' === $location ? null : $location ];
-            if ( '' === $location ) {
-                $message .= ' The menu "' . MenuBuilder::MENU_NAME . '" was built, but this theme has no menu location, so it was not assigned. Assign it under Appearance > Menus.';
-            }
-            if ( $added < count( $menuItems ) ) {
-                $message .= ' ' . ( count( $menuItems ) - $added ) . ' of ' . count( $menuItems ) . ' menu items could not be added.';
+            try {
+                $added = MenuBuilder::build( $menuItems, $location );
+                $after = MenuBuilder::snapshot( $location );
+                $record( [ Item::make( 'menu', $location, 'Main Menu (primary navigation)', $menuBefore, MenuBuilder::canonical( $after ) ) ] );
+                $menu = [ 'items' => $added, 'location' => '' === $location ? null : $location ];
+                if ( '' === $location ) {
+                    $message .= ' The menu "' . MenuBuilder::MENU_NAME . '" was built, but this theme has no menu location, so it was not assigned. Assign it under Appearance > Menus.';
+                }
+                if ( $added < count( $menuItems ) ) {
+                    $message .= ' ' . ( count( $menuItems ) - $added ) . ' of ' . count( $menuItems ) . ' menu items could not be added.';
+                }
+            } catch ( \Throwable $e ) {
+                // The pages are live and recorded: say so instead of letting a generic error hide it. The build is finished (a second
+                // launch could only skip pages that are no longer drafts); the menu can be set with set_primary_menu.
+                $menuError = $e->getMessage();
+                $message  .= ' The menu could not be built (' . $menuError . '): the pages are live and the front page is set. Set the menu with set_primary_menu, or take everything back with undo_batch ' . $buildId . '.';
             }
         }
 
         $stored = $stored && $this->log->close( $buildId, 'applied' );
-        $batch  = $stored ? BatchLog::describe( (array) $this->log->find( $buildId ) ) : [ 'id' => null, 'undoable' => false, 'note' => 'The build went live, but this could not be recorded, so undo_batch cannot undo it.' ];
-
-        return [
+        if ( $stored ) {
+            $batch = BatchLog::describe( (array) $this->log->find( $buildId ) );
+        } elseif ( $any ) {
+            $batch = BatchLog::describe( (array) $this->log->find( $buildId ) ) + [ 'note' => 'Not every step could be recorded, so undo_batch may not take everything back.' ];
+        } else {
+            $batch = [ 'id' => null, 'undoable' => false, 'note' => 'The build went live, but this could not be recorded, so undo_batch cannot undo it.' ];
+        }
+        $result = [
             'changed'    => true,
             'dry_run'    => false,
             'published'  => $published,
@@ -262,5 +292,10 @@ final class BuildLaunch
             'batch'      => $batch,
             'message'    => $message,
         ];
+        if ( null !== $menuError ) {
+            $result['menu_error'] = $menuError;
+        }
+
+        return $result;
     }
 }

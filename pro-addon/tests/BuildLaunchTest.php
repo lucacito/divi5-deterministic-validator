@@ -390,24 +390,27 @@ class BuildLaunchTest extends TestCase
         $this->assertArrayNotHasKey( 'aied_pro_buildlock_7', $GLOBALS['__wp_options'], 'released after a refusal' );
     }
 
-    public function testWhatWasPublishedIsRecordedEvenWhenALaterStepFailsSoItCanStillBeUndone(): void
+    public function testAMenuStepThatFailsAfterThePagesWentLiveIsReportedNotHiddenInAGenericError(): void
     {
         $ids = $this->build();
         $p   = $this->preview();
         $GLOBALS['__wp_menu_create_fail'] = true;
-        try {
-            $this->launch( $p );
-            $this->fail( 'expected the menu failure to surface' );
-        } catch ( \RuntimeException $e ) {
-            $this->assertStringContainsString( 'simulated menu failure', $e->getMessage() );
-        }
+        $r = $this->launch( $p );
         $GLOBALS['__wp_menu_create_fail'] = false;
+        $this->assertTrue( $r['changed'], 'the pages did go live and the front page is set: say so' );
+        $this->assertSame( [ $ids['home'], $ids['about'], $ids['hidden'] ], array_column( $r['published'], 'id' ) );
+        $this->assertSame( $ids['home'], $r['front_page'] );
+        $this->assertNull( $r['menu'] );
+        $this->assertStringContainsString( 'simulated menu failure', $r['menu_error'] );
+        $this->assertStringContainsString( 'set_primary_menu', $r['message'] );
+        $this->assertStringContainsString( 'undo_batch 1', $r['message'] );
         foreach ( $ids as $id ) {
-            $this->assertSame( 'publish', $GLOBALS['__wp_posts'][ $id ]->post_status, 'the pages did go live before the menu step failed' );
+            $this->assertSame( 'publish', $GLOBALS['__wp_posts'][ $id ]->post_status );
         }
         $row = $this->repo->rows[1];
-        $this->assertSame( 'building', $row['status'], 'the build is not marked launched' );
-        $this->assertSame( [ 'page_created', 'page_created', 'page_created', 'post_status', 'post_status', 'post_status', 'front_page' ], array_column( $row['items'], 'kind' ), 'the publishes and the front page were recorded as they happened' );
+        $this->assertSame( 'applied', $row['status'], 'the build is finished: a second launch would only skip pages that are no longer drafts' );
+        $this->assertSame( [ 'page_created', 'page_created', 'page_created', 'post_status', 'post_status', 'post_status', 'front_page' ], array_column( $row['items'], 'kind' ), 'what happened is recorded; no menu item because the menu was not built' );
+        $this->assertArrayNotHasKey( 'aied_pro_buildlock_7', $GLOBALS['__wp_options'], 'the lock is released after a failed step' );
 
         $u = $this->undo()->undo( 1 );
         $this->assertTrue( $u['fully_undone'] );
@@ -415,5 +418,51 @@ class BuildLaunchTest extends TestCase
         foreach ( $ids as $id ) {
             $this->assertSame( 'trash', $GLOBALS['__wp_posts'][ $id ]->post_status );
         }
+    }
+
+    public function testTheBuildIsReadOnlyAfterTheLockSoALockedCallIsRefusedWhateverTheBuildIs(): void
+    {
+        $this->build();
+        $GLOBALS['__wp_options']['aied_pro_buildlock_7'] = (string) time();
+        $this->refused( [ 'action' => 'launch', 'build_id' => 99, 'dry_run' => true ], 'still running' );
+        $this->log->close( 1, 'applied' );
+        $this->refused( [ 'action' => 'launch', 'build_id' => 1, 'dry_run' => true ], 'still running' );
+        unset( $GLOBALS['__wp_options']['aied_pro_buildlock_7'] );
+        $this->refused( [ 'action' => 'launch', 'build_id' => 99, 'dry_run' => true ], 'Build 99 was not found' );
+        $this->assertArrayNotHasKey( 'aied_pro_buildlock_7', $GLOBALS['__wp_options'], 'released after a refusal inside the locked part' );
+        $this->refused( [ 'action' => 'launch', 'build_id' => 1, 'token' => 'not-a-token' ], 'finished' );
+        $this->assertArrayNotHasKey( 'aied_pro_buildlock_7', $GLOBALS['__wp_options'] );
+    }
+
+    public function testWhenThePublishingCannotBeRecordedNothingElseIsChangedAndTheResultSaysSo(): void
+    {
+        $ids = $this->build();
+        $p   = $this->preview();
+        $this->repo->failAppend = true;
+        $r = $this->launch( $p );
+        $this->assertTrue( $r['changed'] );
+        $this->assertSame( [ $ids['home'], $ids['about'], $ids['hidden'] ], array_column( $r['published'], 'id' ), 'the pages are live' );
+        $this->assertNull( $r['front_page'] );
+        $this->assertNull( $r['menu'] );
+        $this->assertSame( 0, $GLOBALS['__wp_options']['page_on_front'], 'the front page was NOT changed: it could not be undone' );
+        $this->assertSame( [], $this->menuTitles(), 'and neither was the menu' );
+        $this->assertNull( $r['batch']['id'] );
+        $this->assertFalse( $r['batch']['undoable'] );
+        $this->assertStringContainsString( 'could not be recorded', $r['message'] );
+        $this->assertSame( 'building', $this->repo->rows[1]['status'] );
+    }
+
+    public function testWhenOnlyALaterStepCannotBeRecordedTheBatchIdAndTheMissingStepAreReported(): void
+    {
+        $this->build();
+        $p = $this->preview();
+        $this->repo->failAppendAt = 2;   // the statuses are recorded (append 1), the front page is not (append 2)
+        $r = $this->launch( $p );
+        $this->assertTrue( $r['changed'] );
+        $this->assertSame( 1, $r['batch']['id'], 'what WAS recorded can still be undone through this batch' );
+        $this->assertStringContainsString( 'Not every step could be recorded', $r['batch']['note'] );
+        $this->assertSame( 'building', $this->repo->rows[1]['status'], 'the build is not closed while a step is missing' );
+        $this->assertContains( 'menu', array_column( $this->repo->rows[1]['items'], 'kind' ) );
+        $this->assertNotContains( 'front_page', array_column( $this->repo->rows[1]['items'], 'kind' ) );
     }
 }

@@ -15,6 +15,9 @@ final class InMemoryBatchRepository implements BatchRepository
     public array $rows = [];
     public bool $failInsert = false;
     public bool $failAppend = false;
+    /** Fail only the Nth append call (1-based; 0 = never): a build whose later step could not be recorded. */
+    public int $failAppendAt = 0;
+    private int $appends = 0;
     private int $next = 1;
 
     public function insert( array $row ): ?int
@@ -51,7 +54,7 @@ final class InMemoryBatchRepository implements BatchRepository
 
     public function append( int $id, array $items ): bool
     {
-        if ( $this->failAppend || ! isset( $this->rows[ $id ] ) || 'building' !== $this->rows[ $id ]['status'] ) {
+        if ( $this->failAppend || ( $this->failAppendAt > 0 && ++$this->appends === $this->failAppendAt ) || ! isset( $this->rows[ $id ] ) || 'building' !== $this->rows[ $id ]['status'] ) {
             return false;
         }
         $this->rows[ $id ]['items'] = array_merge( $this->rows[ $id ]['items'], array_values( $items ) );
