@@ -11,7 +11,7 @@ require_once __DIR__ . '/../../tests/bootstrap.php';
 require_once __DIR__ . '/../../tests/WpRestShims.php';
 
 if ( ! defined( 'AIED_PRO_VERSION' ) ) {
-    define( 'AIED_PRO_VERSION', '0.5.0' );
+    define( 'AIED_PRO_VERSION', '0.6.0' );
 }
 if ( ! defined( 'AIED_PRO_FILE' ) ) {
     define( 'AIED_PRO_FILE', (string) realpath( __DIR__ . '/..' ) . '/jhmg-ai-editor-for-divi-5-pro.php' );
@@ -71,5 +71,29 @@ if ( ! function_exists( 'wp_doing_cron' ) ) {
 }
 if ( ! function_exists( 'wp_get_environment_type' ) ) {
     function wp_get_environment_type(): string { return (string) ( $GLOBALS['__wp_env_type'] ?? 'production' ); }
+}
+if ( ! function_exists( 'current_user_can' ) ) {
+    function current_user_can( $cap ) { return (bool) ( $GLOBALS['__wp_can'] ?? true ); }
+}
+if ( ! function_exists( 'get_current_user_id' ) ) {
+    function get_current_user_id(): int { return (int) ( $GLOBALS['__wp_current_user']['id'] ?? 1 ); }
+}
+if ( ! function_exists( 'get_user_meta' ) ) {
+    function get_user_meta( $user_id, $meta_key, $single = false ) {
+        $meta = $GLOBALS['__wp_user_meta'][ $meta_key ] ?? [];
+        return $single ? ( $meta[ $user_id ] ?? null ) : $meta;
+    }
+}
+if ( ! function_exists( 'update_user_meta' ) ) {
+    function update_user_meta( $user_id, $meta_key, $meta_value ) {
+        if ( ! isset( $GLOBALS['__wp_user_meta'][ $meta_key ] ) ) {
+            $GLOBALS['__wp_user_meta'][ $meta_key ] = [];
+        }
+        $GLOBALS['__wp_user_meta'][ $meta_key ][ $user_id ] = $meta_value;
+        return true;
+    }
+}
+if ( ! function_exists( 'esc_html_e' ) ) {
+    function esc_html_e( $text ) { echo esc_html( (string) $text ); }
 }
 require_once __DIR__ . '/WpSettingsShims.php';
