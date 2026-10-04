@@ -30,7 +30,14 @@ if ( ! function_exists( 'wp_insert_post' ) ) {
     }
 }
 if ( ! function_exists( 'sanitize_title' ) ) {
-    function sanitize_title( $s ) { return strtolower( trim( preg_replace( '/[^A-Za-z0-9]+/', '-', (string) $s ), '-' ) ); }
+    function sanitize_title( $s ) {
+        if ( ! empty( $GLOBALS['__wp_sanitize_title_utf8'] ) ) {
+            // Like core for accented text: the bytes are percent-encoded, so a slug can be several times longer than what was typed.
+            return strtolower( trim( preg_replace( '/[^%A-Za-z0-9]+/', '-', rawurlencode( (string) $s ) ), '-' ) );
+        }
+
+        return strtolower( trim( preg_replace( '/[^A-Za-z0-9]+/', '-', (string) $s ), '-' ) );
+    }
 }
 if ( ! function_exists( 'get_permalink' ) ) {
     function get_permalink( $id = 0 ) { return 'https://example.com/?page_id=' . (int) ( is_object( $id ) ? $id->ID : $id ); }

@@ -51,7 +51,7 @@ final class InMemoryBatchRepository implements BatchRepository
 
     public function append( int $id, array $items ): bool
     {
-        if ( $this->failAppend || ! isset( $this->rows[ $id ] ) ) {
+        if ( $this->failAppend || ! isset( $this->rows[ $id ] ) || 'building' !== $this->rows[ $id ]['status'] ) {
             return false;
         }
         $this->rows[ $id ]['items'] = array_merge( $this->rows[ $id ]['items'], array_values( $items ) );

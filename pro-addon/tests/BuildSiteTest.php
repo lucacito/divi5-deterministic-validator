@@ -292,6 +292,30 @@ class BuildSiteTest extends TestCase
         $this->assertSame( 'Build 1 was not found.', $this->expectRefusal( [ 'action' => 'status', 'build_id' => 1 ] ) );
     }
 
+    public function testASlugThatIsTooLongOnceCleanedIsRefusedBeforeAnythingIsCreated(): void
+    {
+        $GLOBALS['__wp_sanitize_title_utf8'] = true;
+        try {
+            $this->refused( $this->page( 'Long', str_repeat( 'é', 100 ) ), '"slug" is too long' );
+        } finally {
+            unset( $GLOBALS['__wp_sanitize_title_utf8'] );
+        }
+    }
+
+    public function testTheSlugRefusalOnlyNamesAPageTheUserMayEdit(): void
+    {
+        $GLOBALS['__wp_posts'][300] = (object) [ 'ID' => 300, 'post_type' => 'page', 'post_status' => 'private', 'post_title' => 'Secret', 'post_content' => 'x', 'post_name' => 'about' ];
+        $GLOBALS['__wp_caps']['edit_post:300'] = false;
+        $this->refused( $this->page( 'About', 'about' ), 'already used by another page' );
+        try {
+            $this->tool->run( $this->page( 'About', 'about' ) );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringNotContainsString( '#300', $e->getMessage() );
+        }
+        $GLOBALS['__wp_caps']['edit_post:300'] = true;
+        $this->refused( $this->page( 'About', 'about' ), 'page #300' );
+    }
+
     private function expectRefusal( array $args ): string
     {
         try {

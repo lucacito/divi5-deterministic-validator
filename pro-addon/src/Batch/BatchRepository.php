@@ -28,7 +28,7 @@ interface BatchRepository
     /** @param list<array<string,mixed>> $items */
     public function update( int $id, string $status, array $items ): bool;
 
-    /** Add items after the stored ones, keeping the status. False when the batch does not exist or the write failed. @param list<array<string,mixed>> $items */
+    /** Add items after the stored ones, only to a batch that is still `building`. False when it does not exist, is closed or the write failed. @param list<array<string,mixed>> $items */
     public function append( int $id, array $items ): bool;
 
     /** The newest `building` batch of this user, or null. @return array<string,mixed>|null */

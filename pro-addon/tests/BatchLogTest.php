@@ -170,4 +170,14 @@ class BatchLogTest extends TestCase
         $this->assertCount( 21, $this->repo->rows, 'the 20 newest closed batches and the open build' );
         $this->assertSame( 7, array_key_first( array_diff_key( $this->repo->rows, [ 1 => 1 ] ) ) );
     }
+
+    public function testNothingIsAppendedToAClosedBatch(): void
+    {
+        $this->log->open( 'build_site', 'Site build' );
+        $this->log->close( 1, 'applied' );
+        $this->assertFalse( $this->log->append( 1, [ $this->item() ] ), 'a build an undo or a launch closed must not get a page it can no longer reach' );
+        $this->assertSame( [], $this->repo->rows[1]['items'] );
+        $this->log->record( 'set_front_page', 'not a build', [ $this->item() ] );
+        $this->assertFalse( $this->log->append( 2, [ $this->item() ] ), 'only an open build grows' );
+    }
 }

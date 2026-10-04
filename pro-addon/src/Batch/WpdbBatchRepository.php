@@ -69,12 +69,23 @@ final class WpdbBatchRepository implements BatchRepository
 
     public function append( int $id, array $items ): bool
     {
+        global $wpdb;
+
         $row = $this->find( $id );
-        if ( null === $row ) {
+        if ( null === $row || 'building' !== $row['status'] ) {
+            return false;
+        }
+        if ( [] === $items ) {
+            return true;
+        }
+        $json = wp_json_encode( array_merge( $row['items'], array_values( $items ) ) );
+        if ( false === $json ) {
             return false;
         }
 
-        return $this->update( $id, (string) $row['status'], array_merge( $row['items'], array_values( $items ) ) );
+        // Items only, and only while the batch is still open: an undo that closed it between the read and this write wins
+        // (0 rows), and a stale status is never written back over its `undone`.
+        return 1 === (int) $wpdb->update( BatchTable::name(), [ 'items' => $json ], [ 'id' => $id, 'status' => 'building' ], [ '%s' ], [ '%d', '%s' ] );
     }
 
     public function openBuild( int $userId ): ?array

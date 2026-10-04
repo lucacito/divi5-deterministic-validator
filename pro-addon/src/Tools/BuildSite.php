@@ -90,6 +90,9 @@ final class BuildSite implements ProTool
         if ( '' === $slug ) {
             throw new \InvalidArgumentException( '"slug" must contain letters or digits.' );
         }
+        if ( strlen( $slug ) > 200 ) {
+            throw new \InvalidArgumentException( '"slug" is too long: at most 200 characters once cleaned (accents and symbols count for several).' );
+        }
         $content = (string) Args::string( $a, 'content', true, self::MAX_CONTENT );
         $label   = array_key_exists( 'menu_label', $a ) && null !== $a['menu_label'] ? trim( sanitize_text_field( (string) Args::string( $a, 'menu_label', true, 100 ) ) ) : '';
         $inMenu  = ! array_key_exists( 'in_menu', $a ) || null === $a['in_menu'] ? true : Args::bool( $a, 'in_menu' );
@@ -129,7 +132,8 @@ final class BuildSite implements ProTool
         }
         $taken = get_posts( [ 'post_type' => 'page', 'name' => $slug, 'post_status' => [ 'publish', 'draft', 'pending', 'private', 'future' ], 'fields' => 'ids', 'posts_per_page' => 1, 'no_found_rows' => true ] );
         if ( [] !== $taken ) {
-            throw new \InvalidArgumentException( 'The slug "' . $slug . '" is already used by page #' . (int) $taken[0] . '. Choose a different slug.' );
+            $holder = (int) $taken[0];
+            throw new \InvalidArgumentException( 'The slug "' . $slug . '" is already used by ' . ( current_user_can( 'edit_post', $holder ) ? 'page #' . $holder : 'another page' ) . '. Choose a different slug.' );
         }
 
         $fresh = null === $build;

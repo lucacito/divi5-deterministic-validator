@@ -89,6 +89,9 @@ final class BatchStubWpdb
         if ( ! isset( $this->rows[ $id ] ) ) {
             return false;
         }
+        if ( isset( $where['status'] ) && $this->rows[ $id ]['status'] !== (string) $where['status'] ) {
+            return 0;
+        }
         foreach ( $data as $k => $v ) {
             $this->rows[ $id ][ $k ] = (string) $v;
         }
