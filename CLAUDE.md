@@ -28,8 +28,8 @@ Three parts, one repo:
   `wp-plugin/validator/` and wraps it in the MCP server, REST API, AI-facing guides,
   the built-in image pack and the admin UI. No licensing, no remote calls.
 - **The Pro add-on** (`pro-addon/`) — a separate plugin ("JHMG AI Editor for Divi 5 Pro", sold at divi5lab.com,
-  never in the WordPress.org zip). 0.4.1: compat guard, licensing with the updater, a licence-gated tool
-  registry with 13 tools (settings, batches and undo, Theme Builder header/footer and template tools, site-wide find/replace and audit), REST and ChatGPT parity for all of them, the Pro admin tab, its own suite (`make test-pro`) and zip (`make build-pro`). Not tested
+  never in the WordPress.org zip). 0.5.0: compat guard, licensing with the updater, a licence-gated tool
+  registry with 14 tools (settings, batches and undo, Theme Builder header/footer and template tools, site-wide find/replace and audit, whole-site build), REST and ChatGPT parity for all of them, the Pro admin tab, its own suite (`make test-pro`) and zip (`make build-pro`). Not tested
   by `make test` (see `pro-addon/README.md`).
 
 ## Hard constraints — do not violate
@@ -185,6 +185,7 @@ Docker env + validator workflows go through `make`:
 | `make verify-pro-theme-templates` | Real-site evidence gate for manage_theme_template (self-cleaning; dev site only) |
 | `make verify-pro-site-tools` | Real-site check of find_replace_site and audit_site through the real registry (self-cleaning; dev site only: it evicts old batch rows) |
 | `make verify-pro-rest` | Real-site check of the Pro REST routes and the live OpenAPI spec (read-only) |
+| `make verify-pro-build-site` | Real-site check of `build_site` (build, launch, anonymous menu render, undo, abandon; self-cleaning; dev site only: it evicts old batch rows) |
 | `make clean` | Destroy volumes (prompts for confirmation) |
 
 Tests run via PHPUnit (`phpunit.xml`) and cover both the validator
@@ -224,6 +225,17 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
+- **Pro add-on 0.5.0** (whole-site generation; branch `feat/pro-0-5-0`; NOT merged, NOT released, NOT pushed): the 14th and LAST Pro tool
+  `build_site` (16 free + 14 Pro = 30 of the importer's 30 operations: the budget is used up). `add_page` creates ONE validated DRAFT
+  page per call (invalid layout or taken slug: refused with the reasons, the build keeps its valid pages) and appends it to ONE growing
+  batch (status `building`; one open build per user; `BatchRepository::append`/`openBuild`, `BatchLog::open`/`append`/`close`; an open build is
+  never trimmed); `launch` (dry_run + `PreviewToken`) publishes, sets the flagged front page and rebuilds the live Main Menu, skipping
+  any page that is gone, changed since the preview, or whose slug was taken; `undo_batch` takes the whole build away (item kinds
+  `page_created` -> trash, inverse `page_trashed` -> untrash as a draft). Spike facts that shaped it (live, WP 7.1): a menu item
+  pointing at a draft shows a DEAD link to visitors (so the menu is built only at launch), drafts get no unique slug (clash resolved at
+  publish: refused at add_page), untrash returns a draft. Spec `docs/superpowers/specs/2026-10-03-build-site-design.md`; plan
+  `docs/superpowers/plans/2026-10-03-build-site.md`; `make test-pro` 841 tests, `make test` 727; live gates `make verify-pro-build-site`
+  and `make verify-pro-rest` (30 operations) passed on the Docker dev site.
 - **Pro add-on 0.4.1** (hardening; merged to LOCAL main da340e3; NOT released, NOT pushed): preview tokens are bound to the user,
   single-use (a transient marks a spent nonce) and 30 minutes for BOTH `find_replace_site` and `manage_theme_template`
   (`PreviewToken` v2); `audit_site` pages by the id of the last audited item (pages and layouts in one id order), memoises link
