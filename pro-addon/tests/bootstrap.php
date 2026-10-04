@@ -35,6 +35,9 @@ if ( ! function_exists( 'sanitize_key' ) ) {
 if ( ! function_exists( 'wp_nonce_field' ) ) {
     function wp_nonce_field( $action = -1, $name = '_wpnonce' ) { echo '<input type="hidden" name="' . $name . '" value="nonce-for-' . $action . '">'; }
 }
+if ( ! function_exists( 'wp_create_nonce' ) ) {
+    function wp_create_nonce( $action = -1 ) { return 'nonce-for-' . $action; }
+}
 if ( ! function_exists( 'check_admin_referer' ) ) {
     function check_admin_referer( $action = -1 ) {
         if ( ( $_REQUEST['_wpnonce'] ?? '' ) !== 'nonce-for-' . $action ) {

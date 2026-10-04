@@ -50,6 +50,87 @@ class LicensingTest extends TestCase
         $this->assertTrue( Licensing::isPremium() );
     }
 
+    private const TIER_BODY = [
+        'status' => 'active', 'product' => 'ai-editor-divi5-pro', 'expires' => '2027-07-12T00:00:00.000Z',
+        'tier' => 'freelancer', 'tier_label' => 'Freelancer', 'sites_used' => 3, 'sites_allowed' => 10,
+        'founding' => true, 'lifetime' => false,
+        'upgrade_url' => 'https://divi5lab.com/pricing', 'manage_url' => 'https://divi5lab.com/account/licenses',
+    ];
+
+    public function testActivationStoresTheTierDetailsTheServerReturned(): void
+    {
+        $this->queue( 200, self::TIER_BODY );
+        $this->assertTrue( Licensing::activate( self::KEY )['ok'] );
+        $extras = Licensing::extras();
+        $this->assertSame( 'Freelancer', $extras['tier_label'] );
+        $this->assertSame( 3, $extras['sites_used'] );
+        $this->assertSame( 10, $extras['sites_allowed'] );
+        $this->assertTrue( $extras['founding'] );
+        $this->assertSame( 'https://divi5lab.com/pricing', $extras['upgrade_url'] );
+        $this->assertFalse( Licensing::siteLimitHit() );
+    }
+
+    public function testAnActivationRefusedForTheSiteLimitIsReportedAndStoresTheLimit(): void
+    {
+        $this->queue( 403, [ 'error' => 'site_limit_reached', 'tier' => 'personal', 'tier_label' => 'Personal', 'sites_used' => 1, 'sites_allowed' => 1, 'upgrade_url' => 'https://divi5lab.com/pricing', 'manage_url' => 'https://divi5lab.com/account/licenses' ] );
+        $res = Licensing::activate( self::KEY );
+        $this->assertFalse( $res['ok'] );
+        $this->assertSame( 'site_limit_reached', $res['error'] );
+        $this->assertFalse( Licensing::isPremium() );
+        $this->assertTrue( Licensing::siteLimitHit() );
+        $this->assertSame( 1, Licensing::extras()['sites_allowed'] );
+    }
+
+    public function testASiteLimitAnswerOnRefreshNeverLocksOrChangesTheStoredState(): void
+    {
+        $this->queue( 200, self::TIER_BODY );
+        Licensing::activate( self::KEY );
+        $before = $GLOBALS['__wp_options']['aied_pro_license_state'];
+        $this->ageState();
+        $before['checked_at'] = $GLOBALS['__wp_options']['aied_pro_license_state']['checked_at'];
+        $this->queue( 403, [ 'error' => 'site_limit_reached', 'tier' => 'freelancer', 'tier_label' => 'Freelancer', 'sites_used' => 10, 'sites_allowed' => 10 ] );
+        Licensing::refresh();
+        $this->assertTrue( Licensing::isPremium() );
+        $this->assertSame( $before, $GLOBALS['__wp_options']['aied_pro_license_state'] );
+        $this->assertTrue( Licensing::siteLimitHit() );
+    }
+
+    public function testAGoodRefreshClearsTheSiteLimitFlag(): void
+    {
+        $this->queue( 200, self::TIER_BODY );
+        Licensing::activate( self::KEY );
+        update_option( 'aied_pro_site_limit', 1, false );
+        $this->ageState();
+        $this->queue( 200, self::TIER_BODY );
+        Licensing::refresh();
+        $this->assertFalse( Licensing::siteLimitHit() );
+    }
+
+    public function testGarbageOnRefreshLeavesTheStoredTierDetailsAlone(): void
+    {
+        $this->queue( 200, self::TIER_BODY );
+        Licensing::activate( self::KEY );
+        $this->ageState();
+        $this->queue( 200, '<html>captive portal</html>' );
+        Licensing::refresh();
+        $this->assertSame( 'Freelancer', Licensing::extras()['tier_label'] );
+        $this->assertTrue( Licensing::isPremium() );
+    }
+
+    public function testDeactivateAndClearForgetTheTierDetails(): void
+    {
+        $this->queue( 200, self::TIER_BODY );
+        Licensing::activate( self::KEY );
+        $this->queue( 200, [ 'ok' => true ] );
+        Licensing::deactivate();
+        $this->assertNull( Licensing::extras()['tier_label'] );
+        update_option( 'aied_pro_license_extras', [ 'tier_label' => 'x' ], false );
+        update_option( 'aied_pro_site_limit', 1, false );
+        Licensing::clear();
+        $this->assertFalse( Licensing::siteLimitHit() );
+        $this->assertNull( Licensing::extras()['tier_label'] );
+    }
+
     public function testFreshInstallIsNotPremium(): void
     {
         $this->assertFalse( Licensing::isPremium() );

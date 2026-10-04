@@ -104,9 +104,10 @@ final class Licensing
 
         if ( $res['ok'] ) {
             update_option( self::UNLOCKED_OPTION, 1, false );
-            // Store extras and site limit status from the activation response
-            self::storeExtrasAndSiteLimit( $seen );
         }
+        // A 200 stores the tier details; a refused activation for the site limit stores them too (and the flag) so
+        // the notice can name the limit. Any other failure leaves them alone.
+        self::storeExtrasAndSiteLimit( $seen );
 
         return [ 'ok' => (bool) $res['ok'], 'error' => $res['error'] ];
     }

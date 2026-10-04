@@ -75,6 +75,9 @@ final class ProPage
             'activate_failed' => [ 'error', __( 'The licence could not be activated. Check the key and try again.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'key_invalid'       => [ 'error', __( 'That licence key was not recognised. Check it for typos and try again.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'key_wrong_product' => [ 'error', __( 'That key belongs to a different product. Use the key for JHMG AI Editor for Divi 5 Pro.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
+            'site_limit'        => [ 'error', null !== ( $extras['sites_allowed'] ?? null )
+                ? sprintf( /* translators: %d: site limit */ __( 'This licence is already active on all %d of its sites. Free a site in your divi5lab.com account, or upgrade for more.', 'jhmg-ai-editor-for-divi-5-pro' ), $extras['sites_allowed'] )
+                : __( 'This licence is already active on all of its sites. Free a site in your divi5lab.com account, or upgrade for more.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'key_not_usable'    => [ 'error', __( 'That licence is not active (expired, cancelled, or every site activation is in use). Check your divi5lab.com account.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'rate_limited'      => [ 'error', __( 'Too many attempts. Wait a few minutes and try again.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'offline'           => [ 'error', __( 'Could not reach divi5lab.com. Check that this site can make outgoing requests, then try again.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
@@ -177,6 +180,7 @@ final class ProPage
             'invalid_key'        => 'key_invalid',
             'product_mismatch'   => 'key_wrong_product',
             'license_not_usable' => 'key_not_usable',
+            'site_limit_reached' => 'site_limit',
             'rate_limited'       => 'rate_limited',
             'network_error'      => 'offline',
             default              => 'activate_failed',

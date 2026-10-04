@@ -239,6 +239,7 @@ class ProPageTest extends TestCase
             'invalid key'      => [ 'invalid_key', 'key_invalid' ],
             'wrong product'    => [ 'product_mismatch', 'key_wrong_product' ],
             'not usable'       => [ 'license_not_usable', 'key_not_usable' ],
+            'site limit'       => [ 'site_limit_reached', 'site_limit' ],
             'rate limited'     => [ 'rate_limited', 'rate_limited' ],
             'offline'          => [ 'network_error', 'offline' ],
             'something else'   => [ 'http_500', 'activate_failed' ],

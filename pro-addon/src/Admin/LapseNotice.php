@@ -23,8 +23,13 @@ final class LapseNotice
     /**
      * @param callable():array{valid:bool,status:?string,expires:?int,reason:string} $statusGetter
      */
-    public function __construct( private $statusGetter )
+    private \Closure $terminate;
+
+    public function __construct( private $statusGetter, ?\Closure $terminate = null )
     {
+        $this->terminate = $terminate ?? static function (): void {
+            exit;
+        };
     }
 
     public function register(): void
@@ -56,23 +61,21 @@ final class LapseNotice
             return;
         }
 
-        $manage_url = $this->manageUrl();
-        $notice_text = __( 'Your licence has ended. Everything keeps working; updates and support stop. ', 'jhmg-ai-editor-for-divi-5-pro' );
-        $renew_text  = __( 'Renew', 'jhmg-ai-editor-for-divi-5-pro' );
-        $nonce_html  = \wp_nonce_field( self::NONCE_ACTION, '_wpnonce', true, false );
-        $html        = sprintf(
-            '<div class="notice notice-warning is-dismissible"><p>%s <a href="%s">%s</a></p>%s<input type="hidden" name="action" value="%s"><input type="hidden" name="lapse_key" value="%s"></div>',
-            \esc_html( $notice_text ),
-            \esc_url( $manage_url ),
-            \esc_html( $renew_text ),
-            $nonce_html,
-            \esc_attr( self::ACTION_DISMISS ),
-            \esc_attr( $lapseKey )
+        $dismissUrl = \add_query_arg(
+            [ 'action' => self::ACTION_DISMISS, 'lapse_key' => $lapseKey, '_wpnonce' => \wp_create_nonce( self::NONCE_ACTION ) ],
+            \admin_url( 'admin-post.php' )
         );
-
-        echo $html;
+        printf(
+            '<div class="notice notice-warning"><p>%1$s <a href="%2$s">%3$s</a> &middot; <a href="%4$s">%5$s</a></p></div>',
+            \esc_html__( 'Your licence has ended. Everything keeps working; updates and support stop.', 'jhmg-ai-editor-for-divi-5-pro' ),
+            \esc_url( $this->manageUrl() ),
+            \esc_html__( 'Renew', 'jhmg-ai-editor-for-divi-5-pro' ),
+            \esc_url( $dismissUrl ),
+            \esc_html__( 'Dismiss', 'jhmg-ai-editor-for-divi-5-pro' )
+        );
     }
 
+    /** `admin_post_aied_pro_dismiss_lapse_notice` (a GET link with a nonce): remember that this user dismissed this lapse. */
     public function handleDismiss(): void
     {
         if ( ! \current_user_can( 'manage_options' ) ) {
@@ -81,16 +84,18 @@ final class LapseNotice
 
         \check_admin_referer( self::NONCE_ACTION );
 
-        $lapse_key = isset( $_POST['lapse_key'] ) ? \sanitize_text_field( \wp_unslash( (string) $_POST['lapse_key'] ) ) : '';
-        if ( empty( $lapse_key ) ) {
+        $lapse_key = isset( $_GET['lapse_key'] ) ? \sanitize_text_field( \wp_unslash( (string) $_GET['lapse_key'] ) ) : '';
+        if ( '' === $lapse_key ) {
             \wp_die( 'Invalid request' );
         }
 
-        $dismissed = (array) \get_user_meta( \get_current_user_id(), self::USER_META_KEY, true );
+        $dismissed = \get_user_meta( \get_current_user_id(), self::USER_META_KEY, true );
+        $dismissed = is_array( $dismissed ) ? $dismissed : [];
         $dismissed[ $lapse_key ] = 1;
         \update_user_meta( \get_current_user_id(), self::USER_META_KEY, $dismissed );
 
         \wp_safe_redirect( \admin_url( 'admin.php?page=ai-editor-divi5&tab=pro' ) );
+        ( $this->terminate )();
     }
 
     /** Generate the key that identifies this lapse (status|expires). */
@@ -114,11 +119,6 @@ final class LapseNotice
         $extras = (array) \get_option( 'aied_pro_license_extras', [] );
         if ( ! empty( $extras['manage_url'] ) ) {
             return (string) $extras['manage_url'];
-        }
-
-        // Fallback to the default
-        if ( \class_exists( 'AiEditorDivi5\Pro\Licensing' ) ) {
-            return \AiEditorDivi5\Pro\Licensing::UPGRADE_URL . '/account/licenses';
         }
 
         return 'https://divi5lab.com/account/licenses';
