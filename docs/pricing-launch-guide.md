@@ -34,12 +34,11 @@ it in a chat or commit it.
    It prints lines like `STRIPE_PRICE_AI_EDITOR_PERSONAL=price_...`. Expect **six** AI Editor lines: three yearly plans,
    one lifetime price, one coupon (`STRIPE_COUPON_AI_EDITOR_FOUNDING=ai-editor-divi5-pro-founding`), plus the converter lines.
 2. In Stripe Dashboard -> Product catalogue, open **AI Editor for Divi 5 - Pro**. You should now see the three new yearly
-   prices, the one-time lifetime price, and any older prices from earlier plans.
-   **Do not delete the old yearly price if it still has active subscriptions** (the earlier plan's price may show
-   several). Those are real customers: they keep renewing on it and their licences keep working as before (no tier, so
-   unlimited sites; the licence server does not change them). Archiving it only stops NEW sales, which the site no longer
-   makes anyway, so archiving is optional and safe. To move those customers onto a tier later, change each subscription by
-   hand in Stripe (Customers -> subscription -> Update subscription).
+   prices, the one-time lifetime price, and the older prices from earlier plans.
+   The old yearly price may show several "active" subscriptions. On 2026-10-04 there were 7, and they were all free
+   45-day trials with no card (Stripe counts a trial as active), so nobody had paid and they end by cancelling on their own
+   between Oct 20 and Nov 11. Leave that price alone; archiving it only stops NEW sales, which the site no longer makes
+   anyway, so archiving is optional. Do not delete it while subscriptions are still on it.
 3. In Vercel -> project -> Settings -> Environment Variables, add these for **Production** (values from step 1):
    `STRIPE_PRICE_AI_EDITOR_PERSONAL`, `STRIPE_PRICE_AI_EDITOR_FREELANCER`, `STRIPE_PRICE_AI_EDITOR_AGENCY`,
    `STRIPE_PRICE_AI_EDITOR_LIFETIME`, `STRIPE_COUPON_AI_EDITOR_FOUNDING`.
