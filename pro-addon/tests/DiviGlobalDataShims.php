@@ -1,0 +1,159 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * A stand-in for Divi 5.14's global colors API, with the rules of the shipped source
+ * (includes/builder-5/server/Packages/GlobalData/GlobalData.php) that matter here:
+ *  - get_global_colors() = the five Customizer colors (rebuilt from theme options, CACHED for the whole request in a
+ *    static, with a fresh lastUpdated) merged with the stored custom colors; the result is cached until a save;
+ *  - set_global_colors($data, false) sanitises (drops entries with an empty color or a non-gcid id, runs
+ *    sanitize_text_field over every value, usedInPosts through array_map), writes a Customizer color into its theme
+ *    option and removes it from the map, and REPLACES the whole custom map; it does NOT reset the Customizer cache;
+ *  - set_global_colors($data, true) would MERGE and skip sanitising (the add-on never calls it that way).
+ * State lives in $GLOBALS['__divi_gc'] (see resetForTests); switches: throw_get, throw_set, mutate (callable applied
+ * to the sanitised map), on_get (callable called with the get counter before every read).
+ */
+
+namespace ET\Builder\Packages\GlobalData {
+    class GlobalData
+    {
+        /** @var array<string,array<string,string>> */
+        public static $customizer_colors = [
+            'gcid-primary-color'   => [ 'label' => 'Primary Color', 'option_name' => 'accent_color', 'default' => '#2ea3f2' ],
+            'gcid-secondary-color' => [ 'label' => 'Secondary Color', 'option_name' => 'secondary_accent_color', 'default' => '#2ea3f2' ],
+            'gcid-heading-color'   => [ 'label' => 'Heading Text Color', 'option_name' => 'header_color', 'default' => '#666666' ],
+            'gcid-body-color'      => [ 'label' => 'Body Text Color', 'option_name' => 'font_color', 'default' => '#666666' ],
+            'gcid-link-color'      => [ 'label' => 'Link Color', 'option_name' => 'link_color', 'default' => '#2ea3f2' ],
+        ];
+
+        /**
+         * @param array<string,array<string,mixed>> $custom stored custom colors
+         * @param array<string,string> $options theme options by name (accent_color, ...)
+         */
+        public static function resetForTests( array $custom = [], array $options = [] ): void
+        {
+            $GLOBALS['__divi_gc'] = [
+                'custom' => $custom, 'options' => $options, 'cache' => null, 'formatted' => null, 'clock' => 0,
+                'set_calls' => [], 'set_flags' => [], 'gets' => 0,
+                'throw_get' => false, 'throw_set' => false, 'mutate' => null, 'on_get' => null,
+            ];
+            $GLOBALS['__divi_static_clears'] = [];
+        }
+
+        /** @return array<string,array<string,mixed>> */
+        public static function get_global_colors(): array
+        {
+            if ( ! isset( $GLOBALS['__divi_gc'] ) ) {
+                self::resetForTests(); // other suites load this file too (PHPUnit shares one process): never read an unset state
+            }
+            ++$GLOBALS['__divi_gc']['gets'];
+            if ( is_callable( $GLOBALS['__divi_gc']['on_get'] ) ) {
+                ( $GLOBALS['__divi_gc']['on_get'] )( $GLOBALS['__divi_gc']['gets'] );
+            }
+            if ( $GLOBALS['__divi_gc']['throw_get'] ) {
+                throw new \RuntimeException( 'Divi could not read the colors' );
+            }
+            if ( null === $GLOBALS['__divi_gc']['cache'] ) {
+                $custom = $GLOBALS['__divi_gc']['custom'];
+                foreach ( array_keys( self::$customizer_colors ) as $id ) {
+                    unset( $custom[ $id ] );
+                }
+                $GLOBALS['__divi_gc']['cache'] = array_merge( self::get_customizer_colors(), $custom );
+            }
+
+            return $GLOBALS['__divi_gc']['cache'];
+        }
+
+        /** @return array<string,array<string,mixed>> */
+        public static function get_customizer_colors(): array
+        {
+            if ( ! isset( $GLOBALS['__divi_gc'] ) ) {
+                self::resetForTests();
+            }
+            if ( null !== $GLOBALS['__divi_gc']['formatted'] ) {
+                return $GLOBALS['__divi_gc']['formatted'];
+            }
+            $out = [];
+            foreach ( self::$customizer_colors as $id => $def ) {
+                $out[ $id ] = [
+                    'color'       => sanitize_text_field( (string) et_get_option( $def['option_name'], $def['default'] ) ),
+                    'folder'      => 'customizer',
+                    'label'       => $def['label'],
+                    'lastUpdated' => '2026-02-01T00:00:00.' . sprintf( '%03d', ++$GLOBALS['__divi_gc']['clock'] ) . 'Z',
+                    'status'      => 'active',
+                    'usedInPosts' => [],
+                ];
+            }
+
+            return $GLOBALS['__divi_gc']['formatted'] = $out;
+        }
+
+        /**
+         * @param array<string,mixed> $data
+         * @return array<string,array<string,mixed>>
+         */
+        public static function sanitize_global_colors_data( array $data ): array
+        {
+            $out = [];
+            foreach ( $data as $id => $item ) {
+                if ( 'undefined' === $id || empty( $item ) || empty( $item['color'] ) || 'gcid-' !== substr( (string) $id, 0, 5 ) ) {
+                    continue;
+                }
+                $gid = sanitize_text_field( (string) $id );
+                foreach ( $item as $k => $v ) {
+                    $out[ $gid ][ sanitize_text_field( (string) $k ) ] = 'usedInPosts' === $k ? array_map( 'sanitize_text_field', $v ) : sanitize_text_field( $v );
+                }
+            }
+
+            return $out;
+        }
+
+        /** @param array<string,mixed> $data */
+        public static function set_global_colors( array $data, $already_sanitized = false ): void
+        {
+            if ( ! isset( $GLOBALS['__divi_gc'] ) ) {
+                self::resetForTests();
+            }
+            $s = &$GLOBALS['__divi_gc'];
+            $s['set_calls'][] = $data;
+            $s['set_flags'][] = $already_sanitized;
+            if ( $s['throw_set'] ) {
+                throw new \RuntimeException( 'Divi refused the save' );
+            }
+            $s['cache'] = null; // NOT 'formatted': Divi's Customizer cache survives a save, within the request
+            if ( ! $already_sanitized ) {
+                $data = self::sanitize_global_colors_data( $data );
+            }
+            if ( is_callable( $s['mutate'] ) ) {
+                $data = ( $s['mutate'] )( $data );
+            }
+            foreach ( self::$customizer_colors as $id => $def ) {
+                if ( isset( $data[ $id ]['color'] ) ) {
+                    et_update_option( $def['option_name'], $data[ $id ]['color'] );
+                }
+                unset( $data[ $id ] );
+            }
+            $s['custom'] = $data; // replace all
+            \ET_Core_PageResource::remove_static_resources( 'all', 'all', true );
+        }
+    }
+}
+
+namespace {
+    if ( ! class_exists( 'ET_Core_PageResource' ) ) {
+        class ET_Core_PageResource
+        {
+            public static function remove_static_resources( $a, $b, $c = false ) { $GLOBALS['__divi_static_clears'][] = [ $a, $b ]; }
+        }
+    }
+    if ( ! function_exists( 'et_get_option' ) ) {
+        function et_get_option( $name, $default = false ) { return $GLOBALS['__divi_gc']['options'][ $name ] ?? $default; }
+    }
+    if ( ! function_exists( 'et_update_option' ) ) {
+        function et_update_option( $name, $value ) { $GLOBALS['__divi_gc']['options'][ $name ] = $value; }
+    }
+    if ( ! function_exists( 'wp_generate_uuid4' ) ) {
+        function wp_generate_uuid4() { return vsprintf( '%s%s-%s-%s-%s-%s%s%s', str_split( bin2hex( random_bytes( 16 ) ), 4 ) ); }
+    }
+}

@@ -51,6 +51,7 @@ require_once __DIR__ . '/ThemeBuilder/TemplateStore.php';
 require_once __DIR__ . '/Kinds/ThemeTemplateKind.php';
 require_once __DIR__ . '/Kinds/ThemeLayoutKind.php';
 require_once __DIR__ . '/ThemeBuilder/LayoutWriter.php';
+require_once __DIR__ . '/Settings/GlobalColors.php';
 require_once __DIR__ . '/Tools/ListBatches.php';
 require_once __DIR__ . '/Tools/UndoBatch.php';
 require_once __DIR__ . '/Tools/ListThemeLayouts.php';
