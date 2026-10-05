@@ -114,7 +114,7 @@ class GlobalColorsTest extends TestCase
     /** @return array<string,array{string}> */
     public static function validColors(): array
     {
-        return [ 'hex3' => [ '#fff' ], 'hex4' => [ '#fff8' ], 'hex6' => [ '#1A2b3C' ], 'hex8' => [ '#11223344' ], 'rgb' => [ 'rgb(0, 0, 0)' ], 'rgba' => [ 'rgba(0,0,0,.5)' ], 'hsl' => [ 'hsl(120, 50%, 50%)' ], 'hsla' => [ 'hsla(120,50%,50%,0.5)' ], 'space syntax' => [ 'rgb(0 0 0 / 50%)' ], 'hsl spaces' => [ 'hsl(120 100% 50%)' ] ];
+        return [ 'hex3' => [ '#fff' ], 'hex4' => [ '#fff8' ], 'hex6' => [ '#1A2b3C' ], 'hex8' => [ '#11223344' ], 'rgb' => [ 'rgb(0, 0, 0)' ], 'rgba' => [ 'rgba(0,0,0,.5)' ], 'hsl' => [ 'hsl(120, 50%, 50%)' ], 'hsla' => [ 'hsla(120,50%,50%,0.5)' ], 'space syntax' => [ 'rgb(0 0 0 / 50%)' ], 'hsl spaces' => [ 'hsl(120 100% 50%)' ], 'leading dot' => [ 'rgb(.5,.5,.5)' ], 'decimals' => [ 'rgba(10.5, 20.25, 30, 0.75)' ], 'inner padding' => [ 'rgb( 1 , 2 , 3 )' ] ];
     }
 
     /** @return array<string,array{string}> */
@@ -124,6 +124,8 @@ class GlobalColorsTest extends TestCase
             'named' => [ 'red' ], 'var' => [ 'var(--x)' ], 'brace' => [ '#fff; }' ], 'url' => [ 'url(x)' ], 'semicolon' => [ 'rgb(0,0,0);' ],
             'newline' => [ "#fff\n" ], 'nine digits' => [ '#123456789' ], 'five digits' => [ '#12345' ], 'calc' => [ 'calc(1px)' ], 'empty' => [ '' ],
             'quote' => [ 'rgb(0,0,"0")' ], 'backslash' => [ 'rgb(0,0,\\0)' ], 'angle' => [ '<b>' ], 'too long' => [ 'rgb(' . str_repeat( '1,', 40 ) . '1)' ], 'two args' => [ 'rgb(1,2)' ], 'five args' => [ 'rgb(1,2,3,4,5)' ],
+            'newline in args' => [ "rgb(1\n,2,3)" ], 'vertical tab' => [ "rgb(1\x0B,2,3)" ], 'form feed' => [ "rgb(\f1,2,3)" ], 'tab' => [ "rgb(1\t,2,3)" ], 'carriage return' => [ "rgb(1\r,2,3)" ],
+            'dots only' => [ 'rgb(.,.,.)' ], 'double dot' => [ 'rgb(1..2,0,0)' ], 'trailing dot' => [ 'rgb(1.,2,3)' ], 'two dots' => [ 'rgb(1.2.3,2,3)' ], 'percent only' => [ 'rgb(%,%,%)' ],
         ];
     }
 
@@ -161,5 +163,49 @@ class GlobalColorsTest extends TestCase
         foreach ( [ 'primary', 'gcid-', 'gcid-ab', 'gcid-a b c', "gcid-abc\n", 'GCID-abc', 'gcid-' . str_repeat( 'a', 65 ), 'gcid-abc;' ] as $bad ) {
             $this->assertFalse( GlobalColors::validId( $bad ), $bad );
         }
+    }
+
+    /** @return array<string,array{array<string,mixed>,string}> */
+    public static function unsafeMaps(): array
+    {
+        $ok = [ 'color' => '#112233', 'folder' => '', 'label' => 'Brand', 'lastUpdated' => '2026-01-01T00:00:00.000Z', 'status' => 'active', 'usedInPosts' => [ '12' ] ];
+
+        return [
+            'empty color'            => [ [ 'gcid-aaa-1' => [ 'color' => '' ] + $ok ], 'empty_color' ],
+            'zero color'             => [ [ 'gcid-aaa-1' => [ 'color' => '0' ] + $ok ], 'empty_color' ],
+            'missing color'          => [ [ 'gcid-aaa-1' => array_diff_key( $ok, [ 'color' => 1 ] ) ], 'empty_color' ],
+            'undefined color'        => [ [ 'gcid-aaa-1' => [ 'color' => 'undefined' ] + $ok ], 'undefined_color' ],
+            'id without gcid prefix' => [ [ 'brand-1' => $ok ], 'bad_id' ],
+            'id undefined'           => [ [ 'undefined' => $ok ], 'bad_id' ],
+            'array field'            => [ [ 'gcid-aaa-1' => [ 'label' => [ 'x' ] ] + $ok ], 'non_scalar_field' ],
+            'null field'             => [ [ 'gcid-aaa-1' => [ 'folder' => null ] + $ok ], 'non_scalar_field' ],
+            'usedInPosts a string'   => [ [ 'gcid-aaa-1' => [ 'usedInPosts' => '12' ] + $ok ], 'bad_used_in_posts' ],
+            'usedInPosts null'       => [ [ 'gcid-aaa-1' => [ 'usedInPosts' => null ] + $ok ], 'bad_used_in_posts' ],
+            'usedInPosts nested'     => [ [ 'gcid-aaa-1' => [ 'usedInPosts' => [ [ '12' ] ] ] + $ok ], 'bad_used_in_posts' ],
+            'usedInPosts with null'  => [ [ 'gcid-aaa-1' => [ 'usedInPosts' => [ null ] ] + $ok ], 'bad_used_in_posts' ],
+            'entry not an array'     => [ [ 'gcid-aaa-1' => 'x' ], 'not_an_entry' ],
+        ];
+    }
+
+    /** @param array<string,mixed> $map */
+    #[DataProvider( 'unsafeMaps' )]
+    public function testUnsafeEntriesNamesWhatDiviWouldDropOrDamage( array $map, string $reason ): void
+    {
+        $this->assertSame( [ [ 'id' => (string) array_key_first( $map ), 'reason' => $reason ] ], GlobalColors::unsafeEntries( $map ) );
+    }
+
+    public function testASafeMapHasNoUnsafeEntries(): void
+    {
+        $map = GlobalColorsFixture::custom() + [ 'gcid-primary-color' => GlobalColors::themeEntry( '#ff0000', 'Primary Color', '2026-10-05T10:00:00.000Z' ) ];
+        $map[ GlobalColorsFixture::A ]['usedInPosts'] = [ '1', 2, 3.5, true ];
+        $this->assertSame( [], GlobalColors::unsafeEntries( $map ) );
+        $this->assertSame( [], GlobalColors::unsafeEntries( [] ) );
+    }
+
+    public function testEveryUnsafeEntryIsListedInOrder(): void
+    {
+        $bad = GlobalColorsFixture::custom()[ GlobalColorsFixture::A ];
+        $map = [ 'gcid-x-1' => [ 'color' => '' ] + $bad, GlobalColorsFixture::B => GlobalColorsFixture::custom()[ GlobalColorsFixture::B ], 'nope' => $bad ];
+        $this->assertSame( [ [ 'id' => 'gcid-x-1', 'reason' => 'empty_color' ], [ 'id' => 'nope', 'reason' => 'bad_id' ] ], GlobalColors::unsafeEntries( $map ) );
     }
 }

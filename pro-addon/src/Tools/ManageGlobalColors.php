@@ -11,6 +11,7 @@ use AiEditorDivi5\Pro\Kinds\GlobalColorKind;
 use AiEditorDivi5\Pro\ProTool;
 use AiEditorDivi5\Pro\Settings\GlobalColorPlanner;
 use AiEditorDivi5\Pro\Settings\GlobalColors;
+use AiEditorDivi5\Pro\Settings\GlobalColorsLock;
 use AiEditorDivi5\Pro\Site\PreviewToken;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -22,6 +23,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * color silently loses it). Every real run needs the token from a dry run of the same arguments; it writes Divi's
  * COMPLETE color map once, reads back what Divi really stored and records THAT as one undoable batch. The five theme
  * colors change only with allow_theme_colors, and only their color. MCP and REST only: the ChatGPT spec has no room.
+ *
+ * Two safeguards against losing colors, because Divi's save replaces the whole map: a real run holds the site-wide
+ * GlobalColorsLock from before its first read until the write is read back (two Pro changes, or a Pro change and an undo,
+ * cannot interleave; Divi builder saves are NOT covered), and a pre-flight refuses any map Divi would silently delete or
+ * flatten entries from, already in the dry run.
  */
 final class ManageGlobalColors implements ProTool
 {
@@ -31,13 +37,15 @@ final class ManageGlobalColors implements ProTool
 
     private \Closure $clock;
     private \Closure $newId;
+    private GlobalColorsLock $lock;
 
     /**
      * @param (\Closure():int)|null $clock the time in seconds (the tests move it)
      * @param (\Closure():string)|null $newId makes the id of a created color
      */
-    public function __construct( private BatchLog $log, ?\Closure $clock = null, ?\Closure $newId = null )
+    public function __construct( private BatchLog $log, ?\Closure $clock = null, ?\Closure $newId = null, ?GlobalColorsLock $lock = null )
     {
+        $this->lock  = $lock ?? new GlobalColorsLock();
         $this->clock = $clock ?? static fn (): int => time();
         $this->newId = $newId ?? static fn (): string => 'gcid-' . wp_generate_uuid4();
     }
@@ -91,6 +99,27 @@ final class ManageGlobalColors implements ProTool
         $token   = Args::string( $arguments, 'preview_token', false, 8000 );
         $allow   = Args::bool( $arguments, 'allow_theme_colors' );
 
+        if ( $dry ) {
+            return $this->execute( $entries, true, $token, $allow ); // a preview writes nothing, so it needs no lock
+        }
+        // Before the request's first read: Divi caches that read for the rest of the request, so a lock taken after it
+        // would protect a snapshot another request may already have outdated.
+        if ( ! $this->lock->acquire() ) {
+            throw new \InvalidArgumentException( 'Another color change is in progress on this site; nothing was changed. Try again in a moment.' );
+        }
+        try {
+            return $this->execute( $entries, false, $token, $allow );
+        } finally {
+            $this->lock->release();
+        }
+    }
+
+    /**
+     * @param list<array<string,mixed>> $entries
+     * @return array<string,mixed>
+     */
+    private function execute( array $entries, bool $dry, ?string $token, bool $allow ): array
+    {
         $before = GlobalColors::read();
         if ( null === $before ) {
             throw new \InvalidArgumentException( self::UNAVAILABLE );
@@ -104,6 +133,11 @@ final class ManageGlobalColors implements ProTool
         $argsHash = Canon::hash( [ 'colors' => $entries, 'allow_theme_colors' => $allow ] );
         $userId   = (int) get_current_user_id();
         if ( $dry ) {
+            $all = GlobalColors::customMap( $before );
+            foreach ( $plan['changes'] as $c ) {
+                $all[ $c['id'] ] = $c['write'];
+            }
+            self::refuseUnsafe( $all );
             $items = [];
             foreach ( $plan['changes'] as $c ) {
                 $items[ $c['index'] ] = Canon::hash( $c['before'] );
@@ -139,6 +173,8 @@ final class ManageGlobalColors implements ProTool
             return [ 'changed' => false, 'dry_run' => false, 'skipped' => $skipped, 'message' => 'Every color changed since the preview, so nothing was written. Call again with dry_run=true.' ];
         }
 
+        // Divi caches its read for the rest of the request, so within one request this can only notice a change made by code
+        // that resets that cache; protection against another REQUEST is the lock taken in run(), which Divi builder saves ignore.
         $fresh = GlobalColors::read();
         if ( null === $fresh || self::fingerprint( $fresh ) !== self::fingerprint( $before ) ) {
             throw new \InvalidArgumentException( "The site's global colors changed while this call was running; nothing was written. Call again with dry_run=true." );
@@ -148,6 +184,7 @@ final class ManageGlobalColors implements ProTool
         foreach ( $kept as $c ) {
             $send[ $c['id'] ] = $c['write'];
         }
+        self::refuseUnsafe( $send );
         $res   = GlobalColors::write( $send );
         $after = $res['after'];
         if ( null === $after ) {
@@ -216,6 +253,17 @@ final class ManageGlobalColors implements ProTool
         }
 
         return BatchLog::attach( $result, $batch );
+    }
+
+    /** @param array<string,array<string,mixed>> $map the exact map that would be sent to Divi */
+    private static function refuseUnsafe( array $map ): void
+    {
+        $unsafe = GlobalColors::unsafeEntries( $map );
+        if ( [] === $unsafe ) {
+            return;
+        }
+        $list = implode( ', ', array_map( static fn ( array $u ): string => $u['id'] . ' (' . $u['reason'] . ')', $unsafe ) );
+        throw new \InvalidArgumentException( "Divi would delete or damage these existing colors when it saves the list, and the change could not bring them back: {$list}. Nothing was changed. Fix or remove them in Divi's builder (Global Colors) first." );
     }
 
     /** @param array<string,array<string,mixed>> $all */

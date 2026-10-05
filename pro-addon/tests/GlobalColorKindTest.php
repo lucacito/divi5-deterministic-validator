@@ -9,12 +9,14 @@ use AiEditorDivi5\Pro\Batch\BatchUndo;
 use AiEditorDivi5\Pro\Canon;
 use AiEditorDivi5\Pro\Kinds\GlobalColorKind;
 use AiEditorDivi5\Pro\Settings\GlobalColors;
+use AiEditorDivi5\Pro\Settings\GlobalColorsLock;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../../wp-plugin/src/autoload.php';
 require_once __DIR__ . '/../src/autoload.php';
 require_once __DIR__ . '/GlobalColorsFixture.php';
 require_once __DIR__ . '/InMemoryBatchRepository.php';
+require_once __DIR__ . '/WpBuildShims.php';
 
 class GlobalColorKindTest extends TestCase
 {
@@ -27,6 +29,7 @@ class GlobalColorKindTest extends TestCase
     protected function setUp(): void
     {
         GlobalColorsFixture::reset();
+        $GLOBALS['__wp_options'] = [];
         $this->repo = new InMemoryBatchRepository();
         $this->log  = new BatchLog( $this->repo );
     }
@@ -175,5 +178,39 @@ class GlobalColorKindTest extends TestCase
         $r                                 = $this->undo()->undo( $id );
         $this->assertSame( 'failed', $r['items'][0]['result'] );
         $this->assertFalse( $r['fully_undone'] );
+    }
+
+    public function testAnUndoWhileAnotherColorChangeIsInProgressIsBusyAndLeavesEverything(): void
+    {
+        $id    = $this->change( self::A, [ 'color' => '#abcdef' ] );
+        $other = new GlobalColorsLock( 0 );
+        $this->assertTrue( $other->acquire() );
+        $writes = count( $GLOBALS['__divi_gc']['set_calls'] );
+
+        $r = ( new BatchUndo( [ GlobalColorKind::NAME => new GlobalColorKind( new GlobalColorsLock( 0 ) ) ], $this->log ) )->undo( $id );
+        $this->assertFalse( $r['fully_undone'] );
+        $this->assertSame( 'busy', $r['items'][0]['reason'] );
+        $this->assertCount( $writes, $GLOBALS['__divi_gc']['set_calls'], 'nothing was written' );
+        $this->assertSame( '#abcdef', GlobalColors::read()[ self::A ]['color'] );
+
+        $other->release();
+        $this->assertTrue( $this->undo()->undo( $id )['fully_undone'], 'the same undo works once the other change is done' );
+        $this->assertSame( [], $GLOBALS['__wp_options'], 'the undo released its lock' );
+    }
+
+    public function testAnUndoThatWouldMakeDiviDeleteAnotherColorIsRefusedAndWritesNothing(): void
+    {
+        $id = $this->change( self::A, [ 'color' => '#abcdef' ] );
+        $GLOBALS['__divi_gc']['custom']['gcid-empty-0000'] = [ 'color' => '', 'folder' => '', 'label' => 'Junk', 'lastUpdated' => '2026-01-01T00:00:00.000Z', 'status' => 'active', 'usedInPosts' => [] ];
+        $GLOBALS['__divi_gc']['cache']                     = null;
+        $writes = count( $GLOBALS['__divi_gc']['set_calls'] );
+
+        $r = $this->undo()->undo( $id );
+        $this->assertFalse( $r['fully_undone'] );
+        $this->assertSame( 'unsafe_to_save', $r['items'][0]['reason'] );
+        $this->assertCount( $writes, $GLOBALS['__divi_gc']['set_calls'], 'Divi was not asked to write anything' );
+        $this->assertSame( '#abcdef', GlobalColors::read()[ self::A ]['color'] );
+        $this->assertArrayHasKey( 'gcid-empty-0000', (array) GlobalColors::read(), 'the odd entry is still there' );
+        $this->assertSame( [], $GLOBALS['__wp_options'] );
     }
 }

@@ -143,8 +143,66 @@ final class GlobalColors
             return false;
         }
 
+        // A literal space only (never \s: it would let \n, \v and \f into the CSS) and a real number (never a bare dot).
+        $n = '(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)%?';
+
         return 1 === preg_match( '/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/Di', $color )
-            || 1 === preg_match( '/^(?:rgb|rgba|hsl|hsla)\(\s*[0-9.]+%?(?:\s*[,\/ ]\s*[0-9.]+%?){2,3}\s*\)$/Di', $color );
+            || 1 === preg_match( '/^(?:rgb|rgba|hsl|hsla)\( *' . $n . '(?: *[,\/ ] *' . $n . '){2,3} *\)$/Di', $color );
+    }
+
+    /**
+     * What Divi's own save would delete or flatten if it were handed this map (the exact map that is about to be sent): an entry with
+     * an empty or 'undefined' color or an id that does not start with gcid- is dropped, any array or null value other than a list of
+     * scalars in usedInPosts is flattened to '', and a usedInPosts that is not an array makes Divi throw. Refusing beforehand turns
+     * silent loss (which no batch could undo) into a clear message, and API drift into a refusal.
+     *
+     * @param array<mixed> $map
+     * @return list<array{id:string,reason:string}>
+     */
+    public static function unsafeEntries( array $map ): array
+    {
+        $out = [];
+        foreach ( $map as $id => $entry ) {
+            $reason = self::unsafeReason( $id, $entry );
+            if ( null !== $reason ) {
+                $out[] = [ 'id' => (string) $id, 'reason' => $reason ];
+            }
+        }
+
+        return $out;
+    }
+
+    private static function unsafeReason( mixed $id, mixed $entry ): ?string
+    {
+        if ( ! is_string( $id ) || ! str_starts_with( $id, 'gcid-' ) ) {
+            return 'bad_id';
+        }
+        if ( ! is_array( $entry ) ) {
+            return 'not_an_entry';
+        }
+        $color = $entry['color'] ?? '';
+        if ( is_string( $color ) && 'undefined' === $color ) {
+            return 'undefined_color';
+        }
+        if ( ! is_scalar( $color ) || empty( $color ) ) {
+            return 'empty_color';
+        }
+        foreach ( $entry as $key => $value ) {
+            if ( 'usedInPosts' === $key ) {
+                if ( ! is_array( $value ) ) {
+                    return 'bad_used_in_posts';
+                }
+                foreach ( $value as $post ) {
+                    if ( ! is_scalar( $post ) ) {
+                        return 'bad_used_in_posts';
+                    }
+                }
+            } elseif ( ! is_scalar( $value ) ) {
+                return 'non_scalar_field';
+            }
+        }
+
+        return null;
     }
 
     /** @return string|null the label as it will be stored, or null when it is not acceptable */

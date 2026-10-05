@@ -8,6 +8,7 @@ use AiEditorDivi5\Pro\Batch\Item;
 use AiEditorDivi5\Pro\Batch\ItemKind;
 use AiEditorDivi5\Pro\Canon;
 use AiEditorDivi5\Pro\Settings\GlobalColors;
+use AiEditorDivi5\Pro\Settings\GlobalColorsLock;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -25,6 +26,13 @@ final class GlobalColorKind implements ItemKind
 
     /** The only fields a change ever touches. */
     private const FIELDS = [ 'color', 'label', 'status' ];
+
+    private GlobalColorsLock $lock;
+
+    public function __construct( ?GlobalColorsLock $lock = null )
+    {
+        $this->lock = $lock ?? new GlobalColorsLock();
+    }
 
     public function name(): string
     {
@@ -67,6 +75,22 @@ final class GlobalColorKind implements ItemKind
 
     public function restore( array $item ): array
     {
+        // The same site-wide lock as the tool: Divi's save replaces the whole map, so two writers must not interleave. (BatchUndo
+        // has already called current(), which fills Divi's per-request cache, so the read below can be that few-millisecond-old
+        // snapshot; the lock protects against writers that start after it, and the sanity checks below against the rest.)
+        if ( ! $this->lock->acquire() ) {
+            return [ 'ok' => false, 'reason' => 'busy' ];
+        }
+        try {
+            return $this->restoreLocked( $item );
+        } finally {
+            $this->lock->release();
+        }
+    }
+
+    /** @return array<string,mixed> */
+    private function restoreLocked( array $item ): array
+    {
         $id     = (string) $item['ref'];
         $before = is_array( $item['before'] ?? null ) ? $item['before'] : null;
         $all    = GlobalColors::read();
@@ -107,6 +131,10 @@ final class GlobalColorKind implements ItemKind
                 $map[ $id ]           = $entry;
                 $expected             = GlobalColors::state( $entry );
             }
+        }
+
+        if ( [] !== GlobalColors::unsafeEntries( $map ) ) {
+            return [ 'ok' => false, 'reason' => 'unsafe_to_save' ]; // Divi would delete or damage an entry of the map we must send back
         }
 
         $res = GlobalColors::write( $map );

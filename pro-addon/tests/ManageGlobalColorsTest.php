@@ -8,6 +8,7 @@ use AiEditorDivi5\Pro\Batch\BatchLog;
 use AiEditorDivi5\Pro\Batch\BatchUndo;
 use AiEditorDivi5\Pro\Kinds\GlobalColorKind;
 use AiEditorDivi5\Pro\Settings\GlobalColors;
+use AiEditorDivi5\Pro\Settings\GlobalColorsLock;
 use AiEditorDivi5\Pro\Tools\ManageGlobalColors;
 use PHPUnit\Framework\TestCase;
 
@@ -15,6 +16,7 @@ require_once __DIR__ . '/../../wp-plugin/src/autoload.php';
 require_once __DIR__ . '/../src/autoload.php';
 require_once __DIR__ . '/GlobalColorsFixture.php';
 require_once __DIR__ . '/InMemoryBatchRepository.php';
+require_once __DIR__ . '/WpBuildShims.php';
 
 class ManageGlobalColorsTest extends TestCase
 {
@@ -33,9 +35,10 @@ class ManageGlobalColorsTest extends TestCase
         $this->repo = new InMemoryBatchRepository();
         $this->log  = new BatchLog( $this->repo );
         $this->seq  = 0;
+        $GLOBALS['__wp_options'] = [];
         $this->tool = new ManageGlobalColors( $this->log, fn (): int => $this->now, function (): string {
             return 'gcid-new-00000000-0000-4000-8000-00000000000' . ++$this->seq;
-        } );
+        }, new GlobalColorsLock( 0 ) );
     }
 
     protected function tearDown(): void
@@ -262,12 +265,88 @@ class ManageGlobalColorsTest extends TestCase
         $this->assertSame( '#112233', GlobalColors::read()[ self::A ]['color'] );
     }
 
-    public function testAPreExistingEntryDiviDropsIsReportedNotHidden(): void
+    private const JUNK = [ 'color' => '', 'folder' => '', 'label' => 'Junk', 'lastUpdated' => '2026-01-01T00:00:00.000Z', 'status' => 'active', 'usedInPosts' => [] ];
+
+    public function testAPreExistingEntryDiviWouldDropIsRefusedInThePreviewAndWritesNothing(): void
     {
-        GlobalColorsFixture::reset( [ 'gcid-empty-0000' => [ 'color' => '', 'folder' => '', 'label' => 'Junk', 'lastUpdated' => '2026-01-01T00:00:00.000Z', 'status' => 'active', 'usedInPosts' => [] ] ] );
-        $r = $this->apply( [ 'colors' => [ [ 'label' => 'Sky', 'color' => '#00aaff' ] ] ] );
+        GlobalColorsFixture::reset( [ 'gcid-empty-0000' => self::JUNK ] );
+        $args = [ 'colors' => [ [ 'label' => 'Sky', 'color' => '#00aaff' ] ] ];
+        $this->refused( $args + [ 'dry_run' => true ], 'gcid-empty-0000' );
+        $this->refused( $args + [ 'dry_run' => true ], 'Divi would delete or damage' );
+        $this->refused( $args + [ 'dry_run' => true ], "Divi's builder" );
+        $this->assertSame( [], $GLOBALS['__divi_gc']['set_calls'] );
+    }
+
+    public function testAnEntryThatTurnsUnsafeAfterThePreviewIsRefusedBeforeTheWrite(): void
+    {
+        $args = [ 'colors' => [ [ 'label' => 'Sky', 'color' => '#00aaff' ] ] ];
+        $p    = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $GLOBALS['__divi_gc']['custom']['gcid-empty-0000'] = self::JUNK;
+        $GLOBALS['__divi_gc']['cache']                     = null;
+        $this->refused( $args + [ 'preview_token' => $p['preview_token'] ], 'gcid-empty-0000' );
+        $this->assertSame( [], $GLOBALS['__divi_gc']['set_calls'], 'Divi was not asked to write anything' );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testADropThePreflightCannotPredictIsStillReportedInUnexpectedChanges(): void
+    {
+        $GLOBALS['__divi_gc']['mutate'] = static function ( array $d ): array {
+            unset( $d[ GlobalColorsFixture::B ] );
+
+            return $d;
+        };
+        $r = $this->apply( [ 'colors' => [ [ 'id' => self::A, 'color' => '#abcdef' ] ] ] );
         $this->assertTrue( $r['changed'] );
-        $this->assertSame( [ [ 'id' => 'gcid-empty-0000', 'reason' => 'removed_by_divi' ] ], $r['unexpected_changes'] );
+        $this->assertSame( [ [ 'id' => self::B, 'reason' => 'removed_by_divi' ] ], $r['unexpected_changes'] );
+    }
+
+    public function testADryRunTakesNoLockAndARealRunHoldsItFromBeforeItsFirstReadUntilTheEnd(): void
+    {
+        $args = [ 'colors' => [ [ 'id' => self::A, 'color' => '#abcdef' ] ] ];
+        $seen = [];
+        $GLOBALS['__divi_gc']['on_get'] = static function ( int $n ) use ( &$seen ): void {
+            $seen[ $n ] = count( $GLOBALS['__wp_options'] );
+        };
+        $GLOBALS['__divi_gc']['gets'] = 0;
+        $p = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $this->assertSame( [ 1 => 0 ], $seen, 'a dry run writes nothing, so it takes no lock' );
+
+        $seen                         = [];
+        $GLOBALS['__divi_gc']['gets'] = 0;
+        $this->assertTrue( $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] )['changed'] );
+        $this->assertSame( 1, $seen[1], 'the lock is already held at the very first read of the request' );
+        $this->assertSame( 1, $seen[2], 'and at the re-read' );
+        $this->assertSame( [], $GLOBALS['__wp_options'], 'it is released at the end' );
+    }
+
+    public function testARealRunWhileAnotherChangeIsInProgressIsRefusedAndTheTokenSurvives(): void
+    {
+        $args  = [ 'colors' => [ [ 'id' => self::A, 'color' => '#abcdef' ] ] ];
+        $other = new GlobalColorsLock( 0 );
+        $this->assertTrue( $other->acquire() );
+
+        $p = $this->tool->run( $args + [ 'dry_run' => true ] ); // a preview needs no lock
+        $this->assertArrayHasKey( 'preview_token', $p );
+        $this->refused( $args + [ 'preview_token' => $p['preview_token'] ], 'Another color change is in progress' );
+        $this->assertCount( 1, $GLOBALS['__wp_options'], 'the other request still holds its lock' );
+
+        $other->release();
+        $this->assertTrue( $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] )['changed'], 'the token was not spent by the refusal' );
+    }
+
+    public function testTheLockIsReleasedWhenARealRunFails(): void
+    {
+        $args = [ 'colors' => [ [ 'id' => self::A, 'color' => '#abcdef' ] ] ];
+        $p    = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $GLOBALS['__divi_gc']['throw_set'] = true;
+        try {
+            $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] );
+            $this->fail( 'expected a failure' );
+        } catch ( \RuntimeException $e ) {
+            $this->assertSame( [], $GLOBALS['__wp_options'] );
+        }
+        $this->refused( $args + [ 'preview_token' => 'garbage.token' ], 'preview_token' );
+        $this->assertSame( [], $GLOBALS['__wp_options'], 'a refusal releases it too' );
     }
 
     public function testWhenDiviCannotSaveNothingIsRecorded(): void
