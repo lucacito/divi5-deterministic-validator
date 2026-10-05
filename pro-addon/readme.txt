@@ -52,6 +52,10 @@ Deleting the plugin removes its own data (licence state, batch history, saved co
 
 == Changelog ==
 
+= 0.7.0 =
+* New: `manage_global_colors` creates, recolors, renames and deactivates your site's Divi global colors, so an assistant can set the palette before it builds pages. It never deletes a color. Every real run needs the single-use preview token of a dry run of the same arguments; colors that changed since the preview are skipped and reported, never overwritten. The five theme colors (primary, secondary, heading, body, link) change only when you pass `allow_theme_colors`, and only their color. Color values are checked strictly (hex or rgb/rgba/hsl/hsla numbers only). One `undo_batch` puts it all back; undoing a created color removes it, unless it changed since.
+* Over MCP and REST only: this is the 15th Pro tool, and the ChatGPT importer's 30 operations are used up by the first 14 (16 free + 14 Pro).
+
 = 0.6.0 =
 * New: licence tiers (Personal, Freelancer, Agency) with per-tier site limits shown on the Pro tab.
 * Expiry notice: a dismissible admin notice shows when your licence has ended (expired, canceled, or past due), but all 14 Pro tools keep working.

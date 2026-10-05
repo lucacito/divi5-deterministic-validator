@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace AiEditorDivi5\Pro\Tests;
 
 use AiEditorDivi5\Pro\ProTool;
+use AiEditorDivi5\Pro\Rest\ProOpenApi;
 use AiEditorDivi5\Pro\Tools;
 use AiEditorDivi5\WP\OpenApiSpec;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/ProTool.php';
 require_once __DIR__ . '/../src/Tools.php';
+require_once __DIR__ . '/../src/Rest/ProOpenApi.php';
 require_once __DIR__ . '/../../wp-plugin/src/OpenApiSpec.php';
 
 /** Guards the tool list as the next plans fill it: no shadowing, consistent names, and the OpenAPI operation budget. */
@@ -76,6 +78,10 @@ class ToolsTest extends TestCase
                 $free += count( $methods );
             }
         }
-        $this->assertLessThanOrEqual( 30, $free + count( Tools::all() ) );
+        // The 15th Pro tool, manage_global_colors, is MCP + REST only by the owner's decision of 2026-10-05: it is not an
+        // operation of the spec, so the budget counts the Pro tools that ARE in it (16 free + 14 Pro = 30, exactly).
+        $inSpec = count( Tools::all() ) - count( ProOpenApi::MCP_REST_ONLY );
+        $this->assertLessThanOrEqual( 30, $free + $inSpec );
+        $this->assertSame( [ 'manage_global_colors' ], ProOpenApi::MCP_REST_ONLY, 'a new MCP-only tool is an owner decision: change this list on purpose' );
     }
 }
