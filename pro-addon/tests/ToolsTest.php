@@ -45,7 +45,7 @@ class ToolsTest extends TestCase
     public function testThisReleaseShipsExactlyTheseTools(): void
     {
         $this->assertSame(
-            [ 'set_front_page', 'set_custom_css', 'set_primary_menu', 'publish_page', 'propose_php_snippet', 'list_batches', 'undo_batch', 'list_theme_layouts', 'update_theme_layout', 'edit_theme_layout', 'manage_theme_template', 'find_replace_site', 'audit_site', 'build_site' ],
+            [ 'set_front_page', 'set_custom_css', 'set_primary_menu', 'publish_page', 'propose_php_snippet', 'list_batches', 'undo_batch', 'list_theme_layouts', 'update_theme_layout', 'edit_theme_layout', 'manage_theme_template', 'find_replace_site', 'audit_site', 'build_site', 'manage_global_colors' ],
             array_map( static fn ( ProTool $t ): string => $t->name(), Tools::all() )
         );
     }

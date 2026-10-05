@@ -14,7 +14,7 @@ require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/../src/autoload.php';
 
 /**
- * Verify that all 14 Pro tools are callable in lapsed states: expired, canceled, past_due, and lifetime.
+ * Verify that all 15 Pro tools are callable in lapsed states: expired, canceled, past_due, and lifetime.
  * This test ensures that expiry and lapses never disable the Pro tools.
  */
 class ExpiryKeepsAllToolsTest extends TestCase
@@ -124,12 +124,12 @@ class ExpiryKeepsAllToolsTest extends TestCase
     private function assertKeepsAllTools(): void
     {
         $names = self::allToolNames();
-        $this->assertCount( 14, $names );
+        $this->assertCount( 15, $names );
         $listed = $this->advertised( [] );
         sort( $listed );
         $sorted = $names;
         sort( $sorted );
-        $this->assertSame( $sorted, $listed, 'all 14 Pro tools are advertised' );
+        $this->assertSame( $sorted, $listed, 'all 15 Pro tools are advertised' );
 
         $response = $this->registry()->claim( null, 'propose_php_snippet', [], 1 );
         $this->assertNotNull( $response, 'a Pro tool call is claimed (not passed through) while unlocked' );
