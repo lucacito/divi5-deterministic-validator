@@ -90,3 +90,11 @@ Live gate `make verify-pro-global-colors` (Docker site, self-cleaning, dev site 
 - **Labels are optional in Divi** (many custom colors have none): updates may leave `label` unchanged and creates require one, so the AI always names what it creates.
 - **A written color is not "applied" anywhere** until a layout cites it; the tool says so in its result, and points to `list_global_styles` and the style guide for the reference shape.
 - **Known limit:** the preview token is best effort against replay if an object cache evicts the spent-nonce transient (same as the other Pro tools).
+
+## Implementation notes (2026-10-05, from the plan; all narrow the spec)
+
+1. A theme color changes `color` only: Divi stores nothing else for it. A `label` or `status` on a theme id is refused.
+2. Instead of "recompute once", the tool re-reads once just before writing and aborts (nothing written) if any color differs from what it planned against.
+3. A created color's id is generated at each run: a dry run shows `id: null` for creates; the real run reports the id.
+4. `read()` returns a theme color's LIVE option value (Divi caches the Customizer colors in a static for the whole request, so its own read is stale right after a write); an entry that is not an array makes `read()` return null and the tool refuses.
+5. Undo of a created color removes it and is refused (`changed_since`, even with `force`) unless the entry is exactly what the batch wrote.
