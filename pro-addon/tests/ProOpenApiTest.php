@@ -122,6 +122,7 @@ class ProOpenApiTest extends TestCase
         $registry = new ToolRegistry( Tools::all(), static fn (): bool => true );
         $paths    = ( new ProOpenApi( $registry ) )->paths( [], 'https://example.com' );
         $this->assertCount( 14, $paths );
+        $this->assertArrayNotHasKey( '/pro/manage_global_colors', $paths, 'MCP + REST only: no room in the 30-operation ChatGPT spec' );
         foreach ( $paths as $path => $methods ) {
             $responses = $methods['post']['responses'];
             $this->assertSame( [ '200', '400', '401', '403', '500' ], array_map( 'strval', array_keys( $responses ) ), $path );

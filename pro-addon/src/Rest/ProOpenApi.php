@@ -12,12 +12,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * The ChatGPT/OpenAPI face of every Pro tool, generated from each tool's own definition so it cannot drift from the MCP
- * and REST faces. One operation per tool (the importer caps a spec at 30 operations in total; the free plugin has 16),
- * every description at most 300 characters, and no object schema without properties.
+ * and REST faces. One operation per tool, except the tools listed in MCP_REST_ONLY (the importer caps a spec at 30 operations in
+ * total; the free plugin has 16 and the first 14 Pro tools use the rest), every description at most 300 characters, and no
+ * object schema without properties.
  */
 final class ProOpenApi
 {
     private const SUMMARY_MAX = 120;
+
+    /** Tools that exist over MCP and REST only: the 16 free + 14 Pro operations already use all 30 the ChatGPT importer accepts. */
+    public const MCP_REST_ONLY = [ 'manage_global_colors' ];
 
     public function __construct( private ToolRegistry $registry )
     {
@@ -37,6 +41,9 @@ final class ProOpenApi
         }
         foreach ( $this->registry->tools() as $tool ) {
             $def    = $tool->definition();
+            if ( in_array( $def['name'], self::MCP_REST_ONLY, true ) ) {
+                continue;
+            }
             $schema = self::requestSchema( $def['inputSchema'] );
             $op     = [
                 'operationId' => self::operationId( $def['name'] ),

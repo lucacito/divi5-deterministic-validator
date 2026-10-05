@@ -2,7 +2,7 @@
 Contributors:      lucaslopvet
 Requires at least: 6.0
 Requires PHP:      8.1
-Stable tag:        0.6.0
+Stable tag:        0.7.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,10 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
+
+= 0.7.0 =
+* New: `manage_global_colors` creates, recolors, renames and deactivates your site's Divi global colors, so an assistant can set the palette before it builds pages. It never deletes a color. Every real run needs the single-use preview token of a dry run of the same arguments; colors that changed since the preview are skipped and reported, never overwritten. The five theme colors (primary, secondary, heading, body, link) change only when you pass `allow_theme_colors`, and only their color. Color values are checked strictly (hex or rgb/rgba/hsl/hsla numbers only). One `undo_batch` puts it all back; undoing a created color removes it, unless it changed since.
+* Over MCP and REST only: this is the 15th Pro tool, and the ChatGPT importer's 30 operations are used up by the first 14 (16 free + 14 Pro).
 
 = 0.6.0 =
 * New: licence tiers (Personal, Freelancer, Agency) with per-tier site limits shown on the Pro tab.

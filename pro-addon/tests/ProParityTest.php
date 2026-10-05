@@ -67,14 +67,31 @@ class ProParityTest extends TestCase
         $mcp = array_column( $this->registry->definitions( [] ), 'name' );
         $rest = array_map( static fn ( array $r ): string => substr( $r[1], strlen( '/pro/' ) ), $GLOBALS['__wp_rest_routes'] );
         $api  = array_map( static fn ( array $o ): string => substr( $o[1], strlen( '/pro/' ) ), $this->proOperations() );
+        $inSpec = array_values( array_diff( $mcp, ProOpenApi::MCP_REST_ONLY ) );
         $this->assertSame( $mcp, $rest );
-        $this->assertSame( $mcp, $api );
+        $this->assertSame( $inSpec, $api, 'the spec has every Pro tool except the MCP + REST only ones' );
         $this->assertCount( count( Tools::all() ), $mcp );
+    }
+
+    public function testMcpRestOnlyToolsAreOverMcpAndRestButNotInTheChatGptSpec(): void
+    {
+        $mcp  = array_column( $this->registry->definitions( [] ), 'name' );
+        $rest = array_map( static fn ( array $r ): string => substr( $r[1], strlen( '/pro/' ) ), $GLOBALS['__wp_rest_routes'] );
+        foreach ( ProOpenApi::MCP_REST_ONLY as $name ) {
+            $this->assertContains( $name, $mcp, "{$name} over MCP" );
+            $this->assertContains( $name, $rest, "{$name} over REST" );
+            $this->assertArrayNotHasKey( '/pro/' . $name, $this->spec['paths'], "{$name} is not in the ChatGPT spec" );
+        }
+        $this->assertCount( 14, $this->proOperations(), '16 free + 14 Pro operations = the importer\'s 30' );
     }
 
     public function testEveryOperationCarriesTheToolsOwnArguments(): void
     {
         foreach ( $this->registry->definitions( [] ) as $def ) {
+            if ( in_array( $def['name'], ProOpenApi::MCP_REST_ONLY, true ) ) {
+                $this->assertArrayNotHasKey( '/pro/' . $def['name'], $this->spec['paths'], $def['name'] );
+                continue;
+            }
             $op     = $this->spec['paths']['/pro/' . $def['name']]['post'];
             $schema = $op['requestBody']['content']['application/json']['schema'];
             $this->assertSame( $def['inputSchema']['properties'], $schema['properties'], $def['name'] );

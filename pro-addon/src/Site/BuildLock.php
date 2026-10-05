@@ -27,13 +27,14 @@ final class BuildLock
     /** @var array<int,string> the value this request wrote, per user */
     private array $held = [];
 
-    public function __construct( private int $waitMs = 5000, private int $expirySeconds = 15 )
+    /** @param string $prefix the option-name prefix; the user id is appended (a different prefix is a different, independent lock) */
+    public function __construct( private int $waitMs = 5000, private int $expirySeconds = 15, private string $prefix = self::PREFIX )
     {
     }
 
     public function acquire( int $userId ): bool
     {
-        $key   = self::PREFIX . $userId;
+        $key   = $this->prefix . $userId;
         $token = bin2hex( random_bytes( 8 ) );
         for ( $waited = 0; ; $waited += self::STEP_MS ) {
             $value = time() . ':' . $token;
@@ -58,7 +59,7 @@ final class BuildLock
     public function release( int $userId ): void
     {
         if ( isset( $this->held[ $userId ] ) ) {
-            $this->delete( self::PREFIX . $userId, $this->held[ $userId ] );
+            $this->delete( $this->prefix . $userId, $this->held[ $userId ] );
             unset( $this->held[ $userId ] );
         }
     }

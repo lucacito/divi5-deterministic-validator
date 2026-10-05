@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-theme-layouts verify-pro-theme-templates verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -82,6 +82,13 @@ verify-pro-theme-layouts:
 # ---------------------------------------------------------------
 verify-pro-theme-templates:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-theme-templates.php --user=1
+
+# ---------------------------------------------------------------
+# verify-pro-global-colors — real-site evidence gate for manage_global_colors (self-cleaning; free + Pro plugins must be active; dev site only)
+#   (the probe page is fetched through the Docker network; set AIED_LOOPBACK_BASE if http://wordpress is not reachable)
+# ---------------------------------------------------------------
+verify-pro-global-colors:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-global-colors.php --user=1
 
 # ---------------------------------------------------------------
 # verify-pro-site-tools — real-site check of find_replace_site and audit_site through the real registry (self-cleaning; free + Pro plugins must be active; dev site only: it evicts old batch rows)
