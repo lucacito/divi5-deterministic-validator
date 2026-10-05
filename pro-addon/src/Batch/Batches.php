@@ -6,6 +6,7 @@ namespace AiEditorDivi5\Pro\Batch;
 
 use AiEditorDivi5\Pro\Kinds\CssKind;
 use AiEditorDivi5\Pro\Kinds\FrontPageKind;
+use AiEditorDivi5\Pro\Kinds\GlobalColorKind;
 use AiEditorDivi5\Pro\Kinds\MenuKind;
 use AiEditorDivi5\Pro\Kinds\PageCreatedKind;
 use AiEditorDivi5\Pro\Kinds\PageTrashedKind;
@@ -42,6 +43,7 @@ final class Batches
             new PostContentKind(),
             new ThemeLayoutKind(),
             new ThemeTemplateKind(),
+            new GlobalColorKind(),
         ];
         $out = [];
         foreach ( $kinds as $kind ) {
