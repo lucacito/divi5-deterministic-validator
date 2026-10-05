@@ -10,7 +10,13 @@
  *
  * Run: make verify-pro-global-colors   (needs `make up`, the free plugin and the Pro add-on active on the dev site)
  * The page is fetched through the Docker network (http://wordpress, Host header = the site's host); set AIED_LOOPBACK_BASE to
- * change that base. Dev sites only. WARNING: it records about 6 batches and deletes them at the end.
+ * change that base. Dev sites only. WARNING: it records about 6 batches and deletes them at the end; the batch store keeps only
+ * the newest 20, so on a site that already has more than 14 batches the run evicts the oldest real ones (it warns, and the final
+ * count check then expects the eviction). Every write is also proven to change exactly ONE entry: every other stored color and
+ * the five theme options are fingerprinted before and after each of create, recolor and deactivate. Observed on Divi 5.14
+ * (a page with no color citation of its own got the five theme colors plus 3 of the site's 22 custom ones): Divi defines
+ * --gcid-* only for the custom colors a page (or its Theme Builder template) cites, so the render checks prove both that the
+ * cited color gets its value and, as a control, that an uncited custom color is not emitted.
  */
 
 use AiEditorDivi5\Pro\Batch\BatchTable;
@@ -71,12 +77,16 @@ $call     = static function ( string $name, array $args ) use ( $registry, &$bat
 
     return [ 'error' => null, 'result' => $result ];
 };
+$batchCount = static fn (): int => (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . BatchTable::name() ); // phpcs:ignore
 $errHas = static fn ( array $r, string $needle ): bool => null !== $r['error'] && false !== stripos( (string) $r['error']['message'], $needle );
 
-/** Every stored color (usage compared as strings: Divi's sanitiser stores them as strings) plus the five theme options. */
-$fingerprint = static function (): string {
+/** Every stored color, optionally except one id (usage compared as strings: Divi's sanitiser stores them as strings) plus the five theme options. */
+$fingerprint = static function ( string $except = '' ): string {
     $norm = [];
     foreach ( (array) GlobalColors::read() as $id => $e ) {
+        if ( '' !== $except && $id === $except ) {
+            continue;
+        }
         $norm[ $id ] = [ (string) ( $e['color'] ?? '' ), (string) ( $e['folder'] ?? '' ), (string) ( $e['label'] ?? '' ), GlobalColors::isThemeId( $id ) ? '' : (string) ( $e['lastUpdated'] ?? '' ), (string) ( $e['status'] ?? '' ), array_map( 'strval', (array) ( $e['usedInPosts'] ?? [] ) ) ];
     }
     $opts = [];
@@ -135,7 +145,12 @@ $themeOpts  = [];
 foreach ( GlobalData::$customizer_colors as $def ) {
     $themeOpts[ $def['option_name'] ] = et_get_option( $def['option_name'], $def['default'] );
 }
-WP_CLI::log( "baseline: {$countStart} color(s) (five of them theme colors)" );
+$batchesStart = $batchCount();
+$check( 5 === count( $themeOpts ), 'baseline: Divi reports exactly five theme color options' );
+WP_CLI::log( "baseline: {$countStart} color(s) (five of them theme colors), {$batchesStart} stored batch row(s)" );
+if ( $batchesStart > 14 ) {
+    WP_CLI::warning( "the batch store holds {$batchesStart} rows and keeps only 20: this run will evict the oldest real ones (dev site)" );
+}
 $pageId = 0;
 $newId  = '';
 try {
@@ -149,6 +164,7 @@ try {
     $check( $fingerprint() === $fpBefore, 'the refused run changed nothing' );
 
     // ---- 3. create ----------------------------------------------------------------------------------------------------
+    $othersBefore = $fingerprint();
     $c = $call( 'manage_global_colors', [ 'colors' => $new, 'preview_token' => $d['result']['preview_token'] ] );
     $check( null === $c['error'] && true === $c['result']['changed'] && 'create' === $c['result']['changes'][0]['action'] && true === $c['result']['batch']['undoable'], 'create: applied and undoable' );
     $newId   = (string) ( $c['result']['changes'][0]['id'] ?? '' );
@@ -156,6 +172,7 @@ try {
     $after   = (array) GlobalColors::read();
     $check( str_starts_with( $newId, 'gcid-' ) && '#00aaff' === ( $after[ $newId ]['color'] ?? '' ) && 'AIED verify sky' === ( $after[ $newId ]['label'] ?? '' ) && 'active' === ( $after[ $newId ]['status'] ?? '' ), 'the color is stored through Divi: ' . $newId );
     $check( count( $after ) === $countStart + 1, 'exactly one entry was added' );
+    $check( $fingerprint( $newId ) === $othersBefore, 'create: every other color (incl. usedInPosts, lastUpdated) and the five theme options are untouched' );
     $reuse = $call( 'manage_global_colors', [ 'colors' => $new, 'preview_token' => $d['result']['preview_token'] ] );
     $check( $errHas( $reuse, 'preview_token' ), 'the token works once' );
 
@@ -166,28 +183,49 @@ try {
     }
     $css = $render( (int) $pageId );
     $check( '' !== $css, 'the probe page rendered (if this FAILS: set AIED_LOOPBACK_BASE to a URL the wpcli container can reach)' );
-    $check( $defines( $css, $newId, '#00aaff' ), "Divi's generated CSS defines --{$newId} as #00aaff on the page that cites it" );
+    $check( $defines( $css, $newId, '#00aaff' ), "Divi's generated CSS defines --{$newId} as #00aaff on the probe page that cites it" );
+    $check( false !== strpos( $css, 'var(--' . $newId . ')' ), 'the probe page really cites it: its module CSS uses var(--' . $newId . ')' );
+    // Control: a stored custom color nothing on the probe page cites. Observed: Divi emits only the custom colors a page cites.
+    $ctl = null;
+    foreach ( (array) GlobalColors::read() as $id => $e ) {
+        if ( $id !== $newId && ! GlobalColors::isThemeId( $id ) && false === strpos( $css, 'var(--' . $id . ')' ) && 1 === preg_match( '/^#[0-9a-f]{6}$/i', (string) ( $e['color'] ?? '' ) ) ) {
+            $ctl = [ 'id' => (string) $id, 'color' => (string) $e['color'] ];
+            break;
+        }
+    }
+    if ( null === $ctl ) {
+        WP_CLI::warning( 'no other uncited custom hex color on this site: the uncited-color control was skipped' );
+    } else {
+        $check( false === strpos( $css, '--' . $ctl['id'] . ':' ), "control: the UNCITED custom color {$ctl['id']} ({$ctl['color']}) is not defined on the probe page (Divi 5.14 emits only cited custom colors)" );
+    }
 
     // ---- 5. recolor, then the page shows the new value ----------------------------------------------------------------
     sleep( 2 ); // Divi treats a CSS file written in the same second as a cache clear as fresh; a real page is older than that
     $recolor = [ [ 'id' => $newId, 'color' => '#ff8800' ] ];
     $d2      = $call( 'manage_global_colors', [ 'colors' => $recolor, 'dry_run' => true ] );
+    $check( null === $d2['error'] && is_string( $d2['result']['preview_token'] ?? null ), 'recolor: the dry run gave a preview token' );
+    $othersBefore = $fingerprint( $newId );
     $c2      = $call( 'manage_global_colors', [ 'colors' => $recolor, 'preview_token' => $d2['result']['preview_token'] ?? '' ] );
     $recB    = (int) ( $c2['result']['batch']['id'] ?? 0 );
+    $check( $fingerprint( $newId ) === $othersBefore, 'recolor: every other color and the five theme options are untouched' );
     $check( true === ( $c2['result']['changed'] ?? false ) && '#ff8800' === ( GlobalColors::read()[ $newId ]['color'] ?? '' ), 'recolor: stored' );
     $css2 = $render( (int) $pageId );
-    $check( $defines( $css2, $newId, '#ff8800' ) && ! $defines( $css2, $newId, '#00aaff' ), 'the page now gets the new value (Divi cleared its caches)' );
+    $check( $defines( $css2, $newId, '#ff8800' ) && ! $defines( $css2, $newId, '#00aaff' ), 'the probe page now gets the new value (Divi cleared its caches)' );
 
     // ---- 6. deactivate ------------------------------------------------------------------------------------------------
     $off  = [ [ 'id' => $newId, 'status' => 'inactive' ] ];
     $d3   = $call( 'manage_global_colors', [ 'colors' => $off, 'dry_run' => true ] );
+    $check( null === $d3['error'] && is_string( $d3['result']['preview_token'] ?? null ), 'deactivate: the dry run gave a preview token' );
+    $othersBefore = $fingerprint( $newId );
     $c3   = $call( 'manage_global_colors', [ 'colors' => $off, 'preview_token' => $d3['result']['preview_token'] ?? '' ] );
     $offB = (int) ( $c3['result']['batch']['id'] ?? 0 );
+    $check( $fingerprint( $newId ) === $othersBefore, 'deactivate: every other color and the five theme options are untouched' );
     $check( 'deactivate' === ( $c3['result']['changes'][0]['action'] ?? '' ) && 'inactive' === ( GlobalColors::read()[ $newId ]['status'] ?? '' ), 'deactivate: stored, nothing deleted' );
 
     // ---- 7. the token is bound to the arguments ----------------------------------------------------------------------------
     $d4 = $call( 'manage_global_colors', [ 'colors' => [ [ 'id' => $newId, 'color' => '#123456' ] ], 'dry_run' => true ] );
     $x  = $call( 'manage_global_colors', [ 'colors' => [ [ 'id' => $newId, 'color' => '#654321' ] ], 'preview_token' => $d4['result']['preview_token'] ?? '' ] );
+    $check( null === $d4['error'] && is_string( $d4['result']['preview_token'] ?? null ), 'token binding: the dry run for the other arguments gave a real token' );
     $check( $errHas( $x, 'preview_token' ) && 'inactive' === ( GlobalColors::read()[ $newId ]['status'] ?? '' ) && '#ff8800' === GlobalColors::read()[ $newId ]['color'], 'a token for other arguments does not open a run' );
 
     // ---- 8. refusals ------------------------------------------------------------------------------------------------------
@@ -242,11 +280,14 @@ $leftover = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE pos
 $check( $fingerprint() === $fpBefore, 'every stored color (including usedInPosts and lastUpdated) and the five theme options are identical to the start' );
 $check( count( (array) GlobalColors::read() ) === $countStart, 'the color count equals the baseline' );
 $check( 0 === $leftover, "no throwaway page remains ({$leftover})" );
+$batchIds = array_values( array_unique( $batchIds ) );
 if ( [] !== $batchIds ) {
     $wpdb->query( 'DELETE FROM ' . BatchTable::name() . ' WHERE id IN (' . implode( ',', array_map( 'intval', $batchIds ) ) . ')' ); // phpcs:ignore
 }
-$left = [] === $batchIds ? 0 : (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . BatchTable::name() . ' WHERE id IN (' . implode( ',', array_map( 'intval', $batchIds ) ) . ')' ); // phpcs:ignore
-$check( 0 === $left, "none of the batch rows this run created remain ({$left} left)" );
+// The store keeps the newest 20: with N old rows and k new ones, the old rows left are min(N, 20 - k) (N when nothing was evicted).
+$expectedBatches = min( $batchesStart, max( 0, 20 - count( $batchIds ) ) );
+$batchesEnd      = $batchCount();
+$check( $batchesEnd === $expectedBatches, "after deleting this run's own rows the batch table holds {$batchesEnd} row(s), expected {$expectedBatches} (baseline {$batchesStart}, this run recorded " . count( $batchIds ) . ', so no stray row)' );
 
 if ( [] !== $failures ) {
     WP_CLI::error( count( $failures ) . ' check(s) failed: ' . implode( '; ', $failures ) );
