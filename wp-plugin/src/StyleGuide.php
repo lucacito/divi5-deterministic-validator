@@ -276,6 +276,11 @@ layout still returns normally, with `valid: false` and the violations; fix them 
 saving. A replaced or new section counts as one removed/added block; its children are
 not listed.
 
+## Match the site's structure
+Call `get_site_structure` before building a page that should list a custom post type or
+taxonomy, use an image at a particular registered size, or refer to Advanced Custom Fields
+field names. It is read-only and never returns field values; it only tells you what exists.
+
 ## Match the site (colors and presets)
 Call `list_global_styles` before styling. It lists the site's own global colors (ids like
 `gcid-…`), module presets and variables. Reuse a site color instead of hard-coding a hex:

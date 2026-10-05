@@ -45,6 +45,13 @@ final class RestController
             ],
         ]);
 
+        // GET /site-structure — read-only post types, taxonomies, image sizes and ACF field groups
+        register_rest_route(self::NS, '/site-structure', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'site_structure'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
         // POST /pages — validate + create a new page (always a draft)
         register_rest_route(self::NS, '/pages', [
             'methods'             => WP_REST_Server::CREATABLE,
@@ -277,7 +284,10 @@ final class RestController
         if ($dryRun) {
             UsageTracker::log(DryRun::ENDPOINT, $id, UsageTracker::RESULT_READ);
 
-            return new WP_REST_Response(StyleReferences::attach(DryRun::preview((string) $post->post_content, $content), $content), 200);
+            $preview = DryRun::preview((string) $post->post_content, $content);
+            ApprovalMode::recordPreview($id, $content, (bool) $preview['valid']);
+
+            return new WP_REST_Response(StyleReferences::attach($preview, $content), 200);
         }
 
         // Validate before saving — this is the safety gate
@@ -291,6 +301,11 @@ final class RestController
                 'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
                 'message'    => 'Layout failed validation. Page was NOT updated.',
             ], 422);
+        }
+
+        if (!ApprovalMode::consume($id, $content)) {
+            UsageTracker::log('update_page', $id, 'error');
+            return new WP_REST_Response(ApprovalMode::refusal(), 428);
         }
 
         // Validation passed — snapshot the previous content, then save (wp_slash inside HistoryService).
@@ -425,7 +440,10 @@ final class RestController
         if ($dryRun) {
             UsageTracker::log(DryRun::ENDPOINT, $id, UsageTracker::RESULT_READ);
 
-            return new WP_REST_Response(StyleReferences::attach(DryRun::preview((string) $post->post_content, $edit['content']) + ['replaced' => $edit['count']], $edit['content']), 200);
+            $preview = DryRun::preview((string) $post->post_content, $edit['content']);
+            ApprovalMode::recordPreview($id, $edit['content'], (bool) $preview['valid']);
+
+            return new WP_REST_Response(StyleReferences::attach($preview + ['replaced' => $edit['count']], $edit['content']), 200);
         }
 
         // Same safety gate as update_page — the edited content must still validate.
@@ -438,6 +456,11 @@ final class RestController
                 'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
                 'message'    => 'Edit would make the layout invalid. Page was NOT updated.',
             ], 422);
+        }
+
+        if (!ApprovalMode::consume($id, $edit['content'])) {
+            UsageTracker::log('edit_page', $id, 'error');
+            return new WP_REST_Response(ApprovalMode::refusal(), 428);
         }
 
         $write = HistoryService::write($id, $edit['content'], 'edit_page');
@@ -593,6 +616,22 @@ final class RestController
         }
         $result = GlobalStyles::catalog($module);
         UsageTracker::log('list_global_styles', null, 'read');
+
+        return new WP_REST_Response($result, 200);
+    }
+
+    public function site_structure(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('site_structure', null, 'error');
+            return new WP_Error('forbidden', 'You do not have permission to read the site structure.', ['status' => 403]);
+        }
+        $include = SiteStructure::parseInclude($request->get_param('include'));
+        if ($include === null) {
+            return new WP_Error('invalid_field', '"include" must be a list of: ' . implode(', ', SiteStructure::SECTIONS) . '.', ['status' => 400]);
+        }
+        $result = SiteStructure::catalog($include);
+        UsageTracker::log('site_structure', null, 'read');
 
         return new WP_REST_Response($result, 200);
     }

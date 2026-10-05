@@ -86,4 +86,16 @@ class OpenApiSpecTest extends TestCase
         $this->assertStringContainsString("'per_page'    => ['type' => 'integer', 'minimum' => 1, 'maximum' => 50,", $mcp);
         $this->assertStringContainsString("'page'        => ['type' => 'integer', 'minimum' => 1, 'maximum' => 200,", $mcp);
     }
+
+    public function testTheSavePathsDocumentThe428AndTheOperationCountIsStill16(): void
+    {
+        $paths = $this->spec()['paths'];
+        $this->assertArrayHasKey( '428', $paths['/pages/{id}']['put']['responses'] );
+        $this->assertArrayHasKey( '428', $paths['/pages/{id}/edit']['post']['responses'] );
+        $count = 0;
+        foreach ( $paths as $methods ) {
+            $count += count( $methods );
+        }
+        $this->assertSame( 16, $count, 'the free spec keeps 16 operations (get_site_structure is deliberately not in it)' );
+    }
 }

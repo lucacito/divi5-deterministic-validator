@@ -90,6 +90,7 @@ class WpOrgComplianceTest extends TestCase
         'src/ApiKey.php'       => 'stores the plugin API key and its user (ai_editor_divi5_api_key / _api_user_id)',
         'src/UsageTracker.php' => 'stores the usage-log table schema version (ai_editor_divi5_db_version)',
         'src/HistoryTable.php' => 'stores the history table stage: created / old history migrated (ai_editor_divi5_history_db_version)',
+        'src/ApprovalMode.php' => 'stores the site owner\'s own approval-mode setting (ai_editor_divi5_require_preview); changed only from the nonce-protected admin form, never by the AI (owner-approved exception 2026-10-04)',
     ];
 
     /** @return array<string,string> relative path => contents */
@@ -216,7 +217,7 @@ class WpOrgComplianceTest extends TestCase
                     $hits[] = "$rel:" . ($i + 1) . " ({$m[0]})";
                 }
                 if (preg_match('/\b(?:update_option|add_option|update_site_option|add_site_option)\s*\(/', $line, $m)
-                    && !(isset(self::OPTION_WRITERS[$rel]) && preg_match('/\(\s*self::(?:OPTION_KEY|OPTION_USER|DB_VERSION_OPTION)\s*,/', $line))) {
+                    && !(isset(self::OPTION_WRITERS[$rel]) && preg_match('/\(\s*self::(?:OPTION_KEY|OPTION_USER|DB_VERSION_OPTION|OPTION)\s*,/', $line))) {
                     $hits[] = "$rel:" . ($i + 1) . " ({$m[0]}) writes an option";
                 }
             }
@@ -374,13 +375,11 @@ class WpOrgComplianceTest extends TestCase
         sort($tools);
         $this->assertSame([
             'create_page', 'edit_page_content', 'get_image_guide', 'get_landing_guide', 'get_page_history_entry',
-            'get_page_layout', 'get_section_recipes', 'get_site_guide', 'get_style_guide', 'list_divi_pages',
+            'get_page_layout', 'get_section_recipes', 'get_site_guide', 'get_site_structure', 'get_style_guide', 'list_divi_pages',
             'list_global_styles', 'list_media_images', 'list_page_history', 'restore_page_version', 'update_page_layout', 'validate_layout',
         ], $tools);
-        // 16 tools: 4.4.0 adds one READ-ONLY tool (list_global_styles: the site's own presets and colors) and header/footer
-        // editing (list_theme_layouts, never released) moved out to the separate Pro add-on, so the pinned list shrinks by one.
-        // Nothing is gated and nothing writes a setting; no rule of this test is loosened.
-        $this->assertCount(16, $tools);
+        // 17 tools: 4.6.0 adds the READ-ONLY get_site_structure (post types, taxonomies, image sizes, ACF). Nothing is gated and nothing writes a setting; no rule of this test is loosened.
+        $this->assertCount(17, $tools);
     }
 
     public function testVisibleProductNameIsTheFullJhmgName(): void
@@ -545,7 +544,7 @@ class WpOrgComplianceTest extends TestCase
         $this->assertSame(['get'], array_keys($spec['paths']['/global-styles']));
         $r = (string) file_get_contents(self::ROOT . '/readme.txt');
         $this->assertStringContainsString('`list_global_styles`', $r);
-        $this->assertStringContainsString('(16 tools)', $r);
+        $this->assertStringContainsString('(17 tools)', $r);
         $this->assertStringContainsString('It cannot create or change presets or colors', $r, 'the readme must say plainly that presets and colors are read-only');
     }
 }

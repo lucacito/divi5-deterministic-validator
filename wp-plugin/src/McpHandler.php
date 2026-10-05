@@ -72,8 +72,8 @@ final class McpHandler
 
         return match ($method) {
             'initialize'               => $this->onInitialize($id),
-            'notifications/initialized' => $this->noContent(),
-            'ping'                     => $this->rpcResult($id, []),
+            'notifications/initialized' => $this->accepted(),
+            'ping'                     => $this->rpcResult($id, new \stdClass()),
             'tools/list'               => $this->onToolsList($id),
             'tools/call'               => $this->onToolsCall($id, $params),
             default                    => $this->rpcError($id, -32601, "Method not found: {$method}"),
@@ -107,6 +107,15 @@ final class McpHandler
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => ['module' => ['type' => 'string', 'description' => 'Optional module name to list presets for, e.g. divi/button']],
+                    'required'   => [],
+                ],
+            ],
+            [
+                'name'        => 'get_site_structure',
+                'description' => 'List how this site is set up (read-only): public post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices; never field values). Call it before building a page that lists custom post types, uses a given image size or should refer to ACF fields. Pass "include" to get only some sections: post_types, taxonomies, image_sizes, acf.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => ['include' => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => ['post_types', 'taxonomies', 'image_sizes', 'acf']], 'description' => 'Optional. Sections to return; default all.']],
                     'required'   => [],
                 ],
             ],
@@ -278,6 +287,7 @@ final class McpHandler
             'restore_page_version'   => $this->toolRestoreVersion($id, $arguments),
             'list_media_images'  => $this->toolListMedia($id, $arguments),
             'list_global_styles' => $this->toolListGlobalStyles($id, $arguments),
+            'get_site_structure' => $this->toolSiteStructure($id, $arguments),
             'create_page'        => $this->toolCreatePage($id, $arguments),
             default              => $this->extensionCall($id, $name, $arguments),
         };
@@ -425,8 +435,11 @@ final class McpHandler
         if ($dryRun) {
             UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
 
+            $preview = DryRun::preview((string) $post->post_content, $content);
+            ApprovalMode::recordPreview($pageId, $content, (bool) $preview['valid']);
+
             return $this->rpcResult($id, [
-                'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach(DryRun::preview((string) $post->post_content, $content), $content))]],
+                'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($preview, $content))]],
             ]);
         }
 
@@ -440,6 +453,14 @@ final class McpHandler
                     'valid'      => false,
                     'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
                 ])]],
+                'isError' => true,
+            ]);
+        }
+
+        if (!ApprovalMode::consume($pageId, $content)) {
+            UsageTracker::log('update_layout', $pageId, 'error');
+            return $this->rpcResult($id, [
+                'content' => [['type' => 'text', 'text' => json_encode(ApprovalMode::refusal())]],
                 'isError' => true,
             ]);
         }
@@ -506,8 +527,11 @@ final class McpHandler
         if ($dryRun) {
             UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
 
+            $preview = DryRun::preview((string) $post->post_content, $edit['content']);
+            ApprovalMode::recordPreview($pageId, $edit['content'], (bool) $preview['valid']);
+
             return $this->rpcResult($id, [
-                'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach(DryRun::preview((string) $post->post_content, $edit['content']) + ['replaced' => $edit['count']], $edit['content']))]],
+                'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($preview + ['replaced' => $edit['count']], $edit['content']))]],
             ]);
         }
 
@@ -522,6 +546,14 @@ final class McpHandler
                     'valid'      => false,
                     'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
                 ])]],
+                'isError' => true,
+            ]);
+        }
+
+        if (!ApprovalMode::consume($pageId, $edit['content'])) {
+            UsageTracker::log('edit_content', $pageId, 'error');
+            return $this->rpcResult($id, [
+                'content' => [['type' => 'text', 'text' => json_encode(ApprovalMode::refusal())]],
                 'isError' => true,
             ]);
         }
@@ -637,6 +669,24 @@ final class McpHandler
         ]);
     }
 
+    private function toolSiteStructure(mixed $id, array $args): WP_REST_Response
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('site_structure', null, 'error');
+            return $this->rpcError($id, -32602, 'You do not have permission to read the site structure.');
+        }
+        $include = SiteStructure::parseInclude($args['include'] ?? null);
+        if ($include === null) {
+            return $this->rpcError($id, -32602, 'include must be a list of: ' . implode(', ', SiteStructure::SECTIONS) . '.');
+        }
+        $result = SiteStructure::catalog($include);
+        UsageTracker::log('site_structure', null, 'read');
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => wp_json_encode($result)]],
+        ]);
+    }
+
     private function toolListMedia(mixed $id, array $args): WP_REST_Response
     {
         if (!current_user_can('upload_files')) {
@@ -734,7 +784,7 @@ final class McpHandler
     // JSON-RPC helpers
     // ---------------------------------------------------------------
 
-    private function rpcResult(mixed $id, array $result): WP_REST_Response
+    private function rpcResult(mixed $id, array|\stdClass $result): WP_REST_Response
     {
         return new WP_REST_Response(['jsonrpc' => '2.0', 'id' => $id, 'result' => $result], 200);
     }
@@ -744,8 +794,9 @@ final class McpHandler
         return new WP_REST_Response(['jsonrpc' => '2.0', 'id' => $id, 'error' => ['code' => $code, 'message' => $message]], 200);
     }
 
-    private function noContent(): WP_REST_Response
+    /** The MCP HTTP transport answers a notification with 202 Accepted and no body. */
+    private function accepted(): WP_REST_Response
     {
-        return new WP_REST_Response(null, 204);
+        return new WP_REST_Response(null, 202);
     }
 }

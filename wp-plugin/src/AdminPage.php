@@ -27,6 +27,7 @@ final class AdminPage
         add_action('admin_post_ai_editor_divi5_clear_usage',        [$this, 'handleClearUsage']);
         add_action('admin_post_ai_editor_divi5_restore_page',       [$this, 'handleRestorePage']);
         add_action('admin_post_ai_editor_divi5_dismiss_pro_card',   [$this, 'handleDismissProCard']);
+        add_action('admin_post_ai_editor_divi5_toggle_approval', [$this, 'handleToggleApproval']);
     }
 
     public function addMenu(): void
@@ -85,6 +86,15 @@ final class AdminPage
         $this->guard('ai_editor_divi5_clear_usage');
         UsageTracker::clear();
         $this->redirect('dashboard', 'usage_cleared');
+    }
+
+    public function handleToggleApproval(): void
+    {
+        $this->guard('ai_editor_divi5_toggle_approval'); // guard() verifies the nonce via check_admin_referer().
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() verified the nonce above.
+        $on = '1' === sanitize_text_field( wp_unslash( $_POST['require_preview'] ?? '' ) );
+        ApprovalMode::set( $on );
+        $this->redirect('settings', $on ? 'approval_on' : 'approval_off');
     }
 
     public function handleDismissProCard(): void
@@ -146,11 +156,16 @@ final class AdminPage
      * (shimmed in tests), so it is unit-testable directly with synthetic inputs.
      *
      * Snippet formats intentionally differ per client:
-     *  - Claude / Cursor / Other MCP clients: {"mcpServers":{...}} with a bare url.
+     *  - Cursor / Other MCP clients: {"mcpServers":{...}} with a bare url.
+     *  - Claude Desktop: {"mcpServers":{...}} that runs the mcp-remote helper through npx
+     *    (its config file runs local commands only, so a remote server needs the bridge; needs Node.js).
      *  - VS Code (mcp.json): {"servers":{...}} with "type":"http".
+     *  - Gemini CLI: one `gemini mcp add` command, not a config file.
      *  - ChatGPT: no MCP snippet — it connects via OpenAPI Actions (specUrl).
      *
-     * @return array<string, array{transport:string, snippet:?string, guide:?string, specUrl:?string}>
+     * `format` says what the snippet is ('json' = merged into a config file, 'command' = typed in a terminal).
+     *
+     * @return array<string, array{transport:string, snippet:?string, format:?string, guide:?string, specUrl:?string}>
      */
     public static function connectClients(string $siteUrl, string $apiKey): array
     {
@@ -167,6 +182,17 @@ final class AdminPage
             ]],
         ], $flags);
 
+        // Claude Desktop: the key travels in env so the header argument has no space in it.
+        $claudeSnippet = (string) wp_json_encode([
+            'mcpServers' => ['ai-editor-divi5' => [
+                'command' => 'npx',
+                'args'    => ['-y', 'mcp-remote', $mcpUrl, '--header', 'Authorization:${AIED_AUTH}'],
+                'env'     => ['AIED_AUTH' => $bearer],
+            ]],
+        ], $flags);
+
+        $geminiCommand = 'gemini mcp add --transport http --header "Authorization: ' . $bearer . '" ai-editor-divi5 ' . $mcpUrl;
+
         $vscodeSnippet = (string) wp_json_encode([
             'servers' => ['ai-editor-divi5' => [
                 'type'    => 'http',
@@ -178,11 +204,12 @@ final class AdminPage
         $guides = 'https://divi5lab.com/guides/';
 
         return [
-            'claude'  => ['transport' => 'mcp',     'snippet' => $mcpSnippet,    'guide' => $guides . 'connect-claude-to-divi-5', 'specUrl' => null],
-            'cursor'  => ['transport' => 'mcp',     'snippet' => $mcpSnippet,    'guide' => $guides . 'connect-cursor-to-divi-5', 'specUrl' => null],
-            'vscode'  => ['transport' => 'mcp',     'snippet' => $vscodeSnippet, 'guide' => $guides . 'connect-cursor-to-divi-5', 'specUrl' => null],
-            'chatgpt' => ['transport' => 'actions', 'snippet' => null,           'guide' => $guides . 'connect-chatgpt-to-divi-5', 'specUrl' => $specUrl],
-            'other'   => ['transport' => 'mcp',     'snippet' => $mcpSnippet,    'guide' => null, 'specUrl' => null],
+            'claude'  => ['transport' => 'mcp',     'snippet' => $claudeSnippet, 'format' => 'json',    'guide' => $guides . 'connect-claude-to-divi-5', 'specUrl' => null],
+            'cursor'  => ['transport' => 'mcp',     'snippet' => $mcpSnippet,    'format' => 'json',    'guide' => $guides . 'connect-cursor-to-divi-5', 'specUrl' => null],
+            'vscode'  => ['transport' => 'mcp',     'snippet' => $vscodeSnippet, 'format' => 'json',    'guide' => $guides . 'connect-cursor-to-divi-5', 'specUrl' => null],
+            'gemini'  => ['transport' => 'mcp',     'snippet' => $geminiCommand, 'format' => 'command', 'guide' => null, 'specUrl' => null],
+            'chatgpt' => ['transport' => 'actions', 'snippet' => null,           'format' => null,      'guide' => $guides . 'connect-chatgpt-to-divi-5', 'specUrl' => $specUrl],
+            'other'   => ['transport' => 'mcp',     'snippet' => $mcpSnippet,    'format' => 'json',    'guide' => null, 'specUrl' => null],
         ];
     }
 
@@ -190,7 +217,7 @@ final class AdminPage
      * Renders the tabbed per-assistant connection UI. Panels are NOT server-hidden;
      * admin.js hides inactive ones on load (progressive enhancement / no-JS fallback).
      *
-     * @param array<string, array{transport:string, snippet:?string, guide:?string, specUrl:?string}> $clients
+     * @param array<string, array{transport:string, snippet:?string, format:?string, guide:?string, specUrl:?string}> $clients
      */
     public function connectCard( array $clients ): void
     {
@@ -198,6 +225,7 @@ final class AdminPage
             'claude'  => __( 'Claude', 'jhmg-ai-editor-for-divi-5' ),
             'cursor'  => __( 'Cursor', 'jhmg-ai-editor-for-divi-5' ),
             'vscode'  => __( 'VS Code', 'jhmg-ai-editor-for-divi-5' ),
+            'gemini'  => __( 'Gemini', 'jhmg-ai-editor-for-divi-5' ),
             'chatgpt' => __( 'ChatGPT', 'jhmg-ai-editor-for-divi-5' ),
             'other'   => __( 'Other MCP client', 'jhmg-ai-editor-for-divi-5' ),
         ];
@@ -232,7 +260,15 @@ final class AdminPage
                     </a>
                 <?php endif; ?>
             </div>
-        <?php endforeach;
+        <?php endforeach; ?>
+
+        <p class="aied-note aied-local-note">
+            <strong><?php esc_html_e( 'Using a local site (localhost, .local, .test)?', 'jhmg-ai-editor-for-divi-5' ); ?></strong>
+            <?php esc_html_e( 'Assistants that run on your own computer (Claude Code, Claude Desktop, Cursor, VS Code, Gemini CLI) should be able to reach it: use the exact http:// address your local site shows, and the Settings → Permalinks option must not be “Plain”. If Claude Desktop refuses a plain http:// address (for example a .local or .test one), add', 'jhmg-ai-editor-for-divi-5' ); ?>
+            <code>"--allow-http"</code>
+            <?php esc_html_e( 'to the args list. ChatGPT and other cloud-hosted assistants cannot reach a local site: they need a public https:// address.', 'jhmg-ai-editor-for-divi-5' ); ?>
+        </p>
+        <?php
     }
 
     /** Renders the per-client steps + snippet (MCP) or Actions steps (ChatGPT). */
@@ -271,7 +307,18 @@ final class AdminPage
                 <pre class="aied-snippet" id="snippet-<?php echo esc_attr( $id ); ?>"><?php echo esc_html( (string) $client['snippet'] ); ?></pre>
                 <button class="button button-primary aied-copy-btn" data-target="snippet-<?php echo esc_attr( $id ); ?>"><?php esc_html_e( 'Copy', 'jhmg-ai-editor-for-divi-5' ); ?></button>
             </div>
-            <p class="aied-merge-warn"><?php esc_html_e( 'Already have MCP servers configured? Paste only the inner "ai-editor-divi5": { … } entry into your existing list — not the whole snippet — or it will not load.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <?php if ( ( $client['format'] ?? 'json' ) === 'json' ) : ?>
+                <p class="aied-merge-warn"><?php esc_html_e( 'Already have MCP servers configured? Paste only the inner "ai-editor-divi5": { … } entry into your existing list — not the whole snippet — or it will not load.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <?php endif; ?>
+        <?php endif;
+        if ( $id === 'claude' ) : ?>
+            <p class="aied-note"><strong><?php esc_html_e( 'Error on Mac or Windows when connecting Claude Desktop?', 'jhmg-ai-editor-for-divi-5' ); ?></strong>
+                <?php esc_html_e( 'If you see “spawn npx ENOENT”, “npx: command not found” or the server will not start, Node.js is missing. Install the LTS version from nodejs.org, then fully quit Claude Desktop (Cmd+Q on Mac) and open it again. If it still cannot find npx, run', 'jhmg-ai-editor-for-divi-5' ); ?>
+                <code>which npx</code>
+                <?php esc_html_e( '(Mac) or', 'jhmg-ai-editor-for-divi-5' ); ?>
+                <code>where npx</code>
+                <?php esc_html_e( '(Windows) in a terminal and put that full path in place of "npx" in the snippet.', 'jhmg-ai-editor-for-divi-5' ); ?>
+            </p>
         <?php endif;
     }
 
@@ -287,6 +334,7 @@ final class AdminPage
         switch ( $id ) {
             case 'claude':
                 return [
+                    esc_html__( 'Claude Desktop needs Node.js (free, from nodejs.org: choose the LTS version). It reaches your site through a small helper, mcp-remote, which runs on Node.js. Claude Code does not need it.', 'jhmg-ai-editor-for-divi-5' ),
                     esc_html__( 'Claude Desktop: open your config file —', 'jhmg-ai-editor-for-divi-5' ) . ' '
                         . $code( '~/Library/Application Support/Claude/claude_desktop_config.json' ) . ' '
                         . esc_html__( '(macOS) or', 'jhmg-ai-editor-for-divi-5' ) . ' '
@@ -304,6 +352,11 @@ final class AdminPage
                 return [
                     esc_html__( 'Open Settings → Copilot → MCP Servers (search “MCP” if the path has moved).', 'jhmg-ai-editor-for-divi-5' ),
                     esc_html__( 'Add the snippet below, then use Copilot’s agent mode — standard chat mode will not reach the plugin.', 'jhmg-ai-editor-for-divi-5' ),
+                ];
+            case 'gemini':
+                return [
+                    esc_html__( 'Install Gemini CLI if you have not already, then run the command below in a terminal. It saves the connection for you, so there is no file to edit.', 'jhmg-ai-editor-for-divi-5' ),
+                    esc_html__( 'Start Gemini CLI and ask it to list your Divi 5 pages to check that it is connected.', 'jhmg-ai-editor-for-divi-5' ),
                 ];
             case 'other':
             default:
@@ -389,6 +442,8 @@ final class AdminPage
         $map = [
             'key_regenerated'    => __( 'API key regenerated. Update your AI assistant configuration.', 'jhmg-ai-editor-for-divi-5' ),
             'usage_cleared'      => __( 'Activity log cleared.', 'jhmg-ai-editor-for-divi-5' ),
+            'approval_on'        => __( 'Approval mode is on. Your AI assistant must preview every edit to a page\'s content before it can save it.', 'jhmg-ai-editor-for-divi-5' ),
+            'approval_off'       => __( 'Approval mode is off.', 'jhmg-ai-editor-for-divi-5' ),
             'version_restored'   => __( 'Previous version restored. The version it replaced was saved too, so you can undo this.', 'jhmg-ai-editor-for-divi-5' ),
         ];
         if ( isset( $map[ $notice ] ) ) {
@@ -474,7 +529,7 @@ final class AdminPage
                 <?php if ( ! $connected ) : ?>
                     <span class="aied-eyebrow"><?php esc_html_e( 'Start here', 'jhmg-ai-editor-for-divi-5' ); ?></span>
                     <h2><?php esc_html_e( 'Connect your AI assistant', 'jhmg-ai-editor-for-divi-5' ); ?></h2>
-                    <p><?php esc_html_e( 'Paste one config into Claude, Cursor, VS Code, or ChatGPT — then edit your site in plain English.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+                    <p><?php esc_html_e( 'Paste one config into Claude, Cursor, VS Code, Gemini, or ChatGPT — then edit your site in plain English.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
                     <a class="button button-primary button-hero" href="<?php echo esc_url( add_query_arg(['page' => self::SLUG, 'tab' => 'settings'], admin_url('admin.php')) ); ?>">
                         <?php esc_html_e( 'Connect now', 'jhmg-ai-editor-for-divi-5' ); ?>
                     </a>
@@ -558,13 +613,15 @@ final class AdminPage
 
     private function viewFeatures(): void
     {
-        // [title, description, tools it covers] — the 16 tools your AI assistant can call.
+        // [title, description, tools it covers] — the 17 tools your AI assistant can call.
         $features = [
             [ __( 'Edit pages in plain English', 'jhmg-ai-editor-for-divi-5' ), __( 'Tell your AI what to change and it updates the live Divi 5 layout — no builder, no copy-paste.', 'jhmg-ai-editor-for-divi-5' ), 'update_page_layout, edit_page_content' ],
             [ __( 'Validated, safe saves', 'jhmg-ai-editor-for-divi-5' ), __( 'Every change is checked against fixed rules for more than 80 Divi 5 block types before saving. A broken layout is refused with the exact reason, so it is never saved.', 'jhmg-ai-editor-for-divi-5' ), 'validate_layout' ],
             [ __( 'Read & understand any page', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can list and read existing pages to make precise, context-aware edits.', 'jhmg-ai-editor-for-divi-5' ), 'list_divi_pages, get_page_layout' ],
-            [ __( 'Match your site\'s colors and presets', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can look up your site\'s own Divi colors and presets (read-only) and reuse them, and it is told when a page uses one your site does not have.', 'jhmg-ai-editor-for-divi-5' ), 'list_global_styles' ],
+            [ __( 'Match your site\'s colors and presets', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can look up your site\'s own Divi colors, variables and presets and reuse them, and it is told when a page uses one your site does not have. This is read-only: it never creates, changes or deletes your global colors, variables or presets.', 'jhmg-ai-editor-for-divi-5' ), 'list_global_styles' ],
+            [ __( 'Fit your site (post types, image sizes, ACF)', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI can look up your custom post types, taxonomies, image sizes and Advanced Custom Fields field groups (read-only), so pages match how your site is set up. It never reads field values or your theme files.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_structure' ],
             [ __( 'Undo AI edits', 'jhmg-ai-editor-for-divi-5' ), __( 'Every AI save keeps the previous version, so you or your AI can browse the history and restore an earlier one.', 'jhmg-ai-editor-for-divi-5' ), 'list_page_history, get_page_history_entry, restore_page_version' ],
+            [ __( 'Approval mode (optional)', 'jhmg-ai-editor-for-divi-5' ), __( 'Turn on "Require a preview before every save" in Settings and your AI must show a preview of every edit to a page\'s content before it can save it. Off by default.', 'jhmg-ai-editor-for-divi-5' ), 'dry_run' ],
             [ __( 'Create new pages (as drafts)', 'jhmg-ai-editor-for-divi-5' ), __( 'Generate brand-new pages from a prompt — always saved as a draft, validated, ready for you to review and publish.', 'jhmg-ai-editor-for-divi-5' ), 'create_page' ],
             [ __( 'Build entire websites', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in blueprint helps your AI plan a cohesive multi-page site (home, about, services, contact) with shared styling and links between the pages, then tells you how to finish setting it up yourself.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_guide' ],
             [ __( 'Conversion-focused page generation', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in landing-page blueprint, design vocabulary and proven section patterns guide the AI to produce polished, on-brand pages with a strategic structure built to convert.', 'jhmg-ai-editor-for-divi-5' ), 'get_landing_guide, get_style_guide, get_section_recipes' ],
@@ -588,6 +645,27 @@ final class AdminPage
     // ---------------------------------------------------------------
     // View: Settings
     // ---------------------------------------------------------------
+
+    /** The Settings card for the optional "Require a preview before every save" mode. */
+    public function approvalCard(): void
+    {
+        $on = ApprovalMode::enabled();
+        ?>
+        <div class="aied-card">
+            <h3><?php esc_html_e( 'Approval mode', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
+            <p class="aied-muted"><?php esc_html_e( 'When this is on, your AI assistant must preview every edit to a page\'s content before it can save it: it asks for a preview (nothing is saved), shows you the result, and only then repeats the change to save it. New pages are always drafts, and restoring an earlier version is the undo and needs no preview. Every save can still be undone. Off by default.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                <input type="hidden" name="action" value="ai_editor_divi5_toggle_approval">
+                <?php wp_nonce_field( 'ai_editor_divi5_toggle_approval' ); ?>
+                <label>
+                    <input type="checkbox" name="require_preview" value="1"<?php checked( $on ); ?>>
+                    <?php esc_html_e( 'Require a preview before every save', 'jhmg-ai-editor-for-divi-5' ); ?>
+                </label>
+                <button type="submit" class="button"><?php esc_html_e( 'Save', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+            </form>
+        </div>
+        <?php
+    }
 
     private function viewSettings(): void
     {
@@ -619,6 +697,8 @@ final class AdminPage
             </div>
             <?php $this->connectCard( self::connectClients( rtrim( get_site_url(), '/' ), $key ) ); ?>
         </div>
+
+        <?php $this->approvalCard(); ?>
 
         <!-- Activity log -->
         <?php $recent = UsageTracker::getRecent(10); if ( ! empty( $recent ) ) : ?>

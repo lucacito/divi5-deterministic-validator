@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.5.0
+Stable tag:        4.6.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -32,7 +32,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * **Proven building blocks.** 17 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
 * **Sensible images.** The AI looks in your Media Library first. When nothing there fits, it uses a built-in pack of 44 original images that ships with the plugin.
 * **One-click undo.** The previous version of each page the AI changes is kept (up to the last 10). Restore it from the plugin's Dashboard with one click, or just ask your AI to undo.
-* **Works with the AI assistant you already use.** Claude, ChatGPT, Cursor, VS Code Copilot, or any assistant that supports MCP.
+* **Works with the AI assistant you already use.** Claude, ChatGPT, Gemini, Cursor, VS Code Copilot, or any assistant that supports MCP.
 * **Nothing leaves your site through the plugin.** It uses no third-party services. Your AI assistant talks directly to your own site.
 
 = Examples to try =
@@ -43,13 +43,14 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * "Add a section with our opening hours under the hero on the About page."
 * "Undo the last change you made to the Services page."
 
-= What your AI assistant can do (16 tools) =
+= What your AI assistant can do (17 tools) =
 
 Read and check:
 
 * `list_divi_pages`: list the pages built with Divi 5 that you can edit.
 * `get_page_layout`: read a page's current layout.
 * `list_global_styles`: list your site's own Divi colors and presets so the AI can reuse them (read-only).
+* `get_site_structure`: list your site's custom post types, taxonomies, image sizes and Advanced Custom Fields field groups so pages fit your site (read-only: never field values or theme files; available over MCP and the REST API, not in the ChatGPT Action).
 * `validate_layout`: check a layout without saving anything.
 
 Edit and create:
@@ -84,7 +85,8 @@ A separate Pro add-on is planned (details and waitlist at https://divi5lab.com/p
 
 = Compatible AI assistants =
 
-* Claude (Desktop and Claude Code), through MCP
+* Claude (Desktop and Claude Code), through MCP (Claude Desktop needs Node.js installed)
+* Gemini CLI, through MCP
 * Cursor and Windsurf, through MCP
 * VS Code with GitHub Copilot, through MCP
 * ChatGPT, through a custom GPT Action (OpenAPI)
@@ -119,13 +121,14 @@ This plugin does not connect to any external service. Your AI assistant connects
 * PHP 8.1 or later
 * The Divi 5 theme (Divi 4 and its shortcode format are not supported)
 * Pretty permalinks (Settings → Permalinks, any option except "Plain")
+* For Claude Desktop: Node.js (free, from nodejs.org)
 * For ChatGPT: your site must be reachable over public HTTPS
 
 == Frequently Asked Questions ==
 
 = Does the AI get administrator access to my site? =
 
-No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages, create pages (as drafts), read Media Library images (read-only), and read your site's Divi presets and colors (read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
+No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages, create pages (as drafts), read Media Library images (read-only), read your site's Divi presets and colors (read-only), and read how your site is set up (post types, taxonomies, image sizes and ACF field definitions, read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
 
 = Can the AI add custom CSS, JavaScript or PHP to my site? =
 
@@ -147,6 +150,38 @@ The AI can make mistakes, but a broken page is never saved by an AI edit. The ch
 
 The key is a long random code stored in your WordPress database and shown only to administrators on the plugin's Settings screen. Keep it private, like a password. You can make a new one at any time with the Regenerate button, which stops the old one from working.
 
+= Is it dangerous to let AI edit my site? Is there an approval step? =
+
+Every save is checked by a fixed set of rules (no AI is involved in the check) and a broken layout is refused. You can ask your assistant for a preview first (a dry run shows what would change and saves nothing), new pages are always drafts, and every save can be undone from the Dashboard. The plugin cannot change your site settings, users or plugins, and cannot add custom code. If you want a stricter rule, turn on Approval mode in Settings ("Require a preview before every save"): your assistant must then preview every edit to a page's content before it can save it. Restoring an earlier version is the undo and needs no preview.
+
+= Why do I need this if Claude can already control a browser? =
+
+The plugin edits the Divi 5 layout data directly, so it is faster and more precise, every change is checked before it is saved, and every save can be undone. An assistant that drives a browser works from screenshots and clicks, and nothing stops it from saving a broken layout.
+
+= Does the checking use up my AI tokens? =
+
+No. The check runs in PHP on your own server. Your assistant only reads what the plugin sends back: the tool list it loads once per conversation (about 2,900 tokens), reading the page it is editing (about 600 to 16,500 tokens depending on its size), and the details of what was wrong when a layout is refused (about 400 tokens for one unknown block). These are estimates; the real count depends on the model.
+
+= Does it work with Gemini? =
+
+Yes. It has been tested with Gemini CLI: copy the one command from the Gemini tab on the Settings screen. Any assistant that supports remote MCP servers can connect.
+
+= Can it read my ACF fields, custom post types or functions.php? =
+
+It can read how your site is set up: custom post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices). It never reads field values, your theme files or `functions.php`. This is available to assistants that connect over MCP or the REST API, not to the ChatGPT Action.
+
+= Can it create global colors and presets? =
+
+No. It reads the ones you already have, reuses them, and warns when a layout uses one your site does not have. It never creates, changes or deletes them.
+
+= Does it work on a local site? =
+
+Assistants that run on your own computer (Claude Code, Claude Desktop, Cursor, VS Code, Gemini CLI) should be able to reach a local site. Use the exact http:// address your local site shows, and turn on pretty permalinks. ChatGPT and other assistants that run in the cloud cannot reach a local site; they need a public https:// address.
+
+= I get an error on my Mac when I connect Claude Desktop =
+
+Claude Desktop connects through a small helper that needs Node.js. Install the LTS version from nodejs.org, then fully quit Claude Desktop (Cmd+Q) and open it again. The Claude tab on the Settings screen has the details.
+
 = Does this work with Divi 4? =
 
 No. Divi 4 stores pages as shortcodes. This plugin is made for the Divi 5 page format.
@@ -166,6 +201,13 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.6.0 =
+* New: your AI assistant can look up how your site is set up with `get_site_structure`: custom post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices; never field values). Read-only.
+* New: Approval mode (Settings screen, off by default). When it is on, your AI assistant must preview every edit to a page's content before it can save it.
+* Improved: clearer setup on the Settings screen. Claude Desktop now gets the working setup (it connects through a small Node.js helper, so the screen says Node.js is needed and what to do if Mac or Windows reports a missing `npx`), Gemini CLI has its own tab, and there is a note on which assistants can reach a local site. The Features screen says that your global colors, variables and presets are read-only.
+* Fixed: the connection check (`ping`) now answers exactly as the MCP specification asks, which strict clients require.
+* New: FAQ entries on safety, token use, Gemini, local sites and the Mac connection error.
 
 = 4.5.0 =
 * Fixed: the "Recent AI edits" list on the dashboard now shows only pages you can restore. Edits to other kinds of layouts, such as a header or footer saved by an add-on, no longer appear there with a Restore button that cannot work.
@@ -209,7 +251,7 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Surgical edits: change one piece of text without rebuilding the page (`edit_page_content`).
 
 = 3.1.0 =
-* A guided connection screen for Claude, Cursor, VS Code, ChatGPT and other MCP clients.
+* A guided connection screen for Claude, Cursor, VS Code, Gemini, ChatGPT and other MCP clients.
 
 = 2.0.0 to 3.0.0 =
 * MCP server and REST API, OpenAPI spec for ChatGPT, the deterministic Divi 5 checker, the style, site, landing and image guides, the section pattern library and the admin screens.
@@ -218,6 +260,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 4.6.0 =
+Adds a read-only look-up of your site's post types, taxonomies, image sizes and ACF fields for your AI assistant, an optional Approval mode, and clearer setup instructions. Nothing changes unless your AI assistant uses it or you turn Approval mode on.
 
 = 4.5.0 =
 The dashboard's recent-edits list only shows pages you can restore. Nothing else changes.
