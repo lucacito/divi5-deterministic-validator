@@ -155,8 +155,6 @@ final class ManageGlobalVariables implements ProTool
         if ( null === $map ) {
             throw new \InvalidArgumentException( 'A real run needs the preview_token from a dry run of the same arguments, made by you in the last 30 minutes and not used before. Call again with dry_run=true.' );
         }
-        PreviewToken::spend( (string) $token );
-
         $kept    = [];
         $skipped = [];
         foreach ( $plan['changes'] as $c ) {
@@ -179,6 +177,7 @@ final class ManageGlobalVariables implements ProTool
 
         $send = GlobalVariables::sendMap( self::withChanges( $before, $kept ) );
         self::refuseUnsafe( $send );
+        PreviewToken::spend( (string) $token ); // only now: a refusal above must not burn the person's preview
         $res   = GlobalVariables::write( $send );
         $after = $res['after'];
         if ( null === $after ) {

@@ -298,6 +298,21 @@ class ManageGlobalVariablesTest extends TestCase
         $this->assertSame( [], $GLOBALS['__wp_options'], 'it is released at the end' );
     }
 
+    public function testARealRunRefusedByThePreflightDoesNotSpendTheToken(): void
+    {
+        $args = [ 'variables' => [ [ 'id' => self::N1, 'value' => '16px' ] ] ];
+        $p    = $this->tool->run( $args + [ 'dry_run' => true ] );
+
+        // after the preview a colors group appears (Divi's save would erase it), and the cached read is dropped
+        $GLOBALS['__divi_gv']['stored']['colors'] = [ 'gvid-cccccccc-0000-4000-8000-000000000001' => [ 'label' => 'Brand', 'value' => '#fff', 'order' => '1', 'status' => 'active' ] ];
+        $GLOBALS['__divi_gv']['cache']            = null;
+        $this->refused( $args + [ 'preview_token' => $p['preview_token'] ], 'would delete or damage' );
+
+        unset( $GLOBALS['__divi_gv']['stored']['colors'] );
+        $GLOBALS['__divi_gv']['cache'] = null;
+        $this->assertTrue( $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] )['changed'], 'the refusal did not burn the token' );
+    }
+
     public function testARealRunWhileAnotherChangeIsInProgressIsRefusedWithoutSpendingTheToken(): void
     {
         $args  = [ 'variables' => [ [ 'id' => self::N1, 'value' => '16px' ] ] ];
