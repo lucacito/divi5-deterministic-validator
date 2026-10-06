@@ -58,7 +58,8 @@ class ReadmeTest extends TestCase
     public function testTheHeaderDescriptionClaimsNothingThatIsNotShipped(): void
     {
         $this->assertSame( 1, preg_match( '/^\s*\*\s*Description:\s*(.+)$/m', (string) file_get_contents( AIED_PRO_FILE ), $m ) );
-        foreach ( [ 'regex', 'regular expression', 'woocommerce', 're-brand', 'global colors', 'whole site from a brief' ] as $unshipped ) {
+        // global colors (0.7.0) and global variables (0.8.0) ship now, so the header may name them
+        foreach ( [ 'regex', 'regular expression', 'woocommerce', 're-brand', 'whole site from a brief' ] as $unshipped ) {
             $this->assertStringNotContainsStringIgnoringCase( $unshipped, $m[1], "not shipped yet: {$unshipped}" );
         }
         $this->assertStringContainsString( 'free plugin', $m[1] );

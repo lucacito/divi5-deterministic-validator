@@ -4,7 +4,7 @@ The Pro add-on for the free WordPress.org plugin in `wp-plugin/`. It is a **sepa
 
 Spec: `docs/superpowers/specs/2026-10-02-pro-addon-design.md`. Plans: `docs/superpowers/plans/`.
 
-## What exists (0.7.0)
+## What exists (0.8.0)
 
 | Path | What it is |
 |---|---|
@@ -15,7 +15,7 @@ Spec: `docs/superpowers/specs/2026-10-02-pro-addon-design.md`. Plans: `docs/supe
 | `src/ProPage.php` | the "Pro" admin tab (licence entry, tool list) |
 | `src/Args.php`, `src/Canon.php` | strict argument readers; canonical hashes for the changed-since rule |
 | `src/Batch/` | the batch store (`{prefix}aied_pro_batches`, last 20), `BatchLog`, and the undo engine (`BatchUndo`, `ItemKind`/`ValueKind`) |
-| `src/Kinds/` | how each target is read and put back on undo: front page, Additional CSS block, menu, page status, page created and trashed (the pages of a site build), page content, header/footer content, Theme Builder template, a Divi global color |
+| `src/Kinds/` | how each target is read and put back on undo: front page, Additional CSS block, menu, page status, page created and trashed (the pages of a site build), page content, header/footer content, Theme Builder template, a Divi global color, a Divi global variable |
 | `src/ThemeBuilder/` | the live Theme Builder read model (ThemeLayouts, LayoutTarget: which post a layout tool may touch), the one layout write path (LayoutWriter), Divi cache clearing, and TemplateStore (reads/writes one template through Divi's own store function) |
 | `src/Settings/` | `CustomCss` (managed block), `MenuBuilder`, `PhpProposals`, `GlobalColors` (the only code that talks to Divi's global colors), `GlobalColorPlanner` (the all-or-nothing change list), `GlobalVariables*` (`GlobalVariables` is the only code that talks to Divi's variables; plus `GlobalVariablePlanner`, the numbers and strings value guards and `GlobalVariablesLock`) |
 | `src/Tools/` | the sixteen tools: `set_front_page`, `set_primary_menu`, `publish_page`, `set_custom_css`, `propose_php_snippet`, `list_batches`, `undo_batch`, `list_theme_layouts`, `update_theme_layout`, `edit_theme_layout`, `manage_theme_template`, `find_replace_site`, `audit_site`, `build_site`, `manage_global_colors`, `manage_global_variables` |
@@ -56,7 +56,7 @@ Divi's `GlobalData::set_global_variables()` REPLACES the whole variables map, so
 - The audit's link check cannot tell a missing page from an archive or custom route (the finding says so), and reads at most 200 links per item (`LINKS_NOT_ALL_CHECKED`).
 - On a site with more than 1000 Divi 5 pages `audit_site` audits the first 1000 (by id) and says so, and `find_replace_site` refuses and asks for `page_ids`.
 - The ChatGPT importer allows 30 operations in total: 16 free + 14 Pro = 30, so the budget is used up. The 15th and 16th Pro tools, `manage_global_colors` and `manage_global_variables`, are MCP + REST only on purpose (`ProOpenApi::MCP_REST_ONLY`; `ProParityTest` and `ToolsTest` pin the exception). Any further tool needs the same owner decision or a merge of two tools.
-- The `verify-pro-*` scripts create and delete throwaway content (`verify-pro-rest` is read-only): all nine refuse to run unless the site host is localhost, 127.0.0.1, ::1, `*.local`, `*.test` or `*.localhost` (`scripts/dev-guard.php`).
+- The `verify-pro-*` scripts create and delete throwaway content (`verify-pro-rest` is read-only): all of them except the read-only `verify-pro-rest` refuse to run unless the site host is localhost, 127.0.0.1, ::1, `*.local`, `*.test` or `*.localhost` (`scripts/dev-guard.php`).
 
 ## Dev override of the licence server
 
