@@ -26,6 +26,7 @@ require_once __DIR__ . '/DiviCompat.php';
 require_once __DIR__ . '/GlobalStyles.php';
 require_once __DIR__ . '/SiteStructure.php';
 require_once __DIR__ . '/ApprovalMode.php';
+require_once __DIR__ . '/CustomFields.php';
 require_once __DIR__ . '/StyleReferences.php';
 require_once __DIR__ . '/CodePolicy.php';
 require_once __DIR__ . '/LayoutGate.php';

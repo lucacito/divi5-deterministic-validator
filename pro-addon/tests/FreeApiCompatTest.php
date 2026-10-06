@@ -33,6 +33,7 @@ class FreeApiCompatTest extends TestCase
             [ $w . 'StyleReferences', 'attach', [ 'payload' => 'array', 'content' => 'string' ], 'array' ],
             [ $w . 'StyleReferences', 'advise', [ 'content' => 'string', 'known' => 'array' ], '?array' ],
             [ $w . 'GlobalStyles', 'knownIds', [], 'array' ],
+            [ $w . 'StyleReferences', 'knownIds', [], 'array' ],
         ];
     }
 

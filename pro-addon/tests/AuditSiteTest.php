@@ -146,6 +146,40 @@ class AuditSiteTest extends TestCase
         $this->assertArrayNotHasKey( 'UNKNOWN_VARIABLE_ID', self::byItem( $r, 11 ) );
     }
 
+    public function testUnknownCustomFieldsComeFromTheFreePluginsAdvisory(): void
+    {
+        $advisor = static fn ( string $content ): ?array => str_contains( $content, 'MARK' ) ? [
+            'unknown_custom_fields' => [ [ 'id' => 'gone_a', 'count' => 3 ], [ 'id' => 'gone_b', 'count' => 1 ] ],
+        ] : null;
+        $tool = new AuditSite( $advisor );
+        $this->divi( 11, self::page( '/about/' ) . '<!-- MARK -->' );
+        $this->divi( 12, self::page() );
+        $r = $tool->run( [ 'scope' => 'pages' ] );
+        $a = self::byItem( $r, 11 );
+        $this->assertSame( 2, $a['UNKNOWN_CUSTOM_FIELD'][0]['count'] );
+        $this->assertSame( 'gone_a, gone_b', $a['UNKNOWN_CUSTOM_FIELD'][0]['detail'] );
+        $this->assertSame( [], self::byItem( $r, 12 ) );
+    }
+
+    /** A page whose button text binds dynamic content to the custom field $field (the builder's stored form). */
+    private static function pageBoundTo( string $field ): string
+    {
+        $binding = '$variable(' . json_encode( [ 'type' => 'content', 'value' => [ 'name' => 'post_meta_key', 'settings' => [ 'before' => '', 'after' => '', 'select_meta_key' => 'custom_meta_' . $field, 'meta_key' => '' ] ] ] ) . ')$';
+
+        return str_replace( '"text":"Go"', '"text":' . json_encode( $binding, JSON_HEX_TAG | JSON_HEX_AMP ), self::page( '/about/' ) );
+    }
+
+    public function testABoundCustomFieldTheSiteDoesNotHaveIsFlaggedThroughTheRealAdvisory(): void
+    {
+        $known = static fn (): array => [ 'presets' => [], 'colors' => [], 'custom_fields' => static fn ( string $k ): bool => 'team_name' === $k ];
+        $tool  = new AuditSite( null, AuditSite::MAX_FINDINGS, $known );
+        $this->divi( 11, self::pageBoundTo( 'gone_field' ) );
+        $this->divi( 12, self::pageBoundTo( 'team_name' ) );
+        $r = $tool->run( [ 'scope' => 'pages' ] );
+        $this->assertSame( 'gone_field', self::byItem( $r, 11 )['UNKNOWN_CUSTOM_FIELD'][0]['detail'] );
+        $this->assertArrayNotHasKey( 'UNKNOWN_CUSTOM_FIELD', self::byItem( $r, 12 ), 'a field the site has is not a finding' );
+    }
+
     public function testInternalLinksToNothingAndToUnpublishedPagesAreFound(): void
     {
         $content = self::page( '/missing/' ) . self::page( '/draft-page/' ) . self::page( 'https://example.com/about/' ) . self::page( 'https://other.com/x/' ) . self::page( '#top' ) . self::page( 'mailto:a@b.co' ) . self::page( '/wp-content/uploads/a.pdf' ) . self::page( '/' );

@@ -101,6 +101,7 @@ final class OpenApiSpec
                             'unknown_presets' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/StyleRefCount'], 'description' => 'Preset ids that do not exist on this site (at most 20)'],
                             'unknown_colors'  => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/StyleRefCount'], 'description' => 'Global color ids that do not exist on this site (at most 20)'],
                             'unknown_variables' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/StyleRefCount'], 'description' => 'Global variable ids (gvid-...) that do not exist on this site (at most 20); Divi silently drops a value that cites one'],
+                            'unknown_custom_fields' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/StyleRefCount'], 'description' => 'Custom-field names (an ACF field, or any post meta key) a layout binds dynamic content to that this site does not have (at most 20); Divi renders an empty module for one'],
                             'message'         => ['type' => 'string'],
                         ],
                     ],

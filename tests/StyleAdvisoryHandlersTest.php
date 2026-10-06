@@ -13,6 +13,7 @@ require_once __DIR__ . '/FakeWpdb.php';
 require_once __DIR__ . '/WpRestShims.php';
 require_once __DIR__ . '/WpInsertPostShims.php';
 require_once __DIR__ . '/DiviGlobalDataShims.php';
+require_once __DIR__ . '/GetPostsShim.php';
 require_once __DIR__ . '/../wp-plugin/src/UsageTracker.php';
 require_once __DIR__ . '/../wp-plugin/src/PageHistory.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryTable.php';
@@ -27,6 +28,7 @@ require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
 require_once __DIR__ . '/../wp-plugin/src/DryRun.php';
 require_once __DIR__ . '/../wp-plugin/src/ApprovalMode.php';
 require_once __DIR__ . '/../wp-plugin/src/GlobalStyles.php';
+require_once __DIR__ . '/../wp-plugin/src/CustomFields.php';
 require_once __DIR__ . '/../wp-plugin/src/StyleReferences.php';
 require_once __DIR__ . '/../wp-plugin/src/StyleGuide.php';
 require_once __DIR__ . '/../wp-plugin/src/RestController.php';
@@ -86,6 +88,7 @@ class StyleAdvisoryHandlersTest extends TestCase
         $GLOBALS['__wp_caps']         = [ 'edit_post' => true, 'edit_pages' => true, 'publish_pages' => true ];
         $GLOBALS['__divi_presets']    = [ 'module' => [ 'divi/heading' => [ 'default' => '', 'items' => [ self::KNOWN => [ 'id' => self::KNOWN, 'name' => 'Heading 3' ] ] ] ] ];
         $GLOBALS['__divi_colors']     = [ self::COLOR => [ 'color' => '#ff4d00', 'status' => 'active' ] ];
+        $GLOBALS['__wp_meta_keys']    = [ 'team_name' => true ];
         $GLOBALS['__divi_variables']  = [ 'numbers' => [ self::VAR_KNOWN => [ 'label' => '12px', 'value' => '12px', 'status' => 'active' ] ] ];
     }
 
@@ -93,7 +96,7 @@ class StyleAdvisoryHandlersTest extends TestCase
     {
         $GLOBALS['wpdb'] = null;
         $GLOBALS['__wp_options'] = [];
-        unset( $GLOBALS['__wp_caps'], $GLOBALS['__divi_presets'], $GLOBALS['__divi_colors'], $GLOBALS['__divi_variables'] );
+        unset( $GLOBALS['__wp_meta_keys'], $GLOBALS['__wp_caps'], $GLOBALS['__divi_presets'], $GLOBALS['__divi_colors'], $GLOBALS['__divi_variables'] );
         $GLOBALS['__wp_can'] = true;
     }
 
@@ -141,6 +144,24 @@ class StyleAdvisoryHandlersTest extends TestCase
 
         [ , $clean ] = $this->rest( 'validate', [ 'post_content' => $good ] );
         $this->assertArrayNotHasKey( 'advisories', $clean );
+        $this->assertArrayNotHasKey( 'advisories', $this->mcp( 'validate_layout', [ 'post_content' => $good ] ) );
+    }
+
+    public function testACitedCustomFieldNobodyHasIsReportedOverRestAndMcpAndNeverChangesTheVerdict(): void
+    {
+        $bind = static fn ( string $field ): array => [ 'title' => [ 'innerContent' => [ 'desktop' => [ 'value' => '$variable({"type":"content","value":{"name":"post_meta_key","settings":{"before":"","after":"","select_meta_key":"custom_meta_' . $field . '","meta_key":""}}})$' ] ] ] ];
+        $bad  = $this->layout( 'x', $bind( 'gone_field' ) + [ 'modulePreset' => [ self::KNOWN ] ] );
+        $good = $this->layout( 'x', $bind( 'team_name' ) + [ 'modulePreset' => [ self::KNOWN ] ] );
+
+        [ $st, $rest ] = $this->rest( 'validate', [ 'post_content' => $bad ] );
+        $this->assertSame( 200, $st );
+        $this->assertTrue( $rest['valid'] );
+        $this->assertSame( 'gone_field', $rest['advisories']['style_references']['unknown_custom_fields'][0]['id'] );
+        $mcp = $this->mcp( 'validate_layout', [ 'post_content' => $bad ] );
+        $this->assertTrue( $mcp['valid'] );
+        $this->assertSame( 'gone_field', $mcp['advisories']['style_references']['unknown_custom_fields'][0]['id'] );
+
+        $this->assertArrayNotHasKey( 'advisories', $this->rest( 'validate', [ 'post_content' => $good ] )[1], 'a meta key some post has is a known field' );
         $this->assertArrayNotHasKey( 'advisories', $this->mcp( 'validate_layout', [ 'post_content' => $good ] ) );
     }
 

@@ -23,20 +23,27 @@ final class StyleReferences
 {
     public const MAX_IDS = 20;
 
-    public const MESSAGE = "These ids do not exist on this site; Divi falls back to the module's default preset (presets), leaves the color undefined (colors), or silently drops the value that cites the variable (variables). Call list_global_styles and use this site's own ids.";
+    public const MESSAGE = "These ids do not exist on this site; Divi falls back to the module's default preset (presets), leaves the color undefined (colors), or silently drops the value that cites the variable (variables). A custom field (custom_fields) that is not an ACF field here and that no post has renders an empty module. Call list_global_styles and use this site's own ids; call get_site_structure for the site's ACF fields.";
 
     private const COLOR_TOKEN = '/gcid-[A-Za-z0-9_-]+/';
 
     private const VARIABLE_TOKEN = '/gvid-[A-Za-z0-9_-]+/';
 
+    private const BINDING_TOKEN = '/\$variable\((\{.*?\})\)\$/s';
+
+    private const META_PREFIX = 'custom_meta_';
+
+    private const MANUAL_ENTRY = 'custom_meta_manual_custom_field_value';
+
     /**
-     * @param array{presets: ?array<string,true>, colors: ?array<string,true>, variables?: ?array<string,true>} $known ids that exist on the site; null (or a missing key) = cannot tell
-     * @return ?array{unknown_presets: list<array{id:string,count:int}>, unknown_colors: list<array{id:string,count:int}>, unknown_variables: list<array{id:string,count:int}>, message: string}
+     * @param array{presets: ?array<string,true>, colors: ?array<string,true>, variables?: ?array<string,true>, custom_fields?: ?callable(string):bool} $known ids that exist on the site; null (or a missing key) = cannot tell
+     * @return ?array{unknown_presets: list<array{id:string,count:int}>, unknown_colors: list<array{id:string,count:int}>, unknown_variables: list<array{id:string,count:int}>, unknown_custom_fields: list<array{id:string,count:int}>, message: string}
      */
     public static function advise( string $content, array $known ): ?array
     {
         $knownVariables = $known['variables'] ?? null;
-        if ( null === $known['presets'] && null === $known['colors'] && null === $knownVariables ) {
+        $knownFields    = $known['custom_fields'] ?? null;
+        if ( null === $known['presets'] && null === $known['colors'] && null === $knownVariables && null === $knownFields ) {
             return null;
         }
         // Content too large or too deeply nested to walk safely gets no advisory (the policy refuses it anyway).
@@ -51,7 +58,8 @@ final class StyleReferences
         $presets   = [];
         $colors    = [];
         $variables = [];
-        $parsed->root()->walk( static function ( Block $block ) use ( &$presets, &$colors, &$variables, $known, $knownVariables ): void {
+        $fields    = [];
+        $parsed->root()->walk( static function ( Block $block ) use ( &$presets, &$colors, &$variables, &$fields, $known, $knownVariables, $knownFields ): void {
             $attrs = $block->attrs();
             if ( null !== $known['presets'] ) {
                 foreach ( (array) ( $attrs['modulePreset'] ?? [] ) as $id ) {
@@ -74,9 +82,16 @@ final class StyleReferences
                     }
                 }
             }
+            if ( null !== $knownFields ) {
+                foreach ( self::customFieldKeys( $attrs ) as $key ) {
+                    if ( ! $knownFields( $key ) ) {
+                        $fields[ $key ] = ( $fields[ $key ] ?? 0 ) + 1;
+                    }
+                }
+            }
         } );
 
-        if ( [] === $presets && [] === $colors && [] === $variables ) {
+        if ( [] === $presets && [] === $colors && [] === $variables && [] === $fields ) {
             return null;
         }
 
@@ -84,6 +99,7 @@ final class StyleReferences
             'unknown_presets'   => self::rows( $presets ),
             'unknown_colors'    => self::rows( $colors ),
             'unknown_variables' => self::rows( $variables ),
+            'unknown_custom_fields' => self::rows( $fields ),
             'message'           => self::MESSAGE,
         ];
     }
@@ -97,9 +113,55 @@ final class StyleReferences
      */
     public static function attach( array $payload, string $content ): array
     {
-        $advice = self::advise( $content, GlobalStyles::knownIds() );
+        $advice = self::advise( $content, self::knownIds() );
 
         return null === $advice ? $payload : $payload + [ 'advisories' => [ 'style_references' => $advice ] ];
+    }
+
+    /**
+     * What exists on this site, for checking a layout: Divi's preset, color and variable ids plus a custom-field lookup.
+     *
+     * @return array{presets: ?array<string,true>, colors: ?array<string,true>, variables: ?array<string,true>, custom_fields: callable(string):bool}
+     */
+    public static function knownIds(): array
+    {
+        return GlobalStyles::knownIds() + [ 'custom_fields' => CustomFields::lookup() ];
+    }
+
+    /**
+     * The custom-field keys the attributes bind dynamic content to, in order, repeats included. Two stored forms exist:
+     * name "post_meta_key" with the field in settings.select_meta_key (what the builder wrote in a real export), and name
+     * "custom_meta_<field>" (which Divi 5.14 also reads). Both prefix every field with "custom_meta_"; a manual entry
+     * ("custom_meta_manual_custom_field_value") names the field in settings.meta_key instead. Built-in sources such as
+     * post_title are not custom fields.
+     *
+     * @param array<mixed> $node
+     * @return list<string>
+     */
+    private static function customFieldKeys( array $node ): array
+    {
+        $out = [];
+        foreach ( self::tokens( $node, self::BINDING_TOKEN ) as $token ) {
+            $json    = substr( $token, 10, -2 );
+            $binding = json_decode( $json, true );
+            if ( ! is_array( $binding ) || 'content' !== ( $binding['type'] ?? null ) || ! is_array( $binding['value'] ?? null ) ) {
+                continue;
+            }
+            $name     = $binding['value']['name'] ?? null;
+            $settings = is_array( $binding['value']['settings'] ?? null ) ? $binding['value']['settings'] : [];
+            if ( 'post_meta_key' === $name ) {
+                $name = $settings['select_meta_key'] ?? '';
+            }
+            if ( ! is_string( $name ) || ! str_starts_with( $name, self::META_PREFIX ) ) {
+                continue;
+            }
+            $key = self::MANUAL_ENTRY === $name ? ( $settings['meta_key'] ?? '' ) : substr( $name, strlen( self::META_PREFIX ) );
+            if ( is_string( $key ) && '' !== $key ) {
+                $out[] = $key;
+            }
+        }
+
+        return $out;
     }
 
     /** Every token matching $pattern in any string value of the attributes, in order, repeats included. @param array<mixed> $node @return list<string> */
