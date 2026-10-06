@@ -27,6 +27,12 @@ final class GlobalVariables
 
     public const STATUSES = [ 'active', 'archived' ];
 
+    public const MAX_NUMBER = 100;
+    public const MAX_STRING = 200;
+
+    private const NUMBER_RE = '/\G-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:px|rem|em|%|vh|vw|vmin|vmax|ch|svh|dvh|lvh)?/';
+    private const MAX_DEPTH = 4;
+
     public static function available( ?string $class = null ): bool
     {
         $class ??= self::DATA_CLASS;
@@ -201,6 +207,121 @@ final class GlobalVariables
         }
 
         return $out;
+    }
+
+    /** Whether a value is acceptable for a managed type (numbers or strings); any other type has no rule and is refused. */
+    public static function valueFits( string $type, string $value ): bool
+    {
+        return match ( $type ) {
+            'numbers' => self::validNumber( $value ),
+            'strings' => self::validString( $value ),
+            default   => false,
+        };
+    }
+
+    /**
+     * A number with an optional unit, or calc()/clamp()/min()/max() of such numbers (nested at most four deep). The value ends up in the
+     * site's CSS, so this is a whitelist: no var(), url(), braces, semicolons, quotes, other functions or `!important`.
+     */
+    public static function validNumber( string $value ): bool
+    {
+        if ( '' === $value || strlen( $value ) > self::MAX_NUMBER || $value !== trim( $value ) || '(' === $value[0] ) {
+            return false;
+        }
+        $pos = 0;
+
+        return self::operand( $value, $pos, 0 ) && strlen( $value ) === $pos;
+    }
+
+    /**
+     * Plain text of 1 to 200 characters. It may reach the site's CSS, so: valid UTF-8, no control characters, none of { } ; \ < > " ' `,
+     * and nothing that starts a CSS or Divi expression (url(, @import, expression(, $variable().
+     */
+    public static function validString( string $value ): bool
+    {
+        if ( '' === $value || $value !== trim( $value ) || 1 !== preg_match( '//u', $value ) || mb_strlen( $value ) > self::MAX_STRING ) {
+            return false;
+        }
+        if ( 1 === preg_match( '/[\x00-\x1F\x7F{};<>\\\\"\'`]/', $value ) ) {
+            return false;
+        }
+
+        return 1 !== preg_match( '/url\s*\(|@import|expression\s*\(|\$variable\(/i', $value );
+    }
+
+    private static function operand( string $s, int &$p, int $depth ): bool
+    {
+        if ( $depth > self::MAX_DEPTH ) {
+            return false;
+        }
+        if ( 1 === preg_match( '/\G(calc|clamp|min|max)\(/', $s, $m, 0, $p ) ) {
+            $p += strlen( $m[0] );
+            if ( ! self::expr( $s, $p, $depth + 1 ) ) {
+                return false;
+            }
+            $args = 1;
+            if ( 'calc' !== $m[1] ) {
+                while ( $p < strlen( $s ) && ',' === $s[ $p ] ) {
+                    ++$p;
+                    if ( ! self::expr( $s, $p, $depth + 1 ) ) {
+                        return false;
+                    }
+                    ++$args;
+                }
+                if ( 'clamp' === $m[1] && 3 !== $args ) {
+                    return false;
+                }
+            }
+
+            return $p < strlen( $s ) && ')' === $s[ $p++ ];
+        }
+        if ( $p < strlen( $s ) && '(' === $s[ $p ] ) {
+            ++$p;
+            if ( ! self::expr( $s, $p, $depth + 1 ) ) {
+                return false;
+            }
+
+            return $p < strlen( $s ) && ')' === $s[ $p++ ];
+        }
+        if ( 1 === preg_match( self::NUMBER_RE, $s, $m, 0, $p ) ) {
+            $p += strlen( $m[0] );
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /** Operands joined by + - * / with optional spaces around the operators and before a comma or a closing parenthesis. */
+    private static function expr( string $s, int &$p, int $depth ): bool
+    {
+        self::skipSpaces( $s, $p );
+        if ( ! self::operand( $s, $p, $depth ) ) {
+            return false;
+        }
+        while ( true ) {
+            $q = $p;
+            self::skipSpaces( $s, $q );
+            if ( $q < strlen( $s ) && str_contains( '+-*/', $s[ $q ] ) ) {
+                ++$q;
+                self::skipSpaces( $s, $q );
+                $p = $q;
+                if ( ! self::operand( $s, $p, $depth ) ) {
+                    return false;
+                }
+                continue;
+            }
+            $p = $q;
+
+            return true;
+        }
+    }
+
+    private static function skipSpaces( string $s, int &$p ): void
+    {
+        while ( $p < strlen( $s ) && ' ' === $s[ $p ] ) {
+            ++$p;
+        }
     }
 
     public static function validId( string $id ): bool
