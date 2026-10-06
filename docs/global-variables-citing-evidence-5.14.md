@@ -1,39 +1,41 @@
 # Citing global variables in a layout: live evidence (Divi 5.14, Docker dev site, 2026-10-06)
 
-Spike for phase B of `manage_global_variables` (spec `docs/superpowers/specs/2026-10-06-pro-global-variables-design.md`). Script: `scripts/spike-global-variables-citing.php` (dev sites only, self-cleaning: it creates one numbers and one strings variable through the real Pro tool, builds throwaway PUBLISHED pages, fetches each page's HTML and same-site stylesheets, deletes everything and proves the stored variables are identical to the start). No product code changed.
+Spike for phase B of `manage_global_variables` (spec `docs/superpowers/specs/2026-10-06-pro-global-variables-design.md`). Script: `scripts/spike-global-variables-citing.php` (dev sites only, self-cleaning: creates throwaway variables through the real Pro tool, builds throwaway PUBLISHED pages, fetches each page's HTML and same-site stylesheets, deletes everything, proves the stored variables are identical to the start). The owner also made a REAL builder page (page 17, `/newpage/`) with a numbers variable `12px` on a heading's font size, a global color on a text module and a Customizer font, which is the ground truth for the stored form.
 
-## Question
+## Answer
 
-Can a layout cite a numbers variable (a padding and a font size) and a strings variable (a heading's title and a text module's content) so that real Divi renders the value, and what happens when the cited variable is archived or does not exist?
+**Yes: a layout can cite a numbers variable (any length-like attribute) and a strings variable (heading title, text content), in the form Divi's builder itself stores, and Divi renders both.** Verified on a programmatic page for the builder's own variable and for variables written by our tool IF they carry the builder's stored shape. **Our tool does not write that shape yet, and Divi silently ignores such variables.** That is a bug in `manage_global_variables` 0.8.0 (unreleased) found by this spike.
 
-## Source facts (Divi 5.14 theme source, read only)
+## Ground truth: what the builder stores
 
-- `Utils::resolve_dynamic_variable()` turns `$variable({"type":"content","value":{"name":"gvid-abc123"}})$` into `var(--gvid-abc123)` (any non-color type).
-- `DynamicContentGlobalVariableOptions` renders a STRINGS variable's value as dynamic content (`wp_kses_post`), numbers and the rest with `esc_html`.
-- `GlobalVariableReferenceUtils::sanitize_css_reference()` accepts only `var(--gvid-...)` (id `[a-z0-9-]+`).
-- Real exports in `fixtures/valid/` use the `content` type for dynamic content (`site_logo`, `post_title`, settings `{}` or `{"before":"","after":""}`); NONE cites a `gvid-` id. Colors use `type: color` and `gcid-`.
+Variable entry in the stored option (builder-made, numbers):
+`{"id":"gvid-f7rcuxrcdb","label":"12px","value":"12px","order":"1","status":"active","lastUpdated":"2026-10-06T13:59:08.174Z","variableType":"numbers"}`
+Our tool wrote only `label, value, order, status`.
 
-## Results (what each form produced on the rendered page)
+Citation in the page content (a heading's font size, as stored by the builder; `"` is written `"` inside block attributes):
+`"size":"$variable({\"type\":\"content\",\"value\":{\"name\":\"gvid-f7rcuxrcdb\",\"settings\":{}}})$"`
+Rendered by Divi: `font-size:var(--gvid-f7rcuxrcdb)` plus `<style class="et-vb-global-data et-vb-global-numeric-vars">:root{--gvid-f7rcuxrcdb: 12px;}</style>`.
+A global color is cited as `$variable({"type":"color","value":{"name":"gcid-...","settings":{}}})$` (already taught); the color `ai editor variable` rendered as `color:var(--gcid-kp4fwcc7jc)`. Ids written by the builder are short (`gvid-f7rcuxrcdb`); our tool writes `gvid-` + UUID, which Divi accepts (`^gvid-[a-z0-9-]+$`).
+The builder's Customizer-font variable (`--et_global_heading_font`) is not stored in the option and was not cited by id in the page; fonts remain out of scope.
 
-| Variant (all with an ACTIVE variable unless stated) | Our gate (`LayoutGate`) | Divi's output |
-|---|---|---|
-| D control: literals (`40px`, `30px`, plain text) | valid | `padding-top:40px`, text shown (the probe renders what it is given) |
-| A: `$variable({"type":"content","value":{"name":"gvid-...","settings":{}}})$` in padding-top, font size, heading title, text content | valid | **Nothing.** The `padding-top` declaration is dropped from the CSS entirely, the heading and text show no string (not even the raw token), no `gvid-` appears anywhere in the page or its CSS |
-| E: raw `var(--gvid-...)` in padding-top and font size, literal text | valid | `.et_pb_section_0.et_pb_section{padding-top:var(--gvid-...)}` and the font size use `var(--gvid-...)`, **but no `--gvid-...:40px` definition is emitted anywhere** (page HTML or its stylesheets), so the declaration has no value to resolve to |
-| F: `$variable({"type":"content","value":{"name":"gvid-...","settings":{"before":"","after":""}}})$` in heading title and text content | valid | **Nothing:** the string is not shown |
-| E archived (both variables archived) | valid | identical to E |
-| F archived | valid | identical to F |
-| E missing (a cited `gvid-` id that does not exist) | valid | `padding-top:var(--gvid-<missing>)`, identical in shape to E with a real id |
+## Results of the probes (all pages written programmatically, all accepted by our gate `LayoutGate`)
 
-## What this proves, and what it does not
+| Variant | Divi's output |
+|---|---|
+| Control: literals | `padding-top:40px`, text shown |
+| Our tool's variable (no `id`/`lastUpdated`/`variableType`), `content` form in padding top, font size, heading title, text content | **Dropped:** no `padding-top`, no text, no `gvid-` in the page; the `:root` definition is not emitted |
+| Same, raw `var(--gvid-...)` in padding/font size | `var(--gvid-...)` used but **no definition emitted** |
+| `content` form with `settings` `{"before":"","after":""}` for our unpatched strings | Nothing shown |
+| **The builder's own variable** (`gvid-f7rcuxrcdb`), `content` form, same four places | `padding-top:var(--gvid-f7rcuxrcdb)`, font size `var(...)`, definition `--gvid-f7rcuxrcdb: 12px` emitted, heading and text show the string |
+| **Our variables patched to the builder's shape** (`id`, `lastUpdated`, `variableType` added), `content` form | Same as the builder's: padding and font size use `var(--gvid-...)`, `--gvid-...: 40px` defined, the string appears in the `<h1>` and the text module |
+| Patched variables ARCHIVED | **Identical to active:** still defined, still used, string still shown. Archiving does not break a page that cites it |
+| A cited id that does not exist (`content` form) | **Dropped silently:** no `padding-top`, no text; no raw token leaks |
 
-1. **The validator and gate cannot tell a working citation from a dead one.** Every variant is `valid`. Citing a variable is silent loss when it is wrong (the same character as an unknown preset id), so nothing may be taught until a form is proven to render.
-2. **Neither documented form works end to end for a programmatically written page on 5.14.** The `$variable(...)$` content form is dropped by Divi for a padding and for text; the raw `var(--gvid-...)` form is emitted but its definition is not.
-3. **Not shown:** whether Divi defines `--gvid-...` once the builder itself has saved a page that uses the variable (for example by recording the used variable ids when the builder saves, or by a stylesheet generated on a builder save), or which attributes accept a variable at all. A page written through the REST/MCP path never went through that save. The citing forms the builder stores are therefore unknown, and the plan's rule applies: markup handed to the AI must trace to a real export.
-4. Archived and missing variables render exactly like active ones in the forms that emit anything, so archiving is NOT a safe way to retire a variable that pages still cite.
+(An earlier "archived"/"missing" round used our unpatched shape and was not meaningful; the rows above come from the patched-shape rounds.)
 
-## Recommendation
+## Consequences
 
-- Do not teach citing in the guides yet.
-- Next step needs ONE real builder export: in the Divi 5 builder create a numbers variable (for example `12px`) and a strings variable in the Variables Manager, apply the number to a section's top padding and the string to a text or heading module, save the page, and capture the page content (`make export-layouts`, or the page's stored content). From it we take the exact stored form, repeat this spike with that form on a programmatic page, and only then write the guides.
-- Independent of that: an advisory like `StyleReferences` (non-blocking, free plugin) could warn when a layout cites a `gvid-` id that the site does not have; it needs the same real export to know what a citation looks like.
+1. **Fix `manage_global_variables`** (Pro 0.8.0, not released): a created variable must carry `id` (= its key), `lastUpdated` (`Y-m-d\TH:i:s.v\Z`, as colors) and `variableType` (= its group); an edit must refresh `lastUpdated`. Its live gate must prove a cited variable actually renders (the unit tests and the old gate could not see this: Divi's own read and write accept the incomplete entry).
+2. **The validator/gate cannot tell a working citation from a dead one** (a missing id is `valid` yet renders nothing), exactly like an unknown preset id. A non-blocking advisory for unknown `gvid-` ids (like `StyleReferences` for presets and colors) is worth building.
+3. **Guides may teach the `content` citation form** for numbers (any attribute that takes a length) and strings (heading title, text content), traced to a real builder export (page 17) and a live render. Not proven: other attributes, other modules, `before`/`after` settings on strings, fonts, images, links, gradients.
+4. Archived variables still render, so retiring a variable by archiving is safe for cited pages.

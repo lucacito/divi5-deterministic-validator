@@ -181,6 +181,35 @@ try {
     $out['E_archived']         = $probe( 'EB', $build( $raw( $numId ), $raw( $numId ), $marker, '<p>' . $marker . '</p>' ), $numId, $strId );
     $out['F_archived']         = $probe( 'FB', $build( '40px', '30px', $citeBA( $strId ), $citeBA( $strId ) ), $numId, $strId );
     $out['E_missing']          = $probe( 'EC', $build( $raw( $missing ), $raw( $missing ), $marker, '<p>' . $marker . '</p>' ), $missing, $missing );
+    // Round 3: the builder's own variable (read-only) and our variables patched to the builder's stored shape.
+    $realId = '';
+    foreach ( (array) ( GlobalVariables::read()['numbers'] ?? [] ) as $rid => $re ) {
+        if ( isset( $re['variableType'] ) && $rid !== $numId ) {
+            $realId = (string) $rid;
+            break;
+        }
+    }
+    $out['builder_variable_id'] = $realId;
+    if ( '' !== $realId ) {
+        $out['R_real_builder_variable'] = $probe( 'R', $build( $cite( $realId ), $cite( $realId ), $marker, '<p>' . $marker . '</p>' ), $realId, $strId );
+    }
+    $all = (array) GlobalVariables::read();
+    $now = gmdate( 'Y-m-d\TH:i:s' ) . '.000Z';
+    $all['numbers'][ $numId ] += [ 'id' => $numId, 'lastUpdated' => $now, 'variableType' => 'numbers' ];
+    $all['strings'][ $strId ] += [ 'id' => $strId, 'lastUpdated' => $now, 'variableType' => 'strings' ];
+    $all['numbers'][ $numId ]['status'] = 'active';
+    $all['strings'][ $strId ]['status'] = 'active';
+    GlobalVariables::write( GlobalVariables::sendMap( $all ) );
+    $out['stored_after_patch'] = [ 'number' => GlobalVariables::read()['numbers'][ $numId ] ?? null, 'string' => GlobalVariables::read()['strings'][ $strId ] ?? null ];
+    $newRequest();
+    $out['G_patched_shape_content_form'] = $probe( 'G', $build( $cite( $numId ), $cite( $numId ), $cite( $strId ), $cite( $strId ) ), $numId, $strId );
+    // Round 4: archived and missing with the CORRECT stored shape.
+    $all = (array) GlobalVariables::read();
+    $all['numbers'][ $numId ]['status'] = 'archived';
+    $all['strings'][ $strId ]['status'] = 'archived';
+    GlobalVariables::write( GlobalVariables::sendMap( $all ) );
+    $out['GB_patched_archived'] = $probe( 'GB', $build( $cite( $numId ), $cite( $numId ), $cite( $strId ), $cite( $strId ) ), $numId, $strId );
+    $out['GC_missing_content_form'] = $probe( 'GC', $build( $cite( $missing ), $cite( $missing ), $cite( $missing ), $cite( $missing ) ), $missing, $missing );
 } catch ( \Throwable $e ) {
     $out['aborted'] = get_class( $e ) . ': ' . $e->getMessage();
 } finally {
