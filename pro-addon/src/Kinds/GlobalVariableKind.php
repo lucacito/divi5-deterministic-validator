@@ -116,7 +116,7 @@ final class GlobalVariableKind implements SiteLockingKind
             }
             $order  = null;
             $fields = is_array( $before['_fields'] ?? null ) ? $before['_fields'] : self::FIELDS;
-            $entry  = $found['entry'] ?? [ 'label' => (string) $before['label'], 'value' => (string) $before['value'], 'order' => (string) ( $before['_order'] ?? '1' ), 'status' => (string) $before['status'] ];
+            $entry  = $found['entry'] ?? [ 'label' => (string) $before['label'], 'value' => (string) $before['value'], 'order' => (string) ( $before['_order'] ?? GlobalVariables::nextOrder( $all[ $type ] ?? [] ) ), 'status' => (string) $before['status'] ];
             foreach ( $fields as $field ) {
                 if ( in_array( $field, self::FIELDS, true ) && array_key_exists( $field, $before ) ) {
                     $entry[ $field ] = $before[ $field ];

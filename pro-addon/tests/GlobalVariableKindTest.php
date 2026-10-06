@@ -158,6 +158,21 @@ class GlobalVariableKindTest extends TestCase
         $this->assertSame( '3', $back['order'], 'it comes back in its old place' );
     }
 
+    public function testForcedUndoOfAnEditWhoseVariableWasRemovedMeanwhileRecreatesItAtTheNextFreeOrder(): void
+    {
+        $id  = $this->change( self::N1, 'numbers', [ 'value' => '99px' ] );
+        $all = (array) GlobalVariables::read();
+        unset( $all['numbers'][ self::N1 ] );
+        GlobalVariables::write( GlobalVariables::sendMap( $all ) ); // someone removed it in Divi after our edit
+        $this->assertArrayNotHasKey( self::N1, GlobalVariables::read()['numbers'] );
+
+        $r = $this->undo()->undo( $id, true );
+        $this->assertSame( 'restored', $r['items'][0]['result'] );
+        $back = GlobalVariables::read()['numbers'][ self::N1 ];
+        $this->assertSame( '12px', $back['value'] );
+        $this->assertSame( '3', $back['order'], 'highest existing order (2) + 1, not 1, which would collide with another variable' );
+    }
+
     public function testUndoOfACreateRefusesWhenTheEntryChangedSinceEvenWhenForced(): void
     {
         $id = $this->change( 'gvid-new-0001', 'numbers', [ 'value' => '7px', 'label' => 'Seven' ] );
