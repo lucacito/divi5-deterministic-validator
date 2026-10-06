@@ -285,7 +285,7 @@ final class RestController
             UsageTracker::log(DryRun::ENDPOINT, $id, UsageTracker::RESULT_READ);
 
             $preview = DryRun::preview((string) $post->post_content, $content);
-            ApprovalMode::recordPreview($id, $content, (bool) $preview['valid']);
+            ApprovalMode::recordPreview($id, $content, (bool) $preview['valid'], (string) $post->post_content);
 
             return new WP_REST_Response(StyleReferences::attach($preview, $content), 200);
         }
@@ -303,7 +303,7 @@ final class RestController
             ], 422);
         }
 
-        if (!ApprovalMode::consume($id, $content)) {
+        if (!ApprovalMode::consume($id, $content, (string) $post->post_content)) {
             UsageTracker::log('update_page', $id, 'error');
             return new WP_REST_Response(ApprovalMode::refusal(), 428);
         }
@@ -441,7 +441,7 @@ final class RestController
             UsageTracker::log(DryRun::ENDPOINT, $id, UsageTracker::RESULT_READ);
 
             $preview = DryRun::preview((string) $post->post_content, $edit['content']);
-            ApprovalMode::recordPreview($id, $edit['content'], (bool) $preview['valid']);
+            ApprovalMode::recordPreview($id, $edit['content'], (bool) $preview['valid'], (string) $post->post_content);
 
             return new WP_REST_Response(StyleReferences::attach($preview + ['replaced' => $edit['count']], $edit['content']), 200);
         }
@@ -458,7 +458,7 @@ final class RestController
             ], 422);
         }
 
-        if (!ApprovalMode::consume($id, $edit['content'])) {
+        if (!ApprovalMode::consume($id, $edit['content'], (string) $post->post_content)) {
             UsageTracker::log('edit_page', $id, 'error');
             return new WP_REST_Response(ApprovalMode::refusal(), 428);
         }
