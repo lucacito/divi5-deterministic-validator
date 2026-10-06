@@ -120,8 +120,9 @@ class ManageGlobalVariablesTest extends TestCase
         $this->assertSame( [ 'create', 'create' ], array_column( $r['changes'], 'action' ) );
         $this->assertTrue( $r['batch']['undoable'] );
         $all = GlobalVariables::read();
-        $this->assertSame( [ 'label' => 'Pad', 'value' => '8px', 'order' => '3', 'status' => 'active' ], $all['numbers'][ $r['changes'][0]['id'] ] );
-        $this->assertSame( [ 'label' => 'Tagline', 'value' => 'Built with care', 'order' => '2', 'status' => 'active' ], $all['strings'][ $r['changes'][1]['id'] ] );
+        $stamp = '2026-09-21T14:13:20.000Z'; // gmdate of 1790000000
+        $this->assertSame( [ 'id' => $r['changes'][0]['id'], 'label' => 'Pad', 'value' => '8px', 'order' => '3', 'status' => 'active', 'lastUpdated' => $stamp, 'variableType' => 'numbers' ], $all['numbers'][ $r['changes'][0]['id'] ] );
+        $this->assertSame( [ 'id' => $r['changes'][1]['id'], 'label' => 'Tagline', 'value' => 'Built with care', 'order' => '2', 'status' => 'active', 'lastUpdated' => $stamp, 'variableType' => 'strings' ], $all['strings'][ $r['changes'][1]['id'] ] );
         $this->assertSame( $startImages, $all['images'], 'the unmanaged group is untouched' );
         $this->assertCount( 1, $GLOBALS['__divi_gv']['set_calls'], 'exactly one complete write' );
         $sent = $GLOBALS['__divi_gv']['set_calls'][0];
@@ -332,6 +333,44 @@ class ManageGlobalVariablesTest extends TestCase
         $this->assertNotSame( $start, GlobalVariables::read() );
         $u = $this->undo()->undo( (int) $r['batch']['id'] );
         $this->assertTrue( $u['fully_undone'] );
-        $this->assertSame( $start, GlobalVariables::read() );
+        $now = GlobalVariables::read();
+        foreach ( [ [ 'numbers', self::N1 ], [ 'strings', self::S1 ] ] as [ $type, $id ] ) { // the two entries undo restores are repaired to the builder shape
+            $this->assertSame( $id, $now[ $type ][ $id ]['id'] );
+            $this->assertSame( $type, $now[ $type ][ $id ]['variableType'] );
+            $this->assertArrayHasKey( 'lastUpdated', $now[ $type ][ $id ] );
+            unset( $now[ $type ][ $id ]['id'], $now[ $type ][ $id ]['variableType'], $now[ $type ][ $id ]['lastUpdated'] );
+        }
+        $this->assertSame( $start, $now, 'every other entry, and the restored ones apart from those three keys, is byte-identical' );
+    }
+
+    public function testAnEditRefreshesOnlyTheEditedEntriesLastUpdatedAndUntouchedEntriesGoBackByteIdentical(): void
+    {
+        $r = $this->apply( [ 'variables' => [ [ 'id' => self::N1, 'value' => '16px' ] ] ] );
+        $this->assertTrue( $r['changed'] );
+        $sent = $GLOBALS['__divi_gv']['set_calls'][0];
+        $this->assertSame( GlobalVariablesFixture::stored()['numbers'][ self::N2 ], $sent['numbers'][ self::N2 ], 'an untouched entry keeps its stored form: no lastUpdated is added' );
+        $this->assertSame( GlobalVariablesFixture::stored()['strings'][ self::S1 ], $sent['strings'][ self::S1 ] );
+        $this->assertSame( GlobalVariablesFixture::stored()['images'][ self::IMG ], $sent['images'][ self::IMG ] );
+        $e = $sent['numbers'][ self::N1 ];
+        $this->assertSame( '2026-09-21T14:13:20.000Z', $e['lastUpdated'], 'the tool clock drives the stamp' );
+        $this->assertSame( self::N1, $e['id'] );
+        $this->assertSame( 'numbers', $e['variableType'] );
+        $this->assertSame( '16px', $e['value'] );
+        $this->assertSame( '1', $e['order'] );
+    }
+
+    public function testTheStampFollowsTheClockOfTheCall(): void
+    {
+        $this->now = 1790003600; // one hour later
+        $r         = $this->apply( [ 'variables' => [ [ 'type' => 'strings', 'label' => 'Tagline', 'value' => 'Hi' ] ] ] );
+        $this->assertSame( '2026-09-21T15:13:20.000Z', GlobalVariables::read()['strings'][ $r['changes'][0]['id'] ]['lastUpdated'] );
+    }
+
+    public function testTheCreatedAndEditedEntriesAreNotSeenAsChangedByTheStateComparison(): void
+    {
+        $r = $this->apply( [ 'variables' => [ [ 'id' => self::N1, 'value' => '16px' ] ] ] );
+        $this->assertSame( [ 'label' => 'Radius', 'value' => '16px', 'status' => 'active' ], $r['changes'][0]['after'] );
+        $this->assertArrayNotHasKey( 'differs_from_request', $r );
+        $this->assertArrayNotHasKey( 'unexpected_changes', $r );
     }
 }

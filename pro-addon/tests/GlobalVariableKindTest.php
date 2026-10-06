@@ -112,7 +112,11 @@ class GlobalVariableKindTest extends TestCase
         $id            = $this->change( self::N1, 'numbers', [ 'value' => '99px' ] );
         $r             = $this->undo()->undo( $id );
         $this->assertTrue( $r['fully_undone'] );
-        $this->assertSame( $startingPoint, GlobalVariables::read(), 'every group, including the unmanaged images, is identical to before' );
+        $now = GlobalVariables::read();
+        $this->assertSame( [ 'id' => self::N1, 'variableType' => 'numbers' ], array_intersect_key( $now['numbers'][ self::N1 ], [ 'id' => 1, 'variableType' => 1 ] ), 'the restored entry is repaired to the builder shape' );
+        $this->assertNotSame( '', (string) $now['numbers'][ self::N1 ]['lastUpdated'] );
+        unset( $now['numbers'][ self::N1 ]['id'], $now['numbers'][ self::N1 ]['variableType'], $now['numbers'][ self::N1 ]['lastUpdated'] );
+        $this->assertSame( $startingPoint, $now, 'every group, including the unmanaged images, is identical to before (apart from the three keys undo adds to the entry it restores)' );
         $this->assertCount( 2, $GLOBALS['__divi_gv']['set_calls'], 'the change and its undo: one complete write each' );
         $this->assertArrayNotHasKey( 'colors', $GLOBALS['__divi_gv']['set_calls'][1], 'no empty group and no customizer font is handed to Divi' );
         $this->assertSame( [ 'numbers', 'strings', 'images' ], array_keys( $GLOBALS['__divi_gv']['set_calls'][1] ) );
@@ -132,6 +136,32 @@ class GlobalVariableKindTest extends TestCase
         $now = GlobalVariables::read()['numbers'][ self::N1 ];
         $this->assertSame( '12px', $now['value'], 'the value the batch changed is back' );
         $this->assertSame( 'Renamed later', $now['label'], 'the later rename is kept' );
+    }
+
+    private const OLD = '2020-01-01T00:00:00.000Z';
+
+    public function testUndoOfAnEditRefreshesLastUpdatedAndAddsTheIdAndTypeAnOlderWriteLacked(): void
+    {
+        $id = $this->change( self::N1, 'numbers', [ 'value' => '99px', 'lastUpdated' => self::OLD ] );
+        $this->assertTrue( $this->undo()->undo( $id )['fully_undone'] );
+        $e = GlobalVariables::read()['numbers'][ self::N1 ];
+        $this->assertSame( '12px', $e['value'] );
+        $this->assertSame( self::N1, $e['id'] );
+        $this->assertSame( 'numbers', $e['variableType'] );
+        $this->assertNotSame( self::OLD, $e['lastUpdated'] );
+        $this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z$/', $e['lastUpdated'] );
+        $this->assertGreaterThanOrEqual( strtotime( '2026-01-01T00:00:00Z' ), strtotime( $e['lastUpdated'] ), 'the stamp of now' );
+    }
+
+    public function testUndoOfAnEditKeepsADifferentStoredIdAndTheTypeItAlreadyHas(): void
+    {
+        $id = $this->change( self::S1, 'strings', [ 'value' => 'changed', 'id' => 'gvid-other', 'variableType' => 'strings', 'lastUpdated' => self::OLD ] );
+        $this->assertTrue( $this->undo()->undo( $id )['fully_undone'] );
+        $e = GlobalVariables::read()['strings'][ self::S1 ];
+        $this->assertSame( 'gvid-other', $e['id'], 'an existing id is never overwritten' );
+        $this->assertSame( 'strings', $e['variableType'] );
+        $this->assertSame( '555 0100', $e['value'] );
+        $this->assertNotSame( self::OLD, $e['lastUpdated'] );
     }
 
     public function testUndoOfAnArchiveRestoresTheStatus(): void
@@ -156,6 +186,9 @@ class GlobalVariableKindTest extends TestCase
         $back = GlobalVariables::read()['numbers']['gvid-new-0001'];
         $this->assertSame( [ 'Seven', '7px', 'active' ], [ $back['label'], $back['value'], $back['status'] ] );
         $this->assertSame( '3', $back['order'], 'it comes back in its old place' );
+        $this->assertSame( 'gvid-new-0001', $back['id'], 'a re-created variable carries the builder shape' );
+        $this->assertSame( 'numbers', $back['variableType'] );
+        $this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z$/', $back['lastUpdated'] );
     }
 
     public function testForcedUndoOfAnEditWhoseVariableWasRemovedMeanwhileRecreatesItAtTheNextFreeOrder(): void
@@ -171,6 +204,10 @@ class GlobalVariableKindTest extends TestCase
         $back = GlobalVariables::read()['numbers'][ self::N1 ];
         $this->assertSame( '12px', $back['value'] );
         $this->assertSame( '3', $back['order'], 'highest existing order (2) + 1, not 1, which would collide with another variable' );
+        $this->assertSame( self::N1, $back['id'] );
+        $this->assertSame( 'numbers', $back['variableType'] );
+        $this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z$/', $back['lastUpdated'] );
+        $this->assertSame( [ 'id', 'label', 'value', 'order', 'status', 'lastUpdated', 'variableType' ], array_keys( $back ), 'same seven keys, same order as a create' );
     }
 
     public function testUndoOfACreateRefusesWhenTheEntryChangedSinceEvenWhenForced(): void

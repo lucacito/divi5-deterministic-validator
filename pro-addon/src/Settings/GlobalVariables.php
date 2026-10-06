@@ -107,6 +107,27 @@ final class GlobalVariables
     }
 
     /**
+     * The entry in the form Divi's own Variables Manager stores: `id` (= its key), `lastUpdated` and `variableType` (= its group).
+     * Divi 5.14 silently ignores a variable without them at render time (docs/global-variables-citing-evidence-5.14.md). Every key
+     * the entry has is kept; `lastUpdated` is set to $stamp; `id` and `variableType` are added when missing and never overwritten.
+     *
+     * @param array<string,mixed> $entry
+     * @return array<string,mixed>
+     */
+    public static function builderShape( array $entry, string $id, string $type, string $stamp ): array
+    {
+        $entry['lastUpdated'] = $stamp;
+        if ( ! isset( $entry['id'] ) || ! is_string( $entry['id'] ) || '' === $entry['id'] ) {
+            $entry['id'] = $id;
+        }
+        if ( ! isset( $entry['variableType'] ) || ! is_string( $entry['variableType'] ) || '' === $entry['variableType'] ) {
+            $entry['variableType'] = $type;
+        }
+
+        return $entry;
+    }
+
+    /**
      * @param array<string,array<string,array<string,mixed>>> $all
      * @return array{type:string,entry:array<string,mixed>}|null
      */

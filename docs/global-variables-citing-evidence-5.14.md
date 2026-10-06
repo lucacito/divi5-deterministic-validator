@@ -35,7 +35,7 @@ The builder's Customizer-font variable (`--et_global_heading_font`) is not store
 
 ## Consequences
 
-1. **Fix `manage_global_variables`** (Pro 0.8.0, not released): a created variable must carry `id` (= its key), `lastUpdated` (`Y-m-d\TH:i:s.v\Z`, as colors) and `variableType` (= its group); an edit must refresh `lastUpdated`. Its live gate must prove a cited variable actually renders (the unit tests and the old gate could not see this: Divi's own read and write accept the incomplete entry).
+1. **Fixed in branch fix/pro-variables-builder-shape** (the live gate `make verify-pro-global-variables` now publishes a throwaway page and proves Divi renders a cited variable). **Fix `manage_global_variables`** (Pro 0.8.0, not released): a created variable must carry `id` (= its key), `lastUpdated` (`Y-m-d\TH:i:s.v\Z`, as colors) and `variableType` (= its group); an edit must refresh `lastUpdated`. Its live gate must prove a cited variable actually renders (the unit tests and the old gate could not see this: Divi's own read and write accept the incomplete entry).
 2. **The validator/gate cannot tell a working citation from a dead one** (a missing id is `valid` yet renders nothing), exactly like an unknown preset id. A non-blocking advisory for unknown `gvid-` ids (like `StyleReferences` for presets and colors) is worth building.
 3. **Guides may teach the `content` citation form** for numbers (any attribute that takes a length) and strings (heading title, text content), traced to a real builder export (page 17) and a live render. Not proven: other attributes, other modules, `before`/`after` settings on strings, fonts, images, links, gradients.
 4. Archived variables still render, so retiring a variable by archiving is safe for cited pages.

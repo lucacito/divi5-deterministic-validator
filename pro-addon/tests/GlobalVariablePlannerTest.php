@@ -20,6 +20,8 @@ class GlobalVariablePlannerTest extends TestCase
     private const S1  = GlobalVariablesFixture::S1;
     private const IMG = GlobalVariablesFixture::IMG;
 
+    private const STAMP = '2026-10-06T14:00:00.000Z';
+
     private int $seq = 0;
 
     protected function setUp(): void
@@ -38,7 +40,7 @@ class GlobalVariablePlannerTest extends TestCase
     {
         return GlobalVariablePlanner::plan( (array) GlobalVariables::read(), GlobalVariablePlanner::normalize( $entries ), function (): string {
             return 'gvid-new-00000000-0000-4000-8000-00000000000' . ++$this->seq;
-        } );
+        }, self::STAMP );
     }
 
     private function refused( array $entries, string $needle ): void
@@ -100,8 +102,8 @@ class GlobalVariablePlannerTest extends TestCase
         $p = $this->plan( [ [ 'type' => 'numbers', 'label' => 'Pad', 'value' => '8px' ], [ 'type' => 'strings', 'label' => 'Tagline', 'value' => 'Built with care', 'status' => 'archived' ], [ 'type' => 'numbers', 'label' => 'Pad two', 'value' => '16px' ] ] );
         $this->assertSame( [ 'create', 'create', 'create' ], array_column( $p['changes'], 'action' ) );
         $this->assertSame( [ 'gvid-new-00000000-0000-4000-8000-000000000001', 'gvid-new-00000000-0000-4000-8000-000000000002', 'gvid-new-00000000-0000-4000-8000-000000000003' ], array_column( $p['changes'], 'id' ) );
-        $this->assertSame( [ 'label' => 'Pad', 'value' => '8px', 'order' => '3', 'status' => 'active' ], $p['changes'][0]['write'], 'numbers had orders 1 and 2' );
-        $this->assertSame( [ 'label' => 'Tagline', 'value' => 'Built with care', 'order' => '2', 'status' => 'archived' ], $p['changes'][1]['write'], 'strings had order 1' );
+        $this->assertSame( [ 'id' => 'gvid-new-00000000-0000-4000-8000-000000000001', 'label' => 'Pad', 'value' => '8px', 'order' => '3', 'status' => 'active', 'lastUpdated' => self::STAMP, 'variableType' => 'numbers' ], $p['changes'][0]['write'], 'numbers had orders 1 and 2' );
+        $this->assertSame( [ 'id' => 'gvid-new-00000000-0000-4000-8000-000000000002', 'label' => 'Tagline', 'value' => 'Built with care', 'order' => '2', 'status' => 'archived', 'lastUpdated' => self::STAMP, 'variableType' => 'strings' ], $p['changes'][1]['write'], 'strings had order 1' );
         $this->assertSame( '4', $p['changes'][2]['write']['order'], 'two creates in one call do not share an order' );
         $this->assertNull( $p['changes'][0]['before'] );
         $this->assertSame( [ 'label' => 'Pad', 'value' => '8px', 'status' => 'active' ], $p['changes'][0]['after'] );
@@ -128,9 +130,43 @@ class GlobalVariablePlannerTest extends TestCase
         $this->assertSame( 'update', $c['action'] );
         $this->assertSame( [ 'value' ], $c['fields'] );
         $this->assertSame( 'numbers', $c['type'] );
-        $this->assertSame( [ 'label' => 'Radius', 'value' => '16px', 'order' => '1', 'status' => 'active' ], $c['write'] );
+        $this->assertEquals( [ 'label' => 'Radius', 'value' => '16px', 'order' => '1', 'status' => 'active', 'lastUpdated' => self::STAMP, 'id' => self::N1, 'variableType' => 'numbers' ], $c['write'], 'an entry written by older code is repaired: id, variableType and lastUpdated are added' );
         $this->assertSame( '12px', $c['before']['value'] );
         $this->assertSame( '16px', $c['after']['value'] );
+    }
+
+    public function testTheCreatedEntryHasExactlyTheBuildersSevenKeysInOrder(): void
+    {
+        $c = $this->plan( [ [ 'type' => 'strings', 'label' => 'Tagline', 'value' => 'Hi' ] ] )['changes'][0];
+        $this->assertSame( [ 'id', 'label', 'value', 'order', 'status', 'lastUpdated', 'variableType' ], array_keys( $c['write'] ) );
+        $this->assertSame( $c['id'], $c['write']['id'] );
+        $this->assertSame( 'strings', $c['write']['variableType'] );
+        $this->assertSame( self::STAMP, $c['write']['lastUpdated'] );
+        $this->assertSame( [ 'label' => 'Tagline', 'value' => 'Hi', 'status' => 'active' ], $c['after'], 'the compared state never includes id, variableType or lastUpdated' );
+    }
+
+    public function testAnEditKeepsADifferentStoredIdAndRefreshesLastUpdatedAndAddsOnlyWhatIsMissing(): void
+    {
+        GlobalVariablesFixture::reset( [ 'numbers' => [ self::N1 => [ 'id' => 'gvid-other', 'label' => 'Radius', 'value' => '12px', 'order' => '1', 'status' => 'active', 'lastUpdated' => '2020-01-01T00:00:00.000Z', 'variableType' => 'numbers' ] ] ] );
+        $c = $this->plan( [ [ 'id' => self::N1, 'label' => 'Corner' ] ] )['changes'][0];
+        $this->assertSame( [ 'id' => 'gvid-other', 'label' => 'Corner', 'value' => '12px', 'order' => '1', 'status' => 'active', 'lastUpdated' => self::STAMP, 'variableType' => 'numbers' ], $c['write'], 'same keys, same order, a different id is left as stored' );
+    }
+
+    public function testAStatusOnlyChangeRefreshesLastUpdatedToo(): void
+    {
+        $c = $this->plan( [ [ 'id' => self::N1, 'status' => 'archived' ] ] )['changes'][0];
+        $this->assertSame( self::STAMP, $c['write']['lastUpdated'] );
+        $this->assertSame( 'archived', $c['write']['status'] );
+        $this->assertSame( self::N1, $c['write']['id'] );
+        $this->assertSame( 'numbers', $c['write']['variableType'] );
+    }
+
+    public function testAnUnchangedEntryIsNotRewrittenSoItKeepsItsLastUpdated(): void
+    {
+        $p = $this->plan( [ [ 'id' => self::N1, 'value' => '12px' ], [ 'id' => self::S1, 'value' => 'Call now' ] ] );
+        $this->assertSame( [ self::N1 ], $p['unchanged'] );
+        $this->assertCount( 1, $p['changes'] );
+        $this->assertSame( self::S1, $p['changes'][0]['id'] );
     }
 
     public function testAStatusOnlyChangeIsArchiveOrRestore(): void

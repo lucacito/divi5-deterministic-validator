@@ -7,6 +7,7 @@ namespace AiEditorDivi5\Pro\Kinds;
 use AiEditorDivi5\Pro\Batch\Item;
 use AiEditorDivi5\Pro\Batch\SiteLockingKind;
 use AiEditorDivi5\Pro\Canon;
+use AiEditorDivi5\Pro\Settings\GlobalColors;
 use AiEditorDivi5\Pro\Settings\GlobalVariables;
 use AiEditorDivi5\Pro\Settings\GlobalVariablesLock;
 
@@ -116,12 +117,15 @@ final class GlobalVariableKind implements SiteLockingKind
             }
             $order  = null;
             $fields = is_array( $before['_fields'] ?? null ) ? $before['_fields'] : self::FIELDS;
-            $entry  = $found['entry'] ?? [ 'label' => (string) $before['label'], 'value' => (string) $before['value'], 'order' => (string) ( $before['_order'] ?? GlobalVariables::nextOrder( $all[ $type ] ?? [] ) ), 'status' => (string) $before['status'] ];
+            $stamp  = GlobalColors::stamp( time() );
+            $entry  = $found['entry'] ?? [ 'id' => $id, 'label' => (string) $before['label'], 'value' => (string) $before['value'], 'order' => (string) ( $before['_order'] ?? GlobalVariables::nextOrder( $all[ $type ] ?? [] ) ), 'status' => (string) $before['status'], 'lastUpdated' => $stamp, 'variableType' => $type ];
             foreach ( $fields as $field ) {
                 if ( in_array( $field, self::FIELDS, true ) && array_key_exists( $field, $before ) ) {
                     $entry[ $field ] = $before[ $field ];
                 }
             }
+            // Same stored form as the builder's (Divi ignores a variable without id/variableType); an older write is repaired here.
+            $entry               = GlobalVariables::builderShape( $entry, $id, $type, $stamp );
             $all[ $type ][ $id ] = $entry;
             $expected            = GlobalVariables::state( $entry );
         }

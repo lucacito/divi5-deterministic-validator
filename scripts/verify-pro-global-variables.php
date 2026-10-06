@@ -8,6 +8,12 @@
  * batch is not removed by undoing the create.
  * It first seeds one throwaway images and one links variable (the dev site stores none) to prove the unmanaged groups pass through
  * byte-identical, and removes them at the end (also on an abort), checking the site is exactly as it was before the run.
+ * It also proves Divi RENDERS a cited variable: after the create it publishes ONE throwaway page that cites the number (a section's
+ * padding-top and a heading's font size) and the string (the heading's title and a text module's content) in Divi's `content` form, and
+ * checks the `--gvid-...` definition, the `var(--gvid-...)` use and the shown text (Divi silently ignores a variable whose stored entry
+ * lacks the builder's id, lastUpdated and variableType; see docs/global-variables-citing-evidence-5.14.md); it re-renders after the
+ * archive (an archived variable still renders) and deletes the page, also on an abort. The page is fetched through the Docker network
+ * (http://wordpress, Host header = the site's host); set AIED_LOOPBACK_BASE to change that.
  * Not covered live: Divi's refusal for a user without the Variables Manager permission (the dev admin always has it); the unit
  * tests cover that path against a shim that follows Divi's source.
  *
@@ -21,6 +27,7 @@ use AiEditorDivi5\Pro\Settings\GlobalVariables;
 use AiEditorDivi5\Pro\ToolRegistry;
 use AiEditorDivi5\Pro\Tools;
 use AiEditorDivi5\WP\HistoryTable;
+use AiEditorDivi5\WP\LayoutGate;
 use ET\Builder\Packages\GlobalData\GlobalData;
 
 if ( ! class_exists( \AiEditorDivi5\Pro\Plugin::class ) || ! class_exists( HistoryTable::class ) ) {
@@ -44,7 +51,16 @@ $check    = static function ( bool $ok, string $label ) use ( &$failures ): void
 };
 $batchIds = [];
 $registry = new ToolRegistry( Tools::all(), static fn (): bool => true );
-$call     = static function ( string $name, array $args ) use ( $registry, &$batchIds ): array {
+// Real Divi caches its static CSS per second (a timestamp flag per request): reset it so every call and render below is a fresh request.
+$newRequest = static function (): void {
+    if ( class_exists( 'ET_Core_PageResource' ) && property_exists( 'ET_Core_PageResource', '_global_timestamp_updated' ) ) {
+        $prop = new ReflectionProperty( 'ET_Core_PageResource', '_global_timestamp_updated' );
+        $prop->setAccessible( true );
+        $prop->setValue( null, false );
+    }
+};
+$call     = static function ( string $name, array $args ) use ( $registry, &$batchIds, $newRequest ): array {
+    $newRequest();
     $res = $registry->claim( null, $name, $args, 1 );
     if ( ! $res instanceof WP_REST_Response ) {
         return [ 'error' => [ 'code' => 0, 'message' => 'not claimed' ], 'result' => null ];
@@ -86,6 +102,64 @@ $total = static function (): int {
 
     return $n;
 };
+
+// ---- the render helpers (from scripts/spike-global-variables-citing.php): the page's HTML plus its same-site stylesheets --------------
+$fetch = static function ( string $url ) use ( &$fetch ): string {
+    $p    = wp_parse_url( $url );
+    $host = ( $p['host'] ?? 'localhost' ) . ( isset( $p['port'] ) ? ':' . $p['port'] : '' );
+    $path = ( $p['path'] ?? '/' ) . ( isset( $p['query'] ) ? '?' . $p['query'] : '' );
+    $base = rtrim( (string) ( getenv( 'AIED_LOOPBACK_BASE' ) ?: 'http://wordpress' ), '/' );
+    $res  = wp_remote_get( $base . $path, [ 'headers' => [ 'Host' => $host ], 'timeout' => 30, 'redirection' => 0, 'sslverify' => false ] );
+    if ( is_wp_error( $res ) ) {
+        return '';
+    }
+    $code = (int) wp_remote_retrieve_response_code( $res );
+    if ( in_array( $code, [ 301, 302 ], true ) && '' !== (string) wp_remote_retrieve_header( $res, 'location' ) ) {
+        return $fetch( (string) wp_remote_retrieve_header( $res, 'location' ) );
+    }
+
+    return (string) wp_remote_retrieve_body( $res );
+};
+$render = static function ( int $pageId ) use ( $fetch, $newRequest ): string {
+    $newRequest();
+    $html = $fetch( add_query_arg( 'page_id', $pageId, home_url( '/' ) ) );
+    $all  = $html;
+    if ( preg_match_all( '/<link[^>]+href=[\'"]([^\'"]+\.css[^\'"]*)[\'"]/i', $html, $m ) ) {
+        $site = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+        foreach ( array_slice( array_unique( $m[1] ), 0, 25 ) as $href ) {
+            if ( $site === (string) wp_parse_url( $href, PHP_URL_HOST ) ) {
+                $all .= "\n" . $fetch( $href );
+            }
+        }
+    }
+
+    return $all;
+};
+/** The citation form Divi's own source documents and the builder stores. */
+$cite  = static fn ( string $id ): string => '$variable(' . wp_json_encode( [ 'type' => 'content', 'value' => [ 'name' => $id, 'settings' => new stdClass() ] ] ) . ')$';
+$build = static function ( string $pad, string $size, string $head, string $text ): string {
+    $section = [ 'module' => [ 'decoration' => [ 'spacing' => [ 'desktop' => [ 'value' => [ 'padding' => [ 'top' => $pad, 'bottom' => '20px', 'syncVertical' => 'off' ] ] ] ] ] ], 'builderVersion' => '5.14.0' ];
+    $title   = [ 'title' => [ 'innerContent' => [ 'desktop' => [ 'value' => $head ] ], 'decoration' => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'size' => $size ] ] ] ] ] ], 'builderVersion' => '5.14.0' ];
+    $body    = [ 'content' => [ 'innerContent' => [ 'desktop' => [ 'value' => $text ] ] ], 'builderVersion' => '5.14.0' ];
+
+    return '<!-- wp:divi/placeholder --><!-- wp:divi/section ' . serialize_block_attributes( $section ) . ' --><!-- wp:divi/row {"builderVersion":"5.14.0"} --><!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.14.0"} --><!-- wp:divi/heading ' . serialize_block_attributes( $title ) . ' /--><!-- wp:divi/text ' . serialize_block_attributes( $body ) . ' /--><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->';
+};
+$probePages = [];
+$probeTitle = 'aied verify gv probe';
+$probeLeft  = static function () use ( $wpdb ): int {
+    return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_title LIKE 'aied verify gv%'" ); // phpcs:ignore
+};
+$deleteProbePages = static function () use ( &$probePages ): void {
+    foreach ( $probePages as $pid ) {
+        if ( null !== get_post( $pid ) ) {
+            wp_delete_post( $pid, true );
+        }
+    }
+    $probePages = [];
+};
+if ( $probeLeft() > 0 ) {
+    WP_CLI::error( "a page titled 'aied verify gv...' is already stored (an earlier run was killed?): delete it first" );
+}
 
 HistoryTable::ensureReady( true );
 BatchTable::ensureReady( true );
@@ -167,11 +241,34 @@ try {
     $check( str_starts_with( $numId, 'gvid-' ) && '12px' === ( $stored['numbers'][ $numId ]['value'] ?? '' ) && 'AIED verify radius' === ( $stored['numbers'][ $numId ]['label'] ?? '' ) && 'active' === ( $stored['numbers'][ $numId ]['status'] ?? '' ), "the number is stored through Divi: {$numId}" );
     $check( str_starts_with( $strId, 'gvid-' ) && 'Built with care' === ( $stored['strings'][ $strId ]['value'] ?? '' ), "the string is stored through Divi: {$strId}" );
     $check( is_string( $stored['numbers'][ $numId ]['order'] ?? null ) && ctype_digit( $stored['numbers'][ $numId ]['order'] ), 'Divi stores the order as a string of digits' );
+    $stampRe = '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z$/';
+    foreach ( [ [ 'numbers', $numId ], [ 'strings', $strId ] ] as [ $t, $vid ] ) {
+        $e = (array) ( $stored[ $t ][ $vid ] ?? [] );
+        $check( $vid === ( $e['id'] ?? null ) && $t === ( $e['variableType'] ?? null ) && 1 === preg_match( $stampRe, (string) ( $e['lastUpdated'] ?? '' ) ), "the {$t} entry is stored in the builder's shape (id = its key, variableType, lastUpdated stamp)" );
+    }
     $check( $total() === $countStart + 2, 'exactly two entries were added' );
     $check( $fingerprint( $ids ) === $fpStart, 'create: every other stored variable, in every group, is untouched' );
     $check( $seedsIntact(), 'create: the seeded images and links variables (unmanaged groups) keep their exact label, value and status' );
     $reuse = $call( 'manage_global_variables', [ 'variables' => $new, 'preview_token' => $d['result']['preview_token'] ] );
     $check( $errHas( $reuse, 'preview_token' ), 'the token works once' );
+
+    // ---- 3b. Divi RENDERS a layout that cites them: the content form in padding, font size, heading title and text content -----------
+    $layoutCited = $build( $cite( $numId ), $cite( $numId ), $cite( $strId ), $cite( $strId ) );
+    $check( LayoutGate::check( $layoutCited )->isValid(), 'the probe layout that cites both variables passes the gate' );
+    $newRequest();
+    $probeId = wp_insert_post( [ 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => $probeTitle, 'post_content' => wp_slash( $layoutCited ), 'meta_input' => [ '_et_pb_use_builder' => 'on', '_et_pb_use_divi_5' => 'on' ] ], true );
+    if ( is_wp_error( $probeId ) ) {
+        throw new RuntimeException( 'could not create the probe page: ' . $probeId->get_error_message() );
+    }
+    $probePages[] = (int) $probeId;
+    $css          = $render( (int) $probeId );
+    $check( false !== strpos( $css, 'et_pb_section' ) && 1 === preg_match( '/<body[^>]*\bpage-id-' . (int) $probeId . '\b/', $css ), 'the probe page rendered (if this FAILS: set AIED_LOOPBACK_BASE to a URL the wpcli container can reach)' );
+    $check( 1 === preg_match( '/--' . preg_quote( $numId, '/' ) . '\s*:\s*12px/', $css ), 'render: the number variable is defined (--gvid-...: 12px) for the page' );
+    $check( 1 === preg_match( '/\.et_pb_section_\d+\.et_pb_section\s*\{[^}]*padding-top:\s*var\(--' . preg_quote( $numId, '/' ) . '\)/', $css ), "render: the section's padding-top uses var(--{$numId})" );
+    $check( 1 === preg_match( '/font-size:\s*var\(--' . preg_quote( $numId, '/' ) . '\)/', $css ), "render: the heading's font size uses var(--{$numId})" );
+    $check( 1 === preg_match( '/<h1[^>]*class="[^"]*et_pb_module_header[^"]*"[^>]*>[^<]*Built with care/', $css ), 'render: the heading shows the string variable (Built with care)' );
+    $check( 1 === preg_match( '/et_pb_text_inner[^>]*>(?:\s|<p[^>]*>)*Built with care/', $css ), 'render: the text module shows the string variable too' );
+    $check( 0 === substr_count( $css, '$variable(' ) + substr_count( $css, 'u0024variable(' ), 'render: no raw $variable(...) token leaks into the page' );
 
     // ---- 4. refusals change nothing ---------------------------------------------------------------------------------------
     $fpNow = $fingerprint();
@@ -201,6 +298,13 @@ try {
     $archB = (int) ( $a['result']['batch']['id'] ?? 0 );
     $check( null === $a['error'] && 'archive' === ( $a['result']['changes'][0]['action'] ?? '' ) && 'archived' === ( GlobalVariables::read()['strings'][ $strId ]['status'] ?? '' ), 'archive: the status is archived (nothing deleted)' );
     $check( $fingerprint( $ids ) === $fpStart, 'archive: every other stored variable is untouched' );
+    $css = $render( (int) $probeId );
+    $check( 1 === preg_match( '/<h1[^>]*class="[^"]*et_pb_module_header[^"]*"[^>]*>[^<]*Built with care/', $css ), 'render after the archive: the archived string is still shown' );
+    $check( 1 === preg_match( '/--' . preg_quote( $numId, '/' ) . '\s*:/', $css ) && 1 === preg_match( '/padding-top:\s*var\(--' . preg_quote( $numId, '/' ) . '\)/', $css ), 'render after the archive: the number is still defined and used (it now holds the edited value)' );
+    $e = (array) ( GlobalVariables::read()['strings'][ $strId ] ?? [] );
+    $check( $strId === ( $e['id'] ?? null ) && 'strings' === ( $e['variableType'] ?? null ) && 1 === preg_match( $stampRe, (string) ( $e['lastUpdated'] ?? '' ) ), 'archive: the archived entry kept id and variableType and has a refreshed lastUpdated stamp' );
+    $e = (array) ( GlobalVariables::read()['numbers'][ $numId ] ?? [] );
+    $check( $numId === ( $e['id'] ?? null ) && 'numbers' === ( $e['variableType'] ?? null ), 'edit: the edited number kept id and variableType' );
 
     // ---- 7. undo walks it back; undo of a create refuses once the entry changed since ----------------------------------
     $u = $call( 'undo_batch', [ 'batch_id' => $createB ] );
@@ -217,6 +321,7 @@ try {
     $failures[] = 'aborted by ' . get_class( $e ) . ': ' . $e->getMessage();
     WP_CLI::log( 'FAIL  aborted by ' . get_class( $e ) . ': ' . $e->getMessage() );
 } finally {
+    $deleteProbePages(); // before the variables go: an abort must not leave the probe page behind
     $all   = (array) GlobalVariables::read();
     $dirty = false;
     foreach ( array_filter( $ids ) as $id ) { // cleanup after an abort: remove any throwaway variable still stored
@@ -238,6 +343,8 @@ try {
 // ---- 8. the site is exactly as it was ---------------------------------------------------------------------------------------
 $check( $fingerprint() === $fpStart, 'every stored variable (all groups, with their order) is identical to the start' );
 $check( $total() === $countStart, 'the variable count equals the baseline' );
+$deleteProbePages();
+$check( 0 === $probeLeft(), "the probe page is deleted (none titled 'aied verify gv...' is left)" );
 $check( $seedsIntact(), 'the seeded images and links variables are still exactly as seeded after the whole chain' );
 $removeSeeds();
 $check( $fingerprint() === $fpTrue, 'seeds removed: every stored variable is identical to the true state before the run' );
