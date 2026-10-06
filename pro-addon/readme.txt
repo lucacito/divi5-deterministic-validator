@@ -2,7 +2,7 @@
 Contributors:      lucaslopvet
 Requires at least: 6.0
 Requires PHP:      8.1
-Stable tag:        0.7.0
+Stable tag:        0.8.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,7 +32,7 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `list_batches` - list recent Pro changes.
 * `undo_batch` - undo one batch.
 
-Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked.
+Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors` and `manage_global_variables` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked.
 
 Each tool checks the permission it really needs (for example `manage_options` to set the front page), not only that the request is authenticated.
 
@@ -52,6 +52,12 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
+
+= 0.8.0 =
+* New: `manage_global_variables` creates, edits and archives your site's Divi global variables of type numbers (for example `12px` or `clamp(1rem, 2vw + 1rem, 3rem)`) and strings (short plain text), so an assistant can set spacing, radius and size tokens before it builds pages. It never deletes a variable. Every real run needs the single-use preview token of a dry run of the same arguments; variables that changed since the preview are skipped and reported, never overwritten. Values are checked strictly (a number with an optional unit or calc, clamp, min, max of those; plain text without braces, semicolons, quotes, comment markers, unbalanced brackets or code). It needs Divi's Variables Manager permission as well as the theme options permission. One `undo_batch` puts it all back; undoing a created variable removes it, unless it changed since.
+* Images, links, fonts and gradients variables are carried through untouched (they are not written yet). A site whose stored variables Divi's own save would damage (for example a stored colors group) is refused with the reason instead of being changed.
+* Over MCP and REST only: this is the 16th Pro tool, and the ChatGPT importer's 30 operations are used up by the first 14 (16 free + 14 Pro).
+* Fix (also in 0.7.0's code path): an `undo_batch` takes the site-wide lock before it first reads the global colors.
 
 = 0.7.0 =
 * New: `manage_global_colors` creates, recolors, renames and deactivates your site's Divi global colors, so an assistant can set the palette before it builds pages. It never deletes a color. Every real run needs the single-use preview token of a dry run of the same arguments; colors that changed since the preview are skipped and reported, never overwritten. The five theme colors (primary, secondary, heading, body, link) change only when you pass `allow_theme_colors`, and only their color. Color values are checked strictly (hex or rgb/rgba/hsl/hsla numbers only). One `undo_batch` puts it all back; undoing a created color removes it, unless it changed since.

@@ -104,3 +104,14 @@ Live gate `make verify-pro-global-variables` (Docker site, self-cleaning, dev si
 - **String values are the least understood surface** (where Divi emits them is unproven); the guard starts conservative and the first plan task is the live render that decides it.
 - **Unmanaged types are carried, not understood.** Images, links, fonts and gradients entries are passed back as Divi returned them; if their stored shape ever trips the pre-flight, the tool refuses instead of risking them.
 - **Known limit:** the preview token is best effort against replay if an object cache evicts the spent-nonce transient (same as the other Pro tools).
+
+## Implementation notes (2026-10-06, from the plan and its reviews; all narrow the spec)
+
+1. The strings guard is stricter than the spec's rule. It also refuses `$variable(` (case-insensitive), the backtick, the comment markers `/*` and `*/`, unbalanced or mis-nested `( )` and `[ ]`, and the C1 controls U+0080-U+009F plus U+2028/U+2029. A value or label is trimmed before it is checked. Numbers nest at most four functions deep. The number-unit list was deliberately NOT extended beyond the spec's.
+2. A label that is PHP `empty()` (so "0") is refused: Divi's sanitiser drops such an entry.
+3. `GlobalVariables::read()` removes Divi's built-in customizer fonts by the ids in `GlobalData::$customizer_fonts` (`--et_global_heading_font`, `--et_global_body_font`; they do not start with `gvid-`); when that property is missing nothing is removed and the pre-flight refuses with `bad_id`, so a Divi that changes this fails closed.
+4. An undo item stores the variable's type (`_type`) and, when it removes a variable, its `order` (`_order`), so undoing a removal puts the variable back in its place. An undo cannot recreate a variable that has since disappeared (`not_found`).
+5. The live gate does not exercise the missing-Variables-Manager refusal (the dev admin always has the permission); the unit tests cover it against a shim that follows Divi's source (`set_global_variables` returns without writing). There is no live low-permission probe. The gate asserts the permission is present and that the stored variables are identical after the undo chain.
+6. The live gate first seeds a throwaway `images` and a `links` variable, so every "untouched" check also proves pass-through of unmanaged groups; it then removes them and asserts the site equals its true pre-run state.
+7. `docs/global-variables-evidence-5.14.md` shows only that nothing is emitted for UNCITED variables. The string guard therefore stays conservative, and phase B must test citing before any string rule is relaxed.
+8. Phase B (teaching the AI to cite variables) is NOT part of this plan; the evidence file holds the live evidence that phase starts from.
