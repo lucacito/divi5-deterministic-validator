@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace AiEditorDivi5\Pro\Kinds;
 
 use AiEditorDivi5\Pro\Batch\Item;
-use AiEditorDivi5\Pro\Batch\ItemKind;
+use AiEditorDivi5\Pro\Batch\SiteLockingKind;
 use AiEditorDivi5\Pro\Canon;
 use AiEditorDivi5\Pro\Settings\GlobalColors;
 use AiEditorDivi5\Pro\Settings\GlobalColorsLock;
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * the color still looks the way the batch left it. A color the batch created is never removed once it has changed since,
  * not even with force.
  */
-final class GlobalColorKind implements ItemKind
+final class GlobalColorKind implements SiteLockingKind
 {
     public const NAME = 'global_color';
 
@@ -73,23 +73,19 @@ final class GlobalColorKind implements ItemKind
         return current_user_can( 'edit_theme_options' ) && GlobalColors::available();
     }
 
-    public function restore( array $item ): array
+    /** BatchUndo takes this lock once for the whole batch, before its first read of the colors (Divi caches that read for the request). */
+    public function lockSite(): bool
     {
-        // The same site-wide lock as the tool: Divi's save replaces the whole map, so two writers must not interleave. (BatchUndo
-        // has already called current(), which fills Divi's per-request cache, so the read below can be that few-millisecond-old
-        // snapshot; the lock protects against writers that start after it, and the sanity checks below against the rest.)
-        if ( ! $this->lock->acquire() ) {
-            return [ 'ok' => false, 'reason' => 'busy' ];
-        }
-        try {
-            return $this->restoreLocked( $item );
-        } finally {
-            $this->lock->release();
-        }
+        return $this->lock->acquire();
     }
 
-    /** @return array<string,mixed> */
-    private function restoreLocked( array $item ): array
+    public function unlockSite(): void
+    {
+        $this->lock->release();
+    }
+
+    /** Runs under the site lock BatchUndo holds (see SiteLockingKind): Divi's save replaces the whole map, so two writers must not interleave. */
+    public function restore( array $item ): array
     {
         $id     = (string) $item['ref'];
         $before = is_array( $item['before'] ?? null ) ? $item['before'] : null;

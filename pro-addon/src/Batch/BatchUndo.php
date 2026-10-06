@@ -35,38 +35,64 @@ final class BatchUndo
         $inverse  = [];
         $restored = 0;
         $would    = 0;
-        for ( $i = count( $items ) - 1; $i >= 0; $i-- ) {
-            $item  = $items[ $i ];
-            $row   = [ 'kind' => (string) ( $item['kind'] ?? '' ), 'label' => (string) ( $item['label'] ?? '' ) ];
-            $kind  = $this->kinds[ $row['kind'] ] ?? null;
-            try {
-                $check = $this->check( $item, $kind, $force );
-            } catch ( \Throwable $e ) {
-                // A kind that cannot even read its target (e.g. a menu deleted since) fails this item only; the loop goes on.
-                $check = [ 'result' => 'failed', 'reason' => 'exception' ];
+        // A kind over shared site-wide state is locked once, before the batch's first read of it and until its last write (see
+        // SiteLockingKind). A busy lock fails that kind's items without reading or writing anything; a dry run only reads.
+        $locked = [];
+        $busy   = [];
+        try {
+            if ( ! $dryRun ) {
+                foreach ( $items as $item ) {
+                    $kind = $this->kinds[ (string) ( $item['kind'] ?? '' ) ] ?? null;
+                    if ( $kind instanceof SiteLockingKind && Item::UNDONE !== ( $item['state'] ?? Item::APPLIED ) && ! isset( $locked[ $kind->name() ] ) && ! isset( $busy[ $kind->name() ] ) ) {
+                        if ( $kind->lockSite() ) {
+                            $locked[ $kind->name() ] = $kind;
+                        } else {
+                            $busy[ $kind->name() ] = true;
+                        }
+                    }
+                }
             }
-            if ( null !== $check ) {
-                $report[ $i ] = $row + $check;
-                continue;
+            for ( $i = count( $items ) - 1; $i >= 0; $i-- ) {
+                $item  = $items[ $i ];
+                $row   = [ 'kind' => (string) ( $item['kind'] ?? '' ), 'label' => (string) ( $item['label'] ?? '' ) ];
+                $kind  = $this->kinds[ $row['kind'] ] ?? null;
+                if ( null !== $kind && isset( $busy[ $kind->name() ] ) && Item::UNDONE !== ( $item['state'] ?? Item::APPLIED ) ) {
+                    $report[ $i ] = $row + [ 'result' => 'failed', 'reason' => 'busy' ];
+                    continue;
+                }
+                try {
+                    $check = $this->check( $item, $kind, $force );
+                } catch ( \Throwable $e ) {
+                    // A kind that cannot even read its target (e.g. a menu deleted since) fails this item only; the loop goes on.
+                    $check = [ 'result' => 'failed', 'reason' => 'exception' ];
+                }
+                if ( null !== $check ) {
+                    $report[ $i ] = $row + $check;
+                    continue;
+                }
+                if ( $dryRun ) {
+                    $would++;
+                    $report[ $i ] = $row + [ 'result' => 'would_restore' ];
+                    continue;
+                }
+                try {
+                    $r = $kind->restore( $item );
+                } catch ( \Throwable $e ) {
+                    $r = [ 'ok' => false, 'reason' => 'exception' ];
+                }
+                if ( empty( $r['ok'] ) ) {
+                    $report[ $i ] = $row + [ 'result' => 'failed', 'reason' => (string) ( $r['reason'] ?? 'failed' ) ];
+                    continue;
+                }
+                $restored++;
+                $items[ $i ]['state'] = Item::UNDONE;
+                $inverse[]            = $r['inverse'];
+                $report[ $i ]         = $row + [ 'result' => 'restored' ];
             }
-            if ( $dryRun ) {
-                $would++;
-                $report[ $i ] = $row + [ 'result' => 'would_restore' ];
-                continue;
+        } finally {
+            foreach ( $locked as $kind ) {
+                $kind->unlockSite();
             }
-            try {
-                $r = $kind->restore( $item );
-            } catch ( \Throwable $e ) {
-                $r = [ 'ok' => false, 'reason' => 'exception' ];
-            }
-            if ( empty( $r['ok'] ) ) {
-                $report[ $i ] = $row + [ 'result' => 'failed', 'reason' => (string) ( $r['reason'] ?? 'failed' ) ];
-                continue;
-            }
-            $restored++;
-            $items[ $i ]['state'] = Item::UNDONE;
-            $inverse[]            = $r['inverse'];
-            $report[ $i ]         = $row + [ 'result' => 'restored' ];
         }
         ksort( $report );
 

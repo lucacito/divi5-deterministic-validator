@@ -174,7 +174,6 @@ class GlobalColorsTest extends TestCase
             'empty color'            => [ [ 'gcid-aaa-1' => [ 'color' => '' ] + $ok ], 'empty_color' ],
             'zero color'             => [ [ 'gcid-aaa-1' => [ 'color' => '0' ] + $ok ], 'empty_color' ],
             'missing color'          => [ [ 'gcid-aaa-1' => array_diff_key( $ok, [ 'color' => 1 ] ) ], 'empty_color' ],
-            'undefined color'        => [ [ 'gcid-aaa-1' => [ 'color' => 'undefined' ] + $ok ], 'undefined_color' ],
             'id without gcid prefix' => [ [ 'brand-1' => $ok ], 'bad_id' ],
             'id undefined'           => [ [ 'undefined' => $ok ], 'bad_id' ],
             'array field'            => [ [ 'gcid-aaa-1' => [ 'label' => [ 'x' ] ] + $ok ], 'non_scalar_field' ],
@@ -192,6 +191,12 @@ class GlobalColorsTest extends TestCase
     public function testUnsafeEntriesNamesWhatDiviWouldDropOrDamage( array $map, string $reason ): void
     {
         $this->assertSame( [ [ 'id' => (string) array_key_first( $map ), 'reason' => $reason ] ], GlobalColors::unsafeEntries( $map ) );
+    }
+
+    public function testAColorWhoseValueIsTheWordUndefinedIsSafeBecauseDiviOnlyDropsTheIdUndefined(): void
+    {
+        $entry = [ 'color' => 'undefined', 'folder' => '', 'label' => 'Odd', 'lastUpdated' => '2026-01-01T00:00:00.000Z', 'status' => 'active', 'usedInPosts' => [] ];
+        $this->assertSame( [], GlobalColors::unsafeEntries( [ 'gcid-aaa-1' => $entry ] ) );
     }
 
     public function testASafeMapHasNoUnsafeEntries(): void

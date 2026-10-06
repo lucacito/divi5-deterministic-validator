@@ -268,4 +268,96 @@ class BatchUndoTest extends TestCase
         $this->assertTrue( $r['fully_undone'] );
         $this->assertNotNull( $r['undo_batch'] );
     }
+
+    /** A kind over the fake store that takes a site-wide lock around an undo and logs every step into $GLOBALS['__fake_events']. */
+    private function lockingKind( bool $free = true ): \AiEditorDivi5\Pro\Batch\ValueKind
+    {
+        $GLOBALS['__fake_events'] = [];
+        $GLOBALS['__fake_lock_free'] = $free;
+
+        return new class() extends \AiEditorDivi5\Pro\Batch\ValueKind implements \AiEditorDivi5\Pro\Batch\SiteLockingKind {
+            public function name(): string { return 'fake'; }
+            public function current( array $item ): mixed { $GLOBALS['__fake_events'][] = 'current'; return $GLOBALS['__fake_store'][ $item['ref'] ] ?? null; }
+            public function allowed( array $item ): bool { return true; }
+            protected function write( array $item, mixed $value ): bool { $GLOBALS['__fake_events'][] = 'write'; $GLOBALS['__fake_store'][ $item['ref'] ] = $value; return true; }
+            public function lockSite(): bool { $GLOBALS['__fake_events'][] = 'lock'; return (bool) $GLOBALS['__fake_lock_free']; }
+            public function unlockSite(): void { $GLOBALS['__fake_events'][] = 'unlock'; }
+        };
+    }
+
+    public function testASiteLockingKindIsLockedBeforeItsFirstReadOnceForTheWholeBatchAndReleasedAfterTheLastWrite(): void
+    {
+        $GLOBALS['__fake_store'] = [ 'a' => 'one', 'b' => 'uno' ];
+        $kind  = $this->lockingKind();
+        $batch = $this->log->record( 't', 's', [ Item::make( 'fake', 'a', 'A', 'one', 'two' ), Item::make( 'fake', 'b', 'B', 'uno', 'dos' ) ] );
+        $GLOBALS['__fake_store'] = [ 'a' => 'two', 'b' => 'dos' ];
+        $r = ( new BatchUndo( [ 'fake' => $kind ], $this->log ) )->undo( $batch['id'] );
+        $this->assertTrue( $r['fully_undone'] );
+        $events = $GLOBALS['__fake_events'];
+        $this->assertSame( 'lock', $events[0], 'locked before the first read' );
+        $this->assertSame( 'unlock', $events[ count( $events ) - 1 ], 'released after the last write' );
+        $this->assertSame( 1, count( array_keys( $events, 'lock', true ) ), 'one lock for the whole batch' );
+        $this->assertSame( 1, count( array_keys( $events, 'unlock', true ) ) );
+        $this->assertSame( 2, count( array_keys( $events, 'write', true ) ) );
+    }
+
+    public function testABusySiteLockFailsThatKindsItemsWithoutReadingOrWritingAndStillRestoresTheRest(): void
+    {
+        $GLOBALS['__fake_store'] = [ 'a' => 'two', 'plain' => 'dos' ];
+        $kind  = $this->lockingKind( false );
+        $batch = $this->log->record( 't', 's', [ Item::make( 'fake', 'a', 'A', 'one', 'two' ), Item::make( 'plain', 'plain', 'P', 'uno', 'dos' ) ] );
+        $r     = ( new BatchUndo( [ 'fake' => $kind, 'plain' => new class() extends \AiEditorDivi5\Pro\Batch\ValueKind {
+            public function name(): string { return 'plain'; }
+            public function current( array $item ): mixed { return $GLOBALS['__fake_store'][ $item['ref'] ] ?? null; }
+            public function allowed( array $item ): bool { return true; }
+            protected function write( array $item, mixed $value ): bool { $GLOBALS['__fake_store'][ $item['ref'] ] = $value; return true; }
+        } ], $this->log ) )->undo( $batch['id'] );
+        $this->assertSame( 'failed', $r['items'][0]['result'] );
+        $this->assertSame( 'busy', $r['items'][0]['reason'] );
+        $this->assertSame( 'restored', $r['items'][1]['result'] );
+        $this->assertSame( [ 'lock' ], $GLOBALS['__fake_events'], 'a busy lock is neither read under nor released' );
+        $this->assertSame( 'two', $GLOBALS['__fake_store']['a'] );
+        $this->assertSame( 'uno', $GLOBALS['__fake_store']['plain'] );
+    }
+
+    public function testADryRunTakesNoSiteLock(): void
+    {
+        $GLOBALS['__fake_store'] = [ 'a' => 'two' ];
+        $kind  = $this->lockingKind();
+        $batch = $this->log->record( 't', 's', [ Item::make( 'fake', 'a', 'A', 'one', 'two' ) ] );
+        $r     = ( new BatchUndo( [ 'fake' => $kind ], $this->log ) )->undo( $batch['id'], false, true );
+        $this->assertSame( 1, $r['would_restore'] );
+        $this->assertSame( [ 'current' ], $GLOBALS['__fake_events'] );
+    }
+
+    public function testNoSiteLockIsTakenWhenEveryItemIsAlreadyUndone(): void
+    {
+        $GLOBALS['__fake_store'] = [ 'a' => 'one' ];
+        $kind  = $this->lockingKind();
+        $batch = $this->log->record( 't', 's', [ Item::make( 'fake', 'a', 'A', 'one', 'two' ) ] );
+        $undo  = new BatchUndo( [ 'fake' => $kind ], $this->log );
+        $GLOBALS['__fake_store']['a'] = 'two';
+        $undo->undo( $batch['id'] );
+        $GLOBALS['__fake_events'] = [];
+        $undo->undo( $batch['id'] );
+        $this->assertSame( [], $GLOBALS['__fake_events'] );
+    }
+
+    public function testTheSiteLockIsReleasedWhenTheKindThrows(): void
+    {
+        $GLOBALS['__fake_store'] = [ 'a' => 'two' ];
+        $kind = new class() extends \AiEditorDivi5\Pro\Batch\ValueKind implements \AiEditorDivi5\Pro\Batch\SiteLockingKind {
+            public function name(): string { return 'fake'; }
+            public function current( array $item ): mixed { throw new \RuntimeException( 'boom' ); }
+            public function allowed( array $item ): bool { return true; }
+            protected function write( array $item, mixed $value ): bool { return true; }
+            public function lockSite(): bool { $GLOBALS['__fake_events'][] = 'lock'; return true; }
+            public function unlockSite(): void { $GLOBALS['__fake_events'][] = 'unlock'; }
+        };
+        $GLOBALS['__fake_events'] = [];
+        $batch = $this->log->record( 't', 's', [ Item::make( 'fake', 'a', 'A', 'one', 'two' ) ] );
+        $r     = ( new BatchUndo( [ 'fake' => $kind ], $this->log ) )->undo( $batch['id'] );
+        $this->assertSame( 'failed', $r['items'][0]['result'] );
+        $this->assertSame( [ 'lock', 'unlock' ], $GLOBALS['__fake_events'] );
+    }
 }

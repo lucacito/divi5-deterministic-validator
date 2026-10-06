@@ -152,7 +152,7 @@ final class GlobalColors
 
     /**
      * What Divi's own save would delete or flatten if it were handed this map (the exact map that is about to be sent): an entry with
-     * an empty or 'undefined' color or an id that does not start with gcid- is dropped, any array or null value other than a list of
+     * an empty color or an id that is 'undefined' or does not start with gcid- is dropped (a color whose VALUE is the word undefined is kept), any array or null value other than a list of
      * scalars in usedInPosts is flattened to '', and a usedInPosts that is not an array makes Divi throw. Refusing beforehand turns
      * silent loss (which no batch could undo) into a clear message, and API drift into a refusal.
      *
@@ -181,9 +181,6 @@ final class GlobalColors
             return 'not_an_entry';
         }
         $color = $entry['color'] ?? '';
-        if ( is_string( $color ) && 'undefined' === $color ) {
-            return 'undefined_color';
-        }
         if ( ! is_scalar( $color ) || empty( $color ) ) {
             return 'empty_color';
         }
