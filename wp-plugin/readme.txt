@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.6.0
+Stable tag:        4.7.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -202,6 +202,11 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 
 == Changelog ==
 
+= 4.7.0 =
+* New: your AI assistant can now use your Divi number and text variables in the pages it builds (for example your spacing and font-size variables, or a shared line of text), the same way it already reuses your global colors. The style guide it reads explains exactly where this works, and `list_global_styles` points it there.
+* New: when a layout uses a variable your site does not have, the check now tells your assistant (Divi would silently drop that value). This is advice only and never blocks a save.
+* As before, the plugin only reads: variables, colors and presets are created in Divi itself.
+
 = 4.6.0 =
 * New: your AI assistant can look up how your site is set up with `get_site_structure`: custom post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices; never field values). Read-only.
 * New: Approval mode (Settings screen, off by default). When it is on, your AI assistant must preview every edit to a page's content before it can save it.
@@ -260,6 +265,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 4.7.0 =
+Your AI assistant can reuse your Divi number and text variables and is warned about ones that do not exist. Nothing changes unless your assistant uses them.
 
 = 4.6.0 =
 Adds a read-only look-up of your site's post types, taxonomies, image sizes and ACF fields for your AI assistant, an optional Approval mode, and clearer setup instructions. Nothing changes unless your AI assistant uses it or you turn Approval mode on.

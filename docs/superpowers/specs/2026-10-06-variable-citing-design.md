@@ -1,6 +1,6 @@
 # Free plugin 4.7.0: teach the AI to cite global variables, and warn about unknown ones (phase B)
 
-Status: design, approved in chat by the owner 2026-10-06 (scope (a): teach only the four proven places; version 4.7.0). Awaiting the owner's review of this written spec. Nothing here is built yet. Date: 2026-10-06.
+Status: implemented on branch feat/variable-citing (free plugin 4.7.0, not uploaded). Design approved in chat by the owner 2026-10-06 (scope (a): teach only the four proven places; version 4.7.0). Date: 2026-10-06.
 Source: phase B of `docs/superpowers/specs/2026-10-06-pro-global-variables-design.md`; evidence `docs/global-variables-citing-evidence-5.14.md` (live renders on Divi 5.14 plus the owner's real builder page).
 
 ## Goal
