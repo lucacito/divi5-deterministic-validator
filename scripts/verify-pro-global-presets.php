@@ -9,12 +9,15 @@
  * call); custom CSS, an unknown id, a legacy preset, a module change, an unknown module and an update of a module's default preset
  * without allow_default_presets are refused and change nothing; the token works once and only for the same arguments; undo walks
  * it all back and the stored presets (the WHOLE data, legacy entries included) are IDENTICAL to the start.
+ * IT TEMPORARILY RESTYLES THE SITE'S REAL divi/heading DEFAULT PRESET (section 8: it is updated with allow_default_presets, a probe page
+ * proves Divi renders it, then undo_batch puts it back; only that preset's `updated` stamp may differ, and the script restores the
+ * snapshot taken at the start if anything else differs). Every heading on the dev site without a preset of its own is restyled in between.
  * The page is fetched through the Docker network (http://wordpress, Host header = the site's host); set AIED_LOOPBACK_BASE to change that.
  * Not covered live: Divi's refusal for a user without edit_theme_options (the dev admin always has it); the unit tests cover it.
  *
  * Run: make verify-pro-global-presets   (needs `make up`, the free plugin and the Pro add-on active on the dev site)
- * Dev sites only. WARNING: it records about 8 batches and deletes them at the end; the batch store keeps only the newest 20, so on a
- * site that already has more than 12 batches the run evicts the oldest real ones (it warns, and the final count check expects it).
+ * Dev sites only. WARNING: it records 10 batches and deletes them at the end; the batch store keeps only the newest 20, so on a
+ * site that already has more than 10 batches the run evicts the oldest real ones (it warns, and the final count check expects it).
  */
 
 use AiEditorDivi5\Pro\Batch\BatchTable;
@@ -133,6 +136,8 @@ $render = static function ( int $pageId ) use ( $fetch, $newRequest ): string {
 };
 /** Does a CSS rule whose selector names this heading preset's class contain the declaration? (Divi minifies: no space after the colon.) */
 $ruleHas = static fn ( string $css, string $id, string $decl ): bool => 1 === preg_match( '/preset--module--divi-heading--' . preg_quote( $id, '/' ) . '[^{}<]*\{[^}]*' . preg_quote( $decl, '/' ) . '/', $css ); // no "<" in a selector: the class in the page's HTML must not match
+/** Did this fetch really return the probe page (its body class and its marker text)? A negative render check means nothing on an empty fetch. */
+$pageRendered = static fn ( string $html, int $pageId, string $marker ): bool => false !== strpos( $html, $marker ) && 1 === preg_match( '/<body[^>]*\bpage-id-' . $pageId . '\b/', $html );
 $layout  = static function ( string $presetId ): string {
     $attrs = [ 'modulePreset' => [ $presetId ], 'title' => [ 'innerContent' => [ 'desktop' => [ 'value' => 'AIEDPRESETGATE' ] ] ], 'builderVersion' => '5.14.0' ];
 
@@ -170,7 +175,7 @@ if ( ! is_array( $dataStart ) ) {
     WP_CLI::error( "Divi's presets could not be read: nothing was done." );
 }
 WP_CLI::log( "baseline: {$countStart} stored preset(s) in " . count( (array) ( $dataStart['module'] ?? [] ) ) . " module entries, {$batchesStart} stored batch row(s)" );
-if ( $batchesStart > 12 ) {
+if ( $batchesStart > 10 ) {
     WP_CLI::warning( "the batch store holds {$batchesStart} rows and keeps only 20: this run will evict the oldest real ones (dev site)" );
 }
 // Divi's own default presets can be stored as an empty shell (no attrs, no styleAttrs keys): the tool manages those too (section 8).
@@ -186,10 +191,10 @@ foreach ( (array) ( $dataStart['module'] ?? [] ) as $module => $entry ) {
         $defaultModule = (string) $module;
     }
 }
-$check( '' !== $defaultId, "baseline: a module with a regular default preset exists ({$defaultModule}) to test the default-preset rule" );
+$check( '' !== $defaultId, "baseline: a module with a manageable default preset exists ({$defaultModule}); the default-preset refusal checks aim at it and never write to it" );
 $imageFree = ! isset( $dataStart['module']['divi/image'] );
 if ( ! $imageFree ) {
-    WP_CLI::warning( 'this site already has divi/image presets: the default-preset side-effect checks were skipped' );
+    WP_CLI::warning( 'this site already has divi/image presets: the default-preset side-effect check was skipped' );
 }
 $legacyId = '';
 foreach ( (array) ( $dataStart['module'] ?? [] ) as $module => $entry ) {
@@ -251,7 +256,7 @@ try {
     $probePages[] = (int) $probeId;
     $css          = $render( (int) $probeId );
     $check( false !== strpos( $css, 'et_pb_section' ) && 1 === preg_match( '/<body[^>]*\bpage-id-' . (int) $probeId . '\b/', $css ), 'the probe page rendered (if this FAILS: set AIED_LOOPBACK_BASE to a URL the wpcli container can reach)' );
-    $check( false !== strpos( $css, 'AIEDPRESETGATE' ) && false !== strpos( $css, 'preset--module--divi-heading--' . $newId ), 'render: the heading carries the class preset--module--divi-heading--<id>' );
+    $check( 1 === preg_match( '/class="[^"]*preset--module--divi-heading--' . preg_quote( $newId, '/' ) . '[^"]*"[^>]*><div class="et_pb_heading_container"><h1[^>]*>AIEDPRESETGATE/', $css ), 'render: the heading element carries the class preset--module--divi-heading--<id>' );
     $check( $ruleHas( $css, $newId, 'font-size:57px' ), "render: a rule for the preset's class sets font-size:57px" );
     $check( $ruleHas( $css, $newId, 'margin-bottom:39px' ), "render: a rule for the preset's class sets margin-bottom:39px" );
     $check( ! $ruleHas( $css, $newId, 'font-size:61px' ), 'render: the preset does not yet set font-size:61px' );
@@ -322,6 +327,7 @@ try {
     $check( null === $item( $newId ), 'undo of the create: the preset is gone' );
     $check( $fingerprint() === $fpStart, 'after the undo chain every stored preset (the whole data) is identical to the start' );
     $css = $render( (int) $probeId );
+    $check( $pageRendered( $css, (int) $probeId, 'AIEDPRESETGATE' ), 'render after undoing the create: the probe page rendered (so the next check is not an empty fetch)' );
     $check( ! $ruleHas( $css, $newId, 'font-size:57px' ), 'render after undoing the create: no rule for the removed preset sets 57px' );
 
     // ---- 7. (e) a module with NO presets: Divi adds a default preset, the dry run says so, undo removes both ------------------
@@ -415,6 +421,7 @@ try {
     $check( $shell0 === ( ! array_key_exists( 'attrs', $defItem2 ) && ! array_key_exists( 'styleAttrs', $defItem2 ) ), 'default heading: after undo the item is back to its original kind (a shell has NO attrs and NO styleAttrs keys)' );
     $check( $dataNoStamp() === md5( serialize( $dataStart ) ), "default heading: after undo the whole data equals the start, ignoring only that preset's `updated` stamp" );
     $css = $render( (int) $defPage );
+    $check( $pageRendered( $css, (int) $defPage, 'AIEDDEFAULTGATE' ), 'default heading: after undo the probe page rendered (so the next check is not an empty fetch)' );
     $check( ! $ruleHas( $css, $defCls, 'font-size:53px' ), 'default heading: after undo no rule for the default preset sets font-size:53px any more' );
 } catch ( \Throwable $e ) {
     $aborted    = true;
