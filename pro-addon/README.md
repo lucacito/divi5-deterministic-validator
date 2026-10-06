@@ -56,7 +56,7 @@ Divi's `GlobalData::set_global_variables()` REPLACES the whole variables map, so
 - The audit's link check cannot tell a missing page from an archive or custom route (the finding says so), and reads at most 200 links per item (`LINKS_NOT_ALL_CHECKED`).
 - On a site with more than 1000 Divi 5 pages `audit_site` audits the first 1000 (by id) and says so, and `find_replace_site` refuses and asks for `page_ids`.
 - The ChatGPT importer allows 30 operations in total: 16 free + 14 Pro = 30, so the budget is used up. The 15th and 16th Pro tools, `manage_global_colors` and `manage_global_variables`, are MCP + REST only on purpose (`ProOpenApi::MCP_REST_ONLY`; `ProParityTest` and `ToolsTest` pin the exception). Any further tool needs the same owner decision or a merge of two tools.
-- The `verify-pro-*` scripts create and delete throwaway content (`verify-pro-rest` is read-only): all of them except the read-only `verify-pro-rest` refuse to run unless the site host is localhost, 127.0.0.1, ::1, `*.local`, `*.test` or `*.localhost` (`scripts/dev-guard.php`).
+- The `verify-pro-*` scripts create and delete throwaway content (`verify-pro-rest` is read-only): all ten refuse to run unless the site host is localhost, 127.0.0.1, ::1, `*.local`, `*.test` or `*.localhost` (`scripts/dev-guard.php`).
 
 ## Dev override of the licence server
 
