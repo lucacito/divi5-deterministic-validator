@@ -48,7 +48,7 @@ class GlobalVariableValuesTest extends TestCase
     /** @return array<string,array{string}> */
     public static function goodStrings(): array
     {
-        $cases = [ 'Call us today', '555 0100', 'Built with care. Since 1999!', "Caf\u{E9} \u{2615} na\u{EF}ve", 'a', '$99 off', '50% off (this week)', 'Tom & Jerry' ];
+        $cases = [ 'Call us today', '555 0100', 'Built with care. Since 1999!', "Caf\u{E9} \u{2615} na\u{EF}ve", 'a', '$99 off', '50% off (this week)', 'Tom & Jerry', 'Call (555) 0100', 'Items [new]', 'a (b [c] d) e' ];
 
         return array_combine( $cases, array_map( static fn ( string $c ): array => [ $c ], $cases ) );
     }
@@ -56,7 +56,7 @@ class GlobalVariableValuesTest extends TestCase
     /** @return array<string,array{string}> */
     public static function badStrings(): array
     {
-        $cases = [ '', ' x', 'x ', 'a{b}', 'a;b', 'a\\b', 'a<b>', 'a"b', "a'b", 'a`b', "a\nb", "a\0b", 'url(x)', 'URL (x)', '@import x', 'Expression(1)', '$variable({})$', '$VARIABLE({})$', str_repeat( 'a', 201 ), "bad \xC3\x28 utf8", "tab\there" ];
+        $cases = [ '', ' x', 'x ', 'a{b}', 'a;b', 'a\\b', 'a<b>', 'a"b', "a'b", 'a`b', "a\nb", "a\0b", 'url(x)', 'URL (x)', '@import x', 'Expression(1)', '$variable({})$', '$VARIABLE({})$', str_repeat( 'a', 201 ), "bad \xC3\x28 utf8", "tab\there", 'a/*', 'a*/b', 'a(b', 'a)b', 'a[b', 'a]b', ')(', '(]', ':)', "a\u{0085}b", "a\u{2028}b", "a\u{2029}b", str_repeat( "\u{E9}", 201 ) ];
 
         return array_combine( array_map( static fn ( string $c ): string => '' === $c ? '(empty)' : (string) json_encode( $c, JSON_INVALID_UTF8_SUBSTITUTE ), $cases ), array_map( static fn ( string $c ): array => [ $c ], $cases ) );
     }

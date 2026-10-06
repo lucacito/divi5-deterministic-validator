@@ -234,19 +234,39 @@ final class GlobalVariables
     }
 
     /**
-     * Plain text of 1 to 200 characters. It may reach the site's CSS, so: valid UTF-8, no control characters, none of { } ; \ < > " ' `,
-     * and nothing that starts a CSS or Divi expression (url(, @import, expression(, $variable().
+     * Plain text of 1 to 200 characters. It may reach the site's CSS, so: valid UTF-8, no control characters, none of { } ; \ < > " ' `, no C1 controls or U+2028/2029,
+     * balanced ( ) [ ], no comment markers, and nothing that starts a CSS or Divi expression (url(, @import, expression(, $variable().
      */
     public static function validString( string $value ): bool
     {
         if ( '' === $value || $value !== trim( $value ) || 1 !== preg_match( '//u', $value ) || mb_strlen( $value ) > self::MAX_STRING ) {
             return false;
         }
-        if ( 1 === preg_match( '/[\x00-\x1F\x7F{};<>\\\\"\'`]/', $value ) ) {
+        if ( 1 === preg_match( '/[\x00-\x1F\x7F{};<>\\\\"\'`\x{0080}-\x{009F}\x{2028}\x{2029}]/u', $value ) ) {
+            return false;
+        }
+        if ( str_contains( $value, '/*' ) || str_contains( $value, '*/' ) || 1 === preg_match( '/url\s*\(|@import|expression\s*\(|\$variable\(/i', $value ) ) {
             return false;
         }
 
-        return 1 !== preg_match( '/url\s*\(|@import|expression\s*\(|\$variable\(/i', $value );
+        return self::bracketsBalance( $value );
+    }
+
+    /** Every ( and [ is closed by the matching ) or ] in order, so the text cannot swallow the CSS that follows it. */
+    private static function bracketsBalance( string $value ): bool
+    {
+        $open = [];
+        foreach ( str_split( $value ) as $ch ) {
+            if ( '(' === $ch || '[' === $ch ) {
+                $open[] = $ch;
+            } elseif ( ')' === $ch || ']' === $ch ) {
+                if ( array() === $open || array_pop( $open ) !== ( ')' === $ch ? '(' : '[' ) ) {
+                    return false;
+                }
+            }
+        }
+
+        return array() === $open;
     }
 
     private static function operand( string $s, int &$p, int $depth ): bool
