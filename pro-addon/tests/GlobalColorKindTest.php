@@ -198,6 +198,38 @@ class GlobalColorKindTest extends TestCase
         $this->assertSame( [], $GLOBALS['__wp_options'], 'the undo released its lock' );
     }
 
+    public function testAnUndoHoldsTheSiteLockFromBeforeItsFirstReadUntilTheLastWriteAndADryRunTakesNone(): void
+    {
+        $a = $this->change( self::A, [ 'color' => '#abcdef' ] );
+        $b = $this->change( self::B, [ 'color' => '#fedcba' ] );
+        $seen = [];
+        $GLOBALS['__divi_gc']['gets']   = 0;
+        $GLOBALS['__divi_gc']['on_get'] = static function ( int $n ) use ( &$seen ): void {
+            $seen[ $n ] = count( $GLOBALS['__wp_options'] );
+        };
+        $this->assertTrue( $this->undo()->undo( $a, false, true )['ok'] );
+        $this->assertSame( [ 1 => 0 ], array_slice( $seen, 0, 1, true ), 'a dry run takes no lock' );
+
+        $seen = [];
+        $GLOBALS['__divi_gc']['gets'] = 0;
+        $r = $this->undo()->undo( $a );
+        $this->assertTrue( $r['fully_undone'] );
+        $this->assertSame( 1, $seen[1], 'the lock is already held at the very first read of the undo' );
+        $this->assertSame( [ 1 ], array_values( array_unique( $seen ) ), 'and at every later read' );
+        $this->assertSame( [], $GLOBALS['__wp_options'], 'released at the end' );
+        $this->assertTrue( $this->undo()->undo( $b )['fully_undone'] );
+    }
+
+    public function testAColorWhoseValueIsTheWordUndefinedDoesNotBlockAnUndo(): void
+    {
+        // Divi's sanitiser only drops the ID "undefined", never a color value: such a color must not lock the site's undo out.
+        $id = $this->change( self::A, [ 'color' => '#abcdef' ] );
+        $GLOBALS['__divi_gc']['custom']['gcid-odd-0000'] = [ 'color' => 'undefined', 'folder' => '', 'label' => 'Odd', 'lastUpdated' => '2026-01-01T00:00:00.000Z', 'status' => 'active', 'usedInPosts' => [] ];
+        $GLOBALS['__divi_gc']['cache']                   = null;
+        $this->assertTrue( $this->undo()->undo( $id )['fully_undone'] );
+        $this->assertSame( 'undefined', GlobalColors::read()['gcid-odd-0000']['color'] );
+    }
+
     public function testAnUndoThatWouldMakeDiviDeleteAnotherColorIsRefusedAndWritesNothing(): void
     {
         $id = $this->change( self::A, [ 'color' => '#abcdef' ] );
