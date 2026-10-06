@@ -104,13 +104,13 @@ final class GlobalPresets
         return null;
     }
 
-    /** A preset this tool may target: a normal `divi/...` module key whose item names that same module and has a name and an attrs tree. @param array<string,mixed> $item */
+    /** A preset this tool may target: a normal `divi/...` module key whose item names that same module and has a name and an attrs tree (or none at all: Divi's own default presets are empty "shells" with no `attrs` key, whose state counts as an empty tree). @param array<string,mixed> $item */
     public static function managed( string $module, array $item ): bool
     {
         return self::validModule( $module )
             && ( $item['moduleName'] ?? null ) === $module
             && is_string( $item['name'] ?? null )
-            && is_array( $item['attrs'] ?? null );
+            && ( ! array_key_exists( 'attrs', $item ) || is_array( $item['attrs'] ) );
     }
 
     /** What counts as "this preset changed": its name, its module and its style tree. @param array<string,mixed>|null $item */

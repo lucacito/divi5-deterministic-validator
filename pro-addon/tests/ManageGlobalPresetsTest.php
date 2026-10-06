@@ -459,4 +459,25 @@ class ManageGlobalPresetsTest extends TestCase
         $this->assertSame( '61px', GlobalPresets::read()['module']['divi/heading']['items'][ self::H1 ]['attrs']['title']['decoration']['font']['font']['desktop']['value']['size'] );
         $this->assertTrue( $this->undo()->undo( (int) array_key_first( $this->repo->rows ) )['fully_undone'] );
     }
+
+    public function testTheEmptyDefaultShellOfAModuleCanBeRestyledAndUndoneBackToAShell(): void
+    {
+        $id    = GlobalPresetsFixture::T_DEFAULT;
+        $start = GlobalPresets::read();
+        $args  = [ 'presets' => [ [ 'id' => $id, 'attrs' => [ 'content' => [ 'x' => '1' ] ] ] ] ];
+        $this->refused( $args + [ 'dry_run' => true ], 'default preset' );
+        $dry = $this->tool->run( $args + [ 'dry_run' => true, 'allow_default_presets' => true ] );
+        $this->assertSame( [], $dry['changes'][0]['before']['attrs'] );
+        $r = $this->tool->run( $args + [ 'allow_default_presets' => true, 'preview_token' => $dry['preview_token'] ] );
+        $this->assertTrue( $r['changed'] );
+        $now = GlobalPresets::read()['module']['divi/text']['items'][ $id ];
+        $this->assertSame( [ 'content' => [ 'x' => '1' ] ], $now['attrs'] );
+        $this->assertSame( [ 'content' => [ 'x' => '1' ] ], $now['styleAttrs'] );
+        $this->assertTrue( $this->undo()->undo( (int) $r['batch']['id'] )['fully_undone'] );
+        $back = GlobalPresets::read();
+        $this->assertArrayNotHasKey( 'attrs', $back['module']['divi/text']['items'][ $id ] );
+        $this->assertArrayNotHasKey( 'styleAttrs', $back['module']['divi/text']['items'][ $id ] );
+        unset( $back['module']['divi/text']['items'][ $id ]['updated'], $start['module']['divi/text']['items'][ $id ]['updated'] );
+        $this->assertSame( $start, $back );
+    }
 }

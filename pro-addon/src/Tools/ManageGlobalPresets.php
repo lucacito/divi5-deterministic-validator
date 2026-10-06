@@ -201,8 +201,9 @@ final class ManageGlobalPresets implements ProTool
                 if ( $stored !== $c['after'] ) {
                     $differs[] = [ 'id' => $c['id'], 'requested' => $c['after'], 'stored' => $stored ];
                 }
-                $prevStyle  = $before['module'][ $c['module'] ]['items'][ $c['id'] ]['styleAttrs'] ?? null;
-                $recorded[] = GlobalPresetKind::itemForUpdate( $c['id'], $c['module'], (array) $c['before'], (array) $stored, is_array( $prevStyle ) ? $prevStyle : null );
+                $prevItem   = (array) ( $before['module'][ $c['module'] ]['items'][ $c['id'] ] ?? [] );
+                $prevStyle  = $prevItem['styleAttrs'] ?? null;
+                $recorded[] = GlobalPresetKind::itemForUpdate( $c['id'], $c['module'], (array) $c['before'], (array) $stored, is_array( $prevStyle ) ? $prevStyle : null, ! array_key_exists( 'attrs', $prevItem ) );
                 $applied[]  = [ 'id' => $c['id'], 'module' => $c['module'], 'action' => 'update', 'before' => $c['before'], 'after' => $stored, 'default_preset_created' => false ];
             }
         }

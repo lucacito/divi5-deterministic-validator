@@ -186,4 +186,19 @@ class GlobalPresetsTest extends TestCase
         $this->assertTrue( GlobalPresets::import( 'divi/heading', $item, '' )['threw'] );
         $this->assertTrue( GlobalPresets::save( [] )['threw'] );
     }
+
+    public function testAnEmptyDefaultPresetShellIsManagedAndItsStateHasEmptyAttrs(): void
+    {
+        $data  = GlobalPresetsFixture::data();
+        $found = GlobalPresets::find( $data, GlobalPresetsFixture::T_DEFAULT );
+        $this->assertArrayNotHasKey( 'attrs', $found['item'] );
+        $this->assertArrayNotHasKey( 'styleAttrs', $found['item'] );
+        $this->assertTrue( GlobalPresets::managed( $found['module'], $found['item'] ) );
+        $this->assertSame( [ 'name' => 'Text default', 'moduleName' => 'divi/text', 'attrs' => [] ], GlobalPresets::state( $found['item'] ) );
+        $this->assertFalse( GlobalPresets::managed( 'divi/heading', $found['item'] ), 'the item must still name the module that holds it' );
+        $this->assertFalse( GlobalPresets::managed( 'divi/text', [ 'moduleName' => 'divi/text', 'name' => 'x', 'attrs' => 'nope' ] ), 'an attrs that is present must be an array' );
+        $this->assertFalse( GlobalPresets::managed( 'divi/text', [ 'moduleName' => 'divi/text', 'attrs' => [] ] ), 'a name is still needed' );
+        $legacy = GlobalPresets::find( $data, GlobalPresetsFixture::LEGACY );
+        $this->assertFalse( GlobalPresets::managed( $legacy['module'], $legacy['item'] ) );
+    }
 }

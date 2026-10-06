@@ -35,7 +35,8 @@ final class GlobalPresetsFixture
                 ],
                 'divi/text'    => [
                     'default' => self::T_DEFAULT,
-                    'items'   => [ self::T_DEFAULT => $item( self::T_DEFAULT, 'divi/text', 'Text default', [ 'content' => [ 'decoration' => [ 'bodyFont' => [ 'body' => [ 'font' => [ 'desktop' => [ 'value' => [ 'size' => '16px' ] ] ] ] ] ] ] ] ) ],
+                    // Divi's own default presets on a real site are empty "shells": no attrs and no styleAttrs keys at all.
+                    'items'   => [ self::T_DEFAULT => [ 'id' => self::T_DEFAULT, 'name' => 'Text default', 'moduleName' => 'divi/text', 'version' => '5.8.1', 'type' => 'module', 'created' => 1782593353, 'updated' => 1782593353 ] ],
                 ],
                 '0'            => [
                     'default' => 'legacy-default',

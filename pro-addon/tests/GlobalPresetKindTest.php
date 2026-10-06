@@ -370,4 +370,34 @@ class GlobalPresetKindTest extends TestCase
         };
         $this->assertSame( 'divi_refused', $this->undo()->undo( (int) $r['undo_batch']['id'] )['items'][0]['reason'] );
     }
+
+    public function testUndoOfAShellUpdateRemovesTheTreesAgainAndUndoOfThatUndoBringsThemBack(): void
+    {
+        $id    = GlobalPresetsFixture::T_DEFAULT;
+        $start = GlobalPresets::read();
+        $this->assertArrayNotHasKey( 'attrs', $start['module']['divi/text']['items'][ $id ] );
+        $data  = $start;
+        $item  = $data['module']['divi/text']['items'][ $id ];
+        $item['attrs'] = $item['styleAttrs'] = [ 'content' => [ 'x' => '1' ] ];
+        $item['updated'] = 1790000500;
+        $data['module']['divi/text']['items'][ $id ] = $item;
+        $res   = GlobalPresets::save( $data );
+        $batch = $this->log->record( 'manage_global_presets', 'test', [ GlobalPresetKind::itemForUpdate( $id, 'divi/text', (array) GlobalPresets::state( $start['module']['divi/text']['items'][ $id ] ), (array) GlobalPresets::state( $res['after']['module']['divi/text']['items'][ $id ] ), null, true ) ] );
+        $updated = GlobalPresets::read();
+        $this->assertSame( [ 'content' => [ 'x' => '1' ] ], $updated['module']['divi/text']['items'][ $id ]['styleAttrs'] );
+
+        $r = $this->undo()->undo( (int) $batch['id'] );
+        $this->assertTrue( $r['fully_undone'] );
+        $back = GlobalPresets::read();
+        $this->assertArrayNotHasKey( 'attrs', $back['module']['divi/text']['items'][ $id ] );
+        $this->assertArrayNotHasKey( 'styleAttrs', $back['module']['divi/text']['items'][ $id ] );
+        unset( $back['module']['divi/text']['items'][ $id ]['updated'], $start['module']['divi/text']['items'][ $id ]['updated'] );
+        $this->assertSame( $start, $back, 'the shell is back exactly (apart from its updated stamp)' );
+
+        $again = $this->undo()->undo( (int) $r['undo_batch']['id'] );
+        $this->assertTrue( $again['fully_undone'] );
+        $final = GlobalPresets::read()['module']['divi/text']['items'][ $id ];
+        $this->assertSame( [ 'content' => [ 'x' => '1' ] ], $final['attrs'] );
+        $this->assertSame( [ 'content' => [ 'x' => '1' ] ], $final['styleAttrs'] );
+    }
 }

@@ -163,4 +163,24 @@ class GlobalPresetPlannerTest extends TestCase
         $p = $this->plan( [ [ 'module' => 'divi/heading', 'name' => 'Big', 'attrs' => $this->sized( '1px' ) ], [ 'module' => 'divi/text', 'name' => 'Big', 'attrs' => [ 'content' => [ 'x' => '1' ] ] ] ] );
         $this->assertCount( 2, $p['changes'] );
     }
+
+    public function testUpdatingAnEmptyDefaultShellNeedsTheFlagAndAddsBothTreesKeepingTheRest(): void
+    {
+        $id   = GlobalPresetsFixture::T_DEFAULT;
+        $rows = [ [ 'id' => $id, 'attrs' => [ 'content' => [ 'x' => '1' ] ] ] ];
+        $this->refused( $rows, 'is the default preset of divi/text' );
+        $p = $this->plan( $rows, true );
+        $c = $p['changes'][0];
+        $this->assertSame( 'update', $c['action'] );
+        $this->assertTrue( $c['is_default'] );
+        $this->assertSame( [], $c['before']['attrs'] );
+        $this->assertSame( [ 'content' => [ 'x' => '1' ] ], $c['after']['attrs'] );
+        $this->assertSame( [ 'content' => [ 'x' => '1' ] ], $c['item']['attrs'] );
+        $this->assertSame( [ 'content' => [ 'x' => '1' ] ], $c['item']['styleAttrs'] );
+        $this->assertSame( 1790000000, $c['item']['updated'] );
+        $orig = GlobalPresetsFixture::data()['module']['divi/text']['items'][ $id ];
+        $got  = $c['item'];
+        unset( $got['attrs'], $got['styleAttrs'], $got['updated'], $orig['updated'] );
+        $this->assertSame( $orig, $got, 'every other key of the shell is kept' );
+    }
 }

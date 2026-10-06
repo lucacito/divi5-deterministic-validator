@@ -53,14 +53,18 @@ final class GlobalPresetKind implements SiteLockingKind
      * @param array<string,mixed> $before GlobalPresets::state() before
      * @param array<string,mixed> $after GlobalPresets::state() as stored now
      * @param array<string,mixed>|null $beforeStyleAttrs the preset's styleAttrs tree before the change (it can differ from attrs); null = not recorded, undo then uses attrs
+     * @param bool $attrsAbsent the item had NO attrs key (one of Divi's empty default "shells"); undo then removes the attrs and styleAttrs keys again
      * @return array<string,mixed>
      */
-    public static function itemForUpdate( string $id, string $module, array $before, array $after, ?array $beforeStyleAttrs = null ): array
+    public static function itemForUpdate( string $id, string $module, array $before, array $after, ?array $beforeStyleAttrs = null, bool $attrsAbsent = false ): array
     {
         $label   = 'Global preset "' . ( $after['name'] ?? '' ) . "\" ({$module}, {$id})";
         $payload = [ 'module' => $module, 'created' => false, 'state' => $before ];
         if ( null !== $beforeStyleAttrs ) {
             $payload['style_attrs'] = $beforeStyleAttrs;
+        }
+        if ( $attrsAbsent ) {
+            $payload['attrs_absent'] = true;
         }
 
         return Item::make( self::NAME, $id, $label, $payload, $after );
@@ -204,22 +208,32 @@ final class GlobalPresetKind implements SiteLockingKind
         if ( null === $found || $found['module'] !== $module || ! GlobalPresets::managed( $module, $found['item'] ) || ! is_array( $previous ) || ! is_string( $previous['name'] ?? null ) || ! is_array( $previous['attrs'] ?? null ) ) {
             return [ 'ok' => false, 'reason' => 'not_found' ];
         }
-        $style    = is_array( $before['style_attrs'] ?? null ) ? $before['style_attrs'] : $previous['attrs'];
+        $absent   = ! empty( $before['attrs_absent'] );
+        $recorded = is_array( $before['style_attrs'] ?? null ) ? $before['style_attrs'] : null;
+        $style    = $recorded ?? ( $absent ? null : $previous['attrs'] );
         $nowState = GlobalPresets::state( $found['item'] );
         $nowStyle = is_array( $found['item']['styleAttrs'] ?? null ) ? $found['item']['styleAttrs'] : null;
         $entry    = $found['item'];
-        $entry['name']       = $previous['name'];
-        $entry['attrs']      = $previous['attrs'];
-        $entry['styleAttrs'] = $style;
-        $entry['updated']    = time();
+        $entry['name'] = $previous['name'];
+        if ( $absent ) {
+            unset( $entry['attrs'] ); // an empty default shell goes back to being one, byte for byte
+        } else {
+            $entry['attrs'] = $previous['attrs'];
+        }
+        if ( null === $style ) {
+            unset( $entry['styleAttrs'] );
+        } else {
+            $entry['styleAttrs'] = $style;
+        }
+        $entry['updated'] = time();
         $data['module'][ $module ]['items'][ $id ] = $entry;
         $res    = $this->write( $data );
         $stored = null === $res['after'] ? null : GlobalPresets::find( $res['after'], $id )['item'] ?? null;
-        if ( null === $stored || Canon::hash( GlobalPresets::state( $stored ) ) !== Canon::hash( $previous ) || Canon::hash( $stored['styleAttrs'] ?? null ) !== Canon::hash( $style ) ) {
+        if ( null === $stored || Canon::hash( GlobalPresets::state( $stored ) ) !== Canon::hash( $previous ) || Canon::hash( $stored['styleAttrs'] ?? null ) !== Canon::hash( $style ) || ( $absent && array_key_exists( 'attrs', $stored ) ) ) {
             return [ 'ok' => false, 'reason' => $res['reason'] ?? 'divi_refused' ];
         }
 
-        return [ 'ok' => true, 'inverse' => self::itemForUpdate( $id, $module, (array) $nowState, (array) GlobalPresets::state( $stored ), $nowStyle ) ];
+        return [ 'ok' => true, 'inverse' => self::itemForUpdate( $id, $module, (array) $nowState, (array) GlobalPresets::state( $stored ), $nowStyle, ! array_key_exists( 'attrs', $found['item'] ) ) ];
     }
 
     /**
