@@ -203,7 +203,7 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 == Changelog ==
 
 = 4.7.0 =
-* New: your AI assistant can now use your Divi number and text variables in the pages it builds (for example your spacing and font-size variables, or a shared line of text), the same way it already reuses your global colors. The style guide it reads explains exactly where this works, and `list_global_styles` points it there.
+* New: your AI assistant can now use your Divi number and text variables in the pages it builds (for example a padding or heading-size variable, or a shared line of text), the same way it already reuses your global colors. The style guide it reads explains exactly where this works, and `list_global_styles` points it there.
 * New: when a layout uses a variable your site does not have, the check now tells your assistant (Divi would silently drop that value). This is advice only and never blocks a save.
 * As before, the plugin only reads: variables, colors and presets are created in Divi itself.
 

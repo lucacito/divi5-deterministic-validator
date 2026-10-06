@@ -45,7 +45,7 @@ When the variables list holds numbers or strings variables, `notes` gets one lin
 
 ### 4. Grounding (fixture and tests)
 
-- New fixture `fixtures/valid/variables-numbers-heading-page-17.json` in the repo's existing wrapper format: the builder-made heading block (815 characters) taken verbatim from page 17, wrapped in a minimal section/row/column. It passes the gate (checked 2026-10-06); the rest of page 17 does not (it holds code modules and image blocks missing attributes) and is not used.
+- New fixture `fixtures/valid/page-17-variable-heading.json` in the repo's existing wrapper format: the builder-made heading block (815 characters) taken verbatim from page 17, wrapped in a minimal section/row/column. It passes the gate (checked 2026-10-06); the rest of page 17 does not (it holds code modules and image blocks missing attributes) and is not used.
 - A test pins that the guide's example markup has the same shape as the citation found in that fixture (name prefix, type, `settings`), and that the fixture validates.
 - Optional strengthening, not blocking: a real builder export of a STRINGS variable cited from a heading title would make the strings case builder-traced as well.
 
