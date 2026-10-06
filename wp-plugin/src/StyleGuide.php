@@ -281,6 +281,27 @@ Call `get_site_structure` before building a page that should list a custom post 
 taxonomy, use an image at a particular registered size, or refer to Advanced Custom Fields
 field names. It is read-only and never returns field values; it only tells you what exists.
 
+## Show a custom field's value (dynamic content)
+A module can show a value Divi reads from the page it sits on, such as an Advanced Custom
+Fields (ACF) field, instead of fixed text. Call `get_site_structure` first (it lists the ACF
+field names, labels and types) and use only a name it returns. Never invent a field name.
+The binding is one `$variable(...)$` string that takes the place of the fixed value; Divi
+fills it in when the page is shown. Write it exactly like this (inside a block comment the
+quotes are written as \u0022), with the field's name in place of `FIELD_NAME`:
+`$variable({\u0022type\u0022:\u0022content\u0022,\u0022value\u0022:{\u0022name\u0022:\u0022post_meta_key\u0022,\u0022settings\u0022:{\u0022before\u0022:\u0022\u0022,\u0022after\u0022:\u0022\u0022,\u0022select_meta_key\u0022:\u0022custom_meta_FIELD_NAME\u0022,\u0022meta_key\u0022:\u0022\u0022,\u0022date_format\u0022:\u0022default\u0022,\u0022custom_date_format\u0022:\u0022\u0022,\u0022enable_html\u0022:\u0022off\u0022}}})$`
+The `custom_meta_` prefix is part of the value. `before` and `after` wrap the value, for
+example `<h2>` and `</h2>`. It is verified in
+a text module's content (`content.innerContent.desktop.value`) and
+a blurb's title (`title.innerContent.desktop.value.text`). The same string also works as an image's
+`image.innerContent.desktop.value.src` (an ACF image field, whatever return format it uses;
+keep `id` and `alt` empty) and as a button's `button.innerContent.desktop.value.linkUrl` (an
+ACF URL field). Do not use it anywhere else, and do not use ACF repeater or loop fields.
+The checker cannot see whether a field exists: a name the site does not have
+renders an empty module, with no error. The save, create and preview tools add an `unknown_custom_fields` note
+(inside `advisories.style_references`) when a layout binds a field that is not an ACF field
+here and that no page has; replace it with a name `get_site_structure` returned. A field only
+has a value on the pages its ACF field group applies to.
+
 ## Match the site (colors and presets)
 Call `list_global_styles` before styling. It lists the site's own global colors (ids like
 `gcid-…`), module presets and variables. Reuse a site color instead of hard-coding a hex:

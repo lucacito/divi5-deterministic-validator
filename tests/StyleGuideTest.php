@@ -145,4 +145,58 @@ class StyleGuideTest extends TestCase
         $this->assertStringContainsString($shape, StyleGuide::markdown());
         $this->assertTrue((new \Divi5Validator\Validator())->validateContent((string) $found['post_content'])->isValid(), 'the real export that grounds the guide must pass the checker');
     }
+
+    /** The Custom Field binding exactly as the guide must teach it, with the field name as FIELD_NAME. */
+    private function customFieldShape(): string
+    {
+        $q = '\\' . 'u0022';
+
+        return '$variable({' . $q . 'type' . $q . ':' . $q . 'content' . $q . ',' . $q . 'value' . $q . ':{' . $q . 'name' . $q . ':' . $q . 'post_meta_key' . $q . ',' . $q . 'settings' . $q . ':{' . $q . 'before' . $q . ':' . $q . $q . ',' . $q . 'after' . $q . ':' . $q . $q . ',' . $q . 'select_meta_key' . $q . ':' . $q . 'custom_meta_FIELD_NAME' . $q . ',' . $q . 'meta_key' . $q . ':' . $q . $q . ',' . $q . 'date_format' . $q . ':' . $q . 'default' . $q . ',' . $q . 'custom_date_format' . $q . ':' . $q . $q . ',' . $q . 'enable_html' . $q . ':' . $q . 'off' . $q . '}}})$';
+    }
+
+    public function testTeachesBindingAModuleToACustomFieldInTheVerifiedPlaces(): void
+    {
+        $md = StyleGuide::markdown();
+        $this->assertStringContainsString("## Show a custom field's value (dynamic content)", $md);
+        $this->assertStringContainsString($this->customFieldShape(), $md);
+        foreach ([
+            "a text module's content (`content.innerContent.desktop.value`)",
+            "a blurb's title (`title.innerContent.desktop.value.text`)",
+            '`image.innerContent.desktop.value.src`',
+            '`button.innerContent.desktop.value.linkUrl`',
+            'The `custom_meta_` prefix is part of the value',
+            '`before` and `after` wrap the value',
+        ] as $place) {
+            $this->assertStringContainsString($place, $md, "the guide must say: $place");
+        }
+        $this->assertStringContainsString('Call `get_site_structure` first', $md);
+        $this->assertStringContainsString('Never invent a field name', $md);
+        $this->assertStringContainsString('unknown_custom_fields', $md);
+        $this->assertStringContainsString('renders an empty module', $md);
+    }
+
+    public function testDoesNotTeachTheCustomFieldBindingWhereItIsNotVerified(): void
+    {
+        $md = StyleGuide::markdown();
+        $this->assertStringContainsString('Do not use it anywhere else', $md);
+        $this->assertStringContainsString('repeater or loop fields', $md);
+        $this->assertStringNotContainsString('acf_groups', $md);
+    }
+
+    public function testTheCustomFieldShapeTheGuideTeachesIsInARealFixtureThatPassesTheChecker(): void
+    {
+        $shape = str_replace('FIELD_NAME', 'team_member_name', $this->customFieldShape());
+        $found = null;
+        foreach (glob(__DIR__ . '/../fixtures/valid/page-*.json') ?: [] as $file) {
+            $export = json_decode((string) file_get_contents($file), true);
+            if (is_array($export) && str_contains((string) ($export['post_content'] ?? ''), substr($shape, 0, strpos($shape, 'team_member_name')))) {
+                $found = $export;
+                break;
+            }
+        }
+        $this->assertNotNull($found, 'no fixture in fixtures/valid binds a module to a custom field in the form the guide teaches');
+        $this->assertTrue((new \Divi5Validator\Validator())->validateContent((string) $found['post_content'])->isValid());
+        $gate = \AiEditorDivi5\WP\LayoutGate::check((string) $found['post_content']);
+        $this->assertTrue($gate->isValid(), 'the plugin gate (validator plus the no-custom-code policy) accepts the grounding fixture');
+    }
 }
