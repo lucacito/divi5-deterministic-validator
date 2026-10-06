@@ -19,9 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * A read-only, deterministic audit of the site's Divi 5 pages and live header/footer: layout checker violations
- * (including custom code the plugin will not save), preset and global-color ids the site does not have, and internal
- * links that point at no page or at an unpublished one (codes LINK_NO_POST, LINK_NOT_PUBLISHED, UNKNOWN_PRESET_ID,
- * UNKNOWN_COLOR_ID, and LINKS_NOT_ALL_CHECKED when an item has more links than the scanner reads). 25 items per call; the
+ * (including custom code the plugin will not save), preset, global-color and global-variable ids the site does not have, and
+ * internal links that point at no page or at an unpublished one (codes LINK_NO_POST, LINK_NOT_PUBLISHED,
+ * UNKNOWN_PRESET_ID, UNKNOWN_COLOR_ID, UNKNOWN_VARIABLE_ID, and LINKS_NOT_ALL_CHECKED when an item has more links than the scanner reads). 25 items per call; the
  * items are in post-id order and the cursor is the id of the last item audited, so pages created or deleted between two
  * calls cannot shift the window. No AI, no remote request, nothing is ever written.
  */
@@ -35,14 +35,15 @@ final class AuditSite implements ProTool
     public const LINK_NOT_PUBLISHED = 'LINK_NOT_PUBLISHED';
     public const UNKNOWN_PRESET     = 'UNKNOWN_PRESET_ID';
     public const UNKNOWN_COLOR      = 'UNKNOWN_COLOR_ID';
+    public const UNKNOWN_VARIABLE   = 'UNKNOWN_VARIABLE_ID';
     public const LINKS_NOT_ALL      = 'LINKS_NOT_ALL_CHECKED';
 
     private \Closure $styleAdvisor;
 
-    /** @var \Closure():array{presets: ?array<string,true>, colors: ?array<string,true>} */
+    /** @var \Closure():array{presets: ?array<string,true>, colors: ?array<string,true>, variables?: ?array<string,true>} */
     private \Closure $knownIds;
 
-    /** @var array{presets: ?array<string,true>, colors: ?array<string,true>}|null the site's ids, read once per run() */
+    /** @var array{presets: ?array<string,true>, colors: ?array<string,true>, variables?: ?array<string,true>}|null the site's ids, read once per run() */
     private ?array $known = null;
 
     /** @var array<string,array{id:int, status:string, readable:bool}> link path => what it resolves to, for one run() */
@@ -50,7 +51,7 @@ final class AuditSite implements ProTool
 
     /**
      * @param (\Closure(string):?array<string,mixed>)|null $styleAdvisor fn(content): the free plugin's style-reference advisory or null
-     * @param (\Closure():array{presets: ?array<string,true>, colors: ?array<string,true>})|null $knownIds fn(): the preset and color ids the site has
+     * @param (\Closure():array{presets: ?array<string,true>, colors: ?array<string,true>, variables?: ?array<string,true>})|null $knownIds fn(): the preset and color ids the site has
      */
     public function __construct( ?\Closure $styleAdvisor = null, private int $maxFindings = self::MAX_FINDINGS, ?\Closure $knownIds = null )
     {
@@ -72,7 +73,7 @@ final class AuditSite implements ProTool
     {
         return [
             'name'        => self::NAME,
-            'description' => 'Read-only audit of Divi 5 pages and the live header/footer: layout check violations, unknown preset or color ids, and internal links to missing or unpublished pages. 25 items per call in id order; pass the returned next_cursor to continue. Makes no remote request.',
+            'description' => 'Read-only audit of Divi 5 pages and the live header/footer: layout check violations, unknown preset, color or variable ids, and internal links to missing or unpublished pages. 25 items per call in id order; pass the returned next_cursor to continue. Makes no remote request.',
             'inputSchema' => [
                 'type'       => 'object',
                 'properties' => [
@@ -160,10 +161,10 @@ final class AuditSite implements ProTool
             $findings[] = [ 'code' => (string) $code, 'count' => $row['count'], 'detail' => $row['detail'] ];
         }
 
-        // 2. Preset and global-color ids this site does not have (the free plugin's own advisory).
+        // 2. Preset, global-color and global-variable ids this site does not have (the free plugin's own advisory).
         $advice = ( $this->styleAdvisor )( $content );
         if ( is_array( $advice ) ) {
-            foreach ( [ 'unknown_presets' => self::UNKNOWN_PRESET, 'unknown_colors' => self::UNKNOWN_COLOR ] as $key => $code ) {
+            foreach ( [ 'unknown_presets' => self::UNKNOWN_PRESET, 'unknown_colors' => self::UNKNOWN_COLOR, 'unknown_variables' => self::UNKNOWN_VARIABLE ] as $key => $code ) {
                 $rows = is_array( $advice[ $key ] ?? null ) ? $advice[ $key ] : [];
                 if ( [] !== $rows ) {
                     $findings[] = [ 'code' => $code, 'count' => count( $rows ), 'detail' => implode( ', ', array_slice( array_map( static fn ( $r ): string => (string) ( $r['id'] ?? '' ), $rows ), 0, 5 ) ) ];
