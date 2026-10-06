@@ -173,7 +173,8 @@ try {
     $check( 200 === $r['status'] && true === $r['data']['valid'] && ! array_key_exists( 'advisories', $r['data'] ), 'REST /validate of a layout whose ids all exist: no advisories key' );
     $r = $rest( 'POST', '/validate', [ 'post_content' => $dirty ] );
     $adv = $r['data']['advisories']['style_references'] ?? [];
-    $check( 200 === $r['status'] && true === $r['data']['valid'], 'REST /validate of the unknown-id layout: still 200 and valid' );    $check( [ $unknownP ] === array_column( $adv['unknown_presets'] ?? [], 'id' ), 'the advisory names exactly the unknown preset id' );
+    $check( 200 === $r['status'] && true === $r['data']['valid'], 'REST /validate of the unknown-id layout: still 200 and valid' );
+    $check( [ $unknownP ] === array_column( $adv['unknown_presets'] ?? [], 'id' ), 'the advisory names exactly the unknown preset id' );
     $check( [ $unknownC ] === array_column( $adv['unknown_colors'] ?? [], 'id' ), 'the advisory names exactly the unknown color id' );
 
     $m = $mcp( 'validate_layout', [ 'post_content' => $dirty ] );
