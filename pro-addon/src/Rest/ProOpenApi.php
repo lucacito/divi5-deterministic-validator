@@ -21,7 +21,7 @@ final class ProOpenApi
     private const SUMMARY_MAX = 120;
 
     /** Tools that exist over MCP and REST only: the 16 free + 14 Pro operations already use all 30 the ChatGPT importer accepts. */
-    public const MCP_REST_ONLY = [ 'manage_global_colors' ];
+    public const MCP_REST_ONLY = [ 'manage_global_colors', 'manage_global_variables' ];
 
     public function __construct( private ToolRegistry $registry )
     {

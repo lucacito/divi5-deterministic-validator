@@ -124,7 +124,7 @@ class ExpiryKeepsAllToolsTest extends TestCase
     private function assertKeepsAllTools(): void
     {
         $names = self::allToolNames();
-        $this->assertCount( 15, $names );
+        $this->assertCount( 16, $names );
         $listed = $this->advertised( [] );
         sort( $listed );
         $sorted = $names;
