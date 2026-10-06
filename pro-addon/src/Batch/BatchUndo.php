@@ -39,19 +39,19 @@ final class BatchUndo
         // SiteLockingKind). A busy lock fails that kind's items without reading or writing anything; a dry run only reads.
         $locked = [];
         $busy   = [];
-        if ( ! $dryRun ) {
-            foreach ( $items as $item ) {
-                $kind = $this->kinds[ (string) ( $item['kind'] ?? '' ) ] ?? null;
-                if ( $kind instanceof SiteLockingKind && Item::UNDONE !== ( $item['state'] ?? Item::APPLIED ) && ! isset( $locked[ $kind->name() ] ) && ! isset( $busy[ $kind->name() ] ) ) {
-                    if ( $kind->lockSite() ) {
-                        $locked[ $kind->name() ] = $kind;
-                    } else {
-                        $busy[ $kind->name() ] = true;
+        try {
+            if ( ! $dryRun ) {
+                foreach ( $items as $item ) {
+                    $kind = $this->kinds[ (string) ( $item['kind'] ?? '' ) ] ?? null;
+                    if ( $kind instanceof SiteLockingKind && Item::UNDONE !== ( $item['state'] ?? Item::APPLIED ) && ! isset( $locked[ $kind->name() ] ) && ! isset( $busy[ $kind->name() ] ) ) {
+                        if ( $kind->lockSite() ) {
+                            $locked[ $kind->name() ] = $kind;
+                        } else {
+                            $busy[ $kind->name() ] = true;
+                        }
                     }
                 }
             }
-        }
-        try {
             for ( $i = count( $items ) - 1; $i >= 0; $i-- ) {
                 $item  = $items[ $i ];
                 $row   = [ 'kind' => (string) ( $item['kind'] ?? '' ), 'label' => (string) ( $item['label'] ?? '' ) ];
