@@ -173,10 +173,9 @@ WP_CLI::log( "baseline: {$countStart} stored preset(s) in " . count( (array) ( $
 if ( $batchesStart > 12 ) {
     WP_CLI::warning( "the batch store holds {$batchesStart} rows and keeps only 20: this run will evict the oldest real ones (dev site)" );
 }
-// Some of Divi's own default presets are stored as an empty shell (no attrs): the tool refuses those as "not a regular preset" even
-// with allow_default_presets. The default-preset rule itself is tested on a module whose default has a style tree.
+// Divi's own default presets can be stored as an empty shell (no attrs, no styleAttrs keys): the tool manages those too (section 8).
 $headingDefault = GlobalPresets::defaultId( $dataStart, 'divi/heading' );
-$check( '' !== $headingDefault && null !== GlobalPresets::find( $dataStart, $headingDefault ), 'baseline: divi/heading has a default preset (stored without attrs on this site: the tool must refuse it as not regular)' );
+$check( '' !== $headingDefault && null !== GlobalPresets::find( $dataStart, $headingDefault ), 'baseline: divi/heading has a default preset' . ( is_array( GlobalPresets::find( $dataStart, $headingDefault )['item'] ?? null ) && ! array_key_exists( 'attrs', GlobalPresets::find( $dataStart, $headingDefault )['item'] ) ? ' (an empty shell here: no attrs key)' : '' ) );
 $defaultId = '';
 $defaultModule = '';
 foreach ( (array) ( $dataStart['module'] ?? [] ) as $module => $entry ) {
@@ -264,7 +263,6 @@ try {
         'custom CSS on an update'                            => [ [ [ 'id' => $newId, 'attrs' => $cssAttrs ] ], 'presets[0]' ],
         'an unknown id'                                      => [ [ [ 'id' => 'aiedmissing-0000-0000', 'name' => 'x' ] ], 'no preset with the id' ],
         'the default preset without allow_default_presets'   => [ [ [ 'id' => $defaultId, 'name' => 'AIED verify default' ] ], 'allow_default_presets' ],
-        'a default preset stored without attrs'              => [ [ [ 'id' => $headingDefault, 'name' => 'AIED verify default', 'attrs' => $bigAttr ] ], 'cannot be changed here' ],
         'a module change on an update'                       => [ [ [ 'id' => $newId, 'module' => 'divi/text', 'name' => 'x' ] ], 'never moves' ],
         'an unknown module'                                  => [ [ [ 'module' => 'divi/not-a-module', 'name' => 'x', 'attrs' => $bigAttr ] ], 'must be a Divi 5 module' ],
         'an update with nothing to change'                   => [ [ [ 'id' => $newId ] ], 'at least one of name, attrs' ],
@@ -362,22 +360,88 @@ try {
         $check( true === ( $un['result']['fully_undone'] ?? false ) && ! isset( GlobalPresets::read()['module']['divi/image'] ), 'undo of the two creates is fully_undone and the module entry is gone' );
         $check( $fingerprint() === $fpStart, 'after the two-create undo every stored preset is identical to the start' );
     }
+    // ---- 8. the real DEFAULT preset of divi/heading (a shell without attrs on a stock site): update it, render it, undo it ----------------
+    $defItem0   = (array) GlobalPresets::find( (array) GlobalPresets::read(), $headingDefault )['item'];
+    $shell0     = ! array_key_exists( 'attrs', $defItem0 ) && ! array_key_exists( 'styleAttrs', $defItem0 );
+    $fpNoDef    = $without( $headingDefault );
+    $dataNoStamp = static function () use ( $headingDefault, $defItem0 ): string {
+        $data = (array) GlobalPresets::read();
+        if ( isset( $data['module']['divi/heading']['items'][ $headingDefault ] ) ) {
+            $data['module']['divi/heading']['items'][ $headingDefault ]['updated'] = $defItem0['updated'] ?? null; // undo refreshes this one stamp
+        }
+
+        return md5( serialize( $data ) );
+    };
+    WP_CLI::log( 'shell check: the divi/heading default preset ' . $headingDefault . ( $shell0 ? ' is an empty shell (no attrs, no styleAttrs keys)' : ' has attrs on this site' ) );
+    $defAttr = [ 'title' => [ 'decoration' => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'size' => '53px', 'weight' => '700' ] ] ] ] ] ] ];
+    $defUpd  = [ [ 'id' => $headingDefault, 'attrs' => $defAttr ] ];
+    $r = $call( 'manage_global_presets', [ 'presets' => $defUpd, 'dry_run' => true ] );
+    $check( $errHas( $r, 'allow_default_presets' ), 'default heading: a dry run WITHOUT allow_default_presets is refused (it is the default preset)' );
+    $r = $call( 'manage_global_presets', [ 'presets' => $defUpd ] );
+    $check( $errHas( $r, 'allow_default_presets' ) && $fingerprint() === $fpStart, 'default heading: a real run without allow_default_presets is refused and changes nothing' );
+    $dd = $call( 'manage_global_presets', [ 'presets' => $defUpd, 'dry_run' => true, 'allow_default_presets' => true ] );
+    $check( null === $dd['error'] && true === ( $dd['result']['changes'][0]['is_default'] ?? false ) && $headingDefault === ( $dd['result']['changes'][0]['id'] ?? null ) && is_string( $dd['result']['preview_token'] ?? null ), 'default heading: with allow_default_presets the dry run works, is_default is true and a token is given' );
+    $check( $fingerprint() === $fpStart, 'default heading: that dry run changed nothing' );
+    $noAllow = $call( 'manage_global_presets', [ 'presets' => $defUpd, 'preview_token' => (string) ( $dd['result']['preview_token'] ?? '' ) ] );
+    $check( $errHas( $noAllow, 'allow_default_presets' ) && $fingerprint() === $fpStart, 'default heading: that token cannot be used without allow_default_presets' );
+    // Divi marks a module's DEFAULT preset in the page with the fixed word "default" (preset--module--divi-heading--default), not with the
+    // preset's id (observed live on Divi 5.14), so that class is what the rules are searched by.
+    $defCls    = 'default';
+    $defLayout = str_replace( 'AIEDPRESETGATE', 'AIEDDEFAULTGATE', (string) preg_replace( '/"modulePreset":\["[^"]*"\],?/', '', $layout( 'x-placeholder' ) ) );
+    $check( false === strpos( $defLayout, 'modulePreset' ) && false !== strpos( $defLayout, 'AIEDDEFAULTGATE' ) && LayoutGate::check( $defLayout )->isValid(), 'default heading: the probe layout has a heading WITHOUT modulePreset and passes the gate' );
+    $newRequest();
+    $defPage = wp_insert_post( [ 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'aied verify gp probe default', 'post_content' => wp_slash( $defLayout ), 'meta_input' => [ '_et_pb_use_builder' => 'on', '_et_pb_use_divi_5' => 'on' ] ], true );
+    if ( is_wp_error( $defPage ) ) {
+        throw new RuntimeException( 'could not create the default-preset probe page: ' . $defPage->get_error_message() );
+    }
+    $probePages[] = (int) $defPage;
+    $css = $render( (int) $defPage );
+    $check( false !== strpos( $css, 'AIEDDEFAULTGATE' ) && 1 === preg_match( '/<body[^>]*\bpage-id-' . (int) $defPage . '\b/', $css ), 'default heading: the probe page rendered (before the update)' );
+    $check( false === strpos( $css, 'preset--module--divi-heading--' . $defCls ) && ! $ruleHas( $css, $defCls, 'font-size:53px' ), 'default heading: BEFORE the update the page has no default-preset class and no 53px rule (the control for the checks below)' );
+    $dr = $call( 'manage_global_presets', [ 'presets' => $defUpd, 'allow_default_presets' => true, 'preview_token' => (string) ( $dd['result']['preview_token'] ?? '' ) ] );
+    $defB = (int) ( $dr['result']['batch']['id'] ?? 0 );
+    $check( null === $dr['error'] && true === ( $dr['result']['changed'] ?? false ) && true === ( $dr['result']['batch']['undoable'] ?? false ) && ! isset( $dr['result']['unexpected_changes'] ), 'default heading: the real run changed it, undoable, nothing unexpected' );
+    $defItem1 = (array) GlobalPresets::find( (array) GlobalPresets::read(), $headingDefault )['item'];
+    $check( $canon( $defAttr ) === $canon( $defItem1['attrs'] ?? null ) && $canon( $defAttr ) === $canon( $defItem1['styleAttrs'] ?? null ), 'default heading: the stored default item now has attrs and styleAttrs equal to what was sent' );
+    $check( ( $defItem0['name'] ?? null ) === ( $defItem1['name'] ?? 0 ) && ( $defItem0['id'] ?? null ) === ( $defItem1['id'] ?? 0 ) && ( $defItem0['type'] ?? null ) === ( $defItem1['type'] ?? 0 ) && ( $defItem0['created'] ?? null ) === ( $defItem1['created'] ?? 0 ) && $headingDefault === GlobalPresets::defaultId( (array) GlobalPresets::read(), 'divi/heading' ), 'default heading: name, id, type and created are unchanged and it is still the module default' );
+    $check( $without( $headingDefault ) === $fpNoDef, 'default heading: every OTHER preset (and the rest of the data) is byte-identical to before' );
+    $css = $render( (int) $defPage );
+    $check( 1 === preg_match( '/class="[^"]*preset--module--divi-heading--' . $defCls . '[^"]*"[^>]*><div class="et_pb_heading_container"><h1[^>]*>AIEDDEFAULTGATE/', $css ), 'default heading: Divi now puts the default preset class on the heading that has no modulePreset of its own' );
+    $check( $ruleHas( $css, $defCls, 'font-size:53px' ), "default heading: a rule for the default preset's class sets font-size:53px" );
+    $check( $ruleHas( $css, $defCls, 'font-weight:700' ), "default heading: a rule for the default preset's class sets font-weight:700" );
+    $un = $call( 'undo_batch', [ 'batch_id' => $defB ] );
+    $defItem2 = (array) GlobalPresets::find( (array) GlobalPresets::read(), $headingDefault )['item'];
+    $check( true === ( $un['result']['fully_undone'] ?? false ), "default heading: undo of batch {$defB} is fully_undone" );
+    $check( $shell0 === ( ! array_key_exists( 'attrs', $defItem2 ) && ! array_key_exists( 'styleAttrs', $defItem2 ) ), 'default heading: after undo the item is back to its original kind (a shell has NO attrs and NO styleAttrs keys)' );
+    $check( $dataNoStamp() === md5( serialize( $dataStart ) ), "default heading: after undo the whole data equals the start, ignoring only that preset's `updated` stamp" );
+    $css = $render( (int) $defPage );
+    $check( ! $ruleHas( $css, $defCls, 'font-size:53px' ), 'default heading: after undo no rule for the default preset sets font-size:53px any more' );
 } catch ( \Throwable $e ) {
     $aborted    = true;
     $failures[] = 'aborted by ' . get_class( $e ) . ': ' . $e->getMessage();
     WP_CLI::log( 'FAIL  aborted by ' . get_class( $e ) . ': ' . $e->getMessage() );
 } finally {
     $deleteProbePages(); // an abort must not leave the probe page behind
-    if ( $fingerprint() !== $fpStart ) {
-        // Whatever a failed check or an abort left stored: put Divi's own data back exactly as it was read at the start.
+    if ( serialize( GlobalPresets::read() ) !== serialize( $dataStart ) ) {
+        // The data must end BYTE-IDENTICAL to the start. The only difference an undo is allowed to leave is the `updated` stamp of the
+        // default heading preset it restored (undo refreshes it); anything else is a failure of the run.
+        $cur = (array) GlobalPresets::read();
+        if ( isset( $cur['module']['divi/heading']['items'][ $headingDefault ], $dataStart['module']['divi/heading']['items'][ $headingDefault ] ) ) {
+            $cur['module']['divi/heading']['items'][ $headingDefault ]['updated'] = $dataStart['module']['divi/heading']['items'][ $headingDefault ]['updated'] ?? null;
+        }
+        if ( serialize( $cur ) !== serialize( $dataStart ) ) {
+            $failures[] = 'the stored presets differed from the start after the run and were restored with GlobalPresets::save()';
+            WP_CLI::log( 'FAIL  the stored presets differed from the start after the run: restored from the snapshot taken through Divi\'s own reader' );
+        } else {
+            WP_CLI::log( "note: only the default heading preset's updated stamp differed (undo refreshes it): restored from the snapshot" );
+        }
         GlobalPresets::save( $dataStart );
-        $failures[] = 'the stored presets differed from the start after the run and were restored with GlobalPresets::save()';
-        WP_CLI::log( 'FAIL  the stored presets differed from the start after the run: restored from the snapshot taken through Divi\'s own reader' );
     }
 }
 
-// ---- 8. the site is exactly as it was ---------------------------------------------------------------------------------------
+// ---- 9. the site is exactly as it was ---------------------------------------------------------------------------------------
 $check( $fingerprint() === $fpStart, 'every stored preset (the whole data, legacy entries included) is identical to the start' );
+$check( serialize( GlobalPresets::read() ) === serialize( $dataStart ), 'the final stored presets serialize BYTE-IDENTICALLY to the data read at the start (updated stamps included)' );
 $check( $total() === $countStart, 'the preset count equals the baseline' );
 $deleteProbePages();
 $check( 0 === $probeLeft(), "the probe page is deleted (none titled 'aied verify gp...' is left)" );
