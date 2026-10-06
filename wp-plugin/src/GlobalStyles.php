@@ -90,6 +90,9 @@ final class GlobalStyles
         if ( $truncated ) {
             $notes[] = 'Some lists were cut to their limit; pass "module" to narrow the presets.';
         }
+        if ( [] !== ( $varLists['numbers'] ?? [] ) || [] !== ( $varLists['strings'] ?? [] ) ) {
+            $notes[] = 'Numbers and strings variables can be used in a layout as described in get_style_guide; other kinds of variable are listed for information only.';
+        }
         $notes[] = "Read-only. To create or change presets, colors or variables, use Divi's Visual Builder.";
 
         return [
@@ -103,20 +106,20 @@ final class GlobalStyles
     }
 
     /**
-     * Every preset id and global color id that exists on this site, uncapped, for checking a layout's
+     * Every preset id, global color id and global variable id that exists on this site, uncapped, for checking a layout's
      * references. A part is null when Divi cannot be read, so the caller never flags what it cannot know.
      *
-     * @return array{presets: ?array<string,true>, colors: ?array<string,true>}
+     * @return array{presets: ?array<string,true>, colors: ?array<string,true>, variables: ?array<string,true>}
      */
     public static function knownIds(): array
     {
-        [ $presets, $colors ] = self::readers();
+        [ $presets, $colors, $variables ] = self::readers();
 
-        return self::knownIdsWith( $presets, $colors );
+        return self::knownIdsWith( $presets, $colors, $variables );
     }
 
-    /** @return array{presets: ?array<string,true>, colors: ?array<string,true>} */
-    public static function knownIdsWith( ?callable $presets, ?callable $colors ): array
+    /** @return array{presets: ?array<string,true>, colors: ?array<string,true>, variables: ?array<string,true>} */
+    public static function knownIdsWith( ?callable $presets, ?callable $colors, ?callable $variables = null ): array
     {
         $presetData = self::read( $presets );
         $colorData  = self::read( $colors );
@@ -146,7 +149,24 @@ final class GlobalStyles
             }
         }
 
-        return [ 'presets' => $presetIds, 'colors' => $colorIds ];
+        $variableData = self::read( $variables );
+        $variableIds  = null;
+        if ( null !== $variableData ) {
+            $variableIds = [];
+            foreach ( $variableData as $items ) {
+                $items = is_object( $items ) ? get_object_vars( $items ) : $items;
+                if ( ! is_array( $items ) ) {
+                    continue;
+                }
+                foreach ( array_keys( $items ) as $id ) {
+                    if ( is_string( $id ) && '' !== $id ) {
+                        $variableIds[ $id ] = true;
+                    }
+                }
+            }
+        }
+
+        return [ 'presets' => $presetIds, 'colors' => $colorIds, 'variables' => $variableIds ];
     }
 
     /** Calls a Divi reader; null when it is missing, throws, or does not return an array. @return ?array<mixed> */

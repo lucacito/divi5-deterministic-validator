@@ -145,6 +145,22 @@ $clean        = $layout( 'Probe', [ 'modulePreset' => [ $knownPreset ?: 'default
 $dirty        = $layout( 'Probe', [ 'modulePreset' => [ $unknownP ] ] + $colorAttr( $unknownC ) );
 $check( ( new Validator() )->validateContent( $dirty )->isValid(), 'the probe layout with unknown ids passes the checker (the advisory is not a violation)' );
 
+$varAttr = static fn ( string $id ): array => [ 'title' => [ 'innerContent' => [ 'desktop' => [ 'value' => 'Probe' ] ], 'decoration' => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'size' => '$variable(' . wp_json_encode( [ 'type' => 'content', 'value' => [ 'name' => $id, 'settings' => new stdClass() ] ] ) . ')$' ] ] ] ] ] ] ];
+$knownVar = '';
+foreach ( [ 'numbers', 'strings' ] as $kind ) {
+    if ( [] !== ( $d['variables'][ $kind ] ?? [] ) ) {
+        $knownVar = (string) $d['variables'][ $kind ][0]['id'];
+        break;
+    }
+}
+$unknownV = 'gvid-00000000-0000-4000-8000-000000000000';
+$dirtyVar = $layout( 'Probe', $varAttr( $unknownV ) );
+$cleanVar = '' === $knownVar ? '' : $layout( 'Probe', $varAttr( $knownVar ) );
+$check( ( new Validator() )->validateContent( $dirtyVar )->isValid(), 'a layout citing a variable the site does not have passes the checker (the advisory is not a violation)' );
+if ( '' === $knownVar ) {
+    WP_CLI::warning( 'this site has no numbers or strings variable: the "known variable gets no advisory" check was skipped' );
+}
+
 $pageId = wp_insert_post( [ 'post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'aied global-styles check', 'post_content' => $clean ], true );
 if ( is_wp_error( $pageId ) ) {
     WP_CLI::error( $pageId->get_error_message() );
@@ -163,6 +179,15 @@ try {
 
     $m = $mcp( 'validate_layout', [ 'post_content' => $dirty ] );
     $check( ! $m['isError'] && [ $unknownP ] === array_column( $m['result']['advisories']['style_references']['unknown_presets'] ?? [], 'id' ), 'MCP validate_layout reports the same unknown preset' );
+
+    $r = $rest( 'POST', '/validate', [ 'post_content' => $dirtyVar ] );
+    $check( 200 === $r['status'] && true === $r['data']['valid'] && [ $unknownV ] === array_column( $r['data']['advisories']['style_references']['unknown_variables'] ?? [], 'id' ), 'REST /validate of a layout citing a missing variable: still valid, and the advisory names exactly that id' );
+    $m = $mcp( 'validate_layout', [ 'post_content' => $dirtyVar ] );
+    $check( ! $m['isError'] && true === $m['result']['valid'] && [ $unknownV ] === array_column( $m['result']['advisories']['style_references']['unknown_variables'] ?? [], 'id' ), 'MCP validate_layout reports the same unknown variable' );
+    if ( '' !== $knownVar ) {
+        $r = $rest( 'POST', '/validate', [ 'post_content' => $cleanVar ] );
+        $check( 200 === $r['status'] && true === $r['data']['valid'] && ! array_key_exists( 'advisories', $r['data'] ), "REST /validate of a layout citing the real variable {$knownVar}: no advisories key" );
+    }
 
     $r = $rest( 'PUT', "/pages/{$pageId}", [ 'post_content' => $dirty, 'dry_run' => true ] );
     $check( 200 === $r['status'] && false === $r['data']['saved'] && true === $r['data']['dry_run'] && isset( $r['data']['advisories']['style_references'] ), 'REST PUT dry_run carries the advisory and saves nothing' );

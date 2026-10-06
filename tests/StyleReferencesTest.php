@@ -17,6 +17,8 @@ class StyleReferencesTest extends TestCase
     private const UNKNOWN       = '11111111-2222-4333-8444-555555555555';
     private const KNOWN_COLOR   = 'gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113';
     private const UNKNOWN_COLOR = 'gcid-00000000-0000-4000-8000-000000000000';
+    private const KNOWN_VAR     = 'gvid-f7rcuxrcdb';
+    private const UNKNOWN_VAR   = 'gvid-00000000-0000-4000-8000-000000000000';
 
     private function known(): array
     {
@@ -40,6 +42,11 @@ class StyleReferencesTest extends TestCase
     private function colorAttr( string $id ): array
     {
         return [ 'title' => [ 'decoration' => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'color' => '$variable(' . json_encode( [ 'type' => 'color', 'value' => [ 'name' => $id, 'settings' => new \stdClass() ] ] ) . ')$' ] ] ] ] ] ] ];
+    }
+
+    private function varAttr( string $id ): array
+    {
+        return [ 'title' => [ 'decoration' => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'size' => '$variable(' . json_encode( [ 'type' => 'content', 'value' => [ 'name' => $id, 'settings' => new \stdClass() ] ] ) . ')$' ] ] ] ] ] ] ];
     }
 
     public function testCleanLayoutGivesNull(): void
@@ -126,6 +133,54 @@ class StyleReferencesTest extends TestCase
         $this->assertSame( $a, $b );
         $this->assertSame( $copyC, $content );
         $this->assertSame( $copyK, $known );
+    }
+
+    public function testAnUnknownVariableIsFoundCountedAndBoundedButKnownAndArchivedAreNot(): void
+    {
+        $known   = $this->known() + [ 'variables' => [ self::KNOWN_VAR => true, 'gvid-archived' => true ] ];
+        $content = $this->layout(
+            $this->heading( $this->varAttr( self::UNKNOWN_VAR ) ),
+            $this->heading( $this->varAttr( self::UNKNOWN_VAR ) ),
+            $this->heading( $this->varAttr( self::KNOWN_VAR ) ),
+            $this->heading( $this->varAttr( 'gvid-archived' ) )
+        );
+        $advice = StyleReferences::advise( $content, $known );
+        $this->assertSame( [ [ 'id' => self::UNKNOWN_VAR, 'count' => 2 ] ], $advice['unknown_variables'] );
+        $this->assertSame( [], $advice['unknown_presets'] );
+        $this->assertSame( [], $advice['unknown_colors'] );
+        $this->assertSame( StyleReferences::MESSAGE, $advice['message'] );
+        $this->assertNull( StyleReferences::advise( $this->layout( $this->heading( $this->varAttr( self::KNOWN_VAR ) ) ), $known ) );
+    }
+
+    public function testARawCssVariableReferenceIsCaughtToo(): void
+    {
+        $known   = $this->known() + [ 'variables' => [ self::KNOWN_VAR => true ] ];
+        $content = $this->layout( $this->heading( [ 'title' => [ 'decoration' => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'size' => 'var(--' . self::UNKNOWN_VAR . ')' ] ] ] ] ] ] ] ) );
+        $this->assertSame( [ [ 'id' => self::UNKNOWN_VAR, 'count' => 1 ] ], StyleReferences::advise( $content, $known )['unknown_variables'] );
+    }
+
+    public function testWhenTheVariablesReaderCannotBeReadNothingIsFlaggedForVariablesButOtherAdviceStays(): void
+    {
+        $content = $this->layout( $this->heading( [ 'modulePreset' => [ self::UNKNOWN ] ] + $this->varAttr( self::UNKNOWN_VAR ) ) );
+        foreach ( [ $this->known(), $this->known() + [ 'variables' => null ] ] as $known ) {
+            $advice = StyleReferences::advise( $content, $known );
+            $this->assertSame( [ self::UNKNOWN ], array_column( $advice['unknown_presets'], 'id' ) );
+            $this->assertSame( [], $advice['unknown_variables'] );
+        }
+        $this->assertNull( StyleReferences::advise( $this->layout( $this->heading( $this->varAttr( self::UNKNOWN_VAR ) ) ), [ 'presets' => null, 'colors' => null, 'variables' => null ] ) );
+    }
+
+    public function testMoreThanTwentyUnknownVariablesAreCappedAndLongIdsCut(): void
+    {
+        $blocks = [];
+        for ( $i = 0; $i < 25; $i++ ) {
+            $blocks[] = $this->heading( $this->varAttr( 'gvid-missing-' . $i ) );
+        }
+        $blocks[] = $this->heading( $this->varAttr( 'gvid-' . str_repeat( 'a', 150 ) ) );
+        $advice   = StyleReferences::advise( $this->layout( ...$blocks ), $this->known() + [ 'variables' => [] ] );
+        $this->assertCount( StyleReferences::MAX_IDS, $advice['unknown_variables'] );
+        $long = StyleReferences::advise( $this->layout( $this->heading( $this->varAttr( 'gvid-' . str_repeat( 'a', 150 ) ) ) ), $this->known() + [ 'variables' => [] ] );
+        $this->assertSame( 100, strlen( $long['unknown_variables'][0]['id'] ) );
     }
 
     public function testAttachLeavesAPayloadUntouchedWhenCleanAndAddsTheAdvisoryWhenNot(): void
