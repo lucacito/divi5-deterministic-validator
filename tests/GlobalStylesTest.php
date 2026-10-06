@@ -252,6 +252,9 @@ class GlobalStylesTest extends TestCase
         $this->assertContains( $note, $with['notes'] );
         $this->assertSame( "Read-only. To create or change presets, colors or variables, use Divi's Visual Builder.", end( $with['notes'] ), 'the read-only note stays last' );
 
+        $strings = $this->catalog( $this->presets(), $this->colors(), [ 'strings' => [ 'gvid-s' => [ 'label' => 'S', 'value' => 'x', 'status' => 'active' ] ] ] );
+        $this->assertContains( $note, $strings['notes'], 'a strings-only catalog also gets the note' );
+
         foreach ( [ [], [ 'fonts' => [ 'gvid-f' => [ 'label' => 'F', 'value' => 'Abel', 'status' => 'active' ] ] ], [ 'numbers' => [ 'gvid-arch' => [ 'label' => 'A', 'value' => '1px', 'status' => 'archived' ] ] ] ] as $vars ) {
             $this->assertNotContains( $note, $this->catalog( $this->presets(), $this->colors(), $vars )['notes'], json_encode( $vars ) );
         }

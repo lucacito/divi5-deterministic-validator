@@ -297,10 +297,12 @@ name and `controls` fit, as `"modulePreset":["<id from the tool>"]`; an unknown 
 falls back to the default preset.
 
 Numbers and strings variables (ids like `gvid-…`, listed by the same tool with their values)
-can be reused too, but only in four places that are verified: a **numbers** variable as a
-`padding` value or as a font `size`; a **strings** variable as a heading's title text
-(`title.innerContent`) or as a text module's content (`content.innerContent`). Write the
-value exactly like this (inside a block comment the quotes are written as \u0022):
+can be reused too, but only in four places that are verified: a **numbers**
+variable as a `padding` value or as a **heading's** font `size`; a
+**strings** variable as a heading's title text (`title.innerContent`) or as a text module's
+content (`content.innerContent`). For a strings variable
+the whole `$variable(...)$` token is the entire value of `title.innerContent.desktop.value` or `content.innerContent.desktop.value`.
+Write the value exactly like this (inside a block comment the quotes are written as \u0022):
 `"size":"$variable({\u0022type\u0022:\u0022content\u0022,\u0022value\u0022:{\u0022name\u0022:\u0022gvid-XXXX\u0022,\u0022settings\u0022:{}}})$"`
 with a real id from the tool in place of `gvid-XXXX`. Do not cite a variable anywhere else,
 and do not reference fonts, images, links or gradients variables: those are

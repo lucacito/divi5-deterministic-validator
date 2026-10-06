@@ -102,7 +102,13 @@ class StyleGuideTest extends TestCase
         $this->assertStringContainsString('gvid-XXXX', $md);
         $this->assertStringContainsString('numbers', $md);
         $this->assertStringContainsString('strings', $md);
-        foreach (['padding', '`size`', 'title.innerContent', 'content.innerContent'] as $place) {
+        foreach ([
+            'variable as a `padding` value or as a **heading\'s** font `size`',
+            'strings** variable as a heading\'s title text',
+            '(`title.innerContent`)',
+            '(`content.innerContent`)',
+            'the whole `$variable(...)$` token is the entire value of `title.innerContent.desktop.value` or `content.innerContent.desktop.value`',
+        ] as $place) {
             $this->assertStringContainsString($place, $md, "the guide must name the verified place: $place");
         }
         $this->assertStringContainsString(

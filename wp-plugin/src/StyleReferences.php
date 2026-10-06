@@ -16,7 +16,7 @@ require_once __DIR__ . '/CodePolicy.php';
 /**
  * Finds the preset ids, global color ids and global variable ids a layout cites that do not exist on this site. Divi
  * renders such a layout anyway (an unknown preset falls back to the module's default preset; an
- * unknown color is left undefined), so this is an advisory only: it never changes a verdict, blocks
+ * unknown color is left undefined; a missing variable makes Divi silently drop the value that cites it), so this is an advisory only: it never changes a verdict, blocks
  * a save or alters content. The bundled validator is used read-only and stays site-agnostic.
  */
 final class StyleReferences

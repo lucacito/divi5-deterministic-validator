@@ -96,6 +96,10 @@ class GlobalStylesLockstepTest extends TestCase
         foreach ( [ 'StyleAdvisory', 'StyleRefCount', 'Advisories' ] as $name ) {
             $this->assertArrayHasKey( $name, $spec['components']['schemas'] );
         }
+        $unknownVariables = $spec['components']['schemas']['StyleAdvisory']['properties']['unknown_variables'] ?? null;
+        $this->assertIsArray( $unknownVariables );
+        $this->assertSame( 'array', $unknownVariables['type'] );
+        $this->assertSame( '#/components/schemas/StyleRefCount', $unknownVariables['items']['$ref'] );
         $this->assertSame( $ref, $spec['components']['schemas']['ValidationResult']['properties']['advisories']['$ref'] );
         $this->assertSame( $ref, $spec['paths']['/pages/{id}']['put']['responses']['200']['content']['application/json']['schema']['properties']['advisories']['$ref'] );
         $this->assertSame( $ref, $spec['paths']['/pages/{id}/edit']['post']['responses']['200']['content']['application/json']['schema']['properties']['advisories']['$ref'] );
