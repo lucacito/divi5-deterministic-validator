@@ -13,6 +13,7 @@ declare(strict_types=1);
  *  - set_global_colors($data, true) would MERGE and skip sanitising (the add-on never calls it that way).
  * State lives in $GLOBALS['__divi_gc'] (see resetForTests); switches: throw_get, throw_set, mutate (callable applied
  * to the sanitised map), on_get (callable called with the get counter before every read).
+ * Variables (get_global_variables / set_global_variables) follow the same source file; state lives in $GLOBALS['__divi_gv'].
  */
 
 namespace ET\Builder\Packages\GlobalData {
@@ -137,6 +138,112 @@ namespace ET\Builder\Packages\GlobalData {
             $s['custom'] = $data; // replace all
             \ET_Core_PageResource::remove_static_resources( 'all', 'all', true );
         }
+
+        /** @var array<string,array<string,mixed>> Divi's two built-in font variables (their ids do NOT start with gvid-). */
+        public static $customizer_fonts = [
+            '--et_global_heading_font' => [ 'label' => 'Heading', 'option_name' => 'heading_font', 'default' => 'Open Sans' ],
+            '--et_global_body_font'    => [ 'label' => 'Body', 'option_name' => 'body_font', 'default' => 'Open Sans' ],
+        ];
+
+        /** @param array<string,array<string,array<string,mixed>>> $stored the groups as stored (type => id => entry) */
+        public static function resetVariablesForTests( array $stored = [] ): void
+        {
+            $GLOBALS['__divi_gv'] = [
+                'stored' => $stored, 'cache' => null, 'gets' => 0, 'set_calls' => [],
+                'throw_get' => false, 'throw_set' => false, 'mutate' => null, 'on_get' => null,
+            ];
+        }
+
+        /** Divi's read: seven groups as objects, allowedActions on every entry, the customizer fonts merged into `fonts`; cached until a save. */
+        public static function get_global_variables(): array
+        {
+            if ( ! isset( $GLOBALS['__divi_gv'] ) ) {
+                self::resetVariablesForTests();
+            }
+            $s = &$GLOBALS['__divi_gv'];
+            ++$s['gets'];
+            if ( is_callable( $s['on_get'] ) ) {
+                ( $s['on_get'] )( $s['gets'] );
+            }
+            if ( $s['throw_get'] ) {
+                throw new \RuntimeException( 'Divi could not read the variables' );
+            }
+            if ( null === $s['cache'] ) {
+                $all   = array_merge( [ 'numbers' => [], 'strings' => [], 'images' => [], 'links' => [], 'colors' => [], 'fonts' => [], 'gradients' => [] ], $s['stored'] );
+                $fonts = is_array( $all['fonts'] ) ? $all['fonts'] : [];
+                $own   = [];
+                foreach ( self::$customizer_fonts as $fid => $def ) {
+                    unset( $fonts[ $fid ] );
+                    $own[ $fid ] = [ 'id' => $fid, 'label' => $def['label'], 'value' => $def['default'], 'status' => 'active', 'order' => '--et_global_heading_font' === $fid ? 1 : 2 ];
+                }
+                $all['fonts'] = array_merge( $own, $fonts );
+                foreach ( $all as $type => $items ) {
+                    if ( ! is_array( $items ) ) {
+                        $all[ $type ] = [];
+                        continue;
+                    }
+                    foreach ( $items as $id => $item ) {
+                        $all[ $type ][ $id ] = array_merge( $item, [ 'allowedActions' => [ 'editLabel' => true, 'editValue' => true, 'reorder' => true, 'remove' => true ] ] );
+                    }
+                }
+                $s['cache'] = array_map( static fn ( $items ) => (object) $items, $all );
+            }
+
+            return $s['cache'];
+        }
+
+        /**
+         * @param array<string,mixed> $data
+         * @return array<string,array<string,array<string,mixed>>>
+         */
+        public static function sanitize_global_variables_data( array $data ): array
+        {
+            $out = [];
+            foreach ( $data as $type => $items ) {
+                if ( ! in_array( $type, [ 'numbers', 'strings', 'images', 'links', 'fonts', 'gradients' ], true ) || empty( $items ) ) {
+                    continue;
+                }
+                foreach ( $items as $id => $item ) {
+                    if ( 'undefined' === $id || empty( $item ) || empty( $item['label'] ) || 'gvid-' !== substr( (string) $id, 0, 5 ) ) {
+                        continue;
+                    }
+                    $gid = sanitize_text_field( (string) $id );
+                    foreach ( $item as $k => $v ) {
+                        if ( 'allowedActions' === $k ) {
+                            continue;
+                        }
+                        $out[ $type ][ $gid ][ sanitize_text_field( (string) $k ) ] = in_array( $type, [ 'strings', 'gradients' ], true ) && 'value' === $k
+                            ? ( is_scalar( $v ) ? (string) $v : '' )
+                            : sanitize_text_field( $v );
+                    }
+                }
+            }
+
+            return $out;
+        }
+
+        /** @param array<string,mixed> $data */
+        public static function set_global_variables( array $data ): void
+        {
+            if ( ! isset( $GLOBALS['__divi_gv'] ) ) {
+                self::resetVariablesForTests();
+            }
+            $s = &$GLOBALS['__divi_gv'];
+            $s['set_calls'][] = $data;
+            if ( $s['throw_set'] ) {
+                throw new \RuntimeException( 'Divi refused the save' );
+            }
+            if ( ! current_user_can( 'edit_theme_options' ) || ! et_pb_is_allowed( 'variables_manager' ) ) {
+                return; // Divi's own SILENT no-op without the permission
+            }
+            $s['cache'] = null;
+            $data       = self::sanitize_global_variables_data( $data );
+            if ( is_callable( $s['mutate'] ) ) {
+                $data = ( $s['mutate'] )( $data );
+            }
+            $s['stored'] = $data; // replace all
+            \ET_Core_PageResource::remove_static_resources( 'all', 'all', true );
+        }
     }
 }
 
@@ -152,6 +259,9 @@ namespace {
     }
     if ( ! function_exists( 'et_update_option' ) ) {
         function et_update_option( $name, $value ) { $GLOBALS['__divi_gc']['options'][ $name ] = $value; }
+    }
+    if ( ! function_exists( 'et_pb_is_allowed' ) ) {
+        function et_pb_is_allowed( $capabilities, $role = '' ) { return $GLOBALS['__divi_role_allowed'] ?? true; }
     }
     if ( ! function_exists( 'wp_generate_uuid4' ) ) {
         function wp_generate_uuid4() { return vsprintf( '%s%s-%s-%s-%s-%s%s%s', str_split( bin2hex( random_bytes( 16 ) ), 4 ) ); }
