@@ -146,7 +146,7 @@ final class ManageGlobalPresets implements ProTool
                 'changes'       => array_map( static fn ( array $c ): array => [ 'index' => $c['index'], 'id' => 'create' === $c['action'] ? null : $c['id'], 'module' => $c['module'], 'action' => $c['action'], 'before' => $c['before'], 'after' => $c['after'], 'is_default' => $c['is_default'], 'default_preset_created' => $c['default_created'] ], $plan['changes'] ),
                 'preview_token' => PreviewToken::make( $argsHash, $items, $now, $userId ),
                 'expires_in'    => PreviewToken::TTL,
-                'message'       => 'Preview only. Nothing was changed. Repeat the call without dry_run and with this preview_token to apply it. Every module that cites a changed preset is restyled.' . ( $default ? ' For a module with no presets yet Divi also adds a default preset, which undo_batch removes again.' : '' ),
+                'message'       => 'Preview only. Nothing was changed. Repeat the call without dry_run and with this preview_token to apply it. Every module that cites a changed preset is restyled.' . ( $default ? ' For a module with no presets yet Divi also adds a default preset, which undo_batch removes again.' : '' ) . ' Undoing a created preset removes it again, and pages that cite it then lose its styling.',
             ];
         }
 
@@ -189,16 +189,16 @@ final class ManageGlobalPresets implements ProTool
             $res   = GlobalPresets::save( $data );
             $threw = $threw || $res['threw'];
             if ( null === $res['after'] ) {
-                throw new \RuntimeException( "Divi's presets could not be read back after the write, so nothing is recorded. Check list_global_styles for their current state." );
+                return self::uncertain( "Divi's presets could not be read back after the update save, so the run stopped.", $skipped );
             }
             foreach ( $updates as $c ) {
                 $touched[ $c['id'] ] = true;
                 $stored = GlobalPresets::state( GlobalPresets::find( $res['after'], $c['id'] )['item'] ?? null );
-                if ( null === $stored || $stored === $c['before'] ) { // gone, or Divi kept what was there: not stored
+                if ( null === $stored || Canon::hash( $stored ) === Canon::hash( $c['before'] ) ) { // gone, or Divi kept what was there: not stored
                     $notStored[] = [ 'index' => $c['index'], 'id' => $c['id'] ];
                     continue;
                 }
-                if ( $stored !== $c['after'] ) {
+                if ( Canon::hash( $stored ) !== Canon::hash( $c['after'] ) ) {
                     $differs[] = [ 'id' => $c['id'], 'requested' => $c['after'], 'stored' => $stored ];
                 }
                 $prevItem   = (array) ( $before['module'][ $c['module'] ]['items'][ $c['id'] ] ?? [] );
@@ -257,12 +257,8 @@ final class ManageGlobalPresets implements ProTool
             $recorded[] = GlobalPresetKind::itemForCreate( $created['id'], $c['module'], $created['state'], [] !== $idsBefore, $auto );
             $applied[]  = [ 'id' => $created['id'], 'module' => $c['module'], 'action' => 'create', 'before' => null, 'after' => $created['state'], 'default_preset_created' => null !== $auto ];
         }
-        if ( null !== $abort ) {
-            if ( [] === $recorded ) {
-                throw new \RuntimeException( $abort . ' Check list_global_styles for their current state.' );
-            }
-            $partial = $this->log->record( self::NAME, 'Global presets: ' . count( $recorded ) . ' change(s) (stopped early)', $recorded );
-            throw new \RuntimeException( $abort . ' ' . count( $recorded ) . ' change(s) were already saved and ' . ( null === $partial ? 'could NOT be recorded for undo' : 'were recorded as batch #' . (int) ( $partial['id'] ?? 0 ) . ', so undo_batch can undo them' ) . '. Check list_global_styles for the current state.' );
+        if ( null !== $abort && [] === $recorded ) {
+            return self::uncertain( $abort, $skipped );
         }
 
         // 3. Read back: every preset this call did not touch must be exactly as it was.
@@ -277,7 +273,7 @@ final class ManageGlobalPresets implements ProTool
                     $newItem = $final['module'][ $module ]['items'][ $id ] ?? null;
                     if ( null === $newItem ) {
                         $unexpected[] = [ 'id' => (string) $id, 'reason' => 'removed_by_divi' ];
-                    } elseif ( GlobalPresets::state( $newItem ) !== GlobalPresets::state( $oldItem ) ) {
+                    } elseif ( Canon::hash( GlobalPresets::state( $newItem ) ) !== Canon::hash( GlobalPresets::state( $oldItem ) ) ) {
                         $unexpected[] = [ 'id' => (string) $id, 'reason' => 'changed' ];
                     }
                 }
@@ -292,7 +288,7 @@ final class ManageGlobalPresets implements ProTool
             return [ 'changed' => false, 'dry_run' => false, 'skipped' => $skipped, 'not_stored' => $notStored, 'unexpected_changes' => $unexpected, 'message' => 'Divi accepted the call, but none of the requested changes is stored; nothing is recorded.' ];
         }
 
-        $batch  = $this->log->record( self::NAME, 'Global presets: ' . count( $recorded ) . ' change(s)', $recorded );
+        $batch  = $this->log->record( self::NAME, 'Global presets: ' . count( $recorded ) . ' change(s)' . ( null !== $abort ? ' (stopped early)' : '' ), $recorded );
         $result = [
             'changed' => true,
             'dry_run' => false,
@@ -305,11 +301,37 @@ final class ManageGlobalPresets implements ProTool
                 $result[ $key ] = $list;
             }
         }
+        $warnings = [];
+        if ( null !== $abort ) {
+            $result['stopped_early'] = true;
+            $warnings[]              = $abort . ' ' . count( $recorded ) . ' change(s) were already saved and ' . ( null === $batch ? 'could NOT be recorded for undo' : 'recorded as batch #' . (int) ( $batch['id'] ?? 0 ) . ', so undo_batch can undo them' ) . '. The rest of the call was not attempted; check list_global_styles for the current state before retrying.';
+        }
         if ( $threw ) {
-            $result['warning'] = 'Divi reported an error while saving; what is stored now is what was recorded, and undo_batch can put the previous state back.';
+            $warnings[] = 'Divi reported an error while saving; what is stored now is what was recorded, and undo_batch can put the previous state back.';
+        }
+        if ( [] !== $warnings ) {
+            $result['warning'] = implode( ' ', $warnings );
         }
 
         return BatchLog::attach( $result, $batch );
+    }
+
+    /**
+     * A run cut short with nothing recorded: what Divi may have stored is unknown, so this neither claims success nor claims
+     * that nothing happened. A normal result (not an exception) so the warning reaches the client over MCP and REST.
+     *
+     * @param list<array<string,mixed>> $skipped
+     * @return array<string,mixed>
+     */
+    private static function uncertain( string $why, array $skipped ): array
+    {
+        return [
+            'changed'       => false,
+            'dry_run'       => false,
+            'stopped_early' => true,
+            'skipped'       => $skipped,
+            'warning'       => $why . ' Some of the requested presets MAY have been stored, but nothing could be verified, so nothing was recorded for undo. Check list_global_styles for the current state before retrying.',
+        ];
     }
 
     /** @param array<string,mixed> $data */

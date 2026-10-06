@@ -10,6 +10,7 @@ use AiEditorDivi5\Pro\Kinds\GlobalPresetKind;
 use AiEditorDivi5\Pro\Settings\GlobalPresets;
 use AiEditorDivi5\Pro\Settings\GlobalPresetsLock;
 use AiEditorDivi5\Pro\Tools\ManageGlobalPresets;
+use AiEditorDivi5\Pro\ToolRunner;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../../wp-plugin/src/autoload.php';
@@ -444,13 +445,11 @@ class ManageGlobalPresetsTest extends TestCase
                 $GLOBALS['__divi_gp']['throw_get'] = true;
             }
         };
-        try {
-            $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] );
-            $this->fail( 'expected a failure' );
-        } catch ( \RuntimeException $e ) {
-            $this->assertStringContainsString( 'recorded', $e->getMessage() );
-            $this->assertStringContainsString( 'undo_batch', $e->getMessage() );
-        }
+        $r = $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] );
+        $this->assertTrue( $r['changed'] );
+        $this->assertTrue( $r['stopped_early'] );
+        $this->assertStringContainsString( 'recorded as batch #' . $r['batch']['id'], $r['warning'] );
+        $this->assertStringContainsString( 'undo_batch', $r['warning'] );
         $GLOBALS['__divi_gp']['throw_get'] = false;
         $GLOBALS['__divi_gp']['on_get']    = null;
         $this->assertCount( 1, $this->repo->rows );
@@ -479,5 +478,122 @@ class ManageGlobalPresetsTest extends TestCase
         $this->assertArrayNotHasKey( 'styleAttrs', $back['module']['divi/text']['items'][ $id ] );
         unset( $back['module']['divi/text']['items'][ $id ]['updated'], $start['module']['divi/text']['items'][ $id ]['updated'] );
         $this->assertSame( $start, $back );
+    }
+
+    /** @return array{0:array<string,mixed>,1:array<string,mixed>} the runner result and the arguments of a real run that is cut short */
+    private function cutShort( array $presets, int $failFromRead ): array
+    {
+        $args = [ 'presets' => $presets ];
+        $p    = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $GLOBALS['__divi_gp']['gets']   = 0;
+        $GLOBALS['__divi_gp']['on_get'] = static function ( int $n ) use ( $failFromRead ): void {
+            if ( $n >= $failFromRead ) {
+                $GLOBALS['__divi_gp']['throw_get'] = true;
+            }
+        };
+
+        return [ ToolRunner::run( $this->tool, $args + [ 'preview_token' => $p['preview_token'] ] ), $args ];
+    }
+
+    private function heal(): void
+    {
+        $GLOBALS['__divi_gp']['throw_get'] = false;
+        $GLOBALS['__divi_gp']['on_get']    = null;
+    }
+
+    public function testThroughTheRunnerAStoppedEarlyRunWithRecordedChangesIsANormalResultWithTheBatchAndTheWarning(): void
+    {
+        [ $run ] = $this->cutShort( [ [ 'id' => self::H1, 'attrs' => $this->sized( '61px' ) ], [ 'module' => 'divi/heading', 'name' => 'Big', 'attrs' => $this->sized( '57px' ) ] ], 3 );
+        $this->heal();
+        $this->assertTrue( $run['ok'], 'a partial write is a normal result, not a 500' );
+        $r = $run['payload'];
+        $this->assertTrue( $r['changed'] );
+        $this->assertTrue( $r['stopped_early'] );
+        $this->assertTrue( $r['batch']['undoable'] );
+        $this->assertCount( 1, $r['changes'] );
+        $this->assertStringContainsString( 'recorded as batch #' . $r['batch']['id'], $r['warning'] );
+        $this->assertStringContainsString( 'undo_batch can undo them', $r['warning'] );
+        $this->assertStringContainsString( 'not attempted', $r['warning'] );
+    }
+
+    public function testThroughTheRunnerSavedUpdatesThatCannotBeReadBackAreAnUncertainResultNotAFailure(): void
+    {
+        [ $run ] = $this->cutShort( [ [ 'id' => self::H1, 'attrs' => $this->sized( '61px' ) ] ], 2 ); // read 2 = the read-back of the update save
+        $this->heal();
+        $this->assertTrue( $run['ok'] );
+        $r = $run['payload'];
+        $this->assertFalse( $r['changed'] );
+        $this->assertTrue( $r['stopped_early'] );
+        $this->assertStringContainsString( 'list_global_styles', $r['warning'] );
+        $this->assertStringContainsString( 'MAY', $r['warning'] );
+        $this->assertSame( [], $this->repo->rows, 'nothing could be verified, so nothing is recorded' );
+    }
+
+    public function testThroughTheRunnerDiviBecomingUnreadableBeforeACreateIsAnUncertainResult(): void
+    {
+        [ $run ] = $this->cutShort( [ [ 'module' => 'divi/heading', 'name' => 'Big', 'attrs' => $this->sized( '57px' ) ] ], 2 ); // read 2 = before the first import
+        $this->heal();
+        $this->assertTrue( $run['ok'] );
+        $this->assertFalse( $run['payload']['changed'] );
+        $this->assertTrue( $run['payload']['stopped_early'] );
+        $this->assertStringContainsString( 'list_global_styles', $run['payload']['warning'] );
+        $this->assertSame( [], $GLOBALS['__divi_gp']['import_calls'], 'the import was not attempted' );
+    }
+
+    public function testThroughTheRunnerACreateThatCannotBeReadBackAfterTheImportIsAnUncertainResult(): void
+    {
+        [ $run ] = $this->cutShort( [ [ 'module' => 'divi/heading', 'name' => 'Big', 'attrs' => $this->sized( '57px' ) ] ], 3 ); // read 3 = after the import
+        $this->heal();
+        $this->assertTrue( $run['ok'] );
+        $this->assertFalse( $run['payload']['changed'] );
+        $this->assertTrue( $run['payload']['stopped_early'] );
+        $this->assertStringContainsString( 'MAY', $run['payload']['warning'] );
+        $this->assertStringContainsString( 'list_global_styles', $run['payload']['warning'] );
+        $this->assertCount( 1, $GLOBALS['__divi_gp']['import_calls'] );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testDiviThrowingWhileSavingAndStoringNothingStaysAFailureTheRunnerReportsAs500(): void
+    {
+        $args = [ 'presets' => [ [ 'id' => self::H1, 'attrs' => $this->sized( '61px' ) ] ] ];
+        $p    = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $GLOBALS['__divi_gp']['throw_save'] = true;
+        $run = ToolRunner::run( $this->tool, $args + [ 'preview_token' => $p['preview_token'] ] );
+        $this->assertFalse( $run['ok'] );
+        $this->assertSame( 500, $run['status'] );
+    }
+
+    public function testAMereKeyReorderByDiviIsNeitherADifferenceNorAnUnexpectedChange(): void
+    {
+        $two = [ 'title' => [ 'a' => '1', 'b' => '2' ], 'module' => [ 'c' => '3', 'd' => '4' ] ];
+        $GLOBALS['__divi_gp']['data']['module']['divi/heading']['items'][ self::H_DEFAULT ]['attrs'] = $two;
+        $args = [ 'presets' => [ [ 'id' => self::H1, 'attrs' => $two ] ] ];
+        $p    = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $flip = static function ( array $a ) use ( &$flip ): array {
+            $out = [];
+            foreach ( array_reverse( $a, true ) as $k => $v ) {
+                $out[ $k ] = is_array( $v ) && ! array_is_list( $v ) ? $flip( $v ) : $v;
+            }
+
+            return $out;
+        };
+        $GLOBALS['__divi_gp']['mutate'] = static function ( array $data ) use ( $flip ): array {
+            foreach ( $data['module']['divi/heading']['items'] as $id => $item ) {
+                $data['module']['divi/heading']['items'][ $id ]['attrs'] = $flip( $item['attrs'] );
+            }
+
+            return $data;
+        };
+        $r = $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] );
+        $this->assertTrue( $r['changed'] );
+        $this->assertArrayNotHasKey( 'differs_from_request', $r );
+        $this->assertArrayNotHasKey( 'unexpected_changes', $r );
+    }
+
+    public function testTheDryRunMessageSaysWhatUndoingACreateCosts(): void
+    {
+        $r = $this->tool->run( [ 'presets' => [ [ 'module' => 'divi/heading', 'name' => 'Big', 'attrs' => $this->sized( '57px' ) ] ], 'dry_run' => true ] );
+        $this->assertStringContainsString( 'Undoing a created preset removes it again, and pages that cite it then lose its styling.', $r['message'] );
+        $this->assertStringContainsString( 'Every module that cites a changed preset is restyled.', $r['message'] );
     }
 }

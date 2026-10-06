@@ -348,7 +348,7 @@ namespace ET\Builder\Packages\GlobalData {
                     }
                     if ( ! $existed ) {
                         $did                                       = wp_generate_uuid4();
-                        $data['module'][ $module ]['items'][ $did ] = [ 'id' => $did, 'moduleName' => $module, 'name' => ucfirst( substr( (string) $module, 5 ) ) . ' 1', 'attrs' => [], 'styleAttrs' => [], 'version' => '5.14.0', 'type' => 'module', 'created' => $s['now'], 'updated' => $s['now'] ];
+                        $data['module'][ $module ]['items'][ $did ] = [ 'id' => $did, 'moduleName' => $module, 'name' => ucfirst( substr( (string) $module, 5 ) ) . ' 1', 'version' => '5.14.0', 'type' => 'module', 'created' => $s['now'], 'updated' => $s['now'] ];
                         $data['module'][ $module ]['default']      = $did;
                     }
                 }
