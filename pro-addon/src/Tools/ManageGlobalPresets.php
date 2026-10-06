@@ -194,7 +194,7 @@ final class ManageGlobalPresets implements ProTool
             foreach ( $updates as $c ) {
                 $touched[ $c['id'] ] = true;
                 $stored = GlobalPresets::state( GlobalPresets::find( $res['after'], $c['id'] )['item'] ?? null );
-                if ( $stored === $c['before'] ) {
+                if ( null === $stored || $stored === $c['before'] ) { // gone, or Divi kept what was there: not stored
                     $notStored[] = [ 'index' => $c['index'], 'id' => $c['id'] ];
                     continue;
                 }
@@ -208,31 +208,41 @@ final class ManageGlobalPresets implements ProTool
         }
 
         // 2. Creates: Divi's additive import, one preset at a time.
+        $added = [];
+        $abort = null;
         foreach ( $kept as $c ) {
             if ( 'create' !== $c['action'] ) {
                 continue;
             }
             $current = GlobalPresets::read();
             if ( null === $current ) {
-                throw new \RuntimeException( "Divi's presets could not be read, so the remaining creates were not attempted. Check list_global_styles for their current state." );
+                $abort = "Divi's presets could not be read, so the remaining creates were not attempted.";
+                break;
             }
             $idsBefore = GlobalPresets::itemIds( $current, $c['module'] );
             $res       = GlobalPresets::import( $c['module'], $c['item'], GlobalPresets::defaultId( $current, $c['module'] ) );
             $threw     = $threw || $res['threw'];
             if ( null === $res['after'] ) {
-                throw new \RuntimeException( "Divi's presets could not be read back after the write, so nothing further is recorded. Check list_global_styles for their current state." );
+                $abort = "Divi's presets could not be read back after a create, so nothing further is recorded.";
+                break;
             }
-            $newIds   = array_values( array_diff( GlobalPresets::itemIds( $res['after'], $c['module'] ), $idsBefore ) );
-            $created  = null;
-            $auto     = null;
+            $newIds  = array_values( array_diff( GlobalPresets::itemIds( $res['after'], $c['module'] ), $idsBefore ) );
+            $created = null;
+            $others  = [];
             foreach ( $newIds as $nid ) {
                 $nItem = $res['after']['module'][ $c['module'] ]['items'][ $nid ] ?? null;
                 $nSt   = GlobalPresets::state( is_array( $nItem ) ? $nItem : null );
                 if ( null === $created && null !== $nSt && $nSt['name'] === $c['after']['name'] && Canon::hash( $nSt['attrs'] ) === Canon::hash( $c['after']['attrs'] ) ) {
                     $created = [ 'id' => (string) $nid, 'state' => $nSt ];
                 } else {
-                    $auto = [ 'id' => (string) $nid, 'hash' => Canon::hash( $nSt ) ];
+                    $others[] = [ 'id' => (string) $nid, 'hash' => Canon::hash( $nSt ) ];
                 }
+            }
+            // The one default preset Divi adds for a module that had none is expected; anything else it added is not.
+            $auto = [] === $idsBefore && null !== $created && [] !== $others ? array_shift( $others ) : null;
+            foreach ( $others as $o ) {
+                $touched[ $o['id'] ] = true;
+                $added[]             = [ 'id' => $o['id'], 'reason' => 'added_by_divi' ];
             }
             if ( null === $created ) {
                 $notStored[] = [ 'index' => $c['index'], 'name' => $c['after']['name'] ];
@@ -242,13 +252,21 @@ final class ManageGlobalPresets implements ProTool
             if ( null !== $auto ) {
                 $touched[ $auto['id'] ] = true;
             }
-            $recorded[] = GlobalPresetKind::itemForCreate( $created['id'], $c['module'], $created['state'], $c['module_existed'], $auto );
+            // Whether the module had presets is read just before THIS import: a second create for a new module finds the first one.
+            $recorded[] = GlobalPresetKind::itemForCreate( $created['id'], $c['module'], $created['state'], [] !== $idsBefore, $auto );
             $applied[]  = [ 'id' => $created['id'], 'module' => $c['module'], 'action' => 'create', 'before' => null, 'after' => $created['state'], 'default_preset_created' => null !== $auto ];
+        }
+        if ( null !== $abort ) {
+            if ( [] === $recorded ) {
+                throw new \RuntimeException( $abort . ' Check list_global_styles for their current state.' );
+            }
+            $partial = $this->log->record( self::NAME, 'Global presets: ' . count( $recorded ) . ' change(s) (stopped early)', $recorded );
+            throw new \RuntimeException( $abort . ' ' . count( $recorded ) . ' change(s) were already saved and ' . ( null === $partial ? 'could NOT be recorded for undo' : 'were recorded as batch #' . (int) ( $partial['id'] ?? 0 ) . ', so undo_batch can undo them' ) . '. Check list_global_styles for the current state.' );
         }
 
         // 3. Read back: every preset this call did not touch must be exactly as it was.
         $final      = GlobalPresets::read();
-        $unexpected = [];
+        $unexpected = $added;
         if ( null !== $final ) {
             foreach ( (array) ( $before['module'] ?? [] ) as $module => $entry ) {
                 foreach ( (array) ( is_array( $entry ) ? ( $entry['items'] ?? [] ) : [] ) as $id => $oldItem ) {

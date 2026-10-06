@@ -109,6 +109,7 @@ final class GlobalPresetPlanner
         $errors    = [];
         $seen      = [];
         $names     = [];
+        $started   = []; // modules that already get their first preset from an earlier create in this call
         foreach ( $rows as $i => $r ) {
             $where = "presets[{$i}]";
             if ( null === $r['id'] ) {
@@ -124,8 +125,9 @@ final class GlobalPresetPlanner
                 $existing      = GlobalPresets::itemIds( $data, $module );
                 $changes[]     = [
                     'index' => $i, 'id' => $id, 'module' => $module, 'action' => 'create', 'before' => null, 'after' => GlobalPresets::state( $item ),
-                    'item' => $item, 'is_default' => false, 'default_created' => [] === $existing, 'module_existed' => [] !== $existing,
+                    'item' => $item, 'is_default' => false, 'default_created' => [] === $existing && ! isset( $started[ $module ] ), 'module_existed' => [] !== $existing,
                 ];
+                $started[ $module ] = true;
                 continue;
             }
             $id = $r['id'];

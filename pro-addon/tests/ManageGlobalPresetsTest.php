@@ -346,7 +346,7 @@ class ManageGlobalPresetsTest extends TestCase
         $this->assertTrue( $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] )['changed'] );
     }
 
-    public function testTheTokenSurvivesARefusalThatHappensAfterItWasOpened(): void
+    public function testARefusalBeforeTheTokenIsOpenedLeavesItUsable(): void
     {
         $args = [ 'presets' => [ [ 'id' => self::H1, 'attrs' => $this->sized( '61px' ) ] ] ];
         $p    = $this->tool->run( $args + [ 'dry_run' => true ] );
@@ -369,5 +369,94 @@ class ManageGlobalPresetsTest extends TestCase
         $back = GlobalPresets::read()['module']['divi/heading']['items'][ self::H1 ];
         $this->assertSame( $start['module']['divi/heading']['items'][ self::H1 ]['attrs'], $back['attrs'] );
         $this->assertSame( $differing, $back['styleAttrs'], 'styleAttrs comes back as it was, not as attrs' );
+    }
+
+    public function testTwoCreatesForAModuleWithNoPresetsAreOneUndoableBatchAndOnlyTheFirstReportsTheDefault(): void
+    {
+        $start = GlobalPresets::read();
+        $args  = [ 'presets' => [
+            [ 'module' => 'divi/image', 'name' => 'Rounded', 'attrs' => [ 'module' => [ 'x' => '1' ] ] ],
+            [ 'module' => 'divi/image', 'name' => 'Square', 'attrs' => [ 'module' => [ 'x' => '2' ] ] ],
+        ] ];
+        $dry = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $this->assertSame( [ true, false ], array_column( $dry['changes'], 'default_preset_created' ) );
+        $r = $this->tool->run( $args + [ 'preview_token' => $dry['preview_token'] ] );
+        $this->assertCount( 2, $r['changes'] );
+        $this->assertSame( [ true, false ], array_column( $r['changes'], 'default_preset_created' ) );
+        $this->assertCount( 3, GlobalPresets::read()['module']['divi/image']['items'] );
+        $u = $this->undo()->undo( (int) $r['batch']['id'] );
+        $this->assertTrue( $u['fully_undone'] );
+        $this->assertSame( $start, GlobalPresets::read() );
+    }
+
+    public function testAllowDefaultPresetsIsBoundIntoTheToken(): void
+    {
+        // A token made with the flag on is no use for a real run without it (which is refused as a default-preset change)...
+        $def = [ 'presets' => [ [ 'id' => self::H_DEFAULT, 'attrs' => $this->sized( '31px' ) ] ] ];
+        $p   = $this->tool->run( $def + [ 'dry_run' => true, 'allow_default_presets' => true ] );
+        $this->refused( $def + [ 'preview_token' => $p['preview_token'] ], 'default preset' );
+        // ...and a token made without the flag does not open for a call that adds it, even for an ordinary preset.
+        $args = [ 'presets' => [ [ 'id' => self::H1, 'attrs' => $this->sized( '61px' ) ] ] ];
+        $q    = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $this->refused( $args + [ 'allow_default_presets' => true, 'preview_token' => $q['preview_token'] ], 'preview_token' );
+        // The flagged token still works for the flagged call.
+        $this->assertTrue( $this->tool->run( $def + [ 'allow_default_presets' => true, 'preview_token' => $p['preview_token'] ] )['changed'] );
+    }
+
+    public function testAPresetThatVanishesDuringTheUpdateSaveIsNotStoredAndNotRecorded(): void
+    {
+        $args = [ 'presets' => [ [ 'id' => self::H1, 'attrs' => $this->sized( '61px' ) ] ] ];
+        $p    = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $GLOBALS['__divi_gp']['mutate'] = static function ( array $data ): array {
+            unset( $data['module']['divi/heading']['items'][ GlobalPresetsFixture::H1 ] );
+
+            return $data;
+        };
+        $r = $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] );
+        $this->assertFalse( $r['changed'] );
+        $this->assertSame( [ [ 'index' => 0, 'id' => self::H1 ] ], $r['not_stored'] );
+        $this->assertArrayNotHasKey( 'differs_from_request', $r );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testANewPresetDiviAddedThatWeDidNotAskForIsReportedAsUnexpected(): void
+    {
+        $args = [ 'presets' => [ [ 'module' => 'divi/heading', 'name' => 'Big', 'attrs' => $this->sized( '57px' ) ] ] ];
+        $p    = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $GLOBALS['__divi_gp']['mutate'] = static function ( array $data ): array {
+            $data['module']['divi/heading']['items']['stray-0000-0000'] = [ 'id' => 'stray-0000-0000', 'moduleName' => 'divi/heading', 'name' => 'Stray', 'attrs' => [ 'a' => '1' ], 'styleAttrs' => [ 'a' => '1' ], 'type' => 'module' ];
+
+            return $data;
+        };
+        $r = $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] );
+        $this->assertTrue( $r['changed'] );
+        $this->assertSame( [ [ 'id' => 'stray-0000-0000', 'reason' => 'added_by_divi' ] ], $r['unexpected_changes'] );
+        $this->assertFalse( $r['changes'][0]['default_preset_created'] );
+    }
+
+    public function testACreateFollowingSavedUpdatesRecordsTheUpdatesWhenTheReadFailsAndSaysSo(): void
+    {
+        $args = [ 'presets' => [ [ 'id' => self::H1, 'attrs' => $this->sized( '61px' ) ], [ 'module' => 'divi/heading', 'name' => 'Big', 'attrs' => $this->sized( '57px' ) ] ] ];
+        $p    = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $GLOBALS['__divi_gp']['gets']   = 0;
+        $GLOBALS['__divi_gp']['on_get'] = static function ( int $n ): void {
+            if ( $n >= 3 ) { // read 1 = before, 2 = read-back of the update save, 3 = the read before the first create
+                $GLOBALS['__divi_gp']['throw_get'] = true;
+            }
+        };
+        try {
+            $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] );
+            $this->fail( 'expected a failure' );
+        } catch ( \RuntimeException $e ) {
+            $this->assertStringContainsString( 'recorded', $e->getMessage() );
+            $this->assertStringContainsString( 'undo_batch', $e->getMessage() );
+        }
+        $GLOBALS['__divi_gp']['throw_get'] = false;
+        $GLOBALS['__divi_gp']['on_get']    = null;
+        $this->assertCount( 1, $this->repo->rows );
+        $row = array_values( $this->repo->rows )[0];
+        $this->assertCount( 1, $row['items'] );
+        $this->assertSame( '61px', GlobalPresets::read()['module']['divi/heading']['items'][ self::H1 ]['attrs']['title']['decoration']['font']['font']['desktop']['value']['size'] );
+        $this->assertTrue( $this->undo()->undo( (int) array_key_first( $this->repo->rows ) )['fully_undone'] );
     }
 }
