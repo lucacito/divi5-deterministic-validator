@@ -667,6 +667,28 @@ final class AdminPage
         <?php
     }
 
+    /**
+     * One truthful line for the Settings screen: has an AI assistant actually reached this site, and when. It reads the
+     * usage log only, so it proves a request arrived (not merely that the endpoint answers in a browser).
+     *
+     * @param ?array{endpoint:string, client:string, age:int} $last the newest logged request, or null when there is none
+     * @param string $ago a human "3 mins" for $last['age'] (the caller formats it, so this stays pure)
+     */
+    public static function lastRequestText( ?array $last, string $ago ): string
+    {
+        if ( null === $last ) {
+            return __( 'No request from an AI assistant has reached this site yet. Paste the setup below, then ask your assistant to list your Divi pages.', 'jhmg-ai-editor-for-divi-5' );
+        }
+
+        return sprintf(
+            /* translators: 1: how long ago, such as "3 mins"; 2: the action the assistant ran; 3: the assistant's name */
+            __( 'Last request from an AI assistant: %1$s ago (%2$s, %3$s).', 'jhmg-ai-editor-for-divi-5' ),
+            $ago,
+            $last['endpoint'],
+            '' !== $last['client'] ? $last['client'] : __( 'unknown assistant', 'jhmg-ai-editor-for-divi-5' )
+        );
+    }
+
     private function viewSettings(): void
     {
         $key = ApiKey::get();
@@ -684,6 +706,8 @@ final class AdminPage
         <div class="aied-card">
             <h3><?php esc_html_e( 'Connect your AI assistant', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
             <p class="aied-muted"><?php esc_html_e( 'Your API key authorizes your AI assistant to read and edit this site. Keep it private.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <?php $last = UsageTracker::lastRequest(); ?>
+            <p class="aied-last-request<?php echo null === $last ? '' : ' is-connected'; ?>"><?php echo esc_html( self::lastRequestText( $last, null === $last ? '' : human_time_diff( time() - $last['age'], time() ) ) ); ?></p>
             <div class="aied-key-row">
                 <code class="aied-key" id="aied-api-key" data-key="<?php echo esc_attr( $key ); ?>">••••••••••••••••••••••••</code>
                 <button type="button" class="button" id="aied-toggle-key"><?php esc_html_e( 'Show', 'jhmg-ai-editor-for-divi-5' ); ?></button>

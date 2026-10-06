@@ -71,4 +71,16 @@ class UsageTrackerSummaryTest extends TestCase
         $s = UsageTracker::summaryFromCounts(['total' => 3, 'saved' => 1, 'read_calls' => 2]);
         $this->assertSame(2, $s['reads']);
     }
+
+    public function testLastRequestShapesTheNewestRowAndNeverGoesNegative(): void
+    {
+        $this->assertNull(UsageTracker::lastFromRow(null));
+        $this->assertNull(UsageTracker::lastFromRow([]));
+        $this->assertSame(
+            ['endpoint' => 'update_layout', 'client' => 'Claude Code', 'age' => 125],
+            UsageTracker::lastFromRow(['endpoint' => 'update_layout', 'client' => 'Claude Code', 'age' => '125'])
+        );
+        $this->assertSame(0, UsageTracker::lastFromRow(['endpoint' => 'ping', 'client' => null, 'age' => '-3'])['age'], 'a clock skew never shows a negative age');
+        $this->assertSame('', UsageTracker::lastFromRow(['endpoint' => 'ping', 'client' => null, 'age' => 1])['client'], 'an unknown client is an empty string');
+    }
 }

@@ -192,3 +192,7 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px;
 }
 .aied-copy-inline { flex: 0 0 auto; }
+
+/* Settings: has an AI assistant reached this site yet? */
+.aied-last-request { margin: 0 0 12px; font-size: 13px; color: var(--aied-muted); }
+.aied-last-request.is-connected { color: var(--aied-ok); font-weight: 600; }
