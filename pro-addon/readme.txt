@@ -63,6 +63,7 @@ Deleting the plugin removes its own data (licence state, batch history, saved co
 * New: `manage_global_presets` creates and updates your site's Divi module presets (for example a heading style) so an assistant can set the look of a whole kind of module before it builds pages. Creating never changes an existing preset; changing a preset or a module's default preset restyles every module that uses it, so each run needs the single-use preview token of a dry run, custom CSS and code in a preset are refused, and `undo_batch` puts the changes back as long as nothing changed them afterwards (a default preset Divi adds for a module that had none goes too). It never deletes a preset. Updating a module's default preset also needs `allow_default_presets`.
 * Presets stored in a form this tool does not manage (old-style entries, and option-group presets) are carried through untouched and refused as a target.
 * Over MCP and REST only: this is the 17th Pro tool and the third that is MCP and REST only (after `manage_global_colors` and `manage_global_variables`), and the ChatGPT importer's 30 operations are used up by the first 14 (16 free + 14 Pro).
+* `audit_site` now also reports global variable ids (`gvid-...`) that a page cites but your site does not have (code `UNKNOWN_VARIABLE_ID`); Divi silently drops such a value.
 * Fix (also in 0.7.0's code path): an `undo_batch` takes the site-wide lock before it first reads the global colors.
 
 = 0.7.0 =

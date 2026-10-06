@@ -104,6 +104,48 @@ class AuditSiteTest extends TestCase
         $this->assertSame( [], self::byItem( $r, 12 ) );
     }
 
+    public function testUnknownVariableIdsComeFromTheFreePluginsAdvisory(): void
+    {
+        $advisor = static fn ( string $content ): ?array => str_contains( $content, 'MARK' ) ? [
+            'unknown_variables' => [ [ 'id' => 'gvid-aaa', 'count' => 3 ], [ 'id' => 'gvid-bbb', 'count' => 1 ] ],
+        ] : null;
+        $tool = new AuditSite( $advisor );
+        $this->divi( 11, self::page( '/about/' ) . '<!-- MARK -->' );
+        $this->divi( 12, self::page() );
+        $r = $tool->run( [ 'scope' => 'pages' ] );
+        $a = self::byItem( $r, 11 );
+        $this->assertSame( 2, $a['UNKNOWN_VARIABLE_ID'][0]['count'] );
+        $this->assertSame( 'gvid-aaa, gvid-bbb', $a['UNKNOWN_VARIABLE_ID'][0]['detail'] );
+        $this->assertSame( [], self::byItem( $r, 12 ) );
+        $this->assertSame( 1, $r['totals_by_code']['UNKNOWN_VARIABLE_ID'] );
+    }
+
+    /** A page whose only button text cites $id (a string attribute the free advisory reads). */
+    private static function pageCiting( string $id ): string
+    {
+        return str_replace( '"text":"Go"', '"text":"' . $id . '"', self::page( '/about/' ) );
+    }
+
+    public function testACitedVariableTheSiteDoesNotHaveIsFlaggedThroughTheRealAdvisory(): void
+    {
+        $known = static fn (): array => [ 'presets' => [], 'colors' => [], 'variables' => [ 'gvid-have' => true ] ];
+        $tool  = new AuditSite( null, AuditSite::MAX_FINDINGS, $known );
+        $this->divi( 11, self::pageCiting( 'gvid-gone' ) );
+        $this->divi( 12, self::pageCiting( 'gvid-have' ) );
+        $r = $tool->run( [ 'scope' => 'pages' ] );
+        $this->assertSame( 'gvid-gone', self::byItem( $r, 11 )['UNKNOWN_VARIABLE_ID'][0]['detail'] );
+        $this->assertArrayNotHasKey( 'UNKNOWN_VARIABLE_ID', self::byItem( $r, 12 ), 'a variable the site has is not a finding' );
+    }
+
+    public function testNothingIsReportedWhenTheSitesVariablesCannotBeRead(): void
+    {
+        $known = static fn (): array => [ 'presets' => [], 'colors' => [], 'variables' => null ];
+        $tool  = new AuditSite( null, AuditSite::MAX_FINDINGS, $known );
+        $this->divi( 11, self::pageCiting( 'gvid-gone' ) );
+        $r = $tool->run( [ 'scope' => 'pages' ] );
+        $this->assertArrayNotHasKey( 'UNKNOWN_VARIABLE_ID', self::byItem( $r, 11 ) );
+    }
+
     public function testInternalLinksToNothingAndToUnpublishedPagesAreFound(): void
     {
         $content = self::page( '/missing/' ) . self::page( '/draft-page/' ) . self::page( 'https://example.com/about/' ) . self::page( 'https://other.com/x/' ) . self::page( '#top' ) . self::page( 'mailto:a@b.co' ) . self::page( '/wp-content/uploads/a.pdf' ) . self::page( '/' );
