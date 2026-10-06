@@ -193,6 +193,39 @@ class ApprovalModeHandlersTest extends TestCase
         $this->assertTrue( $data['saved'] );
     }
 
+    public function testAPreviewIsVoidWhenThePageChangedAfterItOnTheRestUpdate(): void
+    {
+        ApprovalMode::set( true );
+        $this->restUpdate( [ 'post_content' => self::NEW_VALID, 'dry_run' => true ] );
+
+        // Someone saved the page in the builder after the owner saw the preview's diff.
+        $GLOBALS['__wp_posts'][5]->post_content = self::NEW_INVALID;
+
+        [ $status, $data ] = $this->restUpdate( [ 'post_content' => self::NEW_VALID ] );
+        $this->assertSame( 428, $status );
+        $this->assertSame( 'PREVIEW_REQUIRED', $data['code'] );
+        $this->assertSame( self::NEW_INVALID, $GLOBALS['__wp_posts'][5]->post_content );
+        $this->assertSame( 0, $GLOBALS['__wp_update_calls'] );
+
+        $this->restUpdate( [ 'post_content' => self::NEW_VALID, 'dry_run' => true ] );
+        [ $status ] = $this->restUpdate( [ 'post_content' => self::NEW_VALID ] );
+        $this->assertSame( 200, $status, 'a fresh preview against the new base unlocks the save' );
+    }
+
+    public function testAPreviewIsVoidWhenThePageChangedAfterItOnTheMcpUpdate(): void
+    {
+        ApprovalMode::set( true );
+        $args = [ 'page_id' => 5, 'post_content' => self::NEW_VALID ];
+        $this->mcp( 'update_page_layout', $args + [ 'dry_run' => true ] );
+
+        $GLOBALS['__wp_posts'][5]->post_content = self::NEW_INVALID;
+
+        [ , $data, $isError ] = $this->mcp( 'update_page_layout', $args );
+        $this->assertTrue( $isError );
+        $this->assertSame( 'PREVIEW_REQUIRED', $data['code'] );
+        $this->assertSame( 0, $GLOBALS['__wp_update_calls'] );
+    }
+
     // ---- what a preview does and does not unlock ---------------------------------------------------
 
     public function testAPreviewOfOneChangeDoesNotUnlockADifferentChange(): void

@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Optional "Require a preview before every save" setting. When it is on, the free plugin's page-saving
  * entry points refuse a save unless the exact resulting content was previewed (a valid dry run) by the
- * same user for the same page in the last 30 minutes. A preview is single use. State is one transient
+ * same user for the same page, as it stood then, in the last 30 minutes. A preview is single use. State is one transient
  * per preview; if it is evicted the only effect is that the AI must preview again.
  */
 final class ApprovalMode
@@ -31,27 +31,28 @@ final class ApprovalMode
         update_option( self::OPTION, $on ? '1' : '0', false );
     }
 
-    public static function key( int $userId, int $pageId, string $content ): string
+    /** $base is the page's stored content at preview time: a page that changed since voids the preview. */
+    public static function key( int $userId, int $pageId, string $content, string $base ): string
     {
-        return 'aied_prev_' . substr( hash( 'sha256', $userId . '|' . $pageId . '|' . hash( 'sha256', $content ) ), 0, 40 );
+        return 'aied_prev_' . substr( hash( 'sha256', $userId . '|' . $pageId . '|' . hash( 'sha256', $content ) . '|' . hash( 'sha256', $base ) ), 0, 40 );
     }
 
     /** Remember a successful, valid preview (only while the mode is on). */
-    public static function recordPreview( int $pageId, string $content, bool $valid ): void
+    public static function recordPreview( int $pageId, string $content, bool $valid, string $base ): void
     {
         if ( ! $valid || ! self::enabled() ) {
             return;
         }
-        set_transient( self::key( get_current_user_id(), $pageId, $content ), 1, self::TTL );
+        set_transient( self::key( get_current_user_id(), $pageId, $content, $base ), 1, self::TTL );
     }
 
     /** True when a save may go ahead: the mode is off, or a matching preview existed (it is used up now). */
-    public static function consume( int $pageId, string $content ): bool
+    public static function consume( int $pageId, string $content, string $base ): bool
     {
         if ( ! self::enabled() ) {
             return true;
         }
-        $key = self::key( get_current_user_id(), $pageId, $content );
+        $key = self::key( get_current_user_id(), $pageId, $content, $base );
         if ( false === get_transient( $key ) ) {
             return false;
         }

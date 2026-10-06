@@ -31,4 +31,24 @@ class McpProtocolTest extends TestCase
         $this->assertSame( 202, $r->get_status() );
         $this->assertNull( $r->get_data() );
     }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'otherNotifications' )]
+    public function testAnyOtherNotificationIsAcceptedToo( string $method ): void
+    {
+        $r = $this->call( [ 'jsonrpc' => '2.0', 'method' => $method ] );
+        $this->assertSame( 202, $r->get_status() );
+        $this->assertNull( $r->get_data() );
+    }
+
+    /** @return list<array{string}> */
+    public static function otherNotifications(): array
+    {
+        return [ [ 'notifications/cancelled' ], [ 'notifications/roots/list_changed' ], [ 'notifications/progress' ] ];
+    }
+
+    public function testAnUnknownRequestIsStillMethodNotFound(): void
+    {
+        $r = $this->call( [ 'jsonrpc' => '2.0', 'id' => 9, 'method' => 'bogus/method' ] );
+        $this->assertSame( -32601, $r->get_data()['error']['code'] );
+    }
 }

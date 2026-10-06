@@ -72,11 +72,12 @@ final class McpHandler
 
         return match ($method) {
             'initialize'               => $this->onInitialize($id),
-            'notifications/initialized' => $this->accepted(),
             'ping'                     => $this->rpcResult($id, new \stdClass()),
             'tools/list'               => $this->onToolsList($id),
             'tools/call'               => $this->onToolsCall($id, $params),
-            default                    => $this->rpcError($id, -32601, "Method not found: {$method}"),
+            default                    => str_starts_with($method, 'notifications/')
+                ? $this->accepted()
+                : $this->rpcError($id, -32601, "Method not found: {$method}"),
         };
     }
 
@@ -436,7 +437,7 @@ final class McpHandler
             UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
 
             $preview = DryRun::preview((string) $post->post_content, $content);
-            ApprovalMode::recordPreview($pageId, $content, (bool) $preview['valid']);
+            ApprovalMode::recordPreview($pageId, $content, (bool) $preview['valid'], (string) $post->post_content);
 
             return $this->rpcResult($id, [
                 'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($preview, $content))]],
@@ -457,7 +458,7 @@ final class McpHandler
             ]);
         }
 
-        if (!ApprovalMode::consume($pageId, $content)) {
+        if (!ApprovalMode::consume($pageId, $content, (string) $post->post_content)) {
             UsageTracker::log('update_layout', $pageId, 'error');
             return $this->rpcResult($id, [
                 'content' => [['type' => 'text', 'text' => json_encode(ApprovalMode::refusal())]],
@@ -528,7 +529,7 @@ final class McpHandler
             UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
 
             $preview = DryRun::preview((string) $post->post_content, $edit['content']);
-            ApprovalMode::recordPreview($pageId, $edit['content'], (bool) $preview['valid']);
+            ApprovalMode::recordPreview($pageId, $edit['content'], (bool) $preview['valid'], (string) $post->post_content);
 
             return $this->rpcResult($id, [
                 'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($preview + ['replaced' => $edit['count']], $edit['content']))]],
@@ -550,7 +551,7 @@ final class McpHandler
             ]);
         }
 
-        if (!ApprovalMode::consume($pageId, $edit['content'])) {
+        if (!ApprovalMode::consume($pageId, $edit['content'], (string) $post->post_content)) {
             UsageTracker::log('edit_content', $pageId, 'error');
             return $this->rpcResult($id, [
                 'content' => [['type' => 'text', 'text' => json_encode(ApprovalMode::refusal())]],

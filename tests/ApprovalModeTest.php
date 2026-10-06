@@ -51,59 +51,69 @@ class ApprovalModeTest extends TestCase
 
     public function testWhenOffNothingIsRecordedAndEverySaveIsAllowed(): void
     {
-        ApprovalMode::recordPreview( 5, 'content', true );
+        ApprovalMode::recordPreview( 5, 'content', true, 'base' );
         $this->assertSame( [], $GLOBALS['__wp_transients'], 'no state is written while the mode is off' );
-        $this->assertTrue( ApprovalMode::consume( 5, 'content' ) );
+        $this->assertTrue( ApprovalMode::consume( 5, 'content', 'base' ) );
     }
 
     public function testASavingWithoutAPreviewIsRefusedWhenOn(): void
     {
         ApprovalMode::set( true );
-        $this->assertFalse( ApprovalMode::consume( 5, 'content' ), 'a missing preview (or an evicted one) is a refusal' );
+        $this->assertFalse( ApprovalMode::consume( 5, 'content', 'base' ), 'a missing preview (or an evicted one) is a refusal' );
     }
 
     public function testAValidPreviewUnlocksExactlyOneSaveOfExactlyThatContent(): void
     {
         ApprovalMode::set( true );
-        ApprovalMode::recordPreview( 5, 'content', true );
+        ApprovalMode::recordPreview( 5, 'content', true, 'base' );
 
-        $key = ApprovalMode::key( 7, 5, 'content' );
+        $key = ApprovalMode::key( 7, 5, 'content', 'base' );
         $this->assertSame( ApprovalMode::TTL, $GLOBALS['__wp_transient_ttl'][ $key ] );
         $this->assertSame( 1800, ApprovalMode::TTL );
 
-        $this->assertTrue( ApprovalMode::consume( 5, 'content' ) );
-        $this->assertFalse( ApprovalMode::consume( 5, 'content' ), 'single use: the same save again needs a new preview' );
+        $this->assertTrue( ApprovalMode::consume( 5, 'content', 'base' ) );
+        $this->assertFalse( ApprovalMode::consume( 5, 'content', 'base' ), 'single use: the same save again needs a new preview' );
     }
 
     public function testAnInvalidPreviewUnlocksNothing(): void
     {
         ApprovalMode::set( true );
-        ApprovalMode::recordPreview( 5, 'content', false );
-        $this->assertFalse( ApprovalMode::consume( 5, 'content' ) );
+        ApprovalMode::recordPreview( 5, 'content', false, 'base' );
+        $this->assertFalse( ApprovalMode::consume( 5, 'content', 'base' ) );
         $this->assertSame( [], $GLOBALS['__wp_transients'] );
     }
 
     public function testAPreviewDoesNotUnlockOtherContentAnotherPageOrAnotherUser(): void
     {
         ApprovalMode::set( true );
-        ApprovalMode::recordPreview( 5, 'content', true );
+        ApprovalMode::recordPreview( 5, 'content', true, 'base' );
 
-        $this->assertFalse( ApprovalMode::consume( 5, 'content ' ), 'one extra character' );
-        $this->assertFalse( ApprovalMode::consume( 6, 'content' ), 'another page' );
+        $this->assertFalse( ApprovalMode::consume( 5, 'content ', 'base' ), 'one extra character' );
+        $this->assertFalse( ApprovalMode::consume( 6, 'content', 'base' ), 'another page' );
 
         $GLOBALS['__wp_current_user_id'] = 8;
-        $this->assertFalse( ApprovalMode::consume( 5, 'content' ), 'another user' );
+        $this->assertFalse( ApprovalMode::consume( 5, 'content', 'base' ), 'another user' );
 
         $GLOBALS['__wp_current_user_id'] = 7;
-        $this->assertTrue( ApprovalMode::consume( 5, 'content' ), 'the original preview is still there for its owner' );
+        $this->assertTrue( ApprovalMode::consume( 5, 'content', 'base' ), 'the original preview is still there for its owner' );
+    }
+
+    public function testAPreviewIsBoundToThePagesBaseContent(): void
+    {
+        ApprovalMode::set( true );
+        ApprovalMode::recordPreview( 5, 'content', true, 'base A' );
+
+        $this->assertFalse( ApprovalMode::consume( 5, 'content', 'base B' ), 'the page changed after the preview' );
+        $this->assertTrue( ApprovalMode::consume( 5, 'content', 'base A' ), 'the same base still unlocks it' );
+        $this->assertFalse( ApprovalMode::consume( 5, 'content', 'base A' ), 'single use' );
     }
 
     public function testTheKeyIsAShortStableTransientName(): void
     {
-        $key = ApprovalMode::key( 7, 5, 'content' );
+        $key = ApprovalMode::key( 7, 5, 'content', 'base' );
         $this->assertMatchesRegularExpression( '/^aied_prev_[0-9a-f]{40}$/', $key );
-        $this->assertSame( $key, ApprovalMode::key( 7, 5, 'content' ) );
-        $this->assertNotSame( $key, ApprovalMode::key( 7, 5, 'other' ) );
+        $this->assertSame( $key, ApprovalMode::key( 7, 5, 'content', 'base' ) );
+        $this->assertNotSame( $key, ApprovalMode::key( 7, 5, 'other', 'base' ) );
     }
 
     public function testTheRefusalBodyNamesTheCodeAndTheNextStep(): void
