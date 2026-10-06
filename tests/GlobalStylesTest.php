@@ -244,4 +244,16 @@ class GlobalStylesTest extends TestCase
             unset( $GLOBALS['__divi_presets'], $GLOBALS['__divi_colors'], $GLOBALS['__divi_variables'] );
         }
     }
+
+    public function testANoteSaysNumbersAndStringsVariablesCanBeUsedOnlyWhenThereAreSome(): void
+    {
+        $with = $this->catalog( $this->presets(), $this->colors(), [ 'numbers' => [ 'gvid-1' => [ 'label' => 'R', 'value' => '12px', 'status' => 'active' ] ] ] );
+        $note = "numbers and strings variables can be used in a layout as described in get_style_guide; other kinds of variable are listed for information only.";
+        $this->assertContains( $note, $with['notes'] );
+        $this->assertSame( "Read-only. To create or change presets, colors or variables, use Divi's Visual Builder.", end( $with['notes'] ), 'the read-only note stays last' );
+
+        foreach ( [ [], [ 'fonts' => [ 'gvid-f' => [ 'label' => 'F', 'value' => 'Abel', 'status' => 'active' ] ] ], [ 'numbers' => [ 'gvid-arch' => [ 'label' => 'A', 'value' => '1px', 'status' => 'archived' ] ] ] ] as $vars ) {
+            $this->assertNotContains( $note, $this->catalog( $this->presets(), $this->colors(), $vars )['notes'], json_encode( $vars ) );
+        }
+    }
 }

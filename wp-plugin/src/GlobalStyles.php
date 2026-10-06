@@ -90,6 +90,9 @@ final class GlobalStyles
         if ( $truncated ) {
             $notes[] = 'Some lists were cut to their limit; pass "module" to narrow the presets.';
         }
+        if ( [] !== ( $varLists['numbers'] ?? [] ) || [] !== ( $varLists['strings'] ?? [] ) ) {
+            $notes[] = 'numbers and strings variables can be used in a layout as described in get_style_guide; other kinds of variable are listed for information only.';
+        }
         $notes[] = "Read-only. To create or change presets, colors or variables, use Divi's Visual Builder.";
 
         return [
