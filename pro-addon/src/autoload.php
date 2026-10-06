@@ -62,6 +62,8 @@ require_once __DIR__ . '/Settings/GlobalVariablesLock.php';
 require_once __DIR__ . '/Kinds/GlobalVariableKind.php';
 require_once __DIR__ . '/Settings/GlobalPresets.php';
 require_once __DIR__ . '/Settings/GlobalPresetPlanner.php';
+require_once __DIR__ . '/Settings/GlobalPresetsLock.php';
+require_once __DIR__ . '/Kinds/GlobalPresetKind.php';
 require_once __DIR__ . '/Tools/ListBatches.php';
 require_once __DIR__ . '/Tools/UndoBatch.php';
 require_once __DIR__ . '/Tools/ListThemeLayouts.php';
