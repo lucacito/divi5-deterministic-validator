@@ -187,11 +187,26 @@ class ManageGlobalPresetsTest extends TestCase
 
     public function testARealRunNeedsTheTokenAndItWorksOnce(): void
     {
-        $args = [ 'presets' => [ [ 'id' => self::H1, 'attrs' => $this->sized( '61px' ) ] ] ];
+        $args = [ 'presets' => [ [ 'module' => 'divi/heading', 'name' => 'Big', 'attrs' => $this->sized( '57px' ) ] ] ];
         $this->refused( $args, 'preview_token' );
         $p = $this->tool->run( $args + [ 'dry_run' => true ] );
         $this->assertTrue( $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] )['changed'] );
+        // A create still plans a change the second time, so the token check is reached and the spent token is refused.
         $this->refused( $args + [ 'preview_token' => $p['preview_token'] ], 'preview_token' );
+    }
+
+    public function testReplayingAnAlreadyAppliedUpdateAnswersNothingToChangeWithoutATokenAndWritesNothing(): void
+    {
+        $args = [ 'presets' => [ [ 'id' => self::H1, 'attrs' => $this->sized( '61px' ) ] ] ];
+        $this->assertTrue( $this->apply( $args )['changed'] );
+        $before = $this->snapshot();
+        foreach ( [ [], [ 'dry_run' => true ] ] as $extra ) {
+            $r = $this->tool->run( $args + $extra );
+            $this->assertFalse( $r['changed'] );
+            $this->assertSame( [ self::H1 ], $r['unchanged'] );
+            $this->assertArrayNotHasKey( 'preview_token', $r );
+        }
+        $this->assertSame( $before, $this->snapshot(), 'nothing is written, recorded or locked' );
     }
 
     public function testATokenForOtherArgumentsAnotherUserOrAnExpiredOneIsRefused(): void

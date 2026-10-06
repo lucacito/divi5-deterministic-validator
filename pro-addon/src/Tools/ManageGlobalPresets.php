@@ -32,8 +32,6 @@ final class ManageGlobalPresets implements ProTool
 
     private const UNAVAILABLE = "Divi's preset functions are not available on this site (is the Divi 5 theme active?), so nothing was changed.";
 
-    private const TOKEN_REFUSAL = 'A real run needs the preview_token from a dry run of the same arguments (including allow_default_presets), made by you in the last 30 minutes and not used before. Call again with dry_run=true.';
-
     private \Closure $clock;
     private \Closure $newId;
     private GlobalPresetsLock $lock;
@@ -128,17 +126,12 @@ final class ManageGlobalPresets implements ProTool
         self::refuseUnsafe( $before );
         $now  = ( $this->clock )();
         $plan = GlobalPresetPlanner::plan( $before, $rows, $allow, $now, $this->newId );
-        $argsHash = Canon::hash( [ 'presets' => $rows, 'allow_default_presets' => $allow ] );
-        $userId   = (int) get_current_user_id();
         if ( [] === $plan['changes'] ) {
-            // A real run always needs a genuine, unspent token, even when there turns out to be nothing to write (it is not spent here).
-            if ( ! $dry && ( null === $token || null === PreviewToken::open( $token, $argsHash, $now, $userId ) ) ) {
-                throw new \InvalidArgumentException( self::TOKEN_REFUSAL );
-            }
-
             return [ 'changed' => false, 'dry_run' => $dry, 'unchanged' => $plan['unchanged'], 'message' => 'Every preset already is exactly like that; nothing changed.' ];
         }
 
+        $argsHash = Canon::hash( [ 'presets' => $rows, 'allow_default_presets' => $allow ] );
+        $userId   = (int) get_current_user_id();
         if ( $dry ) {
             $items   = [];
             $default = false;
@@ -159,7 +152,7 @@ final class ManageGlobalPresets implements ProTool
 
         $map = null === $token ? null : PreviewToken::open( $token, $argsHash, $now, $userId );
         if ( null === $map ) {
-            throw new \InvalidArgumentException( self::TOKEN_REFUSAL );
+            throw new \InvalidArgumentException( 'A real run needs the preview_token from a dry run of the same arguments (including allow_default_presets), made by you in the last 30 minutes and not used before. Call again with dry_run=true.' );
         }
 
         $kept    = [];
