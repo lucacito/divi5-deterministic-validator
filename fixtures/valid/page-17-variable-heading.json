@@ -1,0 +1,10 @@
+{
+    "source": "wp-divi5-export",
+    "format": "gutenberg-blocks",
+    "divi_version": "5.14.0",
+    "page_id": 17,
+    "post_title": "Heading citing a numbers variable",
+    "post_status": "publish",
+    "note": "The heading block is taken verbatim from a page the owner built in the Divi 5.14 builder, with a global numbers variable (12px) applied to the font size; the section, row and column around it are a minimal wrapper. The rest of that page is not used.",
+    "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.14.0\"} --><!-- wp:divi/row {\"builderVersion\":\"5.14.0\"} --><!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.14.0\"} --><!-- wp:divi/heading {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"maxWidth\":\"680px\"}}}}},\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Premium Brands Deserve Champions on the Ground\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"weight\":\"700\",\"color\":\"$variable({\\u0022type\\u0022:\\u0022color\\u0022,\\u0022value\\u0022:{\\u0022name\\u0022:\\u0022gcid-99viu2b4dr\\u0022,\\u0022settings\\u0022:{}}})$\",\"lineHeight\":\"1.25em\",\"family\":\"Abel\",\"size\":\"$variable({\\u0022type\\u0022:\\u0022content\\u0022,\\u0022value\\u0022:{\\u0022name\\u0022:\\u0022gvid-f7rcuxrcdb\\u0022,\\u0022settings\\u0022:{}}})$\"}},\"phone\":{\"value\":{\"color\":\"$variable({\\u0022type\\u0022:\\u0022color\\u0022,\\u0022value\\u0022:{\\u0022name\\u0022:\\u0022gcid-99viu2b4dr\\u0022,\\u0022settings\\u0022:{}}})$\",\"size\":\"2.5rem\"}}}}}},\"builderVersion\":\"5.2.1\"} /--><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+}
