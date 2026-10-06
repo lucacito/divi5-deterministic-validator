@@ -312,7 +312,11 @@ final class GlobalVariables
         return false;
     }
 
-    /** Operands joined by + - * / with optional spaces around the operators and before a comma or a closing parenthesis. */
+    /**
+     * Operands joined by + - * /. CSS needs whitespace on both sides of + and - inside calc() and its min/max/clamp math (`calc(1px+2px)` is
+     * invalid and the whole declaration is dropped), so those two operators need at least one space before and after; * and / do not.
+     * Spaces before a comma or a closing parenthesis are allowed.
+     */
     private static function expr( string $s, int &$p, int $depth ): bool
     {
         self::skipSpaces( $s, $p );
@@ -322,9 +326,15 @@ final class GlobalVariables
         while ( true ) {
             $q = $p;
             self::skipSpaces( $s, $q );
+            $before = $q > $p;
             if ( $q < strlen( $s ) && str_contains( '+-*/', $s[ $q ] ) ) {
+                $op = $s[ $q ];
                 ++$q;
+                $afterStart = $q;
                 self::skipSpaces( $s, $q );
+                if ( ( '+' === $op || '-' === $op ) && ( ! $before || $q === $afterStart ) ) {
+                    return false;
+                }
                 $p = $q;
                 if ( ! self::operand( $s, $p, $depth ) ) {
                     return false;

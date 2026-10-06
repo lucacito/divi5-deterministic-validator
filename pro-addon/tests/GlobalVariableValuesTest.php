@@ -18,7 +18,7 @@ class GlobalVariableValuesTest extends TestCase
     /** @return array<string,array{string}> */
     public static function goodNumbers(): array
     {
-        $cases = [ '12px', '1.5rem', '0', '-4px', '.5em', '100%', '1.5', 'clamp(1rem, 2vw + 1rem, 3rem)', 'calc(100% - 2rem)', 'min(10px,5vw)', 'max(1px, calc(2px * 3))', 'calc((1px + 2px) * 3)', 'calc(calc(calc(calc(1px))))', '10svh', '2ch' ];
+        $cases = [ '12px', '1.5rem', '0', '-4px', '.5em', '100%', '1.5', 'clamp(1rem, 2vw + 1rem, 3rem)', 'calc(100% - 2rem)', 'min(10px,5vw)', 'max(1px, calc(2px * 3))', 'calc((1px + 2px) * 3)', 'calc(calc(calc(calc(1px))))', '10svh', '2ch', 'calc(1px - -2px)', 'calc(2px * 3)', 'calc(10px/2)', 'calc(1px + 2px )' ];
 
         return array_combine( $cases, array_map( static fn ( string $c ): array => [ $c ], $cases ) );
     }
@@ -26,7 +26,7 @@ class GlobalVariableValuesTest extends TestCase
     /** @return array<string,array{string}> */
     public static function badNumbers(): array
     {
-        $cases = [ '', ' 12px', '12px ', '12 px', '12px;', 'calc(1px; x)', 'url(x)', 'var(--x)', '12px !important', '12pt', '1e3px', 'calc(1px', 'calc(1px))', 'clamp(1px, 2px)', 'clamp(1px,2px,3px,4px)', 'min()', '(1px)', 'calc(calc(calc(calc(calc(1px)))))', str_repeat( '1', 101 ), "12px\n", 'red', 'calc(1px + var(--a))', '{12px}', "12px\0", 'calc(1px, 2px)', '1px 2px', 'calc()', 'calc(1px +)', '--1px', '+1px', '12px"', "12px'", '12px\\' ];
+        $cases = [ '', ' 12px', '12px ', '12 px', '12px;', 'calc(1px; x)', 'url(x)', 'var(--x)', '12px !important', '12pt', '1e3px', 'calc(1px', 'calc(1px))', 'clamp(1px, 2px)', 'clamp(1px,2px,3px,4px)', 'min()', '(1px)', 'calc(calc(calc(calc(calc(1px)))))', str_repeat( '1', 101 ), "12px\n", 'red', 'calc(1px + var(--a))', '{12px}', "12px\0", 'calc(1px, 2px)', '1px 2px', 'calc()', 'calc(1px +)', '--1px', '+1px', '12px"', "12px'", '12px\\', 'calc(100%-20px)', 'calc(1px+2px)', 'calc(1px -2px)', 'calc(1px- 2px)', 'calc(1px +2px)', 'calc(1px+ 2px)', 'clamp(1rem, 2vw+1rem, 3rem)', 'min(1px -2px, 3px)' ];
 
         return array_combine( array_map( static fn ( string $c ): string => '' === $c ? '(empty)' : (string) json_encode( $c, JSON_INVALID_UTF8_SUBSTITUTE ), $cases ), array_map( static fn ( string $c ): array => [ $c ], $cases ) );
     }

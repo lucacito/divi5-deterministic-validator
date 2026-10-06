@@ -170,7 +170,7 @@ final class GlobalVariablePlanner
     private static function valueRule( string $type ): string
     {
         return 'numbers' === $type
-            ? '"value" of a numbers variable must be a number with an optional unit (px, rem, em, %, vh, vw, vmin, vmax, ch, svh, dvh, lvh) or calc(), clamp(), min() or max() of those; var(), url(), !important and anything else are refused.'
+            ? '"value" of a numbers variable must be a number with an optional unit (px, rem, em, %, vh, vw, vmin, vmax, ch, svh, dvh, lvh) or calc(), clamp(), min() or max() of those (write a space on both sides of + and -); var(), url(), !important and anything else are refused.'
             : '"value" of a strings variable must be 1 to ' . GlobalVariables::MAX_STRING . ' characters of plain text without braces, semicolons, backslashes, angle brackets, quotes, comment markers (/* */), url(, @import, expression( or $variable(; brackets ( ) [ ] must be balanced.';
     }
 }
