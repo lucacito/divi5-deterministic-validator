@@ -47,7 +47,7 @@ class ToolsTest extends TestCase
     public function testThisReleaseShipsExactlyTheseTools(): void
     {
         $this->assertSame(
-            [ 'set_front_page', 'set_custom_css', 'set_primary_menu', 'publish_page', 'propose_php_snippet', 'list_batches', 'undo_batch', 'list_theme_layouts', 'update_theme_layout', 'edit_theme_layout', 'manage_theme_template', 'find_replace_site', 'audit_site', 'build_site', 'manage_global_colors', 'manage_global_variables' ],
+            [ 'set_front_page', 'set_custom_css', 'set_primary_menu', 'publish_page', 'propose_php_snippet', 'list_batches', 'undo_batch', 'list_theme_layouts', 'update_theme_layout', 'edit_theme_layout', 'manage_theme_template', 'find_replace_site', 'audit_site', 'build_site', 'manage_global_colors', 'manage_global_variables', 'manage_global_presets' ],
             array_map( static fn ( ProTool $t ): string => $t->name(), Tools::all() )
         );
     }
@@ -78,10 +78,10 @@ class ToolsTest extends TestCase
                 $free += count( $methods );
             }
         }
-        // The 15th and 16th Pro tools, manage_global_colors and manage_global_variables, are MCP + REST only by the owner's decision (2026-10-05 and after): they are not an
+        // The 15th to 17th Pro tools, manage_global_colors, manage_global_variables and manage_global_presets, are MCP + REST only by the owner's decision (2026-10-05 and after): they are not an
         // operation of the spec, so the budget counts the Pro tools that ARE in it (16 free + 14 Pro = 30, exactly).
         $inSpec = count( Tools::all() ) - count( ProOpenApi::MCP_REST_ONLY );
         $this->assertLessThanOrEqual( 30, $free + $inSpec );
-        $this->assertSame( [ 'manage_global_colors', 'manage_global_variables' ], ProOpenApi::MCP_REST_ONLY, 'a new MCP-only tool is an owner decision: change this list on purpose' );
+        $this->assertSame( [ 'manage_global_colors', 'manage_global_variables', 'manage_global_presets' ], ProOpenApi::MCP_REST_ONLY, 'a new MCP-only tool is an owner decision: change this list on purpose' );
     }
 }

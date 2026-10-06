@@ -72,6 +72,7 @@ require_once __DIR__ . '/Tools/EditThemeLayout.php';
 require_once __DIR__ . '/Tools/ManageThemeTemplate.php';
 require_once __DIR__ . '/Tools/ManageGlobalColors.php';
 require_once __DIR__ . '/Tools/ManageGlobalVariables.php';
+require_once __DIR__ . '/Tools/ManageGlobalPresets.php';
 require_once __DIR__ . '/Site/SiteItems.php';
 require_once __DIR__ . '/Site/PreviewToken.php';
 require_once __DIR__ . '/Tools/FindReplaceSite.php';
