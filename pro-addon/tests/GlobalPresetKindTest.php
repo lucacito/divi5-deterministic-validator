@@ -80,7 +80,7 @@ class GlobalPresetKindTest extends TestCase
         $item['updated'] = 1790000500;
         $data['module'][ $found['module'] ]['items'][ $id ] = $item;
         $res   = GlobalPresets::save( $data );
-        $batch = $this->log->record( 'manage_global_presets', 'test', [ GlobalPresetKind::itemForUpdate( $id, $found['module'], (array) GlobalPresets::state( $found['item'] ), (array) GlobalPresets::state( $res['after']['module'][ $found['module'] ]['items'][ $id ] ) ) ] );
+        $batch = $this->log->record( 'manage_global_presets', 'test', [ GlobalPresetKind::itemForUpdate( $id, $found['module'], (array) GlobalPresets::state( $found['item'] ), (array) GlobalPresets::state( $res['after']['module'][ $found['module'] ]['items'][ $id ] ), $found['item']['styleAttrs'] ?? null ) ] );
 
         return (int) $batch['id'];
     }
@@ -244,5 +244,130 @@ class GlobalPresetKindTest extends TestCase
         $r     = $this->undo()->undo( $id );
         $this->assertSame( 'unsafe_to_save', $r['items'][0]['reason'] );
         $this->assertCount( $saves, $GLOBALS['__divi_gp']['save_calls'] );
+    }
+
+    /** A preset whose styleAttrs differ from its attrs, as a real site can have after a builder edit. */
+    private function withDivergentStyleAttrs(): array
+    {
+        $data = GlobalPresets::read();
+        $data['module']['divi/heading']['items'][ self::H1 ]['styleAttrs'] = $this->sized( '55px' );
+        GlobalPresets::save( $data );
+
+        return $data['module']['divi/heading']['items'][ self::H1 ];
+    }
+
+    public function testUndoOfAnUpdateRestoresAStyleAttrsThatDifferedFromAttrsAndUndoOfThatUndoBringsTheUpdateBack(): void
+    {
+        $original = $this->withDivergentStyleAttrs();
+        $start    = GlobalPresets::read();
+        $id       = $this->update( self::H1, $this->sized( '61px' ), 'Heading 1 v2' );
+        $updated  = GlobalPresets::read();
+        $r        = $this->undo()->undo( $id );
+        $this->assertTrue( $r['fully_undone'] );
+        $now = GlobalPresets::read()['module']['divi/heading']['items'][ self::H1 ];
+        $this->assertSame( $original['attrs'], $now['attrs'] );
+        $this->assertSame( $this->sized( '55px' ), $now['styleAttrs'], 'the style tree is back as it was, not a copy of attrs' );
+        unset( $now['updated'], $original['updated'] );
+        $this->assertSame( $original, $now );
+        $again = $this->undo()->undo( (int) $r['undo_batch']['id'] );
+        $this->assertTrue( $again['fully_undone'] );
+        $back = GlobalPresets::read();
+        $this->assertSame( $updated['module']['divi/heading']['items'][ self::H1 ]['attrs'], $back['module']['divi/heading']['items'][ self::H1 ]['attrs'] );
+        $this->assertSame( $updated['module']['divi/heading']['items'][ self::H1 ]['styleAttrs'], $back['module']['divi/heading']['items'][ self::H1 ]['styleAttrs'] );
+        $this->assertSame( 'Heading 1 v2', $back['module']['divi/heading']['items'][ self::H1 ]['name'] );
+        $this->assertNotSame( $start, $back );
+    }
+
+    public function testAnUpdateUndoWhoseStyleAttrsDiviDoesNotKeepIsRefused(): void
+    {
+        $this->withDivergentStyleAttrs();
+        $id = $this->update( self::H1, $this->sized( '61px' ) );
+        $GLOBALS['__divi_gp']['mutate'] = static function ( array $data ): array {
+            $data['module']['divi/heading']['items'][ self::H1 ]['styleAttrs'] = [ 'other' => '1' ];
+
+            return $data;
+        };
+        $this->assertSame( 'divi_refused', $this->undo()->undo( $id )['items'][0]['reason'] );
+    }
+
+    public function testAnUpdateRecordedWithoutNamedAttrsIsNotFoundAndWritesNothing(): void
+    {
+        $id    = $this->update( self::H1, $this->sized( '61px' ) );
+        $this->repo->rows[ $id ]['items'][0]['before']['state'] = [ 'name' => 'x' ];
+        $saves = count( $GLOBALS['__divi_gp']['save_calls'] );
+        $this->assertSame( 'not_found', $this->undo()->undo( $id, true )['items'][0]['reason'] );
+        $this->assertCount( $saves, $GLOBALS['__divi_gp']['save_calls'] );
+    }
+
+    public function testAForcedUndoOfAnUpdateWhosePresetVanishedIsNotFoundAndWritesNothing(): void
+    {
+        $id = $this->update( self::H1, $this->sized( '61px' ) );
+        unset( $GLOBALS['__divi_gp']['data']['module']['divi/heading']['items'][ self::H1 ] );
+        $saves = count( $GLOBALS['__divi_gp']['save_calls'] );
+        $r     = $this->undo()->undo( $id, true );
+        $this->assertFalse( $r['fully_undone'] );
+        $this->assertSame( 'not_found', $r['items'][0]['reason'] );
+        $this->assertCount( $saves, $GLOBALS['__divi_gp']['save_calls'] );
+    }
+
+    public function testAChangedAutoCreatedDefaultBlocksTheRemovalOfACreateAndWritesNothing(): void
+    {
+        $id   = $this->create( 'divi/image', self::NEW, 'Rounded', [ 'module' => [ 'x' => '1' ] ] );
+        $auto = array_values( array_diff( GlobalPresets::itemIds( GlobalPresets::read(), 'divi/image' ), [ self::NEW ] ) )[0];
+        $GLOBALS['__divi_gp']['data']['module']['divi/image']['items'][ $auto ]['attrs'] = [ 'edited' => 'later' ];
+        $saves = count( $GLOBALS['__divi_gp']['save_calls'] );
+        foreach ( [ false, true ] as $force ) {
+            $r = $this->undo()->undo( $id, $force );
+            $this->assertFalse( $r['fully_undone'] );
+            $this->assertSame( 'changed_since', $r['items'][0]['reason'] ?? $r['items'][0]['result'] );
+        }
+        $this->assertCount( $saves, $GLOBALS['__divi_gp']['save_calls'] );
+        $this->assertArrayHasKey( self::NEW, GlobalPresets::read()['module']['divi/image']['items'] );
+    }
+
+    public function testRemovingACreatedPresetRefusesAnUnreproducibleShapeWithoutWriting(): void
+    {
+        $id = $this->create( 'divi/heading', self::NEW, 'Big', $this->sized( '57px' ) );
+        $GLOBALS['__divi_gp']['data']['mystery'] = [ 'x' => 1 ];
+        $saves = count( $GLOBALS['__divi_gp']['save_calls'] );
+        $this->assertSame( 'unsafe_to_save', $this->undo()->undo( $id )['items'][0]['reason'] );
+        $this->assertCount( $saves, $GLOBALS['__divi_gp']['save_calls'] );
+    }
+
+    public function testRemovingACreatedPresetThatDiviKeepsAnywayIsReportedAsRefused(): void
+    {
+        $id   = $this->create( 'divi/heading', self::NEW, 'Big', $this->sized( '57px' ) );
+        $keep = GlobalPresets::read()['module']['divi/heading']['items'][ self::NEW ];
+        $GLOBALS['__divi_gp']['mutate'] = static function ( array $data ) use ( $keep ): array {
+            $data['module']['divi/heading']['items'][ self::NEW ] = $keep;
+
+            return $data;
+        };
+        $this->assertSame( 'divi_refused', $this->undo()->undo( $id )['items'][0]['reason'] );
+    }
+
+    public function testRecreatingARemovedPresetRefusesAnUnreproducibleShapeWithoutWriting(): void
+    {
+        $id = $this->create( 'divi/heading', self::NEW, 'Big', $this->sized( '57px' ) );
+        $r  = $this->undo()->undo( $id );
+        $this->assertTrue( $r['fully_undone'] );
+        $GLOBALS['__divi_gp']['data']['mystery'] = [ 'x' => 1 ];
+        $saves = count( $GLOBALS['__divi_gp']['save_calls'] );
+        $this->assertSame( 'unsafe_to_save', $this->undo()->undo( (int) $r['undo_batch']['id'] )['items'][0]['reason'] );
+        $this->assertCount( $saves, $GLOBALS['__divi_gp']['save_calls'] );
+    }
+
+    public function testRecreatingARemovedPresetThatDiviStoresDifferentlyIsReportedAsRefused(): void
+    {
+        $id = $this->create( 'divi/heading', self::NEW, 'Big', $this->sized( '57px' ) );
+        $r  = $this->undo()->undo( $id );
+        $GLOBALS['__divi_gp']['mutate'] = static function ( array $data ): array {
+            if ( isset( $data['module']['divi/heading']['items'][ self::NEW ] ) ) {
+                $data['module']['divi/heading']['items'][ self::NEW ]['name'] = 'something else';
+            }
+
+            return $data;
+        };
+        $this->assertSame( 'divi_refused', $this->undo()->undo( (int) $r['undo_batch']['id'] )['items'][0]['reason'] );
     }
 }

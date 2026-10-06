@@ -52,13 +52,18 @@ final class GlobalPresetKind implements SiteLockingKind
     /**
      * @param array<string,mixed> $before GlobalPresets::state() before
      * @param array<string,mixed> $after GlobalPresets::state() as stored now
+     * @param array<string,mixed>|null $beforeStyleAttrs the preset's styleAttrs tree before the change (it can differ from attrs); null = not recorded, undo then uses attrs
      * @return array<string,mixed>
      */
-    public static function itemForUpdate( string $id, string $module, array $before, array $after ): array
+    public static function itemForUpdate( string $id, string $module, array $before, array $after, ?array $beforeStyleAttrs = null ): array
     {
-        $label = 'Global preset "' . ( $after['name'] ?? '' ) . "\" ({$module}, {$id})";
+        $label   = 'Global preset "' . ( $after['name'] ?? '' ) . "\" ({$module}, {$id})";
+        $payload = [ 'module' => $module, 'created' => false, 'state' => $before ];
+        if ( null !== $beforeStyleAttrs ) {
+            $payload['style_attrs'] = $beforeStyleAttrs;
+        }
 
-        return Item::make( self::NAME, $id, $label, [ 'module' => $module, 'created' => false, 'state' => $before ], $after );
+        return Item::make( self::NAME, $id, $label, $payload, $after );
     }
 
     public function current( array $item ): mixed
@@ -194,25 +199,27 @@ final class GlobalPresetKind implements SiteLockingKind
     /** @param array<string,mixed> $data @param array<string,mixed> $before @return array<string,mixed> */
     private function revert( array $data, string $id, string $module, array $before ): array
     {
-        $found = GlobalPresets::find( $data, $id );
-        if ( null === $found || $found['module'] !== $module || ! GlobalPresets::managed( $module, $found['item'] ) || ! is_array( $before['state'] ?? null ) ) {
+        $found    = GlobalPresets::find( $data, $id );
+        $previous = $before['state'] ?? null;
+        if ( null === $found || $found['module'] !== $module || ! GlobalPresets::managed( $module, $found['item'] ) || ! is_array( $previous ) || ! is_string( $previous['name'] ?? null ) || ! is_array( $previous['attrs'] ?? null ) ) {
             return [ 'ok' => false, 'reason' => 'not_found' ];
         }
-        $previous = $before['state'];
+        $style    = is_array( $before['style_attrs'] ?? null ) ? $before['style_attrs'] : $previous['attrs'];
         $nowState = GlobalPresets::state( $found['item'] );
+        $nowStyle = is_array( $found['item']['styleAttrs'] ?? null ) ? $found['item']['styleAttrs'] : null;
         $entry    = $found['item'];
-        $entry['name']       = (string) $previous['name'];
+        $entry['name']       = $previous['name'];
         $entry['attrs']      = $previous['attrs'];
-        $entry['styleAttrs'] = $previous['attrs'];
+        $entry['styleAttrs'] = $style;
         $entry['updated']    = time();
         $data['module'][ $module ]['items'][ $id ] = $entry;
         $res    = $this->write( $data );
-        $stored = null === $res['after'] ? null : GlobalPresets::state( GlobalPresets::find( $res['after'], $id )['item'] ?? null );
-        if ( $stored !== $previous ) {
+        $stored = null === $res['after'] ? null : GlobalPresets::find( $res['after'], $id )['item'] ?? null;
+        if ( null === $stored || Canon::hash( GlobalPresets::state( $stored ) ) !== Canon::hash( $previous ) || Canon::hash( $stored['styleAttrs'] ?? null ) !== Canon::hash( $style ) ) {
             return [ 'ok' => false, 'reason' => $res['reason'] ?? 'divi_refused' ];
         }
 
-        return [ 'ok' => true, 'inverse' => self::itemForUpdate( $id, $module, (array) $nowState, (array) $stored ) ];
+        return [ 'ok' => true, 'inverse' => self::itemForUpdate( $id, $module, (array) $nowState, (array) GlobalPresets::state( $stored ), $nowStyle ) ];
     }
 
     /**
