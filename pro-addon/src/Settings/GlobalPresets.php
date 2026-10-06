@@ -58,7 +58,7 @@ final class GlobalPresets
 
     /**
      * Shape problems that make a replace-all save unsafe: a save writes back exactly what it is given, so it must be given something
-     * it can reproduce faithfully.
+     * it can reproduce faithfully. Only the `module` list is shape-checked; `group` only has to be an array.
      *
      * @param array<mixed> $data
      * @return list<string>
@@ -74,6 +74,9 @@ final class GlobalPresets
             if ( ! is_array( $modules ) ) {
                 $out[] = '"' . $kind . '" is not a list';
                 continue;
+            }
+            if ( 'group' === $kind ) {
+                continue; // carried back untouched by every save; its real shape is unknown and this tool never writes it
             }
             foreach ( $modules as $name => $entry ) {
                 if ( ! is_array( $entry ) || ! is_array( $entry['items'] ?? null ) ) {

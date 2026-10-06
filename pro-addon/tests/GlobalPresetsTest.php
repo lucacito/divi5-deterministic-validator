@@ -56,6 +56,16 @@ class GlobalPresetsTest extends TestCase
         $this->assertNotSame( [], GlobalPresets::unsafe( [ 'mystery' => [] ] ), 'an unknown top-level key would be erased by a save we cannot reproduce' );
     }
 
+    public function testGroupPresetsAreCarriedUntouchedSoOnlyTheirTypeIsChecked(): void
+    {
+        $module = GlobalPresetsFixture::data()['module'];
+        $this->assertSame( [], GlobalPresets::unsafe( [ 'module' => $module, 'group' => [ 'anything' => [ 'whatever' => 1 ] ] ] ), 'a group of unknown shape is carried back as it is' );
+        $this->assertSame( [], GlobalPresets::unsafe( [ 'module' => $module, 'group' => [] ] ) );
+        $this->assertNotSame( [], GlobalPresets::unsafe( [ 'module' => $module, 'group' => 'x' ] ), 'a group that is not an array is unsafe' );
+        $this->assertNotSame( [], GlobalPresets::unsafe( [ 'module' => $module, 'group' => [ 'a' => [ 'whatever' => 1 ] ], 'mystery' => [] ] ), 'an unknown key stays unsafe next to a group' );
+        $this->assertNotSame( [], GlobalPresets::unsafe( [ 'module' => [ 'divi/heading' => [ 'default' => 'x' ] ], 'group' => [ 'a' => [ 'whatever' => 1 ] ] ] ), 'a module entry without items stays unsafe' );
+    }
+
     public function testFindStateAndManaged(): void
     {
         $data  = GlobalPresetsFixture::data();
