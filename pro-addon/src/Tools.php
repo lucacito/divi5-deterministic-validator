@@ -12,6 +12,7 @@ use AiEditorDivi5\Pro\Tools\FindReplaceSite;
 use AiEditorDivi5\Pro\Tools\ListBatches;
 use AiEditorDivi5\Pro\Tools\ListThemeLayouts;
 use AiEditorDivi5\Pro\Tools\ManageGlobalColors;
+use AiEditorDivi5\Pro\Tools\ManageGlobalVariables;
 use AiEditorDivi5\Pro\Tools\ManageThemeTemplate;
 use AiEditorDivi5\Pro\Tools\ProposePhpSnippet;
 use AiEditorDivi5\Pro\Tools\PublishPage;
@@ -49,6 +50,7 @@ final class Tools
             new AuditSite(),
             new BuildSite( $log ),
             new ManageGlobalColors( $log ),
+            new ManageGlobalVariables( $log ),
         ];
     }
 }
