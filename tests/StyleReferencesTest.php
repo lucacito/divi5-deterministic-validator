@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/DiviGlobalDataShims.php';
 require_once __DIR__ . '/../wp-plugin/src/GlobalStyles.php';
+require_once __DIR__ . '/../wp-plugin/src/CustomFields.php';
 require_once __DIR__ . '/../wp-plugin/src/StyleReferences.php';
 
 class StyleReferencesTest extends TestCase
@@ -47,6 +48,78 @@ class StyleReferencesTest extends TestCase
     private function varAttr( string $id ): array
     {
         return [ 'title' => [ 'decoration' => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'size' => '$variable(' . json_encode( [ 'type' => 'content', 'value' => [ 'name' => $id, 'settings' => new \stdClass() ] ] ) . ')$' ] ] ] ] ] ] ];
+    }
+
+    /** The Custom Field binding as the builder stores it (a real export): name post_meta_key, the field in settings.select_meta_key. */
+    private function legacyBinding( string $field ): string
+    {
+        return '$variable(' . json_encode( [ 'type' => 'content', 'value' => [ 'name' => 'post_meta_key', 'settings' => [ 'before' => '', 'after' => '', 'select_meta_key' => 'custom_meta_' . $field, 'meta_key' => '', 'date_format' => 'default', 'custom_date_format' => '', 'enable_html' => 'off' ] ] ] ) . ')$';
+    }
+
+    private function simpleBinding( string $field ): string
+    {
+        return '$variable(' . json_encode( [ 'type' => 'content', 'value' => [ 'name' => 'custom_meta_' . $field, 'settings' => new \stdClass() ] ] ) . ')$';
+    }
+
+    private function boundHeading( string $binding ): string
+    {
+        return $this->heading( [ 'title' => [ 'innerContent' => [ 'desktop' => [ 'value' => $binding ] ] ] ] );
+    }
+
+    /** @return array{presets: ?array<string,true>, colors: ?array<string,true>, custom_fields: callable} */
+    private function knownWithFields( array $knownFields ): array
+    {
+        return [ 'presets' => null, 'colors' => null, 'custom_fields' => static fn ( string $k ): bool => in_array( $k, $knownFields, true ) ];
+    }
+
+    public function testACitedCustomFieldTheSiteDoesNotHaveIsReportedInBothBindingForms(): void
+    {
+        $content = $this->layout(
+            $this->boundHeading( $this->legacyBinding( 'team_name' ) ),
+            $this->boundHeading( $this->legacyBinding( 'gone_field' ) ),
+            $this->boundHeading( $this->simpleBinding( 'gone_field' ) ),
+            $this->boundHeading( $this->simpleBinding( 'other_gone' ) )
+        );
+        $advice  = StyleReferences::advise( $content, $this->knownWithFields( [ 'team_name' ] ) );
+
+        $this->assertSame( [ [ 'id' => 'gone_field', 'count' => 2 ], [ 'id' => 'other_gone', 'count' => 1 ] ], $advice['unknown_custom_fields'] );
+        $this->assertSame( [], $advice['unknown_presets'] );
+        $this->assertSame( StyleReferences::MESSAGE, $advice['message'] );
+    }
+
+    public function testCustomFieldBindingsInAnyAttributeSlotAreRead(): void
+    {
+        $image  = '<!-- wp:divi/image ' . json_encode( [ 'image' => [ 'innerContent' => [ 'desktop' => [ 'value' => [ 'src' => $this->legacyBinding( 'photo_gone' ), 'id' => '', 'alt' => '' ] ] ] ], 'builderVersion' => '5.14.0' ], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP ) . ' /-->';
+        $button = '<!-- wp:divi/button ' . json_encode( [ 'button' => [ 'innerContent' => [ 'desktop' => [ 'value' => [ 'text' => 'Go', 'linkUrl' => $this->legacyBinding( 'link_gone' ) ] ] ] ], 'builderVersion' => '5.14.0' ], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP ) . ' /-->';
+        $advice = StyleReferences::advise( $this->layout( $image, $button ), $this->knownWithFields( [] ) );
+
+        $this->assertSame( [ [ 'id' => 'photo_gone', 'count' => 1 ], [ 'id' => 'link_gone', 'count' => 1 ] ], $advice['unknown_custom_fields'] );
+    }
+
+    public function testAManualEntryCitesTheFieldNameInMetaKey(): void
+    {
+        $manual = '$variable(' . json_encode( [ 'type' => 'content', 'value' => [ 'name' => 'post_meta_key', 'settings' => [ 'select_meta_key' => 'custom_meta_manual_custom_field_value', 'meta_key' => 'typed_by_hand' ] ] ] ) . ')$';
+        $advice = StyleReferences::advise( $this->layout( $this->boundHeading( $manual ) ), $this->knownWithFields( [] ) );
+
+        $this->assertSame( [ [ 'id' => 'typed_by_hand', 'count' => 1 ] ], $advice['unknown_custom_fields'] );
+    }
+
+    public function testBuiltInDynamicSourcesAndOtherVariablesAreNotCustomFields(): void
+    {
+        $title   = '$variable(' . json_encode( [ 'type' => 'content', 'value' => [ 'name' => 'post_title', 'settings' => [ 'before' => '<h1>', 'after' => '</h1>' ] ] ] ) . ')$';
+        $featured = '$variable(' . json_encode( [ 'type' => 'content', 'value' => [ 'name' => 'post_featured_image', 'settings' => new \stdClass() ] ] ) . ')$';
+        $empty   = '$variable(' . json_encode( [ 'type' => 'content', 'value' => [ 'name' => 'post_meta_key', 'settings' => [ 'select_meta_key' => '', 'meta_key' => '' ] ] ] ) . ')$';
+        $content = $this->layout( $this->boundHeading( $title ), $this->boundHeading( $featured ), $this->boundHeading( $empty ), $this->heading( $this->colorAttr( self::KNOWN_COLOR ) ) );
+
+        $this->assertNull( StyleReferences::advise( $content, $this->knownWithFields( [] ) + [ 'colors' => [ self::KNOWN_COLOR => true ] ] ) );
+    }
+
+    public function testNothingIsReportedWhenCustomFieldsCannotBeChecked(): void
+    {
+        $content = $this->layout( $this->boundHeading( $this->legacyBinding( 'gone_field' ) ) );
+
+        $this->assertNull( StyleReferences::advise( $content, [ 'presets' => null, 'colors' => null, 'custom_fields' => null ] ) );
+        $this->assertNull( StyleReferences::advise( $content, [ 'presets' => null, 'colors' => null ] ) );
     }
 
     public function testCleanLayoutGivesNull(): void
