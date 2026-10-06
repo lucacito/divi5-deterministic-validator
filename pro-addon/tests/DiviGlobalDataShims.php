@@ -245,6 +245,125 @@ namespace ET\Builder\Packages\GlobalData {
             \ET_Core_PageResource::remove_static_resources( 'all', 'all', true );
         }
     }
+
+    if ( ! class_exists( GlobalPreset::class ) ) {
+        /**
+         * A stand-in for Divi 5.14's preset storage (state in $GLOBALS['__divi_gp']): get_data() returns the stored data;
+         * save_data() REPLACES it; process_presets_for_import() is ADDITIVE: an item whose id already exists with the same
+         * name and attrs is skipped, with other content it is stored as a copy under a NEW id, and a module with no presets
+         * gets a default preset created by Divi. Divi's PHP functions check no capability.
+         */
+        class GlobalPreset
+        {
+            /** @param array<string,mixed> $data */
+            public static function resetForTests( array $data = [] ): void
+            {
+                $GLOBALS['__divi_gp'] = [
+                    'data' => $data, 'save_calls' => [], 'import_calls' => [], 'gets' => 0,
+                    'throw_get' => false, 'throw_save' => false, 'throw_import' => false, 'mutate' => null, 'on_get' => null, 'now' => 1790000000,
+                ];
+            }
+
+            public static function option_name(): string
+            {
+                return 'builder_global_presets_d5';
+            }
+
+            /** @return array<string,mixed> */
+            public static function get_data(): array
+            {
+                if ( ! isset( $GLOBALS['__divi_gp'] ) ) {
+                    self::resetForTests();
+                }
+                $s = &$GLOBALS['__divi_gp'];
+                ++$s['gets'];
+                if ( is_callable( $s['on_get'] ) ) {
+                    ( $s['on_get'] )( $s['gets'] );
+                }
+                if ( $s['throw_get'] ) {
+                    throw new \RuntimeException( 'Divi could not read the presets' );
+                }
+
+                return $s['data'];
+            }
+
+            /**
+             * @param array<string,mixed> $data
+             * @return array<string,mixed>
+             */
+            public static function save_data( array $data, bool $skip_external_cache = false ): array
+            {
+                if ( ! isset( $GLOBALS['__divi_gp'] ) ) {
+                    self::resetForTests();
+                }
+                $s = &$GLOBALS['__divi_gp'];
+                $s['save_calls'][] = $data;
+                if ( $s['throw_save'] ) {
+                    throw new \RuntimeException( 'Divi refused the save' );
+                }
+                if ( is_callable( $s['mutate'] ) ) {
+                    $data = ( $s['mutate'] )( $data );
+                }
+                $s['data'] = $data;
+                \ET_Core_PageResource::remove_static_resources( 'all', 'all', true );
+
+                return $s['data'];
+            }
+
+            /**
+             * @param array<string,mixed> $presets
+             * @return array<string,mixed>
+             */
+            public static function process_presets_for_import( array $presets, bool $auto_save = true, bool $skip_external_cache = false ): array
+            {
+                if ( ! isset( $GLOBALS['__divi_gp'] ) ) {
+                    self::resetForTests();
+                }
+                $s = &$GLOBALS['__divi_gp'];
+                $s['import_calls'][] = $presets;
+                if ( $s['throw_import'] ) {
+                    throw new \RuntimeException( 'Divi refused the import' );
+                }
+                $data     = $s['data'];
+                $mappings = [ 'module' => [], 'group' => [] ];
+                foreach ( (array) ( $presets['module'] ?? [] ) as $module => $entry ) {
+                    $existed = [] !== (array) ( $data['module'][ $module ]['items'] ?? [] );
+                    if ( ! isset( $data['module'][ $module ] ) ) {
+                        $data['module'][ $module ] = [ 'default' => '', 'items' => [] ];
+                    }
+                    foreach ( (array) ( $entry['items'] ?? [] ) as $id => $item ) {
+                        $exists = $data['module'][ $module ]['items'][ $id ] ?? null;
+                        if ( null !== $exists ) {
+                            if ( ( $exists['name'] ?? null ) === ( $item['name'] ?? null ) && ( $exists['attrs'] ?? null ) === ( $item['attrs'] ?? null ) ) {
+                                continue;
+                            }
+                            $new                     = wp_generate_uuid4();
+                            $mappings['module'][ $id ] = $new;
+                            $item['id']              = $new;
+                            $id                      = $new;
+                        }
+                        $item['created']                              = $s['now'];
+                        $item['updated']                              = $s['now'];
+                        $data['module'][ $module ]['items'][ $id ] = $item;
+                    }
+                    if ( ! $existed ) {
+                        $did                                       = wp_generate_uuid4();
+                        $data['module'][ $module ]['items'][ $did ] = [ 'id' => $did, 'moduleName' => $module, 'name' => ucfirst( substr( (string) $module, 5 ) ) . ' 1', 'version' => '5.14.0', 'type' => 'module', 'created' => $s['now'], 'updated' => $s['now'] ];
+                        $data['module'][ $module ]['default']      = $did;
+                    }
+                }
+                if ( $auto_save ) {
+                    if ( is_callable( $s['mutate'] ) ) {
+                        $data = ( $s['mutate'] )( $data );
+                    }
+                    $s['data'] = $data;
+                    \ET_Core_PageResource::remove_static_resources( 'all', 'all', true );
+                }
+
+                return [ 'presets' => $data, 'preset_id_mappings' => $mappings, 'defaultImportedModulePresetIds' => [], 'defaultImportedGroupPresetIds' => [] ];
+            }
+        }
+    }
 }
 
 namespace {

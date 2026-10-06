@@ -29,11 +29,12 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `audit_site` - a read-only check of your Divi 5 pages and header/footer: layout check violations (including custom code the plugin would not save), unknown preset or color ids, and internal links to missing or unpublished pages. 25 items per call. It never makes a remote request and never changes anything.
 * `build_site` - build a whole Divi 5 site as one undoable build: `add_page` creates one checked draft page per call (a page that fails the checks, or reuses a slug, is refused and the rest are kept), then the build is launched in one previewed step. Nothing goes live while pages are added, and `undo_batch` takes the whole build away again.
 * `manage_global_variables` - create, edit or archive your site's Divi global variables of type numbers and strings (never deletes one). It affects every page that uses a variable, so every real run needs the token from a preview (`dry_run`); undo puts it all back.
+* `manage_global_presets` - create or update your site's Divi module presets (never deletes one; updating a module's default preset needs `allow_default_presets`). A preset restyles every module that cites it, so every real run needs the token from a preview (`dry_run`); `undo_batch` puts the changes back as long as nothing changed them afterwards.
 * `manage_global_colors` - create, recolor, rename or deactivate your site's Divi global colors (never deletes one; the five theme colors only with `allow_theme_colors`). It affects every page that uses a color, so every real run needs the token from a preview (`dry_run`); undo puts it all back.
 * `list_batches` - list recent Pro changes.
 * `undo_batch` - undo one batch.
 
-Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors` and `manage_global_variables` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked.
+Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors`, `manage_global_variables` and `manage_global_presets` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked.
 
 Each tool checks the permission it really needs (for example `manage_options` to set the front page), not only that the request is authenticated.
 
@@ -59,6 +60,9 @@ Deleting the plugin removes its own data (licence state, batch history, saved co
 * Variables are written in the same stored form as Divi's own Variables Manager (with their id, type and update time), so a layout that cites one renders it.
 * Images, links, fonts and gradients variables are carried through untouched (they are not written yet). A site whose stored variables Divi's own save would damage (for example a stored colors group) is refused with the reason instead of being changed.
 * Over MCP and REST only: this is the 16th Pro tool, and the ChatGPT importer's 30 operations are used up by the first 14 (16 free + 14 Pro).
+* New: `manage_global_presets` creates and updates your site's Divi module presets (for example a heading style) so an assistant can set the look of a whole kind of module before it builds pages. Creating never changes an existing preset; changing a preset or a module's default preset restyles every module that uses it, so each run needs the single-use preview token of a dry run, custom CSS and code in a preset are refused, and `undo_batch` puts the changes back as long as nothing changed them afterwards (a default preset Divi adds for a module that had none goes too). It never deletes a preset. Updating a module's default preset also needs `allow_default_presets`.
+* Presets stored in a form this tool does not manage (old-style entries, and option-group presets) are carried through untouched and refused as a target.
+* Over MCP and REST only: this is the 17th Pro tool and the third that is MCP and REST only (after `manage_global_colors` and `manage_global_variables`), and the ChatGPT importer's 30 operations are used up by the first 14 (16 free + 14 Pro).
 * Fix (also in 0.7.0's code path): an `undo_batch` takes the site-wide lock before it first reads the global colors.
 
 = 0.7.0 =
