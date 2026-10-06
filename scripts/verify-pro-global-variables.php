@@ -12,7 +12,7 @@
  * tests cover that path against a shim that follows Divi's source.
  *
  * Run: make verify-pro-global-variables   (needs `make up`, the free plugin and the Pro add-on active on the dev site)
- * Dev sites only. WARNING: it records about 5 batches and deletes them at the end; the batch store keeps only the newest 20, so on a
+ * Dev sites only. WARNING: it records about 6 batches and deletes them at the end; the batch store keeps only the newest 20, so on a
  * site that already has more than 15 batches the run evicts the oldest real ones (it warns, and the final count check expects it).
  */
 

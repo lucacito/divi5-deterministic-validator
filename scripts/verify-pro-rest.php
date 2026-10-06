@@ -77,7 +77,9 @@ foreach ( $paths as $methods ) {
 }
 $check( 200 === $spec['status'], 'GET /openapi.json answers 200' );
 $proPaths = array_filter( array_keys( $paths ), static fn ( string $p ): bool => str_starts_with( $p, '/pro/' ) );
-$check( count( $proPaths ) === count( $names ) && [] === array_diff( array_map( static fn ( string $n ): string => '/pro/' . $n, $names ), array_keys( $paths ) ), 'the live spec has one /pro/ operation for each of the ' . count( $names ) . ' Pro tools' );
+$inSpec   = array_values( array_diff( $names, ProOpenApi::MCP_REST_ONLY ) );
+$check( count( $proPaths ) === count( $inSpec ) && [] === array_diff( array_map( static fn ( string $n ): string => '/pro/' . $n, $inSpec ), array_keys( $paths ) ), 'the live spec has one /pro/ operation for each of the ' . count( $inSpec ) . ' Pro tools that are in the spec (the ' . count( ProOpenApi::MCP_REST_ONLY ) . ' MCP + REST only tools are not)' );
+$check( [] === array_filter( ProOpenApi::MCP_REST_ONLY, static fn ( string $n ): bool => isset( $paths[ '/pro/' . $n ] ) ), 'none of the MCP + REST only tools (' . implode( ', ', ProOpenApi::MCP_REST_ONLY ) . ') appears in the live spec' );
 $check( $ops <= 30 && 0 === $long && count( $ids ) === count( array_unique( $ids ) ), "the live spec has {$ops} operations (limit 30), every description at most 300 characters, unique operationIds" );
 $check( isset( $spec['data']['components']['schemas']['ProResult'], $spec['data']['components']['schemas']['ProError'] ), 'the ProResult and ProError schemas are in the spec' );
 $undocumented = 0;
