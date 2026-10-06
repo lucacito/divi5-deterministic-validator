@@ -207,6 +207,7 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * New: when a layout uses a variable your site does not have, the check now tells your assistant (Divi would silently drop that value). This is advice only and never blocks a save.
 * As before, the plugin only reads: variables, colors and presets are created in Divi itself.
 * New: your AI assistant can show a custom field's value in a module, for example an Advanced Custom Fields name, photo or link, and the style guide it reads explains exactly where this works. When a layout uses a custom field your site does not have, the check now tells your assistant (Divi would show an empty module). This is advice only and never blocks a save.
+* Improved: the Settings screen now shows one line saying when your AI assistant last reached your site and what it did, or that no request has arrived yet, so you can tell at a glance whether the connection works.
 * Improved: with Approval mode on, a preview now only counts while the page is still as it was when previewed. If the page changed in the meantime (for example you saved it in the Divi builder), your assistant has to preview again.
 * Fixed: an assistant that sends the standard MCP notifications other than the first one (such as a cancellation) no longer gets an error back.
 

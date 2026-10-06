@@ -175,6 +175,43 @@ final class UsageTracker
         ];
     }
 
+    /**
+     * The newest logged request and how long ago it was. The database computes the age (NOW() minus created_at) so both
+     * sides use the same clock and a timezone difference between PHP and MySQL cannot show a wrong "hours ago".
+     *
+     * @return ?array{endpoint:string, client:string, age:int}
+     */
+    public static function lastRequest(): ?array
+    {
+        global $wpdb;
+        $table = self::tableName();
+        // Table name from $wpdb->prefix (trusted); no user input in the query.
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $row = $wpdb->get_row( "SELECT endpoint, client, TIMESTAMPDIFF(SECOND, created_at, NOW()) AS age FROM {$table} ORDER BY created_at DESC, id DESC LIMIT 1", ARRAY_A );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+        return self::lastFromRow( is_array( $row ) ? $row : null );
+    }
+
+    /**
+     * Pure shaping of the newest-row query result.
+     *
+     * @param ?array<string,mixed> $row
+     * @return ?array{endpoint:string, client:string, age:int}
+     */
+    public static function lastFromRow(?array $row): ?array
+    {
+        if (!is_array($row) || !isset($row['endpoint'])) {
+            return null;
+        }
+
+        return [
+            'endpoint' => (string) $row['endpoint'],
+            'client'   => (string) ($row['client'] ?? ''),
+            'age'      => max(0, (int) ($row['age'] ?? 0)),
+        ];
+    }
+
     public static function getRecent(int $limit = 50): array
     {
         global $wpdb;
