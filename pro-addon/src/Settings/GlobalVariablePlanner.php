@@ -96,9 +96,10 @@ final class GlobalVariablePlanner
      * @param array<string,array<string,array<string,mixed>>> $state GlobalVariables::read()
      * @param list<array{id:?string,type:?string,label:?string,value:?string,status:?string}> $entries normalize() output
      * @param \Closure():string $newId makes the id of a created variable
+     * @param string $now GlobalColors::stamp() of the call's time: the `lastUpdated` of every entry written
      * @return array{changes:list<array<string,mixed>>, unchanged:list<string>}
      */
-    public static function plan( array $state, array $entries, \Closure $newId ): array
+    public static function plan( array $state, array $entries, \Closure $newId, string $now ): array
     {
         $changes   = [];
         $unchanged = [];
@@ -117,8 +118,10 @@ final class GlobalVariablePlanner
                 }
                 $labels[ $key ] = true;
                 $next[ $type ]  ??= GlobalVariables::nextOrder( $state[ $type ] ?? [] );
-                $entry          = [ 'label' => (string) $e['label'], 'value' => (string) $e['value'], 'order' => (string) $next[ $type ]++, 'status' => $e['status'] ?? 'active' ];
-                $changes[]      = [ 'index' => $i, 'id' => (string) $newId(), 'type' => $type, 'action' => 'create', 'fields' => [ 'label', 'value', 'status' ], 'before' => null, 'after' => GlobalVariables::state( $entry ), 'write' => $entry ];
+                $newKey         = (string) $newId();
+                // The shape the builder itself stores; Divi ignores a variable without id, lastUpdated and variableType.
+                $entry          = [ 'id' => $newKey, 'label' => (string) $e['label'], 'value' => (string) $e['value'], 'order' => (string) $next[ $type ]++, 'status' => $e['status'] ?? 'active', 'lastUpdated' => $now, 'variableType' => $type ];
+                $changes[]      = [ 'index' => $i, 'id' => $newKey, 'type' => $type, 'action' => 'create', 'fields' => [ 'label', 'value', 'status' ], 'before' => null, 'after' => GlobalVariables::state( $entry ), 'write' => $entry ];
                 continue;
             }
             $id = $e['id'];
@@ -157,6 +160,7 @@ final class GlobalVariablePlanner
             foreach ( $fields as $f ) {
                 $write[ $f ] = $after[ $f ];
             }
+            $write = GlobalVariables::builderShape( $write, $id, $found['type'], $now );
             $action    = [ 'status' ] === $fields ? ( 'archived' === $after['status'] ? 'archive' : 'restore' ) : 'update';
             $changes[] = [ 'index' => $i, 'id' => $id, 'type' => $found['type'], 'action' => $action, 'fields' => $fields, 'before' => $before, 'after' => $after, 'write' => $write ];
         }

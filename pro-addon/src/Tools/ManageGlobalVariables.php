@@ -9,6 +9,7 @@ use AiEditorDivi5\Pro\Batch\BatchLog;
 use AiEditorDivi5\Pro\Canon;
 use AiEditorDivi5\Pro\Kinds\GlobalVariableKind;
 use AiEditorDivi5\Pro\ProTool;
+use AiEditorDivi5\Pro\Settings\GlobalColors;
 use AiEditorDivi5\Pro\Settings\GlobalVariablePlanner;
 use AiEditorDivi5\Pro\Settings\GlobalVariables;
 use AiEditorDivi5\Pro\Settings\GlobalVariablesLock;
@@ -126,12 +127,12 @@ final class ManageGlobalVariables implements ProTool
         if ( null === $before ) {
             throw new \InvalidArgumentException( self::UNAVAILABLE );
         }
-        $plan = GlobalVariablePlanner::plan( $before, $entries, $this->newId );
+        $now  = ( $this->clock )();
+        $plan = GlobalVariablePlanner::plan( $before, $entries, $this->newId, GlobalColors::stamp( $now ) );
         if ( [] === $plan['changes'] ) {
             return [ 'changed' => false, 'dry_run' => $dry, 'unchanged' => $plan['unchanged'], 'message' => 'Every variable already is exactly like that; nothing changed.' ];
         }
 
-        $now      = ( $this->clock )();
         $argsHash = Canon::hash( [ 'variables' => $entries ] );
         $userId   = (int) get_current_user_id();
         if ( $dry ) {
