@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -189,3 +189,9 @@ shell-wp:
 
 shell-wpcli:
 	docker compose exec wpcli bash
+
+# ---------------------------------------------------------------
+# verify-acf-custom-fields — real-site check of the custom-field advisory (needs the free ACF plugin active on the dev site, see the script header; creates and deletes a field group and throwaway pages)
+# ---------------------------------------------------------------
+verify-acf-custom-fields:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-acf-custom-fields.php --user=1

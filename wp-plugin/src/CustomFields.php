@@ -22,15 +22,26 @@ final class CustomFields
     /** ACF field types stored under their own name plus a numbered or flattened suffix, so their prefix counts as known. */
     private const PREFIXED_TYPES = [ 'repeater', 'flexible_content' ];
 
-    /** @return \Closure(string):bool true when the meta key is an ACF field or any post has it */
+    /**
+     * Lazy: ACF's field groups are read on the first lookup, so a layout that binds no custom field costs nothing.
+     *
+     * @return \Closure(string):bool true when the meta key is an ACF field or any post has it
+     */
     public static function lookup(): \Closure
     {
-        $acf = self::acfNamesWith(
-            function_exists( 'acf_get_field_groups' ) ? 'acf_get_field_groups' : null,
-            function_exists( 'acf_get_fields' ) ? 'acf_get_fields' : null
-        );
+        $inner = null;
 
-        return self::lookupWith( $acf, [ self::class, 'postHasMeta' ] );
+        return static function ( string $key ) use ( &$inner ): bool {
+            $inner ??= self::lookupWith(
+                self::acfNamesWith(
+                    function_exists( 'acf_get_field_groups' ) ? 'acf_get_field_groups' : null,
+                    function_exists( 'acf_get_fields' ) ? 'acf_get_fields' : null
+                ),
+                [ self::class, 'postHasMeta' ]
+            );
+
+            return $inner( $key );
+        };
     }
 
     /**

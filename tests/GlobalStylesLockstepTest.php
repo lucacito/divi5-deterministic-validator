@@ -101,6 +101,10 @@ class GlobalStylesLockstepTest extends TestCase
         $this->assertIsArray( $unknownVariables );
         $this->assertSame( 'array', $unknownVariables['type'] );
         $this->assertSame( '#/components/schemas/StyleRefCount', $unknownVariables['items']['$ref'] );
+        $unknownFields = $spec['components']['schemas']['StyleAdvisory']['properties']['unknown_custom_fields'] ?? null;
+        $this->assertIsArray( $unknownFields, 'the ChatGPT spec must describe the custom-field advisory too' );
+        $this->assertSame( 'array', $unknownFields['type'] );
+        $this->assertSame( '#/components/schemas/StyleRefCount', $unknownFields['items']['$ref'] );
         $this->assertSame( $ref, $spec['components']['schemas']['ValidationResult']['properties']['advisories']['$ref'] );
         $this->assertSame( $ref, $spec['paths']['/pages/{id}']['put']['responses']['200']['content']['application/json']['schema']['properties']['advisories']['$ref'] );
         $this->assertSame( $ref, $spec['paths']['/pages/{id}/edit']['post']['responses']['200']['content']['application/json']['schema']['properties']['advisories']['$ref'] );
