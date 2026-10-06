@@ -43,6 +43,8 @@ class StyleAdvisoryHandlersTest extends TestCase
     private const UNKNOWN = '11111111-2222-4333-8444-555555555555';
     private const COLOR   = 'gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113';
     private const NO_COLOR = 'gcid-00000000-0000-4000-8000-000000000000';
+    private const VAR_KNOWN = 'gvid-f7rcuxrcdb';
+    private const VAR_NO    = 'gvid-00000000-0000-4000-8000-000000000000';
 
     private function layout( string $text, array $extra = [] ): string
     {
@@ -84,13 +86,14 @@ class StyleAdvisoryHandlersTest extends TestCase
         $GLOBALS['__wp_caps']         = [ 'edit_post' => true, 'edit_pages' => true, 'publish_pages' => true ];
         $GLOBALS['__divi_presets']    = [ 'module' => [ 'divi/heading' => [ 'default' => '', 'items' => [ self::KNOWN => [ 'id' => self::KNOWN, 'name' => 'Heading 3' ] ] ] ] ];
         $GLOBALS['__divi_colors']     = [ self::COLOR => [ 'color' => '#ff4d00', 'status' => 'active' ] ];
+        $GLOBALS['__divi_variables']  = [ 'numbers' => [ self::VAR_KNOWN => [ 'label' => '12px', 'value' => '12px', 'status' => 'active' ] ] ];
     }
 
     protected function tearDown(): void
     {
         $GLOBALS['wpdb'] = null;
         $GLOBALS['__wp_options'] = [];
-        unset( $GLOBALS['__wp_caps'], $GLOBALS['__divi_presets'], $GLOBALS['__divi_colors'] );
+        unset( $GLOBALS['__wp_caps'], $GLOBALS['__divi_presets'], $GLOBALS['__divi_colors'], $GLOBALS['__divi_variables'] );
         $GLOBALS['__wp_can'] = true;
     }
 
@@ -120,6 +123,25 @@ class StyleAdvisoryHandlersTest extends TestCase
         $this->assertArrayHasKey( 'advisories', $payload );
         $this->assertSame( $id, $payload['advisories']['style_references']['unknown_presets'][0]['id'] );
         $this->assertSame( \AiEditorDivi5\WP\StyleReferences::MESSAGE, $payload['advisories']['style_references']['message'] );
+    }
+
+    public function testAnUnknownVariableIsReportedOverRestAndMcpAndNeverChangesTheVerdict(): void
+    {
+        $cite = static fn ( string $id ): array => [ 'title' => [ 'innerContent' => [ 'desktop' => [ 'value' => 'Hello' ] ], 'decoration' => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'size' => '$variable({"type":"content","value":{"name":"' . $id . '","settings":{}}})$' ] ] ] ] ] ] ];
+        $bad  = $this->layout( 'Hello', $cite( self::VAR_NO ) + [ 'modulePreset' => [ self::KNOWN ] ] );
+        $good = $this->layout( 'Hello', $cite( self::VAR_KNOWN ) + [ 'modulePreset' => [ self::KNOWN ] ] );
+
+        [ $st, $rest ] = $this->rest( 'validate', [ 'post_content' => $bad ] );
+        $this->assertSame( 200, $st );
+        $this->assertTrue( $rest['valid'] );
+        $this->assertSame( self::VAR_NO, $rest['advisories']['style_references']['unknown_variables'][0]['id'] );
+        $mcp = $this->mcp( 'validate_layout', [ 'post_content' => $bad ] );
+        $this->assertTrue( $mcp['valid'] );
+        $this->assertSame( self::VAR_NO, $mcp['advisories']['style_references']['unknown_variables'][0]['id'] );
+
+        [ , $clean ] = $this->rest( 'validate', [ 'post_content' => $good ] );
+        $this->assertArrayNotHasKey( 'advisories', $clean );
+        $this->assertArrayNotHasKey( 'advisories', $this->mcp( 'validate_layout', [ 'post_content' => $good ] ) );
     }
 
     public function testValidateAddsTheAdvisoryOnlyForUnknownIdsAndKeepsTheVerdict(): void

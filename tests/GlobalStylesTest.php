@@ -189,7 +189,27 @@ class GlobalStylesTest extends TestCase
     public function testKnownIdsAreNullForAnUnavailableReader(): void
     {
         $known = GlobalStyles::knownIdsWith( null, function () { throw new \RuntimeException( 'x' ); } );
-        $this->assertSame( [ 'presets' => null, 'colors' => null ], $known );
+        $this->assertSame( [ 'presets' => null, 'colors' => null, 'variables' => null ], $known );
+    }
+
+    public function testKnownIdsCoverEveryVariableInEveryGroupIncludingArchivedAndObjectGroups(): void
+    {
+        $vars = [
+            'numbers' => [ 'gvid-active' => [ 'label' => 'R', 'value' => '12px', 'status' => 'active' ], 'gvid-archived' => [ 'label' => 'G', 'value' => '1rem', 'status' => 'archived' ] ],
+            'strings' => (object) [ 'gvid-text' => [ 'label' => 'T', 'value' => 'Hi' ] ],
+            'fonts'   => [ '--et_global_heading_font' => [ 'label' => 'Heading', 'value' => 'Abel' ] ],
+        ];
+        $known = GlobalStyles::knownIdsWith( fn () => $this->presets(), fn () => $this->colors(), fn () => $vars );
+        $this->assertSame( [ 'gvid-active', 'gvid-archived', 'gvid-text', '--et_global_heading_font' ], array_keys( $known['variables'] ) );
+        $this->assertArrayNotHasKey( 'gvid-nope', $known['variables'] );
+    }
+
+    public function testKnownVariableIdsAreNullWhenTheReaderIsMissingThrowsOrReturnsNothingUseful(): void
+    {
+        $this->assertNull( GlobalStyles::knownIdsWith( fn () => $this->presets(), fn () => $this->colors() )['variables'] );
+        $this->assertNull( GlobalStyles::knownIdsWith( fn () => $this->presets(), fn () => $this->colors(), null )['variables'] );
+        $this->assertNull( GlobalStyles::knownIdsWith( null, null, function () { throw new \RuntimeException( 'x' ); } )['variables'] );
+        $this->assertSame( [], GlobalStyles::knownIdsWith( null, null, fn () => [ 'numbers' => 'junk' ] )['variables'], 'a reader that works but holds no usable group means "no variables", not "cannot tell"' );
     }
 
     public function testRealReadersPointAtDiviClassesOnlyWhenTheyExist(): void
@@ -213,6 +233,8 @@ class GlobalStylesTest extends TestCase
             $this->assertSame( 1, $cat['counts']['variables'] );
             $this->assertCount( 1, GlobalStyles::catalog( 'divi/button' )['presets'] );
             $this->assertArrayHasKey( self::H1, GlobalStyles::knownIds()['presets'] );
+
+            $this->assertArrayHasKey( 'gvid-1', GlobalStyles::knownIds()['variables'] );
 
             $GLOBALS['__divi_presets'] = null; // the shim now throws
             $this->assertSame( [], GlobalStyles::catalog()['presets'] );

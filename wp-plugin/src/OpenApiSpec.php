@@ -100,6 +100,7 @@ final class OpenApiSpec
                         'properties' => [
                             'unknown_presets' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/StyleRefCount'], 'description' => 'Preset ids that do not exist on this site (at most 20)'],
                             'unknown_colors'  => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/StyleRefCount'], 'description' => 'Global color ids that do not exist on this site (at most 20)'],
+                            'unknown_variables' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/StyleRefCount'], 'description' => 'Global variable ids (gvid-...) that do not exist on this site (at most 20); Divi silently drops a value that cites one'],
                             'message'         => ['type' => 'string'],
                         ],
                     ],
