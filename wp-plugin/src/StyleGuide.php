@@ -294,10 +294,25 @@ have leaves the color undefined, so the text silently loses its color.
 A module with no `modulePreset` (or `"modulePreset":["default"]`) already gets the site's
 default preset for its type, so most modules need nothing. Use a named preset only when its
 name and `controls` fit, as `"modulePreset":["<id from the tool>"]`; an unknown id silently
-falls back to the default preset. Variables other than colors are listed for information
-only: do not reference them. The tool is read-only: presets and colors are created in
-Divi's Visual Builder. The save, create and preview tools add an `advisories.style_references`
-note when a layout cites an id the site does not have; replace those ids with the site's own.
+falls back to the default preset.
+
+Numbers and strings variables (ids like `gvid-…`, listed by the same tool with their values)
+can be reused too, but only in four places that are verified: a **numbers** variable as a
+`padding` value or as a font `size`; a **strings** variable as a heading's title text
+(`title.innerContent`) or as a text module's content (`content.innerContent`). Write the
+value exactly like this (inside a block comment the quotes are written as \u0022):
+`"size":"$variable({\u0022type\u0022:\u0022content\u0022,\u0022value\u0022:{\u0022name\u0022:\u0022gvid-XXXX\u0022,\u0022settings\u0022:{}}})$"`
+with a real id from the tool in place of `gvid-XXXX`. Do not cite a variable anywhere else,
+and do not reference fonts, images, links or gradients variables: those are
+listed for information only. Never invent an id: Divi silently drops a value (a padding, a
+size, a line of text) that cites an id the site does not have, and the checker cannot see
+that.
+
+The tool is read-only: presets, colors and variables are created in Divi's Visual Builder
+(its Variables Manager). The save, create and preview tools add an
+`advisories.style_references` note when a layout cites a preset, color or variable id the
+site does not have (`unknown_presets`, `unknown_colors`, `unknown_variables`); replace those
+ids with the site's own.
 MD;
     }
 }

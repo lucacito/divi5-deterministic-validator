@@ -95,12 +95,48 @@ class StyleGuideTest extends TestCase
         $this->assertTrue($found, 'no real export in fixtures/valid contains the color-variable shape the guide teaches');
     }
 
-    public function testSiteStylesSectionDoesNotTeachUngroundedVariableTypes(): void
+    public function testTeachesNumbersAndStringsVariablesInExactlyTheFourVerifiedPlaces(): void
     {
         $md = StyleGuide::markdown();
-        $this->assertStringContainsString('Variables other than colors are listed for information', $md);
+        $q  = '\\' . 'u0022';
+        $this->assertStringContainsString('gvid-XXXX', $md);
+        $this->assertStringContainsString('numbers', $md);
+        $this->assertStringContainsString('strings', $md);
+        foreach (['padding', '`size`', 'title.innerContent', 'content.innerContent'] as $place) {
+            $this->assertStringContainsString($place, $md, "the guide must name the verified place: $place");
+        }
+        $this->assertStringContainsString(
+            '$variable({' . $q . 'type' . $q . ':' . $q . 'content' . $q . ',' . $q . 'value' . $q . ':{' . $q . 'name' . $q . ':' . $q . 'gvid-XXXX' . $q . ',' . $q . 'settings' . $q . ':{}}})$',
+            $md
+        );
+        $this->assertStringContainsString('unknown_variables', $md);
+        $this->assertStringContainsString('Never invent an id', $md);
+    }
+
+    public function testStillForbidsTheVariableKindsThatAreNotVerified(): void
+    {
+        $md = StyleGuide::markdown();
+        $this->assertStringContainsString('fonts, images, links or gradients', $md);
+        $this->assertStringContainsString('listed for information only', $md);
+        $this->assertStringContainsString('Do not cite a variable anywhere else', $md);
         $q = '\\' . 'u0022';
         $this->assertStringNotContainsString($q . 'type' . $q . ':' . $q . 'number', $md);
-        $this->assertStringNotContainsString('gvid-XXXX', $md);
+    }
+
+    public function testTheVariableShapeTheGuideTeachesIsInARealBuilderExportThatPassesTheChecker(): void
+    {
+        $q     = '\\' . 'u0022';
+        $shape = '$variable({' . $q . 'type' . $q . ':' . $q . 'content' . $q . ',' . $q . 'value' . $q . ':{' . $q . 'name' . $q . ':' . $q . 'gvid-';
+        $found = null;
+        foreach (glob(__DIR__ . '/../fixtures/valid/page-*.json') ?: [] as $file) {
+            $export = json_decode((string) file_get_contents($file), true);
+            if (is_array($export) && str_contains((string) ($export['post_content'] ?? ''), $shape)) {
+                $found = $export;
+                break;
+            }
+        }
+        $this->assertNotNull($found, 'no real export in fixtures/valid cites a global variable in the content form the guide teaches');
+        $this->assertStringContainsString($shape, StyleGuide::markdown());
+        $this->assertTrue((new \Divi5Validator\Validator())->validateContent((string) $found['post_content'])->isValid(), 'the real export that grounds the guide must pass the checker');
     }
 }
