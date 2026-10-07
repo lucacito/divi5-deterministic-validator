@@ -28,16 +28,17 @@ protected, secret-looking or other-user's field never reaches it; nothing is wri
 ### 1. `get_custom_fields` (MCP + REST, read-only)
 
 - Input: `id` (integer, required; a non-integer is rejected 400 / -32602, never cast), `keys` (optional list of strings that
-  restricts the answer; a non-list or non-string entry is rejected the same way).
+  restricts the answer; a non-list or non-string entry is rejected the same way). MCP takes a list only and rejects a string
+  `keys`; REST also accepts the comma separated query string.
 - Target rule (new `FieldTarget`, kept apart from `EditTarget`, which stays page-only until B): the post exists, its type is a
-  public post type, and the current user has `edit_post` on it. Anything else answers like a missing post
-  (`not_found`), so nothing leaks about other posts.
+  public post type, and the current user has `edit_post` on it. Anything else, including a post the user cannot edit, answers
+  exactly like a missing post (`not_found`: 404 / -32602, same message), so nothing leaks about other posts.
 - Output: `{ id, post_type, fields: [{ key, value, acf: { label, type } | null }], withheld: <int>, truncated: <bool> }`.
   `acf` is filled from ACF's own read functions behind `function_exists` guards (reusing the `CustomFields` ACF reader); a
   missing reader means `acf: null` everywhere, never an error.
 - Values come from `get_post_meta()` only. Arrays and objects are returned as JSON.
 - Authorisation as every other tool: accepted API key, its user needs `edit_pages`, then `edit_post` on the target.
-- Logged by `UsageTracker` as endpoint `get_custom_fields`, result `read`.
+- Logged by `UsageTracker` as endpoint `custom_fields`, result `read` (`error` for a refusal or failure).
 - REST route: `GET /wp-json/ai-editor-divi5/v1/posts/{id}/custom-fields` (optional `keys` query parameter, comma separated).
 - NOT in the ChatGPT OpenAPI spec: the importer's 30 operations are used up (same exception as `get_site_structure`;
   `SiteStructureLockstepTest` gets a matching pin).
@@ -47,8 +48,12 @@ protected, secret-looking or other-user's field never reaches it; nothing is wri
 - Never returned: keys starting with `_`, and keys for which `is_protected_meta( $key, 'post' )` is true (ACF `_field`
   reference rows, `_edit_lock`, `_wp_*`).
 - Withheld and counted in `withheld`: keys that look like secrets (case-insensitive match on `password`, `passwd`, `secret`,
-  `token`, `api_key`/`apikey`, `license`/`licence`). This is a heuristic; the real protection is the per-post `edit_post`
+  `pwd`, `token`, `api_key`/`apikey`, `private_key`, `access_key`, `auth_key`, `credential`, `license`/`licence`, and a standalone
+  `pass` delimited by start/end/`_`/`-`, so `smtp_pass` is withheld but `passage`, `compass` and `bypass_url` are not), and every key
+  ACF says is a `password`-type field, whatever its name (its value is never loaded; discovery does not list it). This is a heuristic; the real protection is the per-post `edit_post`
   check, and the AI acts as the key's user.
+- A failure while reading (an unencodable value is treated as cut; anything thrown is caught) answers a clean -32603 / 500
+  "Could not read the custom fields." and is logged as an error.
 - Caps: 100 fields per call, each value cut at 500 characters (`truncated: true` when anything was cut or dropped).
 - No writes, no remote calls, no raw SQL. The free plugin has no code that calls `update_post_meta`, `add_post_meta`,
   `update_field`, `update_metadata` or `add_metadata` (the compliance test pins this; the old history migration's

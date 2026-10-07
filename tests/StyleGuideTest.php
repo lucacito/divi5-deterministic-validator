@@ -21,7 +21,7 @@ class StyleGuideTest extends TestCase
     {
         $g = StyleGuide::markdown();
         $this->assertStringContainsString( '`get_custom_fields`', $g );
-        $this->assertStringContainsString( 'custom_fields', $g, 'names the get_site_structure section that lists the keys' );
+        $this->assertStringContainsString( '`custom_fields` section', $g, 'names the get_site_structure section that lists the keys' );
     }
 
     public function testImageGuidancePointsAtTheImageGuideNotARemoteHost(): void

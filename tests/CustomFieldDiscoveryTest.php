@@ -35,7 +35,7 @@ class CustomFieldDiscoveryTest extends TestCase
 
     protected function tearDown(): void
     {
-        unset( $GLOBALS['__cfd_posts'], $GLOBALS['__ss_post_types'], $GLOBALS['__wp_caps'] );
+        unset( $GLOBALS['__cfd_posts'], $GLOBALS['__ss_post_types'], $GLOBALS['__wp_caps'], $GLOBALS['__wp_postmeta'], $GLOBALS['__ss_acf_groups'], $GLOBALS['__ss_acf_fields'] );
         $GLOBALS['__wp_can'] = true;
     }
 

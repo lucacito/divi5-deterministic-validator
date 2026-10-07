@@ -58,12 +58,12 @@ class FieldTargetTest extends TestCase
         }
     }
 
-    public function testAPublicPostTheUserCannotEditIsForbidden(): void
+    public function testAPublicPostTheUserCannotEditLooksMissing(): void
     {
         $GLOBALS['__wp_caps'] = [ 'edit_post' => true, 'edit_post:6' => false ];
         $this->assertNull( FieldTarget::resolve( 5 )['error'] );
         $r = FieldTarget::resolve( 6 );
-        $this->assertSame( FieldTarget::FORBIDDEN, $r['error'] );
+        $this->assertSame( FieldTarget::NOT_FOUND, $r['error'], 'the same answer as a missing post' );
         $this->assertNull( $r['post'] );
     }
 

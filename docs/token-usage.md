@@ -6,7 +6,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 
 | What | Detail | Bytes | Approx. tokens |
 | --- | --- | ---: | ---: |
-| Tool definitions | 17 tools, loaded once per conversation (free plugin only) | 11,548 | 2,887 |
+| Tool definitions | 18 tools, loaded once per conversation (free plugin only) | 11,548 | 2,887 |
 | Reading a page (smallest) | the page's layout content (get_page_layout adds a little wrapper), from page-7-homepage.json | 2,214 | 554 |
 | Reading a page (median) | the page's layout content (get_page_layout adds a little wrapper), from page-86-layout-5.json | 51,612 | 12,903 |
 | Reading a page (largest) | the page's layout content (get_page_layout adds a little wrapper), from page-85-layout-4.json | 66,095 | 16,524 |
@@ -19,3 +19,5 @@ A refusal can be long because it lists the allowed block types; shortening it wo
 Tokens the assistant WRITES also count: sending a whole layout to update_page_layout costs roughly the size of the page read. edit_page_content avoids that (and a dry_run of it sends only the find-and-replace pair).
 
 The Pro add-on adds its own tool definitions on top of the first row.
+
+The numbers above were measured before `get_custom_fields` and the `custom_fields` discovery section of `get_site_structure` were added, and have not been re-measured.

@@ -711,20 +711,22 @@ final class McpHandler
         if (!is_int($postId) || $postId < 1) {
             return $this->rpcError($id, -32602, 'id must be a positive integer.');
         }
-        $only = CustomFieldReader::parseKeys($args['keys'] ?? null);
+        $only = is_string($args['keys'] ?? null) ? null : CustomFieldReader::parseKeys($args['keys'] ?? null); // MCP takes a list, never the REST comma form
         if ($only === null) {
             return $this->rpcError($id, -32602, 'keys must be a list of at most ' . CustomFieldReader::MAX_KEYS_ARG . ' strings.');
         }
         $target = FieldTarget::resolve($postId);
-        if ($target['error'] === FieldTarget::NOT_FOUND) {
+        if ($target['error'] !== null) {
+            // A missing post, a non-public type and a post the user cannot edit all answer the same.
             UsageTracker::log('custom_fields', $postId, 'error');
             return $this->rpcError($id, -32602, "Post {$postId} not found.");
         }
-        if ($target['error'] === FieldTarget::FORBIDDEN) {
+        try {
+            $result = CustomFieldReader::read($target['post'], $only);
+        } catch (\Throwable) {
             UsageTracker::log('custom_fields', $postId, 'error');
-            return $this->rpcError($id, -32602, "You do not have permission to read post {$postId}.");
+            return $this->rpcError($id, -32603, 'Could not read the custom fields.');
         }
-        $result = CustomFieldReader::read($target['post'], $only);
         UsageTracker::log('custom_fields', $postId, 'read');
 
         return $this->rpcResult($id, [

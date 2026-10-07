@@ -307,7 +307,7 @@ that must all match, such as `post_type == page`. Bind only fields whose group a
 site's posts really use, ACF or not (a sample of recent posts; keys only). To see what a
 field holds on one page or Project, call `get_custom_fields` with its id: it returns each
 key with its value (never protected or secret-looking keys), so you can write copy that
-fits. A key with no ACF field behind it binds the same way: put its name in place of
+fits. A key with no ACF field behind it binds the same way in a text module: put its name in place of
 `FIELD_NAME`.
 
 ## Match the site (colors and presets)

@@ -44,6 +44,9 @@ class CustomFieldReaderTest extends TestCase
             [ '_edit_lock', 'hidden' ], [ '_headline', 'hidden' ], [ '', 'hidden' ], [ 'wp_protected_by_filter', 'hidden' ],
             [ 'api_key', 'secret' ], [ 'my-api-key', 'secret' ], [ 'apikey', 'secret' ], [ 'Stripe_Token', 'secret' ],
             [ 'admin_password', 'secret' ], [ 'passwd', 'secret' ], [ 'client_secret', 'secret' ], [ 'license_code', 'secret' ], [ 'licence', 'secret' ],
+            [ 'smtp_pass', 'secret' ], [ 'db-pass', 'secret' ], [ 'pass', 'secret' ], [ 'Pass_word_hint', 'secret' ], [ 'pwd', 'secret' ], [ 'stripe_private_key', 'secret' ],
+            [ 'private-key', 'secret' ], [ 'aws_access_key', 'secret' ], [ 'auth_key', 'secret' ], [ 'credentials', 'secret' ], [ 'user_credential', 'secret' ],
+            [ 'passage', 'shown' ], [ 'compass', 'shown' ], [ 'bypass_url', 'shown' ], [ 'pass_through', 'secret' ], [ 'passport_no', 'shown' ],
         ];
     }
 
@@ -201,6 +204,34 @@ class CustomFieldReaderTest extends TestCase
         $this->assertSame( [], CustomFieldReader::acfInfoWith( null, null ) );
         $this->assertSame( [], CustomFieldReader::acfInfoWith( static fn () => throw new \RuntimeException( 'x' ), static fn () => [] ) );
         $this->assertSame( [], CustomFieldReader::acfInfoWith( static fn () => 'nope', static fn () => [] ) );
+    }
+
+    public function testAnAcfPasswordFieldIsWithheldWhateverItsNameAndItsValueIsNeverLoaded(): void
+    {
+        $asked = [];
+        $r = CustomFieldReader::readWith( [ 'headline', 'site_login' ], [], static function ( string $k ) use ( &$asked ): mixed {
+            $asked[] = $k;
+
+            return 'SECRET-VALUE';
+        }, [ 'site_login' => [ 'label' => 'Login', 'type' => 'password' ], 'headline' => [ 'label' => 'H', 'type' => 'text' ] ] );
+        $this->assertSame( [ 'headline' ], array_column( $r['fields'], 'key' ) );
+        $this->assertSame( 1, $r['withheld'] );
+        $this->assertSame( [ 'headline' ], $asked, 'the password value is never loaded' );
+    }
+
+    public function testDiscoveryDoesNotListAnAcfPasswordField(): void
+    {
+        $d = CustomFieldReader::discoverWith( [ 'book' => [ [ 'isbn', 'site_login' ] ] ], [ 'site_login' => [ 'label' => 'Login', 'type' => 'password' ] ] );
+        $this->assertSame( [ 'isbn' ], array_column( $d['post_types'][0]['keys'], 'key' ) );
+    }
+
+    public function testAValueThatCannotBeJsonEncodedIsTreatedAsCut(): void
+    {
+        foreach ( [ [ 'x' => NAN ], [ "bad\xB1utf8" ], [ 'deep' => [ 'bad' => "\xff" ] ] ] as $value ) {
+            $r = $this->read( [ 'k' => $value ] );
+            $this->assertSame( '', $r['fields'][0]['value'] );
+            $this->assertTrue( $r['truncated'] );
+        }
     }
 
     // ---- discoverWith -------------------------------------------------------------------------

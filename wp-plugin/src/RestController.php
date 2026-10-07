@@ -655,15 +655,17 @@ final class RestController
             return new WP_Error('invalid_field', '"keys" must be a list of at most ' . CustomFieldReader::MAX_KEYS_ARG . ' strings.', ['status' => 400]);
         }
         $target = FieldTarget::resolve($postId);
-        if ($target['error'] === FieldTarget::NOT_FOUND) {
+        if ($target['error'] !== null) {
+            // A missing post, a non-public type and a post the user cannot edit all answer the same.
             UsageTracker::log('custom_fields', $postId ?: null, 'error');
             return new WP_Error('not_found', "Post $postId not found.", ['status' => 404]);
         }
-        if ($target['error'] === FieldTarget::FORBIDDEN) {
+        try {
+            $result = CustomFieldReader::read($target['post'], $only);
+        } catch (\Throwable) {
             UsageTracker::log('custom_fields', $postId, 'error');
-            return new WP_Error('forbidden', "You do not have permission to read post $postId.", ['status' => 403]);
+            return new WP_Error('server_error', 'Could not read the custom fields.', ['status' => 500]);
         }
-        $result = CustomFieldReader::read($target['post'], $only);
         UsageTracker::log('custom_fields', $postId, 'read');
 
         return new WP_REST_Response($result, 200);

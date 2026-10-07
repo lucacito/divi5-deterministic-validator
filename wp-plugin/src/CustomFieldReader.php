@@ -28,7 +28,8 @@ final class CustomFieldReader
     public const SAMPLE_POSTS      = 20;
     public const MAX_KEYS_PER_TYPE = 100;
 
-    private const SECRET_PATTERN = '/(password|passwd|secret|token|api[_-]?key|licen[cs]e)/i';
+    // A standalone `pass` (smtp_pass, db-pass) is a secret; `passage`, `compass` and `bypass_url` are not.
+    private const SECRET_PATTERN = '/(password|passwd|pwd|secret|token|api[_-]?key|private[_-]?key|access[_-]?key|auth[_-]?key|credential|licen[cs]e|(?:^|[_-])pass(?:$|[_-]))/i';
     private const MAX_LABEL      = 200;
 
     /** SHOWN, HIDDEN (never returned, not counted) or SECRET (never returned, counted as withheld). */
@@ -42,6 +43,17 @@ final class CustomFieldReader
         }
 
         return 1 === preg_match( self::SECRET_PATTERN, $key ) ? self::SECRET : self::SHOWN;
+    }
+
+    /** classify(), plus: a key ACF says is a `password` field is a secret whatever its name. @param array<string,array{label:string,type:string}> $acf */
+    private static function classifyWith( string $key, array $acf ): string
+    {
+        $class = self::classify( $key );
+        if ( self::SHOWN === $class && 'password' === ( $acf[ $key ]['type'] ?? null ) ) {
+            return self::SECRET;
+        }
+
+        return $class;
     }
 
     /**
@@ -97,7 +109,7 @@ final class CustomFieldReader
         $withheld  = 0;
         $truncated = false;
         foreach ( $keys as $key ) {
-            $class = self::classify( $key );
+            $class = self::classifyWith( $key, $acf );
             if ( self::HIDDEN === $class ) {
                 continue;
             }
@@ -241,7 +253,7 @@ final class CustomFieldReader
             $counts = [];
             foreach ( $posts as $postKeys ) {
                 foreach ( array_unique( array_map( 'strval', (array) $postKeys ) ) as $key ) {
-                    if ( self::SHOWN !== self::classify( $key ) ) {
+                    if ( self::SHOWN !== self::classifyWith( $key, $acf ) ) {
                         continue;
                     }
                     $counts[ $key ] = ( $counts[ $key ] ?? 0 ) + 1;
@@ -267,7 +279,11 @@ final class CustomFieldReader
     private static function valueText( mixed $value ): array
     {
         if ( is_array( $value ) || is_object( $value ) ) {
-            $text = (string) wp_json_encode( $value );
+            $json = wp_json_encode( $value );
+            if ( false === $json ) {
+                return [ '', true ]; // cannot be encoded (invalid UTF-8, NAN, too deep): treat as cut, never guess
+            }
+            $text = $json;
         } elseif ( is_bool( $value ) ) {
             $text = $value ? '1' : '';
         } elseif ( is_scalar( $value ) ) {

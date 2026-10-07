@@ -159,19 +159,44 @@ class CustomFieldsLockstepTest extends TestCase
         }
     }
 
-    public function testMissingAndNonPublicPostsAreNotFoundAndNoEditRightIsForbidden(): void
+    public function testMissingNonPublicAndNotEditablePostsAllAnswerAsNotFound(): void
     {
-        foreach ( [ '999', '7' ] as $id ) {
+        $GLOBALS['__wp_caps'] = [ 'edit_pages' => true, 'edit_post' => true, 'edit_post:6' => false ];
+        $messages = [];
+        foreach ( [ '999', '7', '6' ] as $id ) {
             $r = $this->rest( [ 'id' => $id ] );
             $this->assertInstanceOf( \WP_Error::class, $r );
-            $this->assertSame( 404, $r->data['status'] );
-            $this->assertSame( -32602, $this->mcpCall( [ 'id' => (int) $id ] )['error']['code'] );
+            $this->assertSame( 404, $r->data['status'], "post {$id}" );
+            $e = $this->mcpCall( [ 'id' => (int) $id ] );
+            $this->assertSame( -32602, $e['error']['code'], "post {$id}" );
+            $this->assertSame( "Post {$id} not found.", $e['error']['message'] );
+            $messages[] = str_replace( $id, 'N', $r->get_error_message() );
         }
-        $GLOBALS['__wp_caps'] = [ 'edit_pages' => true, 'edit_post' => true, 'edit_post:6' => false ];
-        $r = $this->rest( [ 'id' => '6' ] );
-        $this->assertSame( 403, $r->data['status'] );
-        $e = $this->mcpCall( [ 'id' => 6 ] );
-        $this->assertStringContainsString( 'permission', $e['error']['message'] );
+        $this->assertCount( 1, array_unique( $messages ), 'no-edit-right reads exactly like a missing post' );
+    }
+
+    public function testMcpRejectsAStringKeysArgument(): void
+    {
+        $e = $this->mcpCall( [ 'id' => 5, 'keys' => 'subtitle' ] );
+        $this->assertSame( -32602, $e['error']['code'] );
+        $this->assertSame( 200, $this->rest( [ 'id' => '5', 'keys' => 'subtitle' ] )->get_status(), 'REST keeps the comma form' );
+    }
+
+    public function testAFailureWhileReadingAnswersCleanly(): void
+    {
+        $GLOBALS['__wp_postmeta'][5]['boom'] = new class implements \JsonSerializable {
+            public function jsonSerialize(): mixed
+            {
+                throw new \RuntimeException( 'internal detail /var/www' );
+            }
+        };
+        $r = $this->rest( [ 'id' => '5' ] );
+        $this->assertInstanceOf( \WP_Error::class, $r );
+        $this->assertSame( 500, $r->data['status'] );
+        $this->assertSame( 'Could not read the custom fields.', $r->get_error_message() );
+        $e = $this->mcpCall( [ 'id' => 5 ] );
+        $this->assertSame( -32603, $e['error']['code'] );
+        $this->assertSame( 'Could not read the custom fields.', $e['error']['message'] );
     }
 
     public function testBothSurfacesRefuseAUserWhoCannotEditPages(): void
