@@ -11,11 +11,18 @@
 
 use AiEditorDivi5\WP\CustomFieldReader;
 
+require_once __DIR__ . '/dev-guard.php';
+aied_require_dev_site();
 if ( ! class_exists( CustomFieldReader::class ) ) {
     WP_CLI::error( 'Activate jhmg-ai-editor-for-divi-5 (with get_custom_fields) on this site first.' );
 }
-require_once __DIR__ . '/dev-guard.php';
-aied_require_dev_site();
+require_once ABSPATH . 'wp-admin/includes/user.php';
+// A previous run that was killed may have left its throwaway contributor behind: remove only that exact login.
+$stale = get_user_by( 'login', 'aied_cf_contrib' );
+if ( $stale && $stale->ID > 1 ) {
+    wp_delete_user( $stale->ID );
+}
+WP_CLI::log( function_exists( 'acf_import_field_group' ) ? 'NOTE  ACF is active on this site (the evidence below is not an "ACF absent" run)' : 'NOTE  ACF is not installed on this site (the render evidence is for a plain post meta key)' );
 
 $failures = [];
 $check    = static function ( bool $ok, string $label ) use ( &$failures ): void {
@@ -117,7 +124,11 @@ try {
     }
 
     // 4. a contributor cannot use it
-    $userId = (int) wp_insert_user( [ 'user_login' => 'aied_cf_contrib', 'user_pass' => wp_generate_password(), 'role' => 'contributor' ] );
+    $inserted = wp_insert_user( [ 'user_login' => 'aied_cf_contrib', 'user_pass' => wp_generate_password(), 'role' => 'contributor' ] );
+    if ( is_wp_error( $inserted ) ) {
+        throw new RuntimeException( 'could not create the throwaway contributor: ' . $inserted->get_error_message() );
+    }
+    $userId = (int) $inserted;
     wp_set_current_user( $userId );
     $denied = $rest( 'GET', "/posts/{$pid}/custom-fields" );
     wp_set_current_user( 1 );
@@ -149,9 +160,12 @@ try {
     foreach ( $posts as $id ) {
         wp_delete_post( $id, true );
     }
-    if ( $userId > 0 ) {
-        require_once ABSPATH . 'wp-admin/includes/user.php';
-        wp_delete_user( $userId );
+    // Only ever delete the throwaway user: never id 1 or any other account.
+    if ( $userId > 1 ) {
+        $made = get_userdata( $userId );
+        if ( $made && 'aied_cf_contrib' === $made->user_login ) {
+            wp_delete_user( $userId );
+        }
     }
     wp_set_current_user( 1 );
 }
