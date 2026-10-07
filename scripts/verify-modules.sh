@@ -11,7 +11,10 @@ cd "$ROOT"
 bash scripts/schema-gap.sh
 VERSION="$(cat build/divi-version.txt)"
 
-INSTALLED="$(docker compose exec -T wpcli wp theme get Divi --field=version | tr -d '\r\n')"
+# php -d memory_limit=1G: the wpcli default 128M dies loading the Divi theme (same as the verify-* make targets).
+WP="php -d memory_limit=1G /usr/local/bin/wp"
+
+INSTALLED="$(docker compose exec -T wpcli $WP theme get Divi --field=version | tr -d '\r\n')"
 if [ "$INSTALLED" != "$VERSION" ]; then
   echo "[verify] Installed Divi ($INSTALLED) != divi/Divi.zip ($VERSION). Upgrade the theme first:" >&2
   echo "         docker compose exec -T wpcli wp theme install /divi-install/Divi.zip --activate --force" >&2
@@ -23,7 +26,7 @@ docker compose cp tools wpcli:/tmp/divi5-tools
 docker compose cp scripts/verify-modules.php wpcli:/tmp/verify-modules.php
 docker compose cp build/candidates.json wpcli:/tmp/candidates.json
 
-docker compose exec -T wpcli wp eval-file /tmp/verify-modules.php /tmp/candidates.json /tmp/results.json "$VERSION"
+docker compose exec -T wpcli $WP eval-file /tmp/verify-modules.php /tmp/candidates.json /tmp/results.json "$VERSION"
 
 EVIDENCE="docs/module-verification-${VERSION%.*}.json"
 NEW="$(mktemp "${TMPDIR:-/tmp}/verify-modules-results.XXXXXX")"

@@ -46,7 +46,10 @@ $sweep = function (): int {
     return count($ids);
 };
 
-$probe = function (string $module, ?string $child, string $placement, ?callable $inject = null) use ($version): array {
+// $subject: the module whose class must appear in the render, when it is not the outer one (a child item
+// of an already-known parent is proven by ITS class inside the parent, e.g. et_pb_signup_custom_field).
+$probe = function (string $module, ?string $child, string $placement, ?callable $inject = null, ?string $subject = null) use ($version): array {
+    $subject ??= $module;
     $startLevel = ob_get_level();
     $id = 0;
     $html = '';
@@ -100,7 +103,7 @@ $probe = function (string $module, ?string $child, string $placement, ?callable 
 
     // Excerpt around the module's own marker so a reader can eyeball the real class attribute.
     $at = false;
-    foreach (RenderEvidence::markers($module) as $marker) {
+    foreach (RenderEvidence::markers($subject) as $marker) {
         $at = strpos($html, $marker);
         if ($at !== false) {
             break;
@@ -108,14 +111,18 @@ $probe = function (string $module, ?string $child, string $placement, ?callable 
     }
     $sample = substr($html, $at === false ? 0 : max(0, $at - 20), 400);
 
-    return RenderEvidence::classify($html, $noise, $module) + ['html_bytes' => strlen($html), 'sample' => $sample];
+    return RenderEvidence::classify($html, $noise, $subject) + ['html_bytes' => strlen($html), 'sample' => $sample];
 };
 
 $verify = function (array $p) use ($probe): array {
-    $child = $p['children'][0] ?? null;
+    // A child candidate carries its known `parent`: render parent + child, judge the child's own class.
+    $parent = $p['parent'] ?? null;
+    $child = $parent === null ? ($p['children'][0] ?? null) : $p['name'];
     $placements = [];
     foreach ([MarkupBuilder::PLACEMENT_COLUMN, MarkupBuilder::PLACEMENT_SECTION] as $pl) {
-        $placements[$pl] = $probe($p['name'], $child, $pl);
+        $placements[$pl] = $parent === null
+            ? $probe($p['name'], $child, $pl)
+            : $probe($parent, $child, $pl, null, $p['name']);
     }
     $rendered = array_keys(array_filter($placements, fn ($r) => $r['status'] === 'pass'));
     $failed   = array_filter($placements, fn ($r) => $r['status'] === 'fail') !== [];
@@ -127,7 +134,8 @@ $verify = function (array $p) use ($probe): array {
         $status = 'needs-real-export';
     }
 
-    return ['status' => $status, 'placements_rendered' => $rendered, 'placements' => $placements];
+    return ['status' => $status, 'placements_rendered' => $rendered, 'placements' => $placements]
+        + ($parent === null ? [] : ['parent' => $parent]);
 };
 
 $placementNote = "placements_rendered records where a module's class rendered without diagnostics. "
@@ -142,6 +150,9 @@ try {
         $controls[$known] = $verify(['name' => $known, 'children' => []]);
     }
     $controls['divi/not-a-module'] = $verify(['name' => 'divi/not-a-module', 'children' => []]);
+    // Child-probe negative control: a made-up child inside a real parent must NOT pass (the parent's own
+    // class must not be mistaken for the child's).
+    $controls['divi/signup-not-a-field'] = $verify(['name' => 'divi/signup-not-a-field', 'children' => [], 'parent' => 'divi/signup']);
 
     // Diagnostics control: a render that emits a PHP diagnostic through the real the_content path
     // (same ob_start()/classify route every probe uses) MUST classify as 'fail'. If it does not,
@@ -169,6 +180,9 @@ try {
     }
     if ($controls['divi/not-a-module']['status'] === 'pass') {
         $bad[] = 'negative control divi/not-a-module passed';
+    }
+    if ($controls['divi/signup-not-a-field']['status'] === 'pass') {
+        $bad[] = 'negative control divi/signup-not-a-field (made-up child inside a real parent) passed';
     }
     foreach (array_keys($diagnosticLevels) as $label) {
         $c = $controls['diagnostic:' . $label];

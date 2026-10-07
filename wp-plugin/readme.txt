@@ -214,6 +214,7 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Improved: the Settings screen now shows one line saying when your AI assistant last reached your site and what it did, or that no request has arrived yet, so you can tell at a glance whether the connection works.
 * Improved: with Approval mode on, a preview now only counts while the page is still as it was when previewed. If the page changed in the meantime (for example you saved it in the Divi builder), your assistant has to preview again.
 * Fixed: an assistant that sends the standard MCP notifications other than the first one (such as a cancellation) no longer gets an error back.
+* Fixed: a page with an Email Optin (signup) module that has custom fields can now be edited by your AI assistant. Before, the check did not recognise those custom fields and refused to save any change to that page, even one far from the form.
 
 = 4.6.0 =
 * New: your AI assistant can look up how your site is set up with `get_site_structure`: custom post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices; never field values). Read-only.

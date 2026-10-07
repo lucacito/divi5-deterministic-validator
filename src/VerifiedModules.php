@@ -32,6 +32,7 @@ final class VerifiedModules
         'divi/post-filter-item',
         'divi/post-slider',
         'divi/post-title',
+        'divi/signup-custom-field',
         'divi/slide',
         'divi/svg',
         'divi/table-of-contents',
@@ -80,5 +81,10 @@ final class VerifiedModules
         'divi/fullwidth-slider' => ['divi/slide'],
         'divi/post-filter' => ['divi/post-filter-item'],
         'divi/video-slider' => ['divi/video-slider-item'],
+    ];
+
+    /** Children of parents the validator already knew by hand (e.g. divi/signup): parent => proven child items. */
+    public const KNOWN_PARENT_CHILDREN = [
+        'divi/signup' => ['divi/signup-custom-field'],
     ];
 }
