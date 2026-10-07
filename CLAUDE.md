@@ -79,8 +79,8 @@ PHP classes in `wp-plugin/src/`:
 | `get_image_guide` (`ImageGuide`) | which image fits each section: Media Library first, then the built-in pack |
 | `get_section_recipes` (`SectionRecipes` + `data/section-recipes.json`) | 17 proven, validated section patterns, each mapped to a persuasion stage |
 
-**16 MCP tools, all free:** `list_divi_pages`, `get_page_layout`,
-`list_global_styles` (read-only site presets and colors, `GlobalStyles`), `validate_layout`, `update_page_layout`, `edit_page_content` (surgical find-and-replace), `create_page`
+**18 MCP tools, all free:** `list_divi_pages`, `get_page_layout`,
+`list_global_styles` (read-only site presets and colors, `GlobalStyles`), `get_site_structure` (read-only: post types, taxonomies, image sizes, ACF field groups, and a `custom_fields` section of the custom field keys the site's posts use, sampled, keys only; `SiteStructure`; MCP and REST only), `get_custom_fields` (read-only: one post's non-protected custom field values; any public post type the user can edit, Divi Projects included; `CustomFieldReader` + `FieldTarget`; MCP and REST only), `validate_layout`, `update_page_layout`, `edit_page_content` (surgical find-and-replace), `create_page`
 (always a draft), `list_page_history`, `get_page_history_entry`,
 `restore_page_version`, `list_media_images` (read-only Media Library listing,
 `MediaLibrary` + `MediaService`, needs `upload_files` + per-item `read_post`) and the
@@ -149,6 +149,7 @@ listed but never taught (no real export uses them). The validator stays site-agn
 Same logic is exposed three ways, kept in lockstep: MCP (`McpHandler`), REST
 (`RestController`), and the ChatGPT OpenAPI spec (`OpenApiSpec`). Add or change a
 tool → update all three.
+Exception (owner decision 2026-10-04): get_site_structure and get_custom_fields are MCP + REST only, because the ChatGPT importer allows 30 operations and the free (16) plus Pro (14) tools already use all 30; `SiteStructureLockstepTest` and `CustomFieldsLockstepTest` pin the absence on purpose.
 
 ## WordPress.org compliance rule
 
@@ -158,7 +159,7 @@ tool → update all three.
 that save CSS/PHP or change site settings (front page, menus, users, plugins). The
 only Pro mention allowed in the plugin UI is the one dismissible Dashboard card in
 `AdminPage::proCard()`. `tests/WpOrgComplianceTest.php` enforces all of this (plus
-the URL-host allowlist, the 16-tool list and the readme's claims, including the
+the URL-host allowlist, the 18-tool list, a ban on meta-write functions in `wp-plugin/` and the readme's claims, including the
 "more than N Divi 5 block types" number checked against `SchemaRules`). Never weaken
 that test to make it pass — fix the plugin, or add a justified explicit exception.
 
@@ -179,6 +180,7 @@ Docker env + validator workflows go through `make`:
 | `make verify-global-styles` | Real-site check of `list_global_styles` and the style-reference advisory on the REST and MCP handlers; proves presets, global colors and variables are byte-identical afterwards (creates and deletes one throwaway draft page) |
 | `make test-pro` | Run the Pro add-on's own PHPUnit suite (`pro-addon/phpunit.xml`) |
 | `make build-pro` | Build `dist/jhmg-ai-editor-for-divi-5-pro.zip` (sold from divi5lab.com; `dist/` is git-ignored) |
+| `make verify-custom-fields` | Real-site check of `get_custom_fields`, the `custom_fields` discovery and the plain-meta render (self-cleaning; dev site only) |
 | `make verify-pro-skeleton` | Real-site check of the Pro add-on skeleton (Docker site; the free and Pro plugins must be active) |
 | `make verify-pro-settings` | Real-site check of the Pro settings tools and batch undo on the Docker site; restores every setting and deletes everything it created (the free and Pro plugins must be active) |
 | `make verify-pro-theme-layouts` | Real-site check of the Pro header/footer tools through the real registry (self-cleaning; free + Pro plugins active; dev site only) |
@@ -226,6 +228,7 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
+- **Unreleased (branch feat/get-custom-fields): `get_custom_fields` + `custom_fields` discovery** (sub-project A of the Projects/custom-fields request; B = edit Divi Project layouts and C = write field values are separate, later specs). Spec/plan `docs/superpowers/specs|plans/2026-10-07-get-custom-fields*`. Version, changelog and zip are the owner's release step (4.7.1 is already waiting for upload).
 - **Free plugin 4.5.0 is PUBLISHED on WordPress.org** (2026-10-04; SVN `https://plugins.svn.wordpress.org/jhmg-ai-editor-for-divi-5`, user `lucaslopvet`, revisions r3727421..r3727426, tags 4.4.0 and 4.5.0; the directory page and API show 4.5.0, the icon, both banners and 3 screenshots). Release routine: sync trunk from the tracked zip, commit, `svn copy trunk tags/<version>`. The SVN password is never stored in the repo or in memory; ask the owner each time.
 - **Pro pricing tiers (Pro add-on 0.6.0, branch `feat/pro-0-6-0-tiers`; spec/plan `docs/superpowers/plans/2026-10-04-pricing-tiers.md`)**: annual licences priced by site count (Personal / Freelancer / Agency, a founding offer for the first buyers, a capped Lifetime, prorated upgrades, renewal reminders 30 and 7 days ahead). EVERY price, tier name, site limit and cap lives in ONE file, `layoutlab/config/pricing.json` (the divi5lab.com store repo); the add-on carries NO price and shows only what the licence server returns (`LicenseExtras`: tier, sites used/allowed, founding, lifetime, upgrade and manage URLs). Enforcement is SERVER-side only (the add-on is GPL): the site cap is checked at activate and validate in the store (`lib/license-server`), the founding and lifetime caps at checkout (plus a Stripe coupon redemption limit), proration by Stripe. An expired, cancelled or past-due licence never disables any Pro tool (only `revoked`/`invalid` lock; `ExpiryKeepsAllToolsTest`); one dismissible `LapseNotice` replaces the shared client's notice. The no-card 45-day trial is Personal only and never takes the founding coupon. The shared licence client is untouched. Draft page copy: `docs/pricing-page.md` (price tokens, competitor facts dated October 2026, `TODO(owner)` markers).
 - **Pro add-on 0.5.0** (whole-site generation; merged to LOCAL main 749dc86; NOT released, NOT pushed): the 14th and LAST Pro tool
