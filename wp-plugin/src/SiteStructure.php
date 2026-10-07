@@ -22,6 +22,9 @@ final class SiteStructure
     public const MAX_FIELDS  = 100;
     public const MAX_CHOICES = 50;
     public const MAX_TEXT    = 200;
+    /** A group's location is a list of alternative rule sets; each set is a list of rules that must all match. */
+    public const MAX_LOCATION_SETS  = 10;
+    public const MAX_LOCATION_RULES = 10;
 
     /**
      * The sections a caller asked for: every section for null, '' or [], a comma-separated string or a
@@ -189,10 +192,56 @@ final class SiteStructure
             }
             $key     = is_string( $group['key'] ?? null ) ? $group['key'] : '';
             $fields  = '' === $key ? null : self::read( $readers['acf_fields'] ?? null, [ $key ] );
-            $list[]  = [ 'key' => $key, 'title' => self::text( $group['title'] ?? '' ), 'fields' => self::fields( $fields ?? [], $truncated ) ];
+            $list[]  = [
+                'key'      => $key,
+                'title'    => self::text( $group['title'] ?? '' ),
+                'location' => self::location( $group['location'] ?? null, $truncated ),
+                'fields'   => self::fields( $fields ?? [], $truncated ),
+            ];
         }
 
         return [ 'active' => true, 'groups' => $list ];
+    }
+
+    /**
+     * Where an ACF field group applies, as ACF stores it: a list of alternative rule sets (any one matching is enough),
+     * each a list of rules that must all match, shown as "param operator value" (for example "post_type == page").
+     * Unusable data gives an empty list.
+     *
+     * @return list<list<string>>
+     */
+    private static function location( mixed $raw, bool &$truncated ): array
+    {
+        if ( ! is_array( $raw ) ) {
+            return [];
+        }
+        $sets = [];
+        foreach ( $raw as $set ) {
+            if ( ! is_array( $set ) ) {
+                continue;
+            }
+            $rules = [];
+            foreach ( $set as $rule ) {
+                if ( ! is_array( $rule ) || ! is_string( $rule['param'] ?? null ) || ! is_string( $rule['operator'] ?? null ) || ! is_scalar( $rule['value'] ?? null ) ) {
+                    continue;
+                }
+                if ( count( $rules ) >= self::MAX_LOCATION_RULES ) {
+                    $truncated = true;
+                    break;
+                }
+                $rules[] = self::text( $rule['param'] . ' ' . $rule['operator'] . ' ' . $rule['value'] );
+            }
+            if ( [] === $rules ) {
+                continue;
+            }
+            if ( count( $sets ) >= self::MAX_LOCATION_SETS ) {
+                $truncated = true;
+                break;
+            }
+            $sets[] = $rules;
+        }
+
+        return $sets;
     }
 
     /** @param array<int|string,mixed> $raw @return list<array<string,mixed>> */

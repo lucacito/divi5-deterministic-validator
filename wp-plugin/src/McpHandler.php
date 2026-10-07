@@ -113,7 +113,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'get_site_structure',
-                'description' => 'List how this site is set up (read-only): public post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices; never field values). Call it before building a page that lists custom post types, uses a given image size or should refer to ACF fields. Pass "include" to get only some sections: post_types, taxonomies, image_sizes, acf.',
+                'description' => 'List how this site is set up (read-only): public post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups, where each group applies (location rules) and its fields (names, labels, types and choices; never field values). Call it before building a page that lists custom post types, uses a given image size or should refer to ACF fields. Pass "include" to get only some sections: post_types, taxonomies, image_sizes, acf.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => ['include' => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => ['post_types', 'taxonomies', 'image_sizes', 'acf']], 'description' => 'Optional. Sections to return; default all.']],

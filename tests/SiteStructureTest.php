@@ -104,6 +104,47 @@ class SiteStructureTest extends TestCase
         );
     }
 
+    public function testAGroupListsWhereItAppliesAsAlternativesOfRequiredRules(): void
+    {
+        $r   = $this->readers( [ 'acf_groups' => static fn () => [ [ 'key' => 'group_a', 'title' => 'A', 'location' => [
+            [ [ 'param' => 'post_type', 'operator' => '==', 'value' => 'page' ] ],
+            [ [ 'param' => 'page_template', 'operator' => '==', 'value' => 'default' ], [ 'param' => 'post_category', 'operator' => '!=', 'value' => 'category:news' ] ],
+        ] ] ] ] );
+        $acf = SiteStructure::catalogWith( $r, [ 'acf' ] )['acf'];
+
+        $this->assertSame( [ [ 'post_type == page' ], [ 'page_template == default', 'post_category != category:news' ] ], $acf['groups'][0]['location'] );
+    }
+
+    public function testAGroupWithNoUsableLocationHasAnEmptyList(): void
+    {
+        foreach ( [ null, 'junk', [], [ 'junk' ], [ [ 'junk' ] ], [ [ [ 'param' => 'post_type' ] ] ], [ [ [ 'param' => 5, 'operator' => '==', 'value' => 'x' ] ] ] ] as $bad ) {
+            $r   = $this->readers( [ 'acf_groups' => static fn () => [ [ 'key' => 'group_a', 'title' => 'A', 'location' => $bad ] ] ] );
+            $acf = SiteStructure::catalogWith( $r, [ 'acf' ] )['acf'];
+            $this->assertSame( [], $acf['groups'][0]['location'], 'unusable location data gives an empty list, never an error' );
+        }
+        $acf = SiteStructure::catalogWith( $this->readers(), [ 'acf' ] )['acf'];
+        $this->assertSame( [], $acf['groups'][0]['location'], 'a group with no location key at all is listed with an empty list' );
+    }
+
+    public function testLocationRulesAreCappedAndLongValuesCut(): void
+    {
+        $rule  = static fn ( string $v ): array => [ 'param' => 'post_type', 'operator' => '==', 'value' => $v ];
+        $many  = array_map( static fn ( int $i ): array => [ $rule( 'p' . $i ) ], range( 1, SiteStructure::MAX_LOCATION_SETS + 2 ) );
+        $wide  = [ array_map( static fn ( int $i ): array => $rule( 'q' . $i ), range( 1, SiteStructure::MAX_LOCATION_RULES + 2 ) ) ];
+        $long  = [ [ $rule( str_repeat( 'x', 500 ) ) ] ];
+        $r     = $this->readers( [ 'acf_groups' => static fn () => [
+            [ 'key' => 'group_a', 'title' => 'A', 'location' => $many ],
+            [ 'key' => 'group_b', 'title' => 'B', 'location' => $wide ],
+            [ 'key' => 'group_c', 'title' => 'C', 'location' => $long ],
+        ] ] );
+        $d = SiteStructure::catalogWith( $r, [ 'acf' ] );
+
+        $this->assertCount( SiteStructure::MAX_LOCATION_SETS, $d['acf']['groups'][0]['location'] );
+        $this->assertCount( SiteStructure::MAX_LOCATION_RULES, $d['acf']['groups'][1]['location'][0] );
+        $this->assertLessThanOrEqual( SiteStructure::MAX_TEXT, mb_strlen( $d['acf']['groups'][2]['location'][0][0] ) );
+        $this->assertTrue( $d['truncated'] );
+    }
+
     public function testAGroupWhoseFieldsComeBackAsFalseHasAnEmptyFieldList(): void
     {
         $r   = $this->readers( [ 'acf_groups' => static fn () => [ [ 'key' => 'group_empty', 'title' => 'Empty' ] ] ] );

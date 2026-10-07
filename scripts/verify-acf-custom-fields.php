@@ -116,6 +116,13 @@ try {
         }
     }
     $check( in_array( 'aied_known', $names, true ), 'get_site_structure lists the ACF field the layout binds' );
+    $loc = null;
+    foreach ( (array) ( $s['result']['acf']['groups'] ?? [] ) as $g ) {
+        if ( 'group_aied_verify' === ( $g['key'] ?? '' ) ) {
+            $loc = $g['location'] ?? null;
+        }
+    }
+    $check( [ [ 'post_type == page' ] ] === $loc, 'get_site_structure says where the group applies (post_type == page), read from real ACF' );
 
     // 4. Pro: audit_site reports the same finding for the saved page
     if ( class_exists( \AiEditorDivi5\Pro\ToolRegistry::class ) ) {
