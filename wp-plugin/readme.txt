@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.7.0
+Stable tag:        4.7.1
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -205,6 +205,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 
 == Changelog ==
 
+= 4.7.1 =
+* Fixed: a page with an Email Optin (signup) module that has custom fields can now be edited by your AI assistant. Before, the check did not recognise those custom fields and refused to save any change to that page, even one far from the form.
+
 = 4.7.0 =
 * New: your AI assistant can now use your Divi number and text variables in the pages it builds (for example a padding or heading-size variable, or a shared line of text), the same way it already reuses your global colors. The style guide it reads explains exactly where this works, and `list_global_styles` points it there.
 * New: when a layout uses a variable your site does not have, the check now tells your assistant (Divi would silently drop that value). This is advice only and never blocks a save.
@@ -214,7 +217,6 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Improved: the Settings screen now shows one line saying when your AI assistant last reached your site and what it did, or that no request has arrived yet, so you can tell at a glance whether the connection works.
 * Improved: with Approval mode on, a preview now only counts while the page is still as it was when previewed. If the page changed in the meantime (for example you saved it in the Divi builder), your assistant has to preview again.
 * Fixed: an assistant that sends the standard MCP notifications other than the first one (such as a cancellation) no longer gets an error back.
-* Fixed: a page with an Email Optin (signup) module that has custom fields can now be edited by your AI assistant. Before, the check did not recognise those custom fields and refused to save any change to that page, even one far from the form.
 
 = 4.6.0 =
 * New: your AI assistant can look up how your site is set up with `get_site_structure`: custom post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices; never field values). Read-only.
