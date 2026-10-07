@@ -182,6 +182,47 @@ final class CustomFieldReader
     }
 
     /**
+     * What a site's posts use, read from WordPress: the newest SAMPLE_POSTS posts of each public post type except
+     * attachments, only posts the current user can edit, keys only. No raw SQL: get_posts() plus the posts' own meta keys.
+     *
+     * @return array{post_types: list<array<string,mixed>>, truncated: bool}
+     */
+    public static function discover(): array
+    {
+        if ( ! function_exists( 'get_post_types' ) || ! function_exists( 'get_posts' ) ) {
+            return [ 'post_types' => [], 'truncated' => false ];
+        }
+        $samples = [];
+        foreach ( array_values( array_map( 'strval', array_keys( (array) get_post_types( [ 'public' => true ] ) ) ) ) as $type ) {
+            if ( 'attachment' === $type ) {
+                continue;
+            }
+            $ids = get_posts( [
+                'post_type'      => $type,
+                'post_status'    => 'any',
+                'posts_per_page' => self::SAMPLE_POSTS,
+                'orderby'        => 'modified',
+                'order'          => 'DESC',
+                'fields'         => 'ids',
+                'no_found_rows'  => true,
+            ] );
+            $ids = array_values( array_filter( array_map( 'intval', (array) $ids ), static fn ( int $id ): bool => $id > 0 && current_user_can( 'edit_post', $id ) ) );
+            if ( [] === $ids ) {
+                continue;
+            }
+            if ( function_exists( 'update_meta_cache' ) ) {
+                update_meta_cache( 'post', $ids ); // one query for the whole sample
+            }
+            foreach ( $ids as $id ) {
+                $custom             = get_post_custom( $id );
+                $samples[ $type ][] = is_array( $custom ) ? array_map( 'strval', array_keys( $custom ) ) : [];
+            }
+        }
+
+        return self::discoverWith( $samples, self::acfInfo() );
+    }
+
+    /**
      * What a site's posts use: for each post type with sampled posts, its shown keys with how many sampled posts have each,
      * most used first, then by name. Keys only, never values.
      *

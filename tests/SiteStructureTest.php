@@ -8,6 +8,7 @@ use AiEditorDivi5\WP\SiteStructure;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/SiteStructureShims.php';
+require_once __DIR__ . '/../wp-plugin/src/CustomFieldReader.php';
 require_once __DIR__ . '/../wp-plugin/src/SiteStructure.php';
 
 class SiteStructureTest extends TestCase
@@ -38,6 +39,7 @@ class SiteStructureTest extends TestCase
                 [ 'name' => 'isbn', 'label' => 'ISBN', 'type' => 'text' ],
                 [ 'name' => 'format', 'label' => 'Format', 'type' => 'select', 'choices' => [ 'hc' => 'Hardcover', 'pb' => 'Paperback' ] ],
             ] : false,
+            'custom_fields' => static fn () => [ 'post_types' => [], 'truncated' => false ],
         ];
     }
 
@@ -75,7 +77,7 @@ class SiteStructureTest extends TestCase
     {
         $d = SiteStructure::catalogWith( $this->readers() );
 
-        $this->assertSame( [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'truncated', 'notes' ], array_keys( $d ) );
+        $this->assertSame( [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields', 'truncated', 'notes' ], array_keys( $d ) );
         $this->assertSame( [ 'page', 'book' ], array_column( $d['post_types'], 'name' ) );
         $this->assertSame( [ 'name' => 'book', 'label' => 'Books', 'supports' => [ 'title' ], 'taxonomies' => [ 'genre' ], 'has_archive' => true, 'hierarchical' => false ], $d['post_types'][1] );
         $this->assertSame( [ [ 'name' => 'genre', 'label' => 'Genres', 'object_types' => [ 'book' ], 'hierarchical' => true ] ], $d['taxonomies'] );
@@ -278,5 +280,42 @@ class SiteStructureTest extends TestCase
         $this->assertTrue( $d['image_sizes'][0]['crop'], 'an array crop position counts as cropped' );
         $this->assertSame( [ 'name' => 'isbn', 'label' => 'ISBN', 'type' => 'text' ], $d['acf']['groups'][0]['fields'][0] );
         $this->assertStringNotContainsString( 'SECRET-VALUE', json_encode( $d ), 'field values are never returned' );
+    }
+
+    // ---- custom_fields section ----------------------------------------------------------------
+
+    public function testTheCustomFieldsSectionListsKeysOnlyAndIgnoresAnythingElseTheReaderReturns(): void
+    {
+        $r = $this->readers( [ 'custom_fields' => static fn () => [
+            'post_types' => [ [ 'post_type' => 'book', 'sampled' => 3, 'keys' => [ [ 'key' => 'isbn', 'posts' => 2, 'acf' => [ 'label' => 'ISBN', 'type' => 'text' ], 'value' => 'SECRET-VALUE' ] ] ] ],
+            'truncated'  => false,
+        ] ] );
+        $d = SiteStructure::catalogWith( $r, [ 'custom_fields' ] );
+        $this->assertSame( [ 'custom_fields', 'truncated', 'notes' ], array_keys( $d ) );
+        $this->assertSame( [ [ 'key' => 'isbn', 'posts' => 2, 'acf' => [ 'label' => 'ISBN', 'type' => 'text' ] ] ], $d['custom_fields']['post_types'][0]['keys'] );
+        $this->assertSame( 3, $d['custom_fields']['post_types'][0]['sampled'] );
+        $this->assertStringNotContainsString( 'SECRET-VALUE', json_encode( $d ) );
+        $this->assertStringContainsString( 'get_custom_fields', $d['custom_fields']['note'] );
+    }
+
+    public function testAMissingOrThrowingCustomFieldsReaderGivesAnEmptySectionAndANote(): void
+    {
+        foreach ( [ null, static fn () => throw new \RuntimeException( 'x' ), static fn () => 'nope' ] as $reader ) {
+            $d = SiteStructure::catalogWith( $this->readers( [ 'custom_fields' => $reader ] ), [ 'custom_fields' ] );
+            $this->assertSame( [], $d['custom_fields']['post_types'] );
+            $this->assertNotEmpty( $d['notes'] );
+        }
+    }
+
+    public function testACustomFieldsTruncationFlagReachesTheTopLevel(): void
+    {
+        $d = SiteStructure::catalogWith( $this->readers( [ 'custom_fields' => static fn () => [ 'post_types' => [], 'truncated' => true ] ] ), [ 'custom_fields' ] );
+        $this->assertTrue( $d['truncated'] );
+    }
+
+    public function testParseIncludeKnowsTheNewSection(): void
+    {
+        $this->assertSame( [ 'custom_fields' ], SiteStructure::parseInclude( 'custom_fields' ) );
+        $this->assertContains( 'custom_fields', SiteStructure::SECTIONS );
     }
 }

@@ -11,13 +11,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * A READ-ONLY view of how this site is set up: public post types, taxonomies, image sizes and, when
  * Advanced Custom Fields is active, its field groups and fields (names, labels, types, choices; never
- * field values). Everything comes from WordPress's and ACF's own public read functions, each behind a
+ * field values). Also the custom field KEYS the site's recent posts use (a sample; keys only, never values). Everything comes from WordPress's and ACF's own public read functions, each behind a
  * guard: a missing or throwing reader means an empty section plus a note. Nothing here writes anything,
  * and nothing reads theme files or menus.
  */
 final class SiteStructure
 {
-    public const SECTIONS    = [ 'post_types', 'taxonomies', 'image_sizes', 'acf' ];
+    public const SECTIONS    = [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields' ];
     public const MAX_ITEMS   = 100;
     public const MAX_FIELDS  = 100;
     public const MAX_CHOICES = 50;
@@ -64,6 +64,7 @@ final class SiteStructure
             'image_sizes' => function_exists( 'wp_get_registered_image_subsizes' ) ? 'wp_get_registered_image_subsizes' : null,
             'acf_groups'  => function_exists( 'acf_get_field_groups' ) ? 'acf_get_field_groups' : null,
             'acf_fields'  => function_exists( 'acf_get_fields' ) ? 'acf_get_fields' : null,
+            'custom_fields' => class_exists( CustomFieldReader::class ) ? [ CustomFieldReader::class, 'discover' ] : null,
         ];
     }
 
@@ -108,7 +109,7 @@ final class SiteStructure
     }
 
     /**
-     * @param array<string, ?callable> $readers post_types, taxonomies, image_sizes, acf_groups, acf_fields
+     * @param array<string, ?callable> $readers post_types, taxonomies, image_sizes, acf_groups, acf_fields, custom_fields
      * @param ?list<string>            $include sections to return; null = all
      * @return array<string,mixed>
      */
@@ -162,6 +163,18 @@ final class SiteStructure
 
         if ( in_array( 'acf', $include, true ) ) {
             $out['acf'] = self::acf( $readers, $truncated, $notes );
+        }
+
+        if ( in_array( 'custom_fields', $include, true ) ) {
+            $raw = self::read( $readers['custom_fields'] ?? null );
+            if ( null === $raw ) {
+                $notes[] = 'Custom field data is not available on this site.';
+            }
+            $out['custom_fields'] = [
+                'post_types' => self::customFieldTypes( $raw['post_types'] ?? [] ),
+                'note'       => 'A sample: the keys seen on the most recently modified posts of each type that you can edit, not every key the site has. Values are never listed here; call get_custom_fields with a post id to read one post\'s values.',
+            ];
+            $truncated = $truncated || ! empty( $raw['truncated'] );
         }
 
         return $out + [ 'truncated' => $truncated, 'notes' => $notes ];
@@ -242,6 +255,45 @@ final class SiteStructure
         }
 
         return $sets;
+    }
+
+    /**
+     * Keys only: each entry is rebuilt from known fields, so nothing else a reader returns (such as a value) can pass through.
+     *
+     * @return list<array<string,mixed>>
+     */
+    private static function customFieldTypes( mixed $raw ): array
+    {
+        if ( ! is_array( $raw ) ) {
+            return [];
+        }
+        $list = [];
+        foreach ( $raw as $type ) {
+            if ( ! is_array( $type ) || ! is_string( $type['post_type'] ?? null ) || ! is_array( $type['keys'] ?? null ) ) {
+                continue;
+            }
+            if ( count( $list ) >= self::MAX_ITEMS ) {
+                break;
+            }
+            $keys = [];
+            foreach ( $type['keys'] as $k ) {
+                if ( ! is_array( $k ) || ! is_string( $k['key'] ?? null ) ) {
+                    continue;
+                }
+                if ( count( $keys ) >= CustomFieldReader::MAX_KEYS_PER_TYPE ) {
+                    break;
+                }
+                $acf    = $k['acf'] ?? null;
+                $keys[] = [
+                    'key'   => self::text( $k['key'] ),
+                    'posts' => (int) ( $k['posts'] ?? 0 ),
+                    'acf'   => is_array( $acf ) ? [ 'label' => self::text( $acf['label'] ?? '' ), 'type' => self::text( $acf['type'] ?? '' ) ] : null,
+                ];
+            }
+            $list[] = [ 'post_type' => self::text( $type['post_type'] ), 'sampled' => (int) ( $type['sampled'] ?? 0 ), 'keys' => $keys ];
+        }
+
+        return $list;
     }
 
     /** @param array<int|string,mixed> $raw @return list<array<string,mixed>> */

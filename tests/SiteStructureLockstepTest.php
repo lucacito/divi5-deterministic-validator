@@ -28,6 +28,7 @@ require_once __DIR__ . '/../wp-plugin/src/GlobalStyles.php';
 require_once __DIR__ . '/../wp-plugin/src/CustomFields.php';
 require_once __DIR__ . '/../wp-plugin/src/StyleReferences.php';
 require_once __DIR__ . '/../wp-plugin/src/StyleGuide.php';
+require_once __DIR__ . '/../wp-plugin/src/CustomFieldReader.php';
 require_once __DIR__ . '/../wp-plugin/src/SiteStructure.php';
 require_once __DIR__ . '/../wp-plugin/src/OpenApiSpec.php';
 require_once __DIR__ . '/../wp-plugin/src/RestController.php';
@@ -156,7 +157,7 @@ class SiteStructureLockstepTest extends TestCase
         $include = $tool['inputSchema']['properties']['include'];
         $this->assertSame( 'array', $include['type'] );
         $this->assertSame( 'string', $include['items']['type'] );
-        $this->assertSame( [ 'post_types', 'taxonomies', 'image_sizes', 'acf' ], $include['items']['enum'] );
+        $this->assertSame( [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields' ], $include['items']['enum'] );
         $json = (string) json_encode( $tool['inputSchema'] );
         foreach ( [ 'additionalProperties', '$ref', 'oneOf' ] as $banned ) {
             $this->assertStringNotContainsString( $banned, $json );
