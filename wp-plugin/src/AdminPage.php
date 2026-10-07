@@ -613,7 +613,7 @@ final class AdminPage
 
     private function viewFeatures(): void
     {
-        // [title, description, tools it covers] — the 17 tools your AI assistant can call.
+        // [title, description, tools it covers] — the 18 tools your AI assistant can call.
         $features = [
             [ __( 'Edit pages in plain English', 'jhmg-ai-editor-for-divi-5' ), __( 'Tell your AI what to change and it updates the live Divi 5 layout — no builder, no copy-paste.', 'jhmg-ai-editor-for-divi-5' ), 'update_page_layout, edit_page_content' ],
             [ __( 'Validated, safe saves', 'jhmg-ai-editor-for-divi-5' ), __( 'Every change is checked against fixed rules for more than 80 Divi 5 block types before saving. A broken layout is refused with the exact reason, so it is never saved.', 'jhmg-ai-editor-for-divi-5' ), 'validate_layout' ],

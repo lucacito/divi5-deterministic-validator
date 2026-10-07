@@ -10,8 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * READ-ONLY view of a post's custom fields (post meta). Every rule lives in the `*With()` methods, which take plain data
- * and callables so they run without WordPress; the real wrappers (`read()`, `discover()`, `acfInfo()`, added in later
- * tasks) only fetch the data from WordPress and ACF's own public functions. Nothing here writes anything.
+ * and callables so they run without WordPress; the real wrappers (`acfInfo()`, `read()` and `discover()`) only fetch
+ * the data from WordPress and ACF's own public functions. Nothing here writes anything.
  *
  * Never returned: keys starting with an underscore or protected by WordPress. Withheld (and counted): keys that look like
  * secrets. The per-post `edit_post` check is the real protection; the secret filter is a heuristic on top of it.

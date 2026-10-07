@@ -303,6 +303,12 @@ here and that no page has; replace it with a name `get_site_structure` returned.
 has a value on the pages its ACF field group applies to: each group in `get_site_structure`
 has a `location` list of alternatives (any one set applying is enough), each a list of rules
 that must all match, such as `post_type == page`. Bind only fields whose group applies to the page you are editing.
+`get_site_structure` also lists, in its `custom_fields` section, the custom field keys this
+site's posts really use, ACF or not (a sample of recent posts; keys only). To see what a
+field holds on one page or Project, call `get_custom_fields` with its id: it returns each
+key with its value (never protected or secret-looking keys), so you can write copy that
+fits. A key with no ACF field behind it binds the same way: put its name in place of
+`FIELD_NAME`.
 
 ## Match the site (colors and presets)
 Call `list_global_styles` before styling. It lists the site's own global colors (ids like

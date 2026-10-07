@@ -17,6 +17,13 @@ require_once __DIR__ . '/../wp-plugin/src/StyleGuide.php';
  */
 class StyleGuideTest extends TestCase
 {
+    public function testTheGuideSendsTheAiToGetCustomFieldsForValuesAndPlainKeys(): void
+    {
+        $g = StyleGuide::markdown();
+        $this->assertStringContainsString( '`get_custom_fields`', $g );
+        $this->assertStringContainsString( 'custom_fields', $g, 'names the get_site_structure section that lists the keys' );
+    }
+
     public function testImageGuidancePointsAtTheImageGuideNotARemoteHost(): void
     {
         $md = StyleGuide::markdown();
