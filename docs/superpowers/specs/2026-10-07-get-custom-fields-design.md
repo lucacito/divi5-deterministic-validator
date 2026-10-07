@@ -50,12 +50,16 @@ protected, secret-looking or other-user's field never reaches it; nothing is wri
   `token`, `api_key`/`apikey`, `license`/`licence`). This is a heuristic; the real protection is the per-post `edit_post`
   check, and the AI acts as the key's user.
 - Caps: 100 fields per call, each value cut at 500 characters (`truncated: true` when anything was cut or dropped).
-- No writes, no remote calls, no raw SQL. The free plugin keeps no code that calls `update_post_meta`, `add_post_meta`,
-  `delete_post_meta` or `update_field` (the compliance test pins this).
+- No writes, no remote calls, no raw SQL. The free plugin has no code that calls `update_post_meta`, `add_post_meta`,
+  `update_field`, `update_metadata` or `add_metadata` (the compliance test pins this; the old history migration's
+  `delete_post_meta` of its own legacy key is the only meta delete and stays).
+- A key stored several times on a post returns its first value (`get_post_meta( $id, $key, true )`); WordPress itself
+  unserializes it, the plugin never calls `unserialize`.
 
 ### 3. Discovery in `get_site_structure`
 
-- New section `custom_fields` (added to `SiteStructure::SECTIONS` and the `include` enum): for each public post type, the keys
+- New section `custom_fields` (added to `SiteStructure::SECTIONS` and the `include` enum): for each public post type except
+  attachments (media meta is noise), the keys
   seen on the newest 20 posts of that type (via `get_posts` + `get_post_meta`, no `SELECT DISTINCT`), each as
   `{ key, posts: <count of the sample that have it>, acf: { label, type } | null }`, at most 100 keys per type.
 - Keys only, never values. The same protected and secret-looking filters apply.
