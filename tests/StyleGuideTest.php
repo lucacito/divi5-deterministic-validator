@@ -199,4 +199,13 @@ class StyleGuideTest extends TestCase
         $gate = \AiEditorDivi5\WP\LayoutGate::check((string) $found['post_content']);
         $this->assertTrue($gate->isValid(), 'the plugin gate (validator plus the no-custom-code policy) accepts the grounding fixture');
     }
+
+    public function testTheGuideTellsTheAiToCheckWhereAFieldGroupApplies(): void
+    {
+        $md = StyleGuide::markdown();
+        $this->assertStringContainsString('`location`', $md);
+        $this->assertStringContainsString('post_type == page', $md);
+        $this->assertStringContainsString('alternatives', $md);
+        $this->assertStringContainsString('whose group applies to the page you are editing', $md);
+    }
 }

@@ -300,7 +300,9 @@ The checker cannot see whether a field exists: a name the site does not have
 renders an empty module, with no error. The save, create and preview tools add an `unknown_custom_fields` note
 (inside `advisories.style_references`) when a layout binds a field that is not an ACF field
 here and that no page has; replace it with a name `get_site_structure` returned. A field only
-has a value on the pages its ACF field group applies to.
+has a value on the pages its ACF field group applies to: each group in `get_site_structure`
+has a `location` list of alternatives (any one set applying is enough), each a list of rules
+that must all match, such as `post_type == page`. Bind only fields whose group applies to the page you are editing.
 
 ## Match the site (colors and presets)
 Call `list_global_styles` before styling. It lists the site's own global colors (ids like
