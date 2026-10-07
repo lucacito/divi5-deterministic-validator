@@ -374,12 +374,12 @@ class WpOrgComplianceTest extends TestCase
         $tools = $m[1];
         sort($tools);
         $this->assertSame([
-            'create_page', 'edit_page_content', 'get_image_guide', 'get_landing_guide', 'get_page_history_entry',
+            'create_page', 'edit_page_content', 'get_custom_fields', 'get_image_guide', 'get_landing_guide', 'get_page_history_entry',
             'get_page_layout', 'get_section_recipes', 'get_site_guide', 'get_site_structure', 'get_style_guide', 'list_divi_pages',
             'list_global_styles', 'list_media_images', 'list_page_history', 'restore_page_version', 'update_page_layout', 'validate_layout',
         ], $tools);
-        // 17 tools: 4.6.0 adds the READ-ONLY get_site_structure (post types, taxonomies, image sizes, ACF). Nothing is gated and nothing writes a setting; no rule of this test is loosened.
-        $this->assertCount(17, $tools);
+        // 18 tools: 4.8.0 adds the READ-ONLY get_custom_fields (one post's non-protected custom field values). Nothing is gated and nothing writes a setting; no rule of this test is loosened.
+        $this->assertCount(18, $tools);
     }
 
     public function testVisibleProductNameIsTheFullJhmgName(): void
@@ -496,6 +496,37 @@ class WpOrgComplianceTest extends TestCase
     private const DIVI_STYLE_WRITES = '/\b(?:save_data|process_presets(?:_for_import)?|delete_data|merge_new_presets_with_existing|save_is_legacy_presets_imported|set_global_colors|set_global_variables|import_global_variables|et_update_option|et_global_data)\b|builder_global_presets/';
 
     /** @param array<string,string> $files @return list<string> */
+    private function metaWriteHits(array $files): array
+    {
+        $hits = [];
+        foreach ($files as $rel => $src) {
+            if (str_starts_with($rel, 'validator/')) {
+                continue;
+            }
+            if (preg_match_all('/\b(update_post_meta|add_post_meta|update_field|update_metadata|add_metadata)\s*\(/', $src, $m)) {
+                $hits[] = $rel . ' (' . implode(', ', array_unique($m[1])) . ')';
+            }
+        }
+        return $hits;
+    }
+
+    public function testTheFreePluginNeverWritesPostMeta(): void
+    {
+        $planted = [
+            'src/a.php' => "<?php update_post_meta(1, 'k', 'v');",
+            'src/b.php' => "<?php add_post_meta (1, 'k', 'v');",
+            'src/c.php' => "<?php update_field('f', 'v', 1);",
+            'src/d.php' => "<?php add_metadata('post', 1, 'k', 'v');",
+        ];
+        $found = $this->metaWriteHits($planted);
+        foreach (array_keys($planted) as $rel) {
+            $this->assertNotEmpty(array_filter($found, fn($h) => str_starts_with($h, $rel)), "meta-write scan missed {$rel}");
+        }
+        $this->assertSame([], $this->metaWriteHits(['src/ok.php' => "<?php get_post_meta(1, 'k', true); delete_post_meta(1, 'legacy');"]));
+        $this->assertSame([], $this->metaWriteHits($this->files()), 'the free plugin reads custom fields and never writes them');
+    }
+
+    /** @param array<string,string> $files @return list<string> */
     private function diviStyleWriteHits(array $files): array
     {
         $hits = [];
@@ -544,7 +575,7 @@ class WpOrgComplianceTest extends TestCase
         $this->assertSame(['get'], array_keys($spec['paths']['/global-styles']));
         $r = (string) file_get_contents(self::ROOT . '/readme.txt');
         $this->assertStringContainsString('`list_global_styles`', $r);
-        $this->assertStringContainsString('(17 tools)', $r);
+        $this->assertStringContainsString('(18 tools)', $r);
         $this->assertStringContainsString('It cannot create or change presets or colors', $r, 'the readme must say plainly that presets and colors are read-only');
     }
 }

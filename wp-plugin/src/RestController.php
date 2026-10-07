@@ -52,6 +52,13 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
+        // GET /posts/{id}/custom-fields — read-only custom field values of one post you can edit (any public post type)
+        register_rest_route(self::NS, '/posts/(?P<id>\d+)/custom-fields', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'custom_fields'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
         // POST /pages — validate + create a new page (always a draft)
         register_rest_route(self::NS, '/pages', [
             'methods'             => WP_REST_Server::CREATABLE,
@@ -632,6 +639,32 @@ final class RestController
         }
         $result = SiteStructure::catalog($include);
         UsageTracker::log('site_structure', null, 'read');
+
+        return new WP_REST_Response($result, 200);
+    }
+
+    public function custom_fields(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('custom_fields', null, 'error');
+            return new WP_Error('forbidden', 'You do not have permission to read custom fields.', ['status' => 403]);
+        }
+        $postId = (int) $request->get_param('id');
+        $only   = CustomFieldReader::parseKeys($request->get_param('keys'));
+        if ($only === null) {
+            return new WP_Error('invalid_field', '"keys" must be a list of at most ' . CustomFieldReader::MAX_KEYS_ARG . ' strings.', ['status' => 400]);
+        }
+        $target = FieldTarget::resolve($postId);
+        if ($target['error'] === FieldTarget::NOT_FOUND) {
+            UsageTracker::log('custom_fields', $postId ?: null, 'error');
+            return new WP_Error('not_found', "Post $postId not found.", ['status' => 404]);
+        }
+        if ($target['error'] === FieldTarget::FORBIDDEN) {
+            UsageTracker::log('custom_fields', $postId, 'error');
+            return new WP_Error('forbidden', "You do not have permission to read post $postId.", ['status' => 403]);
+        }
+        $result = CustomFieldReader::read($target['post'], $only);
+        UsageTracker::log('custom_fields', $postId, 'read');
 
         return new WP_REST_Response($result, 200);
     }

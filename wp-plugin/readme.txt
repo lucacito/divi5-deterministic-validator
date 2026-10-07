@@ -43,14 +43,15 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * "Add a section with our opening hours under the hero on the About page."
 * "Undo the last change you made to the Services page."
 
-= What your AI assistant can do (17 tools) =
+= What your AI assistant can do (18 tools) =
 
 Read and check:
 
 * `list_divi_pages`: list the pages built with Divi 5 that you can edit.
 * `get_page_layout`: read a page's current layout.
 * `list_global_styles`: list your site's own Divi colors and presets so the AI can reuse them (read-only).
-* `get_site_structure`: list your site's custom post types, taxonomies, image sizes and Advanced Custom Fields field groups so pages fit your site (read-only: never field values or theme files; available over MCP and the REST API, not in the ChatGPT Action).
+* `get_site_structure`: list your site's custom post types, taxonomies, image sizes and Advanced Custom Fields field groups so pages fit your site (read-only: field names and the keys your posts use, never values here or theme files; available over MCP and the REST API, not in the ChatGPT Action).
+* `get_custom_fields`: read the custom fields of one page or Divi Project you can edit, with their values, so your assistant can write copy that fits and use the right field names (read-only: keys WordPress protects, or that look like passwords, API keys or other secrets, are never shown; available over MCP and the REST API, not in the ChatGPT Action).
 * `validate_layout`: check a layout without saving anything.
 
 Edit and create:
@@ -128,7 +129,7 @@ This plugin does not connect to any external service. Your AI assistant connects
 
 = Does the AI get administrator access to my site? =
 
-No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages, create pages (as drafts), read Media Library images (read-only), read your site's Divi presets and colors (read-only), and read how your site is set up (post types, taxonomies, image sizes and ACF field definitions, read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
+No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages, create pages (as drafts), read Media Library images (read-only), read your site's Divi presets and colors (read-only), and read how your site is set up (post types, taxonomies, image sizes and ACF field definitions, read-only), read the custom fields of a page or Divi Project you can edit (read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
 
 = Can the AI add custom CSS, JavaScript or PHP to my site? =
 
@@ -168,7 +169,7 @@ Yes. It has been tested with Gemini CLI: copy the one command from the Gemini ta
 
 = Can it read my ACF fields, custom post types or functions.php? =
 
-It can read how your site is set up: custom post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices). It never reads field values, your theme files or `functions.php`. This is available to assistants that connect over MCP or the REST API, not to the ChatGPT Action.
+It can read how your site is set up: custom post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices). It reads custom field values only when your assistant asks about one specific page or Project you can edit, never ones WordPress protects or that look like passwords, API keys or other secrets, and it never reads your theme files or `functions.php`. This is available to assistants that connect over MCP or the REST API, not to the ChatGPT Action.
 
 = Can it create global colors and presets? =
 

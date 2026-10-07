@@ -121,6 +121,18 @@ final class McpHandler
                 ],
             ],
             [
+                'name'        => 'get_custom_fields',
+                'description' => 'Read the custom fields (post meta) of ONE page, Divi Project or other post you can edit (read-only): each key with its value and, when Advanced Custom Fields knows the key, its label and type. Keys that start with an underscore, are protected by WordPress or look like secrets (password, token, API key, licence) are never returned; the answer says how many were withheld. Values are cut at 500 characters and at most 100 fields are returned; a key stored several times returns its first value. Use it to write copy that fits the post or to find a key to bind a module to (see get_style_guide). Pass "keys" to read only some. get_site_structure lists the keys a site\'s posts use.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'id'   => ['type' => 'integer', 'description' => 'WordPress post ID (a page, a Divi Project or another public post type)'],
+                        'keys' => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Optional. Only these keys (at most 100).'],
+                    ],
+                    'required'   => ['id'],
+                ],
+            ],
+            [
                 'name'        => 'get_page_layout',
                 'description' => 'Get the full Divi 5 layout (Gutenberg block HTML) for a specific page by ID.',
                 'inputSchema' => [
@@ -289,6 +301,7 @@ final class McpHandler
             'list_media_images'  => $this->toolListMedia($id, $arguments),
             'list_global_styles' => $this->toolListGlobalStyles($id, $arguments),
             'get_site_structure' => $this->toolSiteStructure($id, $arguments),
+            'get_custom_fields'  => $this->toolGetCustomFields($id, $arguments),
             'create_page'        => $this->toolCreatePage($id, $arguments),
             default              => $this->extensionCall($id, $name, $arguments),
         };
@@ -682,6 +695,37 @@ final class McpHandler
         }
         $result = SiteStructure::catalog($include);
         UsageTracker::log('site_structure', null, 'read');
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => wp_json_encode($result)]],
+        ]);
+    }
+
+    private function toolGetCustomFields(mixed $id, array $args): WP_REST_Response
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('custom_fields', null, 'error');
+            return $this->rpcError($id, -32602, 'You do not have permission to read custom fields.');
+        }
+        $postId = $args['id'] ?? null;
+        if (!is_int($postId) || $postId < 1) {
+            return $this->rpcError($id, -32602, 'id must be a positive integer.');
+        }
+        $only = CustomFieldReader::parseKeys($args['keys'] ?? null);
+        if ($only === null) {
+            return $this->rpcError($id, -32602, 'keys must be a list of at most ' . CustomFieldReader::MAX_KEYS_ARG . ' strings.');
+        }
+        $target = FieldTarget::resolve($postId);
+        if ($target['error'] === FieldTarget::NOT_FOUND) {
+            UsageTracker::log('custom_fields', $postId, 'error');
+            return $this->rpcError($id, -32602, "Post {$postId} not found.");
+        }
+        if ($target['error'] === FieldTarget::FORBIDDEN) {
+            UsageTracker::log('custom_fields', $postId, 'error');
+            return $this->rpcError($id, -32602, "You do not have permission to read post {$postId}.");
+        }
+        $result = CustomFieldReader::read($target['post'], $only);
+        UsageTracker::log('custom_fields', $postId, 'read');
 
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => wp_json_encode($result)]],

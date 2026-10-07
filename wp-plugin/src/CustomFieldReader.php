@@ -155,6 +155,32 @@ final class CustomFieldReader
         return $out;
     }
 
+    /** ACF label and type by stored key, read through ACF's own public functions behind function_exists guards. @return array<string,array{label:string,type:string}> */
+    public static function acfInfo(): array
+    {
+        return self::acfInfoWith(
+            function_exists( 'acf_get_field_groups' ) ? 'acf_get_field_groups' : null,
+            function_exists( 'acf_get_fields' ) ? 'acf_get_fields' : null
+        );
+    }
+
+    /**
+     * What `get_custom_fields` answers for one post the caller already resolved through FieldTarget. A key stored several
+     * times returns its first value. WordPress unserializes values itself; nothing here calls unserialize.
+     *
+     * @param list<string> $only [] = all keys
+     * @return array{id:int,post_type:string,fields:list<array<string,mixed>>,withheld:int,truncated:bool}
+     */
+    public static function read( object $post, array $only ): array
+    {
+        $postId = (int) $post->ID;
+        $custom = get_post_custom( $postId );
+        $keys   = is_array( $custom ) ? array_map( 'strval', array_keys( $custom ) ) : [];
+
+        return [ 'id' => $postId, 'post_type' => (string) $post->post_type ]
+            + self::readWith( $keys, $only, static fn ( string $key ): mixed => get_post_meta( $postId, $key, true ), self::acfInfo() );
+    }
+
     /**
      * What a site's posts use: for each post type with sampled posts, its shown keys with how many sampled posts have each,
      * most used first, then by name. Keys only, never values.
