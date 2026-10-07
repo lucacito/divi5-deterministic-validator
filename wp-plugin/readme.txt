@@ -186,6 +186,9 @@ Claude Desktop connects through a small helper that needs Node.js. Install the L
 
 No. Divi 4 stores pages as shortcodes. This plugin is made for the Divi 5 page format.
 
+= Can it edit pages that use modules from other Divi add-on plugins? =
+Not yet. The checker only knows Divi's own modules, so it refuses to save a page that contains a module from another plugin (for example Divi Pixel or Divi Plus), even for a text change. Your assistant can still read such a page, and it can edit every other page. Nothing is changed on a refused save, and the reply tells your assistant exactly which block was not recognised.
+
 = Does it work on staging sites or multisite? =
 
 It works on any standard WordPress site, including staging sites. Multisite is not officially supported yet.
