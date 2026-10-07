@@ -10,11 +10,21 @@ final class Promoter
     /**
      * @param list<array{name:string, children:list<string>, isChild:bool}> $proposals
      * @param array<string, array{status:string, placements_rendered:list<string>}> $results
-     * @return array{leaf:list<string>, structural:list<string>, columnChildren:list<string>, sectionChildren:list<string>, children:array<string,list<string>>}
+     * @return array{leaf:list<string>, structural:list<string>, columnChildren:list<string>, sectionChildren:list<string>, children:array<string,list<string>>, knownParentChildren:array<string,list<string>>}
      */
     public static function promote(array $proposals, array $results): array
     {
-        $sets = ['leaf' => [], 'structural' => [], 'columnChildren' => [], 'sectionChildren' => [], 'children' => []];
+        $sets = ['leaf' => [], 'structural' => [], 'columnChildren' => [], 'sectionChildren' => [], 'children' => [], 'knownParentChildren' => []];
+
+        // Which parent proposal lists each child, so child evidence can only name a real parent.
+        $listedBy = [];
+        foreach ($proposals as $p) {
+            if (!$p['isChild']) {
+                foreach ($p['children'] as $kid) {
+                    $listedBy[$kid][] = $p['name'];
+                }
+            }
+        }
 
         foreach ($proposals as $p) {
             self::assertName($p['name']);
@@ -22,6 +32,14 @@ final class Promoter
                 self::assertName($kid);
             }
             $r = $results[$p['name']] ?? null;
+            if ($p['isChild'] && $r !== null && $r['status'] === 'pass' && is_string($r['parent'] ?? null)
+                && in_array($r['parent'], $listedBy[$p['name']] ?? [], true)) {
+                // A child of a parent the validator already knows, proven by rendering it inside that parent.
+                self::assertName($r['parent']);
+                $sets['knownParentChildren'][$r['parent']][] = $p['name'];
+                $sets['leaf'][] = $p['name'];
+                continue;
+            }
             if ($p['isChild'] || $r === null || $r['status'] !== 'pass') {
                 continue;
             }
@@ -49,6 +67,12 @@ final class Promoter
             sort($sets[$k]);
         }
         ksort($sets['children']);
+        foreach ($sets['knownParentChildren'] as $parent => $kids) {
+            $kids = array_values(array_unique($kids));
+            sort($kids);
+            $sets['knownParentChildren'][$parent] = $kids;
+        }
+        ksort($sets['knownParentChildren']);
 
         return $sets;
     }
@@ -67,9 +91,11 @@ final class Promoter
         foreach (['leaf', 'structural', 'columnChildren', 'sectionChildren'] as $k) {
             array_map([self::class, 'assertName'], $sets[$k]);
         }
-        foreach ($sets['children'] as $parent => $kids) {
-            self::assertName((string) $parent);
-            array_map([self::class, 'assertName'], $kids);
+        foreach (['children', 'knownParentChildren'] as $k) {
+            foreach ($sets[$k] as $parent => $kids) {
+                self::assertName((string) $parent);
+                array_map([self::class, 'assertName'], $kids);
+            }
         }
 
         $list = function (array $items): string {
@@ -96,6 +122,8 @@ final class Promoter
             . '    public const STRUCTURAL = ' . $list($sets['structural']) . ";\n\n"
             . '    public const COLUMN_CHILDREN = ' . $list($sets['columnChildren']) . ";\n\n"
             . '    public const SECTION_CHILDREN = ' . $list($sets['sectionChildren']) . ";\n\n"
-            . '    public const CHILDREN = ' . $map($sets['children']) . ";\n}\n";
+            . '    public const CHILDREN = ' . $map($sets['children']) . ";\n\n"
+            . "    /** Children of parents the validator already knew by hand (e.g. divi/signup): parent => proven child items. */\n"
+            . '    public const KNOWN_PARENT_CHILDREN = ' . $map($sets['knownParentChildren']) . ";\n}\n";
     }
 }

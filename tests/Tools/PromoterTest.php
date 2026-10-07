@@ -115,4 +115,53 @@ class PromoterTest extends TestCase
         $this->expectException(\UnexpectedValueException::class);
         Promoter::render(['leaf' => [$bad], 'structural' => [], 'columnChildren' => [], 'sectionChildren' => [], 'children' => []], '5.14.0');
     }
+
+    private function knownParentProposals(): array
+    {
+        return [
+            ['name' => 'divi/signup', 'category' => 'module', 'children' => ['divi/signup-custom-field', 'divi/signup-other'], 'isChild' => false],
+            ['name' => 'divi/signup-custom-field', 'category' => 'child-module', 'children' => [], 'isChild' => true],
+            ['name' => 'divi/signup-other', 'category' => 'child-module', 'children' => [], 'isChild' => true],
+        ];
+    }
+
+    public function testPassingChildOfAKnownParentIsPromotedAsALeafWithItsParent(): void
+    {
+        $sets = Promoter::promote($this->knownParentProposals(), [
+            'divi/signup-custom-field' => ['status' => 'pass', 'placements_rendered' => ['column'], 'parent' => 'divi/signup'],
+        ]);
+        $this->assertSame(['divi/signup' => ['divi/signup-custom-field']], $sets['knownParentChildren']);
+        $this->assertContains('divi/signup-custom-field', $sets['leaf']);
+        // The parent is hand-written, not promoted here, and the child is never placeable alone.
+        $this->assertNotContains('divi/signup', $sets['structural']);
+        $this->assertSame([], $sets['children']);
+        $this->assertSame([], $sets['columnChildren']);
+    }
+
+    public function testNonPassingOrParentlessChildEvidenceIsNotPromoted(): void
+    {
+        $sets = Promoter::promote($this->knownParentProposals(), [
+            'divi/signup-custom-field' => ['status' => 'needs-real-export', 'placements_rendered' => [], 'parent' => 'divi/signup'],
+            'divi/signup-other'        => ['status' => 'pass', 'placements_rendered' => ['column']],
+        ]);
+        $this->assertSame([], $sets['knownParentChildren']);
+        $this->assertSame([], $sets['leaf']);
+    }
+
+    public function testChildEvidenceNamingAParentThatDoesNotListItIsIgnored(): void
+    {
+        $sets = Promoter::promote($this->knownParentProposals(), [
+            'divi/signup-custom-field' => ['status' => 'pass', 'placements_rendered' => ['column'], 'parent' => 'divi/video-slider'],
+        ]);
+        $this->assertSame([], $sets['knownParentChildren']);
+    }
+
+    public function testKnownParentChildrenAreRenderedSortedAndDeduplicated(): void
+    {
+        $sets = Promoter::promote([], []);
+        $sets['knownParentChildren'] = ['divi/signup' => ['divi/signup-custom-field']];
+        $php = Promoter::render($sets, '5.14.0');
+        $this->assertStringContainsString('public const KNOWN_PARENT_CHILDREN = [', $php);
+        $this->assertStringContainsString("'divi/signup' => ['divi/signup-custom-field'],", $php);
+    }
 }

@@ -41,6 +41,9 @@ $missing   = SchemaGap::missing($proposals, $rules);
 // module/fullwidth-module) and either still missing or already promoted (re-verified so a
 // Divi update cannot silently invalidate the shipped schema).
 $candidates = SchemaGap::candidates($proposals, $rules);
+// Children of parents the validator already knows are never reached above (the parent is not a candidate),
+// so a page holding one is refused as an unknown block. They are probed INSIDE their parent.
+$childCandidates = SchemaGap::childCandidates($proposals, $rules);
 $reverified = count($candidates) - count(array_filter($candidates, fn (array $p): bool => !$rules->isKnownType($p['name'])));
 // Children referenced by a candidate travel with it; keep their own proposals for the promoter.
 $all = $proposals;
@@ -49,11 +52,12 @@ if (isset($opts['json']) && is_string($opts['json'])) {
     file_put_contents($opts['json'], json_encode($all, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
 }
 if (isset($opts['candidates']) && is_string($opts['candidates'])) {
-    file_put_contents($opts['candidates'], json_encode($candidates, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+    file_put_contents($opts['candidates'], json_encode(array_merge($candidates, $childCandidates), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
 }
 
 if (isset($opts['report'])) {
     printf("Divi declares %d modules; validator is missing %d (%d placeable candidates: %d missing + %d already promoted, re-verified).\n", count($proposals), count($missing), count($candidates), count($candidates) - $reverified, $reverified);
+    printf("Child items of already-known parents probed inside their parent: %d%s\n", count($childCandidates), $childCandidates === [] ? '' : ' (' . implode(', ', array_column($childCandidates, 'name')) . ')');
     foreach ($missing as $p) {
         printf("  MISSING  %-46s %s%s\n", $p['name'], $p['category'] ?? '?', $p['isChild'] ? ' (child item)' : '');
     }

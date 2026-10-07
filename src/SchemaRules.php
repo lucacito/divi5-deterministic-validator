@@ -179,6 +179,8 @@ class SchemaRules
         'divi/group-carousel' => ['divi/group'],
         'divi/timeline'       => ['divi/timeline-item'],
         ...VerifiedModules::CHILDREN,
+        // Children of hand-written parents (e.g. divi/signup), each proven by rendering it inside its parent.
+        ...VerifiedModules::KNOWN_PARENT_CHILDREN,
     ];
 
     /**

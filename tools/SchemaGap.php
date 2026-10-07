@@ -42,6 +42,44 @@ final class SchemaGap
     }
 
     /**
+     * Child items of a parent the validator ALREADY knows (hand-written, e.g. divi/signup) whose own
+     * name it does not: the parent is never a candidate, so `candidates()` never reaches them, and a
+     * page holding such a child is refused as an unknown block type (divi/signup-custom-field). They
+     * are probed inside their parent. Parents promoted by VerifiedModules::STRUCTURAL are skipped
+     * (their parent probe already renders their first child). A child currently promoted through
+     * KNOWN_PARENT_CHILDREN stays a candidate so a Divi update re-proves it.
+     *
+     * @param list<array{name:string,category:?string,isChild:bool,children?:list<string>}> $proposals
+     * @return list<array{name:string,category:?string,isChild:bool,children:list<string>,parent:string}>
+     */
+    public static function childCandidates(array $proposals, SchemaRules $rules): array
+    {
+        $parentOf = [];
+        foreach ($proposals as $p) {
+            if ($p['isChild'] || !$rules->isKnownType($p['name']) || in_array($p['name'], VerifiedModules::STRUCTURAL, true)) {
+                continue;
+            }
+            foreach ($p['children'] ?? [] as $kid) {
+                $parentOf[$kid] ??= $p['name'];
+            }
+        }
+
+        $out = [];
+        foreach ($proposals as $p) {
+            $parent = $parentOf[$p['name']] ?? null;
+            if ($parent === null || !$p['isChild'] || $p['category'] !== 'child-module') {
+                continue;
+            }
+            $promoted = in_array($p['name'], VerifiedModules::KNOWN_PARENT_CHILDREN[$parent] ?? [], true);
+            if (!$rules->isKnownType($p['name']) || $promoted) {
+                $out[] = ['name' => $p['name'], 'category' => $p['category'], 'isChild' => true, 'children' => [], 'parent' => $parent];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
      * @param list<array{name:string}> $proposals
      * @return list<string> types the validator knows that no module.json declares
      */

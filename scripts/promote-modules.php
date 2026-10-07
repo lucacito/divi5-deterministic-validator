@@ -66,5 +66,25 @@ foreach (['column' => $sets['columnChildren'], 'section' => $sets['sectionChildr
     }
 }
 
+// Children of already-known (hand-written) parents: one fixture per pair, the child inside its parent in a column.
+foreach ($sets['knownParentChildren'] as $parent => $kids) {
+    foreach ($kids as $kid) {
+        $fixture = [
+            'source'       => 'render-verified',
+            'format'       => 'gutenberg-blocks',
+            'divi_version' => $version,
+            'post_title'   => 'Verified ' . str_replace('divi/', '', $kid) . ' inside ' . str_replace('divi/', '', $parent),
+            'post_status'  => 'draft',
+            'post_content' => MarkupBuilder::page($parent, 'column', $kid, $version),
+        ];
+        $name = 'verified-' . str_replace('divi/', '', $kid) . '-in-' . str_replace('divi/', '', $parent) . '.json';
+        if (file_put_contents("{$root}/fixtures/valid/{$name}", json_encode($fixture, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n") === false) {
+            fwrite(STDERR, "Failed to write fixture for {$kid}\n");
+            exit(1);
+        }
+        $written++;
+    }
+}
+
 printf("Promoted: %d leaf, %d structural; column=%d section=%d; %d fixtures written.\n",
     count($sets['leaf']), count($sets['structural']), count($sets['columnChildren']), count($sets['sectionChildren']), $written);

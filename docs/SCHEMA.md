@@ -350,6 +350,6 @@ The render produced only the empty wrapper, and the evidence records just "outpu
 - `divi/imagely-gallery`
 - `divi/payment-button`
 
-#### Child of an already-known parent, not probed (1)
+#### Child of an already-known parent (1, promoted 2026-10-07)
 
-- `divi/signup-custom-field`: a child of the already-known `divi/signup`. It exists in Divi 5.14 but is still rejected. The candidate filter excludes child items and the promoter only promotes children of *missing* parents, so the harness does not probe children of known parents (follow-up). This is not evidence of any render problem.
+- `divi/signup-custom-field`: a child of the already-known `divi/signup` (Email Optin custom fields). It was rejected as an unknown block type, so any page holding an Email Optin with custom fields could not be saved by the plugin, even for an edit elsewhere on the page (reported by a user on 2026-10-07). The harness now probes such children INSIDE their parent (`SchemaGap::childCandidates`; candidates carry a `parent`), judges the child's own class (`et_pb_signup_custom_field`, with a made-up child inside a real parent as the negative control) and `scripts/promote-modules.php` writes them to `VerifiedModules::KNOWN_PARENT_CHILDREN`. Result on Divi 5.14: pass in column and section. Inside `divi/signup` it validates; alone it is still rejected, and `divi/signup` still refuses any other child. Fixture: `fixtures/valid/verified-signup-custom-field-in-signup.json`. Limit: the probe renders the child with default attributes only; real saved custom fields carry attributes (field type, id, required) that this evidence does not cover, and there is no real builder export of one yet.
