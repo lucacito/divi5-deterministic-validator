@@ -278,7 +278,7 @@ final class OpenApiSpec
                                 'type'       => 'object',
                                 'properties' => [
                                     'post_id'      => ['type' => 'integer'],
-                                    'post_type'    => ['type' => 'string', 'description' => 'The WordPress post type page or project'],
+                                    'post_type'    => ['type' => 'string', 'description' => 'The WordPress post type: page or project'],
                                     'post_title'   => ['type' => 'string'],
                                     'post_status'  => ['type' => 'string'],
                                     'post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML'],
@@ -353,7 +353,7 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'listPageHistory',
                         'summary'     => 'List a page\'s saved previous versions',
-                        'description' => 'Every AI save tries to snapshot the page or Project\'s prior content (last 10, fewer for large pages). Returns saved versions newest first (id, time, tool, size); restore one with restorePageVersion when a snapshot was kept (history.stored).',
+                        'description' => 'Every AI save tries to snapshot the previous content of the page or Divi Project (last 10, fewer for large pages). Returns saved versions newest first (id, time, tool, size); restore one with restorePageVersion when a snapshot was kept (history.stored).',
                         'parameters'  => [self::idParam()],
                         'responses'   => [
                             '200' => ['description' => 'Versions', 'content' => ['application/json' => ['schema' => [

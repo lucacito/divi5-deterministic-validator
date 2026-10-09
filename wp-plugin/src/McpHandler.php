@@ -213,7 +213,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'list_page_history',
-                'description' => 'List the saved previous versions of a page or Divi Project (newest first). Every AI save tries to snapshot the page\'s prior content (up to the last 10 per page, fewer for very large pages), so an AI edit can be undone when a snapshot was kept (the save result\'s history.stored says so). Returns id, saved_at, tool, actor, bytes, label for each version (no content). Use restore_page_version to undo.',
+                'description' => 'List the saved previous versions of a page or Divi Project (newest first). Every AI save tries to snapshot the previous content of the page or Project (up to the last 10 per page, fewer for very large pages), so an AI edit can be undone when a snapshot was kept (the save result\'s history.stored says so). Returns id, saved_at, tool, actor, bytes, label for each version (no content). Use restore_page_version to undo.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [

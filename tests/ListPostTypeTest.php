@@ -77,16 +77,16 @@ class ListPostTypeTest extends TestCase
         return [ $r->get_status(), (array) $r->get_data() ];
     }
 
-    /** @return array{0:?int,1:array<string,mixed>} */
+    /** @return array{0:?int,1:array<string,mixed>,2:string} code, result, error message */
     private function mcp( array $args ): array
     {
         $req  = new \WP_REST_Request( [ 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => [ 'name' => 'list_divi_pages', 'arguments' => $args ?: new \stdClass() ] ] );
         $data = (array) ( new McpHandler() )->handle( $req )->get_data();
         if ( isset( $data['error'] ) ) {
-            return [ $data['error']['code'], [] ];
+            return [ $data['error']['code'], [], (string) $data['error']['message'] ];
         }
 
-        return [ null, (array) json_decode( $data['result']['content'][0]['text'], true ) ];
+        return [ null, (array) json_decode( $data['result']['content'][0]['text'], true ), '' ];
     }
 
     public function testTheDefaultIsPagesAndEveryItemReportsItsPostType(): void
@@ -138,6 +138,10 @@ class ListPostTypeTest extends TestCase
         $this->assertSame( -32602, $this->mcp( [ 'post_type' => 'project' ] )[0] );
         [ $status ] = $this->rest( [ 'post_type' => 'nonsense' ] );
         $this->assertSame( 403, $status, 'a user without edit_pages learns nothing about the argument' );
+        [ $code, , $message ] = $this->mcp( [ 'post_type' => 'nonsense' ] );
+        $this->assertSame( -32602, $code );
+        $this->assertStringContainsString( 'permission to list pages', $message, 'the capability error wins over the post_type error' );
+        $this->assertStringNotContainsString( 'post_type', $message );
     }
 
     public function testToolsListDeclaresAGeminiSafePostTypeEnum(): void
