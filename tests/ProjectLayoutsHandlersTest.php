@@ -93,9 +93,9 @@ class ProjectLayoutsHandlersTest extends TestCase
     }
 
     /** @return array{0:int,1:array<string,mixed>} */
-    private function rest( string $method, int $id, array $body = [] ): array
+    private function rest( string $method, int $id, array $body = [], array $urlParams = [] ): array
     {
-        return $this->unwrap( ( new RestController() )->$method( new \WP_REST_Request( $body, [ 'id' => $id ] ) ) );
+        return $this->unwrap( ( new RestController() )->$method( new \WP_REST_Request( $body, [ 'id' => $id ] + $urlParams ) ) );
     }
 
     /** @return array{0:?int,1:array<string,mixed>,2:bool,3:string} JSON-RPC error code, decoded tool result, isError, error message */
@@ -167,6 +167,7 @@ class ProjectLayoutsHandlersTest extends TestCase
         $this->assertSame( 200, $status );
         $this->assertTrue( $data['valid'] );
         $this->assertUnchanged( 5, 'dry run' );
+        $this->assertSame( [], \AiEditorDivi5\WP\HistoryService::listFor( 5 ), 'a dry run snapshots nothing' );
     }
 
     public function testApprovalModeAppliesToProjects(): void
@@ -208,6 +209,10 @@ class ProjectLayoutsHandlersTest extends TestCase
         $this->assertSame( 200, $status );
         $this->assertSame( 1, $list['count'] );
 
+        [ $status, $entry ] = $this->rest( 'history_entry', 5, [], [ 'version_id' => $versionId ] );
+        $this->assertSame( 200, $status );
+        $this->assertSame( self::ORIGINAL, $entry['post_content'] );
+
         [ $status, $data ] = $this->rest( 'history_restore', 5, [ 'version_id' => $versionId ] );
         $this->assertSame( 200, $status );
         $this->assertTrue( $data['restored'] );
@@ -223,16 +228,29 @@ class ProjectLayoutsHandlersTest extends TestCase
 
     public function testABlogPostIsNotFoundOnEveryIdTakingToolAndRoute(): void
     {
+        // Seed a REAL snapshot for the blog post straight through the service (not the handlers under test), so a
+        // missing version can never be the reason for a refusal: only the post-type check can explain it.
+        $seed = \AiEditorDivi5\WP\HistoryService::write( 6, self::NEW_VALID, 'seed' );
+        $this->assertTrue( $seed['snapshot']['stored'], 'the seed snapshot was stored' );
+        $vid = (int) $seed['snapshot']['version_id'];
+        $this->assertGreaterThan( 0, $vid );
+        $GLOBALS['__wp_posts'][6]->post_content = self::ORIGINAL;
+        $GLOBALS['__wp_update_calls']           = 0;
+        $seeded                                 = \AiEditorDivi5\WP\HistoryService::listFor( 6 );
+        $this->assertCount( 1, $seeded );
+        $this->assertNotNull( \AiEditorDivi5\WP\HistoryService::entry( 6, $vid ), 'the seeded version really exists' );
+
+        // [ method, JSON body, URL params ]: history_entry reads version_id from the URL, history_restore from the body.
         $restCalls = [
-            [ 'get_page', [] ],
-            [ 'update_page', [ 'post_content' => self::NEW_VALID ] ],
-            [ 'edit_page', [ 'find' => '4_4', 'replace' => '1_2' ] ],
-            [ 'history_list', [] ],
-            [ 'history_entry', [ 'version_id' => 1 ] ],
-            [ 'history_restore', [ 'version_id' => 1 ] ],
+            [ 'get_page', [], [] ],
+            [ 'update_page', [ 'post_content' => self::NEW_VALID ], [] ],
+            [ 'edit_page', [ 'find' => '4_4', 'replace' => '1_2' ], [] ],
+            [ 'history_list', [], [] ],
+            [ 'history_entry', [], [ 'version_id' => $vid ] ],
+            [ 'history_restore', [ 'version_id' => $vid ], [] ],
         ];
-        foreach ( $restCalls as [ $method, $body ] ) {
-            [ $status, $data ] = $this->rest( $method, 6, $body );
+        foreach ( $restCalls as [ $method, $body, $urlParams ] ) {
+            [ $status, $data ] = $this->rest( $method, 6, $body, $urlParams );
             $this->assertSame( 404, $status, "REST {$method} on a blog post" );
             $this->assertSame( 'not_found', $data['error'] );
         }
@@ -241,14 +259,15 @@ class ProjectLayoutsHandlersTest extends TestCase
             [ 'update_page_layout', [ 'page_id' => 6, 'post_content' => self::NEW_VALID ] ],
             [ 'edit_page_content', [ 'page_id' => 6, 'find' => '4_4', 'replace' => '1_2' ] ],
             [ 'list_page_history', [ 'page_id' => 6 ] ],
-            [ 'get_page_history_entry', [ 'page_id' => 6, 'version_id' => 1 ] ],
-            [ 'restore_page_version', [ 'page_id' => 6, 'version_id' => 1 ] ],
+            [ 'get_page_history_entry', [ 'page_id' => 6, 'version_id' => $vid ] ],
+            [ 'restore_page_version', [ 'page_id' => 6, 'version_id' => $vid ] ],
         ];
         foreach ( $mcpCalls as [ $tool, $args ] ) {
             [ $code ] = $this->mcp( $tool, $args );
             $this->assertSame( -32602, $code, "MCP {$tool} on a blog post" );
         }
         $this->assertUnchanged( 6, 'a blog post' );
+        $this->assertSame( $seeded, \AiEditorDivi5\WP\HistoryService::listFor( 6 ), 'nothing new was snapshotted, nothing restored' );
     }
 
     public function testAProjectTheUserCannotEditIsForbidden(): void
