@@ -899,6 +899,7 @@ EOF
 **Files:**
 - Create: `pro-addon/src/Tools/SetCustomFields.php`
 - Create: `pro-addon/tests/SetCustomFieldsTest.php`
+- Create: `pro-addon/tests/WpKsesShim.php` (global, non-namespaced shim)
 - Modify: `pro-addon/src/autoload.php`, `pro-addon/src/Tools.php`, `pro-addon/src/Rest/ProOpenApi.php`, `pro-addon/src/Compat.php`
 - Modify: `pro-addon/tests/ToolsTest.php`, `pro-addon/tests/ProOpenApiTest.php`, `pro-addon/tests/FreeApiCompatTest.php`, `pro-addon/tests/CompatTest.php` (only if it asserts `REQUIRED_CLASSES`), `pro-addon/readme.txt` (so `ReadmeTest` finds the tool)
 
@@ -908,7 +909,24 @@ EOF
 
 - [ ] **Step 1: Write the failing tests**
 
-Create `pro-addon/tests/SetCustomFieldsTest.php`:
+First create the global shim file `pro-addon/tests/WpKsesShim.php`. It MUST NOT declare a namespace (a function declared in a namespaced test file would live in that namespace, and the tool code, which calls the global `wp_kses_post`, would not find it):
+
+```php
+<?php
+
+declare(strict_types=1);
+
+/**
+ * A stand-in for core's wp_kses_post() for the Pro unit tests (no namespace: the code under test calls the global function).
+ * It keeps the usual post-content tags and drops others. The real function runs in `make verify-pro-custom-fields`.
+ */
+if ( ! function_exists( 'wp_kses_post' ) ) {
+    function wp_kses_post( $s ) { return (string) preg_replace( '#</?(?!(?:p|br|strong|em|b|i|a|ul|ol|li|blockquote|div|span|h[1-6])\b)[a-z][^>]*>#i', '', (string) $s ); }
+}
+```
+Add the same rule to any other shim you need for this task or Task 2 (`wp_slash`, etc.): global, guarded with `function_exists`, in a file without a namespace.
+
+Then create `pro-addon/tests/SetCustomFieldsTest.php`:
 
 ```php
 <?php
@@ -930,10 +948,7 @@ require_once __DIR__ . '/../../tests/CustomFieldsReadShims.php';
 require_once __DIR__ . '/../src/autoload.php';
 require_once __DIR__ . '/InMemoryBatchRepository.php';
 
-if ( ! function_exists( 'wp_kses_post' ) ) {
-    // A stand-in for core's wp_kses_post(): keeps the usual post-content tags, drops others (the real one runs in the live gate).
-    function wp_kses_post( $s ) { return (string) preg_replace( '#</?(?!(?:p|br|strong|em|b|i|a|ul|ol|li|blockquote|div|span|h[1-6])\b)[a-z][^>]*>#i', '', (string) $s ); }
-}
+require_once __DIR__ . '/WpKsesShim.php'; // a GLOBAL (non-namespaced) stand-in for wp_kses_post(); see below
 
 class SetCustomFieldsTest extends TestCase
 {
@@ -1620,7 +1635,7 @@ Run the focused command for `SetCustomFieldsTest`, then `make test-pro` (all pas
 - [ ] **Step 5: Commit**
 
 ```bash
-git add pro-addon/src pro-addon/tests pro-addon/readme.txt
+git add pro-addon/src pro-addon/tests pro-addon/readme.txt  # includes tests/WpKsesShim.php
 git commit -m "$(cat <<'EOF'
 feat(pro): set_custom_fields, an undoable all-or-nothing tool for custom field values
 
