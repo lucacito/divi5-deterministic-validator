@@ -9,6 +9,7 @@
  */
 
 use AiEditorDivi5\WP\EditTarget;
+use AiEditorDivi5\WP\HistoryService;
 
 require_once __DIR__ . '/dev-guard.php';
 aied_require_dev_site();
@@ -65,22 +66,26 @@ $BAD      = '<!-- wp:divi/placeholder --><!-- wp:divi/section {"builderVersion":
 $posts    = [];
 try {
     $meta = [ '_et_pb_use_builder' => 'on', '_et_pb_use_divi_5' => 'on' ];
-    $prj  = wp_insert_post( [ 'post_type' => 'project', 'post_status' => 'draft', 'post_title' => 'aied project verify', 'post_content' => wp_slash( $ORIGINAL ), 'meta_input' => $meta ], true );
-    $blog = wp_insert_post( [ 'post_type' => 'post', 'post_status' => 'draft', 'post_title' => 'aied blog verify', 'post_content' => wp_slash( $ORIGINAL ), 'meta_input' => $meta ], true );
-    foreach ( [ $prj, $blog ] as $id ) {
-        if ( is_wp_error( $id ) ) {
-            throw new RuntimeException( $id->get_error_message() );
-        }
-        $posts[] = (int) $id;
+    // Record each id right after its own insert, so a failure between the two inserts cannot leak the first.
+    $prj = wp_insert_post( [ 'post_type' => 'project', 'post_status' => 'draft', 'post_title' => 'aied project verify', 'post_content' => wp_slash( $ORIGINAL ), 'meta_input' => $meta ], true );
+    if ( is_wp_error( $prj ) ) {
+        throw new RuntimeException( $prj->get_error_message() );
     }
+    $posts[] = (int) $prj;
+    $blog = wp_insert_post( [ 'post_type' => 'post', 'post_status' => 'draft', 'post_title' => 'aied blog verify', 'post_content' => wp_slash( $ORIGINAL ), 'meta_input' => $meta ], true );
+    if ( is_wp_error( $blog ) ) {
+        throw new RuntimeException( $blog->get_error_message() );
+    }
+    $posts[] = (int) $blog;
     $check( true, 'a throwaway draft Project and a throwaway draft blog post exist' );
 
     // 1. discovery
     $l = $rest( 'GET', '/pages', [], [ 'post_type' => 'project' ] );
-    $check( 200 === $l['status'] && in_array( (int) $prj, array_map( 'intval', array_column( (array) $l['data']['pages'], 'id' ) ), true ), 'REST GET /pages?post_type=project lists the Project' );
-    $check( 'project' === ( array_column( (array) $l['data']['pages'], 'post_type', 'id' )[ $prj ] ?? '' ), 'the listed item reports post_type project' );
+    $lPages = (array) ( $l['data']['pages'] ?? [] );
+    $check( 200 === $l['status'] && in_array( (int) $prj, array_map( 'intval', array_column( $lPages, 'id' ) ), true ), 'REST GET /pages?post_type=project lists the Project' );
+    $check( 'project' === ( array_column( $lPages, 'post_type', 'id' )[ $prj ] ?? '' ), 'the listed item reports post_type project' );
     $lp = $rest( 'GET', '/pages' );
-    $check( ! in_array( (int) $prj, array_map( 'intval', array_column( (array) $lp['data']['pages'], 'id' ) ), true ), 'the default listing (pages) does not include the Project' );
+    $check( 200 === $lp['status'] && isset( $lp['data']['pages'] ) && ! in_array( (int) $prj, array_map( 'intval', array_column( (array) $lp['data']['pages'], 'id' ) ), true ), 'the default listing (pages) answers 200 and does not include the Project' );
     $check( 400 === $rest( 'GET', '/pages', [], [ 'post_type' => 'post' ] )['status'], 'REST rejects post_type=post (400)' );
     $m = $mcp( 'list_divi_pages', [ 'post_type' => 'project' ] );
     $check( null === $m['error'] && in_array( (int) $prj, array_map( 'intval', array_column( (array) ( $m['result']['pages'] ?? [] ), 'id' ) ), true ), 'MCP list_divi_pages post_type=project lists the Project' );
@@ -93,9 +98,11 @@ try {
     $check( null === $gm['error'] && 'project' === ( $gm['result']['post_type'] ?? '' ), 'MCP get_page_layout reads the Project' );
 
     // 3. dry run, invalid, save
+    $histBefore = count( HistoryService::listFor( (int) $prj ) );
     $d = $rest( 'PUT', "/pages/{$prj}", [ 'post_content' => $NEW, 'dry_run' => true ] );
     $check( 200 === $d['status'] && true === ( $d['data']['valid'] ?? null ), 'dry run on the Project returns a valid preview' );
     $check( get_post_field( 'post_content', $prj ) === $ORIGINAL, 'dry run left the Project untouched' );
+    $check( count( HistoryService::listFor( (int) $prj ) ) === $histBefore, 'dry run left the Project history untouched' );
     $bad = $rest( 'PUT', "/pages/{$prj}", [ 'post_content' => $BAD ] );
     $check( 422 === $bad['status'] && get_post_field( 'post_content', $prj ) === $ORIGINAL, 'an invalid layout is refused (422) and nothing is saved' );
     $s = $rest( 'PUT', "/pages/{$prj}", [ 'post_content' => $NEW ] );
@@ -121,22 +128,33 @@ try {
     $check( null === $lm['error'] && (int) ( $lm['result']['count'] ?? 0 ) >= 2, 'MCP list_page_history lists the Project snapshots' );
 
     // 5. a blog post is refused by every id-taking tool and route
-    $before = get_post_field( 'post_content', $blog );
+    // Seed a REAL snapshot row for the blog post through the production service (not through the handlers under test),
+    // so a missing version can never be the reason a history-entry or restore probe is refused.
+    $seed = HistoryService::write( (int) $blog, $NEW, 'seed' );
+    $seedId = (int) ( $seed['snapshot']['version_id'] ?? 0 );
+    $check( true === ( $seed['ok'] ?? false ) && true === ( $seed['snapshot']['stored'] ?? false ) && $seedId > 0 && null !== HistoryService::entry( (int) $blog, $seedId ), 'seeded a real history snapshot for the blog post (version ' . $seedId . ')' );
+    $before     = get_post_field( 'post_content', $blog );
+    $histBlog   = count( HistoryService::listFor( (int) $blog ) );
     $refused = [
         $rest( 'GET', "/pages/{$blog}" )['status'],
         $rest( 'PUT', "/pages/{$blog}", [ 'post_content' => $NEW ] )['status'],
         $rest( 'POST', "/pages/{$blog}/edit", [ 'find' => 'aied', 'replace' => 'x' ] )['status'],
         $rest( 'GET', "/pages/{$blog}/history" )['status'],
+        $rest( 'GET', "/pages/{$blog}/history/{$seedId}" )['status'],
+        $rest( 'POST', "/pages/{$blog}/restore", [ 'version_id' => $seedId ] )['status'],
     ];
-    $check( [ 404, 404, 404, 404 ] === $refused, 'REST: a blog post is 404 on get, update, edit and history' );
+    $check( [ 404, 404, 404, 404, 404, 404 ] === $refused, 'REST: a blog post is 404 on get, update, edit, history, history entry (real version) and restore (real version)' );
     $codes = [
         $mcp( 'get_page_layout', [ 'page_id' => (int) $blog ] )['error']['code'] ?? null,
         $mcp( 'update_page_layout', [ 'page_id' => (int) $blog, 'post_content' => $NEW ] )['error']['code'] ?? null,
         $mcp( 'edit_page_content', [ 'page_id' => (int) $blog, 'find' => 'aied', 'replace' => 'x' ] )['error']['code'] ?? null,
         $mcp( 'list_page_history', [ 'page_id' => (int) $blog ] )['error']['code'] ?? null,
+        $mcp( 'get_page_history_entry', [ 'page_id' => (int) $blog, 'version_id' => $seedId ] )['error']['code'] ?? null,
+        $mcp( 'restore_page_version', [ 'page_id' => (int) $blog, 'version_id' => $seedId ] )['error']['code'] ?? null,
     ];
-    $check( [ -32602, -32602, -32602, -32602 ] === $codes, 'MCP: a blog post is refused on get, update, edit and history' );
+    $check( [ -32602, -32602, -32602, -32602, -32602, -32602 ] === $codes, 'MCP: a blog post is refused on get, update, edit, history, history entry (real version) and restore (real version)' );
     $check( get_post_field( 'post_content', $blog ) === $before, 'the blog post was never touched' );
+    $check( count( HistoryService::listFor( (int) $blog ) ) === $histBlog, 'the blog post history did not grow' );
 } catch ( Throwable $e ) {
     $check( false, 'unexpected error: ' . $e->getMessage() );
 } finally {
