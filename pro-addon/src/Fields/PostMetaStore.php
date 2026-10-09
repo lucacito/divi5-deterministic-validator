@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * The only code in the add-on that reads and writes a post's custom fields. Writes go through ACF's own update_field() when an ACF
  * selector (the field key) is given and ACF is active, otherwise through update_post_meta(). WordPress unslashes meta values it is
- * given, so the plain path slashes first. Every write is verified by reading the raw value back.
+ * given, and so does ACF's update_field(), so both the plain path and the ACF path slash the value first. Every write is verified by reading the raw value back.
  */
 class PostMetaStore // not final: the tool tests extend it with doubles that fail a write or report a key stored twice
 {

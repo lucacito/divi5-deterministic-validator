@@ -2,7 +2,7 @@
 /**
  * Real-site check of the Pro tool set_custom_fields: the real tool, the real batch table, WordPress's own meta functions and its REAL
  * wp_kses_post() (the unit tests only use a stand-in for it). Self-cleaning: it deletes every post, batch row, ACF field group and
- * contributor user it created. It records about 13 batches and the batch store keeps only the newest 20, so on a site that already
+ * contributor user it created. It records about 12 batches and the batch store keeps only the newest 20, so on a site that already
  * has batches it evicts the oldest real ones: dev sites only.
  *
  * ACF checks run only when the free ACF plugin is active (it is NOT part of the dev environment). To run them, install it for the
@@ -47,7 +47,6 @@ $skip = static function ( string $label ): void {
 
 $posts    = [];
 $batchIds = [];
-$acfGroup = false;
 BatchTable::ensureReady( true );
 $check( BatchTable::exists(), 'the batch table exists on the real database (' . BatchTable::name() . ')' );
 $log  = Batches::log();
@@ -90,7 +89,7 @@ $meta     = static fn ( int $id, string $key ): mixed => get_post_meta( $id, $ke
 $newestId = static fn (): int => (int) ( $log->recent( 1 )[0]['id'] ?? 0 );
 
 try {
-    // A stale contributor from an interrupted earlier run goes first.
+    // A stale contributor from an interrupted earlier run goes first (deleteContributor() only ever removes the reserved login, never id 1 or below).
     $deleteContributor();
 
     // A key becomes "known" because ANOTHER post already has it.
@@ -202,7 +201,6 @@ try {
                 [ 'key' => 'field_aied_pro_rep', 'label' => 'R', 'name' => 'aied_pro_acf_rep', 'type' => 'repeater', 'sub_fields' => [ [ 'key' => 'field_aied_pro_rep_item', 'label' => 'I', 'name' => 'item', 'type' => 'text' ] ] ],
             ],
         ] );
-        $acfGroup  = true;
         // The tool memoizes ACF's field index and the known-keys lookup per instance (one instance per request in production), so
         // the instance used before this group existed would not see it: use a fresh one, as the next real request would.
         $tool      = new SetCustomFields( $log );
