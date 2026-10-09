@@ -34,6 +34,14 @@ class PostMetaStore // not final: the tool tests extend it with doubles that fai
         );
     }
 
+    /** @return list<string> every meta key the post stores (as WordPress reports them, hidden ones included) */
+    public function keys( int $postId ): array
+    {
+        $all = get_post_custom( $postId );
+
+        return is_array( $all ) ? array_map( 'strval', array_keys( $all ) ) : [];
+    }
+
     /** @return array{exists:bool, value:?string, rows:int, structured:bool} */
     public function read( int $postId, string $key ): array
     {

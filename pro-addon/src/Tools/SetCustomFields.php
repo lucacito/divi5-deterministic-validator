@@ -29,6 +29,8 @@ final class SetCustomFields implements ProTool
     public const NAME       = 'set_custom_fields';
     public const MAX_FIELDS = 25;
     private const SHOW_CHARS = 200;
+    private const KEY_CHARS  = 80;
+    private const MAX_MESSAGE = 6000;
 
     private BatchLog $log;
     private ?PostMetaStore $store;
@@ -103,14 +105,18 @@ final class SetCustomFields implements ProTool
         foreach ( $fields as $field ) {
             $plan = $this->plan( $postId, $field['key'], $field['value'], $store );
             if ( null !== $plan['refusal'] ) {
-                $refusals[] = $field['key'] . ' ' . $plan['refusal'];
+                $refusals[] = self::shown( $field['key'] ) . ' ' . $plan['refusal'];
                 continue;
             }
             $plans[] = $plan;
         }
         if ( [] !== $refusals ) {
             $message = 'Nothing was written. ' . count( $refusals ) . ' field(s) refused: ' . implode( '; ', $refusals ) . '.';
-            throw new \InvalidArgumentException( mb_substr( $message, 0, 1500 ) );
+            // Long enough for 25 refusals with 80-character keys; if a reason list ever exceeds it, the cut still ends in a full stop.
+            if ( mb_strlen( $message ) > self::MAX_MESSAGE ) {
+                $message = mb_substr( $message, 0, self::MAX_MESSAGE - 3 ) . '...';
+            }
+            throw new \InvalidArgumentException( $message );
         }
 
         $rows    = [];
@@ -134,13 +140,28 @@ final class SetCustomFields implements ProTool
                 + ( [] === $changes ? [ 'message' => 'Every value is already what you asked for; nothing changed.' ] : [] );
         }
 
+        // A write that returns false may still have stored something (a sanitize filter can mangle the value), and a store can
+        // throw: so the current field joins the rollback set BEFORE it is written. Restoring `before` is idempotent.
         $written = [];
-        foreach ( $changes as $c ) {
-            if ( ! $store->write( $postId, $c['key'], $c['value'], $c['acf'] ) ) {
-                $this->rollback( $postId, $written, $store );
-                throw new \InvalidArgumentException( "Could not write \"{$c['key']}\"; nothing was changed." );
+        $failed  = null;
+        try {
+            foreach ( $changes as $c ) {
+                $written[] = $c;
+                if ( ! $store->write( $postId, $c['key'], $c['value'], $c['acf'] ) ) {
+                    $failed = $c['key'];
+                    break;
+                }
             }
-            $written[] = $c;
+        } catch ( \Throwable $e ) {
+            $failed = $c['key'] ?? '';
+        }
+        if ( null !== $failed ) {
+            $notRestored = $this->rollback( $postId, $written, $store );
+            $shown       = self::shown( $failed );
+            if ( [] !== $notRestored ) {
+                throw new \InvalidArgumentException( "Could not write \"{$shown}\". These fields may not have been restored: " . implode( ', ', array_map( [ self::class, 'shown' ], $notRestored ) ) . '. Check them with get_custom_fields.' );
+            }
+            throw new \InvalidArgumentException( "Could not write \"{$shown}\"; nothing was changed." );
         }
 
         $items = [];
@@ -183,6 +204,9 @@ final class SetCustomFields implements ProTool
             if ( ! isset( $item['value'] ) || ! is_string( $item['value'] ) ) {
                 throw new \InvalidArgumentException( "\"fields\" item {$n}: \"value\" must be a string." );
             }
+            if ( $key !== trim( $key ) || 1 === preg_match( '/[\x00-\x1F\x7F]/', $key ) ) {
+                throw new \InvalidArgumentException( "\"fields\" item {$n}: \"key\" must not have leading or trailing whitespace or control characters." );
+            }
             if ( isset( $seen[ $key ] ) ) {
                 throw new \InvalidArgumentException( "\"fields\": the key \"{$key}\" appears more than once." );
             }
@@ -207,11 +231,33 @@ final class SetCustomFields implements ProTool
         if ( CustomFieldReader::SECRET === $class ) {
             return [ 'refusal' => 'looks like a password, token or licence key and is never written' ] + $plan;
         }
+
+        // WordPress matches meta keys with SQL `meta_key = %s`, which is case-insensitive (and ignores trailing spaces) under the usual
+        // collations: "Headline" would hit the stored "headline" row while skipping the exact-match checks below. So a key that differs
+        // from an existing field, or from an ACF field or prefix, only by letter case is refused. Residual, accepted: a mis-cased NEW
+        // key on a post that lacks the base key can still be created, because "known" is collation-insensitive too.
+        $acf = $this->acf();
+        foreach ( $store->keys( $postId ) as $existing ) {
+            if ( 0 === strcasecmp( $existing, $key ) && $existing !== $key ) {
+                return [ 'refusal' => 'differs only by letter case from the existing field "' . self::shown( $existing ) . '"; use the exact key' ] + $plan;
+            }
+        }
+        foreach ( array_keys( $acf['fields'] ) as $name ) {
+            $name = (string) $name;
+            if ( 0 === strcasecmp( $name, $key ) && $name !== $key ) {
+                return [ 'refusal' => 'differs only by letter case from the ACF field "' . self::shown( $name ) . '"; use the exact key' ] + $plan;
+            }
+        }
+        foreach ( $acf['prefixes'] as $prefix ) {
+            if ( 0 === stripos( $key, $prefix ) && ! str_starts_with( $key, $prefix ) ) {
+                return [ 'refusal' => 'differs only by letter case from the ACF field "' . self::shown( rtrim( $prefix, '_' ) ) . '"; use the exact key' ] + $plan;
+            }
+        }
+
         if ( ! current_user_can( 'edit_post_meta', $postId, $key ) ) {
             return [ 'refusal' => 'is not allowed by WordPress for this post' ] + $plan;
         }
 
-        $acf = $this->acf();
         $def = $acf['fields'][ $key ] ?? null;
         if ( null !== $def && $def['nested'] ) {
             return [ 'refusal' => 'belongs to a group in ACF; edit it in the ACF editor' ] + $plan;
@@ -240,7 +286,10 @@ final class SetCustomFields implements ProTool
         if ( null !== $why ) {
             return [ 'refusal' => 'value ' . $why ] + $plan;
         }
-        if ( wp_kses_post( $value ) !== $value ) {
+        // Core's wp_kses_post() rewrites a bare "&" to "&amp;"; that is not unsafe markup, so both sides are compared with it undone.
+        // The value that is stored is still exactly what the caller sent, never the kses output.
+        $norm = static fn ( string $s ): string => str_replace( '&amp;', '&', $s );
+        if ( $norm( wp_kses_post( $value ) ) !== $norm( $value ) ) {
             return [ 'refusal' => 'value contains markup WordPress does not allow in post content' ] + $plan;
         }
         if ( null !== $def ) {
@@ -254,16 +303,35 @@ final class SetCustomFields implements ProTool
         return $plan;
     }
 
-    /** @param list<array{key:string,value:string,before:array{exists:bool,value:?string},acf:?string,refusal:?string}> $written */
-    private function rollback( int $postId, array $written, PostMetaStore $store ): void
+    /**
+     * Puts every written field back (newest first) and reports honestly which ones could not be restored.
+     *
+     * @param list<array{key:string,value:string,before:array{exists:bool,value:?string},acf:?string,refusal:?string}> $written
+     * @return list<string> the keys that may not be back to their old value
+     */
+    private function rollback( int $postId, array $written, PostMetaStore $store ): array
     {
+        $failed = [];
         foreach ( array_reverse( $written ) as $c ) {
-            if ( $c['before']['exists'] ) {
-                $store->write( $postId, $c['key'], (string) $c['before']['value'], $c['acf'] );
-            } else {
-                $store->delete( $postId, $c['key'], $c['acf'] );
+            try {
+                $ok = $c['before']['exists']
+                    ? $store->write( $postId, $c['key'], (string) $c['before']['value'], $c['acf'] )
+                    : $store->delete( $postId, $c['key'], $c['acf'] );
+            } catch ( \Throwable $e ) {
+                $ok = false;
+            }
+            if ( ! $ok ) {
+                $failed[] = $c['key'];
             }
         }
+
+        return $failed;
+    }
+
+    /** A key as shown in a message: cut at 80 characters. */
+    private static function shown( string $key ): string
+    {
+        return mb_strlen( $key ) > self::KEY_CHARS ? mb_substr( $key, 0, self::KEY_CHARS ) . '...' : $key;
     }
 
     private static function cut( string $text ): string

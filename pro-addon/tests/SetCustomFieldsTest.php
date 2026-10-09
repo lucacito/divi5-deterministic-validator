@@ -164,7 +164,7 @@ class SetCustomFieldsTest extends TestCase
         $this->assertSame( [], $this->repo->rows );
     }
 
-    public function testBackslashesQuotesAndUnicodeSurviveTheWriteAndTheUndo(): void
+    public function testBackslashesQuotesAndUnicodeSurviveThePlainWriteAndTheUndo(): void
     {
         $value = 'C:\\path "quoted" \'single\' Café ✓';
         $r     = $this->call( 5, [ $this->field( 'headline', $value ) ] );
@@ -383,5 +383,175 @@ class SetCustomFieldsTest extends TestCase
         $this->assertFalse( $u['fully_undone'] );
         $this->assertSame( 'changed_since', $u['items'][0]['result'] );
         $this->assertSame( 'Edited by a person', $GLOBALS['__wp_postmeta'][5]['headline'], 'the later edit is not overwritten' );
+    }
+
+    public function testBackslashesQuotesAndUnicodeSurviveTheAcfWriteToo(): void
+    {
+        $value = 'D:\\dir "q" \'s\' Ünï ✓';
+        $this->assertTrue( $this->call( 5, [ $this->field( 'acf_text', $value ) ] )['changed'] );
+        $this->assertSame( [ [ 'field_acf_text', $value, 5 ] ], $GLOBALS['__acf_calls'] );
+        $this->assertSame( $value, $GLOBALS['__wp_postmeta'][5]['acf_text'] );
+    }
+
+    // ---- key spelling -------------------------------------------------------------------------
+
+    public function testAPaddedOrControlCharacterKeyIsRefusedAsAnArgumentError(): void
+    {
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( 'headline ', 'x' ) ] ], 'leading or trailing whitespace or control characters' );
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( ' headline', 'x' ) ] ], 'leading or trailing whitespace or control characters' );
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( "head\nline", 'x' ) ] ], 'leading or trailing whitespace or control characters' );
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( "headline\0", 'x' ) ] ], 'leading or trailing whitespace or control characters' );
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( "head\x7Fline", 'x' ) ] ], 'leading or trailing whitespace or control characters' );
+    }
+
+    public function testAKeyThatDiffersOnlyByCaseFromAnExistingFieldIsRefused(): void
+    {
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( 'Headline', 'x' ) ] ], 'differs only by letter case from the existing field "headline"; use the exact key' );
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( 'HEADLINE', 'x' ) ] ], 'differs only by letter case' );
+    }
+
+    public function testAKeyThatDiffersOnlyByCaseFromAnAcfFieldOrPrefixIsRefused(): void
+    {
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( 'Size', 'l' ) ] ], 'differs only by letter case from the ACF field "size"; use the exact key' );
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( 'Team', 'x' ) ] ], 'differs only by letter case from the ACF field "team"; use the exact key' );
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( 'Team_0_member', 'x' ) ] ], 'differs only by letter case from the ACF field "team"' );
+        $this->assertSame( [], $GLOBALS['__acf_calls'] );
+    }
+
+    public function testANumericKeyIsHandledCleanly(): void
+    {
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( '123', 'x' ) ] ], '123 is not a custom field this site knows' );
+        $GLOBALS['__wp_postmeta'][5]['123'] = 'num';
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( '123', 'x' ) ] ], 'this site knows' );
+    }
+
+    // ---- ampersands and markup ----------------------------------------------------------------
+
+    public function testABareAmpersandAndAnEntityAreAcceptedAndStoredByteExactly(): void
+    {
+        foreach ( [ 'Terms & Conditions', 'Fish &amp; Chips', 'A &lt; B &#38; C' ] as $value ) {
+            $r = $this->call( 5, [ $this->field( 'headline', $value ) ] );
+            $this->assertTrue( $r['changed'], $value );
+            $this->assertSame( $value, $GLOBALS['__wp_postmeta'][5]['headline'], $value );
+        }
+    }
+
+    public function testRealMarkupIsStillRefusedNextToAmpersands(): void
+    {
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( 'headline', '<form action="x">Terms & Conditions</form>' ) ] ], 'markup' );
+    }
+
+    // ---- messages -----------------------------------------------------------------------------
+
+    public function testTwentyFiveLongRefusedKeysAreAllReportedInTheMessage(): void
+    {
+        $fields = [];
+        for ( $i = 0; $i < 25; $i++ ) {
+            $fields[] = $this->field( sprintf( 'k%02d', $i ) . str_repeat( 'a', 196 ), 'x' );
+        }
+        try {
+            $this->tool->run( [ 'id' => 5, 'fields' => $fields ] );
+            $this->fail( 'expected a refusal' );
+        } catch ( \InvalidArgumentException $e ) {
+            $m = $e->getMessage();
+            $this->assertStringContainsString( '25 field(s) refused', $m );
+            $this->assertSame( 25, substr_count( $m, 'this site knows' ), 'every refusal survives' );
+            $this->assertStringContainsString( 'k24', $m );
+            $this->assertStringEndsWith( '.', $m );
+            $this->assertStringNotContainsString( str_repeat( 'a', 100 ), $m, 'keys are cut at 80 characters' );
+        }
+    }
+
+    // ---- rollback honesty ---------------------------------------------------------------------
+
+    private function storeWhose( \Closure $write ): PostMetaStore
+    {
+        return new class( $write ) extends PostMetaStore {
+            public int $calls = 0;
+            public function __construct( private \Closure $hook )
+            {
+                parent::__construct();
+            }
+            public function write( int $postId, string $key, string $value, ?string $acfSelector = null ): bool
+            {
+                $this->calls++;
+
+                return ( $this->hook )( $this, $postId, $key, $value, $acfSelector );
+            }
+        };
+    }
+
+    public function testAWriteThatStoresAMangledValueAndFailsIsRolledBackToo(): void
+    {
+        $store = $this->storeWhose( static function ( PostMetaStore $s, int $postId, string $key, string $value, ?string $acf ): bool {
+            if ( 'subtitle' === $key && 'boom' === $value ) {
+                $GLOBALS['__wp_postmeta'][ $postId ]['subtitle'] = 'boom (mangled by a filter)';
+
+                return false; // stored something else, then reported failure
+            }
+
+            return ( new PostMetaStore() )->write( $postId, $key, $value, $acf );
+        } );
+        $tool = new SetCustomFields( $this->log, $store, static fn (): bool => true, $this->acf );
+        try {
+            $tool->run( [ 'id' => 5, 'fields' => [ $this->field( 'headline', 'First' ), $this->field( 'seo_title', 'Created' ), $this->field( 'subtitle', 'boom' ) ] ] );
+            $this->fail( 'expected a failure' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'Could not write "subtitle"', $e->getMessage() );
+            $this->assertStringContainsString( 'nothing was changed', $e->getMessage() );
+        }
+        $this->assertSame( 'Old headline', $GLOBALS['__wp_postmeta'][5]['headline'] );
+        $this->assertSame( 'Old sub', $GLOBALS['__wp_postmeta'][5]['subtitle'], 'the failing field itself is back to its old value' );
+        $this->assertArrayNotHasKey( 'seo_title', $GLOBALS['__wp_postmeta'][5] );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testARollbackThatCannotRestoreAFieldSaysSoHonestly(): void
+    {
+        $headlineWrites = 0;
+        $store          = $this->storeWhose( static function ( PostMetaStore $s, int $postId, string $key, string $value, ?string $acf ) use ( &$headlineWrites ): bool {
+            if ( 'subtitle' === $key && 'boom' === $value ) {
+                return false;
+            }
+            if ( 'headline' === $key && ++$headlineWrites > 1 ) {
+                return false; // the restore of headline fails
+            }
+
+            return ( new PostMetaStore() )->write( $postId, $key, $value, $acf );
+        } );
+        $tool = new SetCustomFields( $this->log, $store, static fn (): bool => true, $this->acf );
+        try {
+            $tool->run( [ 'id' => 5, 'fields' => [ $this->field( 'headline', 'First' ), $this->field( 'seo_title', 'Created' ), $this->field( 'subtitle', 'boom' ) ] ] );
+            $this->fail( 'expected a failure' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'Could not write "subtitle". These fields may not have been restored: headline. Check them with get_custom_fields.', $e->getMessage() );
+            $this->assertStringNotContainsString( 'nothing was changed', $e->getMessage() );
+        }
+        $this->assertArrayNotHasKey( 'seo_title', $GLOBALS['__wp_postmeta'][5], 'the fields that could be restored were' );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testAStoreThatThrowsMidWayIsRolledBackAndNothingLeaks(): void
+    {
+        $store = $this->storeWhose( static function ( PostMetaStore $s, int $postId, string $key, string $value, ?string $acf ): bool {
+            if ( 'subtitle' === $key && 'boom' === $value ) {
+                throw new \RuntimeException( 'secret internal detail' );
+            }
+
+            return ( new PostMetaStore() )->write( $postId, $key, $value, $acf );
+        } );
+        $tool = new SetCustomFields( $this->log, $store, static fn (): bool => true, $this->acf );
+        try {
+            $tool->run( [ 'id' => 5, 'fields' => [ $this->field( 'headline', 'First' ), $this->field( 'seo_title', 'Created' ), $this->field( 'subtitle', 'boom' ) ] ] );
+            $this->fail( 'expected a failure' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'Could not write "subtitle"', $e->getMessage() );
+            $this->assertStringContainsString( 'nothing was changed', $e->getMessage() );
+            $this->assertStringNotContainsString( 'secret internal detail', $e->getMessage() );
+        }
+        $this->assertSame( 'Old headline', $GLOBALS['__wp_postmeta'][5]['headline'] );
+        $this->assertArrayNotHasKey( 'seo_title', $GLOBALS['__wp_postmeta'][5] );
+        $this->assertSame( 'Old sub', $GLOBALS['__wp_postmeta'][5]['subtitle'] );
+        $this->assertSame( [], $this->repo->rows );
     }
 }
