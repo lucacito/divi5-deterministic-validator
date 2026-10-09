@@ -112,7 +112,7 @@ final class SetCustomFields implements ProTool
         }
         if ( [] !== $refusals ) {
             $message = 'Nothing was written. ' . count( $refusals ) . ' field(s) refused: ' . implode( '; ', $refusals ) . '.';
-            // Long enough for 25 refusals with 80-character keys; if a reason list ever exceeds it, the cut still ends in a full stop.
+            // Long enough for 25 refusals with 80-character keys; if a reason list ever exceeds it, the message is cut and ends with an ellipsis.
             if ( mb_strlen( $message ) > self::MAX_MESSAGE ) {
                 $message = mb_substr( $message, 0, self::MAX_MESSAGE - 3 ) . '...';
             }
@@ -206,6 +206,11 @@ final class SetCustomFields implements ProTool
             }
             if ( $key !== trim( $key ) || 1 === preg_match( '/[\x00-\x1F\x7F]/', $key ) ) {
                 throw new \InvalidArgumentException( "\"fields\" item {$n}: \"key\" must not have leading or trailing whitespace or control characters." );
+            }
+            // WordPress's default collations are accent- and case-insensitive, so "api_tokén" could equal a stored "api_token" row while
+            // slipping past the secret and case-variant checks. Keys are therefore printable ASCII only (and at most 191, the indexable length).
+            if ( 1 !== preg_match( '/^[\x20-\x7E]{1,191}$/', $key ) ) {
+                throw new \InvalidArgumentException( "\"fields\" item {$n}: \"key\" may contain only printable ASCII characters (at most 191)." );
             }
             if ( isset( $seen[ $key ] ) ) {
                 throw new \InvalidArgumentException( "\"fields\": the key \"{$key}\" appears more than once." );

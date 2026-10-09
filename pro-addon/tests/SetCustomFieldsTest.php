@@ -447,7 +447,7 @@ class SetCustomFieldsTest extends TestCase
     {
         $fields = [];
         for ( $i = 0; $i < 25; $i++ ) {
-            $fields[] = $this->field( sprintf( 'k%02d', $i ) . str_repeat( 'a', 196 ), 'x' );
+            $fields[] = $this->field( sprintf( 'k%02d', $i ) . str_repeat( 'a', 188 ), 'x' );
         }
         try {
             $this->tool->run( [ 'id' => 5, 'fields' => $fields ] );
@@ -553,5 +553,36 @@ class SetCustomFieldsTest extends TestCase
         $this->assertArrayNotHasKey( 'seo_title', $GLOBALS['__wp_postmeta'][5] );
         $this->assertSame( 'Old sub', $GLOBALS['__wp_postmeta'][5]['subtitle'] );
         $this->assertSame( [], $this->repo->rows );
+    }
+
+    /** @return array<string,array{string}> */
+    public static function nonAsciiOrOverlongKeys(): array
+    {
+        return [
+            'accented'           => [ "api_token\u{00E9}" ],
+            'accented in middle' => [ "api_tok\u{00E9}n" ],
+            'greek homoglyph'    => [ "h\u{03B5}adline" ],
+            'cyrillic homoglyph' => [ "h\u{0435}adline" ],
+            'ligature'           => [ "\u{FB01}eld" ],
+            'emoji'              => [ "mood_\u{1F600}" ],
+            '192 characters'     => [ str_repeat( 'a', 192 ) ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'nonAsciiOrOverlongKeys' )]
+    public function testAKeyThatIsNotPrintableAsciiOrIsTooLongIsRefusedAsAnArgumentError( string $key ): void
+    {
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( $key, 'x' ) ] ], 'item 1: "key" may contain only printable ASCII characters (at most 191).' );
+        $this->assertSame( [], $GLOBALS['__acf_calls'] );
+    }
+
+    public function testA191CharacterAsciiKeyAndAKeyWithAnInternalSpaceStillPass(): void
+    {
+        $tool = new SetCustomFields( $this->log, null, static fn (): bool => true, $this->acf );
+        $long = str_repeat( 'a', 191 );
+        foreach ( [ $long, 'My Field' ] as $key ) {
+            $r = $tool->run( [ 'id' => 6, 'fields' => [ $this->field( $key, 'v' ) ], 'dry_run' => true ] );
+            $this->assertSame( 'create', $r['fields'][0]['status'], $key );
+        }
     }
 }
