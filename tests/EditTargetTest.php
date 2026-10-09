@@ -31,6 +31,7 @@ class EditTargetTest extends TestCase
         $GLOBALS['__wp_caps']     = [ 'edit_post' => true ];
 
         $this->post( 5, 'page' );
+        $this->post( 8, 'project' );
         $this->post( 6, 'post' );
         $this->post( 7, 'attachment' );
         $this->post( 201, 'et_header_layout' );
@@ -52,6 +53,27 @@ class EditTargetTest extends TestCase
     {
         $r = EditTarget::resolve( 5 );
         $this->assertSame( [ 5, 'page', null ], [ $r['post']->ID, $r['kind'], $r['error'] ] );
+    }
+
+    public function testADiviProjectTheUserCanEditResolvesWithItsOwnKind(): void
+    {
+        $r = EditTarget::resolve( 8 );
+        $this->assertSame( [ 8, 'project', null ], [ $r['post']->ID, $r['kind'], $r['error'] ] );
+    }
+
+    public function testTheAllowlistIsExactlyPagesAndProjects(): void
+    {
+        $this->assertSame( [ 'page', 'project' ], EditTarget::ALLOWED_TYPES );
+    }
+
+    public function testAProjectTheUserCannotEditIsForbidden(): void
+    {
+        $GLOBALS['__wp_caps'] = [ 'edit_post' => true, 'edit_post:8' => false ];
+        $r = EditTarget::resolve( 8 );
+        $this->assertSame( EditTarget::FORBIDDEN, $r['error'] );
+        $this->assertNull( $r['post'] );
+        $this->assertNull( $r['kind'] );
+        $this->assertNull( EditTarget::resolve( 5 )['error'], 'the page is still editable' );
     }
 
     public function testAPageTheUserCannotEditIsForbidden(): void
@@ -81,14 +103,14 @@ class EditTargetTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider( 'neverEditable' )]
-    public function testEverythingThatIsNotAPageIsNotFoundNeverForbidden( int $id, string $why ): void
+    public function testEverythingThatIsNotAPageOrAProjectIsNotFoundNeverForbidden( int $id, string $why ): void
     {
         $r = EditTarget::resolve( $id );
         $this->assertSame( EditTarget::NOT_FOUND, $r['error'], $why );
         $this->assertNull( $r['post'], $why );
     }
 
-    public function testANonPageIsNotFoundEvenWhenTheUserCannotEditIt(): void
+    public function testAnotherTypeIsNotFoundEvenWhenTheUserCannotEditIt(): void
     {
         $GLOBALS['__wp_caps'] = [ 'edit_post' => false ];
         $this->assertSame( EditTarget::NOT_FOUND, EditTarget::resolve( 201 )['error'], 'nothing is leaked about other post types' );
