@@ -47,7 +47,8 @@ class SetCustomFieldsTest extends TestCase
         $this->tool = new SetCustomFields( $this->log, new PostMetaStore( static function ( string $selector, string $value, int $postId ): void {
             $GLOBALS['__acf_calls'][] = [ $selector, $value, $postId ];
             $name = [ 'field_acf_text' => 'acf_text', 'field_size' => 'size', 'field_count' => 'count' ][ $selector ] ?? 'unknown';
-            $GLOBALS['__wp_postmeta'][ $postId ][ $name ] = $value;
+            // Mimics ACF's update_field(): it unslashes what it receives (verified live on ACF 6.8.10).
+            $GLOBALS['__wp_postmeta'][ $postId ][ $name ] = stripslashes( $value );
         } ), $known, $this->acf );
 
         $GLOBALS['__acf_calls']   = [];
@@ -389,7 +390,7 @@ class SetCustomFieldsTest extends TestCase
     {
         $value = 'D:\\dir "q" \'s\' Ünï ✓';
         $this->assertTrue( $this->call( 5, [ $this->field( 'acf_text', $value ) ] )['changed'] );
-        $this->assertSame( [ [ 'field_acf_text', $value, 5 ] ], $GLOBALS['__acf_calls'] );
+        $this->assertSame( [ [ 'field_acf_text', wp_slash( $value ), 5 ] ], $GLOBALS['__acf_calls'], 'update_field gets the slashed form' );
         $this->assertSame( $value, $GLOBALS['__wp_postmeta'][5]['acf_text'] );
     }
 

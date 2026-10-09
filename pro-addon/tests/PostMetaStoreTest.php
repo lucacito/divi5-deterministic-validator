@@ -91,6 +91,21 @@ class PostMetaStoreTest extends TestCase
         $this->assertSame( [], $calls );
     }
 
+    public function testAnAcfWriteGetsTheSlashedValueBecauseUpdateFieldUnslashesLikeCore(): void
+    {
+        $received = null;
+        // Mimics ACF 6.8.10: update_field() unslashes what it is given (verified live), so the stored value equals the original
+        // only if the store slashed it first.
+        $s = new PostMetaStore( static function ( string $selector, string $value, int $postId ) use ( &$received ): void {
+            $received = $value;
+            $GLOBALS['__wp_postmeta'][ $postId ]['acf_text'] = stripslashes( $value );
+        } );
+        $value = 'C:\\path "quoted" Café';
+        $this->assertTrue( $s->write( 5, 'acf_text', $value, 'field_abc' ) );
+        $this->assertSame( $value, $GLOBALS['__wp_postmeta'][5]['acf_text'] );
+        $this->assertSame( wp_slash( $value ), $received );
+    }
+
     public function testAnAcfWriteThatStoresSomethingElseIsReportedAsFailure(): void
     {
         $s = new PostMetaStore( static function ( string $selector, string $value, int $postId ): void {

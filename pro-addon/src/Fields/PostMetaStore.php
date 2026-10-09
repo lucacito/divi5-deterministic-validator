@@ -60,7 +60,9 @@ class PostMetaStore // not final: the tool tests extend it with doubles that fai
     public function write( int $postId, string $key, string $value, ?string $acfSelector = null ): bool
     {
         if ( null !== $acfSelector && null !== $this->acfWriter ) {
-            ( $this->acfWriter )( $acfSelector, $value, $postId );
+            // ACF's update_field() unslashes its value like update_post_meta() does (verified live on ACF 6.8.10), so it is slashed
+            // here too. The read-back check below is the guard if an ACF version ever behaves differently.
+            ( $this->acfWriter )( $acfSelector, wp_slash( $value ), $postId );
         } else {
             update_post_meta( $postId, $key, wp_slash( $value ) );
         }

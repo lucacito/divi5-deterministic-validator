@@ -2,7 +2,7 @@
 /**
  * Real-site check of the Pro tool set_custom_fields: the real tool, the real batch table, WordPress's own meta functions and its REAL
  * wp_kses_post() (the unit tests only use a stand-in for it). Self-cleaning: it deletes every post, batch row, ACF field group and
- * contributor user it created. It records about 11 batches and the batch store keeps only the newest 20, so on a site that already
+ * contributor user it created. It records about 13 batches and the batch store keeps only the newest 20, so on a site that already
  * has batches it evicts the oldest real ones: dev sites only.
  *
  * ACF checks run only when the free ACF plugin is active (it is NOT part of the dev environment). To run them, install it for the
@@ -218,6 +218,12 @@ try {
         $check( null !== $err && str_contains( $err, 'ACF editor' ), 'ACF: a repeater is refused' );
         [ , $err ] = $run( [ 'id' => $acfPage, 'fields' => [ [ 'key' => 'AIED_PRO_ACF_TEXT', 'value' => 'x' ] ] ] );
         $check( null !== $err && str_contains( $err, 'differs only by letter case' ) && $acfTricky === $meta( $acfPage, 'aied_pro_acf_text' ), 'ACF: a case-variant of an ACF field name is refused and nothing changes' );
+        // an edit of a value that already holds a backslash, then its undo: the earlier value must come back byte-exactly
+        $acfSecond = 'ACF 2 D:\\dir\\sub "z" Ünï \\n';
+        [ $r2, $err ] = $run( [ 'id' => $acfPage, 'fields' => [ [ 'key' => 'aied_pro_acf_text', 'value' => $acfSecond ] ] ] );
+        $check( null === $err && $acfSecond === $meta( $acfPage, 'aied_pro_acf_text' ), 'ACF: an edit to a second backslash value is stored byte-exactly' );
+        $u2 = isset( $r2['batch']['id'] ) ? $trackUndo( $undo->undo( (int) $r2['batch']['id'] ) ) : [];
+        $check( true === ( $u2['fully_undone'] ?? false ) && $acfTricky === $meta( $acfPage, 'aied_pro_acf_text' ) && 'field_aied_pro_text' === $meta( $acfPage, '_aied_pro_acf_text' ), 'ACF: undo restores the previous backslash value byte-exactly (and keeps the field-key reference)' );
         $u = isset( $r['batch']['id'] ) ? $trackUndo( $undo->undo( (int) $r['batch']['id'] ) ) : [];
         $check( true === ( $u['fully_undone'] ?? false ) && ! metadata_exists( 'post', $acfPage, 'aied_pro_acf_text' ), 'ACF: undo of a created ACF value removes it' );
     } else {
