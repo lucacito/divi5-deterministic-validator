@@ -363,7 +363,7 @@ final class McpHandler
             'posts_per_page' => 100,
             'meta_query'     => [['key' => '_et_pb_use_divi_5', 'value' => 'on']], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
         ]);
-        // Only pages this user can edit (other users' drafts/private pages stay hidden).
+        // Only pages or Projects this user can edit (other users' drafts/private ones stay hidden).
         $posts = PageAccess::filterEditable($posts, static fn(int $pid): bool => current_user_can('edit_post', $pid));
 
         $pages = array_map(fn(\WP_Post $p) => [

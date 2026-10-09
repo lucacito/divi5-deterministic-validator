@@ -102,7 +102,7 @@ final class HistoryService
     private const RECENT_SCAN = 200;
 
     /**
-     * The newest snapshot of each page the current user can restore, newest first. A row whose post is not a page
+     * The newest snapshot of each page the current user can restore, newest first. A row whose post is not a page or Divi Project
      * this user may edit (for example a header or footer layout saved by an add-on, or a deleted post) is left out:
      * restoring it would always be refused, and the filter runs before the limit so hidden rows never use up a slot.
      *

@@ -104,7 +104,7 @@ final class AdminPage
         $this->redirect('dashboard');
     }
 
-    /** The Restore button may touch exactly what the tools may: a page the user can edit. */
+    /** The Restore button may touch exactly what the tools may: a page or Divi Project the user can edit. */
     public static function mayRestore( int $id ): bool
     {
         return null === EditTarget::resolve( $id )['error'];

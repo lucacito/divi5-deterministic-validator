@@ -224,7 +224,7 @@ final class RestController
                 ],
             ],
         ]);
-        // Only pages this user can edit (other users' drafts/private pages stay hidden).
+        // Only pages or Projects this user can edit (other users' drafts/private ones stay hidden).
         $posts = PageAccess::filterEditable($posts, static fn(int $pid): bool => current_user_can('edit_post', $pid));
 
         // Coerce link/edit_link to strings: get_permalink() can return false and
