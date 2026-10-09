@@ -18,6 +18,7 @@ use AiEditorDivi5\Pro\Tools\ManageThemeTemplate;
 use AiEditorDivi5\Pro\Tools\ProposePhpSnippet;
 use AiEditorDivi5\Pro\Tools\PublishPage;
 use AiEditorDivi5\Pro\Tools\SetCustomCss;
+use AiEditorDivi5\Pro\Tools\SetCustomFields;
 use AiEditorDivi5\Pro\Tools\SetFrontPage;
 use AiEditorDivi5\Pro\Tools\SetPrimaryMenu;
 use AiEditorDivi5\Pro\Tools\UndoBatch;
@@ -53,6 +54,7 @@ final class Tools
             new ManageGlobalColors( $log ),
             new ManageGlobalVariables( $log ),
             new ManageGlobalPresets( $log ),
+            new SetCustomFields( $log ),
         ];
     }
 }

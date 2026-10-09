@@ -31,10 +31,11 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `manage_global_variables` - create, edit or archive your site's Divi global variables of type numbers and strings (never deletes one). It affects every page that uses a variable, so every real run needs the token from a preview (`dry_run`); undo puts it all back.
 * `manage_global_presets` - create or update your site's Divi module presets (never deletes one; updating a module's default preset needs `allow_default_presets`). A preset restyles every module that cites it, so every real run needs the token from a preview (`dry_run`); `undo_batch` puts the changes back as long as nothing changed them afterwards.
 * `manage_global_colors` - create, recolor, rename or deactivate your site's Divi global colors (never deletes one; the five theme colors only with `allow_theme_colors`). It affects every page that uses a color, so every real run needs the token from a preview (`dry_run`); undo puts it all back.
+* `set_custom_fields` - set custom field values on one page, Divi Project or other post you can edit (only keys your site already uses; never protected or secret keys, code, or ACF lists and images; all or nothing; `dry_run` previews; `undo_batch` puts the values back as long as nothing changed them afterwards).
 * `list_batches` - list recent Pro changes.
 * `undo_batch` - undo one batch.
 
-Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors`, `manage_global_variables` and `manage_global_presets` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked.
+Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors`, `manage_global_variables`, `manage_global_presets` and `set_custom_fields` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked.
 
 Each tool checks the permission it really needs (for example `manage_options` to set the front page), not only that the request is authenticated.
 

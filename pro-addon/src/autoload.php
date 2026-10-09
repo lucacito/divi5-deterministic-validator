@@ -68,6 +68,7 @@ require_once __DIR__ . '/Fields/FieldValuePolicy.php';
 require_once __DIR__ . '/Fields/AcfFields.php';
 require_once __DIR__ . '/Fields/PostMetaStore.php';
 require_once __DIR__ . '/Kinds/PostMetaKind.php';
+require_once __DIR__ . '/Tools/SetCustomFields.php';
 require_once __DIR__ . '/Tools/ListBatches.php';
 require_once __DIR__ . '/Tools/UndoBatch.php';
 require_once __DIR__ . '/Tools/ListThemeLayouts.php';

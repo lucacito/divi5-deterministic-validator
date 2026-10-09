@@ -30,6 +30,8 @@ final class Compat
         'AiEditorDivi5\\WP\\CodePolicy',
         'AiEditorDivi5\\WP\\RestController',
         'AiEditorDivi5\\WP\\FieldTarget',
+        'AiEditorDivi5\\WP\\CustomFieldReader',
+        'AiEditorDivi5\\WP\\CustomFields',
     ];
 
     /**

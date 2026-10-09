@@ -34,6 +34,9 @@ class FreeApiCompatTest extends TestCase
             [ $w . 'StyleReferences', 'advise', [ 'content' => 'string', 'known' => 'array' ], '?array' ],
             [ $w . 'GlobalStyles', 'knownIds', [], 'array' ],
             [ $w . 'StyleReferences', 'knownIds', [], 'array' ],
+            [ $w . 'FieldTarget', 'resolve', [ 'id' => 'int' ], 'array' ],
+            [ $w . 'CustomFieldReader', 'classify', [ 'key' => 'string' ], 'string' ],
+            [ $w . 'CustomFields', 'lookup', [], 'Closure' ],
         ];
     }
 
@@ -89,6 +92,13 @@ class FreeApiCompatTest extends TestCase
     {
         $this->assertSame( 'not_found', \AiEditorDivi5\WP\EditTarget::NOT_FOUND );
         $this->assertSame( 'forbidden', \AiEditorDivi5\WP\EditTarget::FORBIDDEN );
+    }
+
+    public function testTheCustomFieldClassesTheWriterReadsKeepTheirClassifications(): void
+    {
+        $this->assertSame( 'shown', \AiEditorDivi5\WP\CustomFieldReader::SHOWN );
+        $this->assertSame( 'hidden', \AiEditorDivi5\WP\CustomFieldReader::HIDDEN );
+        $this->assertSame( 'secret', \AiEditorDivi5\WP\CustomFieldReader::SECRET );
     }
 
     public function testTheExtensionGuardKeepsBuiltInsFirst(): void
