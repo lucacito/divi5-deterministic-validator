@@ -56,6 +56,12 @@ final class PublishPage implements ProTool
         $at     = Args::string( $arguments, 'publish_at', false, 40 );
         $dry    = Args::bool( $arguments, 'dry_run' );
 
+        // The free plugin's EditTarget now also resolves a Divi Project. Pro stays page-only, so anything that is not a page answers
+        // like a missing page, before the permission check (nothing leaks about a post the user cannot edit).
+        $found = $pageId > 0 ? get_post( $pageId ) : null;
+        if ( is_object( $found ) && 'page' !== $found->post_type ) {
+            throw new \InvalidArgumentException( "Page {$pageId} not found." );
+        }
         $target = EditTarget::resolve( $pageId );
         if ( EditTarget::NOT_FOUND === $target['error'] ) {
             throw new \InvalidArgumentException( "Page {$pageId} not found." );

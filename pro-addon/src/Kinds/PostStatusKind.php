@@ -27,6 +27,12 @@ final class PostStatusKind extends ValueKind
 
     public function allowed( array $item ): bool
     {
+        // Pro is page-only: a Divi Project (or any other post) is never published or put back through this kind.
+        $post = get_post( (int) $item['ref'] );
+        if ( ! is_object( $post ) || 'page' !== $post->post_type ) {
+            return false;
+        }
+
         return current_user_can( 'publish_pages' ) && current_user_can( 'edit_post', (int) $item['ref'] );
     }
 

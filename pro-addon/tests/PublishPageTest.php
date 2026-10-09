@@ -35,6 +35,8 @@ class PublishPageTest extends TestCase
             8  => $page( 8, 'draft', 'post' ),
             9  => $page( 9, 'private' ),
             10 => $page( 10, 'trash' ),
+            11 => $page( 11, 'draft', 'project' ),
+            12 => $page( 12, 'pending', 'project' ),
         ];
         $GLOBALS['__wp_update_calls'] = 0;
         $GLOBALS['__wp_update_fail']  = false;
@@ -132,6 +134,30 @@ class PublishPageTest extends TestCase
         foreach ( [ 7 => 'publish', 9 => 'private', 10 => 'trash' ] as $id => $status ) {
             $this->fails( [ 'page_id' => $id ], "Page {$id} is {$status}" );
         }
+    }
+
+    public function testADiviProjectIsNotAPageAndIsRefusedLikeAMissingOne(): void
+    {
+        // Pro stays page-only: the free plugin's EditTarget now resolves a Project, but publish_page must not publish it.
+        $this->fails( [ 'page_id' => 11 ], 'Page 11 not found.' );
+        $this->fails( [ 'page_id' => 12, 'publish_at' => '2099-01-01T12:00:00Z' ], 'Page 12 not found.' );
+        $this->fails( [ 'page_id' => 11, 'dry_run' => true ], 'Page 11 not found.' );
+        $this->assertSame( 'draft', $GLOBALS['__wp_posts'][11]->post_status );
+
+        // Nothing leaks to a user who could not edit it either: the answer is the same as for a missing page.
+        $GLOBALS['__wp_caps'] = [ 'publish_pages' => true, 'edit_post:11' => false ];
+        $this->fails( [ 'page_id' => 11 ], 'Page 11 not found.' );
+    }
+
+    public function testThePostStatusKindOnlyActsOnPagesNeverOnAProject(): void
+    {
+        $kind = new PostStatusKind();
+        $this->assertTrue( $kind->allowed( [ 'ref' => '5' ] ), 'a page is unchanged' );
+        $this->assertFalse( $kind->allowed( [ 'ref' => '11' ] ), 'a Project is refused' );
+        $this->assertFalse( $kind->allowed( [ 'ref' => '8' ] ), 'a blog post is refused' );
+        $this->assertFalse( $kind->allowed( [ 'ref' => '999' ] ), 'a missing post is refused' );
+        $GLOBALS['__wp_caps'] = [ 'publish_pages' => false ];
+        $this->assertFalse( $kind->allowed( [ 'ref' => '5' ] ), 'the capability checks still apply' );
     }
 
     public function testAUserWhoCannotEditThatPageIsRefused(): void
