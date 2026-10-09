@@ -34,7 +34,7 @@ Success: a valid call writes exactly the listed keys and records one batch that 
 If any field is refused, nothing is written and every refusal is reported with its key and reason.
 1. **Target:** the free `FieldTarget::resolve( $id )` (any public type the user can `edit_post`); missing, non-public or not editable all answer `Post N not found.` (no leak).
 2. **Key** (per field):
-   - spelling: printable ASCII only (bytes 0x20-0x7E), at most 191 characters, no leading or trailing whitespace and no control characters. This closes accent and case aliasing, because WordPress's default collations match `meta_key = %s` case- and accent-insensitively, so a look-alike key could otherwise reach another key's row or slip past the secret-looking check;
+   - spelling: printable ASCII only (bytes 0x20-0x7E), at most 191 characters, no leading or trailing whitespace and no control characters. This closes accent aliasing: WordPress's default collations match `meta_key = %s` case- and accent-insensitively, so an accented look-alike key could otherwise reach another key's row or slip past the secret-looking check. Case aliasing is handled by the separate exact-case refusal below;
    - shown: `CustomFieldReader::classify( $key ) === CustomFieldReader::SHOWN` (so never `_`-prefixed, WordPress-protected, or secret-looking);
    - known: the free `CustomFields::lookup()` closure returns true (an ACF field, or at least one post has the key);
    - allowed by WordPress: `current_user_can( 'edit_post_meta', $id, $key )` (honours `register_meta` `auth_callback`s);
@@ -51,7 +51,7 @@ If any field is refused, nothing is written and every refusal is reported with i
 - When ACF is active and the key is an ACF field, write with ACF's `update_field( $key, $value, $id )` (so ACF's `_key` reference row is kept); otherwise `update_post_meta( $id, $key, $value )`. Both calls exist only in the Pro add-on.
 - The value is slashed before it is handed to WordPress on BOTH paths: `update_post_meta` unslashes what it is given, and ACF's `update_field` unslashes like core (verified live on ACF 6.8.10), so a backslash or quote would otherwise be corrupted.
 - After each write read the raw value back; a mismatch (or a write that returns false) is reported as a failed field. The failing field is rolled back too (a refused write may still have stored something), together with the already-written fields of the call, with the same restore code undo uses, so a call is atomic. Every restore result is checked: if a restore fails, the error says which fields "may not have been restored". Any throwable raised inside a write is rolled back the same way.
-- A batch that cannot be recorded after successful writes leaves the writes in place and reports no batch (`BatchLog::attach` adds the batch to the answer only when one was recorded).
+- A batch that cannot be recorded after successful writes leaves the writes in place. `BatchLog::attach` always adds a `batch` entry to the answer; when nothing was recorded it is `{ id: null, undoable: false, note: "The change was saved, but it could not be recorded, so undo_batch cannot undo it." }`.
 - `dry_run: true` runs every check and returns the per-field before/after preview; nothing is written and no batch is recorded. No preview token is required (one post, at most 25 fields; `dry_run` plus batch undo is the control, as for `set_custom_css`).
 
 ### 4. Undo
