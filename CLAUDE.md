@@ -87,6 +87,8 @@ PHP classes in `wp-plugin/src/`:
 five guide tools above. Write tools run the validator and reject anything invalid
 with exact violation codes so the AI self-corrects.
 
+Divi Projects (v4.8.0, unreleased): `EditTarget::ALLOWED_TYPES = ['page','project']`, so every page tool and route also works on a Project's ID (`page_id` keeps its name); `list_divi_pages` / `GET /pages` take an optional `post_type` (page or project); `create_page` stays page-only; blog posts and every other type stay refused.
+
 **Authorisation** (`PageAccess`): an accepted API key still requires its user to have
 `edit_pages` (a demoted/deleted key owner is refused with 403); `list_divi_pages`
 requires `edit_pages` and only lists pages the user can `edit_post`; every page
@@ -128,7 +130,7 @@ is a normal 200 / `isError: false` response carrying `valid: false`. Logged as e
 Theme layouts (Pro add-on): editing the existing LIVE Theme Builder header and footer (`et_header_layout` /
 `et_footer_layout`) was built as 4.3.0 and then MOVED to the Pro add-on before it was ever uploaded (2026-10-02;
 `docs/superpowers/specs/2026-10-02-pro-addon-design.md`). The free plugin has NO header/footer or Theme Builder code
-(`tests/NoThemeLayoutsInFreeTest.php` enforces it); `EditTarget::resolve()` is page-only. The source is parked in
+(`tests/NoThemeLayoutsInFreeTest.php` enforces it); `EditTarget::resolve()` accepts pages and Divi Projects only (`EditTarget::ALLOWED_TYPES`). The source is parked in
 `pro-addon/staged-4.3.0/`. Verified 2026-10-02 on Divi 5.14: a REAL builder-made header (menu, search, social follow),
 footer (text, button, social follow, code) and body layout all pass the validator (`fixtures/valid/themebuilder-*.json`);
 that proof stays here because it proves the validator.
@@ -181,6 +183,7 @@ Docker env + validator workflows go through `make`:
 | `make test-pro` | Run the Pro add-on's own PHPUnit suite (`pro-addon/phpunit.xml`) |
 | `make build-pro` | Build `dist/jhmg-ai-editor-for-divi-5-pro.zip` (sold from divi5lab.com; `dist/` is git-ignored) |
 | `make verify-custom-fields` | Real-site check of `get_custom_fields`, the `custom_fields` discovery and the plain-meta render (self-cleaning; dev site only) |
+| `make verify-project-layouts` | Real-site check of editing Divi Project layouts (self-cleaning; dev site only) |
 | `make verify-pro-skeleton` | Real-site check of the Pro add-on skeleton (Docker site; the free and Pro plugins must be active) |
 | `make verify-pro-settings` | Real-site check of the Pro settings tools and batch undo on the Docker site; restores every setting and deletes everything it created (the free and Pro plugins must be active) |
 | `make verify-pro-theme-layouts` | Real-site check of the Pro header/footer tools through the real registry (self-cleaning; free + Pro plugins active; dev site only) |
@@ -228,6 +231,7 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
+- **Unreleased (branch feat/project-layouts): Divi Project layouts** (sub-project B of the Projects/custom-fields request; C = write field values is later). Spec/plan `docs/superpowers/specs|plans/2026-10-08-project-layouts*`. Version, changelog and zip are the owner's release step.
 - **Unreleased (branch feat/get-custom-fields): `get_custom_fields` + `custom_fields` discovery** (sub-project A of the Projects/custom-fields request; B = edit Divi Project layouts and C = write field values are separate, later specs). Spec/plan `docs/superpowers/specs|plans/2026-10-07-get-custom-fields*`. Version, changelog and zip are the owner's release step (4.7.1 is already waiting for upload).
 - **Free plugin 4.5.0 is PUBLISHED on WordPress.org** (2026-10-04; SVN `https://plugins.svn.wordpress.org/jhmg-ai-editor-for-divi-5`, user `lucaslopvet`, revisions r3727421..r3727426, tags 4.4.0 and 4.5.0; the directory page and API show 4.5.0, the icon, both banners and 3 screenshots). Release routine: sync trunk from the tracked zip, commit, `svn copy trunk tags/<version>`. The SVN password is never stored in the repo or in memory; ask the owner each time.
 - **Pro pricing tiers (Pro add-on 0.6.0, branch `feat/pro-0-6-0-tiers`; spec/plan `docs/superpowers/plans/2026-10-04-pricing-tiers.md`)**: annual licences priced by site count (Personal / Freelancer / Agency, a founding offer for the first buyers, a capped Lifetime, prorated upgrades, renewal reminders 30 and 7 days ahead). EVERY price, tier name, site limit and cap lives in ONE file, `layoutlab/config/pricing.json` (the divi5lab.com store repo); the add-on carries NO price and shows only what the licence server returns (`LicenseExtras`: tier, sites used/allowed, founding, lifetime, upgrade and manage URLs). Enforcement is SERVER-side only (the add-on is GPL): the site cap is checked at activate and validate in the store (`lib/license-server`), the founding and lifetime caps at checkout (plus a Stripe coupon redemption limit), proration by Stripe. An expired, cancelled or past-due licence never disables any Pro tool (only `revoked`/`invalid` lock; `ExpiryKeepsAllToolsTest`); one dismissible `LapseNotice` replaces the shared client's notice. The no-card 45-day trial is Personal only and never takes the founding coupon. The shared licence client is untouched. Draft page copy: `docs/pricing-page.md` (price tokens, competitor facts dated October 2026, `TODO(owner)` markers).
