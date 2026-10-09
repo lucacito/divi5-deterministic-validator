@@ -30,6 +30,7 @@ final class SetCustomFields implements ProTool
     public const MAX_FIELDS = 25;
     private const SHOW_CHARS = 200;
     private const KEY_CHARS  = 80;
+    private const MAX_STORED_BYTES = 524288; // a larger current value could push its undo row past max_allowed_packet
     private const MAX_MESSAGE = 6000;
 
     private BatchLog $log;
@@ -157,12 +158,15 @@ final class SetCustomFields implements ProTool
         }
         if ( null !== $failed ) {
             $notRestored = $this->rollback( $postId, $written, $store );
+            self::clearCache( $postId );
             $shown       = self::shown( $failed );
             if ( [] !== $notRestored ) {
                 throw new \InvalidArgumentException( "Could not write \"{$shown}\". These fields may not have been restored: " . implode( ', ', array_map( [ self::class, 'shown' ], $notRestored ) ) . '. Check them with get_custom_fields.' );
             }
             throw new \InvalidArgumentException( "Could not write \"{$shown}\"; nothing was changed." );
         }
+
+        self::clearCache( $postId ); // page caches and Divi dynamic content would otherwise keep serving the old value
 
         $items = [];
         foreach ( $written as $c ) {
@@ -273,6 +277,11 @@ final class SetCustomFields implements ProTool
                     return [ 'refusal' => 'belongs to a complex ACF field (a group, repeater or flexible content); edit it in the ACF editor' ] + $plan;
                 }
             }
+            // Not a top-level entry of the ACF index (a seamless-clone member, an ACF key while ACF is inactive, a field whose group
+            // is not returned): ACF's reference row `_{key}` holds a field key. Fail closed; such a value may be a list or an image.
+            if ( str_starts_with( $store->reference( $postId, $key ), 'field_' ) ) {
+                return [ 'refusal' => 'is managed by an ACF field this tool cannot edit; edit it in the ACF editor' ] + $plan;
+            }
             if ( ! ( $this->known() )( $key ) ) {
                 return [ 'refusal' => 'is not a custom field this site knows (no ACF field and no post uses it)' ] + $plan;
             }
@@ -281,6 +290,9 @@ final class SetCustomFields implements ProTool
         $now = $store->read( $postId, $key );
         if ( $now['rows'] > 1 ) {
             return [ 'refusal' => 'is stored more than once on this post' ] + $plan;
+        }
+        if ( is_string( $now['value'] ) && strlen( $now['value'] ) > self::MAX_STORED_BYTES ) {
+            return [ 'refusal' => 'currently holds more than 512 KB and is too large to undo safely' ] + $plan;
         }
         if ( $now['structured'] ) {
             return [ 'refusal' => 'currently holds a list or object; edit it in the ACF editor' ] + $plan;
@@ -333,6 +345,13 @@ final class SetCustomFields implements ProTool
         return $failed;
     }
 
+    private static function clearCache( int $postId ): void
+    {
+        if ( function_exists( 'clean_post_cache' ) ) {
+            clean_post_cache( $postId );
+        }
+    }
+
     /** A key as shown in a message: cut at 80 characters. */
     private static function shown( string $key ): string
     {
@@ -349,9 +368,13 @@ final class SetCustomFields implements ProTool
         return $this->store ??= PostMetaStore::wp();
     }
 
+    /**
+     * Exactly one indexed database lookup per key. NOT CustomFields::lookup(): that closure answers "known" for every key once it has
+     * made 50 lookups, which is right for a read-only advisory and wrong for a permission to write. ACF fields are covered by the ACF index.
+     */
     private function known(): \Closure
     {
-        return $this->known ??= CustomFields::lookup();
+        return $this->known ??= static fn ( string $key ): bool => CustomFields::postHasMeta( $key );
     }
 
     /** @return array{fields: array<string,array<string,mixed>>, prefixes: list<string>} */

@@ -53,6 +53,45 @@ class FieldValuePolicyTest extends TestCase
         $this->assertStringContainsString( $needle, $reason );
     }
 
+    /** @return list<array{string}> */
+    public static function disguisedSchemes(): array
+    {
+        return [
+            [ '&#106;avascript:alert(1)' ], [ '&#x6A;avascript:alert(1)' ], [ 'java&#x09;script:alert(1)' ], [ "java	script:alert(1)" ],
+            [ "java
+script:alert(1)" ], [ "java
+ script :alert(1)" ], [ 'java&Tab;script:alert(1)' ], [ 'javascript&colon;alert(1)' ],
+            [ 'data&colon;text/html,x' ], [ "data :
+text/html,x" ], [ 'vb&#115;cript:x' ], [ "jav\0ascript:x" ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'disguisedSchemes' )]
+    public function testDisguisedScriptSchemesAreRefused( string $value ): void
+    {
+        $this->assertStringContainsString( 'javascript', (string) FieldValuePolicy::refusal( $value ), $value );
+    }
+
+    public function testProseWithAUrlIsStillAllowed(): void
+    {
+        $this->assertNull( FieldValuePolicy::refusal( 'Visit https://example.test/ for the data: it is free' ) );
+        $this->assertNull( FieldValuePolicy::refusal( 'Learn Java. Script writing tips: see the guide' ) );
+    }
+
+    public function testAPatternThatCannotBeEvaluatedRefusesInsteadOfAllowing(): void
+    {
+        $scan = new \ReflectionMethod( FieldValuePolicy::class, 'scan' );
+        set_error_handler( static fn (): bool => true ); // preg_match() warns about the deliberately broken pattern
+        try {
+            $broken = $scan->invoke( null, 'a reason', '/(/', 'anything' );
+        } finally {
+            restore_error_handler();
+        }
+        $this->assertSame( 'could not be checked safely', $broken );
+        $this->assertNull( $scan->invoke( null, 'a reason', '/zzz/', 'anything' ) );
+        $this->assertSame( 'a reason', $scan->invoke( null, 'a reason', '/any/', 'anything' ) );
+    }
+
     public function testTheLengthLimitIsInCharactersNotBytes(): void
     {
         $this->assertNull( FieldValuePolicy::refusal( str_repeat( 'é', FieldValuePolicy::MAX_CHARS ) ) );

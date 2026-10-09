@@ -9,6 +9,9 @@ declare(strict_types=1);
  */
 if ( ! function_exists( 'get_posts' ) ) {
     function get_posts( $args = [] ) {
+        if ( isset( $args['meta_key'] ) ) { // CustomFields::postHasMeta(): a post "has" the key when a test lists it in $GLOBALS['__wp_meta_keys']
+            return ! empty( $GLOBALS['__wp_meta_keys'][ $args['meta_key'] ] ) ? [ 1 ] : [];
+        }
         $types    = (array) ( $args['post_type'] ?? 'post' );
         $statuses = (array) ( $args['post_status'] ?? 'publish' );
         $in       = isset( $args['post__in'] ) ? array_map( 'intval', (array) $args['post__in'] ) : null;

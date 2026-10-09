@@ -18,6 +18,8 @@ require_once __DIR__ . '/../src/autoload.php';
 require_once __DIR__ . '/InMemoryBatchRepository.php';
 
 require_once __DIR__ . '/WpKsesShim.php'; // a GLOBAL (non-namespaced) stand-in for wp_kses_post(); see below
+require_once __DIR__ . '/CleanPostCacheShim.php';
+require_once __DIR__ . '/WpSiteShims.php'; // get_posts() with meta_key support, for the production known-key wiring
 
 class SetCustomFieldsTest extends TestCase
 {
@@ -66,6 +68,8 @@ class SetCustomFieldsTest extends TestCase
         $GLOBALS['__cf_protected'] = [];
         $GLOBALS['__wp_can']    = true;
         unset( $GLOBALS['__wp_caps'] );
+        $GLOBALS['__wp_meta_keys']   = [];
+        $GLOBALS['__clean_post_cache'] = [];
     }
 
     /** @param list<array{key:string,value:string}> $fields */
@@ -585,5 +589,69 @@ class SetCustomFieldsTest extends TestCase
             $r = $tool->run( [ 'id' => 6, 'fields' => [ $this->field( $key, 'v' ) ], 'dry_run' => true ] );
             $this->assertSame( 'create', $r['fields'][0]['status'], $key );
         }
+    }
+
+    // ---- the production "known key" wiring ----------------------------------------------------
+
+    public function testTheProductionKnownCheckAcceptsOnlyAKeyAPostHasAndNeverAnswersYesForEverything(): void
+    {
+        $tool = new SetCustomFields( $this->log, null, null, $this->acf ); // no injected closure: the real default
+        $GLOBALS['__wp_meta_keys']['used_somewhere'] = true;
+        $this->assertSame( 'create', $tool->run( [ 'id' => 6, 'fields' => [ $this->field( 'used_somewhere', 'v' ) ], 'dry_run' => true ] )['fields'][0]['status'] );
+        for ( $i = 0; $i < 60; $i++ ) { // past the free closure's 50-lookup cap, where it would answer "known" for everything
+            try {
+                $tool->run( [ 'id' => 6, 'fields' => [ $this->field( "never_seen_{$i}", 'v' ) ], 'dry_run' => true ] );
+                $this->fail( "never_seen_{$i} must not be known" );
+            } catch ( \InvalidArgumentException $e ) {
+                $this->assertStringContainsString( 'this site knows', $e->getMessage() );
+            }
+        }
+    }
+
+    // ---- ACF clone members and other ACF-managed keys outside the index -----------------------
+
+    public function testAKeyWithAnAcfReferenceRowThatIsNotInTheIndexIsRefused(): void
+    {
+        $GLOBALS['__wp_postmeta'][5]['cloned_title']  = 'v';
+        $GLOBALS['__wp_postmeta'][5]['_cloned_title'] = 'field_xyz';
+        $tool = new SetCustomFields( $this->log, null, static fn (): bool => true, $this->acf );
+        $before = $GLOBALS['__wp_postmeta'];
+        try {
+            $tool->run( [ 'id' => 5, 'fields' => [ $this->field( 'cloned_title', 'new' ) ] ] );
+            $this->fail( 'expected a refusal' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'cloned_title is managed by an ACF field this tool cannot edit; edit it in the ACF editor', $e->getMessage() );
+        }
+        $this->assertSame( $before, $GLOBALS['__wp_postmeta'] );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testAnOrdinaryKeyAndAnIndexedAcfFieldAreUnaffectedByTheReferenceRule(): void
+    {
+        $GLOBALS['__wp_postmeta'][5]['_headline'] = 'not an acf reference';
+        $this->assertTrue( $this->call( 5, [ $this->field( 'headline', 'Fine' ) ] )['changed'] );
+        $GLOBALS['__wp_postmeta'][5]['_acf_text'] = 'field_acf_text';
+        $this->assertTrue( $this->call( 5, [ $this->field( 'acf_text', 'Still fine' ) ] )['changed'], 'a top-level indexed field keeps its normal type rules' );
+        $this->assertSame( [ [ 'field_acf_text', 'Still fine', 5 ] ], $GLOBALS['__acf_calls'] );
+    }
+
+    // ---- a stored value too large to undo safely ----------------------------------------------
+
+    public function testAFieldWhoseCurrentValueIsOver512KbIsRefused(): void
+    {
+        $GLOBALS['__wp_postmeta'][5]['headline'] = str_repeat( 'a', 524289 );
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( 'headline', 'x' ) ] ], 'currently holds more than 512 KB and is too large to undo safely' );
+        $GLOBALS['__wp_postmeta'][5]['headline'] = str_repeat( 'a', 524288 );
+        $this->assertTrue( $this->call( 5, [ $this->field( 'headline', 'x' ) ] )['changed'], 'exactly 512 KB is allowed' );
+    }
+
+    // ---- the page cache -----------------------------------------------------------------------
+
+    public function testThePostCacheIsClearedAfterAWriteButNotAfterADryRunOrARefusal(): void
+    {
+        $this->call( 5, [ $this->field( 'headline', 'Preview' ) ], true );
+        $this->assertSame( [], $GLOBALS['__clean_post_cache'] );
+        $this->call( 5, [ $this->field( 'headline', 'Real' ) ] );
+        $this->assertSame( [ 5 ], $GLOBALS['__clean_post_cache'] );
     }
 }

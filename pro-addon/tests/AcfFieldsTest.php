@@ -53,6 +53,10 @@ class AcfFieldsTest extends TestCase
         return [
             [ 'text', 'anything <b>goes</b>', null ], [ 'textarea', "multi\nline", null ], [ 'wysiwyg', '<p>x</p>', null ], [ 'url', 'https://example.test/', null ],
             [ 'email', 'a@b.test', null ], [ 'date_picker', '20261009', null ], [ 'color_picker', '#ff0000', null ],
+            [ 'url', '', null ], [ 'url', 'http://a.test', null ], [ 'url', '//cdn.example.test/a.png', null ], [ 'url', 'javascript:alert(1)', 'URL starting with' ],
+            [ 'url', '&#106;avascript:x', 'URL starting with' ], [ 'url', 'example.test', 'URL starting with' ], [ 'url', 'ftp://a.test', 'URL starting with' ],
+            [ 'url', "https://a.test/\nx", 'URL starting with' ], [ 'url', 'https://a.test/"onmouseover="x', 'URL starting with' ],
+            [ 'email', '', null ], [ 'email', 'javascript:alert(1)', 'email address' ], [ 'email', 'a b@c.test', 'email address' ], [ 'email', '<a@b.test>', 'email address' ],
             [ 'number', '42', null ], [ 'number', '4.5', null ], [ 'number', 'abc', 'number' ], [ 'range', '7', null ], [ 'range', 'x', 'number' ],
             [ 'true_false', '1', null ], [ 'true_false', '0', null ], [ 'true_false', 'yes', '0 or 1' ],
             [ 'password', 'x', 'ACF editor' ], [ 'checkbox', 'a', 'ACF editor' ], [ 'repeater', 'x', 'ACF editor' ], [ 'group', 'x', 'ACF editor' ],

@@ -17,7 +17,7 @@ final class AcfFields
 {
     public const COMPLEX = 'is a complex ACF field type (a list, group, image, relationship and the like); edit it in the ACF editor';
 
-    private const TEXT_TYPES = [ 'text', 'textarea', 'wysiwyg', 'url', 'email', 'date_picker', 'date_time_picker', 'time_picker', 'color_picker' ];
+    private const TEXT_TYPES = [ 'text', 'textarea', 'wysiwyg', 'date_picker', 'date_time_picker', 'time_picker', 'color_picker' ];
     private const PREFIXED   = [ 'repeater', 'flexible_content', 'group' ];
 
     /** @return array{fields: array<string,array{field_key:string,type:string,choices:array<string,string>,multiple:bool,nested:bool}>, prefixes: list<string>} */
@@ -73,6 +73,12 @@ final class AcfFields
         $type = $def['type'];
         if ( in_array( $type, self::TEXT_TYPES, true ) ) {
             return null;
+        }
+        if ( 'url' === $type ) {
+            return '' === $value || 1 === preg_match( '#^(?:https?:)?//[^\s<>"\']+$#iD', $value ) ? null : 'must be a URL starting with http://, https:// or //';
+        }
+        if ( 'email' === $type ) {
+            return '' === $value || 1 === preg_match( '/^[^@\s<>"\']+@[^@\s<>"\']+$/D', $value ) ? null : 'must be an email address';
         }
         if ( in_array( $type, [ 'number', 'range' ], true ) ) {
             return is_numeric( $value ) ? null : 'must be a number';

@@ -42,6 +42,14 @@ class PostMetaStore // not final: the tool tests extend it with doubles that fai
         return is_array( $all ) ? array_map( 'strval', array_keys( $all ) ) : [];
     }
 
+    /** ACF's reference row for a key: the post's `_{key}` meta as a string ('' when absent or not a string). Holds the field key (`field_...`) of an ACF-managed value. */
+    public function reference( int $postId, string $key ): string
+    {
+        $ref = get_post_meta( $postId, '_' . $key, true );
+
+        return is_string( $ref ) ? $ref : '';
+    }
+
     /** @return array{exists:bool, value:?string, rows:int, structured:bool} */
     public function read( int $postId, string $key ): array
     {

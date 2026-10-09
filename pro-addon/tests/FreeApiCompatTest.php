@@ -36,7 +36,7 @@ class FreeApiCompatTest extends TestCase
             [ $w . 'StyleReferences', 'knownIds', [], 'array' ],
             [ $w . 'FieldTarget', 'resolve', [ 'id' => 'int' ], 'array' ],
             [ $w . 'CustomFieldReader', 'classify', [ 'key' => 'string' ], 'string' ],
-            [ $w . 'CustomFields', 'lookup', [], 'Closure' ],
+            [ $w . 'CustomFields', 'postHasMeta', [ 'key' => 'string' ], 'bool' ],
         ];
     }
 
@@ -99,6 +99,15 @@ class FreeApiCompatTest extends TestCase
         $this->assertSame( 'shown', \AiEditorDivi5\WP\CustomFieldReader::SHOWN );
         $this->assertSame( 'hidden', \AiEditorDivi5\WP\CustomFieldReader::HIDDEN );
         $this->assertSame( 'secret', \AiEditorDivi5\WP\CustomFieldReader::SECRET );
+    }
+
+    public function testClassifyKeepsRefusingSecretLookingAndHiddenKeys(): void
+    {
+        foreach ( [ 'smtp_pass', 'db_password', 'licence_key', 'client_secret', 'my_credential', 'stripe_token' ] as $key ) {
+            $this->assertSame( \AiEditorDivi5\WP\CustomFieldReader::SECRET, \AiEditorDivi5\WP\CustomFieldReader::classify( $key ), $key );
+        }
+        $this->assertSame( \AiEditorDivi5\WP\CustomFieldReader::HIDDEN, \AiEditorDivi5\WP\CustomFieldReader::classify( '_x' ) );
+        $this->assertSame( \AiEditorDivi5\WP\CustomFieldReader::SHOWN, \AiEditorDivi5\WP\CustomFieldReader::classify( 'headline' ) );
     }
 
     public function testTheExtensionGuardKeepsBuiltInsFirst(): void
