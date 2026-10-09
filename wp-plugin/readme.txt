@@ -8,7 +8,7 @@ Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Edit and build Divi 5 pages in plain English with the AI assistant you already use. Every change is checked before it is saved.
+Edit and build Divi 5 pages and Divi Projects in plain English with the AI assistant you already use. Every change is checked before it is saved.
 
 == Description ==
 
@@ -31,7 +31,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * **Matches your site.** Your AI can look up your site's own Divi colors and presets and reuse them, and it is told when a page uses one your site does not have. It cannot create or change presets or colors: that stays in Divi's Visual Builder.
 * **Proven building blocks.** 17 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
 * **Sensible images.** The AI looks in your Media Library first. When nothing there fits, it uses a built-in pack of 44 original images that ships with the plugin.
-* **One-click undo.** The previous version of each page the AI changes is kept (up to the last 10). Restore it from the plugin's Dashboard with one click, or just ask your AI to undo.
+* **One-click undo.** The previous version of each page or Divi Project the AI changes is kept (up to the last 10). Restore it from the plugin's Dashboard with one click, or just ask your AI to undo.
 * **Works with the AI assistant you already use.** Claude, ChatGPT, Gemini, Cursor, VS Code Copilot, or any assistant that supports MCP.
 * **Nothing leaves your site through the plugin.** It uses no third-party services. Your AI assistant talks directly to your own site.
 
@@ -47,8 +47,8 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 
 Read and check:
 
-* `list_divi_pages`: list the pages built with Divi 5 that you can edit.
-* `get_page_layout`: read a page's current layout.
+* `list_divi_pages`: list the pages built with Divi 5 that you can edit (pass post_type project to list Divi Projects).
+* `get_page_layout`: read the current layout of a page or Divi Project.
 * `list_global_styles`: list your site's own Divi colors and presets so the AI can reuse them (read-only).
 * `get_site_structure`: list your site's custom post types, taxonomies, image sizes and Advanced Custom Fields field groups so pages fit your site (read-only: field names and the keys your posts use, never values here or theme files; available over MCP and the REST API, not in the ChatGPT Action).
 * `get_custom_fields`: read the custom fields of one page or Divi Project you can edit, with their values, so your assistant can write copy that fits and use the right field names (read-only: keys WordPress protects, or that look like passwords, API keys or other secrets, are never shown; available over MCP and the REST API, not in the ChatGPT Action).
@@ -56,13 +56,13 @@ Read and check:
 
 Edit and create:
 
-* `edit_page_content`: change one piece of text (an email, phone number, price or sentence) without rebuilding the page. Add `dry_run` to preview the change without saving it.
-* `update_page_layout`: save a new layout for a page, after the checker approves it. Add `dry_run` to preview what would change without saving it.
+* `edit_page_content`: change one piece of text (an email, phone number, price or sentence) without rebuilding the page or Divi Project. Add `dry_run` to preview the change without saving it.
+* `update_page_layout`: save a new layout for a page or Divi Project, after the checker approves it. Add `dry_run` to preview what would change without saving it.
 * `create_page`: create a new page. It is always saved as a draft for you to review and publish.
 
 Undo:
 
-* `list_page_history`, `get_page_history_entry`, `restore_page_version`: see the saved earlier versions of a page and bring one back.
+* `list_page_history`, `get_page_history_entry`, `restore_page_version`: see the saved earlier versions of a page or Divi Project and bring one back.
 
 Guides that help the AI build good pages:
 
@@ -129,7 +129,7 @@ This plugin does not connect to any external service. Your AI assistant connects
 
 = Does the AI get administrator access to my site? =
 
-No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages, create pages (as drafts), read Media Library images (read-only), read your site's Divi presets and colors (read-only), read how your site is set up (post types, taxonomies, image sizes and ACF field definitions, read-only), and read the custom fields of a page or Divi Project you can edit (read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
+No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages and Divi Projects, create pages (as drafts), read Media Library images (read-only), read your site's Divi presets and colors (read-only), read how your site is set up (post types, taxonomies, image sizes and ACF field definitions, read-only), and read the custom fields of a page or Divi Project you can edit (read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
 
 = Can the AI add custom CSS, JavaScript or PHP to my site? =
 
