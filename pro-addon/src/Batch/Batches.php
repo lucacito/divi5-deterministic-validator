@@ -13,6 +13,7 @@ use AiEditorDivi5\Pro\Kinds\MenuKind;
 use AiEditorDivi5\Pro\Kinds\PageCreatedKind;
 use AiEditorDivi5\Pro\Kinds\PageTrashedKind;
 use AiEditorDivi5\Pro\Kinds\PostContentKind;
+use AiEditorDivi5\Pro\Kinds\PostMetaKind;
 use AiEditorDivi5\Pro\Kinds\PostStatusKind;
 use AiEditorDivi5\Pro\Kinds\ThemeLayoutKind;
 use AiEditorDivi5\Pro\Kinds\ThemeTemplateKind;
@@ -48,6 +49,7 @@ final class Batches
             new GlobalColorKind(),
             new GlobalVariableKind(),
             new GlobalPresetKind(),
+            new PostMetaKind(),
         ];
         $out = [];
         foreach ( $kinds as $kind ) {
