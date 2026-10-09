@@ -90,7 +90,7 @@ class RemovedThemeLayoutsToolTest extends TestCase
         foreach ( $calls as $tool => $args ) {
             $data = $this->mcp( 'tools/call', [ 'name' => $tool, 'arguments' => $args ] );
             $this->assertSame( -32602, $data['error']['code'], $tool );
-            $this->assertSame( 'Page ' . $args['page_id'] . ' not found.', $data['error']['message'], $tool );
+            $this->assertSame( 'Page or Project ' . $args['page_id'] . ' not found.', $data['error']['message'], $tool );
         }
     }
 

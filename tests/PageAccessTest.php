@@ -133,4 +133,17 @@ class PageAccessTest extends TestCase
         $this->assertStringContainsString(', 400)', $rest);
         $this->assertDoesNotMatchRegularExpression("/\(string\)\s*\$request->get_param\('name'\)/", $rest);
     }
+
+    public function testPostTypeArgDefaultsToPageAndOnlyAcceptsTheExactAllowedStrings(): void
+    {
+        $allowed = [ 'page', 'project' ];
+        foreach ( [ [], [ 'post_type' => null ], [ 'post_type' => '' ] ] as $none ) {
+            $this->assertSame( 'page', PageAccess::postTypeArg( $none, 'post_type', $allowed ) );
+        }
+        $this->assertSame( 'page', PageAccess::postTypeArg( [ 'post_type' => 'page' ], 'post_type', $allowed ) );
+        $this->assertSame( 'project', PageAccess::postTypeArg( [ 'post_type' => 'project' ], 'post_type', $allowed ) );
+        foreach ( [ 'post', 'PROJECT', ' project', 'project ', 'et_header_layout', 'attachment', 7, true, [ 'project' ], 1.5, (object) [] ] as $bad ) {
+            $this->assertNull( PageAccess::postTypeArg( [ 'post_type' => $bad ], 'post_type', $allowed ), json_encode( $bad ) );
+        }
+    }
 }

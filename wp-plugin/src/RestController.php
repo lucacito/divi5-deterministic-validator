@@ -207,8 +207,13 @@ final class RestController
             return new WP_Error('forbidden', 'You do not have permission to list pages.', ['status' => 403]);
         }
 
+        $postType = PageAccess::postTypeArg(['post_type' => $request->get_param('post_type')], 'post_type', EditTarget::ALLOWED_TYPES);
+        if ($postType === null) {
+            return new WP_Error('invalid_field', '"post_type" must be one of: ' . implode(', ', EditTarget::ALLOWED_TYPES) . '.', ['status' => 400]);
+        }
+
         $posts = get_posts([
-            'post_type'      => 'page',
+            'post_type'      => $postType,
             'post_status'    => 'any',
             'posts_per_page' => 100,
             // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
@@ -231,6 +236,7 @@ final class RestController
             'id'         => $p->ID,
             'title'      => get_the_title($p),
             'status'     => $p->post_status,
+            'post_type'  => $p->post_type,
             'link'       => (string) get_permalink($p),
             'edit_link'  => (string) get_edit_post_link($p->ID, 'raw'),
             'divi_meta'  => [
@@ -248,11 +254,11 @@ final class RestController
         $target = EditTarget::resolve($id);
 
         if ($target['error'] === EditTarget::NOT_FOUND) {
-            return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
+            return new WP_Error('not_found', "Page or Project $id not found.", ['status' => 404]);
         }
 
         if ($target['error'] === EditTarget::FORBIDDEN) {
-            return new WP_Error('forbidden', "You do not have permission to read page $id.", ['status' => 403]);
+            return new WP_Error('forbidden', "You do not have permission to read page or Project $id.", ['status' => 403]);
         }
         $post = $target['post'];
 
@@ -269,11 +275,11 @@ final class RestController
         $target = EditTarget::resolve($id);
 
         if ($target['error'] === EditTarget::NOT_FOUND) {
-            return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
+            return new WP_Error('not_found', "Page or Project $id not found.", ['status' => 404]);
         }
 
         if ($target['error'] === EditTarget::FORBIDDEN) {
-            return new WP_Error('forbidden', "You do not have permission to edit page $id.", ['status' => 403]);
+            return new WP_Error('forbidden', "You do not have permission to edit page or Project $id.", ['status' => 403]);
         }
         $post = $target['post'];
 
@@ -342,10 +348,10 @@ final class RestController
         $target = EditTarget::resolve($id);
 
         if ($target['error'] === EditTarget::NOT_FOUND) {
-            return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
+            return new WP_Error('not_found', "Page or Project $id not found.", ['status' => 404]);
         }
         if ($target['error'] === EditTarget::FORBIDDEN) {
-            return new WP_Error('forbidden', "You do not have permission to access page $id.", ['status' => 403]);
+            return new WP_Error('forbidden', "You do not have permission to access page or Project $id.", ['status' => 403]);
         }
 
         return $target['post'];
@@ -373,7 +379,7 @@ final class RestController
         $entry     = HistoryService::entry($post->ID, $versionId);
         if ($entry === null) {
             UsageTracker::log('get_history', $post->ID, 'error');
-            return new WP_Error('not_found', "Version $versionId not found for page {$post->ID}.", ['status' => 404]);
+            return new WP_Error('not_found', "Version $versionId not found for page or Project {$post->ID}.", ['status' => 404]);
         }
         UsageTracker::log('get_history', $post->ID, 'read');
 
@@ -411,10 +417,10 @@ final class RestController
         $target = EditTarget::resolve($id);
 
         if ($target['error'] === EditTarget::NOT_FOUND) {
-            return new WP_Error('not_found', "Page $id not found.", ['status' => 404]);
+            return new WP_Error('not_found', "Page or Project $id not found.", ['status' => 404]);
         }
         if ($target['error'] === EditTarget::FORBIDDEN) {
-            return new WP_Error('forbidden', "You do not have permission to edit page $id.", ['status' => 403]);
+            return new WP_Error('forbidden', "You do not have permission to edit page or Project $id.", ['status' => 403]);
         }
         $post = $target['post'];
 

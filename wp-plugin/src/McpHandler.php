@@ -99,8 +99,12 @@ final class McpHandler
         $tools = [
             [
                 'name'        => 'list_divi_pages',
-                'description' => 'List the WordPress pages built with the Divi 5 editor that you can edit. Returns page IDs, titles, status, and links.',
-                'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
+                'description' => 'List the WordPress pages (or Divi Projects, with post_type "project") built with the Divi 5 editor that you can edit. Returns IDs, titles, status, post type and links. The IDs work with get_page_layout, update_page_layout, edit_page_content and the history tools.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => ['post_type' => ['type' => 'string', 'enum' => ['page', 'project'], 'description' => 'Optional. "page" (default) or "project" (Divi Projects).']],
+                    'required'   => [],
+                ],
             ],
             [
                 'name'        => 'list_global_styles',
@@ -134,10 +138,10 @@ final class McpHandler
             ],
             [
                 'name'        => 'get_page_layout',
-                'description' => 'Get the full Divi 5 layout (Gutenberg block HTML) for a specific page by ID.',
+                'description' => 'Get the full Divi 5 layout (Gutenberg block HTML) for a specific page or Divi Project by ID.',
                 'inputSchema' => [
                     'type'       => 'object',
-                    'properties' => ['page_id' => ['type' => 'integer', 'description' => 'WordPress page ID']],
+                    'properties' => ['page_id' => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID']],
                     'required'   => ['page_id'],
                 ],
             ],
@@ -181,11 +185,11 @@ final class McpHandler
             ],
             [
                 'name'        => 'update_page_layout',
-                'description' => 'Validate and save a new Divi 5 layout to a page. The page is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL. Pass dry_run=true to preview what would change (a diff plus the checker\'s verdict) without saving anything; an invalid result comes back as a normal preview with valid:false.',
+                'description' => 'Validate and save a new Divi 5 layout to a page or Divi Project. It is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL. Pass dry_run=true to preview what would change (a diff plus the checker\'s verdict) without saving anything; an invalid result comes back as a normal preview with valid:false.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
-                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
                         'post_content' => ['type' => 'string',  'description' => 'Divi 5 Gutenberg block HTML'],
                         'dry_run' => ['type' => 'boolean', 'description' => 'Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing.'],
                     ],
@@ -194,11 +198,11 @@ final class McpHandler
             ],
             [
                 'name'        => 'edit_page_content',
-                'description' => 'Make a small, surgical edit to an existing page WITHOUT re-sending the whole layout: an exact find-and-replace on the page\'s stored content. Use this for changing an email, phone number, link, price, or a line of copy — never rebuild the full page for a tiny change. "find" must match exactly once unless you set expect_count to the number of matches. The result is re-validated before saving; if "find" is empty, not found, or ambiguous, nothing is changed. Pass dry_run=true to preview the change (a diff plus the checker\'s verdict) without saving; an invalid result comes back as a normal preview with valid:false.',
+                'description' => 'Make a small, surgical edit to an existing page or Divi Project WITHOUT re-sending the whole layout: an exact find-and-replace on its stored content. Use this for changing an email, phone number, link, price, or a line of copy — never rebuild the full page for a tiny change. "find" must match exactly once unless you set expect_count to the number of matches. The result is re-validated before saving; if "find" is empty, not found, or ambiguous, nothing is changed. Pass dry_run=true to preview the change (a diff plus the checker\'s verdict) without saving; an invalid result comes back as a normal preview with valid:false.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
-                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
                         'find'         => ['type' => 'string',  'description' => 'Exact text to find (verbatim, including any surrounding markup needed to make it unique)'],
                         'replace'      => ['type' => 'string',  'description' => 'Text to replace it with'],
                         'expect_count' => ['type' => 'integer', 'description' => 'Optional: how many matches to replace (must equal the number found). Omit to require a single unique match.'],
@@ -209,22 +213,22 @@ final class McpHandler
             ],
             [
                 'name'        => 'list_page_history',
-                'description' => 'List the saved previous versions of a page (newest first). Every AI save tries to snapshot the page\'s prior content (up to the last 10 per page, fewer for very large pages), so an AI edit can be undone when a snapshot was kept (the save result\'s history.stored says so). Returns id, saved_at, tool, actor, bytes, label for each version (no content). Use restore_page_version to undo.',
+                'description' => 'List the saved previous versions of a page or Divi Project (newest first). Every AI save tries to snapshot the page\'s prior content (up to the last 10 per page, fewer for very large pages), so an AI edit can be undone when a snapshot was kept (the save result\'s history.stored says so). Returns id, saved_at, tool, actor, bytes, label for each version (no content). Use restore_page_version to undo.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
-                        'page_id' => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'page_id' => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
                     ],
                     'required' => ['page_id'],
                 ],
             ],
             [
                 'name'        => 'get_page_history_entry',
-                'description' => 'Get the full saved content of one previous version of a page (from list_page_history), e.g. to compare it with the current layout before restoring.',
+                'description' => 'Get the full saved content of one previous version of a page or Divi Project (from list_page_history), e.g. to compare it with the current layout before restoring.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
-                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
                         'version_id' => ['type' => 'integer', 'description' => 'Version id from list_page_history'],
                     ],
                     'required' => ['page_id', 'version_id'],
@@ -232,11 +236,11 @@ final class McpHandler
             ],
             [
                 'name'        => 'restore_page_version',
-                'description' => 'Undo: restore a page to a previous saved version. The current content is snapshotted first; the restore itself is undoable when its own history.stored is true. Restore does not block on validation (it returns the person\'s own earlier content); the result reports whether that content passes the validator.',
+                'description' => 'Undo: restore a page or Divi Project to a previous saved version. The current content is snapshotted first; the restore itself is undoable when its own history.stored is true. Restore does not block on validation (it returns the person\'s own earlier content); the result reports whether that content passes the validator.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
-                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page ID'],
+                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
                         'version_id' => ['type' => 'integer', 'description' => 'Version id from list_page_history'],
                     ],
                     'required' => ['page_id', 'version_id'],
@@ -285,7 +289,7 @@ final class McpHandler
         $arguments = (array) ($params['arguments'] ?? []);
 
         return match ($name) {
-            'list_divi_pages'    => $this->toolListPages($id),
+            'list_divi_pages'    => $this->toolListPages($id, $arguments),
             'get_style_guide'    => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => StyleGuide::markdown()]]]),
             'get_site_guide'     => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => SiteGuide::markdown()]]]),
             'get_landing_guide'  => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => LandingGuide::markdown()]]]),
@@ -341,15 +345,20 @@ final class McpHandler
         return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => $text]]]);
     }
 
-    private function toolListPages(mixed $id): WP_REST_Response
+    private function toolListPages(mixed $id, array $args): WP_REST_Response
     {
         if (!current_user_can(PageAccess::CAP)) {
             UsageTracker::log('list_pages', null, 'error');
             return $this->rpcError($id, -32602, 'You do not have permission to list pages.');
         }
 
+        $postType = PageAccess::postTypeArg($args, 'post_type', EditTarget::ALLOWED_TYPES);
+        if ($postType === null) {
+            return $this->rpcError($id, -32602, 'post_type must be one of: ' . implode(', ', EditTarget::ALLOWED_TYPES) . '.');
+        }
+
         $posts = get_posts([
-            'post_type'      => 'page',
+            'post_type'      => $postType,
             'post_status'    => 'any',
             'posts_per_page' => 100,
             'meta_query'     => [['key' => '_et_pb_use_divi_5', 'value' => 'on']], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
@@ -358,10 +367,11 @@ final class McpHandler
         $posts = PageAccess::filterEditable($posts, static fn(int $pid): bool => current_user_can('edit_post', $pid));
 
         $pages = array_map(fn(\WP_Post $p) => [
-            'id'     => $p->ID,
-            'title'  => get_the_title($p),
-            'status' => $p->post_status,
-            'link'   => get_permalink($p),
+            'id'        => $p->ID,
+            'title'     => get_the_title($p),
+            'status'    => $p->post_status,
+            'post_type' => $p->post_type,
+            'link'      => get_permalink($p),
         ], $posts);
 
         UsageTracker::log('list_pages', null, 'read');
@@ -378,12 +388,12 @@ final class McpHandler
 
         if ($target['error'] === EditTarget::NOT_FOUND) {
             UsageTracker::log('get_layout', $pageId ?: null, 'error');
-            return $this->rpcError($id, -32602, "Page {$pageId} not found.");
+            return $this->rpcError($id, -32602, "Page or Project {$pageId} not found.");
         }
 
         if ($target['error'] === EditTarget::FORBIDDEN) {
             UsageTracker::log('get_layout', $pageId, 'error');
-            return $this->rpcError($id, -32602, "You do not have permission to read page {$pageId}.");
+            return $this->rpcError($id, -32602, "You do not have permission to read page or Project {$pageId}.");
         }
         $post = $target['post'];
 
@@ -434,11 +444,11 @@ final class McpHandler
 
         $target = EditTarget::resolve($pageId);
         if ($target['error'] === EditTarget::NOT_FOUND) {
-            return $this->rpcError($id, -32602, "Page {$pageId} not found.");
+            return $this->rpcError($id, -32602, "Page or Project {$pageId} not found.");
         }
 
         if ($target['error'] === EditTarget::FORBIDDEN) {
-            return $this->rpcError($id, -32602, "You do not have permission to edit page {$pageId}.");
+            return $this->rpcError($id, -32602, "You do not have permission to edit page or Project {$pageId}.");
         }
         $post = $target['post'];
 
@@ -517,10 +527,10 @@ final class McpHandler
 
         $target = EditTarget::resolve($pageId);
         if ($target['error'] === EditTarget::NOT_FOUND) {
-            return $this->rpcError($id, -32602, "Page {$pageId} not found.");
+            return $this->rpcError($id, -32602, "Page or Project {$pageId} not found.");
         }
         if ($target['error'] === EditTarget::FORBIDDEN) {
-            return $this->rpcError($id, -32602, "You do not have permission to edit page {$pageId}.");
+            return $this->rpcError($id, -32602, "You do not have permission to edit page or Project {$pageId}.");
         }
         $post = $target['post'];
 
@@ -598,10 +608,10 @@ final class McpHandler
         $target = EditTarget::resolve($pageId);
 
         if ($target['error'] === EditTarget::NOT_FOUND) {
-            return $this->rpcError($id, -32602, "Page {$pageId} not found.");
+            return $this->rpcError($id, -32602, "Page or Project {$pageId} not found.");
         }
         if ($target['error'] === EditTarget::FORBIDDEN) {
-            return $this->rpcError($id, -32602, "You do not have permission to access page {$pageId}.");
+            return $this->rpcError($id, -32602, "You do not have permission to access page or Project {$pageId}.");
         }
 
         return $target['post'];
@@ -631,7 +641,7 @@ final class McpHandler
         $entry     = HistoryService::entry($post->ID, $versionId);
         if ($entry === null) {
             UsageTracker::log('get_history', $post->ID, 'error');
-            return $this->rpcError($id, -32602, "Version {$versionId} not found for page {$post->ID}.");
+            return $this->rpcError($id, -32602, "Version {$versionId} not found for page or Project {$post->ID}.");
         }
         UsageTracker::log('get_history', $post->ID, 'read');
 

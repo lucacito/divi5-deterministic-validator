@@ -69,6 +69,25 @@ final class PageAccess
     }
 
     /**
+     * Optional post type argument: 'page' when absent, null or '', the string itself when it is exactly one of $allowed,
+     * and null for anything else (a different string, wrong case, a number, a bool, an array) so the caller can answer
+     * 400 / -32602 instead of guessing.
+     *
+     * @param array<string,mixed> $args
+     * @param list<string>        $allowed
+     */
+    public static function postTypeArg(array $args, string $key, array $allowed): ?string
+    {
+        if (!array_key_exists($key, $args) || $args[$key] === null || $args[$key] === '') {
+            return 'page';
+        }
+        if (!is_string($args[$key]) || !in_array($args[$key], $allowed, true)) {
+            return null;
+        }
+        return $args[$key];
+    }
+
+    /**
      * Optional boolean argument. Absent or null reads as false; a real boolean is returned as is;
      * any other type (e.g. the string "false", 0, "yes") yields null so the caller rejects it
      * instead of guessing (a typo must never turn a preview into a save).

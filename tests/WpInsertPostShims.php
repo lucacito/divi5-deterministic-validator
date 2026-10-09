@@ -42,3 +42,6 @@ if ( ! function_exists( 'sanitize_title' ) ) {
 if ( ! function_exists( 'get_permalink' ) ) {
     function get_permalink( $id = 0 ) { return 'https://example.com/?page_id=' . (int) ( is_object( $id ) ? $id->ID : $id ); }
 }
+if ( ! function_exists( 'get_edit_post_link' ) ) {
+    function get_edit_post_link( $id = 0, $context = 'display' ) { return 'https://example.com/wp-admin/post.php?post=' . (int) $id . '&action=edit'; }
+}

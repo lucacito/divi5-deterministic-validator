@@ -76,6 +76,7 @@ final class OpenApiSpec
                             'id'        => ['type' => 'integer'],
                             'title'     => ['type' => 'string'],
                             'status'    => ['type' => 'string'],
+                            'post_type' => ['type' => 'string', 'description' => 'page or project'],
                             'link'      => ['type' => 'string'],
                             'edit_link' => ['type' => 'string'],
                         ],
@@ -215,8 +216,11 @@ final class OpenApiSpec
                 '/pages' => [
                     'get' => [
                         'operationId' => 'listDiviPages',
-                        'summary'     => 'List all Divi 5 pages',
-                        'description' => 'Returns the WordPress pages that use the Divi 5 builder and that the authenticated user can edit, including their IDs and edit links.',
+                        'summary'     => 'List Divi 5 pages or Projects',
+                        'description' => 'Returns the WordPress pages (or, with post_type=project, the Divi Projects) that use the Divi 5 builder and that the authenticated user can edit, including their IDs and edit links.',
+                        'parameters'  => [
+                            ['name' => 'post_type', 'in' => 'query', 'required' => false, 'description' => 'page (default) or project', 'schema' => ['type' => 'string', 'enum' => ['page', 'project'], 'default' => 'page']],
+                        ],
                         'responses'   => [
                             '200' => [
                                 'description' => 'Success',
@@ -228,6 +232,7 @@ final class OpenApiSpec
                                     ],
                                 ]]],
                             ],
+                            '400' => ['description' => 'post_type is not page or project'],
                             '403' => ['description' => 'The user cannot edit pages'],
                         ],
                     ],
@@ -266,14 +271,14 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'getPageLayout',
                         'summary'     => 'Get a page layout',
-                        'description' => 'Returns the full Divi 5 post_content (Gutenberg block HTML) and metadata for a page.',
+                        'description' => 'Returns the full Divi 5 post_content (Gutenberg block HTML) and metadata for a page or Divi Project.',
                         'parameters'  => [self::idParam()],
                         'responses'   => [
                             '200' => ['description' => 'Page layout', 'content' => ['application/json' => ['schema' => [
                                 'type'       => 'object',
                                 'properties' => [
                                     'post_id'      => ['type' => 'integer'],
-                                    'post_type'    => ['type' => 'string', 'description' => 'The WordPress post type (always page)'],
+                                    'post_type'    => ['type' => 'string', 'description' => 'The WordPress post type page or project'],
                                     'post_title'   => ['type' => 'string'],
                                     'post_status'  => ['type' => 'string'],
                                     'post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML'],
@@ -312,7 +317,7 @@ final class OpenApiSpec
                     'post' => [
                         'operationId' => 'editPageContent',
                         'summary'     => 'Surgically edit page text (find/replace)',
-                        'description' => 'Change one small part of a page by exact find-and-replace, without resending the whole layout (e.g. an email, phone, link, or line of copy). "find" must match once unless expect_count is set. Returns 422 and leaves the page unchanged if find is missing, ambiguous, or would break validation.',
+                        'description' => 'Change one small part of a page or Divi Project by exact find-and-replace, without resending the layout (e.g. an email, phone, link, or line of copy). "find" must match once unless expect_count is set. Returns 422 and changes nothing if find is missing, ambiguous, or would break validation.',
                         'parameters'  => [self::idParam()],
                         'requestBody' => [
                             'required' => true,
@@ -348,7 +353,7 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'listPageHistory',
                         'summary'     => 'List a page\'s saved previous versions',
-                        'description' => 'Every AI save tries to snapshot the page\'s prior content (last 10, fewer for large pages). Returns saved versions newest first (id, time, tool, size); restore one with restorePageVersion when a snapshot was kept (history.stored).',
+                        'description' => 'Every AI save tries to snapshot the page or Project\'s prior content (last 10, fewer for large pages). Returns saved versions newest first (id, time, tool, size); restore one with restorePageVersion when a snapshot was kept (history.stored).',
                         'parameters'  => [self::idParam()],
                         'responses'   => [
                             '200' => ['description' => 'Versions', 'content' => ['application/json' => ['schema' => [
@@ -386,7 +391,7 @@ final class OpenApiSpec
                     'post' => [
                         'operationId' => 'restorePageVersion',
                         'summary'     => 'Undo: restore a saved version',
-                        'description' => 'Restores a page to a previous saved version. The current content is snapshotted first; the restore is itself undoable when its own history.stored is true. Not blocked by validation (it is the owner\'s own earlier content); the response reports whether it passes the validator.',
+                        'description' => 'Restores a page or Divi Project to a previous saved version. The current content is snapshotted first; the restore is itself undoable when its own history.stored is true. Not blocked by validation (it is the owner\'s own earlier content); the response reports whether it passes the validator.',
                         'parameters'  => [self::idParam()],
                         'requestBody' => [
                             'required' => true,
@@ -541,7 +546,7 @@ final class OpenApiSpec
 
     private static function idParam(): array
     {
-        return ['name' => 'id', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'integer', 'description' => 'WordPress page ID']];
+        return ['name' => 'id', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID']];
     }
 
     private static function versionParam(): array
