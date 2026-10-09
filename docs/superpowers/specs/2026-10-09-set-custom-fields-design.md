@@ -40,7 +40,7 @@ If any field is refused, nothing is written and every refusal is reported with i
    - single-valued on this post: a key stored more than once on the post is refused.
 3. **Value** (strings only):
    - at most 10,000 characters;
-   - no custom code: new Pro class `FieldValuePolicy` refuses a value containing a `<script`, `<style`, `<iframe`, `<object`, `<embed` or `<?` sequence, a `javascript:`, `vbscript:` or `data:text/html` URL, or an HTML event-handler attribute (`on[a-z]{3,}=`); these are the same kinds of code the free `CodePolicy` refuses in layouts, applied to plain text (the free `CodePolicy` itself scans Divi layout markup and is not reused);
+   - no custom code: new Pro class `FieldValuePolicy` refuses a value containing a `<script`, `<style`, `<iframe`, `<object`, `<embed` or `<?` sequence, a `javascript:`, `vbscript:` or `data:text/html` URL, or an HTML event-handler attribute (`on[a-z]{3,}=`); these are the same kinds of code the free plugin refuses in layouts, applied to plain text (the free `CodePolicy` itself scans Divi layout markup and is not reused);
    - no silent sanitizing: if `wp_kses_post( $value ) !== $value` the field is refused;
    - ACF types, when the key is a known ACF field (`CustomFieldReader::acfInfo()` gives the type; choices come from ACF's field definition): `number`/`range` must be numeric; `select` (single value only), `radio` and `button_group` must be one of the field's choices; `true_false` must be `0` or `1`; text-like types (`text`, `textarea`, `wysiwyg`, `url`, `email`, `date_picker`, `color_picker`) are plain strings; any other ACF type is refused with "edit this field in the ACF editor": `password` (a secret), `checkbox` and multi-value `select` (they store lists), and repeater, group, flexible content, relationship, post object, image, file, gallery, taxonomy, user, map and the like. A key that is not an ACF field is a plain string.
 
@@ -58,7 +58,7 @@ If any field is refused, nothing is written and every refusal is reported with i
 ### 5. Free-plugin and Pro compatibility
 
 - Free plugin behavior is unchanged.
-- Pro now calls these free classes: `FieldTarget`, `CustomFieldReader`, `CustomFields`. Add them to `Compat::REQUIRED_CLASSES`, pin their signatures in `pro-addon/tests/FreeApiCompatTest.php`, and raise `Compat::MIN_FREE` to the first free version that contains them. The free version is the owner's release decision; this work sets `MIN_FREE` to `4.8.0` and says so in the report and the Pro README.
+- Pro now calls these free classes: `FieldTarget`, `CustomFieldReader`, `CustomFields`. Add them to `Compat::REQUIRED_CLASSES` and pin their signatures in `pro-addon/tests/FreeApiCompatTest.php`. `Compat::REQUIRED_CLASSES` (the runtime guard: the Pro tools stay off if a class is missing) gains the three classes. `Compat::MIN_FREE` is NOT changed in this branch (the dev site still reports the pre-release free version, which would switch the Pro tools off); the owner raises it, to the first free version that contains these classes, when versioning the free release.
 - Docs: `pro-addon/README.md` and `pro-addon/readme.txt` list the new tool; `CLAUDE.md` mentions it under the Pro add-on. No Pro version bump, changelog, zip or licence-server change (release is the owner's step).
 
 ## Testing
