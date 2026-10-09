@@ -31,6 +31,7 @@ Three parts, one repo:
   never in the WordPress.org zip). 0.5.0: compat guard, licensing with the updater, a licence-gated tool
   registry with 14 tools (settings, batches and undo, Theme Builder header/footer and template tools, site-wide find/replace and audit, whole-site build), REST and ChatGPT parity for all of them, the Pro admin tab, its own suite (`make test-pro`) and zip (`make build-pro`). Not tested
   by `make test` (see `pro-addon/README.md`).
+  `set_custom_fields` (unreleased): sets custom field values on one post; keys the site knows only; all-or-nothing, `dry_run`, undoable; MCP + REST only (`ProOpenApi::MCP_REST_ONLY`); the free plugin stays read-only for fields (`get_custom_fields`).
 
 ## Hard constraints — do not violate
 
@@ -190,6 +191,7 @@ Docker env + validator workflows go through `make`:
 | `make verify-pro-theme-templates` | Real-site evidence gate for manage_theme_template (self-cleaning; dev site only) |
 | `make verify-pro-site-tools` | Real-site check of find_replace_site and audit_site through the real registry (self-cleaning; dev site only: it evicts old batch rows) |
 | `make verify-pro-rest` | Real-site check of the Pro REST routes and the live OpenAPI spec (read-only) |
+| `make verify-pro-custom-fields` | Real-site check of set_custom_fields (self-cleaning; dev site only; free + Pro active; ACF checks run when the free ACF plugin is active) |
 | `make verify-pro-build-site` | Real-site check of `build_site` (build, launch, anonymous menu render, undo, abandon; self-cleaning; dev site only: it evicts old batch rows) |
 | `make verify-pro-licence-tiers` | Real-site check of the Pro tier display, site limit and expiry against a LOCAL layoutlab licence server (`STAGE=limit|agency|expired|cleanup LICENCE_BASE=http://host.docker.internal:3010`; self-cleaning; dev site only; see the script header) |
 | `make clean` | Destroy volumes (prompts for confirmation) |
@@ -231,6 +233,7 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
+- **Unreleased (branch feat/pro-set-custom-fields): Pro `set_custom_fields`** (sub-project C of the Projects/custom-fields request). Spec/plan `docs/superpowers/specs|plans/2026-10-09-set-custom-fields*`. Pro version, changelog, zip and `Compat::MIN_FREE` are the owner's release step.
 - **Unreleased (branch feat/project-layouts): Divi Project layouts** (sub-project B of the Projects/custom-fields request; C = write field values is later). Spec/plan `docs/superpowers/specs|plans/2026-10-08-project-layouts*`. Version, changelog and zip are the owner's release step.
 - **Unreleased (branch feat/get-custom-fields): `get_custom_fields` + `custom_fields` discovery** (sub-project A of the Projects/custom-fields request; B = edit Divi Project layouts and C = write field values are separate, later specs). Spec/plan `docs/superpowers/specs|plans/2026-10-07-get-custom-fields*`. Version, changelog and zip are the owner's release step (4.7.1 is already waiting for upload).
 - **Free plugin 4.5.0 is PUBLISHED on WordPress.org** (2026-10-04; SVN `https://plugins.svn.wordpress.org/jhmg-ai-editor-for-divi-5`, user `lucaslopvet`, revisions r3727421..r3727426, tags 4.4.0 and 4.5.0; the directory page and API show 4.5.0, the icon, both banners and 3 screenshots). Release routine: sync trunk from the tracked zip, commit, `svn copy trunk tags/<version>`. The SVN password is never stored in the repo or in memory; ask the owner each time.
