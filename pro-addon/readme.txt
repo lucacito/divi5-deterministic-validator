@@ -2,7 +2,7 @@
 Contributors:      lucaslopvet
 Requires at least: 6.0
 Requires PHP:      8.1
-Stable tag:        0.8.0
+Stable tag:        0.9.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -10,7 +10,7 @@ Pro add-on for JHMG AI Editor for Divi 5. Lets your AI assistant set the front p
 
 == Description ==
 
-This is a separate plugin. It needs the free plugin "JHMG AI Editor for Divi 5" (version 4.4.0 or newer) and a licence from divi5lab.com. Without both, the Pro tools stay off.
+This is a separate plugin. It needs the free plugin "JHMG AI Editor for Divi 5" (version 4.8.0 or newer) and a licence from divi5lab.com. Without both, the Pro tools stay off.
 
 Every change a Pro tool makes is recorded as a batch with an undo point. `undo_batch` restores everything it safely can and tells you what it could not (because the page or setting was changed afterwards, or the page history no longer holds the earlier version). It only says "fully undone" when every item was restored.
 
@@ -55,6 +55,11 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
+
+= 0.9.0 =
+* New: `set_custom_fields` sets the custom field values of ONE page, Divi Project or other post you can edit, so an assistant can fill in what a layout shows through Divi's custom field binding (for example an Advanced Custom Fields name, price or link). Every field is checked first and nothing is written unless all of them pass: a key must already exist on your site (an Advanced Custom Fields field, or a key a post already uses), keys WordPress keeps private and names that look like passwords or tokens are refused, and so are values that contain code. Add `dry_run` to see each field's before and after without saving anything. A real run is one batch, and `undo_batch` puts every value back as long as nothing changed it afterwards.
+* Over MCP and REST only: this is the 18th Pro tool, and the ChatGPT importer's 30 operations are used up.
+* Needs the free plugin 4.8.0 or newer (the free plugin reads custom fields and edits Divi Projects from that version).
 
 = 0.8.0 =
 * New: `manage_global_variables` creates, edits and archives your site's Divi global variables of type numbers (for example `12px` or `clamp(1rem, 2vw + 1rem, 3rem)`) and strings (short plain text), so an assistant can set spacing, radius and size tokens before it builds pages. It never deletes a variable. Every real run needs the single-use preview token of a dry run of the same arguments; variables that changed since the preview are skipped and reported, never overwritten. Values are checked strictly (a number with an optional unit or calc, clamp, min, max of those; plain text without braces, semicolons, quotes, comment markers, unbalanced brackets or code). It needs Divi's Variables Manager permission as well as the theme options permission. One `undo_batch` puts it all back; undoing a created variable removes it, unless it changed since.

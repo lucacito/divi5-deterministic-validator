@@ -163,7 +163,7 @@ class ProParityTest extends TestCase
         $GLOBALS['__wp_filters'] = [];
         $GLOBALS['__wp_options'] = [ 'aied_pro_premium_unlocked' => 1 ];
         \AiEditorDivi5\Pro\Licensing::resetForTests();
-        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertTrue( Plugin::bootWith( '4.8.0', static fn (): bool => true ) );
         $this->assertArrayHasKey( 'jhmg_aied_register_rest_routes', $GLOBALS['__wp_filters'] );
         $this->assertArrayHasKey( 'jhmg_aied_openapi_paths', $GLOBALS['__wp_filters'] );
         $this->assertArrayHasKey( 'jhmg_aied_openapi_schemas', $GLOBALS['__wp_filters'] );

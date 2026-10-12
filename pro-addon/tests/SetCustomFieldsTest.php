@@ -70,6 +70,7 @@ class SetCustomFieldsTest extends TestCase
         unset( $GLOBALS['__wp_caps'] );
         $GLOBALS['__wp_meta_keys']   = [];
         $GLOBALS['__clean_post_cache'] = [];
+        $GLOBALS['__clean_post_cache_throws'] = false;
     }
 
     /** @param list<array{key:string,value:string}> $fields */
@@ -653,5 +654,24 @@ class SetCustomFieldsTest extends TestCase
         $this->assertSame( [], $GLOBALS['__clean_post_cache'] );
         $this->call( 5, [ $this->field( 'headline', 'Real' ) ] );
         $this->assertSame( [ 5 ], $GLOBALS['__clean_post_cache'] );
+    }
+
+    public function testACleanPostCacheHookThatThrowsAfterASuccessfulWriteDoesNotHideTheWrite(): void
+    {
+        $GLOBALS['__clean_post_cache_throws'] = true;
+        $result = $this->call( 5, [ $this->field( 'headline', 'Saved anyway' ) ] );
+        $this->assertTrue( $result['changed'], 'the values are stored, so the call reports them and records the batch' );
+        $this->assertSame( 'Saved anyway', $GLOBALS['__wp_postmeta'][5]['headline'] );
+        $this->assertSame( [ 5 ], $GLOBALS['__clean_post_cache'] );
+    }
+
+    // ---- meta key "0" -------------------------------------------------------------------------
+
+    public function testTheKeyZeroIsRefusedBecauseTheKnownKeyLookupCannotTellItFromNoKey(): void
+    {
+        // WP_Meta_Query ignores meta_key "0" as empty, so CustomFields::postHasMeta('0') is true on any site and the
+        // "known key" rule would let the tool create a meta key named 0.
+        $this->refused( [ 'id' => 5, 'fields' => [ $this->field( '0', 'x' ) ] ], 'item 1: "key" may not be "0"' );
+        $this->assertSame( [], $GLOBALS['__acf_calls'] );
     }
 }

@@ -54,17 +54,17 @@ class PluginTest extends TestCase
 
     public function testAFreePluginMissingAClassDoesNotBoot(): void
     {
-        $this->assertFalse( Plugin::bootWith( '4.4.0', static fn ( string $c ): bool => false ) );
+        $this->assertFalse( Plugin::bootWith( '4.8.0', static fn ( string $c ): bool => false ) );
     }
 
     public function testACompatibleFreePluginBoots(): void
     {
-        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertTrue( Plugin::bootWith( '4.8.0', static fn (): bool => true ) );
     }
 
     public function testACompatibleBootRegistersTheLicenceAndUpdateHooks(): void
     {
-        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertTrue( Plugin::bootWith( '4.8.0', static fn (): bool => true ) );
         foreach ( [ 'pre_set_site_transient_update_plugins', 'admin_init', 'admin_notices' ] as $hook ) {
             $this->assertArrayHasKey( $hook, $GLOBALS['__wp_filters'], $hook );
         }
@@ -74,7 +74,7 @@ class PluginTest extends TestCase
     {
         $GLOBALS['__wp_options']  = [];
         $GLOBALS['__wp_http_log'] = [];
-        Plugin::bootWith( '4.4.0', static fn (): bool => true );
+        Plugin::bootWith( '4.8.0', static fn (): bool => true );
         foreach ( $GLOBALS['__wp_filters']['admin_init'] as $fn ) {
             $fn();
         }
@@ -83,7 +83,7 @@ class PluginTest extends TestCase
 
     public function testWhileLockedNoProToolIsAdvertised(): void
     {
-        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertTrue( Plugin::bootWith( '4.8.0', static fn (): bool => true ) );
         $this->assertArrayHasKey( 'jhmg_aied_mcp_tools', $GLOBALS['__wp_filters'] );
         $this->assertArrayHasKey( 'jhmg_aied_mcp_call', $GLOBALS['__wp_filters'] );
         $this->assertSame( [ [ 'name' => 'get_page_layout' ] ], apply_filters( 'jhmg_aied_mcp_tools', [ [ 'name' => 'get_page_layout' ] ] ), 'no Pro tool while locked' );
@@ -93,7 +93,7 @@ class PluginTest extends TestCase
     {
         $GLOBALS['__wp_options'] = [ 'aied_pro_premium_unlocked' => 1 ];
         \AiEditorDivi5\Pro\Licensing::resetForTests();
-        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertTrue( Plugin::bootWith( '4.8.0', static fn (): bool => true ) );
         $names = array_column( apply_filters( 'jhmg_aied_mcp_tools', [ [ 'name' => 'get_page_layout' ] ] ), 'name' );
         $this->assertSame( 'get_page_layout', $names[0], 'built-ins stay first' );
         $this->assertCount( 1 + count( \AiEditorDivi5\Pro\Tools::all() ), $names, 'the built-in plus every Pro tool' );
@@ -104,13 +104,13 @@ class PluginTest extends TestCase
 
     public function testACompatibleBootRegistersTheCodeProposalsPanel(): void
     {
-        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertTrue( Plugin::bootWith( '4.8.0', static fn (): bool => true ) );
         $this->assertArrayHasKey( 'admin_post_aied_pro_delete_proposal', $GLOBALS['__wp_filters'] );
     }
 
     public function testACompatibleBootRegistersTheProAdminTab(): void
     {
-        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertTrue( Plugin::bootWith( '4.8.0', static fn (): bool => true ) );
         $this->assertSame( [ 'pro' => 'Pro' ], apply_filters( 'jhmg_aied_admin_tabs', [] ) );
         $this->assertArrayHasKey( 'admin_post_aied_pro_activate', $GLOBALS['__wp_filters'] );
         $this->assertArrayHasKey( 'admin_post_aied_pro_deactivate', $GLOBALS['__wp_filters'] );
@@ -118,14 +118,14 @@ class PluginTest extends TestCase
 
     public function testACompatibleBootCreatesTheBatchTableOnInitAndDropsItWithAMultisiteSite(): void
     {
-        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertTrue( Plugin::bootWith( '4.8.0', static fn (): bool => true ) );
         $this->assertArrayHasKey( 'init', $GLOBALS['__wp_filters'] );
         $this->assertArrayHasKey( 'wpmu_drop_tables', $GLOBALS['__wp_filters'] );
     }
 
     public function testACompatibleBootRegistersTheRecentChangesPanel(): void
     {
-        $this->assertTrue( Plugin::bootWith( '4.4.0', static fn (): bool => true ) );
+        $this->assertTrue( Plugin::bootWith( '4.8.0', static fn (): bool => true ) );
         $this->assertArrayHasKey( 'admin_post_aied_pro_undo_batch', $GLOBALS['__wp_filters'] );
     }
 }

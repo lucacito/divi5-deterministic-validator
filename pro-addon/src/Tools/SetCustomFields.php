@@ -216,6 +216,11 @@ final class SetCustomFields implements ProTool
             if ( 1 !== preg_match( '/^[\x20-\x7E]{1,191}$/', $key ) ) {
                 throw new \InvalidArgumentException( "\"fields\" item {$n}: \"key\" may contain only printable ASCII characters (at most 191)." );
             }
+            // WP_Meta_Query treats meta_key "0" as empty, so the known-key lookup answers true for it on any site and the "known key"
+            // rule cannot protect it: refuse it outright.
+            if ( '0' === $key ) {
+                throw new \InvalidArgumentException( "\"fields\" item {$n}: \"key\" may not be \"0\"." );
+            }
             if ( isset( $seen[ $key ] ) ) {
                 throw new \InvalidArgumentException( "\"fields\": the key \"{$key}\" appears more than once." );
             }
@@ -347,8 +352,14 @@ final class SetCustomFields implements ProTool
 
     private static function clearCache( int $postId ): void
     {
-        if ( function_exists( 'clean_post_cache' ) ) {
-            clean_post_cache( $postId );
+        // Best effort: by now the values are stored and the batch is about to be recorded, so a hook on clean_post_cache that
+        // throws must not turn a successful write into an error with no undo.
+        try {
+            if ( function_exists( 'clean_post_cache' ) ) {
+                clean_post_cache( $postId );
+            }
+        } catch ( \Throwable $e ) {
+            // ignored on purpose
         }
     }
 
