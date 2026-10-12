@@ -28,10 +28,10 @@ Three parts, one repo:
   `wp-plugin/validator/` and wraps it in the MCP server, REST API, AI-facing guides,
   the built-in image pack and the admin UI. No licensing, no remote calls.
 - **The Pro add-on** (`pro-addon/`) — a separate plugin ("JHMG AI Editor for Divi 5 Pro", sold at divi5lab.com,
-  never in the WordPress.org zip). 0.5.0: compat guard, licensing with the updater, a licence-gated tool
-  registry with 14 tools (settings, batches and undo, Theme Builder header/footer and template tools, site-wide find/replace and audit, whole-site build), REST and ChatGPT parity for all of them, the Pro admin tab, its own suite (`make test-pro`) and zip (`make build-pro`). Not tested
+  never in the WordPress.org zip). 0.9.0: compat guard, licensing with the updater, a licence-gated tool
+  registry with 18 tools (settings, batches and undo, Theme Builder header/footer and template tools, site-wide find/replace and audit, whole-site build, global colors/variables/presets, custom field values), REST for all of them and ChatGPT parity for the first 14, the Pro admin tab, its own suite (`make test-pro`) and zip (`make build-pro`). Not tested
   by `make test` (see `pro-addon/README.md`).
-  `set_custom_fields` (unreleased): sets custom field values on one post; keys the site knows only; all-or-nothing, `dry_run`, undoable; MCP + REST only (`ProOpenApi::MCP_REST_ONLY`); the free plugin stays read-only for fields (`get_custom_fields`).
+  `set_custom_fields` (Pro 0.9.0): sets custom field values on one post; keys the site knows only; all-or-nothing, `dry_run`, undoable; MCP + REST only (`ProOpenApi::MCP_REST_ONLY`); the free plugin stays read-only for fields (`get_custom_fields`).
 
 ## Hard constraints — do not violate
 
@@ -128,6 +128,8 @@ the page, its history and `post_modified` are never touched. A preview of an inv
 is a normal 200 / `isError: false` response carrying `valid: false`. Logged as endpoint
 `dry_run`, result `read`. It is a flag, not a tool: the list stayed at 15 tools / 15 operations in 4.2.0 (4.4.0 adds the read-only `list_global_styles`: 16).
 
+Approval mode (v4.6.0): option ai_editor_divi5_require_preview (default off, Settings card). When on, update_page_layout, edit_page_content, PUT /pages/{id} and POST /pages/{id}/edit refuse a save (MCP isError / REST 428, code PREVIEW_REQUIRED) unless the same resulting content was previewed validly by the same user for the same page in the last 30 minutes (ApprovalMode: single-use transient). create_page, restore and every Pro tool are exempt; the check sits in the four handlers, NOT in HistoryService (Pro writes through it).
+
 Theme layouts (Pro add-on): editing the existing LIVE Theme Builder header and footer (`et_header_layout` /
 `et_footer_layout`) was built as 4.3.0 and then MOVED to the Pro add-on before it was ever uploaded (2026-10-02;
 `docs/superpowers/specs/2026-10-02-pro-addon-design.md`). The free plugin has NO header/footer or Theme Builder code
@@ -184,6 +186,7 @@ Docker env + validator workflows go through `make`:
 | `make test-pro` | Run the Pro add-on's own PHPUnit suite (`pro-addon/phpunit.xml`) |
 | `make build-pro` | Build `dist/jhmg-ai-editor-for-divi-5-pro.zip` (sold from divi5lab.com; `dist/` is git-ignored) |
 | `make verify-custom-fields` | Real-site check of `get_custom_fields`, the `custom_fields` discovery and the plain-meta render (self-cleaning; dev site only) |
+| `make verify-site-structure` | Real-site check of `get_site_structure`, approval mode and the MCP protocol fixes on the REST and MCP handlers (creates and deletes throwaway draft pages; restores the approval-mode setting) |
 | `make verify-project-layouts` | Real-site check of editing Divi Project layouts (self-cleaning; dev site only) |
 | `make verify-pro-skeleton` | Real-site check of the Pro add-on skeleton (Docker site; the free and Pro plugins must be active) |
 | `make verify-pro-settings` | Real-site check of the Pro settings tools and batch undo on the Docker site; restores every setting and deletes everything it created (the free and Pro plugins must be active) |
@@ -233,9 +236,8 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
 
 ## Current state
 
-- **Unreleased (branch feat/pro-set-custom-fields): Pro `set_custom_fields`** (sub-project C of the Projects/custom-fields request). Spec/plan `docs/superpowers/specs|plans/2026-10-09-set-custom-fields*`. Pro version, changelog, zip and `Compat::MIN_FREE` are the owner's release step.
-- **Unreleased (branch feat/project-layouts): Divi Project layouts** (sub-project B of the Projects/custom-fields request; C = write field values is later). Spec/plan `docs/superpowers/specs|plans/2026-10-08-project-layouts*`. Version, changelog and zip are the owner's release step.
-- **Unreleased (branch feat/get-custom-fields): `get_custom_fields` + `custom_fields` discovery** (sub-project A of the Projects/custom-fields request; B = edit Divi Project layouts and C = write field values are separate, later specs). Spec/plan `docs/superpowers/specs|plans/2026-10-07-get-custom-fields*`. Version, changelog and zip are the owner's release step (4.7.1 is already waiting for upload).
+- **Free plugin 4.8.0 is PUBLISHED on WordPress.org and Pro add-on 0.9.0 is RELEASED in the divi5lab.com store (2026-10-12)**: free SVN trunk r3741502, tag 4.8.0 r3741504 (4.7.0 went live 2026-10-07; 4.7.1 never existed, its fix was folded into 4.8.0). 4.8.0 = Divi Project layouts (`EditTarget::ALLOWED_TYPES = ['page','project']`, every page tool/route works on a Project; `list_divi_pages` takes `post_type`), read-only `get_custom_fields` (18th free tool, MCP+REST only) plus a keys-only `custom_fields` section in `get_site_structure`, and the Email Optin fix (`divi/signup-custom-field` accepted inside `divi/signup`: the harness now probes children of already-known parents, `SchemaGap::childCandidates`, evidence in `docs/module-verification-5.14.json`, generated `VerifiedModules::KNOWN_PARENT_CHILDREN`). Pro 0.9.0 = `set_custom_fields` (18th Pro tool, MCP+REST only; `ProOpenApi::MCP_REST_ONLY`), key `0` refused, requires free 4.8.0 (`Compat::MIN_FREE`). The ChatGPT importer budget (30 operations) stays used up by the first 14 Pro tools plus 16 free. Spec/plan: `docs/superpowers/specs|plans/2026-10-07-get-custom-fields*`, `2026-10-08-project-layouts*`, `2026-10-09-set-custom-fields*`. Release routine: sync trunk from the tracked zip, commit, `svn copy trunk tags/<version>`, THEN the Pro release (`layoutlab/scripts/release-aied-pro.sh`, dry run first, own `CHANGELOG` env) because the Pro compat guard needs the free version live. The SVN password is never stored; ask the owner each time.
+- **Free plugin 4.7.0 (2026-10-07)**: number and text global variables taught in the style guide, ACF/custom-field binding, approval mode (4.6.0), `get_site_structure` (4.6.0, 17th tool at the time). #9 and #10 (modules from Divi Pixel/Plus and other add-on plugins) are CLOSED as won't-do (owner decision 2026-10-06): the limitation stays and is in the readme FAQ.
 - **Free plugin 4.5.0 is PUBLISHED on WordPress.org** (2026-10-04; SVN `https://plugins.svn.wordpress.org/jhmg-ai-editor-for-divi-5`, user `lucaslopvet`, revisions r3727421..r3727426, tags 4.4.0 and 4.5.0; the directory page and API show 4.5.0, the icon, both banners and 3 screenshots). Release routine: sync trunk from the tracked zip, commit, `svn copy trunk tags/<version>`. The SVN password is never stored in the repo or in memory; ask the owner each time.
 - **Pro pricing tiers (Pro add-on 0.6.0, branch `feat/pro-0-6-0-tiers`; spec/plan `docs/superpowers/plans/2026-10-04-pricing-tiers.md`)**: annual licences priced by site count (Personal / Freelancer / Agency, a founding offer for the first buyers, a capped Lifetime, prorated upgrades, renewal reminders 30 and 7 days ahead). EVERY price, tier name, site limit and cap lives in ONE file, `layoutlab/config/pricing.json` (the divi5lab.com store repo); the add-on carries NO price and shows only what the licence server returns (`LicenseExtras`: tier, sites used/allowed, founding, lifetime, upgrade and manage URLs). Enforcement is SERVER-side only (the add-on is GPL): the site cap is checked at activate and validate in the store (`lib/license-server`), the founding and lifetime caps at checkout (plus a Stripe coupon redemption limit), proration by Stripe. An expired, cancelled or past-due licence never disables any Pro tool (only `revoked`/`invalid` lock; `ExpiryKeepsAllToolsTest`); one dismissible `LapseNotice` replaces the shared client's notice. The no-card 45-day trial is Personal only and never takes the founding coupon. The shared licence client is untouched. Draft page copy: `docs/pricing-page.md` (price tokens, competitor facts dated October 2026, `TODO(owner)` markers).
 - **Pro add-on 0.5.0** (whole-site generation; merged to LOCAL main 749dc86; NOT released, NOT pushed): the 14th and LAST Pro tool
@@ -322,7 +324,7 @@ Docker env and `make export-layouts`. Do not attempt to download it. If missing,
   dev copy and the zip. The owner replies in the WP.org review thread (draft:
   `docs/wporg-review-reply-draft.md`, includes the slug request) and uploads the
   zip — nothing is uploaded or sent without the owner.
-- Validator: knows 88 Divi 5 block types (`SchemaRules`), including the
+- Validator: knows 89 Divi 5 block types (`SchemaRules`), including the
   render-verified Divi 5.14 modules (docs/module-verification-5.14.json); modules
   that could not be verified stay rejected and are listed in docs/SCHEMA.md.
 - The old standalone `mcp-server/` (Node) was removed in 3.3.0: the plugin's
