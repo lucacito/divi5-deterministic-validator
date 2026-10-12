@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.7.1
+Stable tag:        4.8.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -206,7 +206,10 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 
 == Changelog ==
 
-= 4.7.1 =
+= 4.8.0 =
+* New: your AI assistant can edit Divi Projects, not only pages. Every tool that reads, checks, saves, previews or undoes a page's layout now also works on a Divi Project, with the same checks, history and Approval mode. `list_divi_pages` takes an optional `post_type` (page or project) to list them. New pages are still always drafts, and posts and other content types are still refused.
+* New: `get_custom_fields` lets your assistant read the custom fields of one page or Divi Project you can edit, with their values, so the copy it writes fits and it uses the right field names. It is read-only. Keys WordPress keeps private, and fields that look like passwords or tokens, are never shown, and long values are cut. Available over MCP and the REST API, not in the ChatGPT Action.
+* Improved: `get_site_structure` now also lists the custom field names your posts use (names only, never values), and the style guide explains how to show a custom field in a module.
 * Fixed: a page with an Email Optin (signup) module that has custom fields can now be edited by your AI assistant. Before, the check did not recognise those custom fields and refused to save any change to that page, even one far from the form.
 
 = 4.7.0 =
