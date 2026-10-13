@@ -393,6 +393,26 @@ try {
             return $this->real->skuTaken( $sku );
         }
 
+        public function skuOwner( string $sku ): int
+        {
+            return $this->real->skuOwner( $sku );
+        }
+
+        public function typeOf( int $id ): ?string
+        {
+            return $this->real->typeOf( $id );
+        }
+
+        public function product( int $id ): ?array
+        {
+            return $this->real->product( $id );
+        }
+
+        public function apply( int $id, array $changes ): void
+        {
+            $this->real->apply( $id, $changes );
+        }
+
         public function termIds( string $taxonomy, array $slugs ): array
         {
             return $this->real->termIds( $taxonomy, $slugs );

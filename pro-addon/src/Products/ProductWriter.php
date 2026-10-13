@@ -8,12 +8,15 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-/** What create_product and the product batch kinds need from a store. The real one is WooProductWriter; tests use a fake. */
+/** What create_product, update_products and the product batch kinds need from a store. The real one is WooProductWriter; tests use a fake. */
 interface ProductWriter
 {
     public function isActive(): bool;
 
     public function skuTaken( string $sku ): bool;
+
+    /** The id of the product or variation that owns this SKU, 0 when no one does (update_products allows a product to keep its own SKU). */
+    public function skuOwner( string $sku ): int;
 
     /**
      * @param list<string> $slugs
@@ -37,6 +40,30 @@ interface ProductWriter
      *         tag_ids (sorted), image_id, gallery_image_ids, weight, length, width, height, tax_status, virtual, sold_individually
      */
     public function snapshot( int $id ): ?array;
+
+    /** The WooCommerce type ('simple', 'variable', 'grouped', ...) of a product post that is not in the trash; null for anything else (missing, trashed, a variation, another post type). */
+    public function typeOf( int $id ): ?string;
+
+    /**
+     * The whole editable state of a simple, external or variable product (null for any other id, grouped products included):
+     * type, status, name, description, short_description, sku, regular_price, sale_price, sale_from, sale_to (YYYY-MM-DD or ''),
+     * manage_stock, stock_quantity (null unless managed), stock_status, backorders, category_ids and tag_ids (sorted), category_slugs and
+     * tag_slugs (display only, same order), image_id, gallery_image_ids, weight, length, width, height, tax_status, and `variations`:
+     * variation id => row (regular_price, sale_price, sale_from, sale_to, manage_stock, stock_quantity, stock_status, backorders), sorted by id,
+     * empty unless the product is variable.
+     *
+     * @return ?array<string,mixed>
+     */
+    public function product( int $id ): ?array;
+
+    /**
+     * Writes ONLY the given fields of an existing product through WooCommerce's CRUD and throws on any failure. Never touches status, type or
+     * slug. Keys: the scalar fields of product(), `category_ids` and `tag_ids` (lists of int), and `variations` (variation id => the row
+     * fields to write).
+     *
+     * @param array<string,mixed> $changes
+     */
+    public function apply( int $id, array $changes ): void;
 
     /** Permanently delete (used only to roll back a product this same call just created). */
     public function delete( int $id ): bool;
