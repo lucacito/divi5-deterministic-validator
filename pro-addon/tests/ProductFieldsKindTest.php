@@ -173,7 +173,7 @@ class ProductFieldsKindTest extends TestCase
     {
         $item = $this->ran( 60, [ 'variations' => [ 61 => [ 'regular_price' => '11' ], 62 => [ 'sale_price' => '9' ] ] ] );
         $this->assertSame( [ 61 => [ 'regular_price' => '10' ], 62 => [ 'sale_price' => '' ] ], $item['before']['variations'] );
-        $id = $this->record( $item );
+        $id = $this->record( json_decode( (string) json_encode( $item ), true ) ); // as stored: int keys become strings and back
 
         $this->writer->products[60]['variations'][62]['stock_status'] = 'outofstock'; // a field of row 62 the run did not touch
         $ok = $this->undo()->undo( $id, false, true );
@@ -230,6 +230,18 @@ class ProductFieldsKindTest extends TestCase
         $r = $this->kind()->restore( $item );
         $this->assertSame( [ 'ok' => false, 'reason' => 'save_failed' ], $r );
         $this->assertSame( '25', $this->writer->products[50]['regular_price'] );
+    }
+
+    public function testAPartlyWrittenFailedRestoreIsPutBack(): void
+    {
+        $item = $this->ran( 50, [ 'regular_price' => '25', 'name' => 'Red Hat' ] );
+        $this->assertSame( [ '25', 'Red Hat' ], [ $this->writer->products[50]['regular_price'], $this->writer->products[50]['name'] ] );
+        $this->writer->applyCalls       = 0;
+        $this->writer->partialFailCalls = [ 1 ];
+        $r = $this->kind()->restore( $item );
+        $this->assertSame( [ 'ok' => false, 'reason' => 'save_failed' ], $r );
+        $this->assertSame( 2, $this->writer->applyCalls, 'the restore attempt and the put-back' );
+        $this->assertSame( [ '25', 'Red Hat' ], [ $this->writer->products[50]['regular_price'], $this->writer->products[50]['name'] ], 'the half-written previous values were put back by putBack()' );
     }
 
     public function testARestoreThatReadsBackDifferentlyIsPutBackAndReported(): void
