@@ -38,8 +38,8 @@ class ProductFieldsTest extends TestCase
     public function testTrackedAddsTheWholeStockGroupWhereverManageStockChanges(): void
     {
         $t = ProductFields::tracked( [ 'manage_stock' => false, 'name' => 'x', 'variations' => [ 11 => [ 'manage_stock' => true, 'stock_quantity' => 3 ], 12 => [ 'regular_price' => '1' ] ] ] );
-        $this->assertEqualsCanonicalizing( [ 'manage_stock', 'name', 'stock_quantity', 'stock_status', 'backorders' ], array_keys( $t['fields'] ) );
-        $this->assertEqualsCanonicalizing( [ 'manage_stock', 'stock_quantity', 'stock_status', 'backorders' ], array_keys( $t['variations'][11] ) );
+        $this->assertEqualsCanonicalizing( [ 'manage_stock', 'name', 'stock_quantity', 'stock_status', 'backorders', 'low_stock_amount' ], array_keys( $t['fields'] ) );
+        $this->assertEqualsCanonicalizing( [ 'manage_stock', 'stock_quantity', 'stock_status', 'backorders', 'low_stock_amount' ], array_keys( $t['variations'][11] ) );
         $this->assertSame( [ 'regular_price' ], array_keys( $t['variations'][12] ), 'a row that does not touch manage_stock tracks only what it changes' );
         $this->assertSame( [ 'stock_quantity' ], array_keys( ProductFields::tracked( [ 'stock_quantity' => 9 ] )['fields'] ), 'a quantity alone is not a flip' );
     }

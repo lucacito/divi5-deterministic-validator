@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class ProductFields
 {
     /** The stock group. When manage_stock changes, all four are recorded so an undo also puts back the values WooCommerce derives. */
-    public const STOCK = [ 'manage_stock', 'stock_quantity', 'stock_status', 'backorders' ];
+    public const STOCK = [ 'manage_stock', 'stock_quantity', 'stock_status', 'backorders', 'low_stock_amount' ];
 
     /** What one variation row (and the price and stock part of a product) holds. */
     public const ROW = [ 'regular_price', 'sale_price', 'sale_from', 'sale_to', 'manage_stock', 'stock_quantity', 'stock_status', 'backorders' ];

@@ -42,6 +42,8 @@ final class FakeProductWriter implements ProductWriter
     public array $applied = [];
     /** Runs after a successful apply(): fn(int $id, array &$stored, int $call): void, to simulate a store that saved something else. */
     public ?\Closure $afterApply = null;
+    /** @var list<int> apply() calls (1-based) that write the non-variation changes to the stored product and then throw, like a failing apply() that was partly written */
+    public array $partialFailCalls = [];
     /** @var array<int,string> id => type, to make a stored product 'grouped', 'subscription' and so on (or to give an id with no stored fields a type) */
     public array $types = [];
 
@@ -56,7 +58,7 @@ final class FakeProductWriter implements ProductWriter
             }
         }
 
-        return isset( $this->skus[ $sku ] ) ? 1 : 0;
+        return isset( $this->skus[ $sku ] ) ? PHP_INT_MAX : 0;
     }
 
     public function termIds( string $taxonomy, array $slugs ): array
@@ -158,6 +160,12 @@ final class FakeProductWriter implements ProductWriter
         }
         if ( ! isset( $this->products[ $id ] ) ) {
             throw new \Exception( 'no such product' );
+        }
+        if ( in_array( $this->applyCalls, $this->partialFailCalls, true ) ) {
+            $partial = $changes;
+            unset( $partial['variations'] );
+            $this->products[ $id ] = $this->merge( $this->products[ $id ], $partial );
+            throw null !== $this->failApplyException ? ( $this->failApplyException )() : new \Exception( 'boom: could not write /var/www/html/wp-content/secret.php' );
         }
         $rows = (array) ( $changes['variations'] ?? [] );
         unset( $changes['variations'] );

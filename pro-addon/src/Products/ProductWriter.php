@@ -47,9 +47,9 @@ interface ProductWriter
     /**
      * The whole editable state of a simple, external or variable product (null for any other id, grouped products included):
      * type, status, name, description, short_description, sku, regular_price, sale_price, sale_from, sale_to (YYYY-MM-DD or ''),
-     * manage_stock, stock_quantity (null unless managed), stock_status, backorders, category_ids and tag_ids (sorted), category_slugs and
+     * manage_stock, stock_quantity (null unless managed), stock_status, backorders, low_stock_amount ('' or int), category_ids and tag_ids (sorted), category_slugs and
      * tag_slugs (display only, same order), image_id, gallery_image_ids, weight, length, width, height, tax_status, and `variations`:
-     * variation id => row (regular_price, sale_price, sale_from, sale_to, manage_stock, stock_quantity, stock_status, backorders), sorted by id,
+     * variation id => row (regular_price, sale_price, sale_from, sale_to, manage_stock, stock_quantity, stock_status, backorders, low_stock_amount), sorted by id,
      * empty unless the product is variable.
      *
      * @return ?array<string,mixed>

@@ -225,11 +225,10 @@ final class WooProductWriter implements ProductWriter
         if ( ! $p ) {
             return null;
         }
-        $cats = array_map( 'intval', (array) $p->get_category_ids() );
-        $tags = array_map( 'intval', (array) $p->get_tag_ids() );
+        $cats = array_map( 'intval', (array) $p->get_category_ids( 'edit' ) );
+        $tags = array_map( 'intval', (array) $p->get_tag_ids( 'edit' ) );
         sort( $cats );
         sort( $tags );
-        $dims       = (array) $p->get_dimensions( false );
         $variations = [];
         if ( 'variable' === $type ) {
             foreach ( array_map( 'intval', (array) $p->get_children() ) as $vid ) {
@@ -255,9 +254,9 @@ final class WooProductWriter implements ProductWriter
             'image_id'          => (int) $p->get_image_id( 'edit' ),
             'gallery_image_ids' => array_map( 'intval', (array) $p->get_gallery_image_ids( 'edit' ) ),
             'weight'            => (string) $p->get_weight( 'edit' ),
-            'length'            => (string) ( $dims['length'] ?? '' ),
-            'width'             => (string) ( $dims['width'] ?? '' ),
-            'height'            => (string) ( $dims['height'] ?? '' ),
+            'length'            => (string) $p->get_length( 'edit' ),
+            'width'             => (string) $p->get_width( 'edit' ),
+            'height'            => (string) $p->get_height( 'edit' ),
             'tax_status'        => (string) $p->get_tax_status( 'edit' ),
             'variations'        => $variations,
         ] + self::row( $p );
@@ -272,12 +271,20 @@ final class WooProductWriter implements ProductWriter
      */
     public function apply( int $id, array $changes ): void
     {
-        $p = wc_get_product( $id );
-        if ( ! $p || 'product' !== get_post_type( $id ) ) {
+        $p = null === $this->typeOf( $id ) ? null : wc_get_product( $id );
+        if ( ! $p ) {
             throw new ProductSaveFailed( 'the product could not be loaded' );
         }
         $variations = (array) ( $changes['variations'] ?? [] );
         unset( $changes['variations'] );
+        $loaded = [];
+        foreach ( $variations as $vid => $row ) {
+            $v = wc_get_product( (int) $vid );
+            if ( ! $v || 'variation' !== $v->get_type() || (int) $v->get_parent_id() !== $id ) {
+                throw new ProductSaveFailed( 'a variation does not belong to this product' );
+            }
+            $loaded[ (int) $vid ] = $v;
+        }
         if ( [] !== $changes ) {
             self::fill( $p, $changes );
             if ( array_key_exists( 'category_ids', $changes ) ) {
@@ -298,10 +305,7 @@ final class WooProductWriter implements ProductWriter
             return;
         }
         foreach ( $variations as $vid => $row ) {
-            $v = wc_get_product( (int) $vid );
-            if ( ! $v || 'variation' !== $v->get_type() || (int) $v->get_parent_id() !== $id ) {
-                throw new ProductSaveFailed( 'a variation does not belong to this product' );
-            }
+            $v = $loaded[ (int) $vid ];
             self::fill( $v, (array) $row );
             $v->save();
         }
@@ -323,6 +327,7 @@ final class WooProductWriter implements ProductWriter
         $qty    = $p->get_stock_quantity( 'edit' );
         $from   = $p->get_date_on_sale_from( 'edit' );
         $to     = $p->get_date_on_sale_to( 'edit' );
+        $low    = $p->get_low_stock_amount( 'edit' );
 
         return [
             'regular_price'  => (string) $p->get_regular_price( 'edit' ),
@@ -333,6 +338,7 @@ final class WooProductWriter implements ProductWriter
             'stock_quantity' => $manage && null !== $qty ? (int) $qty : null,
             'stock_status'   => (string) $p->get_stock_status( 'edit' ),
             'backorders'     => (string) $p->get_backorders( 'edit' ),
+            'low_stock_amount' => null === $low || '' === $low ? '' : (int) $low,
         ];
     }
 
@@ -382,6 +388,9 @@ final class WooProductWriter implements ProductWriter
         // backorders when it is not, so a quantity of null and a status for a managed product are not written.
         if ( array_key_exists( 'manage_stock', $c ) ) {
             $p->set_manage_stock( (bool) $c['manage_stock'] );
+        }
+        if ( array_key_exists( 'low_stock_amount', $c ) ) {
+            $p->set_low_stock_amount( '' === $c['low_stock_amount'] || null === $c['low_stock_amount'] ? '' : (int) $c['low_stock_amount'] );
         }
         if ( array_key_exists( 'stock_quantity', $c ) && null !== $c['stock_quantity'] ) {
             $p->set_stock_quantity( (int) $c['stock_quantity'] );
