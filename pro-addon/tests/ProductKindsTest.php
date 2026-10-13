@@ -76,6 +76,35 @@ class ProductKindsTest extends TestCase
         $this->assertSame( [ 'available' => true ], $i['undo'] );
         $this->assertSame( Canon::hash( ProductCreatedKind::hashed( $this->snapshot() ) ), $i['after_hash'] );
         $this->assertSame( ProductCreatedKind::FIELDS, array_keys( ProductCreatedKind::hashed( $this->snapshot() ) ) );
+        // Every read-back field except the status (which current() checks on its own).
+        $this->assertSame( array_values( array_diff( array_keys( $this->snapshot() ), [ 'status' ] ) ), ProductCreatedKind::FIELDS );
+    }
+
+    /** @return array<string,array{string,mixed}> */
+    public static function ownerEdits(): array
+    {
+        return [
+            'a tag added'          => [ 'tag_ids', [ 9 ] ],
+            'the weight'           => [ 'weight', '2' ],
+            'the image'            => [ 'image_id', 91 ],
+            'the gallery'          => [ 'gallery_image_ids', [ 91 ] ],
+            'a dimension'          => [ 'height', '3' ],
+            'the tax status'       => [ 'tax_status', 'none' ],
+            'virtual'              => [ 'virtual', true ],
+            'sold individually'    => [ 'sold_individually', true ],
+            'backorders'           => [ 'backorders', 'notify' ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'ownerEdits' )]
+    public function testAnyOwnerEditIsSkippedByANormalUndo( string $field, mixed $value ): void
+    {
+        $batch = $this->log->record( 'create_product', 'Created 1', [ $this->item() ] );
+        $this->writer->products[50][ $field ] = $value;
+        $r = $this->undo()->undo( (int) $batch['id'], false );
+        $this->assertSame( 'draft', $GLOBALS['__wp_posts'][50]->post_status, "{$field} edited: not trashed" );
+        $this->assertSame( 'changed_since', $r['items'][0]['result'] );
+        $this->assertSame( 0, $r['restored'] );
     }
 
     public function testCurrentIsTheHashedSnapshotOfADraftAndNullOtherwise(): void

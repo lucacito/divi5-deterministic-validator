@@ -25,8 +25,12 @@ final class ProductCreatedKind implements ItemKind
 {
     public const NAME = 'product_created';
 
-    /** What the undo compares: the values a call sets that an owner is likely to change. */
-    public const FIELDS = [ 'name', 'description', 'short_description', 'sku', 'regular_price', 'sale_price', 'manage_stock', 'stock_quantity', 'stock_status', 'category_ids' ];
+    /** What the undo compares: EVERY read-back field except `status` (current() checks the status on its own), so any edit is seen. */
+    public const FIELDS = [
+        'name', 'description', 'short_description', 'sku', 'regular_price', 'sale_price', 'manage_stock', 'stock_quantity', 'stock_status',
+        'backorders', 'category_ids', 'tag_ids', 'image_id', 'gallery_image_ids', 'weight', 'length', 'width', 'height', 'tax_status',
+        'virtual', 'sold_individually',
+    ];
 
     public function __construct( private ?ProductWriter $writer = null )
     {
