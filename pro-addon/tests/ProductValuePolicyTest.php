@@ -17,8 +17,8 @@ class ProductValuePolicyTest extends TestCase
 
     protected function setUp(): void
     {
-        // A kses that drops <script> and rewrites a bare ampersand like core, and a strip-tags like core's.
-        $this->kses  = static fn ( string $s ): string => (string) preg_replace( '/&(?!#?\w+;)/', '&amp;', (string) preg_replace( '#<\s*script\b.*?>.*?<\s*/\s*script\s*>#is', '', $s ) );
+        // A kses that drops <script> and <form> (<form> passes FieldValuePolicy, so it reaches the kses comparison) and rewrites a bare ampersand like core, and a strip-tags like core's.
+        $this->kses  = static fn ( string $s ): string => (string) preg_replace( '/&(?!#?\w+;)/', '&amp;', (string) preg_replace( '#<\s*(?:script|form)\b.*?>.*?<\s*/\s*(?:script|form)\s*>#is', '', $s ) );
         $this->strip = static fn ( string $s ): string => strip_tags( $s );
     }
 
@@ -84,6 +84,15 @@ class ProductValuePolicyTest extends TestCase
             'script description'    => [ [ 'name' => 'x', 'description' => '<script>alert(1)</script>' ], 'description' ],
             'js url description'    => [ [ 'name' => 'x', 'description' => '<a href="javascript:alert(1)">x</a>' ], 'description' ],
             'kses would change'     => [ [ 'name' => 'x', 'description' => 'ok <script>x</script>' ], 'description' ],
+            'kses drops a form'     => [ [ 'name' => 'x', 'description' => 'ok <form>x</form>' ], 'contains markup WordPress does not allow in post content' ],
+            'kses drops a form short' => [ [ 'name' => 'x', 'short_description' => 'ok <form>x</form>' ], 'contains markup WordPress does not allow in post content' ],
+            'regular price newline' => [ [ 'name' => 'x', 'regular_price' => "10\n" ], '"regular_price"' ],
+            'sale price newline'    => [ [ 'name' => 'x', 'regular_price' => '20', 'sale_price' => "10\n" ], '"sale_price"' ],
+            'weight newline'        => [ [ 'name' => 'x', 'weight' => "1\n" ], '"weight"' ],
+            'dimension newline'     => [ [ 'name' => 'x', 'dimensions' => [ 'width' => "5\n" ] ], '"dimensions"' ],
+            'category newline'      => [ [ 'name' => 'x', 'categories' => [ "shirts\n" ] ], '"categories"' ],
+            'tag newline'           => [ [ 'name' => 'x', 'tags' => [ "sale\n" ] ], '"tags"' ],
+            'sku newline'           => [ [ 'name' => 'x', 'sku' => "A1\n" ], '"sku"' ],
             'short too long'        => [ [ 'name' => 'x', 'short_description' => str_repeat( 'a', 1001 ) ], 'short_description' ],
             'description too long'  => [ [ 'name' => 'x', 'description' => str_repeat( 'a', 10001 ) ], 'description' ],
             'sku too long'          => [ [ 'name' => 'x', 'sku' => str_repeat( 'a', 101 ) ], '"sku"' ],
@@ -150,6 +159,17 @@ class ProductValuePolicyTest extends TestCase
     {
         $this->assertSame( '0', $this->ok( [ 'name' => 'Free', 'regular_price' => '0' ] )['regular_price'] );
         $this->assertSame( '9.999999', $this->ok( [ 'name' => 'x', 'regular_price' => '10', 'sale_price' => '9.999999' ] )['sale_price'] );
+    }
+
+    public function testAmpersandsInDescriptionsAreAcceptedAndKeptUnchanged(): void
+    {
+        $v = $this->ok( [ 'name' => 'x', 'description' => 'Tom & Jerry', 'short_description' => 'Tom & Jerry' ] );
+        $this->assertSame( 'Tom & Jerry', $v['description'] );
+        $this->assertSame( 'Tom & Jerry', $v['short_description'] );
+
+        $v = $this->ok( [ 'name' => 'x', 'description' => 'Tom &amp; Jerry', 'short_description' => 'Tom &amp; Jerry' ] );
+        $this->assertSame( 'Tom &amp; Jerry', $v['description'] );
+        $this->assertSame( 'Tom &amp; Jerry', $v['short_description'] );
     }
 
     public static function decimalPairs(): array

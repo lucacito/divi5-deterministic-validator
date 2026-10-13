@@ -30,8 +30,8 @@ final class ProductValuePolicy
     public const MAX_GALLERY     = 10;
     public const MAX_STOCK       = 1000000;
 
-    private const DECIMAL = '/^\d{1,10}(\.\d{1,6})?$/';
-    private const SLUG    = '/^[A-Za-z0-9%_-]{1,200}$/';
+    private const DECIMAL = '/^\d{1,10}(\.\d{1,6})?$/D';
+    private const SLUG    = '/^[A-Za-z0-9%_-]{1,200}$/D';
     private const STOCK_STATUSES = [ 'instock', 'outofstock', 'onbackorder' ];
     private const BACKORDERS     = [ 'no', 'notify', 'yes' ];
     private const TAX_STATUSES   = [ 'taxable', 'shipping', 'none' ];
@@ -77,7 +77,7 @@ final class ProductValuePolicy
         $v['sku'] = '';
         if ( self::given( $product, 'sku' ) ) {
             $sku = $product['sku'];
-            if ( ! is_string( $sku ) || 1 !== preg_match( '/^[\x20-\x7E]{1,100}$/', $sku ) || trim( $sku ) !== $sku ) {
+            if ( ! is_string( $sku ) || 1 !== preg_match( '/^[\x20-\x7E]{1,100}$/D', $sku ) || trim( $sku ) !== $sku ) {
                 $r[] = '"sku" must be 1 to 100 printable ASCII characters without leading or trailing spaces';
             } else {
                 $v['sku'] = $sku;
