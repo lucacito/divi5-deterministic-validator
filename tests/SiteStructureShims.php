@@ -24,6 +24,10 @@ if ( ! function_exists( 'get_all_post_type_supports' ) ) {
 if ( ! function_exists( 'wp_get_registered_image_subsizes' ) ) {
     function wp_get_registered_image_subsizes() { return $GLOBALS['__ss_image_sizes'] ?? []; }
 }
+if ( ! function_exists( 'wp_count_posts' ) ) {
+    // Falls back to __wc_counts because this file is required before tests/WooShims.php, so this definition wins there.
+    function wp_count_posts( $type = 'post' ) { return (object) ( $GLOBALS['__ss_counts'][ $type ] ?? $GLOBALS['__wc_counts'] ?? [] ); }
+}
 if ( ! function_exists( 'acf_get_field_groups' ) ) {
     function acf_get_field_groups() { return $GLOBALS['__ss_acf_groups'] ?? []; }
 }

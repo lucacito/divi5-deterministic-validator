@@ -118,7 +118,7 @@ if ( ! function_exists( 'get_terms' ) ) {
     }
 }
 if ( ! function_exists( 'wp_count_posts' ) ) {
-    function wp_count_posts( $type = 'post' ) { return (object) ( $GLOBALS['__wc_counts'] ?? [] ); }
+    function wp_count_posts( $type = 'post' ) { return (object) ( $GLOBALS['__ss_counts'][ $type ] ?? $GLOBALS['__wc_counts'] ?? [] ); }
 }
 if ( ! function_exists( 'wp_get_attachment_url' ) ) {
     function wp_get_attachment_url( $id ) { return $GLOBALS['__wc_attachments'][ (int) $id ] ?? false; }
