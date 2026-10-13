@@ -81,7 +81,7 @@ final class BulkAdjustPrices implements ProTool
                             'types'        => $list( 'simple, variable and/or external', 'string' ),
                             'stock_status' => [ 'type' => 'string', 'description' => 'instock, outofstock or onbackorder' ],
                             'on_sale'      => [ 'type' => 'boolean', 'description' => 'Only products on sale now (true) or not (false)' ],
-                            'search'       => [ 'type' => 'string', 'description' => 'Words in the product name' ],
+                            'search'       => [ 'type' => 'string', 'description' => 'A phrase contained in the product name (case-insensitive)' ],
                             'ids'          => $list( 'Product ids (at most 100)', 'integer' ),
                             'all'          => [ 'type' => 'boolean', 'description' => 'true = every product (in the allowed statuses); cannot be combined with the narrowing filters' ],
                             'exclude_ids'  => $list( 'Product ids to leave out', 'integer' ),

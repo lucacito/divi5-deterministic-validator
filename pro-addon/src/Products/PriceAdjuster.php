@@ -26,7 +26,7 @@ final class PriceAdjuster
         'not_positive'      => 'the new price would be zero or below',
         'too_large'         => 'the new price would be above the largest price WooCommerce can hold here',
         'rounding_reversed' => 'rounding would move the price the opposite way to the change',
-        'not_above_sale'    => 'the new regular price would not stay above the active sale price',
+        'not_above_sale'    => 'the new regular price would not stay above the stored sale price (active or scheduled)',
     ];
 
     /**

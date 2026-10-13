@@ -216,7 +216,7 @@ class BulkAdjustPricesTest extends TestCase
         $this->assertSame( 'no_regular_price', $by[53] );
         $this->assertSame( 'not_above_sale', $by[51], '10 - 9 = 1 is below the sale 8' );
         $this->assertSame( 'variation_blocked', $by[60], 'row 61 would be 1 (fine) but row 62 would be 3, below its sale 9' );
-        $this->assertSame( [ 'id' => 62, 'reason' => 'not_above_sale', 'detail' => 'the new regular price would not stay above the active sale price' ], $r['skipped'][2]['rows'][0] );
+        $this->assertSame( [ 'id' => 62, 'reason' => 'not_above_sale', 'detail' => 'the new regular price would not stay above the stored sale price (active or scheduled)' ], $r['skipped'][2]['rows'][0] );
         $this->assertSame( [ 50, 55 ], $this->ids( $r['products'] ), 'the rest proceed' );
 
         $r = $this->dry( [ 'filter' => [ 'ids' => [ 50, 55 ] ], 'change' => [ 'mode' => 'amount', 'value' => '-20' ] ] );

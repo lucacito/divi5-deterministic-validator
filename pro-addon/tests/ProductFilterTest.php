@@ -48,6 +48,18 @@ class ProductFilterTest extends TestCase
         $this->assertNull( $spec['round_to'] );
     }
 
+    public function testNumericLookingSlugsNormaliseToTheSameListInEveryOrder(): void
+    {
+        $orders = [ [ '10', '1e1', '9' ], [ '9', '10', '1e1' ], [ '1e1', '9', '10' ], [ '9', '1e1', '10' ], [ '10', '9', '1e1' ], [ '1e1', '10', '9' ] ];
+        $first  = null;
+        foreach ( $orders as $order ) {
+            $spec = $this->ok( [ 'filter' => [ 'categories' => $order ], 'change' => $this->change() ] );
+            $first ??= $spec['filter']['categories'];
+            $this->assertSame( $first, $spec['filter']['categories'], 'the same slugs in any order give the same list (so the same token)' );
+        }
+        $this->assertSame( [ '10', '1e1', '9' ], $first, 'a plain string order' );
+    }
+
     public function testTheSameRequestWrittenAnotherWayNormalisesAlike(): void
     {
         $a = $this->ok( [ 'filter' => [ 'categories' => [ 'b', 'a', 'a' ], 'ids' => [ 9, 3 ], 'status' => [ 'private', 'publish' ] ], 'change' => $this->change( 'percent', '10.0' ), 'round_to' => '0.50' ] );

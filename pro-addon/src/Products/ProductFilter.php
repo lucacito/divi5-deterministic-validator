@@ -212,7 +212,7 @@ final class ProductFilter
             }
         }
         $list = array_values( array_unique( $list ) );
-        sort( $list );
+        sort( $list, SORT_STRING );
 
         return $list;
     }
