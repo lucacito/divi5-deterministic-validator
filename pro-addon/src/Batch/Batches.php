@@ -15,6 +15,8 @@ use AiEditorDivi5\Pro\Kinds\PageTrashedKind;
 use AiEditorDivi5\Pro\Kinds\PostContentKind;
 use AiEditorDivi5\Pro\Kinds\PostMetaKind;
 use AiEditorDivi5\Pro\Kinds\PostStatusKind;
+use AiEditorDivi5\Pro\Kinds\ProductCreatedKind;
+use AiEditorDivi5\Pro\Kinds\ProductTrashedKind;
 use AiEditorDivi5\Pro\Kinds\ThemeLayoutKind;
 use AiEditorDivi5\Pro\Kinds\ThemeTemplateKind;
 
@@ -50,6 +52,8 @@ final class Batches
             new GlobalVariableKind(),
             new GlobalPresetKind(),
             new PostMetaKind(),
+            new ProductCreatedKind(),
+            new ProductTrashedKind(),
         ];
         $out = [];
         foreach ( $kinds as $kind ) {
