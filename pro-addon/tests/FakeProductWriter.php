@@ -149,13 +149,13 @@ final class FakeProductWriter implements ProductWriter
                     continue 2;
                 }
             }
-            if ( null !== ( $criteria['stock_status'] ?? null ) && $criteria['stock_status'] !== $p['stock_status'] ) {
+            if ( null !== ( $criteria['stock_status'] ?? null ) && $criteria['stock_status'] !== ( $p['stock_status'] ?? '' ) ) {
                 continue;
             }
             if ( null !== ( $criteria['on_sale'] ?? null ) && ( '' !== (string) ( $p['sale_price'] ?? '' ) ) !== $criteria['on_sale'] ) {
                 continue;
             }
-            if ( null !== ( $criteria['search'] ?? null ) && false === stripos( (string) $p['name'], (string) $criteria['search'] ) ) {
+            if ( null !== ( $criteria['search'] ?? null ) && false === stripos( (string) ( $p['name'] ?? '' ), (string) $criteria['search'] ) ) {
                 continue;
             }
             if ( [] !== ( $criteria['ids'] ?? [] ) && ! in_array( (int) $id, $criteria['ids'], true ) ) {
