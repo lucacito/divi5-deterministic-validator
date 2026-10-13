@@ -41,6 +41,7 @@ require_once __DIR__ . '/Kinds/PageTrashedKind.php';
 require_once __DIR__ . '/Kinds/ProductCreatedKind.php';
 require_once __DIR__ . '/Kinds/ProductTrashedKind.php';
 require_once __DIR__ . '/Kinds/ProductFieldsKind.php';
+require_once __DIR__ . '/Products/ProductUpdateRun.php';
 require_once __DIR__ . '/Tools/PublishPage.php';
 require_once __DIR__ . '/Site/BuildLock.php';
 require_once __DIR__ . '/Site/BuildLaunch.php';
