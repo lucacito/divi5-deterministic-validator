@@ -6,6 +6,7 @@ namespace AiEditorDivi5\Pro;
 
 use AiEditorDivi5\Pro\Batch\Batches;
 use AiEditorDivi5\Pro\Tools\AuditSite;
+use AiEditorDivi5\Pro\Tools\BulkAdjustPrices;
 use AiEditorDivi5\Pro\Tools\BuildSite;
 use AiEditorDivi5\Pro\Tools\CreateProduct;
 use AiEditorDivi5\Pro\Tools\EditThemeLayout;
@@ -59,6 +60,7 @@ final class Tools
             new SetCustomFields( $log ),
             new CreateProduct( $log ),
             new UpdateProducts( $log ),
+            new BulkAdjustPrices( $log ),
         ];
     }
 }
