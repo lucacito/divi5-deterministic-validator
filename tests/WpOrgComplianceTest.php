@@ -580,15 +580,35 @@ class WpOrgComplianceTest extends TestCase
         $this->assertStringContainsString('It cannot create or change presets or colors', $r, 'the readme must say plainly that presets and colors are read-only');
     }
 
+    /**
+     * The identifiers that would WRITE WooCommerce data. set_status is deliberately NOT in the list: WP_REST_Response::set_status()
+     * is legitimate, ordinary code in this plugin and a WooCommerce status write is already caught by ->save( and the other names.
+     */
+    private const WOO_WRITE_BAN = '/\b(wc_update_product(_stock|_lookup_tables)?|wc_create_product|wc_delete_product|wc_update_product_stock|wc_(reduce|increase)_stock_levels|set_(regular_price|sale_price|price|stock_quantity|stock_status|manage_stock|backorders|sku|short_description|name|description|props|date_on_sale_from|date_on_sale_to)\s*\(|new\s+WC_Product(_[A-Za-z]+)?\s*\()|->save\s*\(|\b(update|add)_post_meta\s*\([^;]*\'_(price|regular_price|sale_price|stock|stock_status)\'/';
+
+    public function testTheWooCommerceWriteBanActuallyMatchesWhatItNames(): void
+    {
+        foreach ([
+            '$p->set_name( \'x\' );', '$p->save();', '$p->set_description("d");', '$p->set_props( [] );', '$p->set_date_on_sale_from( 1 );',
+            'wc_reduce_stock_levels( 1 );', 'wc_increase_stock_levels($o);', "update_post_meta( \$id, '_price', '1' );", "add_post_meta( \$id, '_stock', 3 );",
+            '$p->set_regular_price( 1 );', 'wc_update_product_stock( $p, 1 );',
+        ] as $planted) {
+            $this->assertSame(1, preg_match(self::WOO_WRITE_BAN, $planted), "the ban must match: {$planted}");
+        }
+        // set_status stays unbanned on purpose (WP_REST_Response::set_status), and a plain read must never match.
+        foreach (['$response->set_status( 404 );', '$p->get_price();', "get_post_meta( \$id, '_price', true );"] as $ok) {
+            $this->assertSame(0, preg_match(self::WOO_WRITE_BAN, $ok), "the ban must not match: {$ok}");
+        }
+    }
+
     public function testTheFreePluginNeverWritesWooCommerceData(): void
     {
-        $banned = '/\b(wc_update_product(_stock|_lookup_tables)?|wc_create_product|wc_delete_product|wc_update_product_stock|set_(regular_price|sale_price|price|stock_quantity|stock_status|manage_stock|backorders|sku|short_description)\s*\(|new\s+WC_Product(_[A-Za-z]+)?\s*\()/';
-        $hits   = [];
+        $hits = [];
         foreach ($this->files() as $rel => $src) {
             if (str_starts_with($rel, 'validator/')) {
                 continue;
             }
-            if (preg_match($banned, $src, $m)) {
+            if (preg_match(self::WOO_WRITE_BAN, $src, $m)) {
                 $hits[] = "$rel ({$m[0]})";
             }
         }
