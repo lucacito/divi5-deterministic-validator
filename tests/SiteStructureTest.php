@@ -15,7 +15,7 @@ class SiteStructureTest extends TestCase
 {
     protected function tearDown(): void
     {
-        foreach ( [ 'post_types', 'taxonomies', 'object_taxonomies', 'supports', 'image_sizes', 'acf_groups', 'acf_fields' ] as $k ) {
+        foreach ( [ 'post_types', 'taxonomies', 'object_taxonomies', 'supports', 'image_sizes', 'acf_groups', 'acf_fields', 'counts' ] as $k ) {
             unset( $GLOBALS[ '__ss_' . $k ] );
         }
     }
@@ -25,8 +25,8 @@ class SiteStructureTest extends TestCase
     {
         return $override + [
             'post_types'  => static fn () => [
-                'page' => [ 'label' => 'Pages', 'supports' => [ 'title', 'editor' ], 'taxonomies' => [], 'has_archive' => false, 'hierarchical' => true ],
-                'book' => [ 'label' => 'Books', 'supports' => [ 'title' ], 'taxonomies' => [ 'genre' ], 'has_archive' => true, 'hierarchical' => false ],
+                'page' => [ 'label' => 'Pages', 'supports' => [ 'title', 'editor' ], 'taxonomies' => [], 'has_archive' => false, 'hierarchical' => true, 'count' => 5 ],
+                'book' => [ 'label' => 'Books', 'supports' => [ 'title' ], 'taxonomies' => [ 'genre' ], 'has_archive' => true, 'hierarchical' => false, 'count' => 12 ],
             ],
             'taxonomies'  => static fn () => [ 'genre' => [ 'label' => 'Genres', 'object_types' => [ 'book' ], 'hierarchical' => true ] ],
             'image_sizes' => static fn () => [ 'thumbnail' => [ 'width' => 150, 'height' => 150, 'crop' => true ], 'large' => [ 'width' => 1024, 'height' => 1024, 'crop' => false ] ],
@@ -79,7 +79,7 @@ class SiteStructureTest extends TestCase
 
         $this->assertSame( [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields', 'truncated', 'notes' ], array_keys( $d ) );
         $this->assertSame( [ 'page', 'book' ], array_column( $d['post_types'], 'name' ) );
-        $this->assertSame( [ 'name' => 'book', 'label' => 'Books', 'supports' => [ 'title' ], 'taxonomies' => [ 'genre' ], 'has_archive' => true, 'hierarchical' => false ], $d['post_types'][1] );
+        $this->assertSame( [ 'name' => 'book', 'label' => 'Books', 'supports' => [ 'title' ], 'taxonomies' => [ 'genre' ], 'has_archive' => true, 'hierarchical' => false, 'count' => 12 ], $d['post_types'][1] );
         $this->assertSame( [ [ 'name' => 'genre', 'label' => 'Genres', 'object_types' => [ 'book' ], 'hierarchical' => true ] ], $d['taxonomies'] );
         $this->assertSame( [ 'name' => 'thumbnail', 'width' => 150, 'height' => 150, 'crop' => true ], $d['image_sizes'][0] );
         $this->assertFalse( $d['truncated'] );
@@ -261,11 +261,25 @@ class SiteStructureTest extends TestCase
         $this->assertSame( [ 'title' ], $d['post_types'][0]['supports'], 'only strings are kept' );
     }
 
+    public function testEveryPostTypeCarriesAnIntegerCountAndAMissingOneIsZero(): void
+    {
+        $d = SiteStructure::catalogWith( [ 'post_types' => static fn (): array => [
+            'book' => [ 'label' => 'Books', 'count' => '12' ],
+            'note' => [ 'label' => 'Notes' ],
+        ] ], [ 'post_types' ] );
+        $this->assertSame( 12, $d['post_types'][0]['count'] );
+        $this->assertSame( 0, $d['post_types'][1]['count'] );
+    }
+
     // ---- the real readers over the WordPress / ACF shims ---------------------------------------
 
     public function testTheRealReadersMapWordPressObjectsAndAcfArrays(): void
     {
-        $GLOBALS['__ss_post_types']        = [ 'book' => (object) [ 'label' => 'Books', 'has_archive' => true, 'hierarchical' => false ] ];
+        $GLOBALS['__ss_post_types']        = [
+            'book'       => (object) [ 'label' => 'Books', 'has_archive' => true, 'hierarchical' => false ],
+            'attachment' => (object) [ 'label' => 'Media', 'has_archive' => false, 'hierarchical' => false ],
+        ];
+        $GLOBALS['__ss_counts']            = [ 'book' => [ 'publish' => 7, 'draft' => 2 ], 'attachment' => [ 'inherit' => 30 ] ];
         $GLOBALS['__ss_supports']          = [ 'book' => [ 'title' => true, 'editor' => true, 'comments' => false ] ];
         $GLOBALS['__ss_object_taxonomies'] = [ 'book' => [ 'genre' ] ];
         $GLOBALS['__ss_taxonomies']        = [ 'genre' => (object) [ 'label' => 'Genres', 'object_type' => [ 'book' ], 'hierarchical' => true ] ];
@@ -275,7 +289,8 @@ class SiteStructureTest extends TestCase
 
         $d = SiteStructure::catalog();
 
-        $this->assertSame( [ 'name' => 'book', 'label' => 'Books', 'supports' => [ 'title', 'editor' ], 'taxonomies' => [ 'genre' ], 'has_archive' => true, 'hierarchical' => false ], $d['post_types'][0] );
+        $this->assertSame( [ 'name' => 'book', 'label' => 'Books', 'supports' => [ 'title', 'editor' ], 'taxonomies' => [ 'genre' ], 'has_archive' => true, 'hierarchical' => false, 'count' => 7 ], $d['post_types'][0] );
+        $this->assertSame( 30, $d['post_types'][1]['count'], 'attachments are counted by the inherit status' );
         $this->assertSame( [ 'name' => 'genre', 'label' => 'Genres', 'object_types' => [ 'book' ], 'hierarchical' => true ], $d['taxonomies'][0] );
         $this->assertTrue( $d['image_sizes'][0]['crop'], 'an array crop position counts as cropped' );
         $this->assertSame( [ 'name' => 'isbn', 'label' => 'ISBN', 'type' => 'text' ], $d['acf']['groups'][0]['fields'][0] );

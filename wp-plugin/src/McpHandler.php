@@ -117,7 +117,7 @@ final class McpHandler
             ],
             [
                 'name'        => 'get_site_structure',
-                'description' => 'List how this site is set up (read-only): public post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups, where each group applies (location rules) and its fields (names, labels, types and choices; never field values). Call it before building a page that lists custom post types, uses a given image size or should refer to ACF fields or other custom fields. Pass "include" to get only some sections: post_types, taxonomies, image_sizes, acf, custom_fields. The custom_fields section lists the custom field KEYS your recent posts use (a sample, never values); use get_custom_fields to read one post\'s values.',
+                'description' => 'List how this site is set up (read-only): public post types, each with how many items it has (published), taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups, where each group applies (location rules) and its fields (names, labels, types and choices; never field values). Call it before building a page that lists custom post types, uses a given image size or should refer to ACF fields or other custom fields. Pass "include" to get only some sections: post_types, taxonomies, image_sizes, acf, custom_fields. The custom_fields section lists the custom field KEYS your recent posts use (a sample, never values); use get_custom_fields to read one post\'s values.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => ['include' => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => ['post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields']], 'description' => 'Optional. Sections to return; default all.']],
@@ -133,6 +133,35 @@ final class McpHandler
                         'id'   => ['type' => 'integer', 'description' => 'WordPress post ID (a page, a Divi Project or another public post type)'],
                         'keys' => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Optional. Only these keys (at most 100).'],
                     ],
+                    'required'   => ['id'],
+                ],
+            ],
+            [
+                'name'        => 'list_products',
+                'description' => 'List and count the WooCommerce products of this site (read-only): totals by status and by type, and one light row per product (id, name, type, status, SKU, current, regular and sale price, on-sale flag, stock status and quantity, categories, link). Use it to answer store questions ("how many products do I have?") and before writing a shop page or product copy, so names, prices and categories are real. Filters: status, type, category (slug), stock_status, on_sale, search, orderby (title, date, price), order, page, per_page (1 to 50, default 25). Needs the edit_products and edit_others_products permissions. Never returns downloadable files, purchase notes, customer or order data, or custom fields. If WooCommerce is not active it says so. Use get_product for one product in full.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'status'       => ['type' => 'string', 'enum' => ['any', 'publish', 'draft', 'pending', 'private', 'future'], 'description' => 'Optional. Default any (never trash).'],
+                        'type'         => ['type' => 'string', 'enum' => ['simple', 'variable', 'grouped', 'external'], 'description' => 'Optional. Product type.'],
+                        'category'     => ['type' => 'string', 'description' => 'Optional. Product category slug.'],
+                        'stock_status' => ['type' => 'string', 'enum' => ['instock', 'outofstock', 'onbackorder'], 'description' => 'Optional.'],
+                        'on_sale'      => ['type' => 'boolean', 'description' => 'Optional. true = only products on sale, false = only products not on sale.'],
+                        'search'       => ['type' => 'string', 'description' => 'Optional. Words in the product name or text (at most 100 characters).'],
+                        'orderby'      => ['type' => 'string', 'enum' => ['title', 'date', 'price'], 'description' => 'Optional. Default title.'],
+                        'order'        => ['type' => 'string', 'enum' => ['asc', 'desc'], 'description' => 'Optional. Default asc.'],
+                        'page'         => ['type' => 'integer', 'description' => 'Optional. Default 1.'],
+                        'per_page'     => ['type' => 'integer', 'description' => 'Optional. 1 to 50, default 25.'],
+                    ],
+                    'required'   => [],
+                ],
+            ],
+            [
+                'name'        => 'get_product',
+                'description' => 'Read ONE WooCommerce product in full (read-only): its text, price, stock, categories, tags, attributes, images, dimensions, tax and shipping settings and, for a variable product, every variation with its own price, stock and attributes (grouped products list their child ids, external products their link). Never returns downloadable files, the purchase note, custom fields, or the text of a password-protected product. Get ids from list_products. Needs permission to edit that product.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => ['id' => ['type' => 'integer', 'description' => 'WooCommerce product ID (not a variation id)']],
                     'required'   => ['id'],
                 ],
             ],
@@ -306,6 +335,8 @@ final class McpHandler
             'list_global_styles' => $this->toolListGlobalStyles($id, $arguments),
             'get_site_structure' => $this->toolSiteStructure($id, $arguments),
             'get_custom_fields'  => $this->toolGetCustomFields($id, $arguments),
+            'list_products'      => $this->toolListProducts($id, $arguments),
+            'get_product'        => $this->toolGetProduct($id, $arguments),
             'create_page'        => $this->toolCreatePage($id, $arguments),
             default              => $this->extensionCall($id, $name, $arguments),
         };
@@ -741,6 +772,44 @@ final class McpHandler
 
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => wp_json_encode($result)]],
+        ]);
+    }
+
+    private function toolListProducts(mixed $id, array $args): WP_REST_Response
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('list_products', null, 'error');
+            return $this->rpcError($id, -32602, 'You do not have permission to read products.');
+        }
+
+        return $this->productResult($id, 'list_products', null, ProductService::list($args, false, new WooProductGateway(), 'current_user_can'));
+    }
+
+    private function toolGetProduct(mixed $id, array $args): WP_REST_Response
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('get_product', null, 'error');
+            return $this->rpcError($id, -32602, 'You do not have permission to read products.');
+        }
+        $productId = $args['id'] ?? null;
+        if (!is_int($productId) || $productId < 1) {
+            UsageTracker::log('get_product', null, 'error');
+            return $this->rpcError($id, -32602, 'id must be a positive integer.');
+        }
+
+        return $this->productResult($id, 'get_product', $productId, ProductService::get($productId, new WooProductGateway(), 'current_user_can'));
+    }
+
+    /** @param array<string,mixed> $r a ProductService result */
+    private function productResult(mixed $id, string $endpoint, ?int $postId, array $r): WP_REST_Response
+    {
+        UsageTracker::log($endpoint, $postId, $r['ok'] ? UsageTracker::RESULT_READ : UsageTracker::RESULT_ERROR);
+        if (!$r['ok']) {
+            return $this->rpcError($id, 'server' === $r['kind'] ? -32603 : -32602, (string) $r['message']);
+        }
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => wp_json_encode($r['data'])]],
         ]);
     }
 

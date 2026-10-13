@@ -375,11 +375,12 @@ class WpOrgComplianceTest extends TestCase
         sort($tools);
         $this->assertSame([
             'create_page', 'edit_page_content', 'get_custom_fields', 'get_image_guide', 'get_landing_guide', 'get_page_history_entry',
-            'get_page_layout', 'get_section_recipes', 'get_site_guide', 'get_site_structure', 'get_style_guide', 'list_divi_pages',
-            'list_global_styles', 'list_media_images', 'list_page_history', 'restore_page_version', 'update_page_layout', 'validate_layout',
+            'get_page_layout', 'get_product', 'get_section_recipes', 'get_site_guide', 'get_site_structure', 'get_style_guide',
+            'list_divi_pages', 'list_global_styles', 'list_media_images', 'list_page_history', 'list_products', 'restore_page_version',
+            'update_page_layout', 'validate_layout',
         ], $tools);
-        // 18 tools: 4.8.0 adds the READ-ONLY get_custom_fields (one post's non-protected custom field values). Nothing is gated and nothing writes a setting; no rule of this test is loosened.
-        $this->assertCount(18, $tools);
+        // 20 tools: 4.9.0 adds the READ-ONLY list_products and get_product (the WooCommerce catalogue). Nothing is gated and nothing writes anything; no rule of this test is loosened.
+        $this->assertCount(20, $tools);
     }
 
     public function testVisibleProductNameIsTheFullJhmgName(): void
@@ -575,7 +576,42 @@ class WpOrgComplianceTest extends TestCase
         $this->assertSame(['get'], array_keys($spec['paths']['/global-styles']));
         $r = (string) file_get_contents(self::ROOT . '/readme.txt');
         $this->assertStringContainsString('`list_global_styles`', $r);
-        $this->assertStringContainsString('(18 tools)', $r);
+        $this->assertStringContainsString('(20 tools)', $r);
         $this->assertStringContainsString('It cannot create or change presets or colors', $r, 'the readme must say plainly that presets and colors are read-only');
+    }
+
+    /**
+     * The identifiers that would WRITE WooCommerce data. set_status is deliberately NOT in the list: WP_REST_Response::set_status()
+     * is legitimate, ordinary code in this plugin and a WooCommerce status write is already caught by ->save( and the other names.
+     */
+    private const WOO_WRITE_BAN = '/\b(wc_update_product(_stock|_lookup_tables)?|wc_create_product|wc_delete_product|wc_update_product_stock|wc_(reduce|increase)_stock_levels|set_(regular_price|sale_price|price|stock_quantity|stock_status|manage_stock|backorders|sku|short_description|name|description|props|date_on_sale_from|date_on_sale_to)\s*\(|new\s+WC_Product(_[A-Za-z]+)?\s*\()|->save\s*\(|\b(update|add)_post_meta\s*\([^;]*\'_(price|regular_price|sale_price|stock|stock_status)\'/';
+
+    public function testTheWooCommerceWriteBanActuallyMatchesWhatItNames(): void
+    {
+        foreach ([
+            '$p->set_name( \'x\' );', '$p->save();', '$p->set_description("d");', '$p->set_props( [] );', '$p->set_date_on_sale_from( 1 );',
+            'wc_reduce_stock_levels( 1 );', 'wc_increase_stock_levels($o);', "update_post_meta( \$id, '_price', '1' );", "add_post_meta( \$id, '_stock', 3 );",
+            '$p->set_regular_price( 1 );', 'wc_update_product_stock( $p, 1 );',
+        ] as $planted) {
+            $this->assertSame(1, preg_match(self::WOO_WRITE_BAN, $planted), "the ban must match: {$planted}");
+        }
+        // set_status stays unbanned on purpose (WP_REST_Response::set_status), and a plain read must never match.
+        foreach (['$response->set_status( 404 );', '$p->get_price();', "get_post_meta( \$id, '_price', true );"] as $ok) {
+            $this->assertSame(0, preg_match(self::WOO_WRITE_BAN, $ok), "the ban must not match: {$ok}");
+        }
+    }
+
+    public function testTheFreePluginNeverWritesWooCommerceData(): void
+    {
+        $hits = [];
+        foreach ($this->files() as $rel => $src) {
+            if (str_starts_with($rel, 'validator/')) {
+                continue;
+            }
+            if (preg_match(self::WOO_WRITE_BAN, $src, $m)) {
+                $hits[] = "$rel ({$m[0]})";
+            }
+        }
+        $this->assertSame([], $hits, 'the free plugin only READS WooCommerce: writing a price or stock level belongs to the Pro add-on');
     }
 }

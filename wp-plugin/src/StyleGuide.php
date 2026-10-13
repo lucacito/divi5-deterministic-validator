@@ -310,6 +310,11 @@ key with its value (never protected or secret-looking keys), so you can write co
 fits. A key with no ACF field behind it binds the same way in a text module: put its name in place of
 `FIELD_NAME`.
 
+If the site sells products with WooCommerce, call `list_products` before you write a shop page or product copy: it returns the
+real product names, prices, stock and categories (and how many products there are), and `get_product` gives one product in
+full, including its variations. Use those values; never invent a product, a price or a category. These tools only read: you
+cannot change a product from here.
+
 ## Match the site (colors and presets)
 Call `list_global_styles` before styling. It lists the site's own global colors (ids like
 `gcid-…`), module presets and variables. Reuse a site color instead of hard-coding a hex:

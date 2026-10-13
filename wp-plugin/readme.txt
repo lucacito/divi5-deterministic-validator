@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.8.0
+Stable tag:        4.9.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -43,7 +43,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * "Add a section with our opening hours under the hero on the About page."
 * "Undo the last change you made to the Services page."
 
-= What your AI assistant can do (18 tools) =
+= What your AI assistant can do (20 tools) =
 
 Read and check:
 
@@ -52,6 +52,8 @@ Read and check:
 * `list_global_styles`: list your site's own Divi colors and presets so the AI can reuse them (read-only).
 * `get_site_structure`: list your site's custom post types, taxonomies, image sizes and Advanced Custom Fields field groups so pages fit your site (read-only: field names and the keys your posts use, never values here or theme files; available over MCP and the REST API, not in the ChatGPT Action).
 * `get_custom_fields`: read the custom fields of one page or Divi Project you can edit, with their values, so your assistant can write copy that fits and use the right field names (read-only: keys WordPress protects, or that look like passwords, API keys or other secrets, are never shown; available over MCP and the REST API, not in the ChatGPT Action).
+* `list_products`: list and count your WooCommerce products with their prices, stock status and categories (read-only; needs the permission to edit products; available over MCP and the REST API, not in the ChatGPT Action).
+* `get_product`: read one WooCommerce product in full, including its variations (read-only; never downloadable files, purchase notes or custom fields).
 * `validate_layout`: check a layout without saving anything.
 
 Edit and create:
@@ -129,7 +131,7 @@ This plugin does not connect to any external service. Your AI assistant connects
 
 = Does the AI get administrator access to my site? =
 
-No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages and Divi Projects, create pages (as drafts), read Media Library images (read-only), read your site's Divi presets and colors (read-only), read how your site is set up (post types, taxonomies, image sizes and ACF field definitions, read-only), and read the custom fields of a page or Divi Project you can edit (read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
+No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages and Divi Projects, create pages (as drafts), read Media Library images (read-only), read your site's Divi presets and colors (read-only), read how your site is set up (post types, taxonomies, image sizes and ACF field definitions, read-only), read the custom fields of a page or Divi Project you can edit (read-only), and read your WooCommerce products (read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
 
 = Can the AI add custom CSS, JavaScript or PHP to my site? =
 
@@ -161,11 +163,14 @@ The plugin edits the Divi 5 layout data directly, so it is faster and more preci
 
 = Does the checking use up my AI tokens? =
 
-No. The check runs in PHP on your own server. Your assistant only reads what the plugin sends back: the tool list it loads once per conversation (about 2,900 tokens), reading the page it is editing (about 600 to 16,500 tokens depending on its size), and the details of what was wrong when a layout is refused (about 400 tokens for one unknown block). These are estimates; the real count depends on the model.
+No. The check runs in PHP on your own server. Your assistant only reads what the plugin sends back: the tool list it loads once per conversation (about 4,000 tokens), reading the page it is editing (about 300 to 16,500 tokens depending on its size), and the details of what was wrong when a layout is refused (about 400 tokens for one unknown block). These are estimates; the real count depends on the model.
 
 = Does it work with Gemini? =
 
 Yes. It has been tested with Gemini CLI: copy the one command from the Gemini tab on the Settings screen. Any assistant that supports remote MCP servers can connect.
+
+= Does it work with WooCommerce? =
+Yes, for reading. Your assistant can list and count your products and read one product in full (name, description, price, stock, categories, variations), so it can answer store questions and write shop pages that match your catalogue. It never changes a product: prices and stock are not touched by this plugin.
 
 = Can it read my ACF fields, custom post types or functions.php? =
 
@@ -205,6 +210,10 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.9.0 =
+* New: your AI assistant can now see your WooCommerce products. `list_products` lists and counts them with their prices, stock status and categories, and `get_product` reads one product in full, including its variations. Both are read-only: they never show downloadable files, purchase notes, customer or order data, or the text of a password-protected product, and they need the permission to edit products (shop managers and administrators have it). Available over MCP and the REST API, not in the ChatGPT Action.
+* Improved: `get_site_structure` now also says how many items each content type has, so your assistant can answer "how many products (or pages, or posts) do I have?".
 
 = 4.8.0 =
 * New: your AI assistant can edit Divi Projects, not only pages. Every tool that reads, checks, saves, previews or undoes a page's layout now also works on a Divi Project, with the same checks, history and Approval mode. `list_divi_pages` takes an optional `post_type` (page or project) to list them. New pages are still always drafts, and posts and other content types are still refused.

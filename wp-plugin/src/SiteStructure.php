@@ -73,13 +73,16 @@ final class SiteStructure
     {
         $out = [];
         foreach ( (array) get_post_types( [ 'public' => true ], 'objects' ) as $name => $type ) {
-            $name           = (string) $name;
+            $name         = (string) $name;
+            $counts       = function_exists( 'wp_count_posts' ) ? (array) wp_count_posts( $name ) : [];
+            $statusKey    = 'attachment' === $name ? 'inherit' : 'publish';
             $out[ $name ] = [
                 'label'        => (string) ( $type->label ?? $name ),
                 'supports'     => function_exists( 'get_all_post_type_supports' ) ? array_keys( array_filter( (array) get_all_post_type_supports( $name ) ) ) : [],
                 'taxonomies'   => function_exists( 'get_object_taxonomies' ) ? array_values( (array) get_object_taxonomies( $name ) ) : [],
                 'has_archive'  => (bool) ( $type->has_archive ?? false ),
                 'hierarchical' => (bool) ( $type->hierarchical ?? false ),
+                'count'        => (int) ( $counts[ $statusKey ] ?? 0 ),
             ];
         }
 
@@ -132,6 +135,7 @@ final class SiteStructure
                 'taxonomies'   => self::strings( $d['taxonomies'] ?? [] ),
                 'has_archive'  => (bool) ( $d['has_archive'] ?? false ),
                 'hierarchical' => (bool) ( $d['hierarchical'] ?? false ),
+                'count'        => max( 0, (int) ( $d['count'] ?? 0 ) ),
             ] );
         }
 

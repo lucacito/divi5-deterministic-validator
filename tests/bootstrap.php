@@ -250,6 +250,13 @@ if ( ! function_exists( 'apply_filters' ) ) {
 if ( ! function_exists( 'do_action' ) ) {
     function do_action( $tag, ...$args ) { foreach ( $GLOBALS['__wp_filters'][ $tag ] ?? [] as $fn ) { $fn( ...$args ); } }
 }
+if ( ! function_exists( 'remove_filter' ) ) {
+    function remove_filter( $tag, $fn, $priority = 10 ) {
+        $before                          = $GLOBALS['__wp_filters'][ $tag ] ?? [];
+        $GLOBALS['__wp_filters'][ $tag ] = array_values( array_filter( $before, fn ( $f ) => $f !== $fn ) );
+        return count( $before ) !== count( $GLOBALS['__wp_filters'][ $tag ] );
+    }
+}
 if ( ! function_exists( 'remove_all_filters' ) ) {
     function remove_all_filters( $tag ) { unset( $GLOBALS['__wp_filters'][ $tag ] ); return true; }
 }

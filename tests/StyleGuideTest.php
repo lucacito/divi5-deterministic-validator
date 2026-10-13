@@ -24,6 +24,14 @@ class StyleGuideTest extends TestCase
         $this->assertStringContainsString( '`custom_fields` section', $g, 'names the get_site_structure section that lists the keys' );
     }
 
+    public function testTheGuideTellsTheAiToReadTheRealCatalogueBeforeWritingShopCopy(): void
+    {
+        $g = StyleGuide::markdown();
+        $this->assertStringContainsString( '`list_products`', $g );
+        $this->assertStringContainsString( '`get_product`', $g );
+        $this->assertStringContainsString( 'never invent a product', $g );
+    }
+
     public function testImageGuidancePointsAtTheImageGuideNotARemoteHost(): void
     {
         $md = StyleGuide::markdown();
