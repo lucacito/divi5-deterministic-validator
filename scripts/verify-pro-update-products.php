@@ -13,8 +13,8 @@
  *
  * Self-cleaning: it force-deletes every product it created (SKU AIED-UP-*, or name "AIED UP ..."; also trashed ones), its product
  * category and tag (slugs aied-up-*), its Media Library files ("AIED UP ..."), its throwaway users (aied_pro_up_*) and the batch rows
- * it recorded. It records several batches and the batch store keeps only the newest 20, so on a site that already has batches it
- * evicts the oldest real ones: dev sites only.
+ * it recorded. It records about 22 batches and the batch store keeps only the newest 20, so it evicts EVERY batch row already on the
+ * dev site: dev sites only.
  *
  * Run: make verify-pro-update-products   (needs `make up`, WooCommerce, the free plugin and the Pro add-on active; no licence is
  * needed: the tool is called directly, not through the licence-gated registry)
@@ -485,6 +485,7 @@ try {
 
     // ---- a field edited after a run is skipped by the undo -----------------------------------------------------------------------------
     [ , $r, $err ] = $go( [ [ 'id' => $S, 'regular_price' => '33' ], [ 'id' => $U, 'weight' => '4' ] ] );
+    $check( null === $err && '4' === (string) $writer->product( $U )['weight'] && '33' === $wc( $S )['regular'], 'the run set the weights and prices the undo test relies on (U weight 4, S regular price 33)' );
     $sp = wc_get_product( $S );
     $sp->set_regular_price( '34' ); // the owner edits a field the run changed
     $sp->save();
@@ -500,9 +501,11 @@ try {
     $fixBefore    = $fixtures();
     $stateBefore  = $stateOf( [ $S, $U, $V ] );
     $newestBefore = $newestId();
-    $failing = new UpdateProducts( $log, new AiedUpFailingWriter( new WooProductWriter(), 2 ) );
+    $failWriter = new AiedUpFailingWriter( new WooProductWriter(), 2 );
+    $failing    = new UpdateProducts( $log, $failWriter );
     [ , , $err ] = $go( $failUpdates, $failing );
     $check( null !== $err && str_contains( $err, 'Could not update Product 2' ) && ! str_contains( $err, '/var/www' ) && ! str_contains( $err, 'simulated' ), 'a failing second save is refused with a message that shows no path: ' . (string) $err );
+    $check( $failWriter->applyCalls >= 3, "the failing run re-applied the first product's original values through the writer (apply called {$failWriter->applyCalls} times, at least 3)" );
     $check( $fixBefore === $fixtures() && $stateBefore === $stateOf( [ $S, $U, $V ] ) && $newestBefore === $newestId(), 'after the failing save every product is exactly as before (first product put back) and no batch was recorded' );
 
     $dropping = new UpdateProducts( $log, new AiedUpFailingWriter( new WooProductWriter(), 0, 'regular_price' ) );
@@ -525,10 +528,17 @@ try {
 
     wp_set_current_user( $users['shop_manager'] );
     $fixBefore = $fixtures();
+    $smBefore  = $readBack( $S );
     [ , $r, $err ] = $go( [ [ 'id' => $S, 'name' => AIED_UP_NAME . 'Salt & Pepper', 'description' => 'Fish & chips' ] ] );
     $check( null === $err && true === ( $r['changed'] ?? null ), 'a shop manager changes a name and a description containing "&" (core kses stores "&amp;"; the read-back accepts it)' . ( null === $err ? '' : ': ' . $err ) );
     $sm = $readBack( $S );
-    $check( str_contains( (string) ( $sm['name'] ?? '' ), 'Salt &amp; Pepper' ) || str_contains( (string) ( $sm['name'] ?? '' ), 'Salt & Pepper' ), 'the stored name is "Salt & Pepper" or its "&amp;" form: ' . (string) ( $sm['name'] ?? '' ) );
+    $smName = (string) ( $sm['name'] ?? '' );
+    $smDesc = (string) ( $sm['description'] ?? '' );
+    $nameForm = AIED_UP_NAME . 'Salt &amp; Pepper' === $smName ? '&amp;' : ( AIED_UP_NAME . 'Salt & Pepper' === $smName ? '&' : '' );
+    $descForm = 'Fish &amp; chips' === $smDesc ? '&amp;' : ( 'Fish & chips' === $smDesc ? '&' : '' );
+    $check( '' !== $nameForm && $smName !== (string) ( $smBefore['name'] ?? '' ), 'the shop manager\'s name is stored as "Salt & Pepper" in the "' . $nameForm . '" form and differs from the previous name: ' . $smName );
+    $check( '' !== $descForm && $smDesc !== (string) ( $smBefore['description'] ?? '' ), 'the shop manager\'s description (real wp_kses_post()) is stored as "Fish & chips" in the "' . $descForm . '" form and differs from the previous description: ' . $smDesc );
+    $note( 'wp_kses_post() stored the shop manager\'s "&" as "' . $descForm . '" in the description and "' . $nameForm . '" in the name' );
     [ $p2 ] = $run( [ 'updates' => [ [ 'id' => $S, 'name' => AIED_UP_NAME . 'Salt & Pepper' ] ], 'dry_run' => true ] );
     $check( [ $S ] === array_map( 'intval', (array) ( $p2['unchanged'] ?? [] ) ), 'asking for the same name again is "unchanged" (the stored "&amp;" is the same name)' );
     $trackUndo( $undo->undo( (int) ( $r['batch']['id'] ?? 0 ) ) );
@@ -587,6 +597,7 @@ try {
     $lowAfter = $pS->get_low_stock_amount( 'edit' );
     $check( null === $err && true === ( $r['changed'] ?? null ) && false === $ws['manage'], 'manage_stock false is applied: WooCommerce reports the simple product as unmanaged' . ( null === $err ? '' : ': ' . $err ) );
     $note( 'after manage_stock false WooCommerce ' . ( '' === (string) $lowAfter || null === $lowAfter ? 'CLEARED' : 'KEPT' ) . ' the low stock threshold (value now: ' . wp_json_encode( $lowAfter ) . '); quantity now ' . wp_json_encode( $ws['qty'] ) . ', status ' . $ws['status'] );
+    $check( null === $ws['qty'] || '' === (string) $lowAfter || null === $lowAfter, 'the flip changed at least one other stock field (quantity null or threshold cleared), so the undo below has something to restore' );
     $trackUndo( $undo->undo( (int) ( $r['batch']['id'] ?? 0 ) ) );
     $ws = $wc( $S );
     $pS = wc_get_product( $S );
@@ -605,7 +616,7 @@ try {
     $check( null === $err && $img === (int) wc_get_product( $S )->get_image_id( 'edit' ), 'image_id sets the featured image of the simple product' . ( null === $err ? '' : ': ' . $err ) );
     $setBatch = (int) ( $r['batch']['id'] ?? 0 );
     [ , $r2, $err ] = $go( [ [ 'id' => $S, 'image_id' => 0 ] ] );
-    $check( null === $err && 0 === (int) wc_get_product( $S )->get_image_id( 'edit' ) && '' === (string) ( $readBack( $S )['images']['featured'] ?? '' ), 'a run with image_id 0 removes the featured image (get_image_id() is 0)' . ( null === $err ? '' : ': ' . $err ) );
+    $check( null === $err && 0 === (int) wc_get_product( $S )->get_image_id( 'edit' ) && [] !== $readBack( $S )['images'] && '' === (string) ( $readBack( $S )['images']['featured'] ?? '' ), 'a run with image_id 0 removes the featured image (get_image_id() is 0)' . ( null === $err ? '' : ': ' . $err ) );
     $trackUndo( $undo->undo( (int) ( $r2['batch']['id'] ?? 0 ) ) );
     $check( $img === (int) wc_get_product( $S )->get_image_id( 'edit' ), 'undoing the removal puts the image back' );
     $trackUndo( $undo->undo( $setBatch ) );

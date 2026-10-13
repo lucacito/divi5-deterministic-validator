@@ -84,7 +84,7 @@ verify-pro-create-product:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-create-product.php --user=1
 
 # ---------------------------------------------------------------
-# verify-pro-update-products — real-site check of the Pro tool update_products (self-cleaning; dev site only; free + Pro plugins and WooCommerce active; it records several batches, so on a site with batches it evicts the oldest real ones)
+# verify-pro-update-products — real-site check of the Pro tool update_products (self-cleaning; dev site only; free + Pro plugins and WooCommerce active; it records about 22 batches, so it evicts every batch row already on the dev site)
 # ---------------------------------------------------------------
 verify-pro-update-products:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-update-products.php --user=1
