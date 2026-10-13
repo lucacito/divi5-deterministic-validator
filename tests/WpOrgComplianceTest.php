@@ -579,4 +579,19 @@ class WpOrgComplianceTest extends TestCase
         $this->assertStringContainsString('(20 tools)', $r);
         $this->assertStringContainsString('It cannot create or change presets or colors', $r, 'the readme must say plainly that presets and colors are read-only');
     }
+
+    public function testTheFreePluginNeverWritesWooCommerceData(): void
+    {
+        $banned = '/\b(wc_update_product(_stock|_lookup_tables)?|wc_create_product|wc_delete_product|wc_update_product_stock|set_(regular_price|sale_price|price|stock_quantity|stock_status|manage_stock|backorders|sku|short_description)\s*\(|new\s+WC_Product(_[A-Za-z]+)?\s*\()/';
+        $hits   = [];
+        foreach ($this->files() as $rel => $src) {
+            if (str_starts_with($rel, 'validator/')) {
+                continue;
+            }
+            if (preg_match($banned, $src, $m)) {
+                $hits[] = "$rel ({$m[0]})";
+            }
+        }
+        $this->assertSame([], $hits, 'the free plugin only READS WooCommerce: writing a price or stock level belongs to the Pro add-on');
+    }
 }

@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.8.0
+Stable tag:        4.9.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -169,6 +169,9 @@ No. The check runs in PHP on your own server. Your assistant only reads what the
 
 Yes. It has been tested with Gemini CLI: copy the one command from the Gemini tab on the Settings screen. Any assistant that supports remote MCP servers can connect.
 
+= Does it work with WooCommerce? =
+Yes, for reading. Your assistant can list and count your products and read one product in full (name, description, price, stock, categories, variations), so it can answer store questions and write shop pages that match your catalogue. It never changes a product: prices and stock are not touched by this plugin.
+
 = Can it read my ACF fields, custom post types or functions.php? =
 
 It can read how your site is set up: custom post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices). It reads custom field values only when your assistant asks about one specific page or Project you can edit, never ones WordPress protects or that look like passwords, API keys or other secrets, and it never reads your theme files or `functions.php`. This is available to assistants that connect over MCP or the REST API, not to the ChatGPT Action.
@@ -207,6 +210,10 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.9.0 =
+* New: your AI assistant can now see your WooCommerce products. `list_products` lists and counts them with their prices, stock status and categories, and `get_product` reads one product in full, including its variations. Both are read-only: they never show downloadable files, purchase notes, customer or order data, or the text of a password-protected product, and they need the permission to edit products (shop managers and administrators have it). Available over MCP and the REST API, not in the ChatGPT Action.
+* Improved: `get_site_structure` now also says how many items each content type has, so your assistant can answer "how many products (or pages, or posts) do I have?".
 
 = 4.8.0 =
 * New: your AI assistant can edit Divi Projects, not only pages. Every tool that reads, checks, saves, previews or undoes a page's layout now also works on a Divi Project, with the same checks, history and Approval mode. `list_divi_pages` takes an optional `post_type` (page or project) to list them. New pages are still always drafts, and posts and other content types are still refused.

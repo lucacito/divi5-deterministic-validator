@@ -152,3 +152,4 @@ new third-party host.
   direct count, and if the two ever differ the plan switches to a counted query.
 - Whether `get_product` should expose variation `image` URLs for variations without their own image (WooCommerce falls back
   to the parent): the first version returns the variation's own image or null.
+- WooCommerce's wc_get_products() ignores an on_sale argument (checked on 11.1.2 with the dev site's 18 products: 7 are on sale, the argument returned all 18), so the on_sale filter scans at most 500 matching products in PHP and says so in notes when it was cut.
