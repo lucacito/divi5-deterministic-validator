@@ -59,6 +59,20 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
+        // GET /products — read-only list and counts of WooCommerce products
+        register_rest_route(self::NS, '/products', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'list_products'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
+        // GET /products/{id} — read-only detail of one WooCommerce product
+        register_rest_route(self::NS, '/products/(?P<id>\d+)', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'get_product'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
         // POST /pages — validate + create a new page (always a draft)
         register_rest_route(self::NS, '/pages', [
             'methods'             => WP_REST_Server::CREATABLE,
@@ -675,6 +689,47 @@ final class RestController
         UsageTracker::log('custom_fields', $postId, 'read');
 
         return new WP_REST_Response($result, 200);
+    }
+
+    public function list_products(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('list_products', null, 'error');
+            return new WP_Error('forbidden', 'You do not have permission to read products.', ['status' => 403]);
+        }
+        $input = [];
+        foreach (['status', 'type', 'category', 'stock_status', 'on_sale', 'search', 'orderby', 'order', 'page', 'per_page'] as $key) {
+            $value = $request->get_param($key);
+            if ($value !== null) {
+                $input[$key] = $value;
+            }
+        }
+
+        return $this->productResponse('list_products', null, ProductService::list($input, true, new WooProductGateway(), 'current_user_can'));
+    }
+
+    public function get_product(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        if (!current_user_can(PageAccess::CAP)) {
+            UsageTracker::log('get_product', null, 'error');
+            return new WP_Error('forbidden', 'You do not have permission to read products.', ['status' => 403]);
+        }
+        $productId = (int) $request->get_param('id');
+
+        return $this->productResponse('get_product', $productId ?: null, ProductService::get($productId, new WooProductGateway(), 'current_user_can'));
+    }
+
+    /** @param array<string,mixed> $r a ProductService result */
+    private function productResponse(string $endpoint, ?int $postId, array $r): WP_REST_Response|WP_Error
+    {
+        UsageTracker::log($endpoint, $postId, $r['ok'] ? UsageTracker::RESULT_READ : UsageTracker::RESULT_ERROR);
+        if ($r['ok']) {
+            return new WP_REST_Response($r['data'], 200);
+        }
+        $map = ['forbidden' => [403, 'forbidden'], 'invalid' => [400, 'invalid_field'], 'not_found' => [404, 'not_found'], 'server' => [500, 'server_error']];
+        [$status, $code] = $map[$r['kind']] ?? [500, 'server_error'];
+
+        return new WP_Error($code, (string) $r['message'], ['status' => $status]);
     }
 
     public function list_media(WP_REST_Request $request): WP_REST_Response|WP_Error

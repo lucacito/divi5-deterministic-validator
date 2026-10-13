@@ -43,7 +43,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * "Add a section with our opening hours under the hero on the About page."
 * "Undo the last change you made to the Services page."
 
-= What your AI assistant can do (18 tools) =
+= What your AI assistant can do (20 tools) =
 
 Read and check:
 
@@ -52,6 +52,8 @@ Read and check:
 * `list_global_styles`: list your site's own Divi colors and presets so the AI can reuse them (read-only).
 * `get_site_structure`: list your site's custom post types, taxonomies, image sizes and Advanced Custom Fields field groups so pages fit your site (read-only: field names and the keys your posts use, never values here or theme files; available over MCP and the REST API, not in the ChatGPT Action).
 * `get_custom_fields`: read the custom fields of one page or Divi Project you can edit, with their values, so your assistant can write copy that fits and use the right field names (read-only: keys WordPress protects, or that look like passwords, API keys or other secrets, are never shown; available over MCP and the REST API, not in the ChatGPT Action).
+* `list_products`: list and count your WooCommerce products with their prices, stock status and categories (read-only; needs the permission to edit products; available over MCP and the REST API, not in the ChatGPT Action).
+* `get_product`: read one WooCommerce product in full, including its variations (read-only; never downloadable files, purchase notes or custom fields).
 * `validate_layout`: check a layout without saving anything.
 
 Edit and create:
