@@ -11,7 +11,7 @@ require_once __DIR__ . '/../../tests/bootstrap.php';
 require_once __DIR__ . '/../../tests/WpRestShims.php';
 
 if ( ! defined( 'AIED_PRO_VERSION' ) ) {
-    define( 'AIED_PRO_VERSION', '0.11.0' );
+    define( 'AIED_PRO_VERSION', '0.12.0' );
 }
 if ( ! defined( 'AIED_PRO_FILE' ) ) {
     define( 'AIED_PRO_FILE', (string) realpath( __DIR__ . '/..' ) . '/jhmg-ai-editor-for-divi-5-pro.php' );

@@ -204,6 +204,103 @@ final class WooProductWriter implements ProductWriter
         ];
     }
 
+    /** Candidates examined to decide `on_sale` and `search` (same cap as the free plugin's product list). */
+    private const MAX_SCAN = 500;
+
+    /**
+     * The arguments for wc_get_products() (pure: no WooCommerce or WordPress call), or null when the criteria can match nothing.
+     * Two WordPress facts shape it: WP_Query applies `post__not_in` only when `post__in` is not set, so with `ids` the exclusion is
+     * subtracted here and `exclude` is never sent together with `include`; and `s` also searches the excerpt and the content (and a
+     * leading minus means NOT), so it is sent only as a safe superset (letters, digits and spaces) and the name is decided in PHP.
+     *
+     * @param array<string,mixed> $criteria
+     * @return ?array<string,mixed>
+     */
+    public static function findQuery( array $criteria, int $limit ): ?array
+    {
+        $needScan = null !== ( $criteria['on_sale'] ?? null ) || null !== ( $criteria['search'] ?? null );
+        $q        = [
+            'return'  => 'ids',
+            'status'  => $criteria['status'] ?? [ 'publish' ],
+            'type'    => [] === ( $criteria['types'] ?? [] ) ? [ 'simple', 'variable', 'external' ] : $criteria['types'],
+            'orderby' => 'ID',
+            'order'   => 'ASC',
+        ];
+        if ( [] !== ( $criteria['categories'] ?? [] ) ) {
+            $q['category'] = $criteria['categories'];
+        }
+        if ( [] !== ( $criteria['tags'] ?? [] ) ) {
+            $q['tag'] = $criteria['tags'];
+        }
+        if ( null !== ( $criteria['stock_status'] ?? null ) ) {
+            $q['stock_status'] = $criteria['stock_status'];
+        }
+        $search = $criteria['search'] ?? null;
+        if ( null !== $search && 1 === preg_match( '/^[\p{L}\p{N} ]+$/u', (string) $search ) ) {
+            $q['s'] = $search;
+        }
+        $exclude = (array) ( $criteria['exclude_ids'] ?? [] );
+        if ( [] !== ( $criteria['ids'] ?? [] ) ) {
+            $include = array_values( array_diff( $criteria['ids'], $exclude ) );
+            if ( [] === $include ) {
+                return null;
+            }
+            $q['include'] = $include;
+        } elseif ( [] !== $exclude ) {
+            $q['exclude'] = $exclude;
+        }
+
+        return $q + [ 'limit' => ( $needScan ? self::MAX_SCAN : $limit ) + 1, 'paginate' => false ];
+    }
+
+    /** Whether a product name contains the whole phrase, ignoring case (pure: a phrase, not separate words). */
+    public static function nameMatches( string $name, string $phrase ): bool
+    {
+        return false !== mb_stripos( $name, $phrase );
+    }
+
+    public function findProducts( array $criteria, int $limit ): array
+    {
+        $q = self::findQuery( $criteria, $limit );
+        if ( null === $q ) {
+            return [ 'ids' => [], 'truncated' => false ];
+        }
+        $onSale    = $criteria['on_sale'] ?? null;
+        $search    = $criteria['search'] ?? null;
+        $cap       = $q['limit'] - 1;
+        $ids       = array_map( 'intval', (array) wc_get_products( $q ) );
+        $truncated = count( $ids ) > $cap;
+        $ids       = array_slice( $ids, 0, $cap );
+        if ( null !== $onSale || null !== $search ) {
+            $hits = [];
+            foreach ( $ids as $id ) {
+                $p = wc_get_product( $id );
+                if ( ! $p ) {
+                    continue;
+                }
+                if ( null !== $onSale && (bool) $p->is_on_sale() !== $onSale ) {
+                    continue;
+                }
+                if ( null !== $search && ! self::nameMatches( (string) $p->get_name( 'edit' ), (string) $search ) ) {
+                    continue;
+                }
+                $hits[] = $id;
+            }
+            $ids = $hits;
+            if ( count( $ids ) > $limit ) {
+                $truncated = true;
+                $ids       = array_slice( $ids, 0, $limit );
+            }
+        }
+
+        return [ 'ids' => $ids, 'truncated' => $truncated ];
+    }
+
+    public function priceDecimals(): int
+    {
+        return function_exists( 'wc_get_price_decimals' ) ? (int) wc_get_price_decimals() : 2;
+    }
+
     public function typeOf( int $id ): ?string
     {
         $post = get_post( $id );
