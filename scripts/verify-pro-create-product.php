@@ -413,6 +413,16 @@ try {
             $this->real->apply( $id, $changes );
         }
 
+        public function findProducts( array $criteria, int $limit ): array
+        {
+            return $this->real->findProducts( $criteria, $limit );
+        }
+
+        public function priceDecimals(): int
+        {
+            return $this->real->priceDecimals();
+        }
+
         public function termIds( string $taxonomy, array $slugs ): array
         {
             return $this->real->termIds( $taxonomy, $slugs );

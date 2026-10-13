@@ -70,6 +70,8 @@ final class AiedUpFailingWriter implements ProductWriter
     public function product( int $id ): ?array { return $this->real->product( $id ); }
     public function delete( int $id ): bool { return $this->real->delete( $id ); }
     public function editUrl( int $id ): string { return $this->real->editUrl( $id ); }
+    public function findProducts( array $criteria, int $limit ): array { return $this->real->findProducts( $criteria, $limit ); }
+    public function priceDecimals(): int { return $this->real->priceDecimals(); }
 
     public function apply( int $id, array $changes ): void
     {

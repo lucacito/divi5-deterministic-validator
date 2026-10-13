@@ -204,6 +204,64 @@ final class WooProductWriter implements ProductWriter
         ];
     }
 
+    /** Candidates examined to decide `on_sale` (same cap as the free plugin's product list). */
+    private const MAX_SCAN = 500;
+
+    public function findProducts( array $criteria, int $limit ): array
+    {
+        $onSale = $criteria['on_sale'] ?? null;
+        $q      = [
+            'return'  => 'ids',
+            'status'  => $criteria['status'] ?? [ 'publish' ],
+            'type'    => [] === ( $criteria['types'] ?? [] ) ? [ 'simple', 'variable', 'external' ] : $criteria['types'],
+            'orderby' => 'ID',
+            'order'   => 'ASC',
+        ];
+        if ( [] !== ( $criteria['categories'] ?? [] ) ) {
+            $q['category'] = $criteria['categories'];
+        }
+        if ( [] !== ( $criteria['tags'] ?? [] ) ) {
+            $q['tag'] = $criteria['tags'];
+        }
+        if ( null !== ( $criteria['stock_status'] ?? null ) ) {
+            $q['stock_status'] = $criteria['stock_status'];
+        }
+        if ( null !== ( $criteria['search'] ?? null ) ) {
+            $q['s'] = $criteria['search'];
+        }
+        if ( [] !== ( $criteria['ids'] ?? [] ) ) {
+            $q['include'] = $criteria['ids'];
+        }
+        if ( [] !== ( $criteria['exclude_ids'] ?? [] ) ) {
+            $q['exclude'] = $criteria['exclude_ids'];
+        }
+        $cap = null === $onSale ? $limit : self::MAX_SCAN;
+        $ids = array_map( 'intval', (array) wc_get_products( $q + [ 'limit' => $cap + 1, 'paginate' => false ] ) );
+        $truncated = count( $ids ) > $cap;
+        $ids       = array_slice( $ids, 0, $cap );
+        if ( null !== $onSale ) {
+            $hits = [];
+            foreach ( $ids as $id ) {
+                $p = wc_get_product( $id );
+                if ( $p && (bool) $p->is_on_sale() === $onSale ) {
+                    $hits[] = $id;
+                }
+            }
+            $ids = $hits;
+            if ( count( $ids ) > $limit ) {
+                $truncated = true;
+                $ids       = array_slice( $ids, 0, $limit );
+            }
+        }
+
+        return [ 'ids' => $ids, 'truncated' => $truncated ];
+    }
+
+    public function priceDecimals(): int
+    {
+        return function_exists( 'wc_get_price_decimals' ) ? (int) wc_get_price_decimals() : 2;
+    }
+
     public function typeOf( int $id ): ?string
     {
         $post = get_post( $id );

@@ -65,6 +65,21 @@ interface ProductWriter
      */
     public function apply( int $id, array $changes ): void;
 
+    /**
+     * The ids of the simple, variable and external products (never grouped, never variations, never the trash) that match the criteria of
+     * a normalised bulk_adjust_prices filter (see ProductFilter): `status` (list), `types` (list, empty = all three), `categories` and
+     * `tags` (slugs; a category also matches its children), `stock_status`, `on_sale` (decided in PHP: WooCommerce ignores that
+     * query argument), `search` (words in the name), `ids`, `exclude_ids`. Oldest id first. At most `$limit` ids are returned;
+     * `truncated` is true when there were more, or when too many candidates had to be scanned to decide `on_sale`.
+     *
+     * @param array<string,mixed> $criteria
+     * @return array{ids: list<int>, truncated: bool}
+     */
+    public function findProducts( array $criteria, int $limit ): array;
+
+    /** The number of decimals the shop shows prices with (WooCommerce's own setting). */
+    public function priceDecimals(): int;
+
     /** Permanently delete (used only to roll back a product this same call just created). */
     public function delete( int $id ): bool;
 

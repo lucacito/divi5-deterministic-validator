@@ -124,6 +124,53 @@ final class FakeProductWriter implements ProductWriter
         return $s;
     }
 
+    /** The shop's price decimals the fake reports. */
+    public int $decimals = 2;
+    /** Make findProducts() report an overflow (more matches than the limit, or too many candidates to scan). */
+    public bool $findTruncated = false;
+
+    public function priceDecimals(): int { return $this->decimals; }
+
+    public function findProducts( array $criteria, int $limit ): array
+    {
+        $ids = [];
+        foreach ( array_keys( $this->products ) as $id ) {
+            $p = $this->product( (int) $id );
+            if ( null === $p ) {
+                continue;
+            }
+            $types = [] === ( $criteria['types'] ?? [] ) ? [ 'simple', 'variable', 'external' ] : $criteria['types'];
+            if ( ! in_array( $p['type'], $types, true ) || ! in_array( $p['status'] ?? 'publish', $criteria['status'] ?? [ 'publish' ], true ) ) {
+                continue;
+            }
+            foreach ( [ 'categories' => [ 'product_cat', 'category_ids' ], 'tags' => [ 'product_tag', 'tag_ids' ] ] as $key => [ $taxonomy, $field ] ) {
+                $want = array_map( fn ( string $slug ): int => $this->terms[ $taxonomy ][ $slug ] ?? -1, $criteria[ $key ] ?? [] );
+                if ( [] !== $want && [] === array_intersect( $want, $p[ $field ] ) ) {
+                    continue 2;
+                }
+            }
+            if ( null !== ( $criteria['stock_status'] ?? null ) && $criteria['stock_status'] !== $p['stock_status'] ) {
+                continue;
+            }
+            if ( null !== ( $criteria['on_sale'] ?? null ) && ( '' !== (string) ( $p['sale_price'] ?? '' ) ) !== $criteria['on_sale'] ) {
+                continue;
+            }
+            if ( null !== ( $criteria['search'] ?? null ) && false === stripos( (string) $p['name'], (string) $criteria['search'] ) ) {
+                continue;
+            }
+            if ( [] !== ( $criteria['ids'] ?? [] ) && ! in_array( (int) $id, $criteria['ids'], true ) ) {
+                continue;
+            }
+            if ( in_array( (int) $id, $criteria['exclude_ids'] ?? [], true ) ) {
+                continue;
+            }
+            $ids[] = (int) $id;
+        }
+        sort( $ids );
+
+        return [ 'ids' => array_slice( $ids, 0, $limit ), 'truncated' => $this->findTruncated || count( $ids ) > $limit ];
+    }
+
     public function typeOf( int $id ): ?string
     {
         $post = $GLOBALS['__wp_posts'][ $id ] ?? null;
