@@ -387,7 +387,7 @@ try {
     $check( '22.00' === ( $w1['regular_price'] ?? null ) && '21.99' === ( $w2['regular_price'] ?? null ) && '11.00' === ( $w3['regular_price'] ?? null ) && '5.50' === ( $w6['regular_price'] ?? null ),
         'get_product (free) reads back the new regular prices: 20 -> 22.00, 19.99 -> 21.99 (21.989 rounded), 10 -> 11.00, external 5 -> 5.50' . ( '22.00' === ( $w1['regular_price'] ?? null ) ? '' : ': ' . wp_json_encode( [ $w1['regular_price'] ?? null, $w2['regular_price'] ?? null, $w3['regular_price'] ?? null, $w6['regular_price'] ?? null ] ) ) );
     $check( '8' === ( $w3['sale_price'] ?? null ) || '8.00' === ( $w3['sale_price'] ?? null ), 'a sale price is never touched (the mug still has its sale price 8)' );
-    $check( '11.00' === $wc( $vSmall )['regular'] && '13.20' === $wc( $vLarge )['regular'] && '9' === rtrim( rtrim( $wc( $vLarge )['sale'], '0' ), '.' ), 'the variable product\'s variation rows moved (10 -> 11.00, 12 -> 13.20) and the sale price of the second is untouched' );
+    $check( '11.00' === $wc( $vSmall )['regular'] && '13.20' === $wc( $vLarge )['regular'] && in_array( $wc( $vLarge )['sale'], [ '9', '9.00' ], true ), 'the variable product\'s variation rows moved (10 -> 11.00, 12 -> 13.20) and the sale price of the second is untouched' );
     clean_post_cache( $V );
     $parent = wc_get_product( $V );
     $check( 9.0 === (float) $parent->get_variation_price( 'min', true ) && 11.0 === (float) $parent->get_variation_price( 'max', true ), 'the variable parent\'s price range follows its rows (min 9 = the sale price, max 11)' );
@@ -439,7 +439,13 @@ try {
     $edit->save();
     $late = $inCat( AIED_BA_NAME . 'Late', AIED_BA_SKU . 'L', [ 'regular_price' => '40' ] ); // matches the filter now, was not previewed
     [ $r, $err ] = $run( $adjust( $inCatF, 'percent', '10' ) + [ 'token' => (string) ( $p['token'] ?? '' ) ] );
-    $check( null === $err && in_array( $P1, array_map( 'intval', array_column( (array) ( $r['skipped'] ?? [] ), 'id' ) ), true ) && '21' === $wc( $P1 )['regular'], 'a product changed after the preview is skipped (changed_since_preview) and keeps the owner\'s price' . ( null === $err ? '' : ': ' . $err ) );
+    $skippedBy = array_column( (array) ( $r['skipped'] ?? [] ), 'reason', 'id' );
+    $updatedIds = array_map( 'intval', array_column( (array) ( $r['updated'] ?? [] ), 'id' ) );
+    sort( $updatedIds );
+    $expectUpd = [ $P2, $P3, $P6, $V ];
+    sort( $expectUpd );
+    $check( null === $err && 'changed_since_preview' === ( $skippedBy[ $P1 ] ?? '' ) && 'no_regular_price' === ( $skippedBy[ $P4 ] ?? '' ) && 2 === count( $skippedBy ) && '21' === $wc( $P1 )['regular'], 'a product changed after the preview is skipped with exactly the reason changed_since_preview (besides the price-less gift, no_regular_price) and keeps the owner\'s price' . ( null === $err ? '' : ': ' . $err ) . ' (skipped: ' . wp_json_encode( $skippedBy ) . ')' );
+    $check( $expectUpd === $updatedIds && '21.99' === $wc( $P2 )['regular'], 'in that same run the other four previewed products (scarf, mug, external, variable) were updated (updated: ' . wp_json_encode( $updatedIds ) . ')' );
     $check( 1 === ( $r['not_in_preview'] ?? -1 ) && '40' === $wc( $late )['regular'], 'a product that matches now but was not previewed is not touched (not_in_preview: 1)' );
     $undoLast( $r );
     $edit = wc_get_product( $P1 );
@@ -451,10 +457,12 @@ try {
     $fixBefore    = $fixtures();
     $stateBefore  = $stateOf( $allIds );
     $newestBefore = $newestId();
-    $failing = new BulkAdjustPrices( $log, new AiedBaFailingWriter( new WooProductWriter(), 2 ) );
+    $failWriter = new AiedBaFailingWriter( new WooProductWriter(), 2 );
+    $failing    = new BulkAdjustPrices( $log, $failWriter );
     [ , , $err ] = $go( $adjust( $inCatF, 'percent', '10' ), $failing );
     $check( null !== $err && str_contains( $err, 'Could not update' ) && ! str_contains( $err, '/var/www' ) && ! str_contains( $err, 'simulated' ), 'a failing second save is refused with a message that shows no path: ' . (string) $err );
     $check( $fixBefore === $fixtures() && $stateBefore === $stateOf( $allIds ) && $newestBefore === $newestId(), 'after the failing save every product is exactly as before and no batch was recorded' );
+    $check( $failWriter->applyCalls >= 3, "the failing run saved the first product, failed on the second and re-applied the first one's original values through the writer (apply called {$failWriter->applyCalls} times, at least 3)" );
     $dropping = new BulkAdjustPrices( $log, new AiedBaFailingWriter( new WooProductWriter(), 0, 'regular_price' ) );
     [ , , $err ] = $go( $adjust( $inCatF, 'percent', '10' ), $dropping );
     $check( null !== $err && str_contains( $err, 'saved differently than asked (regular_price)' ), 'a store that saves something else is caught by the read-back: ' . (string) $err );
@@ -466,7 +474,7 @@ try {
     $edit->set_sale_price( '21' ); // valid under the new 22.00, but not under the old 20
     $edit->save();
     $ux = $undoLast( $r );
-    $check( 0 === ( $ux['restored'] ?? -1 ) && 'conflicts' === ( $ux['items'][0]['reason'] ?? '' ) && '22.00' === $wc( $P1 )['regular'] && '21' === rtrim( rtrim( $wc( $P1 )['sale'], '0' ), '.' ), 'undo refuses (conflicts) rather than let WooCommerce discard the sale price the owner added since' );
+    $check( 0 === ( $ux['restored'] ?? -1 ) && 'conflicts' === ( $ux['items'][0]['reason'] ?? '' ) && '22.00' === $wc( $P1 )['regular'] && in_array( $wc( $P1 )['sale'], [ '21', '21.00' ], true ), 'undo refuses (conflicts) rather than let WooCommerce discard the sale price the owner added since' );
     $edit = wc_get_product( $P1 );
     $edit->set_sale_price( '' );
     $edit->set_regular_price( '20' );
@@ -510,16 +518,17 @@ try {
     $plain = $makeSimple( AIED_BA_NAME . 'Plain', AIED_BA_SKU . 'PL', [ 'regular_price' => '12', 'description' => 'A long text with the unique word aiedbazinga in it', 'short_description' => 'aiedbazinga', 'category_ids' => [ $catId ] ] );
     [ $p, $err ] = $run( $adjust( [ 'search' => 'aiedbazinga' ], 'percent', '10', [ 'dry_run' => true ] ) );
     $listed = array_map( 'intval', array_column( (array) ( $p['products'] ?? [] ), 'id' ) );
-    $check( $plain > 0 && ! in_array( $plain, $listed, true ) && [] === $listed, 'a search for a word that is only in a product DESCRIPTION lists nothing (the name is what is matched)' . ( null === $err ? '' : ' [answer: ' . $err . ']' ) . ' (listed: ' . wp_json_encode( $listed ) . ')' );
-    if ( null !== $err ) {
-        $note( 'search with no match answers with a refusal: ' . $err );
-    }
+    $check( null === $err && $plain > 0 && ! in_array( $plain, $listed, true ) && [] === $listed, 'a search for a word that is only in a product DESCRIPTION lists nothing, and is answered normally, not by a refusal (the name is what is matched)' . ( null === $err ? '' : ' [answer: ' . $err . ']' ) . ' (listed: ' . wp_json_encode( $listed ) . ')' );
+    $odd = $makeSimple( AIED_BA_NAME . 'Odd -Scarf Hat', AIED_BA_SKU . 'ODD', [ 'regular_price' => '15' ] ); // positive control: its name holds the literal text "-Scarf"
     [ $p, $err ] = $run( $adjust( [ 'search' => 'Scarf' ], 'percent', '10', [ 'dry_run' => true ] ) );
     $listed = array_map( 'intval', array_column( (array) ( $p['products'] ?? [] ), 'id' ) );
-    $check( null === $err && in_array( $P2, $listed, true ) && ! in_array( $P1, $listed, true ) && ! in_array( $plain, $listed, true ), 'a search for "Scarf" (a word in a product NAME) lists the scarf and not the hat' . ( null === $err ? '' : ': ' . $err ) );
-    [ $p, $err ] = $run( $adjust( [ 'search' => '-Scarf' ], 'percent', '10', [ 'dry_run' => true ] ) );
+    $check( null === $err && in_array( $P2, $listed, true ) && in_array( $odd, $listed, true ) && ! in_array( $P1, $listed, true ) && ! in_array( $plain, $listed, true ), 'a search for "Scarf" (a word in a product NAME) lists the scarf and the odd -Scarf hat, not the hat' . ( null === $err ? '' : ': ' . $err ) );
+    [ $p, $err ] = $run( $adjust( [ 'search' => '-Scarf', 'ids' => [ $odd, $P2 ] ], 'percent', '10', [ 'dry_run' => true ] ) );
     $listed = array_map( 'intval', array_column( (array) ( $p['products'] ?? [] ), 'id' ) );
-    $check( [] === $listed, 'a search starting with "-" is a literal phrase, not an exclusion: "-Scarf" matches no product name (listed: ' . wp_json_encode( $listed ) . ')' . ( null === $err ? '' : ' [answer: ' . $err . ']' ) );
+    $check( null === $err && [ $odd ] === $listed, 'a search for "-Scarf" (with ids [odd hat, scarf]) lists exactly the product whose name holds the literal text "-Scarf": the phrase is matched literally, not read as an exclusion' . ( null === $err ? '' : ': ' . $err ) . ' (listed: ' . wp_json_encode( $listed ) . ')' );
+    [ $p, $err ] = $run( $adjust( [ 'search' => '-Scarf' ], 'percent', '10', [ 'dry_run' => true ] ) ); // no ids; the 101 cap products exist, so an exclusion regression would match >100 products and be refused
+    $listed = array_map( 'intval', array_column( (array) ( $p['products'] ?? [] ), 'id' ) );
+    $check( null === $err && in_array( $odd, $listed, true ) && ! in_array( $P2, $listed, true ) && ! in_array( $P1, $listed, true ), 'a search for "-Scarf" alone (no ids) is answered normally and lists the odd -Scarf hat but neither the scarf nor the hat' . ( null === $err ? '' : ': ' . $err ) . ' (listed: ' . wp_json_encode( $listed ) . ')' );
 
     // ---- a child category is included when its parent is filtered ------------------------------------------------------------------------------
     $child = wp_insert_term( AIED_BA_NAME . 'Child', 'product_cat', [ 'slug' => AIED_BA_SLUG . 'child', 'parent' => $catId ] );
@@ -544,10 +553,14 @@ try {
     clean_post_cache( $bad );
     [ $p, $err ] = $run( $adjust( [ 'ids' => [ $bad ] ], 'percent', '10', [ 'dry_run' => true ] ) );
     $note( 'a regular price stored as "1,5" is read by WooCommerce as "' . (string) $writer->product( $bad )['regular_price'] . '" (so the dry run plans ' . wp_json_encode( $p['products'][0]['changes']['regular_price'] ?? null ) . '); the tool cannot see the raw meta' . ( null === $err ? '' : ' [answer: ' . $err . ']' ) );
-    foreach ( [ [ '12345678901234', 'more than 10 integer digits' ], [ '1.1234567', 'more than 6 decimals' ] ] as [ $raw, $why ] ) { // a list of pairs: a numeric-string array key would turn into an int
+    foreach ( [ [ '12345678901234', 'more than 10 integer digits' ], [ '1.1234567', 'more than 6 decimals' ], [ '-5', 'a malformed shape: a negative price' ] ] as [ $raw, $why ] ) { // a list of pairs: a numeric-string array key would turn into an int
         update_post_meta( $bad, '_regular_price', $raw );
         update_post_meta( $bad, '_price', $raw );
         clean_post_cache( $bad );
+        if ( $raw !== (string) $writer->product( $bad )['regular_price'] ) {
+            $note( "WooCommerce reads a stored \"{$raw}\" as \"" . (string) $writer->product( $bad )['regular_price'] . '", so this shape cannot reach the tool' );
+            continue;
+        }
         [ $p, $err ] = $run( $adjust( [ 'ids' => [ $bad ] ], 'percent', '10', [ 'dry_run' => true ] ) );
         $check( null === $err && 'unreadable_price' === ( $p['skipped'][0]['reason'] ?? '' ) && $bad === (int) ( $p['skipped'][0]['id'] ?? 0 ) && [] === ( $p['products'] ?? [] ) && empty( $p['token'] ),
             "a regular price stored as \"{$raw}\" ({$why}) is skipped with unreadable_price (no exception, nothing planned, no token)" . ( null === $err ? '' : ': ' . $err ) . ' (skipped: ' . wp_json_encode( $p['skipped'] ?? null ) . ')' );
