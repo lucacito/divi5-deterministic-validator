@@ -174,13 +174,15 @@ final class BulkAdjustPrices implements ProTool
                 }
                 continue;
             }
-            $hash = substr( Canon::hash( $current ), 0, 32 );
+            $name = ProductUpdateRun::cut( (string) $current['name'] );
+            $adj  = self::adjustment( $current, $spec['change'], $writer->priceDecimals(), $spec['round_to'] );
+            // The token binds the product's state AND the change planned for it (so a different shop-decimals setting, or anything else
+            // that moves the computed price, makes a previewed product "changed since the preview"). null = nothing planned.
+            $hash = substr( Canon::hash( [ $current, 'change' === $adj['status'] ? $adj['changes'] : null ] ), 0, 32 );
             if ( $inMap && $map[ $id ] !== $hash ) {
                 $skipped[] = [ 'id' => $id, 'reason' => self::CHANGED ];
                 continue;
             }
-            $name = ProductUpdateRun::cut( (string) $current['name'] );
-            $adj  = self::adjustment( $current, $spec['change'], $writer->priceDecimals(), $spec['round_to'] );
             if ( 'skip' === $adj['status'] ) {
                 $skipped[] = [ 'id' => $id, 'name' => $name, 'reason' => $adj['reason'], 'detail' => self::REASONS[ $adj['reason'] ] ] + ( isset( $adj['rows'] ) ? [ 'rows' => $adj['rows'] ] : [] );
                 continue;

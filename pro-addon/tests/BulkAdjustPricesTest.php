@@ -390,6 +390,30 @@ class BulkAdjustPricesTest extends TestCase
         $this->assertSame( '25', $this->writer->products[50]['regular_price'], 'never overwritten' );
     }
 
+    public function testTheTokenBindsThePlannedPriceSoAChangeOfTheShopsDecimalsSkipsTheProduct(): void
+    {
+        $args  = $this->args( [ 'filter' => [ 'ids' => [ 50 ] ], 'change' => [ 'mode' => 'percent', 'value' => '7.5' ] ] );
+        $p     = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $this->assertSame( '21.50', $p['products'][0]['changes']['regular_price']['after'] );
+        $this->writer->decimals = 0; // the shop's setting (or a currency plugin's filter) changed after the preview
+        $r = $this->tool->run( $args + [ 'token' => $p['token'] ] );
+        $this->assertFalse( $r['changed'] );
+        $this->assertSame( [ [ 'id' => 50, 'reason' => 'changed_since_preview' ] ], $r['skipped'] );
+        $this->assertSame( 0, $this->writer->applyCalls );
+        $this->assertSame( '20', $this->writer->products[50]['regular_price'] );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testAProductTheUserMayNoLongerEditIsSkippedAsChangedAndNotWritten(): void
+    {
+        $token = $this->dry()['token'];
+        $GLOBALS['__wp_caps']['edit_post:50'] = false; // per-id denial after the preview
+        $r = $this->tool->run( $this->args() + [ 'token' => $token ] );
+        $this->assertContains( [ 'id' => 50, 'reason' => 'changed_since_preview' ], $r['skipped'] );
+        $this->assertSame( [ 51, 54, 60 ], $this->ids( $r['updated'] ) );
+        $this->assertSame( '20', $this->writer->products[50]['regular_price'], 'not written' );
+    }
+
     public function testAnyOtherChangeToTheProductAlsoCountsAndSoDoesATrashedProduct(): void
     {
         $token = $this->dry()['token'];
