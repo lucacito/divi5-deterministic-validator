@@ -349,9 +349,12 @@ try {
         'a gallery id that is a text file'    => [ [ [ 'name' => AIED_CP_NAME . 'Gal', 'gallery_image_ids' => [ $doc ] ] ], "gallery_image_ids {$doc} is not an image" ],
         'an unknown key (status)'             => [ [ [ 'name' => AIED_CP_NAME . 'Status', 'status' => 'publish' ] ], '"status" is not a supported field' ],
         'manage_stock without stock_quantity' => [ [ [ 'name' => AIED_CP_NAME . 'Stock', 'manage_stock' => true ] ], '"stock_quantity" is required' ],
-        'a name with leading/trailing spaces' => [ [ [ 'name' => '  ' . AIED_CP_NAME . 'Spaced  ' ] ], '"name"' ],
+        'a name with leading/trailing spaces' => [ [ [ 'name' => '  ' . AIED_CP_NAME . 'Spaced  ' ] ], '"name" must not start or end with spaces' ],
+        'a name with "<"'                     => [ [ [ 'name' => AIED_CP_NAME . 'Size < 10' ] ], '"name" must not contain < or >' ],
+        'markup in a SKU'                     => [ [ [ 'name' => AIED_CP_NAME . 'Sku tag', 'sku' => '<b>x</b>' ] ], '"sku" must not contain < or >' ],
+        'a backslash in a name'               => [ [ [ 'name' => AIED_CP_NAME . 'back\\slash' ] ], '"name" must not contain a backslash' ],
+        'a backslash in a description'        => [ [ [ 'name' => AIED_CP_NAME . 'Back desc', 'description' => 'C:\\dir' ] ], '"description" must not contain a backslash' ],
     ];
-    $spacedReason = '';
     foreach ( $cases as $label => [ $products, $needle ] ) {
         $mineBefore   = $mine();
         $newestBefore = $newestId();
@@ -360,11 +363,7 @@ try {
             null !== $err && str_starts_with( $err, 'Nothing was created.' ) && str_contains( $err, $needle ) && $mineBefore === $mine() && $newestBefore === $newestId(),
             "refused: {$label} (the valid product beside it was not created, no batch recorded)" . ( null !== $err && str_contains( $err, $needle ) ? '' : ': ' . (string) $err )
         );
-        if ( 'a name with leading/trailing spaces' === $label ) {
-            $spacedReason = (string) $err;
-        }
     }
-    $note( 'the reason given for a name with leading/trailing spaces: ' . $spacedReason );
     $many = [];
     for ( $i = 0; $i < 26; $i++ ) {
         $many[] = [ 'name' => AIED_CP_NAME . 'Many ' . $i ];
@@ -512,6 +511,23 @@ try {
         $check( false, 'the edit/publish products were created' . ( null === $err ? '' : ': ' . $err ) );
     }
 
+    // Any owner edit, not only name or price, makes the undo skip the product (the hash covers every read-back field but status).
+    [ $r, $err ] = $run( [ 'products' => [ [ 'name' => AIED_CP_NAME . 'Edit T', 'sku' => AIED_CP_SKU . 'ET' ], [ 'name' => AIED_CP_NAME . 'Edit W', 'sku' => AIED_CP_SKU . 'EW', 'weight' => '1' ] ] ] );
+    [ $et, $ew ] = array_pad( $ids( $r ), 2, 0 );
+    $batchTW     = (int) ( $r['batch']['id'] ?? 0 );
+    if ( null === $err && $et > 0 && $ew > 0 && $batchTW > 0 ) {
+        wp_set_post_terms( $et, [ $tagId ], 'product_tag' );
+        $w = wc_get_product( $ew );
+        $w->set_weight( '9' );
+        $w->save();
+        $u = $trackUndo( $undo->undo( $batchTW, false ) );
+        clean_post_cache( $et );
+        clean_post_cache( $ew );
+        $check( 0 === ( $u['restored'] ?? -1 ) && [ 'changed_since', 'changed_since' ] === array_column( (array) ( $u['items'] ?? [] ), 'result' ) && 'draft' === get_post_status( $et ) && 'draft' === get_post_status( $ew ), 'undo skips a product whose only edit is a tag and one whose only edit is the weight (changed_since), neither is trashed' );
+    } else {
+        $check( false, 'the tag/weight edit products were created' . ( null === $err ? '' : ': ' . $err ) );
+    }
+
     // ---- permissions: an editor is refused, a shop manager may create ----------------------------------------------------------
     foreach ( AIED_CP_USERS as $role => $login ) {
         $uid = wp_insert_user( [ 'user_login' => $login, 'user_pass' => wp_generate_password(), 'user_email' => $login . '@example.invalid', 'role' => $role ] );
@@ -536,6 +552,37 @@ try {
     wp_set_current_user( 1 );
     $check( null === $err && $shopId > 0 && 'draft' === ( $shopGot['status'] ?? null ), 'a shop manager creates a draft (with a category and an image)' . ( null === $err ? '' : ': ' . $err ) );
     $check( in_array( str_replace( '&amp;', '&', (string) ( $shopGot['description'] ?? '' ) ), [ 'Salt & pepper <p>x</p>' ], true ), 'the shop manager\'s description survives core\'s kses filter (' . ( $shopFiltered ? 'filtered user' : 'unfiltered user' ) . ': ' . wp_json_encode( $shopGot['description'] ?? null ) . ')' );
+
+    // ---- names with "&" as a filtered user (shop manager) and as admin: core stores "&amp;" for the first, the read-back must pass ---
+    foreach ( [ 'shop_manager' => $users['shop_manager'], 'admin' => 1 ] as $who => $uid ) {
+        wp_set_current_user( $uid );
+        $sku         = AIED_CP_SKU . 'SALT-' . strtoupper( $who );
+        [ $r, $err ] = $run( [ 'products' => [ [ 'name' => AIED_CP_NAME . 'Salt & Pepper', 'sku' => $sku, 'short_description' => 'Salt & pepper' ] ] ] );
+        $id          = $ids( $r )[0] ?? 0;
+        $got         = $id > 0 ? $readBack( $id ) : [];
+        wp_set_current_user( 1 );
+        $check(
+            null === $err && $id > 0 && 'draft' === ( $got['status'] ?? null ) && ProductValuePolicy::sameText( AIED_CP_NAME . 'Salt & Pepper', (string) ( $got['name'] ?? '' ) ) && $sku === ( $got['sku'] ?? null ),
+            "the {$who} creates \"AIED CP Salt & Pepper\" and it reads back (free get_product) as " . wp_json_encode( $got['name'] ?? null ) . ( null === $err ? '' : ': ' . $err )
+        );
+    }
+
+    // ---- backslashes: the real store drops them, so the tool refuses them (as admin and as a shop manager) ------------------
+    $probeValues = [ 'name' => AIED_CP_NAME . 'probe back\\slash', 'description' => 'D:\\dir', 'short_description' => 'a\\b', 'sku' => '', 'regular_price' => '', 'sale_price' => '', 'manage_stock' => false, 'stock_quantity' => null, 'stock_status' => 'instock', 'backorders' => 'no', 'category_ids' => [], 'tag_ids' => [], 'image_id' => 0, 'gallery_image_ids' => [], 'weight' => '', 'length' => '', 'width' => '', 'height' => '', 'tax_status' => 'taxable', 'virtual' => false, 'sold_individually' => false ];
+    foreach ( [ 'admin' => 1, 'shop_manager' => $users['shop_manager'] ] as $who => $uid ) {
+        wp_set_current_user( $uid );
+        $writer = new WooProductWriter();
+        $pid    = $writer->create( $probeValues ); // straight to the writer, past the policy: what the store itself keeps
+        $snap   = (array) $writer->snapshot( $pid );
+        $mineBefore   = $mine();
+        $newestBefore = $newestId();
+        [ , $err ]    = $run( [ 'products' => [ [ 'name' => AIED_CP_NAME . 'Back ' . $who, 'description' => 'C:\\dir' ] ] ] );
+        wp_set_current_user( 1 );
+        $note( "backslash probe ({$who}, writer only): name " . wp_json_encode( $snap['name'] ?? null ) . ', description ' . wp_json_encode( $snap['description'] ?? null ) . ', short ' . wp_json_encode( $snap['short_description'] ?? null ) );
+        $check( ! str_contains( (string) ( $snap['name'] ?? '' ), '\\' ) && ! str_contains( (string) ( $snap['description'] ?? '' ), '\\' ), "the real store drops a backslash from the name and the description ({$who}): that is why the tool refuses it" );
+        $check( null !== $err && str_contains( $err, 'must not contain a backslash' ) && $mineBefore === $mine() && $newestBefore === $newestId(), "the tool refuses a backslash ({$who}) and creates nothing" );
+        $forceDelete( $pid );
+    }
 
     // ---- a FOREIGN product inserted by another hook during OUR save, then our save fails -------------------------------------
     // The writer must clean up only the draft THIS save inserted (InsertedProduct::matches), never another plugin's product.
