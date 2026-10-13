@@ -131,7 +131,7 @@ This plugin does not connect to any external service. Your AI assistant connects
 
 = Does the AI get administrator access to my site? =
 
-No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages and Divi Projects, create pages (as drafts), read Media Library images (read-only), read your site's Divi presets and colors (read-only), read how your site is set up (post types, taxonomies, image sizes and ACF field definitions, read-only), and read the custom fields of a page or Divi Project you can edit (read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
+No. The API key works as the WordPress user who created it, and the AI can only use this plugin's tools. Every request checks that this user can still edit pages, and every page listing, read or change, every new page and every Media Library lookup re-checks that user's WordPress permissions (pages they cannot edit are not even listed). The tools can only list, read, check, edit and undo the content of pages and Divi Projects, create pages (as drafts), read Media Library images (read-only), read your site's Divi presets and colors (read-only), read how your site is set up (post types, taxonomies, image sizes and ACF field definitions, read-only), read the custom fields of a page or Divi Project you can edit (read-only), and read your WooCommerce products (read-only). They cannot install plugins, change users, settings, menus or the front page, or run PHP or other server-side code.
 
 = Can the AI add custom CSS, JavaScript or PHP to my site? =
 
@@ -163,7 +163,7 @@ The plugin edits the Divi 5 layout data directly, so it is faster and more preci
 
 = Does the checking use up my AI tokens? =
 
-No. The check runs in PHP on your own server. Your assistant only reads what the plugin sends back: the tool list it loads once per conversation (about 2,900 tokens), reading the page it is editing (about 600 to 16,500 tokens depending on its size), and the details of what was wrong when a layout is refused (about 400 tokens for one unknown block). These are estimates; the real count depends on the model.
+No. The check runs in PHP on your own server. Your assistant only reads what the plugin sends back: the tool list it loads once per conversation (about 4,000 tokens), reading the page it is editing (about 300 to 16,500 tokens depending on its size), and the details of what was wrong when a layout is refused (about 400 tokens for one unknown block). These are estimates; the real count depends on the model.
 
 = Does it work with Gemini? =
 

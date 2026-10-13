@@ -1,7 +1,7 @@
 <?php
 /**
  * Runs in a SECOND wp-cli process while WooCommerce is deactivated (see the Makefile target): the free plugin must answer
- * "WooCommerce is not active" as a normal success, over REST and MCP, and must not fatal.
+ * "WooCommerce is not active" as a normal success (checked over REST only), and must not fatal.
  */
 
 require_once __DIR__ . '/dev-guard.php';
