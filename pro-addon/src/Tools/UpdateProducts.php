@@ -286,7 +286,10 @@ final class UpdateProducts implements ProTool
             $slugs = $changes[ $slugKey ];
             unset( $changes[ $slugKey ] );
             if ( ! current_user_can( 'assign_product_terms' ) ) {
-                $r[] = 'you need the assign_product_terms permission to use categories or tags';
+                $reason = 'you need the assign_product_terms permission to use categories or tags';
+                if ( ! in_array( $reason, $r, true ) ) {
+                    $r[] = $reason;
+                }
                 continue;
             }
             $found = [] === $slugs ? [ 'ids' => [], 'missing' => [] ] : $writer->termIds( $taxonomy, $slugs );
@@ -399,7 +402,7 @@ final class UpdateProducts implements ProTool
                     throw new ProductSaveFailed( 'the saved product could not be read back' );
                 }
                 $asked = ProductFields::asShape( $plan['changes'] );
-                $diff  = ProductDiff::compare( $asked, ProductFields::pick( $back, $asked ) );
+                $diff  = ProductDiff::compare( $asked, ProductFields::asShape( $back ) );
                 if ( [] !== $diff ) {
                     throw new ProductSaveFailed( 'it was saved differently than asked (' . implode( ', ', $diff ) . ')' );
                 }
@@ -448,7 +451,7 @@ final class UpdateProducts implements ProTool
             try {
                 $writer->apply( $plan['id'], ProductFields::asChanges( $plan['previous'] ) );
                 $back = $writer->product( $plan['id'] );
-                if ( null === $back || [] !== ProductDiff::compare( $plan['previous'], ProductFields::pick( $back, $plan['previous'] ) ) ) {
+                if ( null === $back || [] !== ProductDiff::compare( $plan['previous'], ProductFields::asShape( $back ) ) ) {
                     $left[] = $plan['id'];
                 }
             } catch ( \Throwable $e ) {

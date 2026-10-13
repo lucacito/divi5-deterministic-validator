@@ -87,8 +87,9 @@ final class ProductFieldsKind implements ItemKind
 
             return [ 'ok' => false, 'reason' => 'save_failed' ];
         }
+        // Compare against the whole read-back state: the picked fields alone would hide manage_stock, and ProductDiff needs it to judge backorders.
         $after = null === $back ? null : ProductFields::pick( $back, $before );
-        if ( null === $after || [] !== ProductDiff::compare( $before, $after ) ) {
+        if ( null === $back || [] !== ProductDiff::compare( $before, ProductFields::asShape( $back ) ) ) {
             $this->putBack( $id, $now );
 
             return [ 'ok' => false, 'reason' => 'restore_differs' ];

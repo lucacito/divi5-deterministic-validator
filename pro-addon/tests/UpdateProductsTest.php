@@ -616,6 +616,78 @@ class UpdateProductsTest extends TestCase
         $this->assertSame( [], $this->repo->rows );
     }
 
+    public function testALoneBackordersChangeOnAManagedProductIsVerifiedOnReadBack(): void
+    {
+        $before = $this->stored();
+        $this->writer->afterApply = function ( int $id, array &$stored, int $call ): void {
+            if ( 1 === $call ) {
+                $stored['backorders'] = 'no'; // the store did not keep it
+            }
+        };
+        $updates = [ [ 'id' => 50, 'backorders' => 'notify' ] ];
+        $p       = $this->dry( $updates );
+        try {
+            $this->tool->run( [ 'updates' => $updates, 'token' => $p['token'] ] );
+            $this->fail( 'expected a refusal' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'saved differently than asked (backorders)', $e->getMessage() );
+        }
+        $this->assertEquals( $before, $this->stored() );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testALoneBackordersChangeOnAManagedVariationRowIsVerifiedOnReadBack(): void
+    {
+        $before = $this->stored();
+        $this->writer->afterApply = function ( int $id, array &$stored, int $call ): void {
+            if ( 1 === $call ) {
+                $stored['variations'][61]['backorders'] = 'no';
+            }
+        };
+        $updates = [ [ 'id' => 60, 'variations' => [ [ 'id' => 61, 'backorders' => 'notify' ] ] ] ];
+        $p       = $this->dry( $updates );
+        try {
+            $this->tool->run( [ 'updates' => $updates, 'token' => $p['token'] ] );
+            $this->fail( 'expected a refusal' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'saved differently than asked (variation 61 backorders)', $e->getMessage() );
+        }
+        $this->assertEquals( $before, $this->stored() );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testARollbackOfALoneBackordersChangeThatDoesNotStickNamesTheProduct(): void
+    {
+        $updates = [ [ 'id' => 50, 'backorders' => 'notify' ], [ 'id' => 51, 'stock_status' => 'instock' ] ];
+        $this->writer->failApplyCalls = [ 2 ]; // the second save fails
+        $this->writer->afterApply     = function ( int $id, array &$stored, int $call ): void {
+            if ( 4 === $call ) { // the restore of product 50 (call 3 restores 51): the store keeps the new value
+                $stored['backorders'] = 'notify';
+            }
+        };
+        $p = $this->dry( $updates );
+        try {
+            $this->tool->run( [ 'updates' => $updates, 'token' => $p['token'] ] );
+            $this->fail( 'expected a refusal' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'Could not update Product 2 (#51 "Plain Mug")', $e->getMessage() );
+            $this->assertStringContainsString( 'may not be fully restored and should be checked: #50.', $e->getMessage() );
+        }
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testTheTermPermissionReasonIsReportedOnceWhenCategoriesAndTagsAreBothGiven(): void
+    {
+        $GLOBALS['__wp_caps'] = [ 'edit_products' => true, 'edit_post' => true ];
+        try {
+            $this->dry( [ [ 'id' => 50, 'categories' => [ 'hats' ], 'tags' => [ 'sale' ] ] ] );
+            $this->fail( 'expected a refusal' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertSame( 1, substr_count( $e->getMessage(), 'assign_product_terms permission' ) );
+            $this->assertStringStartsWith( 'Nothing was changed. 1 problem(s): ', $e->getMessage() );
+        }
+    }
+
     public function testAProductThatCannotBeReadBackIsReportedAndTheRunIsRolledBack(): void
     {
         $this->writer->afterApply = function ( int $id, array &$stored, int $call ): void {

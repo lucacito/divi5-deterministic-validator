@@ -257,6 +257,19 @@ class ProductFieldsKindTest extends TestCase
         $this->assertSame( [ '25', 'Red Hat' ], [ $this->writer->products[50]['regular_price'], $this->writer->products[50]['name'] ], 'the values it held before the restore are back' );
     }
 
+    public function testARestoreOfALoneBackordersChangeIsVerifiedAgainstTheManagedState(): void
+    {
+        $item = $this->ran( 50, [ 'backorders' => 'notify' ] );
+        $this->writer->afterApply = function ( int $id, array &$stored, int $call ): void {
+            if ( 1 === $call ) {
+                $stored['backorders'] = 'yes'; // the store kept something else
+            }
+        };
+        $r = $this->kind()->restore( $item );
+        $this->assertSame( [ 'ok' => false, 'reason' => 'restore_differs' ], $r );
+        $this->assertSame( 'notify', $this->writer->products[50]['backorders'], 'the value it held before the restore is back' );
+    }
+
     // ---- permissions ----------------------------------------------------------------------------
 
     public function testItNeedsEditPostAndTermsNeedTheTermPermission(): void
