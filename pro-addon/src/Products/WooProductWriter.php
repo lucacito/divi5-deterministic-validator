@@ -52,10 +52,13 @@ final class WooProductWriter implements ProductWriter
     }
 
     /**
-     * Creates the draft. Cleanup rule: the only id ever deleted here is the id of THE post this save inserted (found through the
-     * product object or through the one-shot transition_post_status listener, which sees the id of a post as soon as it is inserted,
-     * before WooCommerce sets it on the object). If a save fails after it started and no id is known, nothing is deleted; the caller
-     * is told a row may have been left behind.
+     * Creates the draft. Cleanup rule: a failed save deletes at most ONE id, and only a post that is provably the draft this save
+     * inserted. The candidate is the product object's own id when WooCommerce set it, else the id the one-shot transition_post_status
+     * listener recorded; the listener records only a product post turning into a DRAFT whose title is the name set here (so a product
+     * another hook inserts during our save, with another title, is never taken for ours). Right before deleting, the candidate is
+     * re-read and must still be a draft product with our name (InsertedProduct::matches); otherwise nothing is deleted and the caller
+     * is told a draft may have been left behind. Residual: a foreign DRAFT product with exactly our name, inserted during our failing
+     * save before our own insert, could still be mistaken for ours (extremely unlikely; documented in the gate).
      *
      * @throws ProductSaveFailed with a constant message (the id of a product it could not remove, or mayHaveLeftover)
      * @throws \WC_Data_Exception only when it is certain no post was inserted (WooCommerce validates before the insert), so its own text can be shown
@@ -65,14 +68,15 @@ final class WooProductWriter implements ProductWriter
         $p           = null;
         $seen        = 0;
         $saveStarted = false;
-        $listener    = static function ( $new, $old, $post ) use ( &$seen ): void {
-            if ( 0 === $seen && is_object( $post ) && 'product' === ( $post->post_type ?? '' ) && (int) ( $post->ID ?? 0 ) > 0 ) {
+        $name        = (string) $values['name'];
+        $listener    = static function ( $new, $old, $post ) use ( &$seen, $name ): void {
+            if ( 0 === $seen && 'draft' === $new && InsertedProduct::matches( $post, $name ) ) {
                 $seen = (int) $post->ID;
             }
         };
         try {
             $p = new \WC_Product_Simple();
-            $p->set_name( (string) $values['name'] );
+            $p->set_name( $name );
             $p->set_status( 'draft' );
             $p->set_description( (string) $values['description'] );
             $p->set_short_description( (string) $values['short_description'] );
@@ -106,8 +110,11 @@ final class WooProductWriter implements ProductWriter
             $saveStarted = true;
             $id          = (int) $p->save();
         } catch ( \Throwable $e ) {
-            $inserted = max( $seen, null !== $p ? (int) $p->get_id() : 0 );
+            $inserted = InsertedProduct::candidate( null !== $p ? (int) $p->get_id() : 0, $seen );
             if ( $inserted > 0 ) {
+                if ( ! $this->stillOurs( $inserted, $name ) ) {
+                    throw new ProductSaveFailed( 'WooCommerce could not save the product', null, true );
+                }
                 throw new ProductSaveFailed( 'WooCommerce could not save the product', $this->removeQuietly( $inserted ) ? null : $inserted );
             }
             if ( is_a( $e, 'WC_Data_Exception' ) ) {
@@ -122,6 +129,18 @@ final class WooProductWriter implements ProductWriter
         }
 
         return $id;
+    }
+
+    /** Re-reads the candidate right before a cleanup delete: it must still be a draft product with our name. */
+    private function stillOurs( int $id, string $name ): bool
+    {
+        try {
+            clean_post_cache( $id );
+
+            return InsertedProduct::matches( get_post( $id ), $name );
+        } catch ( \Throwable $e ) {
+            return false;
+        }
     }
 
     private function removeQuietly( int $id ): bool
