@@ -17,8 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * What update_products changed on one product. `ref` is the product id. `before` is a shape (see ProductFields) holding the PREVIOUS values
- * of only the fields the run changed (plus the whole stock group where manage_stock changed, and per variation row only the fields that
- * row changed); `after_hash` is the hash of those same fields as read back after the save. Undo puts the previous values back, but only
+ * of only the fields the run changed, except that wherever manage_stock changes (on the product OR on a variation row) the whole stock
+ * group is recorded (manage_stock, stock_quantity, stock_status, backorders, low_stock_amount); `after_hash` is the hash of those same fields as read back after the save. Undo puts the previous values back, but only
  * while those fields still hold what the run wrote (the changed-since rule); `force` skips that rule, never the permission or the
  * existence checks. After a restore the fields are read back and compared; the inverse item records the values the restore replaced, so
  * the undo can itself be undone.
