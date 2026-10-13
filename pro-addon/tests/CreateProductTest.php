@@ -18,7 +18,6 @@ require_once __DIR__ . '/WpBuildShims.php';
 require_once __DIR__ . '/FakeProductWriter.php';
 require_once __DIR__ . '/WcDataExceptionShim.php';
 
-
 class CreateProductTest extends TestCase
 {
     private InMemoryBatchRepository $repo;
@@ -371,6 +370,23 @@ class CreateProductTest extends TestCase
         }
     }
 
+    public function testAProductThatMayHaveBeenLeftBehindIsNotReportedAsNothingCreated(): void
+    {
+        $this->writer->failOnCreate  = 2;
+        $this->writer->failException = static fn () => new ProductSaveFailed( 'WooCommerce could not save the product', null, true );
+        try {
+            $this->go( [ $this->hat(), $this->hat( [ 'name' => 'Green Cap', 'sku' => 'B' ] ) ] );
+            $this->fail( 'expected failure' );
+        } catch ( \InvalidArgumentException $e ) {
+            $m = $e->getMessage();
+            $this->assertStringContainsString( 'Product 2 "Green Cap"', $m );
+            $this->assertStringContainsString( 'A draft product named "Green Cap" may have been left behind; check your drafts in WooCommerce.', $m );
+            $this->assertStringNotContainsString( 'Nothing was created', $m );
+        }
+        $this->assertSame( [ 100 ], $this->writer->deleted, 'the earlier product was rolled back' );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
     // ---- the rest of the read-back --------------------------------------------------------------
 
     private function stock( array $over = [] ): array
@@ -408,7 +424,7 @@ class CreateProductTest extends TestCase
         $this->readBackFails( $this->hat( [ 'image_id' => 90 ] ), static function ( array &$s ): void { $s['image_id'] = 91; }, 'image_id' );
     }
 
-    public function testAGalleryVirtualOrSoldIndividuallyThatComesBackDifferentFails(): void
+    public function testAGalleryThatComesBackDifferentFails(): void
     {
         $this->readBackFails( $this->hat( [ 'gallery_image_ids' => [ 90, 91 ] ] ), static function ( array &$s ): void { $s['gallery_image_ids'] = [ 90 ]; }, 'gallery_image_ids' );
     }

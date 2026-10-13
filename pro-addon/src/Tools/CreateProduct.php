@@ -172,6 +172,11 @@ final class CreateProduct implements ProTool
             if ( [] !== $notRemoved ) {
                 throw new \InvalidArgumentException( $text . ' These products may still exist as drafts and should be checked or trashed: #' . implode( ', #', $notRemoved ) . '.' );
             }
+            if ( $e instanceof ProductSaveFailed && $e->mayHaveLeftover ) {
+                $name = isset( $current['values']['name'] ) ? self::cut( (string) $current['values']['name'] ) : '';
+                $what = '' !== $name ? "A draft product named \"{$name}\"" : 'A draft product';
+                throw new \InvalidArgumentException( $text . " {$what} may have been left behind; check your drafts in WooCommerce." );
+            }
             throw new \InvalidArgumentException( $text . ' Nothing was created.' );
         }
 
@@ -350,12 +355,15 @@ final class CreateProduct implements ProTool
     {
         $name = $raw['name'] ?? null;
         if ( is_string( $name ) && '' !== trim( $name ) ) {
-            $name = mb_strlen( $name ) > 60 ? mb_substr( $name, 0, 60 ) . '...' : $name;
-
-            return "Product {$n} \"{$name}\"";
+            return "Product {$n} \"" . self::cut( $name ) . '"';
         }
 
         return "Product {$n}";
+    }
+
+    private static function cut( string $name ): string
+    {
+        return mb_strlen( $name ) > 60 ? mb_substr( $name, 0, 60 ) . '...' : $name;
     }
 
     private function writer(): ProductWriter

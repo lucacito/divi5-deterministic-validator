@@ -52,12 +52,24 @@ final class WooProductWriter implements ProductWriter
     }
 
     /**
-     * @throws ProductSaveFailed with a constant message (and the id of a product it could not remove, if one was inserted)
-     * @throws \WC_Data_Exception only when no post was inserted, so WooCommerce's own validation text can be shown
+     * Creates the draft. Cleanup rule: the only id ever deleted here is the id of THE post this save inserted (found through the
+     * product object or through the one-shot transition_post_status listener, which sees the id of a post as soon as it is inserted,
+     * before WooCommerce sets it on the object). If a save fails after it started and no id is known, nothing is deleted; the caller
+     * is told a row may have been left behind.
+     *
+     * @throws ProductSaveFailed with a constant message (the id of a product it could not remove, or mayHaveLeftover)
+     * @throws \WC_Data_Exception only when it is certain no post was inserted (WooCommerce validates before the insert), so its own text can be shown
      */
     public function create( array $values ): int
     {
-        $p = null;
+        $p           = null;
+        $seen        = 0;
+        $saveStarted = false;
+        $listener    = static function ( $new, $old, $post ) use ( &$seen ): void {
+            if ( 0 === $seen && is_object( $post ) && 'product' === ( $post->post_type ?? '' ) && (int) ( $post->ID ?? 0 ) > 0 ) {
+                $seen = (int) $post->ID;
+            }
+        };
         try {
             $p = new \WC_Product_Simple();
             $p->set_name( (string) $values['name'] );
@@ -90,17 +102,20 @@ final class WooProductWriter implements ProductWriter
             $p->set_virtual( (bool) $values['virtual'] );
             $p->set_sold_individually( (bool) $values['sold_individually'] );
 
-            $id = (int) $p->save();
+            add_action( 'transition_post_status', $listener, PHP_INT_MIN, 3 );
+            $saveStarted = true;
+            $id          = (int) $p->save();
         } catch ( \Throwable $e ) {
-            // save() may fail AFTER the post was inserted (a hook threw, a meta or lookup-table write failed): never leave it behind.
-            $inserted = null !== $p ? (int) $p->get_id() : 0;
-            if ( $inserted <= 0 ) {
-                if ( is_a( $e, 'WC_Data_Exception' ) ) {
-                    throw $e;
-                }
-                throw new ProductSaveFailed( 'WooCommerce could not save the product' );
+            $inserted = max( $seen, null !== $p ? (int) $p->get_id() : 0 );
+            if ( $inserted > 0 ) {
+                throw new ProductSaveFailed( 'WooCommerce could not save the product', $this->removeQuietly( $inserted ) ? null : $inserted );
             }
-            throw new ProductSaveFailed( 'WooCommerce could not save the product', $this->removeQuietly( $inserted ) ? null : $inserted );
+            if ( is_a( $e, 'WC_Data_Exception' ) ) {
+                throw $e; // WooCommerce's own validation, which runs before anything is inserted
+            }
+            throw new ProductSaveFailed( 'WooCommerce could not save the product', null, $saveStarted );
+        } finally {
+            remove_action( 'transition_post_status', $listener, PHP_INT_MIN );
         }
         if ( $id <= 0 ) {
             throw new ProductSaveFailed( 'WooCommerce did not save the product' );
