@@ -110,8 +110,10 @@ class ProductFieldsTest extends TestCase
         // not managed: the status IS compared; managed: backorders ARE compared
         $this->assertSame( [ 'stock_status' ], $this->diff( [ 'fields' => [ 'manage_stock' => false, 'stock_status' => 'outofstock' ] ], [ 'fields' => [ 'manage_stock' => false, 'stock_status' => 'instock' ] ] ) );
         $this->assertSame( [ 'backorders' ], $this->diff( [ 'fields' => [ 'manage_stock' => true, 'backorders' => 'notify' ] ], [ 'fields' => [ 'manage_stock' => true, 'backorders' => 'no' ] ] ) );
-        // the managed flag is taken from the actual state when the expectation does not name it
-        $this->same( [ 'fields' => [ 'stock_status' => 'outofstock' ] ], [ 'fields' => [ 'stock_status' => 'instock', 'manage_stock' => true ] ] );
+        // a lone stock_status expectation is always compared, even when the actual state is managed (an undo must not claim a status it could not restore)
+        $this->assertSame( [ 'stock_status' ], $this->diff( [ 'fields' => [ 'stock_status' => 'outofstock' ] ], [ 'fields' => [ 'stock_status' => 'instock', 'manage_stock' => true ] ] ) );
+        // backorders still take the managed flag from the actual state when the expectation does not name it
+        $this->same( [ 'fields' => [ 'backorders' => 'yes' ] ], [ 'fields' => [ 'backorders' => 'no', 'manage_stock' => false ] ] );
     }
 
     public function testVariationRowsAreComparedByIdAndNamedInTheAnswer(): void

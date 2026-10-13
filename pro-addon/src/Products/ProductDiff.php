@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Rules: texts through ProductValuePolicy::sameText() (core stores a bare "&" as "&amp;" for a user without unfiltered_html); prices,
  * weight and dimensions as exact decimals ("20" equals "20.00"); an expected EMPTY category list accepts anything (WooCommerce files a
- * product without categories under its default one); stock_status is not compared while stock is managed and backorders are not compared
+ * product without categories under its default one); stock_status is not compared when the expectation itself says stock is managed (a lone stock_status is always compared: the actual state may have been switched to managed since) and backorders are not compared
  * while it is not (WooCommerce works them out).
  */
 final class ProductDiff
@@ -50,14 +50,15 @@ final class ProductDiff
     private static function fields( array $e, array $a, string $prefix ): array
     {
         $bad    = [];
-        $manage = array_key_exists( 'manage_stock', $e ) ? (bool) $e['manage_stock'] : (bool) ( $a['manage_stock'] ?? false );
+        $managedWanted = array_key_exists( 'manage_stock', $e ) && (bool) $e['manage_stock'];
+        $manage        = array_key_exists( 'manage_stock', $e ) ? (bool) $e['manage_stock'] : (bool) ( $a['manage_stock'] ?? false );
         foreach ( $e as $field => $want ) {
             $got = $a[ $field ] ?? null;
             if ( in_array( $field, self::TEXTS, true ) ) {
                 $same = is_string( $got ) && ProductValuePolicy::sameText( (string) $want, $got );
             } elseif ( in_array( $field, self::DECIMALS, true ) ) {
                 $same = is_string( $got ) && self::sameDecimal( (string) $want, $got );
-            } elseif ( 'stock_status' === $field && $manage ) {
+            } elseif ( 'stock_status' === $field && $managedWanted ) {
                 $same = true;
             } elseif ( 'backorders' === $field && ! $manage ) {
                 $same = true;

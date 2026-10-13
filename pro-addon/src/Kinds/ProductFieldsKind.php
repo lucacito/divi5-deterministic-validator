@@ -8,6 +8,7 @@ use AiEditorDivi5\Pro\Batch\Item;
 use AiEditorDivi5\Pro\Batch\ItemKind;
 use AiEditorDivi5\Pro\Products\ProductDiff;
 use AiEditorDivi5\Pro\Products\ProductFields;
+use AiEditorDivi5\Pro\Products\ProductValuePolicy;
 use AiEditorDivi5\Pro\Products\ProductWriter;
 use AiEditorDivi5\Pro\Products\WooProductWriter;
 
@@ -78,6 +79,9 @@ final class ProductFieldsKind implements ItemKind
                 return [ 'ok' => false, 'reason' => 'variation_missing' ];
             }
         }
+        if ( self::wouldLoseASalePrice( $state, $before ) ) {
+            return [ 'ok' => false, 'reason' => 'conflicts' ];
+        }
         $now = ProductFields::pick( $state, $before );
         try {
             $writer->apply( $id, ProductFields::asChanges( $before ) );
@@ -96,6 +100,45 @@ final class ProductFieldsKind implements ItemKind
         }
 
         return [ 'ok' => true, 'inverse' => Item::make( self::NAME, (string) $id, (string) $item['label'], $now, $after ) ];
+    }
+
+    /**
+     * WooCommerce clears a sale price that is not below the regular price (or has no regular price) whenever a price is saved. A price the
+     * owner added after the run is not tracked, so restoring the previous prices could silently wipe it. Computed BEFORE anything is written:
+     * for the product and for each variation row whose `before` names a price, the resulting prices (the current state with the `before`
+     * fields applied) must not leave a sale price WooCommerce would discard.
+     *
+     * @param array<string,mixed> $state
+     * @param array{fields: array<string,mixed>, variations: array<int,array<string,mixed>>} $before
+     */
+    private static function wouldLoseASalePrice( array $state, array $before ): bool
+    {
+        if ( self::saleWouldGo( $state, $before['fields'] ) ) {
+            return true;
+        }
+        foreach ( $before['variations'] as $vid => $row ) {
+            if ( self::saleWouldGo( (array) ( $state['variations'][ $vid ] ?? [] ), $row ) ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<string,mixed> $current the product's (or the row's) current values
+     * @param array<string,mixed> $apply   the previous values about to be written
+     */
+    private static function saleWouldGo( array $current, array $apply ): bool
+    {
+        if ( ! array_key_exists( 'regular_price', $apply ) && ! array_key_exists( 'sale_price', $apply ) ) {
+            return false;
+        }
+        $res     = $apply + $current;
+        $regular = (string) ( $res['regular_price'] ?? '' );
+        $sale    = (string) ( $res['sale_price'] ?? '' );
+
+        return '' !== $sale && ( '' === $regular || ProductValuePolicy::compareDecimals( $sale, $regular ) >= 0 );
     }
 
     /** Best effort after a failed restore: the values the product held just before it. */

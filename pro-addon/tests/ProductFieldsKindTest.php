@@ -208,6 +208,64 @@ class ProductFieldsKindTest extends TestCase
         $this->assertSame( [ [ 3 ], [] ], [ $this->writer->products[50]['category_ids'], $this->writer->products[50]['tag_ids'] ] );
     }
 
+    // ---- prices WooCommerce would clear ------------------------------------------------------------
+
+    public function testUndoRefusesWhenRestoringThePricesWouldWipeASalePriceAddedSince(): void
+    {
+        $this->writer->clearsInvalidSale = true;
+        $item = $this->ran( 50, [ 'regular_price' => '40' ] );
+        $id   = $this->record( $item );
+        $this->writer->products[50]['sale_price'] = '30'; // the owner, after the run: valid at regular 40
+        $this->assertSame( [ 'ok' => false, 'reason' => 'conflicts' ], $this->kind()->restore( $item ) );
+        $this->assertSame( 0, $this->writer->applyCalls, 'nothing is written' );
+        $this->assertSame( [ '40', '30' ], [ $this->writer->products[50]['regular_price'], $this->writer->products[50]['sale_price'] ] );
+
+        $r = $this->undo()->undo( $id );
+        $this->assertSame( 0, $r['restored'] );
+        $this->assertSame( [ 'failed', 'conflicts' ], [ $r['items'][0]['result'], $r['items'][0]['reason'] ] );
+        $this->assertFalse( $r['fully_undone'] );
+        $this->assertSame( [ '40', '30' ], [ $this->writer->products[50]['regular_price'], $this->writer->products[50]['sale_price'] ] );
+    }
+
+    public function testTheSameHoldsForAVariationRow(): void
+    {
+        $this->writer->clearsInvalidSale = true;
+        $id = $this->record( $this->ran( 60, [ 'variations' => [ 61 => [ 'regular_price' => '40' ] ] ] ) );
+        $this->writer->products[60]['variations'][61]['sale_price'] = '30';
+        $this->writer->applyCalls = 0;
+        $r = $this->undo()->undo( $id );
+        $this->assertSame( [ 'failed', 'conflicts' ], [ $r['items'][0]['result'], $r['items'][0]['reason'] ] );
+        $this->assertFalse( $r['fully_undone'] );
+        $this->assertSame( 0, $this->writer->applyCalls );
+        $this->assertSame( [ '40', '30' ], [ $this->writer->products[60]['variations'][61]['regular_price'], $this->writer->products[60]['variations'][61]['sale_price'] ] );
+    }
+
+    public function testARestoreWhoseResultingPricesAreValidStillWorksWhileTheStoreClearsInvalidSales(): void
+    {
+        $this->writer->clearsInvalidSale = true;
+        $this->writer->products[50]['regular_price'] = '50';
+        $this->writer->products[50]['sale_price']    = '30';
+        $id = $this->record( $this->ran( 50, [ 'regular_price' => '40' ] ) ); // before 50, after 40, sale 30 stays valid
+        $r  = $this->undo()->undo( $id );
+        $this->assertSame( 1, $r['restored'] );
+        $this->assertSame( [ '50', '30' ], [ $this->writer->products[50]['regular_price'], $this->writer->products[50]['sale_price'] ] );
+    }
+
+    public function testAnUndoCannotClaimAStockStatusThatAManagedProductWillNotTake(): void
+    {
+        $this->writer->products[50]['manage_stock']   = false;
+        $this->writer->products[50]['stock_quantity'] = null;
+        $id = $this->record( $this->ran( 50, [ 'stock_status' => 'outofstock' ] ) );
+        // the owner turns managed stock on with quantity 0: the derived status is 'outofstock', exactly what the run wrote
+        $this->writer->products[50]['manage_stock']   = true;
+        $this->writer->products[50]['stock_quantity'] = 0;
+        $r = $this->undo()->undo( $id );
+        $this->assertSame( 0, $r['restored'] );
+        $this->assertSame( [ 'failed', 'restore_differs' ], [ $r['items'][0]['result'], $r['items'][0]['reason'] ] );
+        $this->assertFalse( $r['fully_undone'] );
+        $this->assertSame( [ true, 0, 'outofstock' ], [ $this->writer->products[50]['manage_stock'], $this->writer->products[50]['stock_quantity'], $this->writer->products[50]['stock_status'] ] );
+    }
+
     // ---- failures -------------------------------------------------------------------------------
 
     public function testAMissingProductOrVariationIsReportedAndNothingElseIsTouched(): void

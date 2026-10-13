@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\Pro\Tests;
 
+use AiEditorDivi5\Pro\Products\ProductValuePolicy;
 use AiEditorDivi5\Pro\Products\ProductWriter;
 
 /** A scripted store: no WooCommerce at all. Post status is read from $GLOBALS['__wp_posts'] when the post is there (so wp_trash_post shows). */
@@ -42,6 +43,8 @@ final class FakeProductWriter implements ProductWriter
     public array $applied = [];
     /** Runs after a successful apply(): fn(int $id, array &$stored, int $call): void, to simulate a store that saved something else. */
     public ?\Closure $afterApply = null;
+    /** Like WooCommerce: a sale price that is not below the regular price (or has no regular price) is cleared when a product or row is merged. */
+    public bool $clearsInvalidSale = false;
     /** @var list<int> apply() calls (1-based) that write the non-variation changes to the stored product and then throw, like a failing apply() that was partly written */
     public array $partialFailCalls = [];
     /** @var array<int,string> id => type, to make a stored product 'grouped', 'subscription' and so on (or to give an id with no stored fields a type) */
@@ -240,6 +243,12 @@ final class FakeProductWriter implements ProductWriter
         foreach ( [ 'category_ids', 'tag_ids' ] as $k ) {
             if ( isset( $state[ $k ] ) ) {
                 $state[ $k ] = $this->sorted( $state[ $k ] );
+            }
+        }
+        if ( $this->clearsInvalidSale && '' !== (string) ( $state['sale_price'] ?? '' ) ) {
+            $reg = (string) ( $state['regular_price'] ?? '' );
+            if ( '' === $reg || ProductValuePolicy::compareDecimals( (string) $state['sale_price'], $reg ) >= 0 ) {
+                $state['sale_price'] = '';
             }
         }
         if ( array_key_exists( 'manage_stock', $state ) ) {
