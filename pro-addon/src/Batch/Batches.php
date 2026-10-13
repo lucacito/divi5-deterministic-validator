@@ -16,6 +16,7 @@ use AiEditorDivi5\Pro\Kinds\PostContentKind;
 use AiEditorDivi5\Pro\Kinds\PostMetaKind;
 use AiEditorDivi5\Pro\Kinds\PostStatusKind;
 use AiEditorDivi5\Pro\Kinds\ProductCreatedKind;
+use AiEditorDivi5\Pro\Kinds\ProductFieldsKind;
 use AiEditorDivi5\Pro\Kinds\ProductTrashedKind;
 use AiEditorDivi5\Pro\Kinds\ThemeLayoutKind;
 use AiEditorDivi5\Pro\Kinds\ThemeTemplateKind;
@@ -54,6 +55,7 @@ final class Batches
             new PostMetaKind(),
             new ProductCreatedKind(),
             new ProductTrashedKind(),
+            new ProductFieldsKind(),
         ];
         $out = [];
         foreach ( $kinds as $kind ) {

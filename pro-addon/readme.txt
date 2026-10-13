@@ -2,7 +2,7 @@
 Contributors:      lucaslopvet
 Requires at least: 6.0
 Requires PHP:      8.1
-Stable tag:        0.10.0
+Stable tag:        0.11.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,10 +33,11 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `manage_global_colors` - create, recolor, rename or deactivate your site's Divi global colors (never deletes one; the five theme colors only with `allow_theme_colors`). It affects every page that uses a color, so every real run needs the token from a preview (`dry_run`); undo puts it all back.
 * `set_custom_fields` - set custom field values on one page, Divi Project or other post you can edit (only keys your site already uses; never protected or secret keys, code, or ACF lists and images; all or nothing; `dry_run` previews; `undo_batch` puts the values back as long as nothing changed them afterwards).
 * `create_product` - create up to 25 new simple WooCommerce products per call as drafts (never published): name, descriptions, SKU, regular and sale price, stock, backorders, existing categories and tags, a main image and gallery from your Media Library, weight, dimensions, tax status, virtual and sold individually. Needs WooCommerce. Everything is checked first and nothing is created unless every product passes (unknown categories, tags or images are refused, never created); each saved product is read back and compared, and a difference removes what the call created. `dry_run` previews; one `undo_batch` moves the created drafts to the trash unless you edited, published or trashed one since. It never changes an existing product.
+* `update_products` - change existing WooCommerce products (simple, external and variable): regular and sale price with a sale schedule, stock, name, descriptions, SKU, existing categories and tags, images, weight, dimensions, tax status, and the price and stock of a variable product's variation rows. Needs WooCommerce. It changes live products, so every real run needs the token from a preview (`dry_run`), which shows each change as before and after; a product that changed since the preview is skipped, never overwritten. Everything is checked first and each saved product is read back and compared; a failure puts every product the call touched back. It never publishes, unpublishes, creates or deletes a product. One `undo_batch` puts the previous values back unless you changed those fields since.
 * `list_batches` - list recent Pro changes.
 * `undo_batch` - undo one batch.
 
-Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors`, `manage_global_variables`, `manage_global_presets`, `set_custom_fields` and `create_product` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked.
+Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors`, `manage_global_variables`, `manage_global_presets`, `set_custom_fields`, `create_product` and `update_products` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked.
 
 Each tool checks the permission it really needs (for example `manage_options` to set the front page), not only that the request is authenticated.
 
@@ -56,6 +57,10 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
+
+= 0.11.0 =
+* New: `update_products` changes existing WooCommerce products: prices and sale schedules, stock, texts, SKU, categories, tags, images, weight, dimensions and tax status of simple, external and variable products, and the price and stock of a variable product's variation rows. Up to 25 products per call. Every real run needs the single-use token of a preview (`dry_run`) that shows each change as before and after; a product that changed since the preview is skipped. Checked before anything is saved, read back after, and put back if anything fails. It never changes a product's status, type or slug and never creates or deletes one. One `undo_batch` restores the previous values unless you changed those fields since.
+* Over MCP and REST only: this is the 20th Pro tool, and the ChatGPT importer's 30 operations are used up.
 
 = 0.10.0 =
 * New: `create_product` creates new simple WooCommerce products as drafts: name, descriptions, SKU, prices, stock, existing categories and tags and Media Library images, weight, dimensions and tax status. Up to 25 products per call, checked before anything is saved: if one is refused none is created and every reason is listed. A product is never published, an existing product is never changed, and every saved product is read back and compared (a difference removes what the call created). Add `dry_run` to preview. One `undo_batch` moves the created drafts to the trash, unless you edited, published or trashed one since.

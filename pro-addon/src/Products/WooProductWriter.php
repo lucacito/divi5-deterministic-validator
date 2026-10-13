@@ -9,8 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The only class that calls WooCommerce, through its own CRUD classes and public functions. It creates drafts only and never touches
- * an existing product. Proven on the real site by `make verify-pro-create-product` (the unit tests use FakeProductWriter).
+ * The only class that calls WooCommerce, through its own CRUD classes and public functions. create() makes drafts only; apply() changes
+ * the fields it is given on an existing product and never its status, type or slug. Proven on the real site by
+ * `make verify-pro-create-product` and `make verify-pro-update-products` (the unit tests use FakeProductWriter).
  */
 final class WooProductWriter implements ProductWriter
 {
@@ -22,6 +23,11 @@ final class WooProductWriter implements ProductWriter
     public function skuTaken( string $sku ): bool
     {
         return (int) wc_get_product_id_by_sku( $sku ) > 0;
+    }
+
+    public function skuOwner( string $sku ): int
+    {
+        return (int) wc_get_product_id_by_sku( $sku );
     }
 
     public function termIds( string $taxonomy, array $slugs ): array
@@ -196,6 +202,217 @@ final class WooProductWriter implements ProductWriter
             'virtual'           => (bool) $p->get_virtual(),
             'sold_individually' => (bool) $p->get_sold_individually(),
         ];
+    }
+
+    public function typeOf( int $id ): ?string
+    {
+        $post = get_post( $id );
+        if ( ! is_object( $post ) || 'product' !== $post->post_type || in_array( $post->post_status, [ 'trash', 'auto-draft' ], true ) ) {
+            return null;
+        }
+        $p = wc_get_product( $id );
+
+        return $p ? (string) $p->get_type() : null;
+    }
+
+    public function product( int $id ): ?array
+    {
+        $type = $this->typeOf( $id );
+        if ( ! in_array( $type, [ 'simple', 'external', 'variable' ], true ) ) {
+            return null;
+        }
+        $p = wc_get_product( $id );
+        if ( ! $p ) {
+            return null;
+        }
+        $cats = array_map( 'intval', (array) $p->get_category_ids( 'edit' ) );
+        $tags = array_map( 'intval', (array) $p->get_tag_ids( 'edit' ) );
+        sort( $cats );
+        sort( $tags );
+        $variations = [];
+        if ( 'variable' === $type ) {
+            foreach ( array_map( 'intval', (array) $p->get_children() ) as $vid ) {
+                $v = wc_get_product( $vid );
+                if ( $v && 'variation' === $v->get_type() ) {
+                    $variations[ $vid ] = self::row( $v );
+                }
+            }
+            ksort( $variations );
+        }
+
+        return [
+            'type'              => $type,
+            'status'            => (string) $p->get_status(),
+            'name'              => (string) $p->get_name( 'edit' ),
+            'description'       => (string) $p->get_description( 'edit' ),
+            'short_description' => (string) $p->get_short_description( 'edit' ),
+            'sku'               => (string) $p->get_sku( 'edit' ),
+            'category_ids'      => $cats,
+            'category_slugs'    => self::slugs( $cats, 'product_cat' ),
+            'tag_ids'           => $tags,
+            'tag_slugs'         => self::slugs( $tags, 'product_tag' ),
+            'image_id'          => (int) $p->get_image_id( 'edit' ),
+            'gallery_image_ids' => array_map( 'intval', (array) $p->get_gallery_image_ids( 'edit' ) ),
+            'weight'            => (string) $p->get_weight( 'edit' ),
+            'length'            => (string) $p->get_length( 'edit' ),
+            'width'             => (string) $p->get_width( 'edit' ),
+            'height'            => (string) $p->get_height( 'edit' ),
+            'tax_status'        => (string) $p->get_tax_status( 'edit' ),
+            'variations'        => $variations,
+        ] + self::row( $p );
+    }
+
+    /**
+     * Writes only the fields given. The sale window follows WooCommerce's own product screen: a sale starts at 00:00:00 of its first day and
+     * ends at 23:59:59 of its last, in the site's time zone. The parent of a variable product is re-synced after its variations changed.
+     *
+     * @throws ProductSaveFailed with a constant message (a product or variation that cannot be loaded)
+     * @throws \WC_Data_Exception from a setter or save (its own text is meant to be shown: a taken SKU, for example)
+     */
+    public function apply( int $id, array $changes ): void
+    {
+        $p = null === $this->typeOf( $id ) ? null : wc_get_product( $id );
+        if ( ! $p ) {
+            throw new ProductSaveFailed( 'the product could not be loaded' );
+        }
+        $variations = (array) ( $changes['variations'] ?? [] );
+        unset( $changes['variations'] );
+        $loaded = [];
+        foreach ( $variations as $vid => $row ) {
+            $v = wc_get_product( (int) $vid );
+            if ( ! $v || 'variation' !== $v->get_type() || (int) $v->get_parent_id() !== $id ) {
+                throw new ProductSaveFailed( 'a variation does not belong to this product' );
+            }
+            $loaded[ (int) $vid ] = $v;
+        }
+        if ( [] !== $changes ) {
+            self::fill( $p, $changes );
+            if ( array_key_exists( 'category_ids', $changes ) ) {
+                $p->set_category_ids( array_map( 'intval', (array) $changes['category_ids'] ) );
+            }
+            if ( array_key_exists( 'tag_ids', $changes ) ) {
+                $p->set_tag_ids( array_map( 'intval', (array) $changes['tag_ids'] ) );
+            }
+            if ( array_key_exists( 'image_id', $changes ) ) {
+                $p->set_image_id( (int) $changes['image_id'] > 0 ? (int) $changes['image_id'] : '' );
+            }
+            if ( array_key_exists( 'gallery_image_ids', $changes ) ) {
+                $p->set_gallery_image_ids( array_map( 'intval', (array) $changes['gallery_image_ids'] ) );
+            }
+            $p->save();
+        }
+        if ( [] === $variations ) {
+            return;
+        }
+        foreach ( $variations as $vid => $row ) {
+            $v = $loaded[ (int) $vid ];
+            self::fill( $v, (array) $row );
+            $v->save();
+        }
+        if ( class_exists( '\WC_Product_Variable' ) ) {
+            \WC_Product_Variable::sync( $id );
+            if ( is_callable( [ 'WC_Product_Variable', 'sync_stock_status' ] ) ) {
+                \WC_Product_Variable::sync_stock_status( $id );
+            }
+        }
+        if ( function_exists( 'wc_delete_product_transients' ) ) {
+            wc_delete_product_transients( $id );
+        }
+    }
+
+    /** The price, sale window and stock part, read the same way for a product and for a variation (edit context: no inheritance from a parent). */
+    private static function row( object $p ): array
+    {
+        $manage = (bool) $p->get_manage_stock( 'edit' );
+        $qty    = $p->get_stock_quantity( 'edit' );
+        $from   = $p->get_date_on_sale_from( 'edit' );
+        $to     = $p->get_date_on_sale_to( 'edit' );
+        $low    = $p->get_low_stock_amount( 'edit' );
+
+        return [
+            'regular_price'  => (string) $p->get_regular_price( 'edit' ),
+            'sale_price'     => (string) $p->get_sale_price( 'edit' ),
+            'sale_from'      => $from ? (string) $from->date( 'Y-m-d' ) : '',
+            'sale_to'        => $to ? (string) $to->date( 'Y-m-d' ) : '',
+            'manage_stock'   => $manage,
+            'stock_quantity' => $manage && null !== $qty ? (int) $qty : null,
+            'stock_status'   => (string) $p->get_stock_status( 'edit' ),
+            'backorders'     => (string) $p->get_backorders( 'edit' ),
+            'low_stock_amount' => null === $low || '' === $low ? '' : (int) $low,
+        ];
+    }
+
+    /** The setters both a product and a variation have, for the keys present. @param array<string,mixed> $c */
+    private static function fill( object $p, array $c ): void
+    {
+        if ( array_key_exists( 'name', $c ) ) {
+            $p->set_name( (string) $c['name'] );
+        }
+        if ( array_key_exists( 'description', $c ) ) {
+            $p->set_description( (string) $c['description'] );
+        }
+        if ( array_key_exists( 'short_description', $c ) ) {
+            $p->set_short_description( (string) $c['short_description'] );
+        }
+        if ( array_key_exists( 'sku', $c ) ) {
+            $p->set_sku( (string) $c['sku'] );
+        }
+        if ( array_key_exists( 'regular_price', $c ) ) {
+            $p->set_regular_price( (string) $c['regular_price'] );
+        }
+        if ( array_key_exists( 'sale_price', $c ) ) {
+            $p->set_sale_price( (string) $c['sale_price'] );
+        }
+        if ( array_key_exists( 'sale_from', $c ) ) {
+            $p->set_date_on_sale_from( '' === $c['sale_from'] ? null : $c['sale_from'] . ' 00:00:00' );
+        }
+        if ( array_key_exists( 'sale_to', $c ) ) {
+            $p->set_date_on_sale_to( '' === $c['sale_to'] ? null : $c['sale_to'] . ' 23:59:59' );
+        }
+        if ( array_key_exists( 'weight', $c ) ) {
+            $p->set_weight( (string) $c['weight'] );
+        }
+        if ( array_key_exists( 'length', $c ) ) {
+            $p->set_length( (string) $c['length'] );
+        }
+        if ( array_key_exists( 'width', $c ) ) {
+            $p->set_width( (string) $c['width'] );
+        }
+        if ( array_key_exists( 'height', $c ) ) {
+            $p->set_height( (string) $c['height'] );
+        }
+        if ( array_key_exists( 'tax_status', $c ) ) {
+            $p->set_tax_status( (string) $c['tax_status'] );
+        }
+        // Stock: the order matters. WooCommerce works the stock status out itself while stock is managed, and clears the quantity and the
+        // backorders when it is not, so a quantity of null and a status for a managed product are not written.
+        if ( array_key_exists( 'manage_stock', $c ) ) {
+            $p->set_manage_stock( (bool) $c['manage_stock'] );
+        }
+        if ( array_key_exists( 'low_stock_amount', $c ) ) {
+            $p->set_low_stock_amount( '' === $c['low_stock_amount'] || null === $c['low_stock_amount'] ? '' : (int) $c['low_stock_amount'] );
+        }
+        if ( array_key_exists( 'stock_quantity', $c ) && null !== $c['stock_quantity'] ) {
+            $p->set_stock_quantity( (int) $c['stock_quantity'] );
+        }
+        if ( array_key_exists( 'backorders', $c ) ) {
+            $p->set_backorders( (string) $c['backorders'] );
+        }
+        if ( array_key_exists( 'stock_status', $c ) && ! $p->get_manage_stock( 'edit' ) ) {
+            $p->set_stock_status( (string) $c['stock_status'] );
+        }
+    }
+
+    /** @param list<int> $ids @return list<string> */
+    private static function slugs( array $ids, string $taxonomy ): array
+    {
+        $out = [];
+        foreach ( $ids as $id ) {
+            $term  = get_term( $id, $taxonomy );
+            $out[] = is_object( $term ) && isset( $term->slug ) ? (string) $term->slug : 'term-' . $id;
+        }
+
+        return $out;
     }
 
     public function delete( int $id ): bool
