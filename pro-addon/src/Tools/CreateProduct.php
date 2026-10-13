@@ -8,6 +8,7 @@ use AiEditorDivi5\Pro\Args;
 use AiEditorDivi5\Pro\Batch\BatchLog;
 use AiEditorDivi5\Pro\Kinds\ProductCreatedKind;
 use AiEditorDivi5\Pro\ProTool;
+use AiEditorDivi5\Pro\Products\ProductSaveFailed;
 use AiEditorDivi5\Pro\Products\ProductValuePolicy;
 use AiEditorDivi5\Pro\Products\ProductWriter;
 use AiEditorDivi5\Pro\Products\WooProductWriter;
@@ -150,18 +151,23 @@ final class CreateProduct implements ProTool
                 $created[] = [ 'id' => $id, 'plan' => $plan, 'snapshot' => null ];
                 $snap      = $writer->snapshot( $id );
                 if ( null === $snap ) {
-                    throw new \RuntimeException( 'the saved product could not be read back' );
+                    throw new ProductSaveFailed( 'the saved product could not be read back' );
                 }
                 $created[ count( $created ) - 1 ]['snapshot'] = $snap;
                 $differences = self::differences( $plan['values'], $snap );
                 if ( [] !== $differences ) {
-                    throw new \RuntimeException( 'it was saved differently than asked (' . implode( ', ', $differences ) . ')' );
+                    throw new ProductSaveFailed( 'it was saved differently than asked (' . implode( ', ', $differences ) . ')' );
                 }
             }
         } catch ( \Throwable $e ) {
             $notRemoved = $this->rollback( $created, $writer );
-            // Only our own messages and WooCommerce's data exceptions are safe to show; anything else could carry a path.
-            $reason = ( $e instanceof \RuntimeException || is_a( $e, 'WC_Data_Exception' ) ) ? $e->getMessage() : 'WooCommerce could not save it';
+            // Only our own constant messages (ProductSaveFailed) and WooCommerce's data exceptions are safe to show; any other message
+            // (a foreign RuntimeException, a hook, a database error) could carry a server path.
+            $safe = $e instanceof ProductSaveFailed || is_a( $e, 'WC_Data_Exception' );
+            if ( $e instanceof ProductSaveFailed && null !== $e->leftoverId ) {
+                $notRemoved[] = $e->leftoverId;
+            }
+            $reason = $safe ? $e->getMessage() : 'WooCommerce could not save it';
             $text   = "Could not create {$current['label']}: {$reason}.";
             if ( [] !== $notRemoved ) {
                 throw new \InvalidArgumentException( $text . ' These products may still exist as drafts and should be checked or trashed: #' . implode( ', #', $notRemoved ) . '.' );
@@ -273,10 +279,26 @@ final class CreateProduct implements ProTool
         } elseif ( (string) $values['stock_status'] !== (string) ( $snap['stock_status'] ?? '' ) ) {
             $bad[] = 'stock_status';
         }
+        if ( $values['manage_stock'] && (string) $values['backorders'] !== (string) ( $snap['backorders'] ?? '' ) ) {
+            $bad[] = 'backorders';
+        }
         // WooCommerce files a product saved without categories under its default category, so extra ids in the read-back are normal.
-        // Only the categories that were ASKED for must all be there.
-        if ( [] !== $values['category_ids'] && [] !== array_diff( $values['category_ids'], array_map( 'intval', (array) ( $snap['category_ids'] ?? [] ) ) ) ) {
-            $bad[] = 'categories';
+        // Only the categories and tags that were ASKED for must all be there.
+        foreach ( [ 'category_ids' => 'categories', 'tag_ids' => 'tags' ] as $key => $word ) {
+            if ( [] !== $values[ $key ] && [] !== array_diff( $values[ $key ], array_map( 'intval', (array) ( $snap[ $key ] ?? [] ) ) ) ) {
+                $bad[] = $word;
+            }
+        }
+        if ( (int) $values['image_id'] !== (int) ( $snap['image_id'] ?? 0 ) ) {
+            $bad[] = 'image_id';
+        }
+        if ( array_map( 'intval', $values['gallery_image_ids'] ) !== array_map( 'intval', array_values( (array) ( $snap['gallery_image_ids'] ?? [] ) ) ) ) {
+            $bad[] = 'gallery_image_ids';
+        }
+        foreach ( [ 'virtual', 'sold_individually' ] as $f ) {
+            if ( (bool) $values[ $f ] !== (bool) ( $snap[ $f ] ?? false ) ) {
+                $bad[] = $f;
+            }
         }
 
         return $bad;

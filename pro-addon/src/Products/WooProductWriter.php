@@ -51,45 +51,71 @@ final class WooProductWriter implements ProductWriter
             && current_user_can( 'read_post', $id );
     }
 
+    /**
+     * @throws ProductSaveFailed with a constant message (and the id of a product it could not remove, if one was inserted)
+     * @throws \WC_Data_Exception only when no post was inserted, so WooCommerce's own validation text can be shown
+     */
     public function create( array $values ): int
     {
-        $p = new \WC_Product_Simple();
-        $p->set_name( (string) $values['name'] );
-        $p->set_status( 'draft' );
-        $p->set_description( (string) $values['description'] );
-        $p->set_short_description( (string) $values['short_description'] );
-        if ( '' !== $values['sku'] ) {
-            $p->set_sku( (string) $values['sku'] );
-        }
-        $p->set_regular_price( (string) $values['regular_price'] );
-        $p->set_sale_price( (string) $values['sale_price'] );
-        $p->set_manage_stock( (bool) $values['manage_stock'] );
-        if ( $values['manage_stock'] ) {
-            $p->set_stock_quantity( (int) $values['stock_quantity'] );
-            $p->set_backorders( (string) $values['backorders'] );
-        } else {
-            $p->set_stock_status( (string) $values['stock_status'] );
-        }
-        $p->set_category_ids( array_map( 'intval', $values['category_ids'] ) );
-        $p->set_tag_ids( array_map( 'intval', $values['tag_ids'] ) );
-        if ( (int) $values['image_id'] > 0 ) {
-            $p->set_image_id( (int) $values['image_id'] );
-        }
-        $p->set_gallery_image_ids( array_map( 'intval', $values['gallery_image_ids'] ) );
-        $p->set_weight( (string) $values['weight'] );
-        $p->set_length( (string) $values['length'] );
-        $p->set_width( (string) $values['width'] );
-        $p->set_height( (string) $values['height'] );
-        $p->set_tax_status( (string) $values['tax_status'] );
-        $p->set_virtual( (bool) $values['virtual'] );
-        $p->set_sold_individually( (bool) $values['sold_individually'] );
+        $p = null;
+        try {
+            $p = new \WC_Product_Simple();
+            $p->set_name( (string) $values['name'] );
+            $p->set_status( 'draft' );
+            $p->set_description( (string) $values['description'] );
+            $p->set_short_description( (string) $values['short_description'] );
+            if ( '' !== $values['sku'] ) {
+                $p->set_sku( (string) $values['sku'] );
+            }
+            $p->set_regular_price( (string) $values['regular_price'] );
+            $p->set_sale_price( (string) $values['sale_price'] );
+            $p->set_manage_stock( (bool) $values['manage_stock'] );
+            if ( $values['manage_stock'] ) {
+                $p->set_stock_quantity( (int) $values['stock_quantity'] );
+                $p->set_backorders( (string) $values['backorders'] );
+            } else {
+                $p->set_stock_status( (string) $values['stock_status'] );
+            }
+            $p->set_category_ids( array_map( 'intval', $values['category_ids'] ) );
+            $p->set_tag_ids( array_map( 'intval', $values['tag_ids'] ) );
+            if ( (int) $values['image_id'] > 0 ) {
+                $p->set_image_id( (int) $values['image_id'] );
+            }
+            $p->set_gallery_image_ids( array_map( 'intval', $values['gallery_image_ids'] ) );
+            $p->set_weight( (string) $values['weight'] );
+            $p->set_length( (string) $values['length'] );
+            $p->set_width( (string) $values['width'] );
+            $p->set_height( (string) $values['height'] );
+            $p->set_tax_status( (string) $values['tax_status'] );
+            $p->set_virtual( (bool) $values['virtual'] );
+            $p->set_sold_individually( (bool) $values['sold_individually'] );
 
-        $id = (int) $p->save();
+            $id = (int) $p->save();
+        } catch ( \Throwable $e ) {
+            // save() may fail AFTER the post was inserted (a hook threw, a meta or lookup-table write failed): never leave it behind.
+            $inserted = null !== $p ? (int) $p->get_id() : 0;
+            if ( $inserted <= 0 ) {
+                if ( is_a( $e, 'WC_Data_Exception' ) ) {
+                    throw $e;
+                }
+                throw new ProductSaveFailed( 'WooCommerce could not save the product' );
+            }
+            throw new ProductSaveFailed( 'WooCommerce could not save the product', $this->removeQuietly( $inserted ) ? null : $inserted );
+        }
         if ( $id <= 0 ) {
-            throw new \RuntimeException( 'WooCommerce did not save the product' );
+            throw new ProductSaveFailed( 'WooCommerce did not save the product' );
         }
 
         return $id;
+    }
+
+    private function removeQuietly( int $id ): bool
+    {
+        try {
+            return $this->delete( $id );
+        } catch ( \Throwable $e ) {
+            return false;
+        }
     }
 
     public function snapshot( int $id ): ?array

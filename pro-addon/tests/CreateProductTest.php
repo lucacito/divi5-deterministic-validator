@@ -7,6 +7,7 @@ namespace AiEditorDivi5\Pro\Tests;
 use AiEditorDivi5\Pro\Batch\BatchLog;
 use AiEditorDivi5\Pro\Canon;
 use AiEditorDivi5\Pro\Kinds\ProductCreatedKind;
+use AiEditorDivi5\Pro\Products\ProductSaveFailed;
 use AiEditorDivi5\Pro\Tools\CreateProduct;
 use PHPUnit\Framework\TestCase;
 
@@ -15,6 +16,8 @@ require_once __DIR__ . '/InMemoryBatchRepository.php';
 require_once __DIR__ . '/WpKsesShim.php';
 require_once __DIR__ . '/WpBuildShims.php';
 require_once __DIR__ . '/FakeProductWriter.php';
+require_once __DIR__ . '/WcDataExceptionShim.php';
+
 
 class CreateProductTest extends TestCase
 {
@@ -305,5 +308,128 @@ class CreateProductTest extends TestCase
         }
         $this->assertSame( [ 101, 100 ], $this->writer->deleted );
         $this->assertSame( [], $this->repo->rows );
+    }
+
+    // ---- which exception messages reach the client ----------------------------------------------
+
+    public function testAForeignRuntimeExceptionNeverLeaksItsMessage(): void
+    {
+        $this->writer->failOnCreate  = 2;
+        $this->writer->failException = static fn () => new \RuntimeException( '/var/www/html/wp-content/secret.php went wrong' );
+        try {
+            $this->go( [ $this->hat(), $this->hat( [ 'name' => 'B', 'sku' => 'B' ] ) ] );
+            $this->fail( 'expected failure' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringNotContainsString( '/var/www', $e->getMessage() );
+            $this->assertStringContainsString( 'WooCommerce could not save it', $e->getMessage() );
+            $this->assertStringContainsString( 'Nothing was created.', $e->getMessage() );
+        }
+        $this->assertSame( [ 100 ], $this->writer->deleted );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testAProductSaveFailedWithALeftoverNamesTheLeftoverAndDoesNotClaimNothingWasCreated(): void
+    {
+        $this->writer->failOnCreate  = 2;
+        $this->writer->failException = static fn () => new ProductSaveFailed( 'WooCommerce could not save the product', 777 );
+        try {
+            $this->go( [ $this->hat(), $this->hat( [ 'name' => 'B', 'sku' => 'B' ] ) ] );
+            $this->fail( 'expected failure' );
+        } catch ( \InvalidArgumentException $e ) {
+            $m = $e->getMessage();
+            $this->assertStringContainsString( 'Product 2 "B"', $m );
+            $this->assertStringContainsString( 'WooCommerce could not save the product', $m );
+            $this->assertStringContainsString( '#777', $m );
+            $this->assertStringNotContainsString( 'Nothing was created.', $m );
+        }
+        $this->assertSame( [ 100 ], $this->writer->deleted, 'the earlier product was rolled back' );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testAProductSaveFailedWithoutALeftoverSaysNothingWasCreated(): void
+    {
+        $this->writer->failOnCreate  = 1;
+        $this->writer->failException = static fn () => new ProductSaveFailed( 'WooCommerce did not save the product' );
+        try {
+            $this->go( [ $this->hat() ] );
+            $this->fail( 'expected failure' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'WooCommerce did not save the product', $e->getMessage() );
+            $this->assertStringContainsString( 'Nothing was created.', $e->getMessage() );
+        }
+    }
+
+    public function testAWooCommerceDataExceptionMessageIsShown(): void
+    {
+        $this->writer->failOnCreate  = 1;
+        $this->writer->failException = static fn () => new \WC_Data_Exception( 'product_invalid_sku', 'Invalid or duplicated SKU.' );
+        try {
+            $this->go( [ $this->hat() ] );
+            $this->fail( 'expected failure' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'Invalid or duplicated SKU.', $e->getMessage() );
+        }
+    }
+
+    // ---- the rest of the read-back --------------------------------------------------------------
+
+    private function stock( array $over = [] ): array
+    {
+        return $over + [ 'name' => 'Stocked', 'sku' => 'ST-1', 'regular_price' => '5', 'manage_stock' => true, 'stock_quantity' => 3, 'backorders' => 'notify' ];
+    }
+
+    private function readBackFails( array $product, callable $change, string $field ): void
+    {
+        $this->writer->afterCreate = static function ( array &$snap ) use ( $change ): void {
+            $change( $snap );
+        };
+        try {
+            $this->go( [ $product ] );
+            $this->fail( 'expected failure on ' . $field );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( $field, $e->getMessage() );
+        }
+        $this->assertSame( [ 100 ], $this->writer->deleted );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testABackordersValueThatComesBackDifferentFails(): void
+    {
+        $this->readBackFails( $this->stock(), static function ( array &$s ): void { $s['backorders'] = 'no'; }, 'backorders' );
+    }
+
+    public function testATagMissingFromTheReadBackFails(): void
+    {
+        $this->readBackFails( $this->hat( [ 'tags' => [ 'sale' ] ] ), static function ( array &$s ): void { $s['tag_ids'] = []; }, 'tags' );
+    }
+
+    public function testAnImageThatComesBackDifferentFails(): void
+    {
+        $this->readBackFails( $this->hat( [ 'image_id' => 90 ] ), static function ( array &$s ): void { $s['image_id'] = 91; }, 'image_id' );
+    }
+
+    public function testAGalleryVirtualOrSoldIndividuallyThatComesBackDifferentFails(): void
+    {
+        $this->readBackFails( $this->hat( [ 'gallery_image_ids' => [ 90, 91 ] ] ), static function ( array &$s ): void { $s['gallery_image_ids'] = [ 90 ]; }, 'gallery_image_ids' );
+    }
+
+    public function testVirtualThatComesBackDifferentFails(): void
+    {
+        $this->readBackFails( $this->hat( [ 'virtual' => true ] ), static function ( array &$s ): void { $s['virtual'] = false; }, 'virtual' );
+    }
+
+    public function testSoldIndividuallyThatComesBackDifferentFails(): void
+    {
+        $this->readBackFails( $this->hat( [ 'sold_individually' => true ] ), static function ( array &$s ): void { $s['sold_individually'] = false; }, 'sold_individually' );
+    }
+
+    public function testExtraTagsInTheReadBackAndACorrectReadBackPass(): void
+    {
+        $this->writer->afterCreate = static function ( array &$snap ): void {
+            $snap['tag_ids'] = [ 7, 99 ];
+        };
+        $this->assertTrue( $this->go( [ $this->hat( [ 'tags' => [ 'sale' ] ] ) ] )['changed'] );
+        $this->writer->afterCreate = null;
+        $this->assertTrue( $this->go( [ $this->stock( [ 'sku' => 'ST-2', 'image_id' => 90, 'gallery_image_ids' => [ 91 ], 'virtual' => true, 'sold_individually' => true ] ) ] )['changed'] );
     }
 }

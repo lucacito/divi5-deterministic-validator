@@ -21,6 +21,8 @@ final class FakeProductWriter implements ProductWriter
     public int $next = 100;
     public ?int $failOnCreate = null;
     public ?\Closure $afterCreate = null;
+    /** When set, the failing create() call (see failOnCreate) throws what this returns instead of the default \Exception. */
+    public ?\Closure $failException = null;
     /** @var list<int> */
     public array $deleted = [];
     public bool $deleteFails = false;
@@ -52,7 +54,7 @@ final class FakeProductWriter implements ProductWriter
     {
         ++$this->createCalls;
         if ( $this->failOnCreate === $this->createCalls ) {
-            throw new \Exception( 'boom: could not write /var/www/html/wp-content/secret.php' );
+            throw null !== $this->failException ? ( $this->failException )() : new \Exception( 'boom: could not write /var/www/html/wp-content/secret.php' );
         }
         $id   = $this->next++;
         $snap = [
