@@ -84,7 +84,12 @@ final class WooProductWriter implements ProductWriter
         $p->set_virtual( (bool) $values['virtual'] );
         $p->set_sold_individually( (bool) $values['sold_individually'] );
 
-        return (int) $p->save();
+        $id = (int) $p->save();
+        if ( $id <= 0 ) {
+            throw new \RuntimeException( 'WooCommerce did not save the product' );
+        }
+
+        return $id;
     }
 
     public function snapshot( int $id ): ?array
