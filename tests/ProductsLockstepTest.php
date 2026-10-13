@@ -206,5 +206,50 @@ class ProductsLockstepTest extends TestCase
         $this->assertSame( 403, $this->restList( [] )->data['status'] );
         $this->assertSame( 403, $this->restGet( [ 'id' => '1' ] )->data['status'] );
         $this->assertSame( -32602, $this->mcpCall( 'list_products', [] )['error']['code'] );
+        $e = $this->mcpCall( 'get_product', [ 'id' => 1 ] );
+        $this->assertSame( -32602, $e['error']['code'] );
+        $this->assertStringContainsString( 'permission', $e['error']['message'] );
+        $this->assertStringNotContainsString( 'Product 1', $e['error']['message'], 'refused before the product is looked at: nothing about it is revealed' );
+    }
+
+    public function testATrashedProductIsNotFoundOnBothSurfaces(): void
+    {
+        $GLOBALS['__wc_products'][8] = $this->product( 8, [ 'status' => 'trash' ] );
+        $r = $this->restGet( [ 'id' => '8' ] );
+        $this->assertInstanceOf( \WP_Error::class, $r );
+        $this->assertSame( 404, $r->data['status'] );
+        $e = $this->mcpCall( 'get_product', [ 'id' => 8 ] );
+        $this->assertSame( 'Product 8 not found.', $e['error']['message'] );
+    }
+
+    /** @return list<array<string,mixed>> the usage rows in insertion order */
+    private function usageRows(): array
+    {
+        return $GLOBALS['wpdb']->get_results( 'SELECT endpoint, page_id, result FROM wp_ai_editor_divi5_usage ORDER BY id' );
+    }
+
+    public function testEveryOutcomeIsLoggedWithItsEndpointAndResult(): void
+    {
+        $GLOBALS['wpdb']->query( 'CREATE TABLE wp_ai_editor_divi5_usage (id INTEGER PRIMARY KEY AUTOINCREMENT, endpoint TEXT, page_id INTEGER NULL, result TEXT, violations INTEGER, client TEXT NULL, ip_hash TEXT NULL)' );
+
+        $this->mcpCall( 'list_products', [] );
+        $this->mcpCall( 'get_product', [ 'id' => 1 ] );
+        $this->mcpCall( 'get_product', [ 'id' => 999 ] );        // not found
+        $this->mcpCall( 'get_product', [ 'id' => 'x' ] );        // an invalid id is logged too
+        $this->mcpCall( 'list_products', [ 'per_page' => 99 ] ); // an invalid list argument
+        $GLOBALS['__wp_caps']['edit_products'] = false;
+        $this->mcpCall( 'list_products', [] );                   // refused for the missing permission
+        $GLOBALS['__wp_caps']['edit_pages'] = false;
+        $this->mcpCall( 'get_product', [ 'id' => 1 ] );          // refused before anything else
+
+        $this->assertSame( [
+            [ 'endpoint' => 'list_products', 'page_id' => null, 'result' => 'read' ],
+            [ 'endpoint' => 'get_product', 'page_id' => '1', 'result' => 'read' ],
+            [ 'endpoint' => 'get_product', 'page_id' => '999', 'result' => 'error' ],
+            [ 'endpoint' => 'get_product', 'page_id' => null, 'result' => 'error' ],
+            [ 'endpoint' => 'list_products', 'page_id' => null, 'result' => 'error' ],
+            [ 'endpoint' => 'list_products', 'page_id' => null, 'result' => 'error' ],
+            [ 'endpoint' => 'get_product', 'page_id' => null, 'result' => 'error' ],
+        ], $this->usageRows() );
     }
 }
