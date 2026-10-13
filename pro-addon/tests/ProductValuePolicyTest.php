@@ -76,7 +76,17 @@ class ProductValuePolicyTest extends TestCase
             'no name'               => [ [], '"name" is required' ],
             'empty name'            => [ [ 'name' => '  ' ], '"name" is required' ],
             'name not a string'     => [ [ 'name' => 5 ], '"name"' ],
-            'name with tags'        => [ [ 'name' => 'Hat <b>x</b>' ], 'plain text' ],
+            'name with tags'        => [ [ 'name' => 'Hat <b>x</b>' ], '"name" must not contain < or >' ],
+            'name with a lone <'    => [ [ 'name' => 'Size < 10 Hat' ], '"name" must not contain < or >' ],
+            'name with a lone >'    => [ [ 'name' => 'Size > 10 Hat' ], '"name" must not contain < or >' ],
+            'name padded left'      => [ [ 'name' => '  Hat' ], '"name" must not start or end with spaces' ],
+            'name padded right'     => [ [ 'name' => 'Hat ' ], '"name" must not start or end with spaces' ],
+            'name with a backslash' => [ [ 'name' => 'back\\slash Hat' ], '"name" must not contain a backslash' ],
+            'description backslash' => [ [ 'name' => 'x', 'description' => 'C:\\dir' ], '"description" must not contain a backslash' ],
+            'short backslash'       => [ [ 'name' => 'x', 'short_description' => 'a\\b' ], '"short_description" must not contain a backslash' ],
+            'sku with a tag'        => [ [ 'name' => 'x', 'sku' => '<b>x</b>' ], '"sku" must not contain < or >' ],
+            'sku with <'            => [ [ 'name' => 'x', 'sku' => 'A<1' ], '"sku" must not contain < or >' ],
+            'sku with >'            => [ [ 'name' => 'x', 'sku' => 'A>1' ], '"sku" must not contain < or >' ],
             'name control char'     => [ [ 'name' => "Hat\x07" ], 'control characters' ],
             'name too long'         => [ [ 'name' => str_repeat( 'a', 201 ) ], '200 characters' ],
             'unknown key'           => [ [ 'name' => 'x', 'slug' => 'x' ], '"slug" is not a supported field' ],
@@ -170,6 +180,28 @@ class ProductValuePolicyTest extends TestCase
         $v = $this->ok( [ 'name' => 'x', 'description' => 'Tom &amp; Jerry', 'short_description' => 'Tom &amp; Jerry' ] );
         $this->assertSame( 'Tom &amp; Jerry', $v['description'] );
         $this->assertSame( 'Tom &amp; Jerry', $v['short_description'] );
+    }
+
+    public function testAPaddedNameIsNotCalledMarkup(): void
+    {
+        $r = $this->check( [ 'name' => '  Hat  ' ] );
+        $this->assertSame( [ '"name" must not start or end with spaces' ], $r['reasons'] );
+    }
+
+    public function testAmpersandsAndOtherPunctuationInNamesAndSkusAreFine(): void
+    {
+        $this->assertSame( 'Tom & Jerry Hat', $this->ok( [ 'name' => 'Tom & Jerry Hat' ] )['name'] );
+        $this->assertSame( 'A&B-1/2"#', $this->ok( [ 'name' => 'x', 'sku' => 'A&B-1/2"#' ] )['sku'] );
+    }
+
+    public function testSameTextUndoesOnlyCoresAmpersandRewrite(): void
+    {
+        $this->assertTrue( ProductValuePolicy::sameText( 'Tom & Jerry', 'Tom &amp; Jerry' ) );
+        $this->assertTrue( ProductValuePolicy::sameText( 'Tom &amp; Jerry', 'Tom & Jerry' ) );
+        $this->assertTrue( ProductValuePolicy::sameText( 'Hat', 'Hat' ) );
+        $this->assertFalse( ProductValuePolicy::sameText( 'Hat', 'hat' ) );
+        $this->assertFalse( ProductValuePolicy::sameText( 'Hat', 'Hat ' ) );
+        $this->assertFalse( ProductValuePolicy::sameText( 'a > b', 'a &gt; b' ) );
     }
 
     public static function decimalPairs(): array

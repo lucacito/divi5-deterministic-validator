@@ -74,6 +74,7 @@ class CreateProductTest extends TestCase
         $this->assertSame( 'array', $d['inputSchema']['properties']['products']['type'] );
         $this->assertSame( 'boolean', $d['inputSchema']['properties']['dry_run']['type'] );
         $this->assertSame( 25, $d['inputSchema']['properties']['products']['maxItems'] );
+        $this->assertStringContainsString( 'If list_products is available, use it first to see the catalogue.', $d['description'] );
     }
 
     // ---- a real run -----------------------------------------------------------------------------
@@ -129,7 +130,9 @@ class CreateProductTest extends TestCase
             $this->assertStringContainsString( 'Product 3', $m );
             $this->assertStringContainsString( 'category "nope" does not exist', $m );
             $this->assertStringNotContainsString( 'Product 1', $m );
+            return;
         }
+        $this->fail( 'expected InvalidArgumentException' );
     }
 
     public function testASkuAlreadyOnTheSiteAndADuplicateInsideTheCallAreRefused(): void
@@ -385,6 +388,21 @@ class CreateProductTest extends TestCase
         }
         $this->assertSame( [ 100 ], $this->writer->deleted, 'the earlier product was rolled back' );
         $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testANameCoreStoresWithAnEncodedAmpersandStillPassesTheReadBack(): void
+    {
+        // A user without unfiltered_html: core's title_save_pre stores "&" as "&amp;".
+        $this->writer->filteredTitle = true;
+        $r = $this->go( [ $this->hat( [ 'name' => 'Tom & Jerry Hat' ] ), $this->hat( [ 'name' => 'Salt & Pepper', 'sku' => 'SP-1', 'description' => 'a & b' ] ) ] );
+        $this->assertTrue( $r['changed'] );
+        $this->assertSame( [], $this->writer->deleted, 'nothing was rolled back' );
+        $this->assertSame( 'Tom &amp; Jerry Hat', $this->writer->products[100]['name'] );
+    }
+
+    public function testANameThatComesBackDifferentFails(): void
+    {
+        $this->readBackFails( $this->hat(), static function ( array &$s ): void { $s['name'] = 'Blue Ha'; }, 'name' );
     }
 
     // ---- the rest of the read-back --------------------------------------------------------------

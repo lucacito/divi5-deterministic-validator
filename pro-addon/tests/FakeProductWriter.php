@@ -27,6 +27,8 @@ final class FakeProductWriter implements ProductWriter
     public array $deleted = [];
     public bool $deleteFails = false;
     public int $createCalls = 0;
+    /** Store the name and texts as core does for a user without unfiltered_html: a bare "&" becomes "&amp;". */
+    public bool $filteredTitle = false;
     /** @var list<array<string,mixed>> */
     public array $created = [];
 
@@ -66,6 +68,11 @@ final class FakeProductWriter implements ProductWriter
             'length' => $values['length'], 'width' => $values['width'], 'height' => $values['height'], 'tax_status' => $values['tax_status'],
             'virtual' => $values['virtual'], 'sold_individually' => $values['sold_individually'],
         ];
+        if ( $this->filteredTitle ) {
+            foreach ( [ 'name', 'description', 'short_description' ] as $f ) {
+                $snap[ $f ] = (string) preg_replace( '/&(?!#?\w+;)/', '&amp;', (string) $snap[ $f ] );
+            }
+        }
         if ( null !== $this->afterCreate ) {
             ( $this->afterCreate )( $snap, $this->createCalls );
         }

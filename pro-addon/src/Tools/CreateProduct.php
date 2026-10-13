@@ -49,7 +49,7 @@ final class CreateProduct implements ProTool
 
         return [
             'name'        => self::NAME,
-            'description' => 'Create up to 25 new simple WooCommerce products as DRAFTS (never published). Sets name, texts, SKU, prices, stock, existing categories, tags and Media Library images. All or nothing; one undoable batch. dry_run previews. Use list_products to see the catalogue first.',
+            'description' => 'Create up to 25 new simple WooCommerce products as DRAFTS (never published). Sets name, texts, SKU, prices, stock, existing categories, tags and Media Library images. All or nothing; one undoable batch. dry_run previews. If list_products is available, use it first to see the catalogue.',
             'inputSchema' => [
                 'type'       => 'object',
                 'properties' => [
@@ -255,18 +255,18 @@ final class CreateProduct implements ProTool
         $same = static function ( string $a, string $b ): bool {
             return '' === $a || '' === $b ? $a === $b : 0 === ProductValuePolicy::compareDecimals( $a, $b );
         };
-        $norm = static fn ( string $s ): string => str_replace( '&amp;', '&', $s );
 
         if ( 'draft' !== ( $snap['status'] ?? '' ) ) {
             $bad[] = 'status';
         }
-        foreach ( [ 'name', 'sku', 'tax_status' ] as $f ) {
+        foreach ( [ 'sku', 'tax_status' ] as $f ) {
             if ( (string) $values[ $f ] !== (string) ( $snap[ $f ] ?? '' ) ) {
                 $bad[] = $f;
             }
         }
-        foreach ( [ 'description', 'short_description' ] as $f ) {
-            if ( $norm( (string) $values[ $f ] ) !== $norm( (string) ( $snap[ $f ] ?? '' ) ) ) {
+        // Core's kses (for a user without unfiltered_html) stores a bare "&" as "&amp;" in the title and the texts: the same text.
+        foreach ( [ 'name', 'description', 'short_description' ] as $f ) {
+            if ( ! ProductValuePolicy::sameText( (string) $values[ $f ], (string) ( $snap[ $f ] ?? '' ) ) ) {
                 $bad[] = $f;
             }
         }

@@ -30,6 +30,9 @@ final class ProductValuePolicy
     public const MAX_GALLERY     = 10;
     public const MAX_STOCK       = 1000000;
 
+    /** wp_insert_post() unslashes what it saves, so a backslash would silently disappear (proven on the real store). */
+    private const BACKSLASH = 'must not contain a backslash (\\): WordPress removes it when it saves the product';
+
     private const DECIMAL = '/^\d{1,10}(\.\d{1,6})?$/D';
     private const SLUG    = '/^[A-Za-z0-9%_-]{1,200}$/D';
     private const STOCK_STATUSES = [ 'instock', 'outofstock', 'onbackorder' ];
@@ -64,6 +67,13 @@ final class ProductValuePolicy
             $r[] = '"name" is longer than 200 characters';
         } elseif ( 1 === preg_match( '/[\x00-\x1F\x7F]/', $name ) ) {
             $r[] = '"name" must not contain control characters';
+        } elseif ( trim( $name ) !== $name ) {
+            $r[] = '"name" must not start or end with spaces';
+        } elseif ( str_contains( $name, '<' ) || str_contains( $name, '>' ) ) {
+            // Core's title filter (kses, for a user without unfiltered_html) entity-encodes a lone ">" and cuts the name at a "<".
+            $r[] = '"name" must not contain < or >';
+        } elseif ( str_contains( $name, '\\' ) ) {
+            $r[] = '"name" ' . self::BACKSLASH;
         } elseif ( $stripTags( $name ) !== $name ) {
             $r[] = '"name" must be plain text (no HTML tags)';
         } else {
@@ -79,6 +89,9 @@ final class ProductValuePolicy
             $sku = $product['sku'];
             if ( ! is_string( $sku ) || 1 !== preg_match( '/^[\x20-\x7E]{1,100}$/D', $sku ) || trim( $sku ) !== $sku ) {
                 $r[] = '"sku" must be 1 to 100 printable ASCII characters without leading or trailing spaces';
+            } elseif ( str_contains( $sku, '<' ) || str_contains( $sku, '>' ) ) {
+                // WooCommerce's own SKU input runs wc_clean(), and its product page prints the SKU unescaped: never store markup there.
+                $r[] = '"sku" must not contain < or >';
             } else {
                 $v['sku'] = $sku;
             }
@@ -185,6 +198,15 @@ final class ProductValuePolicy
         return [ 'values' => [] === $r ? $v : null, 'reasons' => $r ];
     }
 
+    /**
+     * The one text comparison the tool uses (input vs kses output, asked vs read back, title vs our name): equal once core's only
+     * harmless rewrite, a bare "&" stored as "&amp;" (kses, for a user without unfiltered_html), is undone on both sides.
+     */
+    public static function sameText( string $a, string $b ): bool
+    {
+        return str_replace( '&amp;', '&', $a ) === str_replace( '&amp;', '&', $b );
+    }
+
     /** Exact comparison of two decimal strings that match DECIMAL (no float rounding). @return int -1, 0 or 1 */
     public static function compareDecimals( string $a, string $b ): int
     {
@@ -226,15 +248,19 @@ final class ProductValuePolicy
 
             return '';
         }
+        if ( str_contains( $value, '\\' ) ) {
+            $r[] = "\"{$key}\" " . self::BACKSLASH;
+
+            return '';
+        }
         $why = FieldValuePolicy::refusal( $value );
         if ( null !== $why ) {
             $r[] = "\"{$key}\" {$why}";
 
             return '';
         }
-        // Core's wp_kses_post() rewrites a bare "&" to "&amp;"; that is not unsafe markup, so both sides are compared with it undone.
-        $norm = static fn ( string $s ): string => str_replace( '&amp;', '&', $s );
-        if ( $norm( $kses( $value ) ) !== $norm( $value ) ) {
+        // Core's wp_kses_post() rewrites a bare "&" to "&amp;"; that is not unsafe markup, so the comparison undoes it (sameText).
+        if ( ! self::sameText( $kses( $value ), $value ) ) {
             $r[] = "\"{$key}\" contains markup WordPress does not allow in post content";
 
             return '';

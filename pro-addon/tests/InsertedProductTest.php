@@ -61,16 +61,26 @@ class InsertedProductTest extends TestCase
         $this->assertFalse( InsertedProduct::matches( self::post( [ 'post_title' => '' ] ), '' ) );
     }
 
-    public function testTheObjectIdWinsOverTheRecordedOne(): void
+    public function testTheObjectIdWinsOverTheRecordedOnes(): void
     {
-        $this->assertSame( 7, InsertedProduct::candidate( 7, 9 ) );
-        $this->assertSame( 7, InsertedProduct::candidate( 7, 3 ) );
+        $this->assertSame( 7, InsertedProduct::candidate( 7, [ 9 ] ) );
+        $this->assertSame( 7, InsertedProduct::candidate( 7, [ 3, 9 ] ), 'WooCommerce set it on the object: certain' );
+        $this->assertFalse( InsertedProduct::ambiguous( 7, [ 3, 9 ] ) );
     }
 
-    public function testTheRecordedIdIsUsedOnlyWhenTheObjectHasNone(): void
+    public function testOneRecordedIdIsUsedOnlyWhenTheObjectHasNone(): void
     {
-        $this->assertSame( 9, InsertedProduct::candidate( 0, 9 ) );
-        $this->assertSame( 0, InsertedProduct::candidate( 0, 0 ) );
-        $this->assertSame( 0, InsertedProduct::candidate( -1, -5 ) );
+        $this->assertSame( 9, InsertedProduct::candidate( 0, [ 9 ] ) );
+        $this->assertSame( 9, InsertedProduct::candidate( 0, [ 9, 9 ] ), 'the same post seen twice is one post' );
+        $this->assertSame( 0, InsertedProduct::candidate( 0, [] ) );
+        $this->assertSame( 0, InsertedProduct::candidate( -1, [ -5, 0 ] ) );
+        $this->assertFalse( InsertedProduct::ambiguous( 0, [ 9 ] ) );
+        $this->assertFalse( InsertedProduct::ambiguous( 0, [] ) );
+    }
+
+    public function testTwoMatchingPostsAreAmbiguousAndNothingIsDeleted(): void
+    {
+        $this->assertTrue( InsertedProduct::ambiguous( 0, [ 9, 10 ] ) );
+        $this->assertSame( 0, InsertedProduct::candidate( 0, [ 9, 10 ] ) );
     }
 }

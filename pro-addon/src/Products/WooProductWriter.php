@@ -53,25 +53,27 @@ final class WooProductWriter implements ProductWriter
 
     /**
      * Creates the draft. Cleanup rule: a failed save deletes at most ONE id, and only a post that is provably the draft this save
-     * inserted. The candidate is the product object's own id when WooCommerce set it, else the id the one-shot transition_post_status
-     * listener recorded; the listener records only a product post turning into a DRAFT whose title is the name set here (so a product
-     * another hook inserts during our save, with another title, is never taken for ours). Right before deleting, the candidate is
-     * re-read and must still be a draft product with our name (InsertedProduct::matches); otherwise nothing is deleted and the caller
-     * is told a draft may have been left behind. Residual: a foreign DRAFT product with exactly our name, inserted during our failing
-     * save before our own insert, could still be mistaken for ours (extremely unlikely; documented in the gate).
+     * inserted. The candidate is the product object's own id when WooCommerce set it; otherwise the listener's record: the one-shot
+     * transition_post_status listener records EVERY product post that turns into a DRAFT with exactly the name set here during the save
+     * (a product another hook inserts with another title is never recorded). If more than one post matched, nothing is deleted
+     * (InsertedProduct::ambiguous). Right before deleting, the candidate is re-read and must still be a draft product with our name;
+     * otherwise nothing is deleted. Whenever nothing is deleted after the save started, the caller is told a draft may be left behind.
+     * Residual: if another hook inserts a DRAFT product with exactly our name during our save and our own insert never happens (the
+     * save fails before it), that foreign draft is the only match: it is deleted, and the tool says "Nothing was created." When both
+     * inserts happen, the two matches make it ambiguous: neither is deleted and the tool says a draft may have been left behind.
      *
      * @throws ProductSaveFailed with a constant message (the id of a product it could not remove, or mayHaveLeftover)
-     * @throws \WC_Data_Exception only when it is certain no post was inserted (WooCommerce validates before the insert), so its own text can be shown
+     * @throws \WC_Data_Exception only from a setter, before save() started, so no post was inserted and its own text can be shown
      */
     public function create( array $values ): int
     {
         $p           = null;
-        $seen        = 0;
+        $seen        = [];
         $saveStarted = false;
         $name        = (string) $values['name'];
         $listener    = static function ( $new, $old, $post ) use ( &$seen, $name ): void {
-            if ( 0 === $seen && 'draft' === $new && InsertedProduct::matches( $post, $name ) ) {
-                $seen = (int) $post->ID;
+            if ( 'draft' === $new && InsertedProduct::matches( $post, $name ) ) {
+                $seen[] = (int) $post->ID;
             }
         };
         try {
@@ -110,15 +112,19 @@ final class WooProductWriter implements ProductWriter
             $saveStarted = true;
             $id          = (int) $p->save();
         } catch ( \Throwable $e ) {
-            $inserted = InsertedProduct::candidate( null !== $p ? (int) $p->get_id() : 0, $seen );
+            $objectId = null !== $p ? (int) $p->get_id() : 0;
+            if ( InsertedProduct::ambiguous( $objectId, $seen ) ) {
+                throw new ProductSaveFailed( 'WooCommerce could not save the product', null, true );
+            }
+            $inserted = InsertedProduct::candidate( $objectId, $seen );
             if ( $inserted > 0 ) {
                 if ( ! $this->stillOurs( $inserted, $name ) ) {
                     throw new ProductSaveFailed( 'WooCommerce could not save the product', null, true );
                 }
                 throw new ProductSaveFailed( 'WooCommerce could not save the product', $this->removeQuietly( $inserted ) ? null : $inserted );
             }
-            if ( is_a( $e, 'WC_Data_Exception' ) ) {
-                throw $e; // WooCommerce's own validation, which runs before anything is inserted
+            if ( ! $saveStarted && is_a( $e, 'WC_Data_Exception' ) ) {
+                throw $e; // a setter's own validation: save() never ran, so nothing was inserted
             }
             throw new ProductSaveFailed( 'WooCommerce could not save the product', null, $saveStarted );
         } finally {
