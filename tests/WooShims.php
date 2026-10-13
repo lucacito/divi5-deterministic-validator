@@ -77,9 +77,28 @@ if ( ! function_exists( 'wc_get_products' ) ) {
         if ( isset( $args['s'] ) ) {
             $all = array_values( array_filter( $all, fn ( $p ) => false !== stripos( (string) $p->d['name'], (string) $args['s'] ) ) );
         }
-        $by = $args['orderby'] ?? 'title';
-        usort( $all, fn ( $a, $b ) => 'price' === $by ? (float) $a->d['price'] <=> (float) $b->d['price'] : ( 'date' === $by ? strcmp( (string) ( $a->d['date_created'] ?? '' ), (string) ( $b->d['date_created'] ?? '' ) ) : strcasecmp( (string) $a->d['name'], (string) $b->d['name'] ) ) );
-        if ( 'DESC' === ( $args['order'] ?? 'ASC' ) ) {
+        $GLOBALS['__wc_last_args'] = $args;
+        // Like the real WooCommerce: `orderby` goes to WP_Query, which knows title, date and ID but not "price" (an unknown
+        // key falls back to the post date). The posts_clauses filters run as in WP_Query; the one ORDER BY this shim
+        // understands is the _price-meta order WooProductGateway adds (the live gate, make verify-products, proves the SQL).
+        $query   = new class( $args ) {
+            /** @param array<string,mixed> $v */
+            public function __construct( private array $v ) {}
+            public function get( string $key ) { return $this->v[ $key ] ?? ''; }
+        };
+        $clauses = apply_filters( 'posts_clauses', [ 'where' => '', 'groupby' => '', 'join' => '', 'orderby' => 'wp_posts.post_date ' . ( $args['order'] ?? 'ASC' ), 'distinct' => '', 'fields' => 'wp_posts.ID', 'limits' => '' ], $query );
+        $by      = $args['orderby'] ?? 'date';
+        $date    = fn ( $a, $b ) => strcmp( (string) ( $a->d['date_created'] ?? '' ), (string) ( $b->d['date_created'] ?? '' ) ) ?: $a->d['id'] <=> $b->d['id'];
+        $desc    = 'DESC' === ( $args['order'] ?? 'ASC' );
+        if ( 1 === preg_match( '/aied_price\.price (ASC|DESC), \S+\.ID (ASC|DESC)$/', (string) $clauses['orderby'], $m ) ) {
+            $desc = 'DESC' === $m[1];
+            usort( $all, fn ( $a, $b ) => (float) $a->d['price'] <=> (float) $b->d['price'] ?: $a->d['id'] <=> $b->d['id'] );
+        } elseif ( 'title' === $by ) {
+            usort( $all, fn ( $a, $b ) => strcasecmp( (string) $a->d['name'], (string) $b->d['name'] ) );
+        } else {
+            usort( $all, $date );
+        }
+        if ( $desc ) {
             $all = array_reverse( $all );
         }
         $limit = (int) ( $args['limit'] ?? -1 );

@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class WooProductGateway implements ProductGateway
 {
     private const LIST_STATUSES = [ 'publish', 'draft', 'pending', 'private', 'future' ];
+    private const PRICE_MARKER  = 'aied_price_order';
 
     public function isActive(): bool
     {
@@ -36,12 +37,66 @@ final class WooProductGateway implements ProductGateway
 
     public function query( array $args ): array
     {
-        $q = [
+        $order = 'desc' === $args['order'] ? 'DESC' : 'ASC';
+        $q     = [
             'return'  => 'ids',
             'status'  => 'any' === $args['status'] ? self::LIST_STATUSES : $args['status'],
-            'orderby' => $args['orderby'],
-            'order'   => strtoupper( (string) $args['order'] ),
+            'orderby' => 'price' === $args['orderby'] ? 'ID' : $args['orderby'],
+            'order'   => $order,
         ];
+        if ( 'price' !== $args['orderby'] ) {
+            return $this->run( $q, $args );
+        }
+
+        // wc_get_products() hands orderby=price to WP_Query, which ignores it and sorts by date (checked on WooCommerce
+        // 11.1.2, make verify-products). Sort by the product's own _price meta instead, for this one marked query only, and
+        // always remove the filter again. Not wc_product_meta_lookup: that table can be empty (it was on the dev site).
+        $q[ self::PRICE_MARKER ] = $order;
+        $filter                  = static function ( $clauses, $query ) {
+            $dir = is_object( $query ) && method_exists( $query, 'get' ) ? (string) $query->get( self::PRICE_MARKER ) : '';
+            if ( ! is_array( $clauses ) || '' === $dir ) {
+                return $clauses;
+            }
+            global $wpdb;
+            $posts    = isset( $wpdb->posts ) ? (string) $wpdb->posts : 'wp_posts';
+            $postmeta = isset( $wpdb->postmeta ) ? (string) $wpdb->postmeta : 'wp_postmeta';
+
+            return self::priceOrderClauses( $clauses, $dir, $posts, $postmeta );
+        };
+        add_filter( 'posts_clauses', $filter, 1000, 2 );
+        try {
+            return $this->run( $q, $args );
+        } finally {
+            remove_filter( 'posts_clauses', $filter, 1000 );
+        }
+    }
+
+    /**
+     * The SQL for the price order: a LEFT JOIN (a product without a price is still listed) on the LOWEST of the product's
+     * _price meta values, which is the current price the row shows (a variable or grouped product stores one _price per
+     * distinct child price; get_price() is the lowest), ORDER BY it with the id as a stable tie-break. One row per product, so
+     * nothing is listed twice. Only "ASC" or "DESC" ever reaches the SQL.
+     *
+     * @param array<string,mixed> $clauses
+     * @return array<string,mixed>
+     */
+    public static function priceOrderClauses( array $clauses, string $dir, string $postsTable, string $postmetaTable ): array
+    {
+        $dir                = 'DESC' === $dir ? 'DESC' : 'ASC';
+        $clauses['join']    = (string) ( $clauses['join'] ?? '' )
+            . " LEFT JOIN ( SELECT post_id, MIN( CAST( meta_value AS DECIMAL(20,6) ) ) AS price FROM {$postmetaTable} WHERE meta_key = '_price' AND meta_value <> '' GROUP BY post_id ) aied_price ON {$postsTable}.ID = aied_price.post_id";
+        $clauses['orderby'] = "aied_price.price {$dir}, {$postsTable}.ID {$dir}";
+
+        return $clauses;
+    }
+
+    /**
+     * @param array<string,mixed> $q the wc_get_products() arguments
+     * @param array<string,mixed> $args the parsed list_products arguments
+     * @return array{ids: list<int>, total: int, truncated: bool}
+     */
+    private function run( array $q, array $args ): array
+    {
         foreach ( [ 'type', 'stock_status' ] as $key ) {
             if ( null !== $args[ $key ] ) {
                 $q[ $key ] = $args[ $key ];

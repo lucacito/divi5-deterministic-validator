@@ -81,7 +81,31 @@ class WooProductGatewayTest extends TestCase
         $this->assertSame( [ 3 ], $gw->query( [ 'status' => 'draft' ] + $base )['ids'] );
         $this->assertSame( [ 4 ], $gw->query( [ 'type' => 'variable' ] + $base )['ids'] );
         $this->assertSame( [ 1 ], $gw->query( [ 'search' => 'alp' ] + $base )['ids'] );
-        $this->assertSame( [ 3, 1, 2 ], $gw->query( [ 'orderby' => 'price' ] + $base )['ids'] );
+    }
+
+    /** Found by make verify-products: WooCommerce hands orderby=price to WP_Query, which ignores it and sorts by date. */
+    public function testPriceOrderIsHonouredBothWaysAndCleansUp(): void
+    {
+        $GLOBALS['__wp_filters'] = [];
+        $gw   = new WooProductGateway();
+        $base = [ 'status' => 'any', 'type' => null, 'category' => null, 'stock_status' => null, 'on_sale' => null, 'search' => null, 'orderby' => 'price', 'order' => 'asc', 'page' => 1, 'per_page' => 50 ];
+        // prices: 1=>10, 2=>20, 3=>5, 4=>40, 5=>50, 6=>60, 7=>70
+        $this->assertSame( [ 3, 1, 2, 4, 5, 6, 7 ], $gw->query( $base )['ids'] );
+        $this->assertNotSame( 'price', $GLOBALS['__wc_last_args']['orderby'] ?? null, 'never hand WP_Query an orderby it does not know' );
+        $this->assertSame( [ 7, 6, 5, 4, 2, 1, 3 ], $gw->query( [ 'order' => 'desc' ] + $base )['ids'] );
+        $this->assertSame( [ 3, 1 ], $gw->query( [ 'on_sale' => true ] + $base )['ids'], 'the on_sale scan keeps the price order' );
+        $this->assertSame( [], $GLOBALS['__wp_filters']['posts_clauses'] ?? [], 'the clauses filter is removed after the query' );
+        $this->assertSame( [ 1, 2, 3, 4, 5, 6, 7 ], $gw->query( [ 'orderby' => 'date' ] + $base )['ids'], 'a later date query is not price-ordered' );
+    }
+
+    public function testPriceOrderClausesJoinTheLowestPriceMetaOncePerProduct(): void
+    {
+        $clauses = [ 'join' => ' JOIN x', 'orderby' => 'wp_posts.post_date DESC', 'where' => ' AND 1=1' ];
+        $out     = WooProductGateway::priceOrderClauses( $clauses, 'DESC', 'wp_posts', 'wp_postmeta' );
+        $this->assertSame( " JOIN x LEFT JOIN ( SELECT post_id, MIN( CAST( meta_value AS DECIMAL(20,6) ) ) AS price FROM wp_postmeta WHERE meta_key = '_price' AND meta_value <> '' GROUP BY post_id ) aied_price ON wp_posts.ID = aied_price.post_id", $out['join'], 'a LEFT JOIN on one row per product: nothing is listed twice and a product without a price is still listed' );
+        $this->assertSame( 'aied_price.price DESC, wp_posts.ID DESC', $out['orderby'], 'the current (lowest) price, as the row shows it, with a stable tie-break' );
+        $this->assertSame( ' AND 1=1', $out['where'] );
+        $this->assertSame( 'aied_price.price ASC, wp_posts.ID ASC', WooProductGateway::priceOrderClauses( $clauses, 'nonsense', 'wp_posts', 'wp_postmeta' )['orderby'], 'anything but DESC is ASC: no caller text reaches the SQL' );
     }
 
     public function testOnSaleIsFilteredInPhpWithTheRightTotalAndPage(): void
