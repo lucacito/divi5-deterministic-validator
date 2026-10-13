@@ -72,6 +72,7 @@ require_once __DIR__ . '/Fields/FieldValuePolicy.php';
 require_once __DIR__ . '/Products/ProductValuePolicy.php';
 require_once __DIR__ . '/Products/ProductFields.php';
 require_once __DIR__ . '/Products/ProductDiff.php';
+require_once __DIR__ . '/Products/PriceAdjuster.php';
 require_once __DIR__ . '/Products/ProductWriter.php';
 require_once __DIR__ . '/Products/ProductSaveFailed.php';
 require_once __DIR__ . '/Products/InsertedProduct.php';
