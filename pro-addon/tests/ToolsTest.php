@@ -47,7 +47,7 @@ class ToolsTest extends TestCase
     public function testThisReleaseShipsExactlyTheseTools(): void
     {
         $this->assertSame(
-            [ 'set_front_page', 'set_custom_css', 'set_primary_menu', 'publish_page', 'propose_php_snippet', 'list_batches', 'undo_batch', 'list_theme_layouts', 'update_theme_layout', 'edit_theme_layout', 'manage_theme_template', 'find_replace_site', 'audit_site', 'build_site', 'manage_global_colors', 'manage_global_variables', 'manage_global_presets', 'set_custom_fields' ],
+            [ 'set_front_page', 'set_custom_css', 'set_primary_menu', 'publish_page', 'propose_php_snippet', 'list_batches', 'undo_batch', 'list_theme_layouts', 'update_theme_layout', 'edit_theme_layout', 'manage_theme_template', 'find_replace_site', 'audit_site', 'build_site', 'manage_global_colors', 'manage_global_variables', 'manage_global_presets', 'set_custom_fields', 'create_product' ],
             array_map( static fn ( ProTool $t ): string => $t->name(), Tools::all() )
         );
     }
@@ -55,7 +55,7 @@ class ToolsTest extends TestCase
     public function testEveryKindARecordedItemUsesIsRegisteredForUndo(): void
     {
         $this->assertEqualsCanonicalizing(
-            [ 'front_page', 'custom_css', 'menu', 'post_status', 'page_created', 'page_trashed', 'post_content', 'theme_layout_content', 'theme_template', 'global_color', 'global_variable', 'global_preset', 'post_meta' ],
+            [ 'front_page', 'custom_css', 'menu', 'post_status', 'page_created', 'page_trashed', 'post_content', 'theme_layout_content', 'theme_template', 'global_color', 'global_variable', 'global_preset', 'post_meta', 'product_created', 'product_trashed' ],
             array_keys( \AiEditorDivi5\Pro\Batch\Batches::kinds() )
         );
     }
@@ -78,10 +78,10 @@ class ToolsTest extends TestCase
                 $free += count( $methods );
             }
         }
-        // The 15th to 18th Pro tools, manage_global_colors, manage_global_variables, manage_global_presets and set_custom_fields, are MCP + REST only by the owner's decision (2026-10-05 and after): they are not an
+        // The 15th to 19th Pro tools, manage_global_colors, manage_global_variables, manage_global_presets, set_custom_fields and create_product, are MCP + REST only by the owner's decision (2026-10-05 and after): they are not an
         // operation of the spec, so the budget counts the Pro tools that ARE in it (16 free + 14 Pro = 30, exactly).
         $inSpec = count( Tools::all() ) - count( ProOpenApi::MCP_REST_ONLY );
         $this->assertLessThanOrEqual( 30, $free + $inSpec );
-        $this->assertSame( [ 'manage_global_colors', 'manage_global_variables', 'manage_global_presets', 'set_custom_fields' ], ProOpenApi::MCP_REST_ONLY, 'a new MCP-only tool is an owner decision: change this list on purpose' );
+        $this->assertSame( [ 'manage_global_colors', 'manage_global_variables', 'manage_global_presets', 'set_custom_fields', 'create_product' ], ProOpenApi::MCP_REST_ONLY, 'a new MCP-only tool is an owner decision: change this list on purpose' );
     }
 }

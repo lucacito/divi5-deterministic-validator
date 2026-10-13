@@ -7,6 +7,7 @@ namespace AiEditorDivi5\Pro;
 use AiEditorDivi5\Pro\Batch\Batches;
 use AiEditorDivi5\Pro\Tools\AuditSite;
 use AiEditorDivi5\Pro\Tools\BuildSite;
+use AiEditorDivi5\Pro\Tools\CreateProduct;
 use AiEditorDivi5\Pro\Tools\EditThemeLayout;
 use AiEditorDivi5\Pro\Tools\FindReplaceSite;
 use AiEditorDivi5\Pro\Tools\ListBatches;
@@ -55,6 +56,7 @@ final class Tools
             new ManageGlobalVariables( $log ),
             new ManageGlobalPresets( $log ),
             new SetCustomFields( $log ),
+            new CreateProduct( $log ),
         ];
     }
 }
