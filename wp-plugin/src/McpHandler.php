@@ -793,6 +793,7 @@ final class McpHandler
         }
         $productId = $args['id'] ?? null;
         if (!is_int($productId) || $productId < 1) {
+            UsageTracker::log('get_product', null, 'error');
             return $this->rpcError($id, -32602, 'id must be a positive integer.');
         }
 

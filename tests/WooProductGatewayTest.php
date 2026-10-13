@@ -32,7 +32,8 @@ class WooProductGatewayTest extends TestCase
 
     protected function setUp(): void
     {
-        $GLOBALS['__wc_terms']       = [ 'product_cat' => [ 3 => [ 'name' => 'Clothing', 'slug' => 'clothing' ], 4 => [ 'name' => 'Music', 'slug' => 'music' ] ], 'product_type' => [ 1 => [ 'name' => 'simple', 'slug' => 'simple', 'count' => 3 ], 2 => [ 'name' => 'variable', 'slug' => 'variable', 'count' => 1 ] ], 'product_tag' => [] ];
+        $GLOBALS['__wc_terms']       = [ 'product_cat' => [ 3 => [ 'name' => 'Clothing', 'slug' => 'clothing' ], 4 => [ 'name' => 'Music', 'slug' => 'music' ] ], 'product_type' => [ 1 => [ 'name' => 'simple', 'slug' => 'simple', 'count' => 3 ], 2 => [ 'name' => 'variable', 'slug' => 'variable', 'count' => 1 ] ], 'product_tag' => [],
+            'pa_color' => [ 10 => [ 'name' => 'Red', 'slug' => 'red' ], 11 => [ 'name' => 'Blue', 'slug' => 'blue' ] ] ];
         $GLOBALS['__wc_counts']      = [ 'publish' => 5, 'draft' => 1, 'trash' => 9, 'auto-draft' => 2 ];
         $GLOBALS['__wc_attachments'] = [ 90 => 'https://shop.test/a.jpg', 91 => 'https://shop.test/g1.jpg' ];
         $GLOBALS['__wc_products']    = [
@@ -57,6 +58,8 @@ class WooProductGatewayTest extends TestCase
         $this->assertTrue( $gw->isProduct( 1 ) );
         $this->assertFalse( $gw->isProduct( 41 ), 'a variation is not a product for get_product' );
         $this->assertFalse( $gw->isProduct( 999 ) );
+        $GLOBALS['__wc_products'][9] = $this->product( 9, [ 'name' => 'Binned', 'status' => 'trash' ] );
+        $this->assertFalse( $gw->isProduct( 9 ), 'a TRASHED product is not found by get_product, like list_products hides it' );
     }
 
     public function testCountsComeFromWordPressAndLeaveTrashOut(): void
@@ -149,9 +152,21 @@ class WooProductGatewayTest extends TestCase
         $d = ( new WooProductGateway() )->detail( 4 );
         $this->assertSame( [ [ 'name' => 'Color', 'options' => [ 'Red', 'Blue' ], 'variation' => true, 'visible' => true, 'taxonomy' => true ], [ 'name' => 'Fit', 'options' => [ 'Slim', 'Wide' ], 'variation' => false, 'visible' => true, 'taxonomy' => false ] ], $d['attributes'] );
         $this->assertSame( 2, $d['variations_total'] );
-        $this->assertSame( [ 'Color' => 'red' ], $d['variations'][0]['attributes'] );
+        $this->assertSame( [ 'Color' => 'Red' ], $d['variations'][0]['attributes'], 'a taxonomy attribute value is the term NAME, as the product-level options say, not the stored slug' );
+        $this->assertSame( [ 'Color' => 'Blue' ], $d['variations'][1]['attributes'] );
         $this->assertSame( 'https://shop.test/g1.jpg', $d['variations'][0]['image'] );
         $this->assertNull( $d['variations'][1]['image'] );
+    }
+
+    public function testVariationAttributesUseTermNamesAndTheParentsOwnLabels(): void
+    {
+        $GLOBALS['__wc_products'][8] = $this->product( 8, [ 'name' => 'Tee', 'type' => 'variable', 'children' => [ 43, 44 ],
+                'attributes' => [ new \FakeWcAttribute( [ 'name' => 'Fit Type', 'options' => [ 'Slim' ], 'variation' => true ] ), new \FakeWcAttribute( [ 'name' => 'pa_color', 'taxonomy' => true, 'terms' => [ 'Red' ], 'variation' => true ] ) ] ] );
+        $GLOBALS['__wc_products'][43] = $this->product( 43, [ 'name' => 'Tee 1', 'type' => 'variation', 'post_type' => 'product_variation', 'attributes' => [ 'fit-type' => 'Slim', 'pa_color' => '' ] ] );
+        $GLOBALS['__wc_products'][44] = $this->product( 44, [ 'name' => 'Tee 2', 'type' => 'variation', 'post_type' => 'product_variation', 'attributes' => [ 'pa_color' => 'green' ] ] );
+        $v = ( new WooProductGateway() )->detail( 8 )['variations'];
+        $this->assertSame( [ 'Fit Type' => 'Slim', 'Color' => '' ], $v[0]['attributes'], 'a custom attribute keeps the name as written (label read from the parent); an empty value ("any") stays empty' );
+        $this->assertSame( [ 'Color' => 'green' ], $v[1]['attributes'], 'a slug with no matching term falls back to the raw slug' );
     }
 
     public function testDetailForExternalGroupedAndImages(): void

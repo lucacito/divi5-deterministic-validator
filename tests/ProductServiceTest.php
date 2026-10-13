@@ -26,7 +26,7 @@ final class FakeGateway implements ProductGateway
 
     public function isActive(): bool { return $this->active; }
     public function info(): array { return [ 'version' => '9.9.9', 'currency' => 'EUR' ]; }
-    public function isProduct( int $id ): bool { return isset( $this->rows[ $id ] ) && 'product' === ( $this->rows[ $id ]['post_type'] ?? 'product' ); }
+    public function isProduct( int $id ): bool { return isset( $this->rows[ $id ] ) && 'product' === ( $this->rows[ $id ]['post_type'] ?? 'product' ) && 'trash' !== ( $this->rows[ $id ]['status'] ?? '' ); }
     public function query( array $args ): array
     {
         $this->guard();
@@ -60,6 +60,17 @@ class ProductServiceTest extends TestCase
         return static function ( string $cap, ...$args ) use ( $deny ): bool {
             return ! in_array( $cap . ( isset( $args[0] ) ? ':' . $args[0] : '' ), $deny, true ) && ! in_array( $cap, $deny, true );
         };
+    }
+
+    public function testATrashedProductAnswersNotFoundLikeAMissingOne(): void
+    {
+        $this->gw->rows[5] = [ 'id' => 5, 'name' => 'Binned', 'type' => 'simple', 'status' => 'trash' ];
+        $trashed = ProductService::get( 5, $this->gw, $this->can() );
+        $missing = ProductService::get( 999, $this->gw, $this->can() );
+        $this->assertFalse( $trashed['ok'] );
+        $this->assertSame( 'not_found', $trashed['kind'] );
+        $this->assertSame( 'Product 5 not found.', $trashed['message'] );
+        $this->assertSame( str_replace( '999', '5', $missing['message'] ), $trashed['message'] );
     }
 
     public function testListReturnsTotalsRowsAndPaging(): void

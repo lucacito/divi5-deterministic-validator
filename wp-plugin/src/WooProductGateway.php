@@ -32,7 +32,7 @@ final class WooProductGateway implements ProductGateway
 
     public function isProduct( int $id ): bool
     {
-        return $id > 0 && 'product' === get_post_type( $id );
+        return $id > 0 && 'product' === get_post_type( $id ) && 'trash' !== get_post_status( $id );
     }
 
     public function query( array $args ): array
@@ -220,7 +220,14 @@ final class WooProductGateway implements ProductGateway
                 }
                 $attrs = [];
                 foreach ( (array) $v->get_attributes() as $name => $value ) {
-                    $attrs[ (string) wc_attribute_label( (string) $name ) ] = (string) $value;
+                    $name  = (string) $name;
+                    $value = (string) $value;
+                    if ( '' !== $value && taxonomy_exists( $name ) ) { // WooCommerce stores the term SLUG; the AI reads the NAME (as the product's options do)
+                        $term  = get_term_by( 'slug', $value, $name );
+                        $value = is_object( $term ) && isset( $term->name ) ? (string) $term->name : $value;
+                    }
+                    // The parent product lets a custom attribute come back as written ("Fit Type"), not as its sanitised key ("fit-type").
+                    $attrs[ (string) wc_attribute_label( $name, $p ) ] = $value;
                 }
                 $vimg                = (int) $v->get_image_id();
                 $raw['variations'][] = [

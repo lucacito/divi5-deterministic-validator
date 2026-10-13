@@ -19,7 +19,7 @@ interface ProductGateway
     /** @return array{version: string, currency: string} */
     public function info(): array;
 
-    /** True only for a post of the exact type `product` (a variation or any other id is false). */
+    /** True only for a post of the exact type `product` that is not in the trash (a variation, a trashed product or any other id is false). */
     public function isProduct( int $id ): bool;
 
     /**

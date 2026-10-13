@@ -285,6 +285,39 @@ try {
         $check( [] === $numeric && $wantNames === $gotNames, 'REST get: taxonomy attribute options are term names, not ids (' . implode( ', ', array_merge( [], ...$gotNames ) ) . ')' );
     }
 
+    // Variation attribute values: WooCommerce stores the term SLUG (percent-encoded on a non-English store); the AI must read the term NAME,
+    // and a custom attribute comes back as written, under the same label the product-level attributes use.
+    $varChecked = 0;
+    $varBad     = [];
+    foreach ( $variables as $vpId ) {
+        $vParent = wc_get_product( $vpId );
+        $vData   = (array) ( $get( $vpId )['data']['product']['variations'] ?? [] );
+        $byId    = [];
+        foreach ( $vData as $row ) {
+            $byId[ (int) $row['id'] ] = (array) ( $row['attributes'] ?? [] );
+        }
+        foreach ( $byId as $vid => $got ) {
+            $wc = wc_get_product( $vid );
+            if ( ! $wc || ! $vParent ) {
+                continue;
+            }
+            foreach ( (array) $wc->get_attributes() as $name => $slug ) {
+                $label = (string) wc_attribute_label( (string) $name, $vParent );
+                $slug  = (string) $slug;
+                $want  = $slug;
+                if ( '' !== $slug && taxonomy_exists( (string) $name ) ) {
+                    $term = get_term_by( 'slug', $slug, (string) $name );
+                    $want = $term ? (string) $term->name : $slug;
+                }
+                ++$varChecked;
+                if ( ( $got[ $label ] ?? null ) !== $want ) {
+                    $varBad[] = "variation {$vid} {$label}: got " . wp_json_encode( $got[ $label ] ?? null ) . ', want ' . wp_json_encode( $want );
+                }
+            }
+        }
+    }
+    $check( $varChecked > 0 && [] === $varBad, "REST get: every variation attribute value is the term NAME (custom attributes keep their own label) across " . count( $variables ) . " variable products ({$varChecked} values)" . ( [] === $varBad ? '' : ': ' . implode( '; ', $varBad ) ) );
+
     $groupedId = $directIds( [ 'type' => 'grouped' ] )[0] ?? 0;
     $r         = $get( $groupedId );
     $gp        = wc_get_product( $groupedId );
@@ -347,6 +380,7 @@ try {
     $r = $rest( 'GET', '/products', [ 'per_page' => '50' ] );
     $check( 'trash' === get_post_status( $made['draft'] ) && ! in_array( $made['draft'], $ids( $r ), true ), 'REST list: status=any does not return a trashed product' );
     $check( $allBefore - 1 === ( $r['data']['totals']['all'] ?? null ) && $allBefore - 1 === ( $r['data']['total_matching'] ?? null ), 'REST list: the totals leave the trashed product out' );
+    $check( 404 === $rest( 'GET', "/products/{$made['draft']}" )['status'], 'REST get: a trashed product is a 404, like a missing one' );
 } catch ( Throwable $e ) {
     $check( false, 'unexpected error: ' . $e->getMessage() );
 } finally {

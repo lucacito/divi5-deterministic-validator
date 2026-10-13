@@ -121,7 +121,43 @@ if ( ! function_exists( 'get_woocommerce_currency' ) ) {
     function get_woocommerce_currency() { return 'USD'; }
 }
 if ( ! function_exists( 'wc_attribute_label' ) ) {
-    function wc_attribute_label( $name ) { return ucfirst( preg_replace( '/^pa_/', '', (string) $name ) ); }
+    // Like WooCommerce: with the parent product, a custom (non-taxonomy) attribute comes back as written ("Fit Type"); without it the
+    // name is the sanitised key ("fit-type"), so only a crude label is possible.
+    function wc_attribute_label( $name, $product = false )
+    {
+        if ( is_object( $product ) ) {
+            foreach ( (array) $product->get_attributes() as $a ) {
+                if ( is_object( $a ) && ! $a->is_taxonomy() && strtolower( str_replace( ' ', '-', (string) $a->get_name() ) ) === (string) $name ) {
+                    return $a->get_name();
+                }
+            }
+        }
+
+        return ucfirst( preg_replace( '/^pa_/', '', (string) $name ) );
+    }
+}
+if ( ! function_exists( 'taxonomy_exists' ) ) {
+    function taxonomy_exists( $taxonomy ) { return isset( $GLOBALS['__wc_terms'][ (string) $taxonomy ] ); }
+}
+if ( ! function_exists( 'get_term_by' ) ) {
+    function get_term_by( $field, $value, $taxonomy = '' )
+    {
+        foreach ( $GLOBALS['__wc_terms'][ (string) $taxonomy ] ?? [] as $id => $t ) {
+            if ( 'slug' === $field && $t['slug'] === (string) $value ) {
+                return (object) [ 'term_id' => $id, 'name' => $t['name'], 'slug' => $t['slug'] ];
+            }
+        }
+
+        return false;
+    }
+}
+if ( ! function_exists( 'get_post_status' ) ) {
+    function get_post_status( $id )
+    {
+        $p = $GLOBALS['__wc_products'][ (int) $id ] ?? null;
+
+        return $p ? ( $p->d['status'] ?? false ) : ( $GLOBALS['__wp_posts'][ (int) $id ]->post_status ?? false );
+    }
 }
 if ( ! function_exists( 'get_terms' ) ) {
     function get_terms( $args ) {
