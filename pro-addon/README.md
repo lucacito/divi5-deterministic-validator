@@ -15,11 +15,12 @@ Spec: `docs/superpowers/specs/2026-10-02-pro-addon-design.md`. Plans: `docs/supe
 | `src/ProPage.php` | the "Pro" admin tab (licence entry, tool list) |
 | `src/Args.php`, `src/Canon.php` | strict argument readers; canonical hashes for the changed-since rule |
 | `src/Batch/` | the batch store (`{prefix}aied_pro_batches`, last 20), `BatchLog`, and the undo engine (`BatchUndo`, `ItemKind`/`ValueKind`) |
-| `src/Kinds/` | how each target is read and put back on undo: front page, Additional CSS block, menu, page status, page created and trashed (the pages of a site build), page content, header/footer content, Theme Builder template, a Divi global color, a Divi global variable, a Divi module preset (`global_preset`), a custom field value on a post (`post_meta`, `PostMetaKind`) |
+| `src/Kinds/` | how each target is read and put back on undo: front page, Additional CSS block, menu, page status, page created and trashed (the pages of a site build), page content, header/footer content, Theme Builder template, a Divi global color, a Divi global variable, a Divi module preset (`global_preset`), a custom field value on a post (`post_meta`, `PostMetaKind`), a product created and trashed (`product_created` / `product_trashed`) |
 | `src/ThemeBuilder/` | the live Theme Builder read model (ThemeLayouts, LayoutTarget: which post a layout tool may touch), the one layout write path (LayoutWriter), Divi cache clearing, and TemplateStore (reads/writes one template through Divi's own store function) |
 | `src/Settings/` | `CustomCss` (managed block), `MenuBuilder`, `PhpProposals`, `GlobalColors` (the only code that talks to Divi's global colors), `GlobalColorPlanner` (the all-or-nothing change list), `GlobalVariables*` (`GlobalVariables` is the only code that talks to Divi's variables; plus `GlobalVariablePlanner`, the numbers and strings value guards and `GlobalVariablesLock`), `GlobalPreset*.php` (`GlobalPresets` is the only code that talks to Divi's module presets; plus `GlobalPresetPlanner`, the all-or-nothing change list, and `GlobalPresetsLock`) |
 | `src/Fields/` | custom field values: `FieldValuePolicy` (the code-and-markup refusal list for a value), `AcfFields` (the site's ACF field index, selectors and the writable types), `PostMetaStore` (the only code that reads and writes a post's custom fields: ACF's `update_field()` for an ACF field, `update_post_meta()` otherwise, every write read back) |
-| `src/Tools/` | the eighteen tools: `set_front_page`, `set_primary_menu`, `publish_page`, `set_custom_css`, `propose_php_snippet`, `list_batches`, `undo_batch`, `list_theme_layouts`, `update_theme_layout`, `edit_theme_layout`, `manage_theme_template`, `find_replace_site`, `audit_site`, `build_site`, `manage_global_colors`, `manage_global_variables`, `manage_global_presets`, `set_custom_fields` |
+| `src/Products/` | new simple products: `ProductValuePolicy` (the pure field rules), `ProductWriter` (the interface) and `WooProductWriter` (the only code that calls WooCommerce), `ProductSaveFailed` |
+| `src/Tools/` | the nineteen tools: `set_front_page`, `set_primary_menu`, `publish_page`, `set_custom_css`, `propose_php_snippet`, `list_batches`, `undo_batch`, `list_theme_layouts`, `update_theme_layout`, `edit_theme_layout`, `manage_theme_template`, `find_replace_site`, `audit_site`, `build_site`, `manage_global_colors`, `manage_global_variables`, `manage_global_presets`, `set_custom_fields`, `create_product` |
 | `src/Site/` | what "the site" means for a site-wide tool (`SiteItems`: Divi 5 pages the user can edit and, with the Theme Builder permission, the live header/footer), the signed preview token (`PreviewToken`), the launch of a site build (`BuildLaunch`) and its per-user add_page lock (`BuildLock`), and the internal-link reader (`LinkScanner`, no request is ever made) |
 | `src/Rest/` | the REST and ChatGPT/OpenAPI faces of every Pro tool (`ProRest`: `POST /pro/<tool>`; `ProOpenApi`), generated from the tool list so MCP, REST and the spec cannot drift |
 | `src/Admin/` | the "Recent Pro changes" and "Code proposals" panels on the Pro tab, and `LapseNotice` for the dismissible expiry warning |
@@ -60,6 +61,29 @@ MCP + REST only, on purpose: the 30-operation ChatGPT budget is used up, so `set
 
 Release note: raise `Compat::MIN_FREE` to the first free version that contains `FieldTarget`, `CustomFieldReader` and `CustomFields` when you version the free release (the runtime guard `REQUIRED_CLASSES` already switches the Pro tools off if they are missing).
 
+## Create products (`create_product`)
+
+The tool creates up to 25 new SIMPLE WooCommerce products per call, always as DRAFTS. It needs WooCommerce active, the `edit_products` permission (plus `assign_product_terms` when a product uses categories or tags), and `edit_posts` like the other Pro tools. Arguments: `products` (a list of 1 to 25 objects) and an optional strict boolean `dry_run`. Each product takes only these fields (any other key is refused):
+
+| Field | Rule |
+|---|---|
+| `name` (required) | plain text, at most 200 characters, no control characters or HTML |
+| `description`, `short_description` | string, at most 10,000 / 1,000 characters, no custom code (`FieldValuePolicy`) and nothing `wp_kses_post()` would change |
+| `sku` | 1 to 100 printable ASCII characters; must not be used by another product or twice in the call |
+| `regular_price`, `sale_price`, `weight` | decimal string such as `"20"` or `"20.50"` (no currency symbol); `sale_price` needs a `regular_price` and must be lower |
+| `manage_stock`, `stock_quantity`, `stock_status`, `backorders` | with `manage_stock: true` a whole `stock_quantity` (0 to 1,000,000) is required and `backorders` is `no`, `notify` or `yes`; without it `stock_status` is `instock`, `outofstock` or `onbackorder` and the other two are refused |
+| `categories`, `tags` | lists of EXISTING slugs (at most 10 / 20); an unknown slug is refused, never created |
+| `image_id`, `gallery_image_ids` | Media Library images the user may use (gallery at most 10); no URLs are accepted |
+| `dimensions` | object with only `length`, `width`, `height` (decimal strings) |
+| `tax_status` | `taxable` (default), `shipping` or `none` |
+| `virtual`, `sold_individually` | booleans |
+
+All-or-nothing: every product is checked first, and one refused product creates nothing; the answer lists every reason with the product's position and name. After the checks each product is saved and read back; a failed save, or any difference between what was asked and what WooCommerce stored (name, SKU, prices, stock, terms asked for, images and the draft status), removes every product this call created. WooCommerce may add its default category to a product saved without categories, which is not counted as a difference. If a product's row was inserted before its save failed and cannot be removed, the error names it (or says a draft may have been left behind) so you can check or trash it. `dry_run: true` runs every check and shows what would be created; it creates nothing and records no batch.
+
+A real run records ONE batch of `product_created` items. `undo_batch` moves each created product to the trash, but only while it is still a draft that matches what the call saved (the changed-since rule): a product edited, published or trashed since is skipped and reported. With `EMPTY_TRASH_DAYS` set to 0 the trash is a permanent delete, so a changed product is never deleted, `force` or not. Undoing records a `product_trashed` item, so the undo can itself be undone (a trashed product comes back as a draft).
+
+Out of scope on purpose: variable, grouped, external and downloadable products, publishing, changing or deleting an existing product, creating categories, tags or images, and any argument that is a URL. MCP + REST only: the 30-operation ChatGPT budget is used up, so `create_product` is the fifth tool in `ProOpenApi::MCP_REST_ONLY`. Spec: `docs/superpowers/specs/2026-10-13-pro-create-product-design.md`; live gate: `make verify-pro-create-product`.
+
 ## Known limits
 
 - WordPress gives draft pages no unique slug and resolves a clash only when a page is published, so `build_site` refuses a taken slug at `add_page`, re-checks at launch (`slug_taken` skips the page) and reports a slug core still changed at publish (`slug_changed`). A menu that points at a draft page shows a dead link to visitors, which is why the menu is only rebuilt at launch.
@@ -70,7 +94,7 @@ Release note: raise `Compat::MIN_FREE` to the first free version that contains `
 
 - The audit's link check cannot tell a missing page from an archive or custom route (the finding says so), and reads at most 200 links per item (`LINKS_NOT_ALL_CHECKED`).
 - On a site with more than 1000 Divi 5 pages `audit_site` audits the first 1000 (by id) and says so, and `find_replace_site` refuses and asks for `page_ids`.
-- The ChatGPT importer allows 30 operations in total: 16 free + 14 Pro = 30, so the budget is used up. The 15th, 16th, 17th and 18th Pro tools, `manage_global_colors`, `manage_global_variables`, `manage_global_presets` and `set_custom_fields`, are MCP + REST only on purpose (`ProOpenApi::MCP_REST_ONLY`; `ProParityTest` and `ToolsTest` pin the exception). Any further tool needs the same owner decision or a merge of two tools.
+- The ChatGPT importer allows 30 operations in total: 16 free + 14 Pro = 30, so the budget is used up. The 15th to 19th Pro tools, `manage_global_colors`, `manage_global_variables`, `manage_global_presets`, `set_custom_fields` and `create_product`, are MCP + REST only on purpose (`ProOpenApi::MCP_REST_ONLY`; `ProParityTest` and `ToolsTest` pin the exception). Any further tool needs the same owner decision or a merge of two tools.
 - The `verify-pro-*` scripts create and delete throwaway content (`verify-pro-rest` is read-only): all twelve refuse to run unless the site host is localhost, 127.0.0.1, ::1, `*.local`, `*.test` or `*.localhost` (`scripts/dev-guard.php`).
 
 ## Dev override of the licence server

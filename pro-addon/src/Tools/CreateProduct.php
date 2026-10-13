@@ -49,7 +49,7 @@ final class CreateProduct implements ProTool
 
         return [
             'name'        => self::NAME,
-            'description' => 'Create up to 25 new simple WooCommerce products as DRAFTS (never published): name, texts, SKU, prices, stock, existing categories, tags and Media Library images. All or nothing; one undoable batch. dry_run previews. Use list_products to see the catalogue first.',
+            'description' => 'Create up to 25 new simple WooCommerce products as DRAFTS (never published). Sets name, texts, SKU, prices, stock, existing categories, tags and Media Library images. All or nothing; one undoable batch. dry_run previews. Use list_products to see the catalogue first.',
             'inputSchema' => [
                 'type'       => 'object',
                 'properties' => [

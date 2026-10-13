@@ -126,6 +126,7 @@ class ProOpenApiTest extends TestCase
         $this->assertArrayNotHasKey( '/pro/manage_global_variables', $paths, 'MCP + REST only: no room in the 30-operation ChatGPT spec' );
         $this->assertArrayNotHasKey( '/pro/manage_global_presets', $paths, 'MCP + REST only: no room in the 30-operation ChatGPT spec' );
         $this->assertArrayNotHasKey( '/pro/set_custom_fields', $paths, 'MCP + REST only: no room in the 30-operation ChatGPT spec' );
+        $this->assertArrayNotHasKey( '/pro/create_product', $paths, 'MCP + REST only: no room in the 30-operation ChatGPT spec' );
         foreach ( $paths as $path => $methods ) {
             $responses = $methods['post']['responses'];
             $this->assertSame( [ '200', '400', '401', '403', '500' ], array_map( 'strval', array_keys( $responses ) ), $path );

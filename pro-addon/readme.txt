@@ -2,7 +2,7 @@
 Contributors:      lucaslopvet
 Requires at least: 6.0
 Requires PHP:      8.1
-Stable tag:        0.9.0
+Stable tag:        0.10.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,10 +32,11 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `manage_global_presets` - create or update your site's Divi module presets (never deletes one; updating a module's default preset needs `allow_default_presets`). A preset restyles every module that cites it, so every real run needs the token from a preview (`dry_run`); `undo_batch` puts the changes back as long as nothing changed them afterwards.
 * `manage_global_colors` - create, recolor, rename or deactivate your site's Divi global colors (never deletes one; the five theme colors only with `allow_theme_colors`). It affects every page that uses a color, so every real run needs the token from a preview (`dry_run`); undo puts it all back.
 * `set_custom_fields` - set custom field values on one page, Divi Project or other post you can edit (only keys your site already uses; never protected or secret keys, code, or ACF lists and images; all or nothing; `dry_run` previews; `undo_batch` puts the values back as long as nothing changed them afterwards).
+* `create_product` - create up to 25 new simple WooCommerce products per call as drafts (never published): name, descriptions, SKU, regular and sale price, stock, backorders, existing categories and tags, a main image and gallery from your Media Library, weight, dimensions, tax status, virtual and sold individually. Needs WooCommerce. Everything is checked first and nothing is created unless every product passes (unknown categories, tags or images are refused, never created); each saved product is read back and compared, and a difference removes what the call created. `dry_run` previews; one `undo_batch` moves the created drafts to the trash unless you edited, published or trashed one since. It never changes an existing product.
 * `list_batches` - list recent Pro changes.
 * `undo_batch` - undo one batch.
 
-Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors`, `manage_global_variables`, `manage_global_presets` and `set_custom_fields` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked.
+Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors`, `manage_global_variables`, `manage_global_presets`, `set_custom_fields` and `create_product` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked.
 
 Each tool checks the permission it really needs (for example `manage_options` to set the front page), not only that the request is authenticated.
 
@@ -55,6 +56,10 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
+
+= 0.10.0 =
+* New: `create_product` creates new simple WooCommerce products as drafts: name, descriptions, SKU, prices, stock, existing categories and tags and Media Library images, weight, dimensions and tax status. Up to 25 products per call, checked before anything is saved: if one is refused none is created and every reason is listed. A product is never published, an existing product is never changed, and every saved product is read back and compared (a difference removes what the call created). Add `dry_run` to preview. One `undo_batch` moves the created drafts to the trash, unless you edited, published or trashed one since.
+* Over MCP and REST only: this is the 19th Pro tool, and the ChatGPT importer's 30 operations are used up.
 
 = 0.9.0 =
 * New: `set_custom_fields` sets the custom field values of ONE page, Divi Project or other post you can edit, so an assistant can fill in what a layout shows through Divi's custom field binding (for example an Advanced Custom Fields name, price or link). Every field is checked first and nothing is written unless all of them pass: a key must already exist on your site (an Advanced Custom Fields field, or a key a post already uses), keys WordPress keeps private and names that look like passwords or tokens are refused, and so are values that contain code. Add `dry_run` to see each field's before and after without saving anything. A real run is one batch, and `undo_batch` puts every value back as long as nothing changed it afterwards.
