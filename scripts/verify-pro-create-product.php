@@ -537,33 +537,80 @@ try {
     $check( null === $err && $shopId > 0 && 'draft' === ( $shopGot['status'] ?? null ), 'a shop manager creates a draft (with a category and an image)' . ( null === $err ? '' : ': ' . $err ) );
     $check( in_array( str_replace( '&amp;', '&', (string) ( $shopGot['description'] ?? '' ) ), [ 'Salt & pepper <p>x</p>' ], true ), 'the shop manager\'s description survives core\'s kses filter (' . ( $shopFiltered ? 'filtered user' : 'unfiltered user' ) . ': ' . wp_json_encode( $shopGot['description'] ?? null ) . ')' );
 
-    // ---- observation only: a FOREIGN product inserted by another hook during OUR save ------------------------------------------
-    // WooProductWriter records the first product that transitions during save(). If another plugin inserts its own product inside our
-    // save and our insert then fails, which id does the writer clean up? Reported as NOTE lines (not a check of this task).
-    $foreignName = AIED_CP_NAME . 'Foreign';
-    $victimName  = AIED_CP_NAME . 'Victim';
-    $inserted    = false;
-    $inserter    = static function () use ( &$inserted, $foreignName ): void {
-        if ( ! $inserted ) {
-            $inserted = true;
-            wp_insert_post( [ 'post_type' => 'product', 'post_status' => 'draft', 'post_title' => $foreignName ] );
+    // ---- a FOREIGN product inserted by another hook during OUR save, then our save fails -------------------------------------
+    // The writer must clean up only the draft THIS save inserted (InsertedProduct::matches), never another plugin's product.
+    $foreignCase = static function ( string $victimName, string $foreignName, string $sku ) use ( $run, $withSkuOrName, $newestId ): array {
+        $foreign  = [ 'id' => 0, 'row' => null, 'inserting' => false ];
+        $inserter = static function () use ( &$foreign, $foreignName ): void {
+            if ( 0 === $foreign['id'] && ! $foreign['inserting'] ) {
+                $foreign['inserting'] = true;
+                $id                   = wp_insert_post( [ 'post_type' => 'product', 'post_status' => 'draft', 'post_title' => $foreignName ], true );
+                if ( ! is_wp_error( $id ) ) {
+                    $foreign['id'] = (int) $id;
+                    $row           = get_post( (int) $id );
+                    $foreign['row'] = $row ? [ $row->post_type, $row->post_status, $row->post_title, $row->post_modified_gmt ] : null;
+                }
+                $foreign['inserting'] = false;
+            }
+        };
+        $throwOnce = false;
+        $thrower   = static function ( $id, $post ) use ( $victimName, $foreignName, &$throwOnce, &$foreign ): void {
+            // Our product only, never the foreign one the inserter is making (with the same title, told apart by the flag and the id).
+            if ( ! $throwOnce && ! $foreign['inserting'] && is_object( $post ) && $victimName === $post->post_title && (int) $post->ID !== $foreign['id'] ) {
+                $throwOnce = true;
+                throw new \RuntimeException( AIED_CP_SECRET . ' simulated hook failure' );
+            }
+        };
+        $newestBefore = $newestId();
+        add_action( 'woocommerce_before_product_object_save', $inserter, 10, 0 );
+        add_action( 'save_post_product', $thrower, 10, 2 );
+        try {
+            [ , $err ] = $run( [ 'products' => [ [ 'name' => $victimName, 'sku' => $sku ] ] ] );
+        } finally {
+            remove_action( 'woocommerce_before_product_object_save', $inserter, 10 );
+            remove_action( 'save_post_product', $thrower, 10 );
+        }
+        $now = null;
+        if ( $foreign['id'] > 0 ) {
+            clean_post_cache( $foreign['id'] );
+            $now = get_post( $foreign['id'] );
+        }
+        $ours = array_values( array_diff( $withSkuOrName( $sku, $victimName ), [ $foreign['id'] ] ) );
+
+        return [
+            'err'          => (string) $err,
+            'foreign_id'   => $foreign['id'],
+            'foreign_same' => null !== $foreign['row'] && $now && [ $now->post_type, $now->post_status, $now->post_title, $now->post_modified_gmt ] === $foreign['row'],
+            'ours_left'    => $ours,
+            'no_batch'     => $newestBefore === $newestId(),
+        ];
+    };
+    $f = $foreignCase( AIED_CP_NAME . 'Victim', AIED_CP_NAME . 'Foreign', AIED_CP_SKU . 'VICTIM' );
+    $check( $f['foreign_id'] > 0 && $f['foreign_same'], "a foreign product (another title) inserted by a hook during our failing save still exists, unchanged, not trashed (#{$f['foreign_id']})" );
+    $check( [] === $f['ours_left'], 'our own orphan draft of that failing save is gone from every status' . ( [] === $f['ours_left'] ? '' : ' (left: #' . implode( ', #', $f['ours_left'] ) . ')' ) );
+    $check( '' !== $f['err'] && ! str_starts_with( $f['err'], 'UNEXPECTED' ) && ! str_contains( $f['err'], '/var/www' ) && ( ! str_contains( $f['err'], 'Nothing was created.' ) || [] === $f['ours_left'] ), 'the message is honest and shows no path: ' . $f['err'] );
+    $check( $f['no_batch'], 'the failing save with a foreign insert recorded no batch' );
+
+    // Residual (documented, not asserted): a foreign DRAFT with exactly OUR name, inserted before our own insert.
+    $s = $foreignCase( AIED_CP_NAME . 'Same title', AIED_CP_NAME . 'Same title', AIED_CP_SKU . 'SAME' );
+    $note( 'same-title residual: foreign #' . $s['foreign_id'] . ' ' . ( $s['foreign_id'] > 0 && $s['foreign_same'] ? 'survived unchanged' : 'was deleted or changed' ) . '; our draft ' . ( [] === $s['ours_left'] ? 'is gone' : 'was left behind (#' . implode( ', #', $s['ours_left'] ) . ')' ) . '; message: ' . $s['err'] );
+
+    // A failure AFTER WooCommerce set the id on the object (woocommerce_new_product runs at the end of its insert): get_id() wins.
+    $lateName = AIED_CP_NAME . 'Late failure';
+    $late     = static function ( $id ) use ( $lateName ): void {
+        if ( $lateName === get_post_field( 'post_title', (int) $id ) ) {
+            throw new \RuntimeException( AIED_CP_SECRET . ' simulated late failure' );
         }
     };
-    $victimThrower = static function ( $id, $post ) use ( $victimName ): void {
-        if ( is_object( $post ) && $victimName === $post->post_title ) {
-            throw new \RuntimeException( AIED_CP_SECRET . ' simulated hook failure' );
-        }
-    };
-    add_action( 'woocommerce_before_product_object_save', $inserter, 10, 0 );
-    add_action( 'save_post_product', $victimThrower, 10, 2 );
+    $newestBefore = $newestId();
+    add_action( 'woocommerce_new_product', $late, 10, 1 );
     try {
-        [ , $err ] = $run( [ 'products' => [ [ 'name' => $victimName, 'sku' => AIED_CP_SKU . 'VICTIM' ] ] ] );
+        [ , $err ] = $run( [ 'products' => [ [ 'name' => $lateName, 'sku' => AIED_CP_SKU . 'LATE' ] ] ] );
     } finally {
-        remove_action( 'woocommerce_before_product_object_save', $inserter, 10 );
-        remove_action( 'save_post_product', $victimThrower, 10 );
+        remove_action( 'woocommerce_new_product', $late, 10 );
     }
-    $note( 'foreign-insert scenario message: ' . (string) $err );
-    $note( 'foreign product left: ' . ( [] === $withSkuOrName( '', $foreignName ) ? 'no (the writer deleted it)' : 'yes' ) . '; our victim product left: ' . ( [] === $withSkuOrName( AIED_CP_SKU . 'VICTIM', $victimName ) ? 'no' : 'yes (#' . implode( ', #', $withSkuOrName( AIED_CP_SKU . 'VICTIM', $victimName ) ) . ')' ) );
+    $lateLeft = $withSkuOrName( AIED_CP_SKU . 'LATE', $lateName );
+    $check( null !== $err && ! str_starts_with( $err, 'UNEXPECTED' ) && [] === $lateLeft && ! str_contains( $err, '/var/www' ) && $newestBefore === $newestId(), 'a failure after WooCommerce set the id (woocommerce_new_product) deletes our draft, shows no path, records no batch: ' . (string) $err );
 } catch ( Throwable $e ) {
     $check( false, 'unexpected error: ' . $e->getMessage() );
 } finally {
