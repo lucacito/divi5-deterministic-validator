@@ -31,6 +31,12 @@ final class ApprovalMode
         update_option( self::OPTION, $on ? '1' : '0', false );
     }
 
+    /** The text an approval key is built from when a title is part of the change; null keeps today's key unchanged. */
+    public static function withTitle( string $content, ?string $title ): string
+    {
+        return null === $title ? $content : $content . "\0aied-title\0" . $title;
+    }
+
     /** $base is the page's stored content at preview time: a page that changed since voids the preview. */
     public static function key( int $userId, int $pageId, string $content, string $base ): string
     {

@@ -20,16 +20,43 @@ final class DryRun
 
     public const MESSAGE = 'Preview only. Nothing was saved.';
 
-    /** @return array<string,mixed> */
-    public static function preview( string $before, string $after ): array
+    /**
+     * @param ?array<string,mixed> $title PageTitle::report() when the call also changes the page title
+     * @return array<string,mixed>
+     */
+    public static function preview( string $before, string $after, ?array $title = null ): array
     {
         $verdict = LayoutGate::check( $after, $before );
-
-        return [
+        $out     = [
             'saved'      => false,
             'dry_run'    => true,
             'valid'      => $verdict->isValid(),
             'violations' => array_map( static fn ( $v ) => $v->toArray(), $verdict->violations() ),
-        ] + LayoutDiff::compare( $before, $after ) + [ 'message' => self::MESSAGE ];
+        ] + LayoutDiff::compare( $before, $after );
+        if ( null !== $title ) {
+            $out['title'] = $title;
+        }
+
+        return $out + [ 'message' => self::MESSAGE ];
+    }
+
+    /**
+     * A title-only preview: the layout is not part of the change, so it is neither checked nor diffed.
+     *
+     * @param array<string,mixed> $title
+     * @return array<string,mixed>
+     */
+    public static function previewTitle( array $title ): array
+    {
+        return [
+            'saved'          => false,
+            'dry_run'        => true,
+            'valid'          => true,
+            'violations'     => [],
+            'layout_changed' => false,
+            'diff'           => null,
+            'title'          => $title,
+            'message'        => self::MESSAGE,
+        ];
     }
 }
