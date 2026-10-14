@@ -7,6 +7,7 @@ namespace AiEditorDivi5\WP;
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 require_once __DIR__ . '/PageAccess.php';
+require_once __DIR__ . '/TitleChange.php';
 
 use WP_REST_Request;
 use WP_REST_Response;
@@ -305,9 +306,13 @@ final class RestController
         $post = $target['post'];
 
         $body    = (array) $request->get_json_params();
-        $content = PageAccess::stringArg($body, 'post_content');
-        if ($content === null || trim($content) === '') {
-            return new WP_Error('missing_field', 'Request body must include a non-empty string "post_content".', ['status' => 400]);
+        $hasContent = array_key_exists('post_content', $body) && $body['post_content'] !== null;
+        $content = '';
+        if ($hasContent) {
+            $content = PageAccess::stringArg($body, 'post_content');
+            if ($content === null || trim($content) === '') {
+                return new WP_Error('missing_field', 'Request body must include a non-empty string "post_content".', ['status' => 400]);
+            }
         }
 
         $dryRun = PageAccess::boolArg($body, 'dry_run');
@@ -315,11 +320,27 @@ final class RestController
             return new WP_Error('invalid_field', '"dry_run" must be a boolean.', ['status' => 400]);
         }
 
+        $titleArg = PageTitle::parse($body);
+        if (!$titleArg['ok']) {
+            return new WP_Error('invalid_field', (string) $titleArg['error'], ['status' => 400]);
+        }
+
+        if (!$hasContent && !$titleArg['present']) {
+            return new WP_Error('missing_field', 'Give post_content, title, or both.', ['status' => 400]);
+        }
+
+        // The title is only written when it differs from the stored one (a repeat is reported, never re-saved).
+        $plan = TitleChange::plan((string) $post->post_title, (string) $post->post_content, $hasContent ? $content : null, $titleArg);
+
+        if (!$hasContent) {
+            return $this->update_page_title_only($id, $post, $plan, $dryRun);
+        }
+
         if ($dryRun) {
             UsageTracker::log(DryRun::ENDPOINT, $id, UsageTracker::RESULT_READ);
 
-            $preview = DryRun::preview((string) $post->post_content, $content);
-            ApprovalMode::recordPreview($id, $content, (bool) $preview['valid'], (string) $post->post_content);
+            $preview = DryRun::preview((string) $post->post_content, $content, $plan['report']);
+            ApprovalMode::recordPreview($id, $plan['subject'], (bool) $preview['valid'], $plan['base']);
 
             return new WP_REST_Response(StyleReferences::attach($preview, $content), 200);
         }
@@ -337,13 +358,13 @@ final class RestController
             ], 422);
         }
 
-        if (!ApprovalMode::consume($id, $content, (string) $post->post_content)) {
+        if (!ApprovalMode::consume($id, $plan['subject'], $plan['base'])) {
             UsageTracker::log('update_page', $id, 'error');
             return new WP_REST_Response(ApprovalMode::refusal(), 428);
         }
 
         // Validation passed — snapshot the previous content, then save (wp_slash inside HistoryService).
-        $write = HistoryService::write($id, $content, 'update_page');
+        $write = HistoryService::write($id, $content, 'update_page', $plan['writeTitle']);
 
         if (!$write['ok']) {
             return new WP_Error('update_failed', (string) $write['message'], ['status' => 500]);
@@ -352,14 +373,89 @@ final class RestController
         UsageTracker::log('update_page', $id, 'valid');
 
         $post->post_content = $content;
+        if ($plan['changed'] && isset($write['title_after'])) {
+            $post->post_title = (string) $write['title_after'];
+        }
 
-        return new WP_REST_Response(StyleReferences::attach([
+        $out = [
             'saved'      => true,
             'valid'      => true,
             'violations' => [],
             'history'    => $write['snapshot'],
             'page'       => $this->build_layout_envelope($post),
-        ], $content), 200);
+        ];
+        if ($plan['report'] !== null) {
+            $out['title'] = $plan['changed']
+                ? PageTitle::report((string) $plan['report']['before'], (string) ($write['title_after'] ?? $plan['report']['after']), true)
+                : $plan['report'];
+            $out['message'] = $plan['message'];
+        }
+
+        return new WP_REST_Response(StyleReferences::attach($out, $content), 200);
+    }
+
+    /**
+     * PUT /pages/{id} with a title and no post_content: only the page title is touched. The layout is neither checked nor
+     * snapshotted (nothing about it changes), and the call needs the same approval-mode preview as any save.
+     *
+     * @param array{present:bool, changed:bool, writeTitle:?string, report:?array<string,mixed>, subject:string, base:string, message:?string} $plan TitleChange::plan()
+     */
+    private function update_page_title_only(int $id, \WP_Post $post, array $plan, bool $dryRun): WP_REST_Response|WP_Error
+    {
+        $report = (array) $plan['report'];
+
+        if ($dryRun) {
+            UsageTracker::log(DryRun::ENDPOINT, $id, UsageTracker::RESULT_READ);
+
+            $preview = DryRun::previewTitle($report);
+            if ($plan['changed']) {
+                ApprovalMode::recordPreview($id, $plan['subject'], true, $plan['base']);
+            } else {
+                $preview['message'] = $plan['message'];
+            }
+
+            return new WP_REST_Response($preview, 200);
+        }
+
+        if (!$plan['changed']) {
+            UsageTracker::log('update_page', $id, 'valid');
+
+            return new WP_REST_Response([
+                'saved'          => false,
+                'valid'          => true,
+                'layout_changed' => false,
+                'title'          => $report,
+                'page'           => $this->build_layout_envelope($post),
+                'message'        => $plan['message'],
+            ], 200);
+        }
+
+        if (!ApprovalMode::consume($id, $plan['subject'], $plan['base'])) {
+            UsageTracker::log('update_page', $id, 'error');
+            return new WP_REST_Response(ApprovalMode::refusal(), 428);
+        }
+
+        $write = HistoryService::writeTitle($id, (string) $plan['writeTitle'], 'update_page');
+        if (!$write['ok']) {
+            UsageTracker::log('update_page', $id, 'error');
+            return new WP_Error('update_failed', (string) $write['message'], ['status' => 500]);
+        }
+
+        UsageTracker::log('update_page', $id, 'valid');
+
+        $stored           = (string) ($write['title_after'] ?? $plan['writeTitle']);
+        $post->post_title = $stored;
+
+        return new WP_REST_Response([
+            'saved'          => true,
+            'valid'          => true,
+            'violations'     => [],
+            'layout_changed' => false,
+            'history'        => $write['snapshot'],
+            'title'          => PageTitle::report((string) $report['before'], $stored, true),
+            'page'           => $this->build_layout_envelope($post),
+            'message'        => $plan['message'],
+        ], 200);
     }
 
     /** @return \WP_Post|WP_Error */
@@ -428,6 +524,8 @@ final class RestController
             'restored'         => true,
             'restored_version' => $result['restored_version'],
             'history'          => $result['snapshot'],
+            'title_restored'   => $result['title_restored'],
+            'title_note'       => $result['title_note'],
             'validator'        => $result['validator'],
         ], 200);
     }

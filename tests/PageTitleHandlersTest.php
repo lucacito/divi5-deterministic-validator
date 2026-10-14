@@ -444,4 +444,329 @@ class PageTitleHandlersTest extends TestCase
         $this->assertSame( 'New title', $this->post()->post_title );
         $this->assertSame( self::ORIGINAL, $this->post()->post_content );
     }
+
+    // ==== REST: PUT /pages/{id} with a title ==================================================
+
+    /** @return array{0:int,1:array<string,mixed>} HTTP status, decoded body (a WP_Error becomes ['error' => code, 'message' => text]) */
+    private function restUpdate( array $body ): array
+    {
+        $r = ( new RestController() )->update_page( new \WP_REST_Request( $body, [ 'id' => 5 ] ) );
+        if ( $r instanceof \WP_Error ) {
+            return [ (int) ( $r->data['status'] ?? 0 ), [ 'error' => $r->code, 'message' => $r->get_error_message() ] ];
+        }
+
+        return [ $r->get_status(), (array) $r->get_data() ];
+    }
+
+    public function testRestTitleOnlySaveChangesOnlyTheTitle(): void
+    {
+        [ $status, $data ] = $this->restUpdate( [ 'title' => 'New title' ] );
+        $this->assertSame( 200, $status );
+        $this->assertTrue( $data['saved'] );
+        $this->assertTrue( $data['valid'] );
+        $this->assertSame( [], $data['violations'] );
+        $this->assertFalse( $data['layout_changed'] );
+        $this->assertSame( [ 'stored' => false, 'version_id' => null, 'reason' => 'title_only' ], $data['history'] );
+        $this->assertTrue( $data['title']['changed'] );
+        $this->assertSame( 'Old title', $data['title']['before'] );
+        $this->assertSame( 'New title', $data['title']['after'] );
+        $this->assertFalse( $data['title']['restorable'] );
+        $this->assertStringContainsString( 'Old title', $data['message'] );
+        $this->assertSame( 'New title', $data['page']['post_title'] );
+        $this->assertSame( self::ORIGINAL, $data['page']['post_content'] );
+        $this->assertSame( 'New title', $this->post()->post_title );
+        $this->assertSame( self::ORIGINAL, $this->post()->post_content );
+        $this->assertSame( 'old-slug', $this->post()->post_name );
+        $this->assertSame( 'publish', $this->post()->post_status );
+        $this->assertSame( 1, $GLOBALS['__wp_update_calls'] );
+        $this->assertSame( 0, $this->historyRows() );
+    }
+
+    public function testRestCombinedSaveChangesBothAndSnapshotsTheContent(): void
+    {
+        [ $status, $data ] = $this->restUpdate( [ 'post_content' => self::NEW_VALID, 'title' => 'New title' ] );
+        $this->assertSame( 200, $status );
+        $this->assertTrue( $data['saved'] );
+        $this->assertTrue( $data['history']['stored'] );
+        $this->assertTrue( $data['title']['changed'] );
+        $this->assertSame( 'New title', $data['title']['after'] );
+        $this->assertStringContainsString( '"Old title"', $data['message'] );
+        $this->assertSame( 'New title', $data['page']['post_title'] );
+        $this->assertSame( self::NEW_VALID, $data['page']['post_content'] );
+        $this->assertSame( 'New title', $this->post()->post_title );
+        $this->assertSame( self::NEW_VALID, $this->post()->post_content );
+        $this->assertSame( 1, $this->historyRows() );
+        $entry = HistoryStore::entry( 5, (int) $data['history']['version_id'] );
+        $this->assertSame( self::ORIGINAL, $entry['content'] );
+    }
+
+    public function testRestInvalidLayoutWithTitleRefusesTheWholeCall(): void
+    {
+        [ $status, $data ] = $this->restUpdate( [ 'post_content' => self::NEW_INVALID, 'title' => 'New title' ] );
+        $this->assertSame( 422, $status );
+        $this->assertFalse( $data['saved'] );
+        $this->assertFalse( $data['valid'] );
+        $this->assertNotEmpty( $data['violations'] );
+        $this->assertNothingWritten( 'rest invalid layout + title' );
+    }
+
+    public function testRestTitleOnlySavesOnAPageWhoseContentIsNotDivi(): void
+    {
+        $this->post()->post_content = 'plain text';
+        [ $status, $data ] = $this->restUpdate( [ 'title' => 'New title' ] );
+        $this->assertSame( 200, $status );
+        $this->assertTrue( $data['saved'] );
+        $this->assertSame( 'New title', $this->post()->post_title );
+        $this->assertSame( 'plain text', $this->post()->post_content );
+    }
+
+    public function testRestDiviProjectTitleOnlyWorks(): void
+    {
+        $this->post()->post_type = 'project';
+        [ $status, $data ] = $this->restUpdate( [ 'title' => 'New title' ] );
+        $this->assertSame( 200, $status );
+        $this->assertTrue( $data['saved'] );
+        $this->assertSame( 'New title', $this->post()->post_title );
+    }
+
+    public function testRestRoundTripKeepsEveryCharacter(): void
+    {
+        $title = 'Say "hi" \\ there & 🎉 é';
+        [ , $data ] = $this->restUpdate( [ 'title' => $title ] );
+        $this->assertSame( $title, $this->post()->post_title );
+        $this->assertSame( $title, $data['title']['after'] );
+        $this->assertSame( $title, $data['page']['post_title'] );
+    }
+
+    public function testRestReportsTheTitleCoreActuallyStored(): void
+    {
+        $GLOBALS['__wp_update_hook'] = static function ( int $id, array $arr ): void {
+            $GLOBALS['__wp_posts'][ $id ]->post_title = str_replace( '&', '&amp;', (string) $arr['post_title'] );
+        };
+        [ , $data ] = $this->restUpdate( [ 'title' => 'Tom & Jerry' ] );
+        $this->assertSame( 'Tom &amp; Jerry', $this->post()->post_title );
+        $this->assertSame( 'Tom &amp; Jerry', $data['title']['after'] );
+        $this->assertSame( 'Tom &amp; Jerry', $data['page']['post_title'] );
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'badTitles' )]
+    public function testRestABadTitleIs400AndWritesNothing( mixed $bad ): void
+    {
+        [ $status, $data ] = $this->restUpdate( [ 'title' => $bad ] );
+        $this->assertSame( 400, $status );
+        $this->assertSame( 'invalid_field', $data['error'] );
+        [ $status2, $data2 ] = $this->restUpdate( [ 'post_content' => self::NEW_VALID, 'title' => $bad ] );
+        $this->assertSame( 400, $status2 );
+        $this->assertSame( 'invalid_field', $data2['error'] );
+        $this->assertNothingWritten( 'rest bad title' );
+    }
+
+    public function testRestNeitherFieldIs400(): void
+    {
+        [ $status, $data ] = $this->restUpdate( [] );
+        $this->assertSame( 400, $status );
+        $this->assertSame( 'missing_field', $data['error'] );
+        $this->assertSame( 'Give post_content, title, or both.', $data['message'] );
+        $this->assertNothingWritten( 'rest neither' );
+    }
+
+    public function testRestBadContentKeepsItsOldMessageEvenWithATitle(): void
+    {
+        foreach ( [ '', '   ', 5, [] ] as $bad ) {
+            [ $status, $data ] = $this->restUpdate( [ 'post_content' => $bad, 'title' => 'New title' ] );
+            $this->assertSame( 400, $status );
+            $this->assertSame( 'missing_field', $data['error'] );
+            $this->assertSame( 'Request body must include a non-empty string "post_content".', $data['message'] );
+        }
+        $this->assertNothingWritten( 'rest bad content + title' );
+    }
+
+    public function testRestNonBooleanDryRunIs400(): void
+    {
+        [ $status, $data ] = $this->restUpdate( [ 'title' => 'New title', 'dry_run' => 'yes' ] );
+        $this->assertSame( 400, $status );
+        $this->assertSame( 'invalid_field', $data['error'] );
+        $this->assertNothingWritten( 'rest bad dry_run' );
+    }
+
+    public function testRestPermissionIsRequiredForTheTitleToo(): void
+    {
+        $GLOBALS['__wp_can'] = false;
+        [ $status ] = $this->restUpdate( [ 'title' => 'New title' ] );
+        $this->assertSame( 403, $status );
+        $this->assertNothingWritten( 'rest no permission' );
+    }
+
+    public function testRestUnknownPageIs404(): void
+    {
+        $r = ( new RestController() )->update_page( new \WP_REST_Request( [ 'title' => 'x' ], [ 'id' => 999 ] ) );
+        $this->assertInstanceOf( \WP_Error::class, $r );
+        $this->assertSame( 404, $r->data['status'] );
+    }
+
+    public function testRestDryRunTitleOnlyWritesNothing(): void
+    {
+        [ $status, $data ] = $this->restUpdate( [ 'title' => 'New title', 'dry_run' => true ] );
+        $this->assertSame( 200, $status );
+        $this->assertTrue( $data['dry_run'] );
+        $this->assertFalse( $data['saved'] );
+        $this->assertFalse( $data['layout_changed'] );
+        $this->assertTrue( $data['title']['changed'] );
+        $this->assertSame( 'Old title', $data['title']['before'] );
+        $this->assertSame( 'New title', $data['title']['after'] );
+        $this->assertNothingWritten( 'rest dry run title only' );
+    }
+
+    public function testRestDryRunCombinedShowsDiffAndTitleAndWritesNothing(): void
+    {
+        [ , $data ] = $this->restUpdate( [ 'post_content' => self::NEW_VALID, 'title' => 'New title', 'dry_run' => true ] );
+        $this->assertTrue( $data['dry_run'] );
+        $this->assertTrue( $data['valid'] );
+        $this->assertNotEmpty( $data['diff'] );
+        $this->assertSame( 'New title', $data['title']['after'] );
+        $this->assertNothingWritten( 'rest dry run combined' );
+    }
+
+    public function testRestDryRunUnchangedTitleSaysSo(): void
+    {
+        [ , $data ] = $this->restUpdate( [ 'title' => 'Old title', 'dry_run' => true ] );
+        $this->assertFalse( $data['title']['changed'] );
+        $this->assertStringContainsString( 'already "Old title"', $data['message'] );
+        $this->assertNothingWritten( 'rest dry run unchanged' );
+    }
+
+    public function testRestUnchangedTitleOnlyIsANoOpAndNeedsNoApproval(): void
+    {
+        ApprovalMode::set( true );
+        [ $status, $data ] = $this->restUpdate( [ 'title' => 'Old title' ] );
+        $this->assertSame( 200, $status );
+        $this->assertFalse( $data['saved'] );
+        $this->assertTrue( $data['valid'] );
+        $this->assertFalse( $data['layout_changed'] );
+        $this->assertFalse( $data['title']['changed'] );
+        $this->assertStringContainsString( 'already "Old title"', $data['message'] );
+        $this->assertSame( 'Old title', $data['page']['post_title'] );
+        $this->assertNothingWritten( 'rest unchanged title' );
+    }
+
+    public function testRestUnchangedTitleInACombinedCallStillSavesTheLayout(): void
+    {
+        [ $status, $data ] = $this->restUpdate( [ 'post_content' => self::NEW_VALID, 'title' => 'Old title' ] );
+        $this->assertSame( 200, $status );
+        $this->assertTrue( $data['saved'] );
+        $this->assertFalse( $data['title']['changed'] );
+        $this->assertSame( self::NEW_VALID, $this->post()->post_content );
+        $this->assertSame( 'Old title', $this->post()->post_title );
+        $this->assertSame( 1, $this->historyRows() );
+        $this->assertSame( 'The page title was already "Old title" and was left as it is.', $data['message'] );
+    }
+
+    public function testRestDryRunWithAnUnchangedTitleInACombinedCallDoesNotClaimNothingChanges(): void
+    {
+        [ , $data ] = $this->restUpdate( [ 'post_content' => self::NEW_VALID, 'title' => 'Old title', 'dry_run' => true ] );
+        $this->assertFalse( $data['title']['changed'] );
+        $this->assertNotEmpty( $data['diff'] );
+        $this->assertSame( 'Preview only. Nothing was saved.', $data['message'] );
+        $this->assertNothingWritten( 'rest dry run combined, title unchanged' );
+    }
+
+    public function testRestExplicitNullContentWithATitleIsTitleOnly(): void
+    {
+        [ $status, $data ] = $this->restUpdate( [ 'post_content' => null, 'title' => 'New title' ] );
+        $this->assertSame( 200, $status );
+        $this->assertTrue( $data['saved'] );
+        $this->assertFalse( $data['layout_changed'] );
+        $this->assertSame( 'New title', $this->post()->post_title );
+        $this->assertSame( self::ORIGINAL, $this->post()->post_content );
+    }
+
+    public function testRestATitleLessSaveKeepsTodaysResponseShape(): void
+    {
+        [ , $data ] = $this->restUpdate( [ 'post_content' => self::NEW_VALID ] );
+        $this->assertSame( [ 'saved', 'valid', 'violations', 'history', 'page' ], array_keys( $data ) );
+    }
+
+    private function assertRestRefused( array $r, string $why ): void
+    {
+        [ $status, $data ] = $r;
+        $this->assertSame( 428, $status, $why );
+        $this->assertSame( 'PREVIEW_REQUIRED', $data['code'] ?? null, $why );
+    }
+
+    public function testRestApprovalModeRequiresAPreviewForATitleOnlySave(): void
+    {
+        ApprovalMode::set( true );
+        $this->assertRestRefused( $this->restUpdate( [ 'title' => 'A' ] ), 'no preview' );
+        $this->assertNothingWritten( 'rest refused' );
+    }
+
+    public function testRestApprovalModePreviewIsBoundToTheExactTitleAndUsedOnce(): void
+    {
+        ApprovalMode::set( true );
+        $this->restUpdate( [ 'title' => 'A', 'dry_run' => true ] );
+        $this->assertRestRefused( $this->restUpdate( [ 'title' => 'B' ] ), 'other title' );
+        $this->assertNothingWritten( 'rest other title' );
+
+        [ $status, $data ] = $this->restUpdate( [ 'title' => 'A' ] );
+        $this->assertSame( 200, $status );
+        $this->assertTrue( $data['saved'] );
+        $this->assertSame( 'A', $this->post()->post_title );
+
+        $this->post()->post_title = 'Old title';
+        $this->assertRestRefused( $this->restUpdate( [ 'title' => 'A' ] ), 'second use' );
+    }
+
+    public function testRestApprovalModeCombinedLayoutAndTitleNeedsItsOwnPreviewAndIsUsedOnce(): void
+    {
+        ApprovalMode::set( true );
+        $body = [ 'post_content' => self::NEW_VALID, 'title' => 'A' ];
+        $this->restUpdate( $body + [ 'dry_run' => true ] );
+        [ $status, $data ] = $this->restUpdate( $body );
+        $this->assertSame( 200, $status );
+        $this->assertTrue( $data['saved'] );
+        $this->assertSame( 'A', $this->post()->post_title );
+        $this->assertSame( self::NEW_VALID, $this->post()->post_content );
+
+        $this->post()->post_title   = 'Old title';
+        $this->post()->post_content = self::ORIGINAL;
+        $this->assertRestRefused( $this->restUpdate( $body ), 'second use' );
+    }
+
+    public function testRestALayoutOnlyPreviewDoesNotAuthoriseLayoutPlusTitle(): void
+    {
+        ApprovalMode::set( true );
+        $this->restUpdate( [ 'post_content' => self::NEW_VALID, 'dry_run' => true ] );
+        $this->assertRestRefused( $this->restUpdate( [ 'post_content' => self::NEW_VALID, 'title' => 'A' ] ), 'layout preview, layout+title save' );
+        $this->assertNothingWritten( 'rest layout preview only' );
+    }
+
+    public function testRestATitlePreviewDoesNotAuthoriseALayoutOnlySave(): void
+    {
+        ApprovalMode::set( true );
+        $this->restUpdate( [ 'post_content' => self::NEW_VALID, 'title' => 'A', 'dry_run' => true ] );
+        $this->assertRestRefused( $this->restUpdate( [ 'post_content' => self::NEW_VALID ] ), 'title preview, layout-only save' );
+        $this->assertNothingWritten( 'rest title preview only' );
+    }
+
+    public function testRestApprovalPreviewIsVoidIfTheStoredTitleChangedSincePreview(): void
+    {
+        ApprovalMode::set( true );
+        $this->restUpdate( [ 'title' => 'A', 'dry_run' => true ] );
+        $this->post()->post_title = 'Someone else changed it';
+        $this->assertRestRefused( $this->restUpdate( [ 'title' => 'A' ] ), 'stored title changed' );
+        $this->assertSame( 'Someone else changed it', $this->post()->post_title );
+    }
+
+    public function testRestRestoreSaysTheTitleWasLeftAlone(): void
+    {
+        [ , $saved ] = $this->restUpdate( [ 'post_content' => self::NEW_VALID, 'title' => 'New title' ] );
+        $r = ( new RestController() )->history_restore( new \WP_REST_Request( [ 'version_id' => $saved['history']['version_id'] ], [ 'id' => 5 ] ) );
+        $this->assertSame( 200, $r->get_status() );
+        $data = (array) $r->get_data();
+        $this->assertTrue( $data['restored'] );
+        $this->assertFalse( $data['title_restored'] );
+        $this->assertStringContainsString( 'New title', $data['title_note'] );
+        $this->assertSame( 'New title', $this->post()->post_title );
+        $this->assertSame( self::ORIGINAL, $this->post()->post_content );
+    }
 }
