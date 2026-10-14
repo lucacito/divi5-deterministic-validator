@@ -125,7 +125,7 @@ This plugin does not connect to any external service. Your AI assistant connects
 * The Divi 5 theme (Divi 4 and its shortcode format are not supported)
 * Pretty permalinks (Settings → Permalinks, any option except "Plain")
 * For Claude Desktop: Node.js (free, from nodejs.org)
-* For ChatGPT: your site must be reachable over public HTTPS
+* For ChatGPT: your site must be reachable over public HTTPS, and creating a custom GPT needs a paid ChatGPT plan
 
 == Frequently Asked Questions ==
 
@@ -182,11 +182,23 @@ No. It reads the ones you already have, reuses them, and warns when a layout use
 
 = Does it work on a local site? =
 
-Assistants that run on your own computer (Claude Code, Claude Desktop, Cursor, VS Code, Gemini CLI) should be able to reach a local site. Use the exact http:// address your local site shows, and turn on pretty permalinks. ChatGPT and other assistants that run in the cloud cannot reach a local site; they need a public https:// address.
+Assistants that run on your own computer (Claude Code, Claude Desktop, Cursor, VS Code, Gemini CLI) should be able to reach a local site. Use the exact http:// address your local site shows, and turn on pretty permalinks. ChatGPT and other assistants that run in the cloud cannot reach a local site; they need a public https:// address. Local tools such as Laragon, Local or MAMP work with the assistants that run on your computer.
 
 = I get an error on my Mac when I connect Claude Desktop =
 
 Claude Desktop connects through a small helper that needs Node.js. Install the LTS version from nodejs.org, then fully quit Claude Desktop (Cmd+Q) and open it again. The Claude tab on the Settings screen has the details.
+
+= Does it use up my Claude or ChatGPT plan? =
+
+The plugin has no AI of its own, so it adds no AI cost. Your own assistant does the thinking, and its usage counts against whatever plan or API account you already use with it. A small edit costs very little; building a whole page costs more, because your assistant writes the layout. The plugin's checking runs on your server and is free.
+
+= How is this different from Divi AI? =
+
+Divi AI is Elegant Themes' own AI inside the Divi builder. This plugin does something different: it lets the AI assistant you already use (Claude, ChatGPT, Gemini, Cursor, Copilot) read and edit your Divi 5 pages from outside the builder, in plain English. Every change is checked before it is saved and can be undone.
+
+= How is it different from other AI plugins for WordPress? =
+
+It is built for one job: editing Divi 5 layouts safely on a live site. It knows the Divi 5 page format, refuses any layout that is broken before it is saved, offers a preview of every change, makes new pages drafts, and keeps an undo history. It does not run code on your site and does not change your site settings.
 
 = Does this work with Divi 4? =
 

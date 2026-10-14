@@ -290,7 +290,7 @@ final class AdminPage
                 </li>
                 <li><?php esc_html_e( 'Set Authentication to API Key, type Bearer, and paste the API key shown above.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
             </ol>
-            <p class="aied-merge-warn"><?php esc_html_e( 'Requires your site to be reachable over public HTTPS — localhost or an unreachable staging box will not work, because ChatGPT calls your site from OpenAI’s servers.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <p class="aied-merge-warn"><?php esc_html_e( 'Requires your site to be reachable over public HTTPS — localhost or an unreachable staging box will not work, because ChatGPT calls your site from OpenAI’s servers. Creating a custom GPT also needs a paid ChatGPT plan.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
             <?php
             return;
         }
