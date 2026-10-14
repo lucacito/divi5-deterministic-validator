@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page with forbidden content</title>
+<style>body { color: red; }</style>
+</head>
+<body>
+<h1>This is allowed</h1>
+<p>Regular paragraph with <strong>formatting</strong>.</p>
+
+<script>alert('This script should be removed');</script>
+
+<form action="/submit">
+<label>Name:</label>
+<input type="text" name="name" />
+<button type="submit">Submit</button>
+</form>
+
+<button onclick="alert('onclick not allowed')">Click me</button>
+
+<a href="javascript:void(0)">Bad link</a>
+
+<iframe src="https://example.com"></iframe>
+
+<p>Text after forbidden elements.</p>
+
+<a href="data:text/html,<script>alert('xss')</script>">Data URL link</a>
+</body>
+</html>

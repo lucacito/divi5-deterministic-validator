@@ -379,11 +379,12 @@ class WpOrgComplianceTest extends TestCase
         $this->assertSame([
             'create_page', 'edit_page_content', 'get_custom_fields', 'get_image_guide', 'get_landing_guide', 'get_page_history_entry',
             'get_page_layout', 'get_product', 'get_section_recipes', 'get_site_guide', 'get_site_structure', 'get_style_guide',
-            'list_divi_pages', 'list_global_styles', 'list_media_images', 'list_page_history', 'list_products', 'restore_page_version',
+            'html_to_divi', 'list_divi_pages', 'list_global_styles', 'list_media_images', 'list_page_history', 'list_products', 'restore_page_version',
             'update_page_layout', 'validate_layout',
         ], $tools);
         // 20 tools: 4.9.0 adds the READ-ONLY list_products and get_product (the WooCommerce catalogue). Nothing is gated and nothing writes anything; no rule of this test is loosened.
-        $this->assertCount(20, $tools);
+        // 21 tools: 4.10.0 adds html_to_divi (deterministic HTML to Divi 5 conversion). It is free, makes no remote call, reads nothing from the site's files, previews by default and saves only a new DRAFT page when asked, through the same validator gate as create_page. No rule of this test is loosened.
+        $this->assertCount(21, $tools);
     }
 
     public function testVisibleProductNameIsTheFullJhmgName(): void
@@ -579,7 +580,7 @@ class WpOrgComplianceTest extends TestCase
         $this->assertSame(['get'], array_keys($spec['paths']['/global-styles']));
         $r = (string) file_get_contents(self::ROOT . '/readme.txt');
         $this->assertStringContainsString('`list_global_styles`', $r);
-        $this->assertStringContainsString('(20 tools)', $r);
+        $this->assertStringContainsString('(21 tools)', $r);
         $this->assertStringContainsString('It cannot create or change presets or colors', $r, 'the readme must say plainly that presets and colors are read-only');
     }
 

@@ -43,7 +43,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * "Add a section with our opening hours under the hero on the About page."
 * "Undo the last change you made to the Services page."
 
-= What your AI assistant can do (20 tools) =
+= What your AI assistant can do (21 tools) =
 
 Read and check:
 
@@ -61,6 +61,7 @@ Edit and create:
 * `edit_page_content`: change one piece of text (an email, phone number, price or sentence) without rebuilding the page or Divi Project. Add `dry_run` to preview the change without saving it.
 * `update_page_layout`: save a new layout for a page or Divi Project, after the checker approves it. Add `dry_run` to preview what would change without saving it.
 * `create_page`: create a new page. It is always saved as a draft for you to review and publish.
+* `html_to_divi`: turn HTML you already have (a page your assistant or another tool wrote) into a Divi 5 layout: the structure, all the copy, the links and the images. It previews by default and saves a new draft only when asked. Scripts, forms, embeds and site navigation are never converted and are listed in a report; colors and fonts are not converted yet (available over MCP and the REST API, not in the ChatGPT Action).
 
 Undo:
 
@@ -88,6 +89,7 @@ A separate, optional Pro add-on is available (details at https://divi5lab.com/pl
 
 = Compatible AI assistants =
 
+* Claude on the web (claude.ai custom connector), by signing in to your own site (turn it on in Settings; needs a public https address)
 * Claude (Desktop and Claude Code), through MCP (Claude Desktop needs Node.js installed)
 * Gemini CLI, through MCP
 * Cursor and Windsurf, through MCP
@@ -102,6 +104,7 @@ Works with Divi 5. Divi is a trademark of Elegant Themes. This plugin is not aff
 The plugin stores these things in your own WordPress database:
 
 * The API key (and which user it belongs to).
+* Only if you turn on sign-in for Claude on the web: the apps that registered, and their access and refresh tokens, in a table in your own database. The tokens are stored only as one-way hashes and you can disconnect any app, or turn the feature off and remove everything, from the Settings screen.
 * An activity log of AI actions: the action, the page ID, the result, the assistant's name (or, when it is not recognised, the first 80 characters of its user-agent string) and a hashed IP address (hashed with your site's own secret key, so the IP itself is not stored). You can clear it from the Settings screen.
 * Page history for undo: up to the last 10 previous versions of each page the AI changes (fewer for very large pages, about 768 KB per page at most). It is kept in a table in your own database.
 
@@ -109,7 +112,7 @@ Nothing is sent anywhere by the plugin. All of this is removed when you delete t
 
 == External services ==
 
-This plugin does not connect to any external service. Your AI assistant connects to your own site using the API key you generate; no data passes through the plugin author's servers.
+This plugin does not connect to any external service. Your AI assistant connects to your own site using the API key you generate (or, if you turn it on, by signing in to your own site from Claude on the web); no data passes through the plugin author's servers.
 
 == Installation ==
 
@@ -125,6 +128,7 @@ This plugin does not connect to any external service. Your AI assistant connects
 * The Divi 5 theme (Divi 4 and its shortcode format are not supported)
 * Pretty permalinks (Settings → Permalinks, any option except "Plain")
 * For Claude Desktop: Node.js (free, from nodejs.org)
+* For Claude on the web (claude.ai): your site must be reachable over public HTTPS
 * For ChatGPT: your site must be reachable over public HTTPS, and creating a custom GPT needs a paid ChatGPT plan
 
 == Frequently Asked Questions ==
@@ -200,6 +204,14 @@ Divi AI is Elegant Themes' own AI inside the Divi builder. This plugin does some
 
 It is built for one job: editing Divi 5 layouts safely on a live site. It knows the Divi 5 page format, refuses any layout that is broken before it is saved, offers a preview of every change, makes new pages drafts, and keeps an undo history. It does not run code on your site and does not change your site settings.
 
+= Can I use Claude on the web (claude.ai) without installing anything? =
+
+Yes. On the Settings screen, turn on sign-in for Claude and copy the address it shows. In claude.ai open Customize → Connectors, choose "Add custom connector" and paste the address. Claude opens your own site: you sign in to WordPress and press Allow. There is no Node.js, no config file and no API key to paste. Claude then works as you, with exactly the permissions your account has, and every save is still checked and undoable. You can disconnect it from the Settings screen at any time. It needs your site to be reachable over public https (Claude connects from the internet), so it does not work on a local site; the other ways of connecting are unchanged. It is off until you turn it on.
+
+= Can it turn my HTML page into a Divi page? =
+
+Yes, for the content. Give your assistant the HTML (for example a page it wrote for you) and it can convert it with `html_to_divi`: the structure (sections, columns for card grids, headings, text, buttons, images), every word and every link. It previews first and tells you what was not converted; with one more step it saves a draft. Scripts, forms, embedded videos, site navigation and CSS are never converted, colors and fonts are not converted yet, and images become placeholders for you to replace with your own. It does not fetch web addresses. For a pixel-accurate copy of a live web page you need a dedicated URL-to-Divi converter instead.
+
 = Does this work with Divi 4? =
 
 No. Divi 4 stores pages as shortcodes. This plugin is made for the Divi 5 page format.
@@ -218,10 +230,13 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 == Screenshots ==
 
 1. The Dashboard: your setup progress and your results.
-2. Settings: one API key and a copy-and-paste setup for Claude, Cursor, VS Code, Gemini, ChatGPT or any MCP client.
+2. Settings: one API key, a copy-and-paste setup for Claude, Cursor, VS Code, Gemini, ChatGPT or any MCP client, and a Test connection button that checks your setup and shows plain-English errors if anything is wrong.
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.10.0 =
+* New: a Test connection button on the Settings screen checks the endpoint, API key and permissions, and shows plain-English errors if something is wrong (for example a firewall blocking the REST API, or plain permalinks, or the key owner not being able to edit pages). The test runs from your browser and never sends the key, so you can troubleshoot your setup without sharing secrets.
 
 = 4.9.0 =
 * New: your AI assistant can now see your WooCommerce products. `list_products` lists and counts them with their prices, stock status and categories, and `get_product` reads one product in full, including its variations. Both are read-only: they never show downloadable files, purchase notes, customer or order data, or the text of a password-protected product, and they need the permission to edit products (shop managers and administrators have it). Available over MCP and the REST API, not in the ChatGPT Action.

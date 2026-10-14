@@ -1,0 +1,29 @@
+<!-- wp:divi/placeholder -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Simple Pricing"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Simple Pricing"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h1"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eChoose the plan that fits your needs.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Section 2"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"1_3,1_3,1_3"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Starter"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003e$29/month\u003c/p\u003e\u003cp\u003ePerfect for small teams.\u003c/p\u003e\u003cul\u003e\u003cli\u003eUp to 5 users\u003c/li\u003e\u003cli\u003eBasic analytics\u003c/li\u003e\u003c/ul\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Buy Now","linkUrl":"/buy?plan=starter"}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Pro"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003e$99/month\u003c/p\u003e\u003cp\u003eFor growing businesses.\u003c/p\u003e\u003cul\u003e\u003cli\u003eUp to 50 users\u003c/li\u003e\u003cli\u003eAdvanced analytics\u003c/li\u003e\u003cli\u003ePriority support\u003c/li\u003e\u003c/ul\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Buy Now","linkUrl":"/buy?plan=pro"}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Enterprise"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eCustom\u003c/p\u003e\u003cp\u003eFor large organizations.\u003c/p\u003e\u003cul\u003e\u003cli\u003eUnlimited users\u003c/li\u003e\u003cli\u003eCustom integrations\u003c/li\u003e\u003cli\u003eDedicated account manager\u003c/li\u003e\u003c/ul\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Contact Sales","linkUrl":"/contact"}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- /wp:divi/placeholder -->

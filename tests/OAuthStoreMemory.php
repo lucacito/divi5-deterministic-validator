@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-/** In-memory OAuthStoreInterface, the reference behaviour the table implementation must match. Used by the tests. */
+/** In-memory OAuthStoreInterface: the reference behaviour the table implementation (OAuthStore) must match. A test double, not shipped in the plugin. */
 final class OAuthStoreMemory implements OAuthStoreInterface
 {
     /** @var array<string,array<string,mixed>> keyed by "kind:hash" */

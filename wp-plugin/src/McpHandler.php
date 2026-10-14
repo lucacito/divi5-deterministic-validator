@@ -307,6 +307,22 @@ final class McpHandler
                     'required' => ['title', 'post_content'],
                 ],
             ],
+            [
+                'name'        => 'html_to_divi',
+                'description' => 'Convert HTML you already have (a page you or another AI wrote, exported markup) into a valid Divi 5 layout, deterministically: no AI and no network. The structure, all the copy, links and images are converted (sections, rows and columns for card grids, headings, text, buttons, images); scripts, forms, embeds, navigation menus and CSS are never converted and are listed in the report. Pass the HTML as `html` (a document or a fragment, up to 400,000 bytes). By default it only PREVIEWS: you get the layout plus a report (what was converted, what was not, whether every word and link was kept, which images became placeholders). Pass create=true and a title to save it as a new DRAFT page in one step, without sending the layout back. Every image becomes a placeholder from the built-in pack (a third-party address never reaches the layout) unless image_mode is "keep" and the image is already in this site\'s Media Library; replace placeholders with list_media_images afterwards. It does not read colors or fonts from the HTML (styles are not converted yet): style the result with get_style_guide. For a pixel-accurate copy of a live web page use the separate URL-to-Divi converter instead. The layout is checked by the same validator as every other write.',
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'html'       => ['type' => 'string', 'description' => 'The HTML to convert (a full document or a fragment).'],
+                        'create'     => ['type' => 'boolean', 'description' => 'Optional. true = save the converted layout as a new DRAFT page (needs title). Default false = preview only.'],
+                        'title'      => ['type' => 'string', 'description' => 'Page title. Required when create is true; the result suggests one from the HTML.'],
+                        'slug'       => ['type' => 'string', 'description' => 'Optional URL slug for the new page.'],
+                        'image_mode' => ['type' => 'string', 'enum' => ['placeholder', 'keep'], 'description' => 'Optional. placeholder (default): every image becomes a built-in placeholder. keep: images already in this site\'s Media Library are kept.'],
+                        'styles'     => ['type' => 'string', 'enum' => ['basic', 'none'], 'description' => 'Optional. Colors, fonts and spacing are not converted yet in either mode; basic only adds a reminder to the report.'],
+                    ],
+                    'required' => ['html'],
+                ],
+            ],
         ];
 
         // Extension point: add-ons may append tool definitions. With no listener this is a no-op.
@@ -344,6 +360,7 @@ final class McpHandler
             'list_products'      => $this->toolListProducts($id, $arguments),
             'get_product'        => $this->toolGetProduct($id, $arguments),
             'create_page'        => $this->toolCreatePage($id, $arguments),
+            'html_to_divi'       => $this->toolHtmlToDivi($id, $arguments),
             default              => $this->extensionCall($id, $name, $arguments),
         };
     }
@@ -833,6 +850,23 @@ final class McpHandler
         ]);
     }
 
+    private function toolHtmlToDivi(mixed $id, array $args): WP_REST_Response
+    {
+        $out = HtmlToDiviService::run($args);
+        if ($out['status'] === 400 && !isset($out['body']['report'])) {
+            // A bad argument: the same JSON-RPC error every other tool uses.
+            return $this->rpcError($id, -32602, (string) ($out['body']['error'] ?? 'Invalid arguments.'));
+        }
+        if ($out['status'] === 403) {
+            return $this->rpcError($id, -32602, (string) ($out['body']['error'] ?? 'Not allowed.'));
+        }
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => wp_json_encode($out['body'])]],
+            'isError' => $out['status'] >= 400,
+        ]);
+    }
+
     private function toolCreatePage(mixed $id, array $args): WP_REST_Response
     {
         if (!current_user_can('publish_pages')) {
@@ -871,25 +905,7 @@ final class McpHandler
             ]);
         }
 
-        // Always a draft — the site owner reviews and publishes. The Divi 5
-        // builder meta flags make the page open in the Divi 5 editor and appear
-        // in list_divi_pages (which filters on _et_pb_use_divi_5).
-        // wp_slash: wp_insert_post runs wp_unslash internally, which would
-        // otherwise strip backslashes from escaped HTML (e.g. <) and corrupt content.
-        $postArr = [
-            'post_type'    => 'page',
-            'post_title'   => $title,
-            'post_content' => $content,
-            'post_status'  => 'draft',
-            'meta_input'   => [
-                '_et_pb_use_divi_5'  => 'on',
-                '_et_pb_use_builder' => 'on',
-            ],
-        ];
-        if ($slug !== '') {
-            $postArr['post_name'] = $slug;
-        }
-        $pageId = wp_insert_post(wp_slash($postArr), true);
+        $pageId = DraftPage::insert($title, $content, $slug);
 
         if (is_wp_error($pageId)) {
             UsageTracker::log('create_page', null, 'error');

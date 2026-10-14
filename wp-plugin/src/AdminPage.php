@@ -683,7 +683,7 @@ final class AdminPage
 
     private function viewFeatures(): void
     {
-        // [title, description, tools it covers] — the 20 tools your AI assistant can call.
+        // [title, description, tools it covers] — the 21 tools your AI assistant can call.
         $features = [
             [ __( 'Edit pages in plain English', 'jhmg-ai-editor-for-divi-5' ), __( 'Tell your AI what to change and it updates the live Divi 5 layout — no builder, no copy-paste.', 'jhmg-ai-editor-for-divi-5' ), 'update_page_layout, edit_page_content' ],
             [ __( 'Validated, safe saves', 'jhmg-ai-editor-for-divi-5' ), __( 'Every change is checked against fixed rules for more than 80 Divi 5 block types before saving. A broken layout is refused with the exact reason, so it is never saved.', 'jhmg-ai-editor-for-divi-5' ), 'validate_layout' ],
@@ -694,6 +694,7 @@ final class AdminPage
             [ __( 'Undo AI edits', 'jhmg-ai-editor-for-divi-5' ), __( 'Every AI save keeps the previous version, so you or your AI can browse the history and restore an earlier one.', 'jhmg-ai-editor-for-divi-5' ), 'list_page_history, get_page_history_entry, restore_page_version' ],
             [ __( 'Approval mode (optional)', 'jhmg-ai-editor-for-divi-5' ), __( 'Turn on "Require a preview before every save" in Settings and your AI must show a preview of every edit to a page\'s content before it can save it. Off by default.', 'jhmg-ai-editor-for-divi-5' ), 'dry_run' ],
             [ __( 'Create new pages (as drafts)', 'jhmg-ai-editor-for-divi-5' ), __( 'Generate brand-new pages from a prompt — always saved as a draft, validated, ready for you to review and publish.', 'jhmg-ai-editor-for-divi-5' ), 'create_page' ],
+            [ __( 'Turn existing HTML into a Divi page', 'jhmg-ai-editor-for-divi-5' ), __( 'Give your AI some HTML and it rebuilds the content as a Divi 5 page: sections, columns, headings, text, buttons, images and every link. It previews first and saves only a draft. Scripts, forms, embeds and site navigation are never converted, and it tells you what it left out.', 'jhmg-ai-editor-for-divi-5' ), 'html_to_divi' ],
             [ __( 'Build entire websites', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in blueprint helps your AI plan a cohesive multi-page site (home, about, services, contact) with shared styling and links between the pages, then tells you how to finish setting it up yourself.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_guide' ],
             [ __( 'Conversion-focused page generation', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in landing-page blueprint, design vocabulary and proven section patterns guide the AI to produce polished, on-brand pages with a strategic structure built to convert.', 'jhmg-ai-editor-for-divi-5' ), 'get_landing_guide, get_style_guide, get_section_recipes' ],
             [ __( 'Relevant images', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI looks in your Media Library first (read-only) and otherwise uses the built-in image pack, so pages do not ship with empty image slots. Nothing is downloaded from other sites.', 'jhmg-ai-editor-for-divi-5' ), 'list_media_images, get_image_guide' ],

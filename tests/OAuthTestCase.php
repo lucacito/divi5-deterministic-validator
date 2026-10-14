@@ -10,9 +10,10 @@ use AiEditorDivi5\WP\OAuthStoreMemory;
 use AiEditorDivi5\WP\OAuthTokens;
 use PHPUnit\Framework\TestCase;
 
-foreach ( [ 'OAuthConfig', 'OAuthStoreInterface', 'OAuthStoreMemory', 'OAuthRedirectPolicy', 'OAuthTokens', 'OAuthClients', 'OAuthMetadata', 'OAuthWellKnown', 'OAuthAuthorizeRequest', 'OAuthConsentPage', 'OAuthTokenEndpoint' ] as $oauthClass ) {
+foreach ( [ 'OAuthConfig', 'OAuthStoreInterface', 'OAuthRedirectPolicy', 'OAuthTokens', 'OAuthClients', 'OAuthMetadata', 'OAuthWellKnown', 'OAuthAuthorizeRequest', 'OAuthConsentPage', 'OAuthTokenEndpoint' ] as $oauthClass ) {
     require_once __DIR__ . '/../wp-plugin/src/' . $oauthClass . '.php';
 }
+require_once __DIR__ . '/OAuthStoreMemory.php';
 
 /** Shared fixtures for the OAuth unit tests: a fixed config, an in-memory store and a controllable clock. */
 abstract class OAuthTestCase extends TestCase
