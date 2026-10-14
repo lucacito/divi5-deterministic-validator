@@ -252,7 +252,7 @@ importer budget is untouched. Lockstep: `McpHandler`, `RestController`, `OpenApi
 
 ## Verified facts
 
-From `make verify-page-title` on the Docker dev site (Divi 5.14, WordPress 6.7), 2026-10-14, 66 PASS / 0 FAIL / 0 SKIP:
+From `make verify-page-title` on the Docker dev site (Divi 5.14.0, WordPress 7.1.2), 2026-10-14, 66 PASS / 0 FAIL / 0 SKIP:
 
 - A title-only change over REST and over MCP changes `post_title` and nothing else: the content is byte-identical, `post_name`
   (slug), `post_status` and the permalink are unchanged (a published page and a draft Project), and no history row is added.
