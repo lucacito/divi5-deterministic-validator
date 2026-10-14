@@ -382,6 +382,62 @@ try {
     $rest( 'PUT', "/pages/{$D}", [ 'title' => $raw . ' (admin)' ] );
     $fact( 'for comparison, user 1 (has unfiltered_html) submitting ' . wp_json_encode( $raw . ' (admin)' ) . ' -> core stored ' . wp_json_encode( $storedTitle( $D ) ) );
 
+    // ---- 10b. a rename must not rewrite the layout, even for a user whose saves core sanitises ---------------------------------
+    // The premise first: a plain wp_update_post of ONLY the title, as the Author, makes core re-run its sanitising over the
+    // page's existing content. A real export is used (fixtures/valid/page-44-layout-2.json, saved by user 1 so it is stored as is).
+    $bigFile = __DIR__ . '/../fixtures/valid/page-44-layout-2.json';
+    $big     = is_file( $bigFile ) ? (string) ( json_decode( (string) file_get_contents( $bigFile ), true )['post_content'] ?? '' ) : '';
+    if ( '' === $big ) {
+        $skip( '10b. title-only rename keeps a real layout byte-identical', 'fixtures/valid/page-44-layout-2.json is missing or has no post_content' );
+    } else {
+        $firstDiff = static function ( string $x, string $y ): string {
+            $n = min( strlen( $x ), strlen( $y ) );
+            for ( $i = 0; $i < $n; ++$i ) {
+                if ( $x[ $i ] !== $y[ $i ] ) {
+                    return '@' . $i . ': ' . wp_json_encode( substr( $x, max( 0, $i - 12 ), 32 ) ) . ' -> ' . wp_json_encode( substr( $y, max( 0, $i - 12 ), 32 ) );
+                }
+            }
+
+            return strlen( $x ) === strlen( $y ) ? 'identical' : 'length differs';
+        };
+        wp_set_current_user( 1 );
+        $E0 = $make( [ 'post_type' => 'page', 'post_status' => 'draft', 'post_title' => AIED_PREFIX . ' E0 control', 'post_content' => wp_slash( $big ), 'post_author' => $authorId ] );
+        $E  = $make( [ 'post_type' => 'page', 'post_status' => 'draft', 'post_title' => AIED_PREFIX . ' E real layout', 'post_content' => wp_slash( $big ), 'post_author' => $authorId ] );
+        $check( $state( $E0 )['content'] === $big && $state( $E )['content'] === $big, '10b. setup: two author-owned draft pages hold the real export page-44-layout-2 (' . strlen( $big ) . ' bytes) exactly as saved by user 1' );
+        wp_set_current_user( $authorId );
+        wp_update_post( wp_slash( [ 'ID' => $E0, 'post_title' => AIED_PREFIX . ' E0 control renamed' ] ) );
+        wp_set_current_user( 1 );
+        $rewritten = $state( $E0 )['content'];
+        $fact( 'CONTROL, a plain wp_update_post of only the title as the Author (no unfiltered_html): the stored content ' . ( $rewritten === $big ? 'stayed identical' : 'was REWRITTEN by core (' . strlen( $big ) . ' -> ' . strlen( $rewritten ) . ' bytes), first difference ' . $firstDiff( $big, $rewritten ) ) );
+        $check( $rewritten !== $big, '10b. premise: without the plugin\'s guard, core really does rewrite this export when the Author only renames the page' );
+
+        $before = $state( $E );
+        wp_set_current_user( $authorId );
+        $r = $rest( 'PUT', "/pages/{$E}", [ 'title' => AIED_PREFIX . ' E renamed-rest' ] );
+        wp_set_current_user( 1 );
+        $after = $state( $E );
+        $check( 200 === $r['status'] && ! empty( $r['data']['saved'] ) && false === ( $r['data']['layout_changed'] ?? null ) && AIED_PREFIX . ' E renamed-rest' === $after['title'], '10b. REST title-only rename by the Author: saved, layout_changed:false, title stored' );
+        $check( $after['content'] === $before['content'] && $after['content'] === $big, '10b. REST: the stored content is byte-identical after the rename (' . strlen( $after['content'] ) . ' bytes)' );
+        $check( $after['history'] === $before['history'] && $after['name'] === $before['name'] && $after['status'] === $before['status'], '10b. REST: no history row, same slug and status' );
+        $m = $mcp( 'update_page_layout', [ 'page_id' => $E, 'title' => AIED_PREFIX . ' E renamed-mcp' ], $authorId );
+        $after2 = $state( $E );
+        $check( null === $m['error'] && ! $m['isError'] && ! empty( $m['result']['saved'] ) && false === ( $m['result']['layout_changed'] ?? null ) && AIED_PREFIX . ' E renamed-mcp' === $after2['title'], '10b. MCP title-only rename by the Author: saved, layout_changed:false, title stored' );
+        $check( $after2['content'] === $big, '10b. MCP: the stored content is byte-identical after the rename' );
+        global $wp_filter;
+        $late = isset( $wp_filter['wp_insert_post_data'] ) ? ( $wp_filter['wp_insert_post_data']->callbacks[ PHP_INT_MAX ] ?? [] ) : [];
+        $check( [] === $late, '10b. the plugin\'s temporary content filter (wp_insert_post_data at PHP_INT_MAX) is not left registered after the renames' );
+
+        // A combined (layout + title) save is a content write: it goes through core's sanitising as it always did (no byte-identity claim).
+        $L1 = $layout( 'Headline one aied' );
+        wp_set_current_user( $authorId );
+        $r = $rest( 'PUT', "/pages/{$E}", [ 'post_content' => $L1, 'title' => AIED_PREFIX . ' E combined' ] );
+        wp_set_current_user( 1 );
+        $after3 = $state( $E );
+        $fact( 'combined layout+title save by the Author: stored content is ' . ( $after3['content'] === $L1 ? 'byte-identical to what was sent' : 'not byte-identical to what was sent (core sanitising), first difference ' . $firstDiff( $L1, $after3['content'] ) ) );
+        $check( 200 === $r['status'] && ! empty( $r['data']['saved'] ) && AIED_PREFIX . ' E combined' === $after3['title'] && str_contains( $after3['content'], 'Headline one aied' ) && $after3['history'] === $after2['history'] + 1, '10b. a combined layout+title save by the Author still saves both and snapshots the previous content' );
+        clean_post_cache( $E );
+    }
+
     // ---- 11. a blog post is refused -----------------------------------------------------------------------------------------------------
     $sb = $state( $B );
     $r  = $rest( 'PUT', "/pages/{$B}", [ 'title' => AIED_PREFIX . ' B hacked' ] );
