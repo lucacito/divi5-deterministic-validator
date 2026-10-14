@@ -168,7 +168,14 @@ after that. An editor cannot rename someone else's published page unless core's 
   `wp_update_post` call carrying both fields, after the snapshot. The result gains a `title` entry only when a title
   was passed.
 - `writeTitle(int $pageId, string $title, string $tool)`: title-only. Passes only `ID` and `post_title` to
-  `wp_update_post`, so `post_content` is never touched, and takes no snapshot.
+  `wp_update_post`, and takes no snapshot. Because core's `wp_update_post` merges the whole stored post and, for a user
+  without `unfiltered_html`, re-runs its sanitising over the existing `post_content` (see "Verified facts"), `writeTitle`
+  also registers a `wp_insert_post_data` filter at `PHP_INT_MAX` for the duration of that one call that sets
+  `post_content` back to the page's own already-stored content (`wp_slash`ed, only for this post ID), and always removes it
+  (`try`/`finally`). That content is the page's own, not new input, and no kses filter is removed or altered. After the
+  update the content is re-read: if it still differs (another plugin changed it) the result carries
+  `layout_changed:true` and both transports report it with an added sentence in `message`. `write()` is unchanged: content
+  that arrives through it still goes through core's sanitising as before.
 - Both read the post fresh after the update and report the stored title.
 - `restore()` keeps its signature; its result gains `title_restored:false` and `title_note`.
 
@@ -252,7 +259,7 @@ importer budget is untouched. Lockstep: `McpHandler`, `RestController`, `OpenApi
 
 ## Verified facts
 
-From `make verify-page-title` on the Docker dev site (Divi 5.14.0, WordPress 7.1.2), 2026-10-14, 66 PASS / 0 FAIL / 0 SKIP:
+From `make verify-page-title` on the Docker dev site (Divi 5.14.0, WordPress 7.1.2), 2026-10-14, 75 PASS / 0 FAIL / 0 SKIP (66 before the final-review fixes; the added checks are section 10b):
 
 - A title-only change over REST and over MCP changes `post_title` and nothing else: the content is byte-identical, `post_name`
   (slug), `post_status` and the permalink are unchanged (a published page and a draft Project), and no history row is added.
@@ -276,3 +283,14 @@ From `make verify-page-title` on the Docker dev site (Divi 5.14.0, WordPress 7.1
   content options and other Divi versions are not claimed. A heading module with the words typed in is plain layout text and
   does not follow a rename.
 - Menus are NOT verified and the guide makes no menu claim (see D11).
+- **A rename must not rewrite the layout (final-review finding, fixed):** for a user WITHOUT `unfiltered_html`, a plain
+  `wp_update_post(['ID' => .., 'post_title' => ..])` re-ran core's sanitising over the page's existing `post_content`.
+  Live control, with the real export `fixtures/valid/page-44-layout-2.json` (54,057 bytes) saved by user 1 so it is stored
+  as is, and then renamed by the page's owner (an Author with `edit_pages`, no `unfiltered_html`): core rewrote the stored
+  content to 54,040 bytes. The first change is at byte 44,266, where `Media \u0026 Press` became `Media \u0026amp; Press`;
+  other exports show `"module":{}` becoming `"module":[]`.
+  With `HistoryService::writeTitle` restoring the stored content (D8), the same rename over REST and over MCP leaves the
+  stored content byte-identical, `layout_changed` is `false`, no history row is added, slug and status are unchanged, and
+  the temporary filter is gone afterwards (`make verify-page-title`, section 10b). A combined layout + title save by the
+  same user is a content write and goes through core's sanitising exactly as before; the live check makes no byte-identity
+  claim there, it asserts that the layout and the title are both saved and the previous layout is snapshotted.
