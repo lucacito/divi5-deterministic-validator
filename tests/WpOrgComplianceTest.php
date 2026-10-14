@@ -75,6 +75,7 @@ class WpOrgComplianceTest extends TestCase
     private const COMMERCIAL_EXCEPTIONS = [
         ['src/UsageTracker.php', "wp-admin/includes/upgrade.php", 'WordPress core include that provides dbDelta() for the usage-log table'],
         ['src/HistoryTable.php', "wp-admin/includes/upgrade.php", 'WordPress core include that provides dbDelta() for the history table'],
+        ['src/OAuthTable.php', "wp-admin/includes/upgrade.php", 'WordPress core include that provides dbDelta() for the OAuth table'],
     ];
 
     /** APIs that change site settings, users, themes, plugins, menus or run code. */
@@ -91,6 +92,8 @@ class WpOrgComplianceTest extends TestCase
         'src/UsageTracker.php' => 'stores the usage-log table schema version (ai_editor_divi5_db_version)',
         'src/HistoryTable.php' => 'stores the history table stage: created / old history migrated (ai_editor_divi5_history_db_version)',
         'src/ApprovalMode.php' => 'stores the site owner\'s own approval-mode setting (ai_editor_divi5_require_preview); changed only from the nonce-protected admin form, never by the AI (owner-approved exception 2026-10-04)',
+        'src/OAuthSettings.php' => 'stores the site owner\'s OAuth enable/disable setting (ai_editor_divi5_oauth_enabled); changed only from the admin panel, never by the AI',
+        'src/OAuthTable.php'    => 'stores the OAuth table schema version for migrations (ai_editor_divi5_oauth_db_version), like HistoryTable',
     ];
 
     /** @return array<string,string> relative path => contents */
@@ -376,11 +379,12 @@ class WpOrgComplianceTest extends TestCase
         $this->assertSame([
             'create_page', 'edit_page_content', 'get_custom_fields', 'get_image_guide', 'get_landing_guide', 'get_page_history_entry',
             'get_page_layout', 'get_product', 'get_section_recipes', 'get_site_guide', 'get_site_structure', 'get_style_guide',
-            'list_divi_pages', 'list_global_styles', 'list_media_images', 'list_page_history', 'list_products', 'restore_page_version',
+            'html_to_divi', 'list_divi_pages', 'list_global_styles', 'list_media_images', 'list_page_history', 'list_products', 'restore_page_version',
             'update_page_layout', 'validate_layout',
         ], $tools);
         // 20 tools: 4.9.0 adds the READ-ONLY list_products and get_product (the WooCommerce catalogue). Nothing is gated and nothing writes anything; no rule of this test is loosened.
-        $this->assertCount(20, $tools);
+        // 21 tools: 4.10.0 adds html_to_divi (deterministic HTML to Divi 5 conversion). It is free, makes no remote call, reads nothing from the site's files, previews by default and saves only a new DRAFT page when asked, through the same validator gate as create_page. No rule of this test is loosened.
+        $this->assertCount(21, $tools);
     }
 
     public function testVisibleProductNameIsTheFullJhmgName(): void
@@ -576,7 +580,7 @@ class WpOrgComplianceTest extends TestCase
         $this->assertSame(['get'], array_keys($spec['paths']['/global-styles']));
         $r = (string) file_get_contents(self::ROOT . '/readme.txt');
         $this->assertStringContainsString('`list_global_styles`', $r);
-        $this->assertStringContainsString('(20 tools)', $r);
+        $this->assertStringContainsString('(21 tools)', $r);
         $this->assertStringContainsString('It cannot create or change presets or colors', $r, 'the readme must say plainly that presets and colors are read-only');
     }
 

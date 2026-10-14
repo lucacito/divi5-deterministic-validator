@@ -42,6 +42,27 @@ if ( ! function_exists( 'home_url' ) ) {
         return $GLOBALS['__wp_home_url'];
     }
 }
+if ( ! function_exists( 'untrailingslashit' ) ) {
+    function untrailingslashit( $str ) {
+        return rtrim( (string) $str, '/' );
+    }
+}
+if ( ! function_exists( 'trailingslashit' ) ) {
+    function trailingslashit( $str ) {
+        return rtrim( (string) $str, '/' ) . '/';
+    }
+}
+if ( ! function_exists( 'admin_url' ) ) {
+    function admin_url( $path = '' ) {
+        return $GLOBALS['__wp_home_url'] . '/wp-admin/' . ltrim( $path, '/' );
+    }
+}
+if ( ! function_exists( 'get_rest_url' ) ) {
+    function get_rest_url( $blog_id = null, $path = '' ) {
+        $base = $GLOBALS['__wp_home_url'] . '/wp-json';
+        return $base . ( $path ? '/' . ltrim( $path, '/' ) : '' );
+    }
+}
 if ( ! function_exists( 'wp_parse_url' ) ) {
     function wp_parse_url( $url, $component = -1 ) {
         return parse_url( $url, $component );
@@ -128,6 +149,11 @@ if ( ! function_exists( 'plugin_basename' ) ) {
 if ( ! function_exists( 'get_bloginfo' ) ) {
     function get_bloginfo( $key ) { return $key === 'version' ? '6.5' : ''; }
 }
+if ( ! function_exists( 'wp_set_current_user' ) ) {
+    function wp_set_current_user( $user_id = 0 ) {
+        $GLOBALS['__wp_current_user_id'] = $user_id;
+    }
+}
 
 // ── View-layer escaping/i18n shims (identity-ish; enough to render admin views) ──
 if ( ! function_exists( 'esc_html' ) ) {
@@ -149,6 +175,9 @@ if ( ! function_exists( 'esc_url' ) ) {
 }
 if ( ! function_exists( '__' ) ) {
     function __( $s, $d = null ) { return (string) $s; }
+}
+if ( ! function_exists( '_n' ) ) {
+    function _n( $single, $plural, $number, $d = null ) { return (string) ( 1 === (int) $number ? $single : $plural ); }
 }
 if ( ! function_exists( 'esc_html__' ) ) {
     function esc_html__( $s, $d = null ) { return htmlspecialchars( (string) $s, ENT_QUOTES ); }

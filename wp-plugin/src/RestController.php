@@ -45,6 +45,13 @@ final class RestController
             ],
         ]);
 
+        // POST /html-to-divi — deterministic HTML to Divi 5 conversion (preview, or save as a draft with create=true)
+        register_rest_route(self::NS, '/html-to-divi', [
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'html_to_divi'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
         // GET /site-structure — read-only post types, taxonomies, image sizes and ACF field groups
         register_rest_route(self::NS, '/site-structure', [
             'methods'             => WP_REST_Server::READABLE,
@@ -545,25 +552,7 @@ final class RestController
             ], 422);
         }
 
-        // Always a draft — the site owner reviews and publishes. The Divi 5
-        // builder meta flags make the page open in the Divi 5 editor and appear
-        // in list_divi_pages (which filters on _et_pb_use_divi_5).
-        // wp_slash because wp_insert_post runs wp_unslash internally and would
-        // otherwise strip backslashes from escaped HTML and corrupt content.
-        $postArr = [
-            'post_type'    => 'page',
-            'post_title'   => $title,
-            'post_content' => $content,
-            'post_status'  => 'draft',
-            'meta_input'   => [
-                '_et_pb_use_divi_5'  => 'on',
-                '_et_pb_use_builder' => 'on',
-            ],
-        ];
-        if ($slug !== '') {
-            $postArr['post_name'] = $slug;
-        }
-        $pageId = wp_insert_post(wp_slash($postArr), true);
+        $pageId = DraftPage::insert($title, $content, $slug);
 
         if (is_wp_error($pageId)) {
             return new WP_Error('create_failed', $pageId->get_error_message(), ['status' => 500]);
@@ -645,6 +634,20 @@ final class RestController
         UsageTracker::log('list_global_styles', null, 'read');
 
         return new WP_REST_Response($result, 200);
+    }
+
+    public function html_to_divi(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        $body = $request->get_json_params();
+        if (!is_array($body)) {
+            return new WP_Error('invalid_body', 'The request body must be a JSON object.', ['status' => 400]);
+        }
+        $out = HtmlToDiviService::run($body);
+        if ($out['status'] === 403) {
+            return new WP_Error('forbidden', (string) ($out['body']['error'] ?? 'Not allowed.'), ['status' => 403]);
+        }
+
+        return new WP_REST_Response($out['body'], $out['status']);
     }
 
     public function site_structure(WP_REST_Request $request): WP_REST_Response|WP_Error
@@ -756,7 +759,7 @@ final class RestController
             // The key is valid, but its user must still be able to edit pages (a demoted or
             // deleted key owner cannot keep using the plugin).
             if (!PageAccess::keyUserAllowed('current_user_can')) {
-                return new WP_Error('forbidden', 'The API key belongs to a user who cannot edit pages.', ['status' => 403]);
+                return new WP_Error('forbidden', ApiKey::presentsOAuthToken() ? 'The signed-in user cannot edit pages.' : 'The API key belongs to a user who cannot edit pages.', ['status' => 403]);
             }
             return true;
         }

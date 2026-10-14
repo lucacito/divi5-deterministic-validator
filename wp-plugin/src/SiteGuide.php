@@ -58,6 +58,23 @@ finish by telling the owner exactly what to do in WordPress:
   in this order: Home, then inner pages, Contact last. Link each item to its page.
 List the page titles and slugs you created so the owner can tick them off.
 
+## 5. Turn existing HTML into Divi 5 pages
+When the owner already has HTML (a page you or another tool wrote, exported markup), do not retype it as
+Divi blocks: call **html_to_divi** with the HTML. It converts the structure, every word, every link and the images
+deterministically and checks the result with the same validator as every save.
+1. **Preview first** (the default): read the `report`. `text_check.equal` and an empty `links.lost` mean nothing was
+   dropped; `flagged` lists what Divi could not take (scripts, forms, embedded video, navigation menus, CSS); `images` lists
+   each image and the placeholder it got.
+2. **Deal with the flagged items**: a form becomes the contact-form recipe (`get_section_recipes`) or the owner's form
+   plugin; video becomes a Divi video module; the menu is the owner's to set in WordPress. Tell the owner what you left out.
+3. **Create**: call html_to_divi again with `create=true` and a `title` (the report suggests one). It saves one DRAFT.
+4. **Real images**: replace each placeholder with an image from `list_media_images`, using `edit_page_content`
+   (`dry_run` first). Never use the source site's image addresses.
+5. **Make it look right**: colors, fonts and spacing are not converted. Style the draft with `get_style_guide` and
+   `list_global_styles`, and use a section recipe for a hero or call to action where it fits.
+6. **Several pages**: one page per call, in the order of the plan above; then point internal links at the new page slugs.
+For a pixel-accurate copy of a live web page, use the separate URL-to-Divi converter instead.
+
 ## Notes
 - The header, footer and navigation come from the active theme's own templates (the
   nav menu drives the header); this plugin does not change them.

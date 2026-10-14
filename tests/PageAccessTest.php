@@ -51,7 +51,7 @@ class PageAccessTest extends TestCase
     public function testSettingsShowsTheHintOnlyOnTheSettingsView(): void
     {
         $src = $this->src('AdminPage.php');
-        $this->assertSame(1, substr_count($src, 'PageAccess::keyOwnerCanUse('), 'one check, in viewSettings');
+        $this->assertSame(2, substr_count($src, 'PageAccess::keyOwnerCanUse('), 'one check in viewSettings, one in handleDiagnose');
         $body = $this->method('AdminPage.php', 'private function viewSettings(');
         $this->assertStringContainsString('PageAccess::keyOwnerCanUse(', $body);
         $this->assertStringContainsString('Press “Regenerate” to create a key owned by you.', $body);

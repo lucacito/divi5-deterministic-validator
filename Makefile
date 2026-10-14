@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-products
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -241,3 +241,28 @@ verify-products:
 	trap 'docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp plugin activate woocommerce >/dev/null 2>&1' EXIT; \
 	docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp plugin deactivate woocommerce >/dev/null 2>&1; \
 	docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-products-inactive.php --user=1
+
+# ---------------------------------------------------------------
+# verify-oauth — real-site check of the OAuth sign-in: the table store against the reference behaviour, then the whole flow over HTTP (discovery, DCR, consent, token, refresh, rotation, replay, revocation, switch off; dev site only; self-cleaning)
+# ---------------------------------------------------------------
+verify-oauth:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-oauth-store.php --user=1
+	@python3 scripts/verify-oauth-flow.py
+
+# ---------------------------------------------------------------
+# verify-test-connection — real-site check of connection diagnosis (Docker site; tests healthy site, wrong key, demoted key owner, plain permalinks, and REST authentication filter)
+# ---------------------------------------------------------------
+verify-test-connection:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-test-connection.php --user=1
+
+# ---------------------------------------------------------------
+# verify-html-to-divi — real-site check of html_to_divi: every fixture saved as a throwaway draft through the real handlers, read back and rendered with the real Divi (Docker site; dev site only; every page it creates is deleted)
+# ---------------------------------------------------------------
+verify-html-to-divi:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-html-to-divi.php --user=1
+
+# ---------------------------------------------------------------
+# verify-guide-shapes — proves on the real Divi (and in a real browser) the per-device and equal-size-image shapes the guides teach, and that the converter's rows stack on a phone (Docker site; dev site only; every page it creates is deleted)
+# ---------------------------------------------------------------
+verify-guide-shapes:
+	@node scripts/verify-guide-shapes.cjs

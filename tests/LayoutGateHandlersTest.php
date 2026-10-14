@@ -21,6 +21,7 @@ require_once __DIR__ . '/../wp-plugin/src/HistoryStore.php';
 require_once __DIR__ . '/../wp-plugin/src/EditTarget.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryService.php';
 require_once __DIR__ . '/../wp-plugin/src/PageEditor.php';
+require_once __DIR__ . '/../wp-plugin/src/DraftPage.php';
 require_once __DIR__ . '/../wp-plugin/src/LayoutDiff.php';
 require_once __DIR__ . '/../wp-plugin/src/GlobalStyles.php';
 require_once __DIR__ . '/../wp-plugin/src/CustomFields.php';
