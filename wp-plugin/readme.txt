@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.10.0
+Stable tag:        4.11.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -238,6 +238,10 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.11.0 =
+* New: your AI assistant can now change the title of an existing page or Divi Project. Ask it to rename a page and it changes only the WordPress title (what shows in the page list and, by default, the browser tab), or the title and the layout together. It can preview the change first, follows Approval mode, only touches pages you can edit, and never changes the page address (slug) or leaves the layout rewritten. A title change is not covered by Undo, so your assistant tells you the old title and can set it back with one more request.
+* Improved: the style guide now explains that the page title and the big headline inside the layout are different things, so a request to "change the title" is no longer answered by editing only the headline.
 
 = 4.10.0 =
 * New: connect Claude on the web (claude.ai) with nothing to install. Turn on sign-in for Claude on the Settings screen, add the address it shows under Customize → Connectors in claude.ai, sign in to your own site and press Allow. Claude then works as you, with the permissions your account has, and every save is still checked and undoable. It is off until you turn it on, needs a public https address, and you can disconnect any app, or turn it off and remove everything, from the Settings screen.
