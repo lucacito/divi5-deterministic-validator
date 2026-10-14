@@ -196,3 +196,27 @@
 /* Settings: has an AI assistant reached this site yet? */
 .aied-last-request { margin: 0 0 12px; font-size: 13px; color: var(--aied-muted); }
 .aied-last-request.is-connected { color: var(--aied-ok); font-weight: 600; }
+
+/* Test connection button and results */
+.aied-test-connection { margin: 12px 0 0; }
+.aied-test-result { margin-top: 12px; }
+.aied-test-result[hidden] { display: none; }
+.aied-test-finding {
+    padding: 10px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 8px;
+    border: 1px solid;
+}
+.aied-test-finding strong { display: block; margin-bottom: 4px; font-size: 13.5px; }
+.aied-test-finding p { margin: 0; color: inherit; white-space: pre-line; }
+/* Not colour alone: each state also starts with a symbol. */
+.aied-test-finding--error strong::before { content: "\2716\00a0"; }
+.aied-test-finding--warning strong::before { content: "\26A0\00a0"; }
+.aied-test-finding--ok strong::before { content: "\2714\00a0"; }
+.aied-test-finding--error {
+    background: #f5ecec; border-color: #e8b4b4; color: #8b3a3a;
+}
+.aied-test-finding--warning {
+    background: #fff8ec; border-color: #f0d9ad; color: #7c6830;
+}
+.aied-test-finding--ok {
+    background: #e3f6ec; border-color: #a7dfc7; color: var(--aied-ok);
+}

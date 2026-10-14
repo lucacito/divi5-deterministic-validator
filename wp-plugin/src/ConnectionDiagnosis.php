@@ -21,8 +21,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class ConnectionDiagnosis
 {
-    /** The probe names the browser may send. Anything else is dropped. */
+    /** The probes every test runs. */
     public const PROBES = [ 'unauth', 'auth', 'tools' ];
+
+    /** Extra probes, sent only while the OAuth sign-in is switched on. They never turn a working API-key connection into an error. */
+    public const OAUTH_PROBES = [ 'oauth_as', 'oauth_prm' ];
 
     /** Error checks in precedence order: the first that matches is the only error shown. */
     private const ERROR_CHECKS = [
@@ -64,6 +67,11 @@ final class ConnectionDiagnosis
                 $findings[] = $finding;
             }
         }
+        if ( true === ( $site['oauth'] ?? false ) ) {
+            foreach ( self::oauthFindings( $probes, $site ) as $finding ) {
+                $findings[] = $finding;
+            }
+        }
         $findings[] = self::allOk( $probes );
 
         return $findings;
@@ -73,30 +81,41 @@ final class ConnectionDiagnosis
      * Strict validation of what the browser posted: only the known probes, each with the known fields of the
      * right type. A value of the wrong type becomes its safe default; nothing is cast.
      *
-     * @return array<string,array{status:int,contentType:string,jsonCode:string,jsonRpc:bool,toolCount:?int,headerHint:bool,redirected:bool}>
+     * @return array<string,array<string,mixed>>
      */
     public static function sanitizeProbes( mixed $input ): array
     {
         $input  = is_array( $input ) ? $input : [];
         $probes = [];
         foreach ( self::PROBES as $name ) {
-            $p = $input[ $name ] ?? [];
-            $p = is_array( $p ) ? $p : [];
-
-            $count = $p['toolCount'] ?? null;
-
-            $probes[ $name ] = [
-                'status'      => self::intIn( $p['status'] ?? null, 0, 599 ) ?? 0,
-                'contentType' => self::text( $p['contentType'] ?? null, 100 ),
-                'jsonCode'    => self::text( $p['jsonCode'] ?? null, 100 ),
-                'jsonRpc'     => true === ( $p['jsonRpc'] ?? false ),
-                'toolCount'   => self::intIn( $count, 0, 1000 ),
-                'headerHint'  => true === ( $p['headerHint'] ?? false ),
-                'redirected'  => true === ( $p['redirected'] ?? false ),
-            ];
+            $probes[ $name ] = self::sanitizeProbe( $input[ $name ] ?? [] );
+        }
+        foreach ( self::OAUTH_PROBES as $name ) {
+            if ( isset( $input[ $name ] ) ) {
+                $probes[ $name ] = self::sanitizeProbe( $input[ $name ] );
+            }
         }
 
         return $probes;
+    }
+
+    /** @return array{status:int,contentType:string,jsonCode:string,jsonRpc:bool,toolCount:?int,headerHint:bool,redirected:bool,hasChallenge:bool,docIssuer:string,docResource:string} */
+    private static function sanitizeProbe( mixed $p ): array
+    {
+        $p = is_array( $p ) ? $p : [];
+
+        return [
+            'status'       => self::intIn( $p['status'] ?? null, 0, 599 ) ?? 0,
+            'contentType'  => self::text( $p['contentType'] ?? null, 100 ),
+            'jsonCode'     => self::text( $p['jsonCode'] ?? null, 100 ),
+            'jsonRpc'      => true === ( $p['jsonRpc'] ?? false ),
+            'toolCount'    => self::intIn( $p['toolCount'] ?? null, 0, 1000 ),
+            'headerHint'   => true === ( $p['headerHint'] ?? false ),
+            'redirected'   => true === ( $p['redirected'] ?? false ),
+            'hasChallenge' => true === ( $p['hasChallenge'] ?? false ),
+            'docIssuer'    => self::text( $p['docIssuer'] ?? null, 300 ),
+            'docResource'  => self::text( $p['docResource'] ?? null, 300 ),
+        ];
     }
 
     private static function intIn( mixed $v, int $min, int $max ): ?int
@@ -376,6 +395,63 @@ final class ConnectionDiagnosis
         }
 
         return null;
+    }
+
+    /**
+     * What stops Claude on the web from signing in. These are warnings: the API-key connection above works either way.
+     * Nothing from the browser is echoed; only the verdicts are.
+     *
+     * @return list<array{level:string, code:string, title:string, fix:string}>
+     */
+    private static function oauthFindings( array $probes, array $site ): array
+    {
+        $out = [];
+        $as  = $probes['oauth_as'] ?? null;
+        $prm = $probes['oauth_prm'] ?? null;
+
+        if ( null === $as || null === $prm ) {
+            return $out;
+        }
+
+        $docsReachable = 200 === $as['status'] && '' !== $as['docIssuer'] && 200 === $prm['status'] && '' !== $prm['docResource'];
+        if ( ! $docsReachable ) {
+            $out[] = self::finding(
+                'warning',
+                'OAUTH_WELLKNOWN_BLOCKED',
+                __( 'Claude on the web cannot find this site’s sign-in details.', 'jhmg-ai-editor-for-divi-5' ),
+                __( 'The address /.well-known/oauth-authorization-server on your site did not return the plugin’s document. A security plugin, a server rule that blocks paths starting with a dot (common on nginx), or a site in a subfolder can cause this. Allow requests to /.well-known/oauth-authorization-server, /.well-known/openid-configuration and /.well-known/oauth-protected-resource.', 'jhmg-ai-editor-for-divi-5' )
+            );
+
+            return $out;
+        }
+        if ( ( $site['issuer'] ?? '' ) !== $as['docIssuer'] || ( $site['resource'] ?? '' ) !== $prm['docResource'] ) {
+            $out[] = self::finding(
+                'warning',
+                'OAUTH_METADATA_MISMATCH',
+                __( 'The sign-in details name a different site address than the one you are using.', 'jhmg-ai-editor-for-divi-5' ),
+                __( 'Check Settings → General: the WordPress Address and Site Address must be the same address people actually visit (www or not, http or https). A redirect or a proxy in front of the site can also change it.', 'jhmg-ai-editor-for-divi-5' )
+            );
+
+            return $out;
+        }
+        if ( 401 === $probes['unauth']['status'] && ! $probes['unauth']['hasChallenge'] ) {
+            $out[] = self::finding(
+                'warning',
+                'OAUTH_NO_CHALLENGE',
+                __( 'Claude on the web would not be told where to sign in.', 'jhmg-ai-editor-for-divi-5' ),
+                __( 'The “not signed in” answer reached the browser without its WWW-Authenticate header. A proxy, a CDN rule or a security plugin is removing it. Let that header through for /wp-json/ai-editor-divi5/.', 'jhmg-ai-editor-for-divi-5' )
+            );
+
+            return $out;
+        }
+        $out[] = self::finding(
+            'ok',
+            'OAUTH_OK',
+            __( 'Claude on the web can find the sign-in details.', 'jhmg-ai-editor-for-divi-5' ),
+            __( 'Add the address from the card below in claude.ai (Customize → Connectors → Add custom connector).', 'jhmg-ai-editor-for-divi-5' )
+        );
+
+        return $out;
     }
 
     private static function allOk( array $probes ): array

@@ -28,6 +28,8 @@ final class AdminPage
         add_action('admin_post_ai_editor_divi5_restore_page',       [$this, 'handleRestorePage']);
         add_action('admin_post_ai_editor_divi5_dismiss_pro_card',   [$this, 'handleDismissProCard']);
         add_action('admin_post_ai_editor_divi5_toggle_approval', [$this, 'handleToggleApproval']);
+        add_action('wp_ajax_ai_editor_divi5_diagnose', [$this, 'handleDiagnose']);
+        OAuthAdmin::registerHooks();
     }
 
     public function addMenu(): void
@@ -50,6 +52,28 @@ final class AdminPage
         }
         wp_enqueue_style('ai-editor-divi5-admin', plugin_dir_url(AI_EDITOR_DIVI5_FILE) . 'assets/admin.css', [], AI_EDITOR_DIVI5_VERSION);
         wp_enqueue_script('ai-editor-divi5-admin', plugin_dir_url(AI_EDITOR_DIVI5_FILE) . 'assets/admin.js', [], AI_EDITOR_DIVI5_VERSION, true);
+
+        // The Settings screen's "Test connection" button: the probes run in the browser (the plugin may not make
+        // HTTP requests itself) and only small facts come back to handleDiagnose() for the plain-English verdict.
+        wp_localize_script(
+            'ai-editor-divi5-admin',
+            'aiedAdminConfig',
+            [
+                'mcpUrl'  => rtrim( get_site_url(), '/' ) . '/wp-json/ai-editor-divi5/v1/mcp',
+                'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+                'nonce'   => wp_create_nonce( 'ai_editor_divi5_diagnose' ),
+                // Set only while the OAuth sign-in is on: the browser then also checks the sign-in details.
+                'oauth'   => OAuthSettings::enabled()
+                    ? [ 'asUrl' => rtrim( get_site_url(), '/' ) . '/.well-known/oauth-authorization-server', 'prmUrl' => OAuthRuntime::config()->resourceMetadataUrl ]
+                    : null,
+                'i18n'    => [
+                    'testing'        => __( 'Testing…', 'jhmg-ai-editor-for-divi-5' ),
+                    'testAgain'      => __( 'Test again', 'jhmg-ai-editor-for-divi-5' ),
+                    'diagnoseFailed' => __( 'The test could not finish.', 'jhmg-ai-editor-for-divi-5' ),
+                    'tryAgain'       => __( 'Reload the page and try again. If it keeps failing, check that you are still logged in.', 'jhmg-ai-editor-for-divi-5' ),
+                ],
+            ]
+        );
     }
 
     // ---------------------------------------------------------------
@@ -102,6 +126,47 @@ final class AdminPage
         $this->guard('ai_editor_divi5_dismiss_pro_card'); // guard() verifies the nonce via check_admin_referer().
         update_user_meta( get_current_user_id(), 'aied_pro_card_dismissed', 1 );
         $this->redirect('dashboard');
+    }
+
+    /** Plain-English verdict for the "Test connection" button. Needs manage_options and the button's nonce. */
+    public function handleDiagnose(): void
+    {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'You are not allowed to run this test.', 'jhmg-ai-editor-for-divi-5' ) ], 403 );
+        }
+        if ( false === check_ajax_referer( 'ai_editor_divi5_diagnose', 'nonce', false ) ) {
+            wp_send_json_error( [ 'message' => __( 'This page has expired. Reload it and try again.', 'jhmg-ai-editor-for-divi-5' ) ], 403 );
+        }
+
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verified above; sanitizeProbes() validates every field strictly.
+        $raw    = isset( $_POST['probes'] ) && is_string( $_POST['probes'] ) ? wp_unslash( $_POST['probes'] ) : '';
+        $probes = ConnectionDiagnosis::sanitizeProbes( strlen( $raw ) <= 8192 ? json_decode( $raw, true ) : null );
+
+        $divi = DiviCompat::installedVersion();
+        $site = [
+            'permalinks_plain' => '' === (string) get_option( 'permalink_structure' ),
+            'is_local'         => self::isLocalSite(),
+            'scheme'           => 'http' === wp_parse_url( get_site_url(), PHP_URL_SCHEME ) ? 'http' : 'https',
+            'key_owner_ok'     => PageAccess::keyOwnerCanUse( ApiKey::getUserId(), 'user_can' ),
+            'divi'             => $divi,
+            'oauth'            => OAuthSettings::enabled(),
+            'issuer'           => OAuthRuntime::config()->issuer,
+            'resource'         => OAuthRuntime::config()->resource,
+        ];
+
+        wp_send_json_success( [ 'findings' => ConnectionDiagnosis::explain( $probes, $site ) ] );
+    }
+
+    /** Whether the site address is a local development address (localhost, *.local, *.test and similar). */
+    private static function isLocalSite(): bool
+    {
+        if ( function_exists( 'wp_get_environment_type' ) && 'local' === wp_get_environment_type() ) {
+            return true;
+        }
+        $host = strtolower( (string) wp_parse_url( get_site_url(), PHP_URL_HOST ) );
+
+        return in_array( $host, [ 'localhost', '127.0.0.1', '[::1]', '::1' ], true )
+            || 1 === preg_match( '/\.(local|test|localhost|invalid)$/', $host );
     }
 
     /** The Restore button may touch exactly what the tools may: a page or Divi Project the user can edit. */
@@ -444,12 +509,17 @@ final class AdminPage
             'usage_cleared'      => __( 'Activity log cleared.', 'jhmg-ai-editor-for-divi-5' ),
             'approval_on'        => __( 'Approval mode is on. Your AI assistant must preview every edit to a page\'s content before it can save it.', 'jhmg-ai-editor-for-divi-5' ),
             'approval_off'       => __( 'Approval mode is off.', 'jhmg-ai-editor-for-divi-5' ),
+            'oauth_on'           => __( 'Sign-in for Claude is on. Follow the steps below to add this site to claude.ai.', 'jhmg-ai-editor-for-divi-5' ),
+            'oauth_off'          => __( 'Sign-in for Claude is off, and every connected app was disconnected.', 'jhmg-ai-editor-for-divi-5' ),
+            'oauth_revoked'      => __( 'The app was disconnected.', 'jhmg-ai-editor-for-divi-5' ),
             'version_restored'   => __( 'Previous version restored. The version it replaced was saved too, so you can undo this.', 'jhmg-ai-editor-for-divi-5' ),
         ];
         if ( isset( $map[ $notice ] ) ) {
             printf('<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $map[ $notice ] ));
         } elseif ( $notice === 'version_restored_no_undo' ) {
             printf('<div class="notice notice-warning is-dismissible"><p>%s</p></div>', esc_html__( 'Previous version restored, but the version it replaced could not be kept, so this restore cannot be undone from here.', 'jhmg-ai-editor-for-divi-5' ));
+        } elseif ( $notice === 'oauth_failed' ) {
+            printf('<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'Sign-in could not be turned on: the database table could not be created. Ask your host to let WordPress create tables, then try again.', 'jhmg-ai-editor-for-divi-5' ));
         } elseif ( $notice === 'restore_failed' ) {
             printf('<div class="notice notice-error is-dismissible"><p>%s</p></div>', esc_html__( 'Could not restore that version.', 'jhmg-ai-editor-for-divi-5' ));
         }
@@ -709,6 +779,10 @@ final class AdminPage
             <p class="aied-muted"><?php esc_html_e( 'Your API key authorizes your AI assistant to read and edit this site. Keep it private.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
             <?php $last = UsageTracker::lastRequest(); ?>
             <p class="aied-last-request<?php echo null === $last ? '' : ' is-connected'; ?>"><?php echo esc_html( self::lastRequestText( $last, null === $last ? '' : human_time_diff( time() - $last['age'], time() ) ) ); ?></p>
+            <div class="aied-test-connection" id="aied-test-connection" hidden>
+                <button type="button" class="button" id="aied-test-connection-btn"><?php esc_html_e( 'Test connection', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+                <div class="aied-test-result" id="aied-test-result" role="status" aria-live="polite" hidden></div>
+            </div>
             <div class="aied-key-row">
                 <code class="aied-key" id="aied-api-key" data-key="<?php echo esc_attr( $key ); ?>">••••••••••••••••••••••••</code>
                 <button type="button" class="button" id="aied-toggle-key"><?php esc_html_e( 'Show', 'jhmg-ai-editor-for-divi-5' ); ?></button>
@@ -724,6 +798,7 @@ final class AdminPage
         </div>
 
         <?php $this->approvalCard(); ?>
+        <?php OAuthAdmin::card(); ?>
 
         <!-- Activity log -->
         <?php $recent = UsageTracker::getRecent(10); if ( ! empty( $recent ) ) : ?>

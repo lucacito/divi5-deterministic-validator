@@ -181,7 +181,7 @@ final class ConnectionDiagnosisTest extends TestCase
             'bogus'  => ['status' => 200],
         ]);
         $this->assertSame(['unauth', 'auth', 'tools'], array_keys($out));
-        $this->assertSame(['status', 'contentType', 'jsonCode', 'jsonRpc', 'toolCount', 'headerHint', 'redirected'], array_keys($out['unauth']));
+        $this->assertSame(['status', 'contentType', 'jsonCode', 'jsonRpc', 'toolCount', 'headerHint', 'redirected', 'hasChallenge', 'docIssuer', 'docResource'], array_keys($out['unauth']));
         $this->assertSame(401, $out['unauth']['status']);
     }
 
@@ -232,6 +232,82 @@ final class ConnectionDiagnosisTest extends TestCase
                 $this->assertNotSame('', $finding['title']);
             }
         }
+    }
+
+    // ── OAuth sign-in probes (only while the owner has switched it on) ─────────────────────
+
+    private function oauthProbes(array $as = [], array $prm = [], array $unauth = []): array
+    {
+        $doc = ['status' => 200, 'contentType' => 'application/json', 'jsonCode' => '', 'jsonRpc' => false, 'toolCount' => null, 'headerHint' => false, 'redirected' => false, 'hasChallenge' => false, 'docIssuer' => '', 'docResource' => ''];
+
+        return $this->healthy(['unauth' => array_merge(['hasChallenge' => true], $unauth)]) + [
+            'oauth_as'  => array_merge($doc, ['docIssuer' => 'https://example.com'], $as),
+            'oauth_prm' => array_merge($doc, ['docResource' => 'https://example.com/wp-json/ai-editor-divi5/v1/mcp'], $prm),
+        ];
+    }
+
+    private function oauthSite(array $o = []): array
+    {
+        return $this->site(array_merge(['oauth' => true, 'issuer' => 'https://example.com', 'resource' => 'https://example.com/wp-json/ai-editor-divi5/v1/mcp'], $o));
+    }
+
+    public function testOauthOffMeansNoOauthFindingsEvenIfProbesArrive(): void
+    {
+        $this->assertSame(['ALL_OK'], $this->codes($this->oauthProbes(['status' => 404]), $this->site()));
+    }
+
+    public function testOauthWorksAddsAFriendlyLine(): void
+    {
+        $this->assertSame(['OAUTH_OK', 'ALL_OK'], $this->codes($this->oauthProbes(), $this->oauthSite()));
+    }
+
+    public function testBlockedWellKnownIsAWarningNotAnError(): void
+    {
+        foreach ([['status' => 404, 'docIssuer' => ''], ['status' => 403, 'headerHint' => true, 'docIssuer' => ''], ['status' => 200, 'docIssuer' => ''], ['status' => 0, 'docIssuer' => '']] as $as) {
+            $f = ConnectionDiagnosis::explain($this->oauthProbes($as), $this->oauthSite());
+            $this->assertSame(['OAUTH_WELLKNOWN_BLOCKED', 'ALL_OK'], array_column($f, 'code'), json_encode($as));
+            $this->assertSame('warning', $f[0]['level'], 'the API key connection still works');
+        }
+    }
+
+    public function testAMissingResourceDocumentCountsAsBlocked(): void
+    {
+        $this->assertSame(['OAUTH_WELLKNOWN_BLOCKED', 'ALL_OK'], $this->codes($this->oauthProbes([], ['status' => 404, 'docResource' => '']), $this->oauthSite()));
+    }
+
+    public function testADifferentSiteAddressIsReported(): void
+    {
+        $this->assertSame(['OAUTH_METADATA_MISMATCH', 'ALL_OK'], $this->codes($this->oauthProbes(['docIssuer' => 'https://www.example.com']), $this->oauthSite()));
+        $this->assertSame(['OAUTH_METADATA_MISMATCH', 'ALL_OK'], $this->codes($this->oauthProbes([], ['docResource' => 'http://example.com/wp-json/ai-editor-divi5/v1/mcp']), $this->oauthSite()));
+    }
+
+    public function testAStrippedChallengeHeaderIsReported(): void
+    {
+        $this->assertSame(['OAUTH_NO_CHALLENGE', 'ALL_OK'], $this->codes($this->oauthProbes([], [], ['hasChallenge' => false]), $this->oauthSite()));
+    }
+
+    public function testAnApiKeyProblemStillWinsOverOauthWarnings(): void
+    {
+        $probes = $this->oauthProbes(['status' => 404, 'docIssuer' => '']);
+        $probes['auth'] = array_merge($probes['auth'], ['status' => 401, 'jsonCode' => 'unauthorized', 'jsonRpc' => false]);
+        $this->assertSame(['KEY_REJECTED'], $this->codes($probes, $this->oauthSite()));
+    }
+
+    public function testOauthProbesAreOptionalInSanitize(): void
+    {
+        $this->assertSame(['unauth', 'auth', 'tools'], array_keys(ConnectionDiagnosis::sanitizeProbes([])));
+        $out = ConnectionDiagnosis::sanitizeProbes(['oauth_as' => ['status' => 200, 'docIssuer' => 'https://example.com'], 'oauth_prm' => 'garbage', 'oauth_other' => ['status' => 200]]);
+        $this->assertSame(['unauth', 'auth', 'tools', 'oauth_as', 'oauth_prm'], array_keys($out));
+        $this->assertSame('https://example.com', $out['oauth_as']['docIssuer']);
+        $this->assertSame(0, $out['oauth_prm']['status']);
+    }
+
+    public function testTheDocumentFieldsAreCappedAndTyped(): void
+    {
+        $out = ConnectionDiagnosis::sanitizeProbes(['oauth_as' => ['docIssuer' => str_repeat('a', 5000), 'docResource' => ['x'], 'hasChallenge' => 'yes']]);
+        $this->assertSame(300, strlen($out['oauth_as']['docIssuer']));
+        $this->assertSame('', $out['oauth_as']['docResource']);
+        $this->assertFalse($out['oauth_as']['hasChallenge']);
     }
 
     public function testTheSourceHasNoRemoteCalls(): void
