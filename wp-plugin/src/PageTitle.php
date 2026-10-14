@@ -35,7 +35,7 @@ final class PageTitle
         if ( null === $title || '' === $title ) {
             return self::fail( "{$key} must not be empty." );
         }
-        if ( 1 === preg_match( '/[\p{Cc}]/u', $title ) ) {
+        if ( 1 === preg_match( '/[\p{Cc}\p{Zl}\p{Zp}]/u', $title ) ) {
             return self::fail( "{$key} must be one line of text: no line breaks, tabs or control characters." );
         }
         if ( false !== strpbrk( $title, '<>' ) ) {

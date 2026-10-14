@@ -66,7 +66,7 @@ class PageTitleTest extends TestCase
 
     public function testControlCharactersAreRejected(): void
     {
-        foreach ( [ "Line one\nLine two", "a\tb", "a\0b", "a\x7Fb", "a\u{0085}b" ] as $t ) {
+        foreach ( [ "Line one\nLine two", "a\tb", "a\0b", "a\x7Fb", "a\u{0085}b", "a\u{2028}b", "a\u{2029}b" ] as $t ) {
             $r = PageTitle::parse( [ 'title' => $t ] );
             $this->assertFalse( $r['ok'], json_encode( $t ) );
             $this->assertStringContainsString( 'one line', (string) $r['error'] );
