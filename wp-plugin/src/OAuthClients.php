@@ -49,7 +49,7 @@ final class OAuthClients
         }
 
         $uris = $body['redirect_uris'] ?? null;
-        if ( ! is_array( $uris ) || array() === $uris || count( $uris ) > OAuthConfig::MAX_REDIRECT_URIS || ! array_is_list( $uris ) ) {
+        if ( ! is_array( $uris ) || array() === $uris || count( $uris ) > OAuthConfig::MAX_REDIRECT_URIS || array_keys( $uris ) !== range( 0, count( $uris ) - 1 ) ) {
             return $this->error( 'invalid_redirect_uri', 'redirect_uris must be a list of one to five addresses.' );
         }
         $clean = [];

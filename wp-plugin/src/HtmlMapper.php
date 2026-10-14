@@ -236,7 +236,7 @@ final class HtmlMapper
             }
             $run = [];
             $html = trim( $html );
-            if ( '' !== HtmlSource::collapse( html_entity_decode( strip_tags( $html ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) ) ) {
+            if ( '' !== HtmlSource::collapse( html_entity_decode( wp_strip_all_tags( $html ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) ) ) {
                 $this->addProse( $current, '<p>' . $html . '</p>' );
             }
         };

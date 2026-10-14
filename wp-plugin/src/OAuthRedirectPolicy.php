@@ -121,7 +121,7 @@ final class OAuthRedirectPolicy
         if ( '' === $uri || strlen( $uri ) > 2000 || 1 === preg_match( '/[\x00-\x20\x7f\\\\]/', $uri ) ) {
             return null;
         }
-        $p = parse_url( $uri );
+        $p = wp_parse_url( $uri );
         if ( ! is_array( $p ) || isset( $p['user'] ) || isset( $p['pass'] ) || str_contains( $uri, '#' ) || str_contains( $uri, '?' ) ) {
             return null;
         }

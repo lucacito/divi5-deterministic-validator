@@ -149,20 +149,9 @@ if ( ! function_exists( 'plugin_basename' ) ) {
 if ( ! function_exists( 'get_bloginfo' ) ) {
     function get_bloginfo( $key ) { return $key === 'version' ? '6.5' : ''; }
 }
-if ( ! function_exists( 'get_userdata' ) ) {
-    function get_userdata( $user_id ) {
-        // Test shim: return false (user doesn't exist) or a mock object
-        return false;
-    }
-}
 if ( ! function_exists( 'wp_set_current_user' ) ) {
     function wp_set_current_user( $user_id = 0 ) {
         $GLOBALS['__wp_current_user_id'] = $user_id;
-    }
-}
-if ( ! function_exists( 'get_current_user_id' ) ) {
-    function get_current_user_id() {
-        return $GLOBALS['__wp_current_user_id'] ?? 0;
     }
 }
 

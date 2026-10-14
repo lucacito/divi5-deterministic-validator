@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.9.0
+Stable tag:        4.10.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -236,7 +236,12 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 == Changelog ==
 
 = 4.10.0 =
-* New: a Test connection button on the Settings screen checks the endpoint, API key and permissions, and shows plain-English errors if something is wrong (for example a firewall blocking the REST API, or plain permalinks, or the key owner not being able to edit pages). The test runs from your browser and never sends the key, so you can troubleshoot your setup without sharing secrets.
+* New: connect Claude on the web (claude.ai) with nothing to install. Turn on sign-in for Claude on the Settings screen, add the address it shows under Customize → Connectors in claude.ai, sign in to your own site and press Allow. Claude then works as you, with the permissions your account has, and every save is still checked and undoable. It is off until you turn it on, needs a public https address, and you can disconnect any app, or turn it off and remove everything, from the Settings screen.
+* New: `html_to_divi` turns HTML you already have into a Divi 5 page: the structure, every word, every link and the images. It previews first and tells you what it could not convert (scripts, forms, embeds, site navigation and CSS are never converted); with one more step it saves a draft. Colors and fonts are not converted yet.
+* New: a Test connection button on the Settings screen checks the address, the key and the permissions, and says in plain English what is wrong (for example a firewall blocking the REST API, plain permalinks, or a key owner who cannot edit pages).
+* Improved: the style guide now teaches the per-device settings that were checked on a real Divi: a smaller headline on phones, text size and alignment per device, spacing per device, and columns that stack on a phone. The image guide teaches how to make images of different shapes the same size with Divi's own settings.
+* Improved: the Settings screen explains that the ChatGPT route needs a paid ChatGPT plan, and mentions Laragon next to the other local tools. New FAQ answers cover plan usage, Divi AI, other AI plugins, Claude on the web and HTML conversion.
+* Changed: 21 tools instead of 20 (`html_to_divi`).
 
 = 4.9.0 =
 * New: your AI assistant can now see your WooCommerce products. `list_products` lists and counts them with their prices, stock status and categories, and `get_product` reads one product in full, including its variations. Both are read-only: they never show downloadable files, purchase notes, customer or order data, or the text of a password-protected product, and they need the permission to edit products (shop managers and administrators have it). Available over MCP and the REST API, not in the ChatGPT Action.

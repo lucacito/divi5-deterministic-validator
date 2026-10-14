@@ -58,7 +58,7 @@ final class HtmlProse
     /** The visible text of an HTML fragment, whitespace collapsed (used to compare source and result). */
     public static function plain( string $html ): string
     {
-        $text = html_entity_decode( strip_tags( str_replace( [ '</p>', '</li>', '</tr>', '</td>', '</th>', '</dd>', '</dt>', '<br>', '</blockquote>' ], ' ', $html ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+        $text = html_entity_decode( wp_strip_all_tags( str_replace( [ '</p>', '</li>', '</tr>', '</td>', '</th>', '</dd>', '</dt>', '<br>', '</blockquote>' ], ' ', $html ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 
         return HtmlSource::collapse( $text );
     }
@@ -92,7 +92,7 @@ final class HtmlProse
         $inner = self::children( $node, $notes, $pre || 'pre' === $tag );
 
         if ( in_array( $tag, self::HEADINGS, true ) ) {
-            return '' === trim( strip_tags( $inner ) ) ? '' : '<p><strong>' . trim( $inner ) . '</strong></p>';
+            return '' === trim( wp_strip_all_tags( $inner ) ) ? '' : '<p><strong>' . trim( $inner ) . '</strong></p>';
         }
         if ( ! in_array( $tag, self::ALLOWED, true ) ) {
             return $inner; // unwrap: div, span, section, font, label ...
@@ -109,7 +109,7 @@ final class HtmlProse
             case 'ol':
                 $start = $node->getAttribute( 'start' );
 
-                return '' === trim( strip_tags( $inner ) ) ? '' : '<ol' . ( 1 === preg_match( '/^\d{1,4}$/', $start ) ? ' start="' . $start . '"' : '' ) . '>' . $inner . '</ol>';
+                return '' === trim( wp_strip_all_tags( $inner ) ) ? '' : '<ol' . ( 1 === preg_match( '/^\d{1,4}$/', $start ) ? ' start="' . $start . '"' : '' ) . '>' . $inner . '</ol>';
             case 'p':
             case 'li':
             case 'dt':
@@ -117,7 +117,7 @@ final class HtmlProse
             case 'blockquote':
             case 'pre':
             case 'caption':
-                return '' === trim( strip_tags( $inner ) ) ? '' : '<' . $tag . '>' . ( 'pre' === $tag ? $inner : trim( $inner ) ) . '</' . $tag . '>';
+                return '' === trim( wp_strip_all_tags( $inner ) ) ? '' : '<' . $tag . '>' . ( 'pre' === $tag ? $inner : trim( $inner ) ) . '</' . $tag . '>';
             case 'ul':
             case 'dl':
             case 'table':
@@ -125,7 +125,7 @@ final class HtmlProse
             case 'tbody':
             case 'tfoot':
             case 'tr':
-                return '' === trim( strip_tags( $inner ) ) ? '' : '<' . $tag . '>' . $inner . '</' . $tag . '>';
+                return '' === trim( wp_strip_all_tags( $inner ) ) ? '' : '<' . $tag . '>' . $inner . '</' . $tag . '>';
             default:
                 return '' === $inner ? '' : '<' . $tag . '>' . $inner . '</' . $tag . '>';
         }
@@ -133,7 +133,7 @@ final class HtmlProse
 
     private static function link( \DOMElement $a, string $inner ): string
     {
-        if ( '' === trim( strip_tags( $inner ) ) ) {
+        if ( '' === trim( wp_strip_all_tags( $inner ) ) ) {
             return '';
         }
         $href = $a->hasAttribute( 'href' ) ? $a->getAttribute( 'href' ) : '';

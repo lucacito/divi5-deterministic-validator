@@ -75,31 +75,67 @@ final class OAuthStore implements OAuthStoreInterface
 
     public function revokeFamily( string $family ): int
     {
+        global $wpdb;
+
         if ( '' === $family ) {
             return 0;
         }
+        $table = OAuthTable::name();
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $n = $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE family = %s", $family ) );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
-        return $this->delete( 'family = %s', [ $family ] );
+        return is_int( $n ) ? $n : 0;
     }
 
     public function revokeClient( string $clientId ): int
     {
-        return '' === $clientId ? 0 : $this->delete( 'client_id = %s', [ $clientId ] );
+        global $wpdb;
+
+        if ( '' === $clientId ) {
+            return 0;
+        }
+        $table = OAuthTable::name();
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $n = $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE client_id = %s", $clientId ) );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+        return is_int( $n ) ? $n : 0;
     }
 
     public function revokeUser( int $userId ): int
     {
-        return $userId <= 0 ? 0 : $this->delete( 'kind <> %s AND user_id = %d', [ self::CLIENT, $userId ] );
+        global $wpdb;
+
+        if ( $userId <= 0 ) {
+            return 0;
+        }
+        $table = OAuthTable::name();
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $n = $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE kind <> %s AND user_id = %d", self::CLIENT, $userId ) );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+        return is_int( $n ) ? $n : 0;
     }
 
     public function revokeAll(): void
     {
-        $this->delete( '1 = %d', [ 1 ] );
+        global $wpdb;
+
+        $table = OAuthTable::name();
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $wpdb->query( "DELETE FROM {$table}" );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
     }
 
     public function purgeExpired( int $now ): void
     {
-        $this->delete( 'expires_at <= %d', [ $now ] );
+        global $wpdb;
+
+        $table = OAuthTable::name();
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE expires_at <= %d", $now ) );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
     }
 
     public function countLive( string $kind, int $now ): int
@@ -159,22 +195,6 @@ final class OAuthStore implements OAuthStoreInterface
         }
 
         return $out;
-    }
-
-    /**
-     * @param list<scalar> $args
-     */
-    private function delete( string $where, array $args ): int
-    {
-        global $wpdb;
-
-        $table = OAuthTable::name();
-        // $where is one of this class's own fixed fragments, never input.
-        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
-        $n = $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE {$where}", ...$args ) );
-        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
-
-        return is_int( $n ) ? $n : 0;
     }
 
     /**
