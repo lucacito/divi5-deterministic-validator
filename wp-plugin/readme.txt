@@ -212,6 +212,10 @@ Yes. On the Settings screen, turn on sign-in for Claude and copy the address it 
 
 Yes, for the content. Give your assistant the HTML (for example a page it wrote for you) and it can convert it with `html_to_divi`: the structure (sections, columns for card grids, headings, text, buttons, images), every word and every link. It previews first and tells you what was not converted; with one more step it saves a draft. Scripts, forms, embedded videos, site navigation and CSS are never converted, colors and fonts are not converted yet, and images become placeholders for you to replace with your own. It does not fetch web addresses. For a pixel-accurate copy of a live web page you need a dedicated URL-to-Divi converter instead.
 
+= Can the AI change a page's title? =
+
+Yes. Ask your assistant to rename the page and it uses the update_page_layout tool with a new title (the page can be a Divi page or a Divi Project). This changes the WordPress page title: what shows in the page list and the browser tab. It is not the same as the big headline (the h1) inside the page layout, which is part of the layout and is changed separately; if the two match, your assistant should ask whether you want both changed. It changes only the title: not the page address (slug). A title change is not covered by Undo, so your assistant tells you the old title when it changes one. You can ask for a preview first.
+
 = Does this work with Divi 4? =
 
 No. Divi 4 stores pages as shortcodes. This plugin is made for the Divi 5 page format.

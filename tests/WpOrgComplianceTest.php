@@ -444,6 +444,21 @@ class WpOrgComplianceTest extends TestCase
         }
     }
 
+    public function testReadmeFaqExplainsTheTitleChangeWithoutOverclaiming(): void
+    {
+        $r = (string) file_get_contents(self::ROOT . '/readme.txt');
+        $start = strpos($r, "= Can the AI change a page's title? =");
+        $this->assertNotFalse($start, 'the FAQ entry about the page title must exist');
+        $rest  = substr($r, $start + 5);
+        $entry = substr($rest, 0, (int) strpos($rest, "\n= "));
+        foreach (['update_page_layout', 'h1', 'address', 'not covered by Undo'] as $needle) {
+            $this->assertStringContainsString($needle, $entry, "the title FAQ must mention {$needle}");
+        }
+        foreach (['premium', 'upgrade', 'Yoast', 'Rank Math'] as $bad) {
+            $this->assertStringNotContainsStringIgnoringCase($bad, $entry, "the title FAQ must not mention {$bad}");
+        }
+    }
+
     public function testReadmeStatesNoExternalServicesAndClaimsNoLockedFeatures(): void
     {
         $r = (string) file_get_contents(self::ROOT . '/readme.txt');

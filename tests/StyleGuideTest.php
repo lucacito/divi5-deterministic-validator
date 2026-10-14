@@ -80,6 +80,24 @@ class StyleGuideTest extends TestCase
         }
     }
 
+    public function testTeachesThatThePageTitleIsNotTheHeadline(): void
+    {
+        $md = StyleGuide::markdown();
+        $start = strpos($md, '## Page title vs headline');
+        $this->assertNotFalse($start, 'the guide needs a "Page title vs headline" section');
+        $rest    = substr($md, $start + 5);
+        $section = substr($rest, 0, (int) strpos($rest, "\n## "));
+        foreach (['update_page_layout', 'title', 'edit_page_content', 'h1', 'restore_page_version', 'slug', 'address', 'ask', 'SEO plugin'] as $needle) {
+            $this->assertStringContainsString($needle, $section, "the section must mention {$needle}");
+        }
+        $this->assertStringContainsString('A heading typed into the layout is layout text and does not change when the title changes.', $section);
+        // Nothing is claimed about how a dynamic post-title module renders, or how other plugins behave.
+        foreach (['dynamic', 'post title module', 'Yoast', 'Rank Math', 'premium', 'upgrade'] as $bad) {
+            $this->assertStringNotContainsStringIgnoringCase($bad, $section, "the section must not mention {$bad}");
+        }
+        $this->assertSame(0, preg_match('/\bPro\b/', $section), 'the section must not mention Pro');
+    }
+
     public function testPreviewSectionTeachesDryRunAndThatAnInvalidPreviewStillReturns(): void
     {
         $md = StyleGuide::markdown();
