@@ -12,7 +12,7 @@ page:
   `ID` and `post_content`.
 - Only `create_page` sets a title, and only on a new draft.
 - The AI may also have edited the `h1` inside the layout and reported that as a title change. That leaves the real
-  WordPress title (the one in the page list, the browser tab, menus and search results) unchanged.
+  WordPress title (the one in the page list, usually the browser tab, and search results) unchanged.
 
 ## Goal and success criteria
 
@@ -194,17 +194,17 @@ recorded in this spec's "Verified facts" section below. Nothing about rendering 
 `StyleGuide` gets a short "Page title vs headline" section. `update_page_layout`'s tool description, the MCP/OpenAPI
 property text and the readme FAQ say the same:
 
-- The **page title** is WordPress's title: what shows in the page list, the browser tab, menus, search and the Divi
-  Projects list. Change it with `update_page_layout` and `title` (title-only is fine).
+- The **page title** is WordPress's title: what shows in the page list, (usually) the browser tab, and search. It
+  is not claimed to show anywhere else (menu labels are stored per menu item and are not verified here). Change it with `update_page_layout` and `title` (title-only is fine).
 - The **headline** is a heading module inside the layout (often the `h1`). Change it with `edit_page_content` or
   `update_page_layout`.
 - They are separate. Changing one never changes the other; if the owner says "change the title" and the page has an
   `h1` that repeats the old title, say so and ask whether to change both. Never report a layout edit as a title change.
-- Not supported (say so, do not improvise): the page's address (slug), menu labels (a menu item that follows the page
-  shows the new title, a custom label does not change), and the browser-tab/SEO title from an SEO plugin.
+- Not supported (say so, do not improvise): the page's address (slug), menu labels (a menu may keep showing the old label: tell the
+  owner to check their menu), and the browser-tab/SEO title from an SEO plugin.
 - A title change cannot be undone with `restore_page_version`; tell the owner the old title.
 
-Wording is checked against what is true: the SEO-plugin and menu statements are phrased as "this tool changes only the
+Wording is checked against what is true (menu behaviour is NOT asserted: an earlier draft said a menu item that follows the page shows the new title; that was removed as unverified): the SEO-plugin and menu statements are phrased as "this tool changes only the
 WordPress page title" and do not assert how other plugins behave.
 
 ### D12. Usage log, tool count, importer
