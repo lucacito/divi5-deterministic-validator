@@ -252,4 +252,27 @@ importer budget is untouched. Lockstep: `McpHandler`, `RestController`, `OpenApi
 
 ## Verified facts
 
-(Filled in from `make verify-page-title` before release; see the plan's Task 9.)
+From `make verify-page-title` on the Docker dev site (Divi 5.14, WordPress 6.7), 2026-10-14, 66 PASS / 0 FAIL / 0 SKIP:
+
+- A title-only change over REST and over MCP changes `post_title` and nothing else: the content is byte-identical, `post_name`
+  (slug), `post_status` and the permalink are unchanged (a published page and a draft Project), and no history row is added.
+- A combined layout + title save snapshots the previous layout; `restore_page_version` brings the layout back, reports
+  `title_restored:false` with a note, and leaves the title as it was.
+- Titles with quotes, backslashes, `&`, accents and emoji round-trip: stored value == `title.after` == submitted value for
+  a user with `unfiltered_html`.
+- **Core filtering:** for a user WITHOUT `unfiltered_html`, core stores `Tom & Jerry` as `Tom &amp; Jerry` (quotes are
+  untouched). The result reports the stored value (`title.after`), as designed (D3). A user with `unfiltered_html` stores `&` raw.
+- All strict-input refusals (number, array, empty, whitespace, HTML, 201 characters, `post_content:""` + title, neither field)
+  are 400 / -32602 and write nothing; `dry_run` (title-only and combined, REST and MCP) leaves title, content,
+  `post_modified` and history untouched and shows old and new title.
+- Approval mode: a save without a preview is 428 / `PREVIEW_REQUIRED`; a preview of title A does not authorise title B; a
+  preview is single use; a layout-only preview does not authorise layout + title; a title changed by hand after the
+  preview voids it.
+- Permissions: an Author who cannot edit a page gets 403 / -32602 and nothing changes; the same Author can rename their own
+  draft. A blog post is refused (404 / -32602).
+- **Dynamic title module (D10):** on a published page whose layout is the real-export `divi/post-title` module, the rendered
+  page showed only the old title before the rename and only the new title after, in the module's `<h1 class="entry-title">`
+  and in the document `<title>`. This is proven for that module on Divi 5.14 only; `fullwidth-post-title`, other dynamic
+  content options and other Divi versions are not claimed. A heading module with the words typed in is plain layout text and
+  does not follow a rename.
+- Menus are NOT verified and the guide makes no menu claim (see D11).
