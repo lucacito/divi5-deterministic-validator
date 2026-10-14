@@ -296,8 +296,11 @@ The **page title** is WordPress's own title for the page: what shows in the page
 the browser tab (usually) and search. Change it with `update_page_layout` and `title`
 (`title` alone is fine; the layout is then left untouched). The **headline** is a heading
 module inside the layout, often the `h1`: change it with `edit_page_content` or
-`update_page_layout` with `post_content`. They are separate and neither changes the other.
+`update_page_layout` with `post_content`. They are separate: a layout edit never changes the page title, and a title change never
+rewrites text typed into the layout.
 A heading typed into the layout is layout text and does not change when the title changes.
+A Divi post title module (`divi/post-title`) shows the WordPress page title, so it follows
+a rename (checked on Divi 5.14); a heading module with the words typed in does not follow it.
 
 - When the owner says "change the title" and the layout has an `h1` that repeats the old
   title, say so and ask whether to change both. Never report a layout edit as a title

@@ -87,13 +87,13 @@ class StyleGuideTest extends TestCase
         $this->assertNotFalse($start, 'the guide needs a "Page title vs headline" section');
         $rest    = substr($md, $start + 5);
         $section = substr($rest, 0, (int) strpos($rest, "\n## "));
-        foreach (['update_page_layout', 'edit_page_content', 'h1', 'restore_page_version', 'slug', 'address', 'ask whether', 'change both', 'not menu labels', 'check their menu', 'SEO plugin'] as $needle) {
+        foreach (['update_page_layout', 'edit_page_content', 'h1', 'restore_page_version', 'slug', 'address', 'divi/post-title', 'checked on Divi 5.14', 'with the words typed in does not follow it', 'ask whether', 'change both', 'not menu labels', 'check their menu', 'SEO plugin'] as $needle) {
             $this->assertStringContainsString($needle, $section, "the section must mention {$needle}");
         }
         $this->assertStringNotContainsString('follows the page', $section);
         $this->assertStringContainsString('A heading typed into the layout is layout text and does not change when the title changes.', $section);
-        // Nothing is claimed about how a dynamic post-title module renders, or how other plugins behave.
-        foreach (['dynamic', 'post title module', 'Yoast', 'Rank Math', 'premium', 'upgrade'] as $bad) {
+        // Only the post title module is claimed (proven live on Divi 5.14); nothing about other dynamic content, other modules, other Divi versions or other plugins.
+        foreach (['fullwidth-post-title', 'dynamic content', 'Yoast', 'Rank Math', 'premium', 'upgrade'] as $bad) {
             $this->assertStringNotContainsStringIgnoringCase($bad, $section, "the section must not mention {$bad}");
         }
         $this->assertSame(0, preg_match('/\bPro\b/', $section), 'the section must not mention Pro');
