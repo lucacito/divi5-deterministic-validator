@@ -88,6 +88,7 @@ if (version_compare(PHP_VERSION, AI_EDITOR_DIVI5_MIN_PHP, '<')) {
 require_once __DIR__ . '/src/autoload.php';
 
 AiEditorDivi5\WP\HistoryTable::register();
+AiEditorDivi5\WP\OAuthRoutes::register();
 
 // ---------------------------------------------------------------
 // Register REST routes

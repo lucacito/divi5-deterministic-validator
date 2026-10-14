@@ -42,9 +42,15 @@ final class McpHandler
             // The key is valid, but its user must still be able to edit pages (a demoted or
             // deleted key owner cannot keep using the plugin).
             if (!PageAccess::keyUserAllowed('current_user_can')) {
-                return new WP_Error('forbidden', 'The API key belongs to a user who cannot edit pages.', ['status' => 403]);
+                return new WP_Error('forbidden', ApiKey::presentsOAuthToken() ? 'The signed-in user cannot edit pages.' : 'The API key belongs to a user who cannot edit pages.', ['status' => 403]);
             }
             return true;
+        }
+
+        // An access token that is wrong, expired or revoked is a 401: that is what makes a client such as Claude
+        // refresh its token or sign in again. (A wrong API key keeps its published 403 below.)
+        if (ApiKey::presentsOAuthToken()) {
+            return new WP_Error('invalid_token', 'The access token is invalid or has expired.', ['status' => 401]);
         }
 
         // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash

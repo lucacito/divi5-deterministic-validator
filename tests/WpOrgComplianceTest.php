@@ -75,6 +75,7 @@ class WpOrgComplianceTest extends TestCase
     private const COMMERCIAL_EXCEPTIONS = [
         ['src/UsageTracker.php', "wp-admin/includes/upgrade.php", 'WordPress core include that provides dbDelta() for the usage-log table'],
         ['src/HistoryTable.php', "wp-admin/includes/upgrade.php", 'WordPress core include that provides dbDelta() for the history table'],
+        ['src/OAuthTable.php', "wp-admin/includes/upgrade.php", 'WordPress core include that provides dbDelta() for the OAuth table'],
     ];
 
     /** APIs that change site settings, users, themes, plugins, menus or run code. */
@@ -91,6 +92,8 @@ class WpOrgComplianceTest extends TestCase
         'src/UsageTracker.php' => 'stores the usage-log table schema version (ai_editor_divi5_db_version)',
         'src/HistoryTable.php' => 'stores the history table stage: created / old history migrated (ai_editor_divi5_history_db_version)',
         'src/ApprovalMode.php' => 'stores the site owner\'s own approval-mode setting (ai_editor_divi5_require_preview); changed only from the nonce-protected admin form, never by the AI (owner-approved exception 2026-10-04)',
+        'src/OAuthSettings.php' => 'stores the site owner\'s OAuth enable/disable setting (ai_editor_divi5_oauth_enabled); changed only from the admin panel, never by the AI',
+        'src/OAuthTable.php'    => 'stores the OAuth table schema version for migrations (ai_editor_divi5_oauth_db_version), like HistoryTable',
     ];
 
     /** @return array<string,string> relative path => contents */

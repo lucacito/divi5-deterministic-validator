@@ -756,7 +756,7 @@ final class RestController
             // The key is valid, but its user must still be able to edit pages (a demoted or
             // deleted key owner cannot keep using the plugin).
             if (!PageAccess::keyUserAllowed('current_user_can')) {
-                return new WP_Error('forbidden', 'The API key belongs to a user who cannot edit pages.', ['status' => 403]);
+                return new WP_Error('forbidden', ApiKey::presentsOAuthToken() ? 'The signed-in user cannot edit pages.' : 'The API key belongs to a user who cannot edit pages.', ['status' => 403]);
             }
             return true;
         }
