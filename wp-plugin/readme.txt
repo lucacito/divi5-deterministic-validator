@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.10.0
+Stable tag:        4.11.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -212,6 +212,10 @@ Yes. On the Settings screen, turn on sign-in for Claude and copy the address it 
 
 Yes, for the content. Give your assistant the HTML (for example a page it wrote for you) and it can convert it with `html_to_divi`: the structure (sections, columns for card grids, headings, text, buttons, images), every word and every link. It previews first and tells you what was not converted; with one more step it saves a draft. Scripts, forms, embedded videos, site navigation and CSS are never converted, colors and fonts are not converted yet, and images become placeholders for you to replace with your own. It does not fetch web addresses. For a pixel-accurate copy of a live web page you need a dedicated URL-to-Divi converter instead.
 
+= Can the AI change a page's title? =
+
+Yes. Ask your assistant to rename the page and it uses the update_page_layout tool with a new title (the page can be a Divi page or a Divi Project). This changes the WordPress page title: what shows in the page list and, by default, the browser tab. It is not the same as the big headline (the h1) inside the page layout, which is part of the layout and is changed separately; if the two match, your assistant should ask whether you want both changed. It changes only the title: not the page address (slug). A title change is not covered by Undo, so your assistant tells you the old title when it changes one, and a title change is not listed under "Recent AI edits" on the dashboard, because that list shows saved versions you can restore and a title change has none. You can ask for a preview first.
+
 = Does this work with Divi 4? =
 
 No. Divi 4 stores pages as shortcodes. This plugin is made for the Divi 5 page format.
@@ -234,6 +238,10 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.11.0 =
+* New: your AI assistant can now change the title of an existing page or Divi Project. Ask it to rename a page and it changes only the WordPress title (what shows in the page list and, by default, the browser tab), or the title and the layout together. It can preview the change first, follows Approval mode, only touches pages you can edit, and never changes the page address (slug) or leaves the layout rewritten. A title change is not covered by Undo, so your assistant tells you the old title and can set it back with one more request.
+* Improved: the style guide now explains that the page title and the big headline inside the layout are different things, so a request to "change the title" is no longer answered by editing only the headline.
 
 = 4.10.0 =
 * New: connect Claude on the web (claude.ai) with nothing to install. Turn on sign-in for Claude on the Settings screen, add the address it shows under Customize → Connectors in claude.ai, sign in to your own site and press Allow. Claude then works as you, with the permissions your account has, and every save is still checked and undoable. It is off until you turn it on, needs a public https address, and you can disconnect any app, or turn it off and remove everything, from the Settings screen.

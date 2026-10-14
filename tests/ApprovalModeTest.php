@@ -124,4 +124,34 @@ class ApprovalModeTest extends TestCase
         $this->assertStringContainsString( 'dry_run', $r['message'] );
         $this->assertStringContainsString( 'Nothing was saved', $r['message'] );
     }
+
+    public function testWithTitleLeavesTheContentAloneWithoutATitle(): void
+    {
+        $this->assertSame( 'X', ApprovalMode::withTitle( 'X', null ) );
+        $this->assertSame( "X\0aied-title\0A", ApprovalMode::withTitle( 'X', 'A' ) );
+        $this->assertNotSame( ApprovalMode::withTitle( 'X', 'A' ), ApprovalMode::withTitle( 'X', 'B' ) );
+    }
+
+    public function testATitleChangesTheKeyButNoTitleKeepsThe4100Key(): void
+    {
+        $this->assertNotSame(
+            ApprovalMode::key( 1, 5, 'C', 'B' ),
+            ApprovalMode::key( 1, 5, ApprovalMode::withTitle( 'C', 'A' ), ApprovalMode::withTitle( 'B', 'Old' ) )
+        );
+        // Pinned from the 4.10.0 formula, computed before withTitle() existed.
+        $this->assertSame( 'aied_prev_71cb0a267e28e767344dde00446bf785bea41de7', ApprovalMode::key( 1, 5, 'C', 'B' ) );
+        $this->assertSame( 'aied_prev_71cb0a267e28e767344dde00446bf785bea41de7', ApprovalMode::key( 1, 5, ApprovalMode::withTitle( 'C', null ), ApprovalMode::withTitle( 'B', null ) ) );
+    }
+
+    public function testAPreviewWithATitleOnlyUnlocksTheSameTitleAndIsSingleUse(): void
+    {
+        ApprovalMode::set( true );
+        ApprovalMode::recordPreview( 5, ApprovalMode::withTitle( 'C', 'A' ), true, ApprovalMode::withTitle( 'B', 'Old' ) );
+
+        $this->assertFalse( ApprovalMode::consume( 5, ApprovalMode::withTitle( 'C', 'B' ), ApprovalMode::withTitle( 'B', 'Old' ) ), 'another title' );
+        $this->assertFalse( ApprovalMode::consume( 5, 'C', 'B' ), 'no title at all' );
+        $this->assertFalse( ApprovalMode::consume( 5, ApprovalMode::withTitle( 'C', 'A' ), ApprovalMode::withTitle( 'B', 'Older' ) ), 'the stored title changed since' );
+        $this->assertTrue( ApprovalMode::consume( 5, ApprovalMode::withTitle( 'C', 'A' ), ApprovalMode::withTitle( 'B', 'Old' ) ) );
+        $this->assertFalse( ApprovalMode::consume( 5, ApprovalMode::withTitle( 'C', 'A' ), ApprovalMode::withTitle( 'B', 'Old' ) ), 'single use' );
+    }
 }

@@ -56,6 +56,8 @@ require_once __DIR__ . '/CodePolicy.php';
 require_once __DIR__ . '/LayoutGate.php';
 require_once __DIR__ . '/EditTarget.php';
 require_once __DIR__ . '/PageEditor.php';
+require_once __DIR__ . '/PageTitle.php';
+require_once __DIR__ . '/TitleChange.php';
 require_once __DIR__ . '/DraftPage.php';
 require_once __DIR__ . '/HtmlSource.php';
 require_once __DIR__ . '/HtmlProse.php';

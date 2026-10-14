@@ -27,7 +27,7 @@ class HistoryMigrationTest extends TestCase
         $GLOBALS['wpdb'] = new FakeWpdb();
         $GLOBALS['wpdb']->createHistoryTable();
         $GLOBALS['__wp_options']     = [ HistoryTable::DB_VERSION_OPTION => HistoryTable::STAGE_TABLE ];
-        $GLOBALS['__wp_posts']       = [ 5 => (object) [ 'ID' => 5, 'post_type' => 'page', 'post_content' => 'ORIGINAL' ] ];
+        $GLOBALS['__wp_posts']       = [ 5 => (object) [ 'ID' => 5, 'post_type' => 'page', 'post_title' => 'Old', 'post_content' => 'ORIGINAL' ] ];
         $GLOBALS['__wp_postmeta']    = [];
         $GLOBALS['__wp_update_fail'] = false;
         $GLOBALS['__wp_transients']  = [];

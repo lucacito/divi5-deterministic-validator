@@ -41,6 +41,48 @@ class FreeApiCompatTest extends TestCase
     }
 
     /**
+     * Methods that may have gained EXTRA TRAILING parameters, as long as each extra one is optional: the add-on keeps
+     * calling them with the original arguments (HistoryService::write got `?string $newTitle = null`, DryRun::preview got
+     * `?array $title = null` for the page-title feature). Every other row is exact.
+     */
+    private const MAY_GAIN_OPTIONAL_TRAILING = [
+        'AiEditorDivi5\\WP\\HistoryService::write',
+        'AiEditorDivi5\\WP\\DryRun::preview',
+    ];
+
+    /**
+     * Compares the pinned parameters with a method's real ones. The pinned ones must come first, unchanged in name, type
+     * and order. With $allowOptionalExtras, further parameters are accepted only when each is optional.
+     *
+     * @param array<string,string>                                      $expected name => type
+     * @param list<array{name:string,type:string,optional:bool}>        $actual
+     * @return string|null a description of the first mismatch, or null when the signature is compatible
+     */
+    public static function parameterMismatch( array $expected, array $actual, bool $allowOptionalExtras ): ?string
+    {
+        $i = 0;
+        foreach ( $expected as $name => $type ) {
+            if ( ! isset( $actual[ $i ] ) ) {
+                return "parameter #{$i} {$name} ({$type}) is missing";
+            }
+            if ( $actual[ $i ]['name'] !== $name || $actual[ $i ]['type'] !== $type ) {
+                return "parameter #{$i} is {$actual[$i]['type']} \${$actual[$i]['name']}, expected {$type} \${$name}";
+            }
+            ++$i;
+        }
+        for ( $n = count( $actual ); $i < $n; ++$i ) {
+            if ( ! $allowOptionalExtras ) {
+                return "unexpected extra parameter \${$actual[$i]['name']}";
+            }
+            if ( ! $actual[ $i ]['optional'] ) {
+                return "extra parameter \${$actual[$i]['name']} is required (it must be optional)";
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @param array<string,string> $params
      */
     #[\PHPUnit\Framework\Attributes\DataProvider( 'signatures' )]
@@ -50,10 +92,46 @@ class FreeApiCompatTest extends TestCase
         $this->assertTrue( $m->isStatic() && $m->isPublic(), "{$class}::{$method} must stay public static" );
         $actual = [];
         foreach ( $m->getParameters() as $p ) {
-            $actual[ $p->getName() ] = (string) $p->getType();
+            $actual[] = [ 'name' => $p->getName(), 'type' => (string) $p->getType(), 'optional' => $p->isOptional() ];
         }
-        $this->assertSame( $params, $actual, "{$class}::{$method} parameters changed" );
+        $mismatch = self::parameterMismatch( $params, $actual, in_array( $class . '::' . $method, self::MAY_GAIN_OPTIONAL_TRAILING, true ) );
+        $this->assertNull( $mismatch, "{$class}::{$method} parameters changed: {$mismatch}" );
         $this->assertSame( $returns, (string) $m->getReturnType(), "{$class}::{$method} return type changed" );
+    }
+
+    /** The comparison itself: the original parameters are strict, extras pass only when optional and only where allowed. */
+    public function testTheSignatureComparisonStaysStrict(): void
+    {
+        $expected = [ 'pageId' => 'int', 'newContent' => 'string' ];
+        $base     = [
+            [ 'name' => 'pageId', 'type' => 'int', 'optional' => false ],
+            [ 'name' => 'newContent', 'type' => 'string', 'optional' => false ],
+        ];
+        $opt  = [ 'name' => 'newTitle', 'type' => '?string', 'optional' => true ];
+        $req  = [ 'name' => 'newTitle', 'type' => '?string', 'optional' => false ];
+
+        $this->assertNull( self::parameterMismatch( $expected, $base, false ) );
+        $this->assertNull( self::parameterMismatch( $expected, [ ...$base, $opt ], true ) );
+        $this->assertNotNull( self::parameterMismatch( $expected, [ ...$base, $opt ], false ), 'an extra parameter where none is allowed' );
+        $this->assertNotNull( self::parameterMismatch( $expected, [ ...$base, $req ], true ), 'an extra REQUIRED parameter' );
+        $this->assertNotNull( self::parameterMismatch( $expected, [ $base[0] ], true ), 'a missing parameter' );
+        $this->assertNotNull( self::parameterMismatch( $expected, [ $base[1], $base[0] ], true ), 'reordered parameters' );
+        $this->assertNotNull( self::parameterMismatch( $expected, [ $base[0], [ 'name' => 'newContent', 'type' => '?string', 'optional' => false ] ], true ), 'a changed type' );
+        $this->assertNotNull( self::parameterMismatch( $expected, [ $base[0], [ 'name' => 'content', 'type' => 'string', 'optional' => false ] ], true ), 'a renamed parameter' );
+        // The extras appear AFTER the originals only: a new optional parameter in the middle shifts an original and fails.
+        $this->assertNotNull( self::parameterMismatch( $expected, [ $base[0], $opt, $base[1] ], true ), 'an optional parameter inserted before an original' );
+    }
+
+    public function testOnlyTheTwoPageTitleMethodsMayGainOptionalParameters(): void
+    {
+        $this->assertSame(
+            [ 'AiEditorDivi5\\WP\\HistoryService::write', 'AiEditorDivi5\\WP\\DryRun::preview' ],
+            self::MAY_GAIN_OPTIONAL_TRAILING
+        );
+        foreach ( [ 'write' => 'HistoryService', 'preview' => 'DryRun' ] as $method => $class ) {
+            $m = new \ReflectionMethod( 'AiEditorDivi5\\WP\\' . $class, $method );
+            $this->assertSame( $method === 'write' ? 3 : 2, $m->getNumberOfRequiredParameters(), "{$class}::{$method}: the add-on's original call shape must still work" );
+        }
     }
 
     /** The validator types LayoutWriter::refusal() reads off the verdict LayoutGate::check() returns. */

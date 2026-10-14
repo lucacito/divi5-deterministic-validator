@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once __DIR__ . '/CodePolicy.php';
+require_once __DIR__ . '/PageTitle.php';
 
 /**
  * Single entry point for page history, shared by the MCP and REST transports.
@@ -20,8 +21,8 @@ final class HistoryService
 {
     public const TOOL_RESTORE = 'restore';
 
-    /** @return array{ok:bool, snapshot:array, error?:string, message?:string} */
-    public static function write( int $pageId, string $newContent, string $tool ): array
+    /** @return array{ok:bool, snapshot:array, title_after?:string, error?:string, message?:string} */
+    public static function write( int $pageId, string $newContent, string $tool, ?string $newTitle = null ): array
     {
         $post = get_post( $pageId );
         if ( ! $post ) {
@@ -31,12 +32,80 @@ final class HistoryService
 
         // wp_slash: wp_update_post runs wp_unslash internally, which would strip
         // backslashes from escaped HTML (e.g. <) and corrupt the content.
-        $updated = wp_update_post( wp_slash( [ 'ID' => $pageId, 'post_content' => $newContent ] ), true );
+        $fields = [ 'ID' => $pageId, 'post_content' => $newContent ];
+        if ( null !== $newTitle ) {
+            $fields['post_title'] = $newTitle;
+        }
+        $updated = wp_update_post( wp_slash( $fields ), true );
         if ( is_wp_error( $updated ) ) {
             return [ 'ok' => false, 'error' => 'update_failed', 'message' => $updated->get_error_message(), 'snapshot' => $snapshot ];
         }
 
-        return [ 'ok' => true, 'snapshot' => $snapshot ];
+        $out = [ 'ok' => true, 'snapshot' => $snapshot ];
+        if ( null !== $newTitle ) {
+            $out['title_after'] = self::storedTitle( $pageId );
+        }
+
+        return $out;
+    }
+
+    /**
+     * Changes only the page title. Passes nothing but the id and the title to wp_update_post, so the slug and status are
+     * carried over by core, and takes no snapshot: no layout changes, and the history keeps content only.
+     * $tool is accepted for symmetry with write() and future logging.
+     *
+     * wp_update_post merges the whole stored post into the update, and for a user without the unfiltered_html capability
+     * core's sanitising then runs over the EXISTING post_content too (verified on Divi 5.14: "module":{} became "module":[]
+     * and & became &amp;). A rename must not rewrite the layout, so while that one call runs a late wp_insert_post_data
+     * filter puts the page's own already-stored content back. That content is not new input, so no security filter is
+     * bypassed and none is touched; content that arrives through write() still goes through core's sanitising as before.
+     * The filter is always removed again. If the stored content still differs afterwards (another plugin changed it),
+     * the result says so with layout_changed.
+     *
+     * @return array{ok:bool, snapshot:array, title_after?:string, layout_changed?:bool, error?:string, message?:string}
+     */
+    public static function writeTitle( int $pageId, string $title, string $tool ): array
+    {
+        $none = [ 'stored' => false, 'version_id' => null, 'reason' => 'title_only' ];
+        $post = get_post( $pageId );
+        if ( ! $post ) {
+            return [ 'ok' => false, 'error' => 'update_failed', 'message' => "Page {$pageId} not found.", 'snapshot' => $none ];
+        }
+        $storedContent = (string) $post->post_content;
+
+        $restoreContent = static function ( $data, $postarr = [] ) use ( $pageId, $storedContent ) {
+            if ( is_array( $data ) && is_array( $postarr ) && (int) ( $postarr['ID'] ?? 0 ) === $pageId ) {
+                $data['post_content'] = wp_slash( $storedContent ); // the filter receives slashed data
+            }
+
+            return $data;
+        };
+        add_filter( 'wp_insert_post_data', $restoreContent, PHP_INT_MAX, 2 );
+        try {
+            $updated = wp_update_post( wp_slash( [ 'ID' => $pageId, 'post_title' => $title ] ), true );
+        } finally {
+            remove_filter( 'wp_insert_post_data', $restoreContent, PHP_INT_MAX );
+        }
+        if ( is_wp_error( $updated ) ) {
+            return [ 'ok' => false, 'error' => 'update_failed', 'message' => $updated->get_error_message(), 'snapshot' => $none ];
+        }
+
+        $after = get_post( $pageId );
+
+        return [
+            'ok'             => true,
+            'snapshot'       => $none,
+            'title_after'    => self::storedTitle( $pageId ),
+            'layout_changed' => ! $after || (string) $after->post_content !== $storedContent,
+        ];
+    }
+
+    /** The title as stored now (core may have filtered what was submitted). */
+    private static function storedTitle( int $pageId ): string
+    {
+        $post = get_post( $pageId );
+
+        return $post ? (string) $post->post_title : '';
     }
 
     /** @return list<array<string,mixed>> */
@@ -79,6 +148,8 @@ final class HistoryService
                 'ok'               => true,
                 'restored_version' => $versionId,
                 'snapshot'         => $snapshot,
+                'title_restored'   => false,
+                'title_note'       => PageTitle::restoreNote( self::storedTitle( $pageId ) ),
                 'validator'        => [
                     'valid'      => false,
                     'violations' => [ [ 'code' => 'LAYOUT_TOO_LARGE_TO_CHECK', 'message' => $tooBig->message(), 'path' => 'post_content' ] ],
@@ -91,6 +162,8 @@ final class HistoryService
             'ok'               => true,
             'restored_version' => $versionId,
             'snapshot'         => $snapshot,
+            'title_restored'   => false,
+            'title_note'       => PageTitle::restoreNote( self::storedTitle( $pageId ) ),
             'validator'        => [
                 'valid'      => $verdict->isValid(),
                 'violations' => array_map( static fn ( $v ) => $v->toArray(), $verdict->violations() ),

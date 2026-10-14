@@ -87,4 +87,32 @@ class DryRunTest extends TestCase
         $r = DryRun::preview( $this->fixture(), (string) preg_replace( '/Your Title Goes Here/', "Caf\u{e9} \u{1F600}", $this->fixture(), 1 ) );
         $this->assertIsString( json_encode( $r ) );
     }
+
+    public function testPreviewWithoutATitleHasNoTitleKey(): void
+    {
+        $r = DryRun::preview( $this->fixture(), $this->fixture() );
+        $this->assertArrayNotHasKey( 'title', $r );
+        $this->assertSame( [ 'saved', 'dry_run', 'valid', 'violations', 'diff', 'message' ], array_keys( $r ) );
+    }
+
+    public function testPreviewCarriesTheTitleReportJustBeforeTheMessage(): void
+    {
+        $t = [ 'changed' => true, 'before' => 'o', 'after' => 'n', 'restorable' => false ];
+        $r = DryRun::preview( $this->fixture(), $this->fixture(), $t );
+        $this->assertSame( $t, $r['title'] );
+        $keys = array_keys( $r );
+        $this->assertSame( [ 'diff', 'title', 'message' ], array_slice( $keys, -3 ) );
+        $this->assertSame( DryRun::preview( $this->fixture(), $this->fixture() ), array_diff_key( $r, [ 'title' => 1 ] ) );
+    }
+
+    public function testPreviewTitleHasExactlyTheTitleOnlyShape(): void
+    {
+        $t = [ 'changed' => true, 'before' => 'o', 'after' => 'n', 'restorable' => false ];
+        $r = DryRun::previewTitle( $t );
+        $this->assertSame(
+            [ 'saved' => false, 'dry_run' => true, 'valid' => true, 'violations' => [], 'layout_changed' => false, 'diff' => null, 'title' => $t, 'message' => 'Preview only. Nothing was saved.' ],
+            $r
+        );
+        $this->assertTrue( $r['valid'] );
+    }
 }

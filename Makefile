@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -231,6 +231,12 @@ verify-custom-fields:
 # ---------------------------------------------------------------
 verify-project-layouts:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-project-layouts.php --user=1
+
+# ---------------------------------------------------------------
+# verify-page-title — real-site check of changing an existing page's title (REST and MCP, title-only and combined, undo note, strict inputs, dry run, approval mode, permissions, core filtering, slug untouched, dynamic post-title render; Docker site; throwaway pages, Project, user, always deleted; approval mode restored)
+# ---------------------------------------------------------------
+verify-page-title:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-page-title.php --user=1
 
 # ---------------------------------------------------------------
 # verify-products — real-site check of list_products / get_product on the dev site's WooCommerce products (throwaway products and a user, always deleted; the existing products must be byte-identical afterwards), then the same tools with WooCommerce deactivated (always reactivated)

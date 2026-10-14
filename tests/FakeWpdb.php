@@ -29,6 +29,9 @@ final class FakeWpdb
     /** @var list<string> every SQL string executed, for assertions */
     public array $queries = [];
 
+    /** @var list<array{0:string,1:array<string,mixed>}> every insert() as [table, row], so a test can read what was logged */
+    public array $inserted = [];
+
     private \PDO $pdo;
 
     public function __construct()
@@ -150,6 +153,7 @@ final class FakeWpdb
     public function insert( string $table, array $data, array $format = [] ): int|false
     {
         $this->queries[] = "INSERT INTO {$table} (" . implode( ', ', array_keys( $data ) ) . ')';
+        $this->inserted[] = [ $table, $data ];
         $this->last_error = '';
         if ( null !== $this->beforeInsert ) {
             $hook               = $this->beforeInsert;

@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 // The extension guard is also loaded by autoload.php; requiring it here keeps this file safe on its own.
 require_once __DIR__ . '/ExtensionGuard.php';
 require_once __DIR__ . '/PageAccess.php';
+require_once __DIR__ . '/TitleChange.php';
 
 use WP_REST_Request;
 use WP_REST_Response;
@@ -220,15 +221,16 @@ final class McpHandler
             ],
             [
                 'name'        => 'update_page_layout',
-                'description' => 'Validate and save a new Divi 5 layout to a page or Divi Project. It is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL. Pass dry_run=true to preview what would change (a diff plus the checker\'s verdict) without saving anything; an invalid result comes back as a normal preview with valid:false.',
+                'description' => 'Validate and save a new Divi 5 layout to a page or Divi Project. It is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL. Pass dry_run=true to preview what would change (a diff plus the checker\'s verdict) without saving anything; an invalid result comes back as a normal preview with valid:false. To change the WordPress page title (what shows in the page list, and usually the browser tab; NOT the h1 inside the layout), pass title; with only title and page_id the layout is left alone. A title change cannot be undone with restore_page_version, so tell the owner the old title (the result has it). In the result, title.after is the exact stored title and the one to trust; page.title is the display title and can differ.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
                         'page_id'      => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
-                        'post_content' => ['type' => 'string',  'description' => 'Divi 5 Gutenberg block HTML'],
+                        'post_content' => ['type' => 'string',  'description' => 'Divi 5 Gutenberg block HTML. Optional when title is given.'],
+                        'title'        => ['type' => 'string',  'description' => 'Optional. New WordPress page title: plain text, one line, 1 to 200 characters, no HTML. Changes the page title only, not any heading in the layout.'],
                         'dry_run' => ['type' => 'boolean', 'description' => 'Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing.'],
                     ],
-                    'required' => ['page_id', 'post_content'],
+                    'required' => ['page_id'],
                 ],
             ],
             [
@@ -484,9 +486,10 @@ final class McpHandler
 
     private function toolUpdate(mixed $id, array $args): WP_REST_Response
     {
-        $pageId  = (int) ($args['page_id'] ?? 0);
-        $content = PageAccess::stringArg($args, 'post_content');
-        $dryRun  = PageAccess::boolArg($args, 'dry_run');
+        $pageId     = (int) ($args['page_id'] ?? 0);
+        $hasContent = array_key_exists('post_content', $args) && $args['post_content'] !== null;
+        $content    = PageAccess::stringArg($args, 'post_content');
+        $dryRun     = PageAccess::boolArg($args, 'dry_run');
 
         if ($content === null) {
             return $this->rpcError($id, -32602, 'post_content must be a string.');
@@ -506,15 +509,32 @@ final class McpHandler
         }
         $post = $target['post'];
 
-        if ($content === '') {
+        // As in REST, the page is looked up first: a bad title on a missing or forbidden page answers "not found" / "no permission".
+        $titleArg = PageTitle::parse($args);
+        if (!$titleArg['ok']) {
+            return $this->rpcError($id, -32602, (string) $titleArg['error']);
+        }
+
+        if (!$hasContent && !$titleArg['present']) {
+            return $this->rpcError($id, -32602, 'Give post_content, title, or both.');
+        }
+
+        if ($hasContent && $content === '') {
             return $this->rpcError($id, -32602, 'post_content is required.');
+        }
+
+        // The title is only written when it differs from the stored one (a repeat is reported, never re-saved).
+        $plan = TitleChange::plan((string) $post->post_title, (string) $post->post_content, $hasContent ? $content : null, $titleArg);
+
+        if (!$hasContent) {
+            return $this->toolUpdateTitleOnly($id, $pageId, $plan, $dryRun);
         }
 
         if ($dryRun) {
             UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
 
-            $preview = DryRun::preview((string) $post->post_content, $content);
-            ApprovalMode::recordPreview($pageId, $content, (bool) $preview['valid'], (string) $post->post_content);
+            $preview = DryRun::preview((string) $post->post_content, $content, $plan['report']);
+            ApprovalMode::recordPreview($pageId, $plan['subject'], (bool) $preview['valid'], $plan['base']);
 
             return $this->rpcResult($id, [
                 'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($preview, $content))]],
@@ -535,7 +555,7 @@ final class McpHandler
             ]);
         }
 
-        if (!ApprovalMode::consume($pageId, $content, (string) $post->post_content)) {
+        if (!ApprovalMode::consume($pageId, $plan['subject'], $plan['base'])) {
             UsageTracker::log('update_layout', $pageId, 'error');
             return $this->rpcResult($id, [
                 'content' => [['type' => 'text', 'text' => json_encode(ApprovalMode::refusal())]],
@@ -544,7 +564,7 @@ final class McpHandler
         }
 
         // Snapshots the previous content, then saves (wp_slash is applied inside HistoryService).
-        $write = HistoryService::write($pageId, $content, 'update_page_layout');
+        $write = HistoryService::write($pageId, $content, 'update_page_layout', $plan['writeTitle']);
 
         if (!$write['ok']) {
             UsageTracker::log('update_layout', $pageId, 'error');
@@ -553,13 +573,93 @@ final class McpHandler
 
         UsageTracker::log('update_layout', $pageId, 'valid');
 
+        $out = [
+            'saved'   => true,
+            'valid'   => true,
+            'history' => $write['snapshot'],
+            'page'    => ['id' => $pageId, 'title' => get_the_title($pageId)],
+        ];
+        if ($plan['report'] !== null) {
+            $out['title'] = $plan['changed']
+                ? PageTitle::report((string) $plan['report']['before'], (string) ($write['title_after'] ?? $plan['report']['after']), true)
+                : $plan['report'];
+            $out['message'] = $plan['message'];
+        }
+
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach([
-                'saved'   => true,
-                'valid'   => true,
-                'history' => $write['snapshot'],
-                'page'    => ['id' => $pageId, 'title' => get_the_title($pageId)],
-            ], $content))]],
+            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($out, $content))]],
+        ]);
+    }
+
+    /**
+     * update_page_layout with a title and no post_content: only the page title is touched. The layout is neither
+     * checked nor snapshotted (nothing about it changes), and the call needs the same approval-mode preview as any save.
+     *
+     * @param array{present:bool, changed:bool, writeTitle:?string, report:?array<string,mixed>, subject:string, base:string, message:?string} $plan TitleChange::plan()
+     */
+    private function toolUpdateTitleOnly(mixed $id, int $pageId, array $plan, bool $dryRun): WP_REST_Response
+    {
+        $report      = (array) $plan['report'];
+        $titleBefore = (string) $report['before'];
+
+        if ($dryRun) {
+            UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
+
+            $preview = DryRun::previewTitle($report);
+            if ($plan['changed']) {
+                ApprovalMode::recordPreview($pageId, $plan['subject'], true, $plan['base']);
+            } else {
+                $preview['message'] = $plan['message'];
+            }
+
+            return $this->rpcResult($id, [
+                'content' => [['type' => 'text', 'text' => json_encode($preview)]],
+            ]);
+        }
+
+        if (!$plan['changed']) {
+            UsageTracker::log('update_layout', $pageId, UsageTracker::RESULT_READ); // nothing was saved
+
+            return $this->rpcResult($id, [
+                'content' => [['type' => 'text', 'text' => json_encode([
+                    'saved'          => false,
+                    'valid'          => true,
+                    'layout_changed' => false,
+                    'title'          => $report,
+                    'page'           => ['id' => $pageId, 'title' => get_the_title($pageId)],
+                    'message'        => $plan['message'],
+                ])]],
+            ]);
+        }
+
+        if (!ApprovalMode::consume($pageId, $plan['subject'], $plan['base'])) {
+            UsageTracker::log('update_layout', $pageId, 'error');
+            return $this->rpcResult($id, [
+                'content' => [['type' => 'text', 'text' => json_encode(ApprovalMode::refusal())]],
+                'isError' => true,
+            ]);
+        }
+
+        $write = HistoryService::writeTitle($pageId, (string) $plan['writeTitle'], 'update_page_layout');
+        if (!$write['ok']) {
+            UsageTracker::log('update_layout', $pageId, 'error');
+            return $this->rpcError($id, -32603, (string) $write['message']);
+        }
+
+        UsageTracker::log('update_layout', $pageId, 'valid');
+
+        $layoutChanged = (bool) ($write['layout_changed'] ?? false);
+
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => json_encode([
+                'saved'          => true,
+                'valid'          => true,
+                'layout_changed' => $layoutChanged,
+                'history'        => $write['snapshot'],
+                'title'          => PageTitle::report($titleBefore, (string) ($write['title_after'] ?? $plan['writeTitle']), true),
+                'page'           => ['id' => $pageId, 'title' => get_the_title($pageId)],
+                'message'        => $plan['message'] . ($layoutChanged ? ' ' . PageTitle::contentTouchedNote() : ''),
+            ])]],
         ]);
     }
 
@@ -724,6 +824,8 @@ final class McpHandler
                 'restored_version' => $result['restored_version'],
                 'history'          => $result['snapshot'],
                 'validator'        => $result['validator'],
+                'title_restored'   => $result['title_restored'],
+                'title_note'       => $result['title_note'],
                 'page'             => ['id' => $post->ID, 'title' => get_the_title($post->ID)],
             ])]],
         ]);
