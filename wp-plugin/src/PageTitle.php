@@ -77,6 +77,12 @@ final class PageTitle
         return 'The page title was already "' . $title . '" and was left as it is.';
     }
 
+    /** Added to a title-only save's message when the stored content changed anyway. */
+    public static function contentTouchedNote(): string
+    {
+        return 'The page content was also changed by WordPress or another plugin while saving the title.';
+    }
+
     public static function restoreNote( string $currentTitle ): string
     {
         return 'Restoring brings back the page content only. The page title was left as it is: "' . $currentTitle . '".';

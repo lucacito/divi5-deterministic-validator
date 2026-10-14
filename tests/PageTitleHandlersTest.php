@@ -66,7 +66,7 @@ class PageTitleHandlersTest extends TestCase
         $GLOBALS['__wp_update_fail']     = false;
         $GLOBALS['__wp_update_calls']    = 0;
         $GLOBALS['__wp_can']             = true;
-        unset( $GLOBALS['__wp_update_hook'] );
+        unset( $GLOBALS['__wp_update_hook'], $GLOBALS['__wp_filters']['wp_insert_post_data'] );
     }
 
     protected function tearDown(): void
@@ -74,7 +74,7 @@ class PageTitleHandlersTest extends TestCase
         $GLOBALS['wpdb']            = null;
         $GLOBALS['__wp_options']    = [];
         $GLOBALS['__wp_transients'] = [];
-        unset( $GLOBALS['__wp_current_user_id'], $GLOBALS['__wp_update_hook'] );
+        unset( $GLOBALS['__wp_current_user_id'], $GLOBALS['__wp_update_hook'], $GLOBALS['__wp_filters']['wp_insert_post_data'] );
         $GLOBALS['__wp_can'] = true;
     }
 
@@ -113,6 +113,36 @@ class PageTitleHandlersTest extends TestCase
         $this->assertSame( 'Old title', $this->post()->post_title, "{$why}: title changed" );
         $this->assertSame( 0, $GLOBALS['__wp_update_calls'], "{$why}: wp_update_post was called" );
         $this->assertSame( 0, $this->historyRows(), "{$why}: the history table changed" );
+    }
+
+    /** @return list<string> the result column of every usage-log row written so far, oldest first */
+    private function loggedResults(): array
+    {
+        $out = [];
+        foreach ( $GLOBALS['wpdb']->inserted as [ $table, $row ] ) {
+            if ( str_ends_with( $table, 'ai_editor_divi5_usage' ) ) {
+                $out[] = (string) $row['result'];
+            }
+        }
+
+        return $out;
+    }
+
+    /** Stands in for core's kses on a user without unfiltered_html: it rewrites post_content on every update. */
+    private function addSimulatedKses(): void
+    {
+        add_filter( 'wp_insert_post_data', static function ( array $data ): array {
+            $data['post_content'] = str_replace( [ '{}', '&' ], [ '[]', '&amp;' ], (string) $data['post_content'] );
+
+            return $data;
+        }, 10, 2 );
+    }
+
+    private function anotherPluginChangesTheContent(): void
+    {
+        $GLOBALS['__wp_update_hook'] = static function ( int $id ): void {
+            $GLOBALS['__wp_posts'][ $id ]->post_content = 'CHANGED BY ANOTHER PLUGIN';
+        };
     }
 
     // ---- saves ----------------------------------------------------------------------------
@@ -203,6 +233,83 @@ class PageTitleHandlersTest extends TestCase
         [ , $data ] = $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'title' => 'Tom & Jerry' ] );
         $this->assertSame( 'Tom &amp; Jerry', $this->post()->post_title );
         $this->assertSame( 'Tom &amp; Jerry', $data['title']['after'] );
+    }
+
+    // ---- the layout stays untouched by a rename -------------------------------------------
+
+    public function testTitleOnlySaveLeavesTheLayoutByteIdenticalEvenWhenCoreSanitisingWouldRewriteIt(): void
+    {
+        $this->post()->post_content = '<!-- wp:divi/shop {"module":{}} /--> a & b';
+        $before                     = $this->post()->post_content;
+        $this->addSimulatedKses();
+
+        [ , $data ] = $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'title' => 'New title' ] );
+
+        $this->assertTrue( $data['saved'] );
+        $this->assertFalse( $data['layout_changed'] );
+        $this->assertSame( $before, $this->post()->post_content );
+        $this->assertSame( 'New title', $this->post()->post_title );
+    }
+
+    public function testTitleOnlySaveSaysSoWhenSomethingElseChangedTheContent(): void
+    {
+        $this->anotherPluginChangesTheContent();
+
+        [ , $data ] = $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'title' => 'New title' ] );
+
+        $this->assertTrue( $data['saved'] );
+        $this->assertTrue( $data['layout_changed'] );
+        $this->assertStringContainsString( 'The page content was also changed by WordPress or another plugin while saving the title.', $data['message'] );
+        $this->assertStringContainsString( 'Old title', $data['message'], 'the usual message is still there' );
+    }
+
+    // ---- usage log ------------------------------------------------------------------------
+
+    public function testAnUnchangedTitleOnlyCallIsLoggedAsReadNotAsSaved(): void
+    {
+        $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'title' => 'Old title' ] );
+        $this->assertSame( [ 'read' ], $this->loggedResults() );
+    }
+
+    public function testAChangedTitleOnlyCallIsLoggedAsSaved(): void
+    {
+        $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'title' => 'New title' ] );
+        $this->assertSame( [ 'valid' ], $this->loggedResults() );
+    }
+
+    // ---- argument order: the page is resolved before the title is read --------------------
+
+    public function testAnUnknownPageIsReportedBeforeABadTitle(): void
+    {
+        [ $code, $data ] = $this->mcp( 'update_page_layout', [ 'page_id' => 999, 'title' => '<b>x</b>' ] );
+        $this->assertSame( -32602, $code );
+        $this->assertStringContainsString( 'not found', $data['message'] );
+    }
+
+    public function testAnUnknownPageIsReportedBeforeNeitherFieldGiven(): void
+    {
+        [ $code, $data ] = $this->mcp( 'update_page_layout', [ 'page_id' => 999 ] );
+        $this->assertSame( -32602, $code );
+        $this->assertStringContainsString( 'not found', $data['message'] );
+    }
+
+    public function testAForbiddenPageIsReportedBeforeABadTitle(): void
+    {
+        $GLOBALS['__wp_can'] = false;
+        [ $code, $data ] = $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'title' => '<b>x</b>' ] );
+        $this->assertSame( -32602, $code );
+        $this->assertStringContainsString( 'permission', $data['message'] );
+        $this->assertNothingWritten( 'forbidden + bad title' );
+    }
+
+    public function testNonStringContentAndNonBooleanDryRunAreStillReportedFirst(): void
+    {
+        [ $code, $data ] = $this->mcp( 'update_page_layout', [ 'page_id' => 999, 'post_content' => 5, 'title' => 'x' ] );
+        $this->assertSame( -32602, $code );
+        $this->assertSame( 'post_content must be a string.', $data['message'] );
+        [ $code2, $data2 ] = $this->mcp( 'update_page_layout', [ 'page_id' => 999, 'title' => 'x', 'dry_run' => 'yes' ] );
+        $this->assertSame( -32602, $code2 );
+        $this->assertSame( 'dry_run must be a boolean.', $data2['message'] );
     }
 
     // ---- input rules ----------------------------------------------------------------------
@@ -602,6 +709,59 @@ class PageTitleHandlersTest extends TestCase
         $r = ( new RestController() )->update_page( new \WP_REST_Request( [ 'title' => 'x' ], [ 'id' => 999 ] ) );
         $this->assertInstanceOf( \WP_Error::class, $r );
         $this->assertSame( 404, $r->data['status'] );
+    }
+
+    public function testRestTitleOnlySaveLeavesTheLayoutByteIdenticalEvenWhenCoreSanitisingWouldRewriteIt(): void
+    {
+        $this->post()->post_content = '<!-- wp:divi/shop {"module":{}} /--> a & b';
+        $before                     = $this->post()->post_content;
+        $this->addSimulatedKses();
+
+        [ $status, $data ] = $this->restUpdate( [ 'title' => 'New title' ] );
+
+        $this->assertSame( 200, $status );
+        $this->assertTrue( $data['saved'] );
+        $this->assertFalse( $data['layout_changed'] );
+        $this->assertSame( $before, $this->post()->post_content );
+        $this->assertSame( 'New title', $this->post()->post_title );
+    }
+
+    public function testRestTitleOnlySaveSaysSoWhenSomethingElseChangedTheContent(): void
+    {
+        $this->anotherPluginChangesTheContent();
+
+        [ , $data ] = $this->restUpdate( [ 'title' => 'New title' ] );
+
+        $this->assertTrue( $data['saved'] );
+        $this->assertTrue( $data['layout_changed'] );
+        $this->assertStringContainsString( 'The page content was also changed by WordPress or another plugin while saving the title.', $data['message'] );
+        $this->assertStringContainsString( 'Old title', $data['message'] );
+    }
+
+    public function testRestAnUnchangedTitleOnlyCallIsLoggedAsReadNotAsSaved(): void
+    {
+        $this->restUpdate( [ 'title' => 'Old title' ] );
+        $this->assertSame( [ 'read' ], $this->loggedResults() );
+    }
+
+    public function testRestAChangedTitleOnlyCallIsLoggedAsSaved(): void
+    {
+        $this->restUpdate( [ 'title' => 'New title' ] );
+        $this->assertSame( [ 'valid' ], $this->loggedResults() );
+    }
+
+    public function testRestAnUnknownPageIs404BeforeABadTitle(): void
+    {
+        $r = ( new RestController() )->update_page( new \WP_REST_Request( [ 'title' => '<b>x</b>' ], [ 'id' => 999 ] ) );
+        $this->assertInstanceOf( \WP_Error::class, $r );
+        $this->assertSame( 404, $r->data['status'] );
+    }
+
+    public function testRestAForbiddenPageIs403BeforeABadTitle(): void
+    {
+        $GLOBALS['__wp_can'] = false;
+        [ $status ] = $this->restUpdate( [ 'title' => '<b>x</b>' ] );
+        $this->assertSame( 403, $status );
     }
 
     public function testRestDryRunTitleOnlyWritesNothing(): void

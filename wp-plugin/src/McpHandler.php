@@ -499,15 +499,6 @@ final class McpHandler
             return $this->rpcError($id, -32602, 'dry_run must be a boolean.');
         }
 
-        $titleArg = PageTitle::parse($args);
-        if (!$titleArg['ok']) {
-            return $this->rpcError($id, -32602, (string) $titleArg['error']);
-        }
-
-        if (!$hasContent && !$titleArg['present']) {
-            return $this->rpcError($id, -32602, 'Give post_content, title, or both.');
-        }
-
         $target = EditTarget::resolve($pageId);
         if ($target['error'] === EditTarget::NOT_FOUND) {
             return $this->rpcError($id, -32602, "Page or Project {$pageId} not found.");
@@ -517,6 +508,16 @@ final class McpHandler
             return $this->rpcError($id, -32602, "You do not have permission to edit page or Project {$pageId}.");
         }
         $post = $target['post'];
+
+        // As in REST, the page is looked up first: a bad title on a missing or forbidden page answers "not found" / "no permission".
+        $titleArg = PageTitle::parse($args);
+        if (!$titleArg['ok']) {
+            return $this->rpcError($id, -32602, (string) $titleArg['error']);
+        }
+
+        if (!$hasContent && !$titleArg['present']) {
+            return $this->rpcError($id, -32602, 'Give post_content, title, or both.');
+        }
 
         if ($hasContent && $content === '') {
             return $this->rpcError($id, -32602, 'post_content is required.');
@@ -617,7 +618,7 @@ final class McpHandler
         }
 
         if (!$plan['changed']) {
-            UsageTracker::log('update_layout', $pageId, 'valid');
+            UsageTracker::log('update_layout', $pageId, UsageTracker::RESULT_READ); // nothing was saved
 
             return $this->rpcResult($id, [
                 'content' => [['type' => 'text', 'text' => json_encode([
@@ -647,15 +648,17 @@ final class McpHandler
 
         UsageTracker::log('update_layout', $pageId, 'valid');
 
+        $layoutChanged = (bool) ($write['layout_changed'] ?? false);
+
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => json_encode([
                 'saved'          => true,
                 'valid'          => true,
-                'layout_changed' => false,
+                'layout_changed' => $layoutChanged,
                 'history'        => $write['snapshot'],
                 'title'          => PageTitle::report($titleBefore, (string) ($write['title_after'] ?? $plan['writeTitle']), true),
                 'page'           => ['id' => $pageId, 'title' => get_the_title($pageId)],
-                'message'        => $plan['message'],
+                'message'        => $plan['message'] . ($layoutChanged ? ' ' . PageTitle::contentTouchedNote() : ''),
             ])]],
         ]);
     }

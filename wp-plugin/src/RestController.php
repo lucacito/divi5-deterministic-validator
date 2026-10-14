@@ -418,7 +418,7 @@ final class RestController
         }
 
         if (!$plan['changed']) {
-            UsageTracker::log('update_page', $id, 'valid');
+            UsageTracker::log('update_page', $id, UsageTracker::RESULT_READ); // nothing was saved
 
             return new WP_REST_Response([
                 'saved'          => false,
@@ -445,16 +445,21 @@ final class RestController
 
         $stored           = (string) ($write['title_after'] ?? $plan['writeTitle']);
         $post->post_title = $stored;
+        $layoutChanged    = (bool) ($write['layout_changed'] ?? false);
+        if ($layoutChanged) {
+            $post = get_post($id) ?: $post; // the content changed too: describe the page as it is stored now
+            $post->post_title = $stored;
+        }
 
         return new WP_REST_Response([
             'saved'          => true,
             'valid'          => true,
             'violations'     => [],
-            'layout_changed' => false,
+            'layout_changed' => $layoutChanged,
             'history'        => $write['snapshot'],
             'title'          => PageTitle::report((string) $report['before'], $stored, true),
             'page'           => $this->build_layout_envelope($post),
-            'message'        => $plan['message'],
+            'message'        => $plan['message'] . ($layoutChanged ? ' ' . PageTitle::contentTouchedNote() : ''),
         ], 200);
     }
 

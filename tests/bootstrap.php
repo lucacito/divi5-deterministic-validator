@@ -225,7 +225,15 @@ if ( ! function_exists( 'wp_update_post' ) ) {
         if ( ! isset( $GLOBALS['__wp_posts'][ $id ] ) ) {
             return new WP_Error( 'invalid_post', 'Invalid post ID.' );
         }
-        foreach ( $arr as $field => $value ) {
+        $fields = $arr; // what is written; the update hook below still sees the caller's own array
+        if ( ! empty( $GLOBALS['__wp_filters']['wp_insert_post_data'] ) ) {
+            // Only when a test registered a wp_insert_post_data filter: mirror core, which merges the stored post
+            // with the changes, slashes the result, lets the filters see (and change) it, then unslashes it.
+            $data = array_merge( array_diff_key( get_object_vars( $GLOBALS['__wp_posts'][ $id ] ), [ 'ID' => 1 ] ), array_diff_key( $arr, [ 'ID' => 1 ] ) );
+            $data = apply_filters( 'wp_insert_post_data', wp_slash( $data ), wp_slash( $arr ), wp_slash( $arr ), true );
+            $fields = array_merge( [ 'ID' => $id ], wp_unslash( $data ) );
+        }
+        foreach ( $fields as $field => $value ) {
             if ( 'ID' !== $field ) {
                 $GLOBALS['__wp_posts'][ $id ]->$field = 'post_content' === $field ? (string) $value : $value;
             }

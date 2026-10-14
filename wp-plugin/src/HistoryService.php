@@ -50,24 +50,54 @@ final class HistoryService
     }
 
     /**
-     * Changes only the page title. Passes nothing but the id and the title to wp_update_post, so the content, slug and
-     * status are carried over by core, and takes no snapshot: no layout changes, and the history keeps content only.
+     * Changes only the page title. Passes nothing but the id and the title to wp_update_post, so the slug and status are
+     * carried over by core, and takes no snapshot: no layout changes, and the history keeps content only.
      * $tool is accepted for symmetry with write() and future logging.
      *
-     * @return array{ok:bool, snapshot:array, title_after?:string, error?:string, message?:string}
+     * wp_update_post merges the whole stored post into the update, and for a user without the unfiltered_html capability
+     * core's sanitising then runs over the EXISTING post_content too (verified on Divi 5.14: "module":{} became "module":[]
+     * and & became &amp;). A rename must not rewrite the layout, so while that one call runs a late wp_insert_post_data
+     * filter puts the page's own already-stored content back. That content is not new input, so no security filter is
+     * bypassed and none is touched; content that arrives through write() still goes through core's sanitising as before.
+     * The filter is always removed again. If the stored content still differs afterwards (another plugin changed it),
+     * the result says so with layout_changed.
+     *
+     * @return array{ok:bool, snapshot:array, title_after?:string, layout_changed?:bool, error?:string, message?:string}
      */
     public static function writeTitle( int $pageId, string $title, string $tool ): array
     {
         $none = [ 'stored' => false, 'version_id' => null, 'reason' => 'title_only' ];
-        if ( ! get_post( $pageId ) ) {
+        $post = get_post( $pageId );
+        if ( ! $post ) {
             return [ 'ok' => false, 'error' => 'update_failed', 'message' => "Page {$pageId} not found.", 'snapshot' => $none ];
         }
-        $updated = wp_update_post( wp_slash( [ 'ID' => $pageId, 'post_title' => $title ] ), true );
+        $storedContent = (string) $post->post_content;
+
+        $restoreContent = static function ( $data, $postarr = [] ) use ( $pageId, $storedContent ) {
+            if ( is_array( $data ) && is_array( $postarr ) && (int) ( $postarr['ID'] ?? 0 ) === $pageId ) {
+                $data['post_content'] = wp_slash( $storedContent ); // the filter receives slashed data
+            }
+
+            return $data;
+        };
+        add_filter( 'wp_insert_post_data', $restoreContent, PHP_INT_MAX, 2 );
+        try {
+            $updated = wp_update_post( wp_slash( [ 'ID' => $pageId, 'post_title' => $title ] ), true );
+        } finally {
+            remove_filter( 'wp_insert_post_data', $restoreContent, PHP_INT_MAX );
+        }
         if ( is_wp_error( $updated ) ) {
             return [ 'ok' => false, 'error' => 'update_failed', 'message' => $updated->get_error_message(), 'snapshot' => $none ];
         }
 
-        return [ 'ok' => true, 'snapshot' => $none, 'title_after' => self::storedTitle( $pageId ) ];
+        $after = get_post( $pageId );
+
+        return [
+            'ok'             => true,
+            'snapshot'       => $none,
+            'title_after'    => self::storedTitle( $pageId ),
+            'layout_changed' => ! $after || (string) $after->post_content !== $storedContent,
+        ];
     }
 
     /** The title as stored now (core may have filtered what was submitted). */

@@ -30,6 +30,7 @@ class HistoryServiceTest extends TestCase
         $GLOBALS['__wp_posts']       = [ 5 => (object) [ 'ID' => 5, 'post_type' => 'page', 'post_title' => 'Old', 'post_content' => 'ORIGINAL' ] ];
         $GLOBALS['__wp_postmeta']    = [];
         $GLOBALS['__wp_update_fail'] = false;
+        unset( $GLOBALS['__wp_filters']['wp_insert_post_data'] );
     }
 
     protected function tearDown(): void
@@ -37,7 +38,7 @@ class HistoryServiceTest extends TestCase
         $GLOBALS['wpdb']          = null;
         $GLOBALS['__wp_options']  = [];
         $GLOBALS['__wp_postmeta'] = [];
-        unset( $GLOBALS['__wp_update_hook'], $GLOBALS['__wp_update_calls'] );
+        unset( $GLOBALS['__wp_update_hook'], $GLOBALS['__wp_update_calls'], $GLOBALS['__wp_filters']['wp_insert_post_data'] );
         $GLOBALS['__wp_update_fail'] = false;
     }
 
@@ -388,12 +389,123 @@ class HistoryServiceTest extends TestCase
 
         $r = HistoryService::writeTitle( 5, 'Brand new', 'update_page_title' );
 
-        $this->assertSame( [ 'ok' => true, 'snapshot' => [ 'stored' => false, 'version_id' => null, 'reason' => 'title_only' ], 'title_after' => 'Brand new' ], $r );
+        $this->assertSame( [ 'ok' => true, 'snapshot' => [ 'stored' => false, 'version_id' => null, 'reason' => 'title_only' ], 'title_after' => 'Brand new', 'layout_changed' => false ], $r );
         $this->assertSame( 'ORIGINAL', $GLOBALS['__wp_posts'][5]->post_content );
         $this->assertSame( 'Brand new', $GLOBALS['__wp_posts'][5]->post_title );
         $this->assertSame( [], HistoryStore::summaries( 5 ) );
         $this->assertSame( 1, $GLOBALS['__wp_update_calls'] );
         $this->assertSame( [ 'ID', 'post_title' ], array_keys( $seen ) );
+    }
+
+    /** Stands in for core's kses on a user without unfiltered_html: it rewrites post_content on every update. */
+    private function addSimulatedKses(): \Closure
+    {
+        $kses = static function ( array $data ): array {
+            $data['post_content'] = str_replace( [ '{}', '&' ], [ '[]', '&amp;' ], (string) $data['post_content'] );
+
+            return $data;
+        };
+        add_filter( 'wp_insert_post_data', $kses, 10, 2 );
+
+        return $kses;
+    }
+
+    public function testASimulatedKsesRewritesContentOnAContentWrite(): void
+    {
+        // Control: proves the shim runs wp_insert_post_data and the simulated kses really changes content.
+        $this->addSimulatedKses();
+
+        HistoryService::write( 5, '{"module":{}} a & b', 'update_page_layout' );
+
+        $this->assertSame( '{"module":[]} a &amp; b', $GLOBALS['__wp_posts'][5]->post_content );
+    }
+
+    public function testWriteTitleLeavesTheStoredContentByteIdenticalWhateverCoreSanitisingDoes(): void
+    {
+        $content                                 = '<!-- wp:divi/section {"module":{}} --> a & b <!-- /wp:divi/section -->';
+        $GLOBALS['__wp_posts'][5]->post_content = $content;
+        $kses                                    = $this->addSimulatedKses();
+
+        $r = HistoryService::writeTitle( 5, 'Brand new', 'update_page_title' );
+
+        $this->assertTrue( $r['ok'] );
+        $this->assertSame( $content, $GLOBALS['__wp_posts'][5]->post_content );
+        $this->assertSame( 'Brand new', $GLOBALS['__wp_posts'][5]->post_title );
+        $this->assertFalse( $r['layout_changed'] );
+        $this->assertSame( [ $kses ], $GLOBALS['__wp_filters']['wp_insert_post_data'], 'only the other plugin\'s filter is left registered' );
+    }
+
+    public function testWriteTitleKeepsBackslashesAndEscapedHtmlInTheStoredContent(): void
+    {
+        $content                                 = '<!-- wp:divi/text {"content":"\\u003cp\\u003eA \\"q\\" \\\\ b\\u003c/p\\u003e"} /-->';
+        $GLOBALS['__wp_posts'][5]->post_content = $content;
+        $this->addSimulatedKses();
+
+        HistoryService::writeTitle( 5, 'T', 't' );
+
+        $this->assertSame( $content, $GLOBALS['__wp_posts'][5]->post_content );
+    }
+
+    public function testTheContentFilterIsRemovedWhenTheUpdateFails(): void
+    {
+        $GLOBALS['__wp_update_fail'] = true;
+
+        $r = HistoryService::writeTitle( 5, 'New', 't' );
+
+        $this->assertFalse( $r['ok'] );
+        $this->assertSame( [], $GLOBALS['__wp_filters']['wp_insert_post_data'] ?? [] );
+    }
+
+    public function testTheContentFilterIsRemovedWhenSomethingThrowsDuringTheUpdate(): void
+    {
+        $GLOBALS['__wp_update_hook'] = static function (): void {
+            throw new \RuntimeException( 'another plugin blew up' );
+        };
+
+        try {
+            HistoryService::writeTitle( 5, 'New', 't' );
+            $this->fail( 'the exception should pass through' );
+        } catch ( \RuntimeException $e ) {
+            $this->assertSame( 'another plugin blew up', $e->getMessage() );
+        }
+        $this->assertSame( [], $GLOBALS['__wp_filters']['wp_insert_post_data'] ?? [] );
+    }
+
+    public function testTheContentFilterIsRemovedAfterASuccessfulWrite(): void
+    {
+        HistoryService::writeTitle( 5, 'New', 't' );
+
+        $this->assertSame( [], $GLOBALS['__wp_filters']['wp_insert_post_data'] ?? [] );
+    }
+
+    public function testTheContentFilterOnlyProtectsTheTitledPage(): void
+    {
+        $GLOBALS['__wp_posts'][6] = (object) [ 'ID' => 6, 'post_type' => 'page', 'post_title' => 'Other', 'post_content' => 'OTHER' ];
+        $nested                   = false;
+        $GLOBALS['__wp_update_hook'] = static function ( int $id ) use ( &$nested ): void {
+            if ( ! $nested ) { // another plugin saves a different page while our title save runs
+                $nested = true;
+                wp_update_post( wp_slash( [ 'ID' => 6, 'post_content' => 'OTHER, EDITED' ] ) );
+            }
+        };
+
+        HistoryService::writeTitle( 5, 'New', 't' );
+
+        $this->assertSame( 'OTHER, EDITED', $GLOBALS['__wp_posts'][6]->post_content, 'the other page keeps its own new content' );
+        $this->assertSame( 'ORIGINAL', $GLOBALS['__wp_posts'][5]->post_content );
+    }
+
+    public function testWriteTitleReportsWhenSomethingElseChangedTheContentAfterwards(): void
+    {
+        $GLOBALS['__wp_update_hook'] = static function ( int $id ): void {
+            $GLOBALS['__wp_posts'][ $id ]->post_content = 'CHANGED BY ANOTHER PLUGIN';
+        };
+
+        $r = HistoryService::writeTitle( 5, 'New', 't' );
+
+        $this->assertTrue( $r['ok'] );
+        $this->assertTrue( $r['layout_changed'] );
+        $this->assertSame( 'New', $r['title_after'] );
     }
 
     public function testWriteTitleRoundTripsQuotesAndBackslashes(): void
