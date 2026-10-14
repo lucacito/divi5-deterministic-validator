@@ -71,6 +71,12 @@ final class PageTitle
         return 'The page title is already "' . $title . '". Nothing was changed.';
     }
 
+    /** For a call that also saved a layout, where the title was sent but already matched. */
+    public static function keptMessage( string $title ): string
+    {
+        return 'The page title was already "' . $title . '" and was left as it is.';
+    }
+
     public static function restoreNote( string $currentTitle ): string
     {
         return 'Restoring brings back the page content only. The page title was left as it is: "' . $currentTitle . '".';

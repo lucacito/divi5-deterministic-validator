@@ -101,6 +101,7 @@ class PageTitleTest extends TestCase
         $this->assertStringContainsString( '"Old"', PageTitle::notRestorableMessage( 'Old' ) );
         $this->assertStringContainsString( 'restore_page_version will not bring the old title back', PageTitle::notRestorableMessage( 'Old' ) );
         $this->assertStringContainsString( 'already "Same"', PageTitle::unchangedMessage( 'Same' ) );
+        $this->assertSame( 'The page title was already "Same" and was left as it is.', PageTitle::keptMessage( 'Same' ) );
         $this->assertStringContainsString( 'left as it is: "Now"', PageTitle::restoreNote( 'Now' ) );
     }
 }

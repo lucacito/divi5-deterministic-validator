@@ -34,11 +34,6 @@ require_once __DIR__ . '/../wp-plugin/src/RestController.php';
 require_once __DIR__ . '/../wp-plugin/src/McpHandler.php';
 
 /**
- * Behavioural proof that dry_run never writes: it drives the REAL REST and MCP handlers against the
- * fake database and checks that the page content, the history rows and wp_update_post are untouched
- * (and that the same calls without dry_run do save, so a handler that always previewed would fail).
- */
-/**
  * update_page_layout with a `title` (MCP half), driven through the REAL MCP handler against the fake database.
  */
 class PageTitleHandlersTest extends TestCase
@@ -318,6 +313,33 @@ class PageTitleHandlersTest extends TestCase
         $this->assertSame( self::NEW_VALID, $this->post()->post_content );
         $this->assertSame( 'Old title', $this->post()->post_title );
         $this->assertSame( 1, $this->historyRows() );
+        $this->assertSame( 'The page title was already "Old title" and was left as it is.', $data['message'] );
+        $this->assertStringNotContainsString( 'Nothing was changed', $data['message'] );
+    }
+
+    public function testDryRunWithAnUnchangedTitleInACombinedCallDoesNotClaimNothingChanges(): void
+    {
+        [ , $data ] = $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'post_content' => self::NEW_VALID, 'title' => 'Old title', 'dry_run' => true ] );
+        $this->assertFalse( $data['title']['changed'] );
+        $this->assertNotEmpty( $data['diff'] );
+        $this->assertSame( 'Preview only. Nothing was saved.', $data['message'] );
+        $this->assertNothingWritten( 'dry run combined, title unchanged' );
+    }
+
+    public function testExplicitNullContentWithATitleIsTitleOnly(): void
+    {
+        [ $code, $data ] = $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'post_content' => null, 'title' => 'New title' ] );
+        $this->assertNull( $code );
+        $this->assertTrue( $data['saved'] );
+        $this->assertFalse( $data['layout_changed'] );
+        $this->assertSame( 'New title', $this->post()->post_title );
+        $this->assertSame( self::ORIGINAL, $this->post()->post_content );
+    }
+
+    public function testATitleLessSaveKeepsTodaysResponseShape(): void
+    {
+        [ , $data ] = $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'post_content' => self::NEW_VALID ] );
+        $this->assertSame( [ 'saved', 'valid', 'history', 'page' ], array_keys( $data ) );
     }
 
     // ---- approval mode --------------------------------------------------------------------
@@ -350,6 +372,23 @@ class PageTitleHandlersTest extends TestCase
 
         $this->post()->post_title = 'Old title';
         $this->assertRefused( $this->mcp( 'update_page_layout', [ 'page_id' => 5, 'title' => 'A' ] ), 'second use' );
+    }
+
+    public function testApprovalModeCombinedLayoutAndTitleNeedsItsOwnPreviewAndIsUsedOnce(): void
+    {
+        ApprovalMode::set( true );
+        $args = [ 'page_id' => 5, 'post_content' => self::NEW_VALID, 'title' => 'A' ];
+        $this->mcp( 'update_page_layout', $args + [ 'dry_run' => true ] );
+        [ , $data, $isError ] = $this->mcp( 'update_page_layout', $args );
+        $this->assertFalse( $isError );
+        $this->assertTrue( $data['saved'] );
+        $this->assertSame( 'A', $this->post()->post_title );
+        $this->assertSame( self::NEW_VALID, $this->post()->post_content );
+
+        // Put the page back exactly as it was at preview time: the same save must still be refused (single use).
+        $this->post()->post_title   = 'Old title';
+        $this->post()->post_content = self::ORIGINAL;
+        $this->assertRefused( $this->mcp( 'update_page_layout', $args ), 'second use' );
     }
 
     public function testALayoutOnlyPreviewDoesNotAuthoriseLayoutPlusTitle(): void

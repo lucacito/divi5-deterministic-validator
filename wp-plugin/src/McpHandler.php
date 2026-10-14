@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 // The extension guard is also loaded by autoload.php; requiring it here keeps this file safe on its own.
 require_once __DIR__ . '/ExtensionGuard.php';
 require_once __DIR__ . '/PageAccess.php';
+require_once __DIR__ . '/TitleChange.php';
 
 use WP_REST_Request;
 use WP_REST_Response;
@@ -522,25 +523,17 @@ final class McpHandler
         }
 
         // The title is only written when it differs from the stored one (a repeat is reported, never re-saved).
-        $titleBefore  = (string) $post->post_title;
-        $titleNew     = $titleArg['title'];
-        $titleChanged = $titleArg['present'] && $titleNew !== $titleBefore;
-        $writeTitle   = $titleChanged ? $titleNew : null;
-        $report       = $titleArg['present'] ? PageTitle::report($titleBefore, (string) $titleNew, $titleChanged) : null;
-
-        // What a preview approves: the content (or the stored content for a title-only call) plus the title change.
-        $subject = ApprovalMode::withTitle($hasContent ? $content : (string) $post->post_content, $writeTitle);
-        $base    = ApprovalMode::withTitle((string) $post->post_content, $writeTitle === null ? null : $titleBefore);
+        $plan = TitleChange::plan((string) $post->post_title, (string) $post->post_content, $hasContent ? $content : null, $titleArg);
 
         if (!$hasContent) {
-            return $this->toolUpdateTitleOnly($id, $pageId, (string) $titleNew, $report, $titleChanged, $dryRun, $subject, $base);
+            return $this->toolUpdateTitleOnly($id, $pageId, $plan, $dryRun);
         }
 
         if ($dryRun) {
             UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
 
-            $preview = DryRun::preview((string) $post->post_content, $content, $report);
-            ApprovalMode::recordPreview($pageId, $subject, (bool) $preview['valid'], $base);
+            $preview = DryRun::preview((string) $post->post_content, $content, $plan['report']);
+            ApprovalMode::recordPreview($pageId, $plan['subject'], (bool) $preview['valid'], $plan['base']);
 
             return $this->rpcResult($id, [
                 'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($preview, $content))]],
@@ -561,7 +554,7 @@ final class McpHandler
             ]);
         }
 
-        if (!ApprovalMode::consume($pageId, $subject, $base)) {
+        if (!ApprovalMode::consume($pageId, $plan['subject'], $plan['base'])) {
             UsageTracker::log('update_layout', $pageId, 'error');
             return $this->rpcResult($id, [
                 'content' => [['type' => 'text', 'text' => json_encode(ApprovalMode::refusal())]],
@@ -570,7 +563,7 @@ final class McpHandler
         }
 
         // Snapshots the previous content, then saves (wp_slash is applied inside HistoryService).
-        $write = HistoryService::write($pageId, $content, 'update_page_layout', $writeTitle);
+        $write = HistoryService::write($pageId, $content, 'update_page_layout', $plan['writeTitle']);
 
         if (!$write['ok']) {
             UsageTracker::log('update_layout', $pageId, 'error');
@@ -585,15 +578,11 @@ final class McpHandler
             'history' => $write['snapshot'],
             'page'    => ['id' => $pageId, 'title' => get_the_title($pageId)],
         ];
-        if ($report !== null) {
-            if ($titleChanged) {
-                $report  = PageTitle::report($titleBefore, (string) ($write['title_after'] ?? $titleNew), true);
-                $out['title']   = $report;
-                $out['message'] = PageTitle::notRestorableMessage($titleBefore);
-            } else {
-                $out['title']   = $report;
-                $out['message'] = PageTitle::unchangedMessage($titleBefore);
-            }
+        if ($plan['report'] !== null) {
+            $out['title'] = $plan['changed']
+                ? PageTitle::report((string) $plan['report']['before'], (string) ($write['title_after'] ?? $plan['report']['after']), true)
+                : $plan['report'];
+            $out['message'] = $plan['message'];
         }
 
         return $this->rpcResult($id, [
@@ -605,20 +594,21 @@ final class McpHandler
      * update_page_layout with a title and no post_content: only the page title is touched. The layout is neither
      * checked nor snapshotted (nothing about it changes), and the call needs the same approval-mode preview as any save.
      *
-     * @param array<string,mixed> $report PageTitle::report()
+     * @param array{present:bool, changed:bool, writeTitle:?string, report:?array<string,mixed>, subject:string, base:string, message:?string} $plan TitleChange::plan()
      */
-    private function toolUpdateTitleOnly(mixed $id, int $pageId, string $titleNew, array $report, bool $titleChanged, bool $dryRun, string $subject, string $base): WP_REST_Response
+    private function toolUpdateTitleOnly(mixed $id, int $pageId, array $plan, bool $dryRun): WP_REST_Response
     {
+        $report      = (array) $plan['report'];
         $titleBefore = (string) $report['before'];
 
         if ($dryRun) {
             UsageTracker::log(DryRun::ENDPOINT, $pageId, UsageTracker::RESULT_READ);
 
             $preview = DryRun::previewTitle($report);
-            if ($titleChanged) {
-                ApprovalMode::recordPreview($pageId, $subject, true, $base);
+            if ($plan['changed']) {
+                ApprovalMode::recordPreview($pageId, $plan['subject'], true, $plan['base']);
             } else {
-                $preview['message'] = PageTitle::unchangedMessage($titleBefore);
+                $preview['message'] = $plan['message'];
             }
 
             return $this->rpcResult($id, [
@@ -626,7 +616,7 @@ final class McpHandler
             ]);
         }
 
-        if (!$titleChanged) {
+        if (!$plan['changed']) {
             UsageTracker::log('update_layout', $pageId, 'valid');
 
             return $this->rpcResult($id, [
@@ -636,12 +626,12 @@ final class McpHandler
                     'layout_changed' => false,
                     'title'          => $report,
                     'page'           => ['id' => $pageId, 'title' => get_the_title($pageId)],
-                    'message'        => PageTitle::unchangedMessage($titleBefore),
+                    'message'        => $plan['message'],
                 ])]],
             ]);
         }
 
-        if (!ApprovalMode::consume($pageId, $subject, $base)) {
+        if (!ApprovalMode::consume($pageId, $plan['subject'], $plan['base'])) {
             UsageTracker::log('update_layout', $pageId, 'error');
             return $this->rpcResult($id, [
                 'content' => [['type' => 'text', 'text' => json_encode(ApprovalMode::refusal())]],
@@ -649,7 +639,7 @@ final class McpHandler
             ]);
         }
 
-        $write = HistoryService::writeTitle($pageId, $titleNew, 'update_page_layout');
+        $write = HistoryService::writeTitle($pageId, (string) $plan['writeTitle'], 'update_page_layout');
         if (!$write['ok']) {
             UsageTracker::log('update_layout', $pageId, 'error');
             return $this->rpcError($id, -32603, (string) $write['message']);
@@ -663,9 +653,9 @@ final class McpHandler
                 'valid'          => true,
                 'layout_changed' => false,
                 'history'        => $write['snapshot'],
-                'title'          => PageTitle::report($titleBefore, (string) ($write['title_after'] ?? $titleNew), true),
+                'title'          => PageTitle::report($titleBefore, (string) ($write['title_after'] ?? $plan['writeTitle']), true),
                 'page'           => ['id' => $pageId, 'title' => get_the_title($pageId)],
-                'message'        => PageTitle::notRestorableMessage($titleBefore),
+                'message'        => $plan['message'],
             ])]],
         ]);
     }
