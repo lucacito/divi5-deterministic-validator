@@ -88,6 +88,7 @@ class PageTitleLockstepTest extends TestCase
         foreach ( [ 'changed', 'before', 'after', 'restorable' ] as $key ) {
             $this->assertArrayHasKey( $key, $ok['title']['properties'] );
         }
+        $this->assertStringContainsString( 'only included when the title changed', $ok['title']['properties']['restorable']['description'] );
         $this->assertStringContainsString( 'title_only', $spec['components']['schemas']['SnapshotInfo']['properties']['reason']['description'] );
 
         $restore = null;

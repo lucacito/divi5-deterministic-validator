@@ -87,7 +87,7 @@ class StyleGuideTest extends TestCase
         $this->assertNotFalse($start, 'the guide needs a "Page title vs headline" section');
         $rest    = substr($md, $start + 5);
         $section = substr($rest, 0, (int) strpos($rest, "\n## "));
-        foreach (['update_page_layout', 'title', 'edit_page_content', 'h1', 'restore_page_version', 'slug', 'address', 'ask', 'SEO plugin'] as $needle) {
+        foreach (['update_page_layout', 'edit_page_content', 'h1', 'restore_page_version', 'slug', 'address', 'ask whether', 'change both', 'custom label', 'SEO plugin'] as $needle) {
             $this->assertStringContainsString($needle, $section, "the section must mention {$needle}");
         }
         $this->assertStringContainsString('A heading typed into the layout is layout text and does not change when the title changes.', $section);

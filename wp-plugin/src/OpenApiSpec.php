@@ -310,7 +310,7 @@ final class OpenApiSpec
                                             'changed'    => ['type' => 'boolean'],
                                             'before'     => ['type' => 'string'],
                                             'after'      => ['type' => 'string'],
-                                            'restorable' => ['type' => 'boolean', 'description' => 'Always false: restorePageVersion does not bring a title back'],
+                                            'restorable' => ['type' => 'boolean', 'description' => 'False whenever present (only included when the title changed): restorePageVersion does not bring a title back'],
                                         ],
                                     ],
                                     'history'    => ['$ref' => '#/components/schemas/SnapshotInfo'],
