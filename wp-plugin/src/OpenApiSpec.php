@@ -293,7 +293,7 @@ final class OpenApiSpec
                     'put' => [
                         'operationId' => 'updatePageLayout',
                         'summary'     => 'Validate and save a page layout',
-                        'description' => 'Validates the layout and saves it only if all checks pass (422 with violations otherwise). dry_run=true previews without saving. title alone renames the page (WordPress title, not the h1); a title change cannot be undone with restorePageVersion.',
+                        'description' => 'Saves the layout only if all checks pass (422 with violations otherwise). dry_run=true previews without saving; a dry run of an invalid layout returns 200 with valid:false and the violations. title alone renames the page (not the h1); restorePageVersion cannot undo a title.',
                         'parameters'  => [self::idParam()],
                         'requestBody' => self::postContentBody(true),
                         'responses'   => [
@@ -302,10 +302,10 @@ final class OpenApiSpec
                                 'properties' => [
                                     'saved'      => ['type' => 'boolean'],
                                     'valid'      => ['type' => 'boolean'],
-                                    'layout_changed' => ['type' => 'boolean', 'description' => 'false for a title-only call: the layout was not touched'],
+                                    'layout_changed' => ['type' => 'boolean', 'description' => 'false for a title-only call: the layout was not touched (true only if WordPress or another plugin changed the content while the title was saved; the message says so)'],
                                     'title'      => [
                                         'type'       => 'object',
-                                        'description' => 'Present when a title was sent',
+                                        'description' => 'Present when a title was sent. title.after is the exact stored title and the authority; the page object shows the display title, which can differ.',
                                         'properties' => [
                                             'changed'    => ['type' => 'boolean'],
                                             'before'     => ['type' => 'string'],

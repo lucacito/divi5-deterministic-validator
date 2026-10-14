@@ -32,11 +32,17 @@ final class PageTitle
         }
         // Trim ASCII whitespace and the Unicode space separators (including NBSP) at both ends.
         $title = preg_replace( '/^[\s\p{Z}]+|[\s\p{Z}]+$/u', '', $raw );
-        if ( null === $title || '' === $title ) {
+        // A title of only invisible format characters (zero-width space, joiners, BOM) is as empty as no title.
+        if ( null === $title || '' === $title || '' === preg_replace( '/\p{Cf}+/u', '', $title ) ) {
             return self::fail( "{$key} must not be empty." );
         }
         if ( 1 === preg_match( '/[\p{Cc}\p{Zl}\p{Zp}]/u', $title ) ) {
             return self::fail( "{$key} must be one line of text: no line breaks, tabs or control characters." );
+        }
+        // Direction overrides and isolates can make a title read differently from how it is stored. Not all of \p{Cf} is
+        // refused: the zero-width joiner is part of valid emoji sequences, and LRM/RLM are plain marks.
+        if ( 1 === preg_match( '/[\x{202A}-\x{202E}\x{2066}-\x{2069}]/u', $title ) ) {
+            return self::fail( "{$key} must not contain direction-control characters." );
         }
         if ( false !== strpbrk( $title, '<>' ) ) {
             return self::fail( "{$key} is plain text: no HTML or markup (the characters < and > are not allowed)." );

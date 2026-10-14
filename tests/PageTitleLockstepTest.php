@@ -57,6 +57,8 @@ class PageTitleLockstepTest extends TestCase
             $this->assertStringContainsString( $word, $update['description'] );
         }
         $this->assertArrayNotHasKey( 'title', $tools['edit_page_content']['inputSchema']['properties'] );
+        $this->assertStringContainsString( 'title.after is the exact stored title', $update['description'] );
+        $this->assertStringContainsString( 'page.title is the display title and can differ', $update['description'] );
     }
 
     public function testOpenApiPutDeclaresTitleAndTheEditRouteDoesNot(): void
@@ -89,6 +91,10 @@ class PageTitleLockstepTest extends TestCase
             $this->assertArrayHasKey( $key, $ok['title']['properties'] );
         }
         $this->assertStringContainsString( 'only included when the title changed', $ok['title']['properties']['restorable']['description'] );
+        $this->assertStringContainsString( 'title.after is the exact stored title and the authority', $ok['title']['description'] );
+        $this->assertStringContainsString( 'another plugin', $ok['layout_changed']['description'] );
+        $putDescription = $spec['paths']['/pages/{id}']['put']['description'];
+        $this->assertStringContainsString( 'a dry run of an invalid layout returns 200 with valid:false and the violations', $putDescription );
         $this->assertStringContainsString( 'title_only', $spec['components']['schemas']['SnapshotInfo']['properties']['reason']['description'] );
 
         $restore = null;
@@ -145,5 +151,14 @@ class PageTitleLockstepTest extends TestCase
         // The numbers pinned by OpenApiSpecTest (16 operations) and WpOrgComplianceTest (21 tools); this test never moves them.
         $this->assertSame( 16, $ops );
         $this->assertCount( 21, $this->mcpTools() );
+    }
+
+    public function testTheReadmeFaqSaysTitleChangesAreNotInTheRecentEditsList(): void
+    {
+        $readme = (string) file_get_contents( __DIR__ . '/../wp-plugin/readme.txt' );
+        $start  = strpos( $readme, "= Can the AI change a page's title? =" );
+        $this->assertNotFalse( $start );
+        $answer = substr( $readme, (int) $start, (int) strpos( $readme, '= Does this work with Divi 4? =', (int) $start ) - (int) $start );
+        $this->assertStringContainsString( 'not listed under "Recent AI edits" on the dashboard', $answer );
     }
 }

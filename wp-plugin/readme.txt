@@ -214,7 +214,7 @@ Yes, for the content. Give your assistant the HTML (for example a page it wrote 
 
 = Can the AI change a page's title? =
 
-Yes. Ask your assistant to rename the page and it uses the update_page_layout tool with a new title (the page can be a Divi page or a Divi Project). This changes the WordPress page title: what shows in the page list and, by default, the browser tab. It is not the same as the big headline (the h1) inside the page layout, which is part of the layout and is changed separately; if the two match, your assistant should ask whether you want both changed. It changes only the title: not the page address (slug). A title change is not covered by Undo, so your assistant tells you the old title when it changes one. You can ask for a preview first.
+Yes. Ask your assistant to rename the page and it uses the update_page_layout tool with a new title (the page can be a Divi page or a Divi Project). This changes the WordPress page title: what shows in the page list and, by default, the browser tab. It is not the same as the big headline (the h1) inside the page layout, which is part of the layout and is changed separately; if the two match, your assistant should ask whether you want both changed. It changes only the title: not the page address (slug). A title change is not covered by Undo, so your assistant tells you the old title when it changes one, and a title change is not listed under "Recent AI edits" on the dashboard, because that list shows saved versions you can restore and a title change has none. You can ask for a preview first.
 
 = Does this work with Divi 4? =
 

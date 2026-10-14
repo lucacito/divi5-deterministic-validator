@@ -55,6 +55,35 @@ class PageTitleTest extends TestCase
         }
     }
 
+    public function testATitleOfOnlyInvisibleFormatCharactersIsEmpty(): void
+    {
+        foreach ( [ "\u{200B}", "\u{200B}\u{200B}", "  \u{200D} ", "\u{FEFF}", "\u{2060}\u{200C}", "\u{00AD}" ] as $t ) {
+            $r = PageTitle::parse( [ 'title' => $t ] );
+            $this->assertFalse( $r['ok'], json_encode( $t ) );
+            $this->assertStringContainsString( 'must not be empty', (string) $r['error'] );
+        }
+    }
+
+    public function testBidiOverrideCharactersAreRejected(): void
+    {
+        foreach ( [ 0x202A, 0x202B, 0x202C, 0x202D, 0x202E, 0x2066, 0x2067, 0x2068, 0x2069 ] as $cp ) {
+            $t = 'Pay ' . mb_chr( $cp, 'UTF-8' ) . 'now';
+            $r = PageTitle::parse( [ 'title' => $t ] );
+            $this->assertFalse( $r['ok'], sprintf( 'U+%04X', $cp ) );
+            $this->assertStringContainsString( 'direction-control', (string) $r['error'] );
+        }
+    }
+
+    public function testFormatCharactersThatRealTitlesNeedStillPass(): void
+    {
+        // The zero-width joiner is part of emoji sequences; LRM/RLM are plain direction marks, not overrides.
+        foreach ( [ "\u{1F469}\u{200D}\u{1F4BB} Team", "Caf\u{00E9}\u{200B}Bar", "Hebrew \u{200F}title\u{200F}", "e\u{0301}\u{FE0F}" ] as $t ) {
+            $r = PageTitle::parse( [ 'title' => $t ] );
+            $this->assertTrue( $r['ok'], json_encode( $t ) );
+            $this->assertSame( $t, $r['title'] );
+        }
+    }
+
     public function testMarkupIsRejected(): void
     {
         foreach ( [ '<b>Hi</b>', 'a < b', 'a > b', '<script>x</script>' ] as $t ) {
