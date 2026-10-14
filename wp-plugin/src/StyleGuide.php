@@ -293,7 +293,7 @@ whole page.
 
 ## Page title vs headline
 The **page title** is WordPress's own title for the page: what shows in the page list,
-the browser tab (usually), menus and search. Change it with `update_page_layout` and `title`
+the browser tab (usually) and search. Change it with `update_page_layout` and `title`
 (`title` alone is fine; the layout is then left untouched). The **headline** is a heading
 module inside the layout, often the `h1`: change it with `edit_page_content` or
 `update_page_layout` with `post_content`. They are separate and neither changes the other.
@@ -302,10 +302,9 @@ A heading typed into the layout is layout text and does not change when the titl
 - When the owner says "change the title" and the layout has an `h1` that repeats the old
   title, say so and ask whether to change both. Never report a layout edit as a title
   change, or the other way round.
-- This tool changes only the WordPress page title. It does not change the page address
-  (the slug), a menu item that has its own custom label (a menu item that simply follows
-  the page shows the page's title), or a browser-tab or SEO title set by an SEO plugin:
-  say so, do not improvise a workaround.
+- This tool changes only the WordPress page title, not menu labels (a menu may keep
+  showing the old label: tell the owner to check their menu), the page address (the slug),
+  or a browser-tab or SEO title set by an SEO plugin: say so, do not improvise a workaround.
 - A title change cannot be undone with `restore_page_version` (a restore brings back the
   layout only). Tell the owner the old title; the result of the call contains it.
 
