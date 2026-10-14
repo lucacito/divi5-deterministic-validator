@@ -207,7 +207,7 @@ final class OpenApiSpec
                         'properties' => [
                             'stored'     => ['type' => 'boolean', 'description' => 'True if the previous content was saved as an undo version'],
                             'version_id' => ['type' => 'integer', 'description' => 'Version id to pass to restorePageVersion (when stored)'],
-                            'reason'     => ['type' => 'string',  'description' => 'Why nothing was stored: duplicate, too_large, invalid_encoding or store_failed (absent or null when stored)'],
+                            'reason'     => ['type' => 'string',  'description' => 'Why nothing was stored: duplicate, too_large, invalid_encoding, store_failed or title_only (a title-only save has no layout snapshot) (absent or null when stored)'],
                         ],
                     ],
                 ],
@@ -293,7 +293,7 @@ final class OpenApiSpec
                     'put' => [
                         'operationId' => 'updatePageLayout',
                         'summary'     => 'Validate and save a page layout',
-                        'description' => 'Validates the submitted layout and saves it only if all checks pass. Returns 422 with violations if the layout is invalid — the page is NOT updated. Set dry_run to true to preview without saving; a dry run of an invalid layout returns 200 with valid:false and the violations.',
+                        'description' => 'Validates the layout and saves it only if all checks pass (422 with violations otherwise). dry_run=true previews without saving. title alone renames the page (WordPress title, not the h1); a title change cannot be undone with restorePageVersion.',
                         'parameters'  => [self::idParam()],
                         'requestBody' => self::postContentBody(true),
                         'responses'   => [
@@ -302,11 +302,22 @@ final class OpenApiSpec
                                 'properties' => [
                                     'saved'      => ['type' => 'boolean'],
                                     'valid'      => ['type' => 'boolean'],
+                                    'layout_changed' => ['type' => 'boolean', 'description' => 'false for a title-only call: the layout was not touched'],
+                                    'title'      => [
+                                        'type'       => 'object',
+                                        'description' => 'Present when a title was sent',
+                                        'properties' => [
+                                            'changed'    => ['type' => 'boolean'],
+                                            'before'     => ['type' => 'string'],
+                                            'after'      => ['type' => 'string'],
+                                            'restorable' => ['type' => 'boolean', 'description' => 'Always false: restorePageVersion does not bring a title back'],
+                                        ],
+                                    ],
                                     'history'    => ['$ref' => '#/components/schemas/SnapshotInfo'],
                                 ] + self::dryRunResponseProperties(),
                                 'additionalProperties' => true,
                             ]]]],
-                            '400' => ['description' => 'Missing post_content'],
+                            '400' => ['description' => 'Missing post_content and title, or an invalid title'],
                             '404' => ['description' => 'Page not found'],
                             '428' => ['description' => 'Approval mode is on and this exact change was not previewed. Call again with dry_run true first, then repeat the save.'],
                             '422' => ['description' => 'Validation failed', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/ValidationResult']]]],
@@ -407,6 +418,8 @@ final class OpenApiSpec
                                 'properties' => [
                                     'restored'         => ['type' => 'boolean'],
                                     'restored_version' => ['type' => 'integer'],
+                                    'title_restored'   => ['type' => 'boolean', 'description' => 'Always false: a restore brings back the layout only, never the page title'],
+                                    'title_note'       => ['type' => 'string', 'description' => 'Says which title the page keeps'],
                                     'history'          => ['$ref' => '#/components/schemas/SnapshotInfo'],
                                     'validator'        => ['$ref' => '#/components/schemas/ValidationResult'],
                                 ],
@@ -557,17 +570,18 @@ final class OpenApiSpec
     private static function postContentBody(bool $dryRun = false): array
     {
         $properties = ['post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML']];
+        $schema     = ['type' => 'object', 'required' => ['post_content']];
         if ($dryRun) {
+            // The save route (PUT /pages/{id}) is the only caller with $dryRun: it also takes a title, and then post_content is optional.
+            $properties['post_content']['description'] .= '. Optional when title is given';
+            $properties['title']   = ['type' => 'string', 'description' => 'Optional. New WordPress page title: plain text, one line, 1 to 200 characters, no HTML. Changes the page title only, not any heading in the layout.'];
             $properties['dry_run'] = self::dryRunProperty();
+            unset($schema['required']);
         }
 
         return [
             'required' => true,
-            'content'  => ['application/json' => ['schema' => [
-                'type'       => 'object',
-                'required'   => ['post_content'],
-                'properties' => $properties,
-            ]]],
+            'content'  => ['application/json' => ['schema' => $schema + ['properties' => $properties]]],
         ];
     }
 

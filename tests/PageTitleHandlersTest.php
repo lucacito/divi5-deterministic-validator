@@ -627,6 +627,20 @@ class PageTitleHandlersTest extends TestCase
         $this->assertNothingWritten( 'rest dry run combined' );
     }
 
+    public function testRestDryRunOfAnInvalidLayoutWithATitleIsAValidFalsePreviewAndWritesNothing(): void
+    {
+        [ $status, $data ] = $this->restUpdate( [ 'post_content' => self::NEW_INVALID, 'title' => 'New title', 'dry_run' => true ] );
+        $this->assertSame( 200, $status );
+        $this->assertTrue( $data['dry_run'] );
+        $this->assertFalse( $data['valid'] );
+        $this->assertNotEmpty( $data['violations'] );
+        $this->assertFalse( $data['saved'] );
+        $this->assertTrue( $data['title']['changed'] );
+        $this->assertSame( 'Old title', $data['title']['before'] );
+        $this->assertSame( 'New title', $data['title']['after'] );
+        $this->assertNothingWritten( 'rest dry run invalid layout + title' );
+    }
+
     public function testRestDryRunUnchangedTitleSaysSo(): void
     {
         [ , $data ] = $this->restUpdate( [ 'title' => 'Old title', 'dry_run' => true ] );
