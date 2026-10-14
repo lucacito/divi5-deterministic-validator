@@ -1,14 +1,14 @@
 <!-- wp:divi/placeholder -->
 <!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Header"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"https://example.com/wp-content/plugins/x/assets/images/logo-1.svg","alt":"Acme logo"}}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/column -->
 <!-- /wp:divi/row -->
 <!-- /wp:divi/section -->
 <!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Meet the team"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"https://example.com/wp-content/plugins/x/assets/images/section-bg-slate-1.svg","alt":"Our office at sunset"}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Meet the team"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h1"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eThe people behind \u003ca href=\u0022/about\u0022\u003eAcme\u003c/a\u003e.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
@@ -16,23 +16,23 @@
 <!-- /wp:divi/row -->
 <!-- /wp:divi/section -->
 <!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Leadership"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Leadership"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/column -->
 <!-- /wp:divi/row -->
-<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"1_3,1_3,1_3"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"1_3,1_3,1_3"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_3"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}},"phone":{"value":{"flexWrap":"wrap"}},"phoneWide":{"value":{"flexWrap":"wrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"8_24"}},"phone":{"value":{"flexType":"24_24"}},"phoneWide":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"https://example.com/wp-content/plugins/x/assets/images/square-gold-1.svg","alt":"Jane Doe"}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Jane Doe"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eCEO\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/column -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"8_24"}},"phone":{"value":{"flexType":"24_24"}},"phoneWide":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"https://example.com/wp-content/plugins/x/assets/images/square-sunset-1.svg","alt":"John Roe"}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"John Roe"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eCTO\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/column -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"8_24"}},"phone":{"value":{"flexType":"24_24"}},"phoneWide":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"https://example.com/wp-content/plugins/x/assets/images/card-slate-1.svg","alt":"Mary Major"}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Mary Major"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eCOO\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
@@ -40,8 +40,8 @@
 <!-- /wp:divi/row -->
 <!-- /wp:divi/section -->
 <!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Press"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Press"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"https://example.com/wp-content/plugins/x/assets/images/card-forest-1.svg","alt":"Download the press kit","linkUrl":"/press/kit"}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"https://example.com/wp-content/plugins/x/assets/images/logo-4.svg","alt":"Panorama"}}}},"builderVersion":"5.8.0"} /-->

@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-products verify-oauth verify-test-connection verify-html-to-divi
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -260,3 +260,9 @@ verify-test-connection:
 # ---------------------------------------------------------------
 verify-html-to-divi:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-html-to-divi.php --user=1
+
+# ---------------------------------------------------------------
+# verify-guide-shapes — proves on the real Divi (and in a real browser) the per-device and equal-size-image shapes the guides teach, and that the converter's rows stack on a phone (Docker site; dev site only; every page it creates is deleted)
+# ---------------------------------------------------------------
+verify-guide-shapes:
+	@node scripts/verify-guide-shapes.cjs

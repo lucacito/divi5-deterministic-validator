@@ -1,7 +1,7 @@
 <!-- wp:divi/placeholder -->
 <!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"The Best Tool for Your Workflow"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"The Best Tool for Your Workflow"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h1"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eSave hours every week. No learning curve.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Get Started","linkUrl":"/pricing"}}}},"builderVersion":"5.8.0"} /-->
@@ -9,29 +9,29 @@
 <!-- /wp:divi/row -->
 <!-- /wp:divi/section -->
 <!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Why Choose Us?"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Why Choose Us?"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/column -->
 <!-- /wp:divi/row -->
-<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"1_3,1_3,1_3"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"1_3,1_3,1_3"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_3"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}},"phone":{"value":{"flexWrap":"wrap"}},"phoneWide":{"value":{"flexWrap":"wrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"8_24"}},"phone":{"value":{"flexType":"24_24"}},"phoneWide":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Fast"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eLightning quick performance.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/column -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"8_24"}},"phone":{"value":{"flexType":"24_24"}},"phoneWide":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Reliable"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003e99.9% uptime guaranteed.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/column -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"8_24"}},"phone":{"value":{"flexType":"24_24"}},"phoneWide":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Easy"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eSetup in minutes, not hours.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/column -->
 <!-- /wp:divi/row -->
 <!-- /wp:divi/section -->
 <!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Ready to Transform Your Workflow?"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Ready to Transform Your Workflow?"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eJoin 5000+ teams who switched.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Start Free Trial"}}}},"builderVersion":"5.8.0"} /-->

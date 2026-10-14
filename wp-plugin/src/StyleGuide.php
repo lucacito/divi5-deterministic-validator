@@ -166,6 +166,32 @@ module.decoration.sizing.{bp}.value.flexType = "8_24"   # 8_24=1/3, 12_24=1/2, 6
 To stack on mobile: set the container's `layout.phone.value.flexDirection = "column"` and
 each child's `sizing.phone.value.flexType = "24_24"`.
 
+## Per-device (responsive) settings
+Most settings have one value per device under the same attribute, keyed `desktop`, `tablet` and `phone`
+(`tabletWide` and `phoneWide` are the in-between devices). Set the desktop value, then add `tablet` and `phone` only where
+they differ. All of these are verified on Divi 5.14 by measuring a real page at three screen widths (`make verify-guide-shapes`).
+
+**Smaller headline on phones** (48px on desktop, 36px on a tablet, 24px on a phone):
+`title.decoration.font.font.desktop.value.size` = "48px", `...tablet.value.size` = "36px", `...phone.value.size` = "24px".
+
+**Body text size and alignment per device** (a text module): `content.decoration.bodyFont.body.font.{bp}.value.size`
+and `.textAlign` (for example "center" on desktop, "left" on a phone). A heading's alignment is
+`title.decoration.font.font.{bp}.value.textAlign`.
+
+**Spacing per device**: `module.decoration.spacing.{bp}.value.padding.top` (also `.right`, `.bottom`, `.left`) and
+`margin.bottom`, for example "60px" on desktop and "20px" on a phone.
+
+**Columns stack on a phone** only when the row says so: a plain row of two columns stays side by side on a phone. These
+are the exact shapes Divi's own builder writes (verified by measuring the result at desktop, tablet and phone widths).
+For N equal columns, set on the `divi/row`:
+`module.advanced.columnStructure.desktop.value` = "1_2,1_2" (N=2), "1_3,1_3,1_3" (N=3) or "1_4,1_4,1_4,1_4" (N=4);
+`module.advanced.flexColumnStructure.desktop.value` = "equal-columns_N";
+`module.decoration.layout.desktop.value.flexWrap` = "nowrap", and `flexWrap` = "wrap" for `phone` and `phoneWide`
+(for N=4 use `tablet` and `tabletWide` instead, so four columns go two by two on a tablet).
+On each `divi/column`: `module.advanced.type.desktop.value` = "1_2" / "1_3" / "1_4" and
+`module.decoration.sizing.{bp}.value.flexType`: desktop "12_24" / "8_24" / "6_24", phone and phoneWide "24_24"
+(N=4 also tablet and tabletWide "12_24").
+
 ## Mobile: collapse multi-column rows to one column
 On every row that has more than one column, add a phone layout that stacks the
 columns vertically so the page is one column on mobile:

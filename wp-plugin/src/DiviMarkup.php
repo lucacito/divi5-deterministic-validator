@@ -19,12 +19,19 @@ final class DiviMarkup
     /** The builderVersion the plugin's guides teach for every block. */
     public const VERSION = '5.8.0';
 
-    /** Columns in a row => [row columnStructure, column type]. */
+    /**
+     * Columns in a row => the exact shapes Divi 5's own builder writes for a new row of that many equal columns
+     * (fixtures/valid/page-17-newpage.json): the row's column structure, its flex structure and the breakpoints at
+     * which it wraps, and each column's type and flex width per breakpoint. That is what makes the columns stack on
+     * a phone (four columns wrap to two by two on a tablet first). Without it a classic row stays side by side.
+     *
+     * @var array<int,array{structure:string,flex:string,wrap:list<string>,type:string,widths:array<string,string>}>
+     */
     private const ROWS = [
-        1 => [ '4_4', '4_4' ],
-        2 => [ '1_2,1_2', '1_2' ],
-        3 => [ '1_3,1_3,1_3', '1_3' ],
-        4 => [ '1_4,1_4,1_4,1_4', '1_4' ],
+        1 => [ 'structure' => '4_4', 'flex' => 'equal-columns_1', 'wrap' => [], 'type' => '4_4', 'widths' => [ 'desktop' => '24_24' ] ],
+        2 => [ 'structure' => '1_2,1_2', 'flex' => 'equal-columns_2', 'wrap' => [ 'phone', 'phoneWide' ], 'type' => '1_2', 'widths' => [ 'desktop' => '12_24', 'phone' => '24_24', 'phoneWide' => '24_24' ] ],
+        3 => [ 'structure' => '1_3,1_3,1_3', 'flex' => 'equal-columns_3', 'wrap' => [ 'phone', 'phoneWide' ], 'type' => '1_3', 'widths' => [ 'desktop' => '8_24', 'phone' => '24_24', 'phoneWide' => '24_24' ] ],
+        4 => [ 'structure' => '1_4,1_4,1_4,1_4', 'flex' => 'equal-columns_4', 'wrap' => [ 'tablet', 'tabletWide' ], 'type' => '1_4', 'widths' => [ 'desktop' => '6_24', 'tablet' => '12_24', 'phone' => '24_24', 'tabletWide' => '12_24', 'phoneWide' => '24_24' ] ],
     ];
 
     /** @param list<string> $sections */
@@ -48,14 +55,32 @@ final class DiviMarkup
     {
         $columns = array() === $columns ? [ '' ] : $columns; // a row always has at least one column
         $n       = max( 1, min( 4, count( $columns ) ) );
-        [ $structure, $type ] = self::ROWS[ $n ];
+        $shape   = self::ROWS[ $n ];
 
+        $sizing = [];
+        foreach ( $shape['widths'] as $breakpoint => $flexType ) {
+            $sizing[ $breakpoint ] = [ 'value' => [ 'flexType' => $flexType ] ];
+        }
         $cols = '';
         foreach ( array_slice( $columns, 0, 4 ) as $modules ) {
-            $cols .= ( '' === $cols ? '' : "\n" ) . self::block( 'column', [ 'module' => [ 'advanced' => [ 'type' => [ 'desktop' => [ 'value' => $type ] ] ] ], 'builderVersion' => self::VERSION ], $modules );
+            $cols .= ( '' === $cols ? '' : "\n" ) . self::block( 'column', [
+                'module'         => [ 'advanced' => [ 'type' => [ 'desktop' => [ 'value' => $shape['type'] ] ] ], 'decoration' => [ 'sizing' => $sizing ] ],
+                'builderVersion' => self::VERSION,
+            ], $modules );
         }
 
-        return self::block( 'row', [ 'module' => [ 'advanced' => [ 'columnStructure' => [ 'desktop' => [ 'value' => $structure ] ] ] ], 'builderVersion' => self::VERSION ], $cols );
+        $layout = [ 'desktop' => [ 'value' => [ 'flexWrap' => 'nowrap' ] ] ];
+        foreach ( $shape['wrap'] as $breakpoint ) {
+            $layout[ $breakpoint ] = [ 'value' => [ 'flexWrap' => 'wrap' ] ];
+        }
+
+        return self::block( 'row', [
+            'module'         => [
+                'advanced'   => [ 'columnStructure' => [ 'desktop' => [ 'value' => $shape['structure'] ] ], 'flexColumnStructure' => [ 'desktop' => [ 'value' => $shape['flex'] ] ] ],
+                'decoration' => [ 'layout' => $layout ],
+            ],
+            'builderVersion' => self::VERSION,
+        ], $cols );
     }
 
     public static function heading( string $text, int $level ): string

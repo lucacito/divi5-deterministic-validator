@@ -99,6 +99,13 @@ Pick one ratio per row of cards and keep every image in it identical (hero/bg
 16:9, card 4:3, avatar/square 1:1, logo 3:1). Mismatched aspect ratio between
 neighbours is the #1 tell of an auto-generated page.
 
+**Making images of different shapes the same size, using Divi's own settings.** Give every image the same box and let Divi crop
+to it. On each `divi/image` set:
+`module.advanced.sizing.desktop.value.aspectRatio` = {"width":"4","height":"3"} (an object, not a string such as "4/3"), and
+`image.decoration.fit.desktop.value.objectFit` = "cover" (fills the box and crops; "contain" shows the whole picture instead).
+Verified on Divi 5.14 in a real browser: a 16:9 and a 1:1 photo side by side both rendered 484x363. A fixed `height` alone
+does NOT work (each image keeps its own width). Use the same ratio on every image in a row.
+
 ## Rules
 1. **Never hotlink third-party images** and never invent a URL. Only a Media
    Library `url` from `list_media_images`, or a URL copied from the table above.
