@@ -38,17 +38,24 @@ class CompatTest extends TestCase
 
     public function testTheMinimumAndNewerAreAccepted(): void
     {
-        foreach ( [ '4.8.0', '4.8.1', '4.10.0', '5.0.0' ] as $v ) {
+        foreach ( [ '4.9.0', '4.9.1', '4.10.0', '5.0.0' ] as $v ) {
             $r = Compat::check( $v, self::all() );
             $this->assertTrue( $r['ok'], $v );
             $this->assertNull( $r['reason'] );
         }
-        $this->assertSame( '4.8.0', Compat::MIN_FREE );
+        $this->assertSame( '4.9.0', Compat::MIN_FREE );
+    }
+
+    public function testTheFreePluginJustBelowTheMinimumIsTooOld(): void
+    {
+        $r = Compat::check( '4.8.9', self::all() );
+        $this->assertFalse( $r['ok'] );
+        $this->assertSame( 'free_too_old', $r['reason'] );
     }
 
     public function testAMissingFreeClassIsReportedByName(): void
     {
-        $r = Compat::check( '4.8.0', static fn ( string $c ): bool => $c !== 'AiEditorDivi5\\WP\\HistoryService' );
+        $r = Compat::check( '4.9.0', static fn ( string $c ): bool => $c !== 'AiEditorDivi5\\WP\\HistoryService' );
         $this->assertFalse( $r['ok'] );
         $this->assertSame( 'class_missing', $r['reason'] );
         $this->assertStringContainsString( 'AiEditorDivi5\\WP\\HistoryService', $r['message'] );
@@ -57,7 +64,7 @@ class CompatTest extends TestCase
     public function testEveryRequiredClassIsChecked(): void
     {
         $asked = [];
-        Compat::check( '4.8.0', static function ( string $c ) use ( &$asked ): bool {
+        Compat::check( '4.9.0', static function ( string $c ) use ( &$asked ): bool {
             $asked[] = $c;
 
             return true;

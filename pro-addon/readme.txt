@@ -10,7 +10,7 @@ Pro add-on for JHMG AI Editor for Divi 5. Lets your AI assistant set the front p
 
 == Description ==
 
-This is a separate plugin. It needs the free plugin "JHMG AI Editor for Divi 5" (version 4.8.0 or newer) and a licence from divi5lab.com. Without both, the Pro tools stay off.
+This is a separate plugin. It needs the free plugin "JHMG AI Editor for Divi 5" (version 4.9.0 or newer) and a licence from divi5lab.com. Without both, the Pro tools stay off.
 
 Every change a Pro tool makes is recorded as a batch with an undo point. `undo_batch` restores everything it safely can and tells you what it could not (because the page or setting was changed afterwards, or the page history no longer holds the earlier version). It only says "fully undone" when every item was restored.
 
@@ -62,6 +62,7 @@ Deleting the plugin removes its own data (licence state, batch history, saved co
 = 0.12.0 =
 * New: `bulk_adjust_prices` raises or lowers the regular prices of every product a filter matches by a percent or a fixed amount: exact decimal arithmetic, your shop's rounding, an optional "end in" such as `0.95`, a preview with every price before and after, a single-use token for the real run, products that cannot be adjusted skipped with a reason, products changed since the preview skipped, a rollback if anything fails to save, and one undo. At most 100 products per call. It never changes sale prices, statuses or anything else.
 * Over MCP and REST only: this is the 21st Pro tool, and the ChatGPT importer's 30 operations are used up.
+* Needs the free plugin 4.9.0 or newer (the free plugin's read-only product tools, `list_products` and `get_product`, ship in that version; `update_products` and `bulk_adjust_prices` tell the assistant to read current values with them).
 
 = 0.11.0 =
 * New: `update_products` changes existing WooCommerce products: prices and sale schedules, stock, texts, SKU, categories, tags, images, weight, dimensions and tax status of simple, external and variable products, and the price and stock of a variable product's variation rows. Up to 25 products per call. Every real run needs the single-use token of a preview (`dry_run`) that shows each change as before and after; a product that changed since the preview is skipped. Checked before anything is saved, read back after, and put back if anything fails. It never changes a product's status, type or slug and never creates or deletes one. One `undo_batch` restores the previous values unless you changed those fields since.

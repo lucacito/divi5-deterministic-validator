@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Compat
 {
-    public const MIN_FREE = '4.8.0';
+    public const MIN_FREE = '4.9.0';
 
     /** The free plugin's classes the add-on calls directly (kept in step by tests/FreeApiCompatTest.php). */
     public const REQUIRED_CLASSES = [
