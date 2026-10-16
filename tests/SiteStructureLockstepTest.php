@@ -157,7 +157,7 @@ class SiteStructureLockstepTest extends TestCase
         $include = $tool['inputSchema']['properties']['include'];
         $this->assertSame( 'array', $include['type'] );
         $this->assertSame( 'string', $include['items']['type'] );
-        $this->assertSame( [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields' ], $include['items']['enum'] );
+        $this->assertSame( [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields', 'components' ], $include['items']['enum'] );
         $json = (string) json_encode( $tool['inputSchema'] );
         foreach ( [ 'additionalProperties', '$ref', 'oneOf' ] as $banned ) {
             $this->assertStringNotContainsString( $banned, $json );

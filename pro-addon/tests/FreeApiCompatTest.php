@@ -43,11 +43,13 @@ class FreeApiCompatTest extends TestCase
     /**
      * Methods that may have gained EXTRA TRAILING parameters, as long as each extra one is optional: the add-on keeps
      * calling them with the original arguments (HistoryService::write got `?string $newTitle = null`, DryRun::preview got
-     * `?array $title = null` for the page-title feature). Every other row is exact.
+     * `?array $title = null` for the page-title feature, StyleReferences::attach got `?string $previous = null` for the content-loss
+     * and component advisories). Every other row is exact.
      */
     private const MAY_GAIN_OPTIONAL_TRAILING = [
         'AiEditorDivi5\\WP\\HistoryService::write',
         'AiEditorDivi5\\WP\\DryRun::preview',
+        'AiEditorDivi5\\WP\\StyleReferences::attach',
     ];
 
     /**
@@ -122,10 +124,10 @@ class FreeApiCompatTest extends TestCase
         $this->assertNotNull( self::parameterMismatch( $expected, [ $base[0], $opt, $base[1] ], true ), 'an optional parameter inserted before an original' );
     }
 
-    public function testOnlyTheTwoPageTitleMethodsMayGainOptionalParameters(): void
+    public function testOnlyThreeNamedMethodsMayGainOptionalParameters(): void
     {
         $this->assertSame(
-            [ 'AiEditorDivi5\\WP\\HistoryService::write', 'AiEditorDivi5\\WP\\DryRun::preview' ],
+            [ 'AiEditorDivi5\\WP\\HistoryService::write', 'AiEditorDivi5\\WP\\DryRun::preview', 'AiEditorDivi5\\WP\\StyleReferences::attach' ],
             self::MAY_GAIN_OPTIONAL_TRAILING
         );
         foreach ( [ 'write' => 'HistoryService', 'preview' => 'DryRun' ] as $method => $class ) {

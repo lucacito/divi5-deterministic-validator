@@ -4,10 +4,12 @@
  * Through the real ToolRegistry it proves: a dry run changes nothing; a create of one numbers and one strings variable changes
  * exactly those two entries and every other stored variable (all groups, with their order) is untouched; an edit and an archive
  * each change exactly one entry; forbidden values and unknown ids are refused and change nothing; the token is required and single
- * use; undo walks it all back and the stored variables are IDENTICAL to the start, and a created variable that changed since its
- * batch is not removed by undoing the create.
+ * use; undo walks it all back (every pre-existing variable is IDENTICAL to the start; a variable the run created is ARCHIVED, never
+ * removed: Divi 5.15.1 refuses any save that omits an existing id, and its own delete is archive), and a created variable that changed
+ * since its batch is not archived by undoing the create.
  * It first seeds one throwaway images and one links variable (the dev site stores none) to prove the unmanaged groups pass through
- * byte-identical, and removes them at the end (also on an abort), checking the site is exactly as it was before the run.
+ * byte-identical. Divi can no longer remove a variable through its save, so the run takes a snapshot of the RAW stored row first and
+ * puts exactly that row back at the end (also on an abort), then checks the site is byte-identical to before the run.
  * It also proves Divi RENDERS a cited variable: after the create it publishes ONE throwaway page that cites the number (a section's
  * padding-top and a heading's font size) and the string (the heading's title and a text module's content) in Divi's `content` form, and
  * checks the `--gvid-...` definition, the `var(--gvid-...)` use and the shown text (Divi silently ignores a variable whose stored entry
@@ -181,20 +183,29 @@ $seedsIntact = static function () use ( $seedIds, $seedWant ): bool {
 
     return true;
 };
-/** Removes only the seeded ids that are still stored. */
-$removeSeeds = static function () use ( $seedIds ): void {
-    $all   = (array) GlobalVariables::read();
-    $dirty = false;
-    foreach ( $seedIds as $type => $id ) {
-        if ( isset( $all[ $type ][ $id ] ) ) {
-            unset( $all[ $type ][ $id ] );
-            $dirty = true;
-        }
-    }
-    if ( $dirty ) {
-        GlobalVariables::write( GlobalVariables::sendMap( $all ) );
+/**
+ * The raw stored row, taken before anything is written, and put back byte for byte at the end: since Divi 5.15.1 a save cannot remove
+ * a variable, so a seed (or a created variable) can only be taken away by restoring the row itself. Dev site only (dev-guard above).
+ */
+$optionName = (string) ( new ReflectionMethod( GlobalData::class, '_get_global_variables_option_name' ) )->invoke( null );
+$rawBefore  = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s LIMIT 1", $optionName ) ); // phpcs:ignore
+if ( null === $rawBefore || '' === $optionName ) {
+    WP_CLI::error( 'could not read the stored global variables row; nothing was changed' );
+}
+$restoreRaw = static function () use ( $wpdb, $optionName, $rawBefore ): void {
+    $wpdb->update( $wpdb->options, [ 'option_value' => $rawBefore ], [ 'option_name' => $optionName ] ); // phpcs:ignore
+    wp_cache_delete( $optionName, 'options' );
+    wp_cache_delete( 'alloptions', 'options' );
+    $prop = new ReflectionProperty( GlobalData::class, '_cached_data' );
+    $prop->setAccessible( true );
+    $cached              = $prop->getValue();
+    $cached['variables'] = null;
+    $prop->setValue( null, $cached );
+    if ( class_exists( 'ET_Core_PageResource' ) ) {
+        ET_Core_PageResource::remove_static_resources( 'all', 'all', true );
     }
 };
+$rawNow = static fn (): ?string => $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s LIMIT 1", $optionName ) ); // phpcs:ignore
 $fpTrue    = $fingerprint();
 $countTrue = $total();
 $map       = GlobalVariables::sendMap( (array) GlobalVariables::read() );
@@ -204,7 +215,7 @@ GlobalVariables::write( $map );
 $seeded = $seedsIntact();
 $check( $seeded, 'seed: an images and a links variable are stored with their exact label, value and status' );
 if ( ! $seeded ) {
-    $removeSeeds();
+    $restoreRaw();
     WP_CLI::error( 'could not seed the unmanaged variables; removed any that were stored' );
 }
 
@@ -315,38 +326,40 @@ try {
     }
     $check( '12px' === ( GlobalVariables::read()['numbers'][ $numId ]['value'] ?? '' ) && 'active' === ( GlobalVariables::read()['strings'][ $strId ]['status'] ?? '' ), 'the variables are exactly as the create left them' );
     $u = $call( 'undo_batch', [ 'batch_id' => $createB ] );
-    $check( true === ( $u['result']['fully_undone'] ?? false ) && ! isset( GlobalVariables::read()['numbers'][ $numId ] ) && ! isset( GlobalVariables::read()['strings'][ $strId ] ), 'now the undo of the create removes both variables' );
+    $now = (array) GlobalVariables::read();
+    $check( true === ( $u['result']['fully_undone'] ?? false ) && 'archived' === ( $now['numbers'][ $numId ]['status'] ?? '' ) && 'archived' === ( $now['strings'][ $strId ]['status'] ?? '' ), 'now the undo of the create ARCHIVES both variables (Divi never removes one; both stay stored with their label and value)' );
+    $check( 'AIED verify radius' === ( $now['numbers'][ $numId ]['label'] ?? '' ) && 'Built with care' === ( $now['strings'][ $strId ]['value'] ?? '' ), 'the archived entries keep their label and value' );
+    $uu = $call( 'undo_batch', [ 'batch_id' => (int) ( $u['result']['undo_batch']['id'] ?? 0 ) ] );
+    $check( true === ( $uu['result']['fully_undone'] ?? false ) && 'active' === ( GlobalVariables::read()['numbers'][ $numId ]['status'] ?? '' ), 'undoing that undo makes the number active again' );
+    $uu2 = $call( 'undo_batch', [ 'batch_id' => (int) ( $uu['result']['undo_batch']['id'] ?? 0 ) ] );
+    $check( true === ( $uu2['result']['fully_undone'] ?? false ) && 'archived' === ( GlobalVariables::read()['numbers'][ $numId ]['status'] ?? '' ), 'and undoing the undo of the undo archives it again' );
+    // Divi 5.15.1 itself: a save that omits an existing id is refused with a WP_Error and nothing is written (the reason undo archives).
+    if ( method_exists( GlobalData::class, 'validate_global_variable_ids' ) ) {
+        $probeMap = GlobalVariables::sendMap( (array) GlobalVariables::read() );
+        unset( $probeMap['numbers'][ $numId ] );
+        $before   = $rawNow();
+        $refusal  = GlobalVariables::write( $probeMap );
+        $check( null !== $refusal['error'] && 'global_variable_ids_missing' === $refusal['error']['code'] && $before === $rawNow(), "Divi refuses a save that omits an id ({$refusal['error']['code']}) and writes nothing" );
+    }
 } catch ( \Throwable $e ) {
     $aborted    = true;
     $failures[] = 'aborted by ' . get_class( $e ) . ': ' . $e->getMessage();
     WP_CLI::log( 'FAIL  aborted by ' . get_class( $e ) . ': ' . $e->getMessage() );
 } finally {
     $deleteProbePages(); // before the variables go: an abort must not leave the probe page behind
-    $all   = (array) GlobalVariables::read();
-    $dirty = false;
-    foreach ( array_filter( $ids ) as $id ) { // cleanup after an abort: remove any throwaway variable still stored
-        foreach ( array_keys( $all ) as $type ) {
-            if ( isset( $all[ $type ][ $id ] ) ) {
-                unset( $all[ $type ][ $id ] );
-                $dirty = true;
-            }
-        }
-    }
-    if ( $dirty ) {
-        GlobalVariables::write( GlobalVariables::sendMap( $all ) );
-    }
     if ( $aborted ) {
-        $removeSeeds(); // an abort must not leave the seeded variables behind
+        $restoreRaw(); // an abort must not leave the seeded or the created variables behind
     }
 }
 
 // ---- 8. the site is exactly as it was ---------------------------------------------------------------------------------------
-$check( $fingerprint() === $fpStart, 'every stored variable (all groups, with their order) is identical to the start' );
-$check( $total() === $countStart, 'the variable count equals the baseline' );
+$check( $fingerprint( $ids ) === $fpStart, 'every pre-existing stored variable (all groups, with their order) is identical to the start' );
+$check( $total() === $countStart + count( array_filter( $ids ) ), 'the only additions are the variables this run created (archived)' );
 $deleteProbePages();
 $check( 0 === $probeLeft(), "the probe page is deleted (none titled 'aied verify gv...' is left)" );
 $check( $seedsIntact(), 'the seeded images and links variables are still exactly as seeded after the whole chain' );
-$removeSeeds();
+$restoreRaw();
+$check( $rawNow() === $rawBefore, 'the stored row is byte-identical to the snapshot taken before the run' );
 $check( $fingerprint() === $fpTrue, 'seeds removed: every stored variable is identical to the true state before the run' );
 $check( $total() === $countTrue, 'seeds removed: the variable count equals the true count before the run' );
 $batchIds = array_values( array_unique( $batchIds ) );

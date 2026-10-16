@@ -6,6 +6,9 @@ namespace AiEditorDivi5\WP;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+require_once __DIR__ . '/ViolationReport.php';
+require_once __DIR__ . '/PageOutline.php';
+
 require_once __DIR__ . '/PageAccess.php';
 require_once __DIR__ . '/TitleChange.php';
 
@@ -284,7 +287,25 @@ final class RestController
         }
         $post = $target['post'];
 
+        $view = PageOutline::parseView($request->get_param('view'), $request->get_param('path'));
+        if ($view['error'] !== null) {
+            return new WP_Error('invalid_field', (string) $view['error'], ['status' => 400]);
+        }
+
         UsageTracker::log('get_page', $id, 'read');
+
+        if ($view['view'] !== 'full') {
+            $r = PageOutline::respond([
+                'post_id'     => $post->ID,
+                'post_type'   => $post->post_type,
+                'post_title'  => get_the_title($post),
+                'post_status' => $post->post_status,
+            ], (string) $post->post_content, $view);
+
+            return $r['status'] === 200
+                ? new WP_REST_Response($r['body'], 200)
+                : new WP_Error($r['status'] === 404 ? 'not_found' : 'layout_unreadable', (string) $r['body']['error'], ['status' => $r['status']]);
+        }
 
         $layout = $this->build_layout_envelope($post);
 
@@ -342,7 +363,7 @@ final class RestController
             $preview = DryRun::preview((string) $post->post_content, $content, $plan['report']);
             ApprovalMode::recordPreview($id, $plan['subject'], (bool) $preview['valid'], $plan['base']);
 
-            return new WP_REST_Response(StyleReferences::attach($preview, $content), 200);
+            return new WP_REST_Response(StyleReferences::attach($preview, $content, (string) $post->post_content), 200);
         }
 
         // Validate before saving — this is the safety gate
@@ -353,7 +374,7 @@ final class RestController
             return new WP_REST_Response([
                 'saved'      => false,
                 'valid'      => false,
-                'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
+                'violations' => ViolationReport::compact($result->violations()),
                 'message'    => 'Layout failed validation. Page was NOT updated.',
             ], 422);
         }
@@ -372,6 +393,7 @@ final class RestController
 
         UsageTracker::log('update_page', $id, 'valid');
 
+        $previousContent    = (string) $post->post_content;
         $post->post_content = $content;
         if ($plan['changed'] && isset($write['title_after'])) {
             $post->post_title = (string) $write['title_after'];
@@ -391,7 +413,7 @@ final class RestController
             $out['message'] = $plan['message'];
         }
 
-        return new WP_REST_Response(StyleReferences::attach($out, $content), 200);
+        return new WP_REST_Response(StyleReferences::attach($out, $content, $previousContent), 200);
     }
 
     /**
@@ -580,7 +602,7 @@ final class RestController
             $preview = DryRun::preview((string) $post->post_content, $edit['content']);
             ApprovalMode::recordPreview($id, $edit['content'], (bool) $preview['valid'], (string) $post->post_content);
 
-            return new WP_REST_Response(StyleReferences::attach($preview + ['replaced' => $edit['count']], $edit['content']), 200);
+            return new WP_REST_Response(StyleReferences::attach($preview + ['replaced' => $edit['count']], $edit['content'], (string) $post->post_content), 200);
         }
 
         // Same safety gate as update_page — the edited content must still validate.
@@ -590,7 +612,7 @@ final class RestController
             return new WP_REST_Response([
                 'saved'      => false,
                 'valid'      => false,
-                'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
+                'violations' => ViolationReport::compact($result->violations()),
                 'message'    => 'Edit would make the layout invalid. Page was NOT updated.',
             ], 422);
         }
@@ -607,6 +629,7 @@ final class RestController
 
         UsageTracker::log('edit_page', $id, 'valid');
 
+        $previousContent    = (string) $post->post_content;
         $post->post_content = $edit['content'];
 
         return new WP_REST_Response(StyleReferences::attach([
@@ -616,7 +639,7 @@ final class RestController
             'violations' => [],
             'history'    => $write['snapshot'],
             'page'       => $this->build_layout_envelope($post),
-        ], $edit['content']), 200);
+        ], $edit['content'], $previousContent), 200);
     }
 
     public function create_page(WP_REST_Request $request): WP_REST_Response|WP_Error
@@ -650,7 +673,7 @@ final class RestController
             return new WP_REST_Response([
                 'created'    => false,
                 'valid'      => false,
-                'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
+                'violations' => ViolationReport::compact($result->violations()),
                 'message'    => 'Layout failed validation. Page was NOT created.',
             ], 422);
         }
@@ -692,7 +715,7 @@ final class RestController
 
         UsageTracker::log('validate', null, $result->isValid() ? 'read' : 'invalid', count($result->violations()));
 
-        $payload = $result->toArray();
+        $payload = ['valid' => $result->isValid(), 'violations' => ViolationReport::compact($result->violations())];
         if ($content !== null) {
             $payload = StyleReferences::attach($payload, $content);
         }

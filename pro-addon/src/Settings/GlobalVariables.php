@@ -175,17 +175,23 @@ final class GlobalVariables
     }
 
     /**
-     * Hands Divi the COMPLETE map once (it replaces everything; sanitising stays on) and reads back what is stored now.
+     * Hands Divi the COMPLETE map once (sanitising stays on) and reads back what is stored now. The map must carry EVERY existing
+     * `gvid-` id: Divi 5.15.1 refuses a save that omits one (its delete is archive) and answers with a WP_Error instead of writing;
+     * Divi 5.14 returned nothing and replaced the map. That refusal is returned as `error` (code and message, Divi's own words).
      *
      * @param array<string,mixed> $map
-     * @return array{threw:bool, after:?array<string,array<string,array<string,mixed>>>}
+     * @return array{threw:bool, error:?array{code:string,message:string}, after:?array<string,array<string,array<string,mixed>>>}
      */
     public static function write( array $map ): array
     {
         $threw = false;
+        $error = null;
         if ( self::available() ) {
             try {
-                call_user_func( [ self::DATA_CLASS, 'set_global_variables' ], $map );
+                $returned = call_user_func( [ self::DATA_CLASS, 'set_global_variables' ], $map );
+                if ( is_object( $returned ) && is_callable( [ $returned, 'get_error_message' ] ) && is_callable( [ $returned, 'get_error_code' ] ) ) {
+                    $error = [ 'code' => (string) $returned->get_error_code(), 'message' => (string) $returned->get_error_message() ];
+                }
             } catch ( \Throwable $e ) {
                 $threw = true;
             }
@@ -193,7 +199,7 @@ final class GlobalVariables
             $threw = true;
         }
 
-        return [ 'threw' => $threw, 'after' => self::read() ];
+        return [ 'threw' => $threw, 'error' => $error, 'after' => self::read() ];
     }
 
     /**

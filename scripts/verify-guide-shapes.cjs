@@ -26,7 +26,7 @@ const wp = (...a) => execFileSync('docker', ['compose', 'exec', '-T', 'wpcli', '
 const fails = [];
 const check = (ok, label) => { console.log((ok ? 'PASS  ' : 'FAIL  ') + label); if (!ok) fails.push(label); };
 
-const V = '5.14.0';
+const V = '5.15.1';
 const BS = String.fromCharCode(92);
 // WordPress's block attribute serialisation: < > & -- as unicode escapes.
 const esc = (j) => j.split('--').join(BS + 'u002d' + BS + 'u002d').split('<').join(BS + 'u003c').split('>').join(BS + 'u003e').split('&').join(BS + 'u0026');
@@ -128,6 +128,44 @@ function makePage(label, content) {
       check(rowsDesktop === '1' && rowsPhone === String(n), `converter, ${n} cards: ${rowsDesktop} row(s) on desktop, ${rowsTablet} on a tablet, ${rowsPhone} on a phone (expected 1 / ${n === 4 ? 2 : 1} / ${n})`);
       if (n === 4) check(rowsTablet === '2', 'converter, 4 cards: two by two on a tablet');
     }
+
+    // ---- 7. a sticky section (real Divi 5.15.1 builder save: module.decoration.sticky.desktop.value.position = "top", offset.top = "20px")
+    const sectionWith = (extra, inner) => block('section', Object.assign({ builderVersion: V }, extra), inner);
+    const spacer = sectionWith({ module: { decoration: { spacing: { desktop: { value: { padding: { top: '500px', bottom: '500px', syncVertical: 'on' } } } } } } }, oneColumn([mod('text', { content: { innerContent: { desktop: { value: '<p>SPACEMARK</p>' } } } }, {})]));
+    const tall = sectionWith({ module: { decoration: { spacing: { desktop: { value: { padding: { top: '2500px', bottom: '100px', syncVertical: 'off' } } } } } } }, oneColumn([mod('text', { content: { innerContent: { desktop: { value: '<p>TALLMARK</p>' } } } }, {})]));
+    const stickySection = (sticky) => sectionWith(sticky ? { module: { decoration: { sticky: { desktop: { value: sticky } } } } } : {}, oneColumn([mod('heading', { title: { innerContent: { desktop: { value: 'STICKYMARK' } } } }, {})]));
+    const stickyTops = (id_) => measure(id_, 1280, async () => {
+      const el = [...document.querySelectorAll('.et_pb_module')].find((e) => e.textContent.includes('STICKYMARK'));
+      const out = [];
+      for (const y of [1800, 2400]) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 900)); out.push(Math.round(el.getBoundingClientRect().top)); }
+      return out;
+    });
+    const wrap = (sticky) => '<!-- wp:divi/placeholder -->' + spacer + stickySection(sticky) + tall + '<!-- /wp:divi/placeholder -->';
+    id = makePage('sticky-none', wrap(null));
+    const topNone = await stickyTops(id);
+    id = makePage('sticky-top', wrap({ position: 'top', offset: { top: '20px' } }));
+    const topSticky = await stickyTops(id);
+    check(topNone[0] - topNone[1] >= 500, `without sticky the section scrolls with the page: its top is ${topNone[0]}px then ${topNone[1]}px after scrolling 600px more`);
+    check(topSticky[0] >= 0 && topSticky[0] <= 160 && Math.abs(topSticky[0] - topSticky[1]) <= 2, `position "top" with offset.top 20px keeps it fixed near the top of the screen: ${topSticky[0]}px then ${topSticky[1]}px after scrolling 600px more`);
+
+    // ---- 8. a scroll effect (real Divi 5.15.1 builder save: module.decoration.scroll.desktop.value.verticalMotion.enable = "on"; the other effects use the same group, defined in Divi's own ScrollEffectsUtils::$scroll_effect_default_group_attr)
+    const effectSection = (effects) => sectionWith(effects ? { module: { decoration: { scroll: { desktop: { value: effects } } } } } : {}, oneColumn([mod('heading', { title: { innerContent: { desktop: { value: 'STICKYMARK' } } } }, {})]));
+    const effectProbe = (id_) => measure(id_, 1280, async () => {
+      const sec = [...document.querySelectorAll('.et_pb_module')].find((e) => e.textContent.includes('STICKYMARK')).closest('.et_pb_section');
+      const seen = [];
+      for (const y of [300, 700, 1100, 1500]) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 700)); seen.push(getComputedStyle(sec).transform + '|' + getComputedStyle(sec).opacity); }
+      return [...new Set(seen)].length;
+    });
+    const wrapEffect = (effects) => '<!-- wp:divi/placeholder -->' + spacer + effectSection(effects) + tall + '<!-- /wp:divi/placeholder -->';
+    id = makePage('effect-none', wrapEffect(null));
+    const stillNone = await effectProbe(id);
+    id = makePage('effect-vertical', wrapEffect({ verticalMotion: { enable: 'on' } }));
+    const moving = await effectProbe(id);
+    check(stillNone === 1, `without a scroll effect the section's transform and opacity never change while scrolling (${stillNone} distinct state)`);
+    check(moving > 1, `verticalMotion.enable "on" moves the section as the page scrolls (${moving} distinct states over four scroll positions)`);
+    id = makePage('effect-fade', wrapEffect({ fade: { enable: 'on' } }));
+    const fading = await effectProbe(id);
+    check(fading > 1, `fade.enable "on" changes the section's opacity as the page scrolls (${fading} distinct states)`);
   } catch (e) {
     check(false, 'script error: ' + (e && e.message ? e.message : e));
   } finally {

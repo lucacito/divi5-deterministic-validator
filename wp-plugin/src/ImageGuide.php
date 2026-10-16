@@ -103,7 +103,7 @@ neighbours is the #1 tell of an auto-generated page.
 to it. On each `divi/image` set:
 `module.advanced.sizing.desktop.value.aspectRatio` = {"width":"4","height":"3"} (an object, not a string such as "4/3"), and
 `image.decoration.fit.desktop.value.objectFit` = "cover" (fills the box and crops; "contain" shows the whole picture instead).
-Verified on Divi 5.14 in a real browser: a 16:9 and a 1:1 photo side by side both rendered 484x363. A fixed `height` alone
+Verified on Divi 5.14, and again on 5.15.1, in a real browser: a 16:9 and a 1:1 photo side by side both rendered 484x363. A fixed `height` alone
 does NOT work (each image keeps its own width). Use the same ratio on every image in a row.
 
 ## Rules

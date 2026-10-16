@@ -16,10 +16,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * One Divi global variable. The item stores the previous state (null = the variable did not exist, so undo removes it) and its
- * type; undo writes the complete map back through GlobalVariables, puts back only the fields the batch changed, and only while
- * the variable still looks the way the batch left it. A variable the batch created is never removed once it has changed since,
- * not even with force. restore() runs under the site lock BatchUndo holds for the whole batch (see SiteLockingKind).
+ * One Divi global variable. The item stores the previous state (null = the variable did not exist, so undo ARCHIVES it: Divi's own
+ * delete is archive, and Divi 5.15.1 refuses any save that omits an existing id) and its type; undo writes the complete map back
+ * through GlobalVariables, puts back only the fields the batch changed, and only while the variable still looks the way the batch
+ * left it. A variable the batch created is never archived by undo once it has changed since, not even with force. restore() runs under the site lock BatchUndo holds for the whole batch (see SiteLockingKind).
  */
 final class GlobalVariableKind implements SiteLockingKind
 {
@@ -43,7 +43,7 @@ final class GlobalVariableKind implements SiteLockingKind
     /**
      * @param array<string,string>|null $before GlobalVariables::state() before the change, or null when the variable did not exist
      * @param array<string,string>|null $after GlobalVariables::state() as Divi stores it now, or null when it no longer exists
-     * @param string|null $order the stored order of a variable this item removes, so that undoing the removal puts it back in place
+     * @param string|null $order the order to put back for a variable that no longer exists (a forced undo of an edit recreates it there)
      * @return array<string,mixed>
      */
     public static function itemFor( string $id, string $type, ?array $before, ?array $after, ?string $order = null ): array
@@ -106,10 +106,12 @@ final class GlobalVariableKind implements SiteLockingKind
             if ( Canon::hash( $nowState ) !== (string) ( $item['after_hash'] ?? '' ) ) {
                 return [ 'ok' => false, 'reason' => 'changed_since' ]; // even when forced: never remove a variable someone changed after us
             }
-            $type     = $found['type'];
-            $order    = (string) ( $found['entry']['order'] ?? '1' );
-            unset( $all[ $type ][ $id ] );
-            $expected = null;
+            // Archive, never remove: the entry keeps its label, value and place; undoing this undo makes it active again.
+            $type                = $found['type'];
+            $order               = null;
+            $entry               = GlobalVariables::builderShape( array_merge( $found['entry'], [ 'status' => 'archived' ] ), $id, $type, GlobalColors::stamp( time() ) );
+            $all[ $type ][ $id ] = $entry;
+            $expected            = GlobalVariables::state( $entry );
         } else {
             $type = (string) ( $found['type'] ?? ( $before['_type'] ?? '' ) );
             if ( ! in_array( $type, GlobalVariables::MANAGED, true ) ) {
@@ -137,11 +139,11 @@ final class GlobalVariableKind implements SiteLockingKind
 
         $res = GlobalVariables::write( $map );
         if ( null === $res['after'] ) {
-            return [ 'ok' => false, 'reason' => 'divi_refused' ];
+            return [ 'ok' => false, 'reason' => 'divi_refused' ] + ( null === $res['error'] ? [] : [ 'detail' => $res['error']['message'] ] );
         }
         $stored = GlobalVariables::state( $res['after'][ $type ][ $id ] ?? null );
         if ( $stored !== $expected ) {
-            return [ 'ok' => false, 'reason' => 'divi_refused' ];
+            return [ 'ok' => false, 'reason' => 'divi_refused' ] + ( null === $res['error'] ? [] : [ 'detail' => $res['error']['message'] ] );
         }
 
         return [ 'ok' => true, 'inverse' => self::itemFor( $id, $type, $nowState, $stored, $order ) ];

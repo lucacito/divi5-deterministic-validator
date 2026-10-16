@@ -1,0 +1,10 @@
+{
+  "source": "wp-divi5-export",
+  "format": "gutenberg-blocks",
+  "divi_version": "5.15.1",
+  "page_id": 229383,
+  "post_title": "aied comp row",
+  "post_status": "draft",
+  "note": "Real Divi 5.15.1 builder: a Row saved with Save As Component; inside the section the row became a divi/global-layout with blockName divi/row (localAttrs carry the row's own attributes) wrapping the row's columns.",
+  "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.15.1\"} -->\n<!-- wp:divi/global-layout {\"globalModule\":\"229384\",\"blockName\":\"divi/row\",\"builderVersion\":\"5.15.1\",\"localAttrs\":{\"module\":{\"advanced\":{\"columnStructure\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.15.1\"},\"localAttrOverridePaths\":[]} -->\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"301c29d7-909f-4542-ab88-8efae374b79a\",\"localAttrOverridePaths\":[]} -->\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Row component probe\"}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"e65f1a46-91ef-45ae-b013-a0ff5cb7046a\",\"localAttrOverridePaths\":[]} /-->\n\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"\\u003cp\\u003eRow body\\u003c/p\\u003e\"}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"f556efc5-d08f-40e8-91ba-e9650c789f0b\",\"localAttrOverridePaths\":[]} /-->\n<!-- /wp:divi/column -->\n<!-- /wp:divi/global-layout -->\n<!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+}

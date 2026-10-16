@@ -10,7 +10,7 @@ namespace Divi5Validator;
  */
 final class VerifiedModules
 {
-    public const DIVI_VERSION = '5.14.0';
+    public const DIVI_VERSION = '5.15.1';
 
     public const LEAF = [
         'divi/charts',

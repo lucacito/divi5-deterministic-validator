@@ -172,23 +172,61 @@ class GlobalVariableKindTest extends TestCase
         $this->assertSame( 'active', GlobalVariables::read()['strings'][ self::S1 ]['status'] );
     }
 
-    public function testUndoOfACreateRemovesTheEntryAndTheUndoIsItselfUndoable(): void
+    /** @return array<string,array{bool}> Divi 5.14 replaced the whole map on save; 5.15.1 refuses a save that omits an existing id. */
+    public static function diviSaveRules(): array
     {
+        return [ 'Divi 5.14 (replace-all save)' => [ false ], 'Divi 5.15.1 (a save may not omit an id)' => [ true ] ];
+    }
+
+    /** @dataProvider diviSaveRules */
+    public function testUndoOfACreateArchivesTheEntryAndTheUndoIsItselfUndoable( bool $strict ): void
+    {
+        $GLOBALS['__divi_gv']['strict_ids'] = $strict;
         $id = $this->change( 'gvid-new-0001', 'numbers', [ 'value' => '7px', 'label' => 'Seven' ] );
         $this->assertArrayHasKey( 'gvid-new-0001', GlobalVariables::read()['numbers'] );
 
         $r = $this->undo()->undo( $id );
-        $this->assertTrue( $r['fully_undone'] );
-        $this->assertSame( [ self::N1, self::N2 ], array_keys( GlobalVariables::read()['numbers'] ) );
+        $this->assertTrue( $r['fully_undone'], 'the undo completes on every Divi version' );
+        $gone = GlobalVariables::read()['numbers']['gvid-new-0001'];
+        $this->assertSame( 'archived', $gone['status'], "Divi's own delete is archive: nothing is removed from the stored list" );
+        $this->assertSame( [ 'Seven', '7px' ], [ $gone['label'], $gone['value'] ], 'label and value are kept' );
+        $this->assertSame( '3', $gone['order'], 'and so is its place' );
+        $this->assertSame( [ self::N1, self::N2, 'gvid-new-0001' ], array_keys( GlobalVariables::read()['numbers'] ) );
 
         $again = $this->undo()->undo( (int) $r['undo_batch']['id'] );
-        $this->assertTrue( $again['fully_undone'], 'undoing the undo brings the variable back' );
+        $this->assertTrue( $again['fully_undone'], 'undoing the undo makes it active again' );
         $back = GlobalVariables::read()['numbers']['gvid-new-0001'];
         $this->assertSame( [ 'Seven', '7px', 'active' ], [ $back['label'], $back['value'], $back['status'] ] );
-        $this->assertSame( '3', $back['order'], 'it comes back in its old place' );
-        $this->assertSame( 'gvid-new-0001', $back['id'], 'a re-created variable carries the builder shape' );
+        $this->assertSame( '3', $back['order'] );
+        $this->assertSame( 'gvid-new-0001', $back['id'], 'carries the builder shape' );
         $this->assertSame( 'numbers', $back['variableType'] );
         $this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z$/', $back['lastUpdated'] );
+    }
+
+    public function testUndoOfACreateNeverOmitsAnIdSoDivi515AcceptsEveryWriteOfAnUndo(): void
+    {
+        $GLOBALS['__divi_gv']['strict_ids'] = true;
+        $id = $this->change( 'gvid-new-0001', 'numbers', [ 'value' => '7px', 'label' => 'Seven' ] );
+        $this->assertTrue( $this->undo()->undo( $id )['fully_undone'] );
+        foreach ( $GLOBALS['__divi_gv']['set_calls'] as $i => $call ) {
+            foreach ( [ 'numbers' => [ self::N1, self::N2 ], 'strings' => [ self::S1 ], 'images' => [ self::IMG ] ] as $type => $ids ) {
+                foreach ( $ids as $existing ) {
+                    $this->assertArrayHasKey( $existing, $call[ $type ], "write {$i} keeps {$existing}" );
+                }
+            }
+        }
+    }
+
+    public function testWhenDiviRefusesTheSaveTheUndoFailsAndSaysWhy(): void
+    {
+        $id = $this->change( 'gvid-new-0001', 'numbers', [ 'value' => '7px', 'label' => 'Seven' ] );
+        $GLOBALS['__divi_gv']['strict_ids'] = true;
+        $GLOBALS['__divi_gv']['mutate']     = static fn ( array $d ): array => $d; // keeps the shim from changing anything
+        $GLOBALS['__divi_gv']['refuse']     = new \WP_Error( 'global_variable_invalid', 'Divi says no.' );
+        $r = $this->undo()->undo( $id );
+        $this->assertFalse( $r['fully_undone'] );
+        $this->assertSame( 'divi_refused', $r['items'][0]['reason'] );
+        $this->assertSame( 'Divi says no.', $r['items'][0]['detail'] ?? null, 'Divi\'s own message is passed on' );
     }
 
     public function testForcedUndoOfAnEditWhoseVariableWasRemovedMeanwhileRecreatesItAtTheNextFreeOrder(): void

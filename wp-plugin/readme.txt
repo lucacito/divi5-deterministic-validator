@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, ai, mcp, editor
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.11.0
+Stable tag:        4.12.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -25,7 +25,9 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 
 * **The checker is not AI.** It follows fixed rules: same page in, same verdict out. The AI can be creative, but every save it makes is checked first, so a broken page is never saved by an AI edit.
 * **It knows Divi 5 well.** The checker knows more than 80 Divi 5 block types (modules, sections, rows and columns) and which ones are allowed inside which.
-* **Rules come from real Divi 5, not guesses.** The rules come from real Divi 5 page exports and, for 24 newer modules (and their child items), from Divi's own module definitions, verified by rendering them in real Divi 5.14.
+* **Rules come from real Divi 5, not guesses.** The rules come from real Divi 5 page exports and, for 24 newer modules (and their child items), from Divi's own module definitions, verified by rendering them in real Divi 5.15.
+* **Understands Divi 5.15 components.** Pages that use shared components (reusable sections, rows and modules, including ones with Slots) can be read and edited. Your AI can see which components your site has and is told when a change would do nothing because the component owns that part.
+* **Warns before a page is hollowed out.** If a save would remove more than half of a page's text, images or modules, your AI is told and can put it back. Nothing is stopped: a deliberate rewrite is still yours to make.
 * **Small changes stay small.** Changing one phone number replaces just that text. The rest of the page is not rebuilt or touched.
 * **Preview before saving.** Your AI can ask what a change would do before it saves anything. It gets a list of the blocks and settings that would change, and the checker's verdict. Nothing is saved until it repeats the request for real.
 * **Matches your site.** Your AI can look up your site's own Divi colors and presets and reuse them, and it is told when a page uses one your site does not have. It cannot create or change presets or colors: that stays in Divi's Visual Builder.
@@ -48,9 +50,9 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 Read and check:
 
 * `list_divi_pages`: list the pages built with Divi 5 that you can edit (pass post_type project to list Divi Projects).
-* `get_page_layout`: read the current layout of a page or Divi Project.
+* `get_page_layout`: read the current layout of a page or Divi Project. For a big page your assistant can read just an outline (every block with its place, size and the start of its text) or one block, which costs a fraction of reading the whole page.
 * `list_global_styles`: list your site's own Divi colors and presets so the AI can reuse them (read-only).
-* `get_site_structure`: list your site's custom post types, taxonomies, image sizes and Advanced Custom Fields field groups so pages fit your site (read-only: field names and the keys your posts use, never values here or theme files; available over MCP and the REST API, not in the ChatGPT Action).
+* `get_site_structure`: list your site's custom post types, taxonomies, image sizes, Divi 5.15 components (name, kind, Slots, how many pages use each) and Advanced Custom Fields field groups so pages fit your site (read-only: field names and the keys your posts use, never values here or theme files; available over MCP and the REST API, not in the ChatGPT Action).
 * `get_custom_fields`: read the custom fields of one page or Divi Project you can edit, with their values, so your assistant can write copy that fits and use the right field names (read-only: keys WordPress protects, or that look like passwords, API keys or other secrets, are never shown; available over MCP and the REST API, not in the ChatGPT Action).
 * `list_products`: list and count your WooCommerce products with their prices, stock status and categories (read-only; needs the permission to edit products; available over MCP and the REST API, not in the ChatGPT Action).
 * `get_product`: read one WooCommerce product in full, including its variations (read-only; never downloadable files, purchase notes or custom fields).
@@ -238,6 +240,15 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.12.0 =
+* New: works with Divi 5.15. Pages that use Divi 5.15 components (a section, row or module saved once and reused) and their Slots are now accepted, so your assistant can read and edit them instead of being refused. Verified by saving real builder-made components and rendering them in Divi 5.15.1. A Slot in a row or section, a row or another Slot inside a Slot, and a column saved as a component are still refused until they have been checked the same way.
+* New: your assistant can see your site's components with `get_site_structure` (name, kind, Slot ids, how many pages use each; never their content) and is told when a change inside a component would not show, because Divi displays the component's own content on every page that uses it.
+* New: your assistant is told when a save would remove more than half of a page's text, images or modules, so a rewrite from a partial copy is caught. It is a warning, not a refusal, and Undo is available.
+* New: for a big page your assistant can read an outline or a single block instead of the whole layout (`get_page_layout` with `view`). On the real pages used for testing an outline is about a sixth of the size of the full layout.
+* Improved: a refusal is much shorter. The first violation about a block keeps its list of allowed blocks, later ones point back to it, and at most 25 are listed. In testing, a refusal that lists 96 nesting mistakes dropped from about 36,000 tokens to about 2,000.
+* Improved: a style value with an unclosed quote or bracket (for example `calc(10px`) is now refused. Divi writes it into the page's stylesheet as it is, and on Divi 5.15.1 it made every section lose its custom styling.
+* Improved: verified on Divi 5.15.1 (converter, style shapes, global styles, page titles and undo all re-checked on it).
 
 = 4.11.0 =
 * New: your AI assistant can now change the title of an existing page or Divi Project. Ask it to rename a page and it changes only the WordPress title (what shows in the page list and, by default, the browser tab), or the title and the layout together. It can preview the change first, follows Approval mode, only touches pages you can edit, and never changes the page address (slug) or leaves the layout rewritten. A title change is not covered by Undo, so your assistant tells you the old title and can set it back with one more request.

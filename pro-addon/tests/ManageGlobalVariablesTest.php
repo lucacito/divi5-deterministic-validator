@@ -241,6 +241,22 @@ class ManageGlobalVariablesTest extends TestCase
         $this->assertSame( [], $GLOBALS['__wp_options'], 'the lock is released after a failure' );
     }
 
+    public function testASaveDiviRefusesWithAnErrorIsReportedWithDivisOwnMessage(): void
+    {
+        $args = [ 'variables' => [ [ 'id' => self::N1, 'value' => '16px' ] ] ];
+        $p    = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $GLOBALS['__divi_gv']['refuse'] = new \WP_Error( 'global_variable_invalid', 'The value of Radius is empty.' );
+        try {
+            $this->tool->run( $args + [ 'preview_token' => $p['preview_token'] ] );
+            $this->fail( 'expected a failure' );
+        } catch ( \RuntimeException $e ) {
+            $this->assertStringContainsString( 'Divi refused the save', $e->getMessage() );
+            $this->assertStringContainsString( 'The value of Radius is empty.', $e->getMessage() );
+        }
+        $this->assertSame( [], $this->repo->rows, 'nothing is recorded' );
+        $this->assertSame( '12px', GlobalVariables::read()['numbers'][ self::N1 ]['value'] );
+    }
+
     public function testASaveDiviIgnoredIsReportedNeverClaimed(): void
     {
         $args                           = [ 'variables' => [ [ 'type' => 'numbers', 'label' => 'Pad', 'value' => '8px' ], [ 'id' => self::N1, 'value' => '16px' ] ] ];
@@ -334,6 +350,10 @@ class ManageGlobalVariablesTest extends TestCase
         $u = $this->undo()->undo( (int) $r['batch']['id'] );
         $this->assertTrue( $u['fully_undone'] );
         $now = GlobalVariables::read();
+        $pad = array_values( array_filter( $now['numbers'], static fn ( array $e ): bool => 'Pad' === $e['label'] ) );
+        $this->assertCount( 1, $pad, 'the created variable is archived by the undo, not removed (Divi 5.15.1 refuses a save that omits an id)' );
+        $this->assertSame( [ '8px', 'archived' ], [ $pad[0]['value'], $pad[0]['status'] ] );
+        unset( $now['numbers'][ $pad[0]['id'] ] );
         foreach ( [ [ 'numbers', self::N1 ], [ 'strings', self::S1 ] ] as [ $type, $id ] ) { // the two entries undo restores are repaired to the builder shape
             $this->assertSame( $id, $now[ $type ][ $id ]['id'] );
             $this->assertSame( $type, $now[ $type ][ $id ]['variableType'] );
