@@ -1,0 +1,73 @@
+{
+  "divi_version": "5.15.1",
+  "note": "The four Divi Library items (post type et_pb_layout, scope 'global') that the real 5.15.1 builder stored when the component fixtures in fixtures/valid/component-*-5.15.json were made, exported verbatim (content, terms, meta). scripts/verify-components.php recreates them on a throwaway basis, points each fixture's globalModule at the new ids and renders every page. The ids below are the ones in the fixtures.",
+  "templates": {
+    "section-with-slot": {
+      "id": 229359,
+      "title": "AIED Probe Card",
+      "scope": [
+        "global"
+      ],
+      "layout_type": [
+        "section"
+      ],
+      "meta": {
+        "_et_pb_built_for_post_type": "page",
+        "_et_pb_template_type": "section",
+        "_et_pb_use_divi_5": "on"
+      },
+      "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.15.1\",\"blockName\":\"divi/section\",\"localAttrsMap\":[]} -->\r\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"columnStructure\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"f3d2ccb0-0696-4631-a193-4c44dc286332\",\"localAttrsMap\":[]} -->\r\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"124eb517-8d22-4004-80b2-5bd9802eb5d3\",\"localAttrsMap\":[]} -->\r\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Component probe\"}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"fc2c5484-71bd-485c-86a1-0ed9b523183b\",\"localAttrsMap\":[]} /-->\r\n\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"\\u003cp\\u003eSome body text\\u003c/p\\u003e\"}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"4790835f-915c-4b55-ac74-4a7d3977c629\",\"localAttrsMap\":[]} /-->\r\n\r\n<!-- wp:divi/global-slot {\"builderVersion\":\"5.15.1\",\"slotId\":\"18e7a400-ee42-4cf5-808c-e8db870de7ce\",\"localAttrsMap\":[]} /-->\r\n\r\r\n<!-- /wp:divi/column -->\r\n<!-- /wp:divi/row -->\r\n<!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+    },
+    "row": {
+      "id": 229384,
+      "title": "AIED Row Comp",
+      "scope": [
+        "global"
+      ],
+      "layout_type": [
+        "row"
+      ],
+      "meta": {
+        "_et_pb_row_layout": "4_4",
+        "_et_pb_built_for_post_type": "page",
+        "_et_pb_template_type": "row",
+        "_et_pb_use_divi_5": "on"
+      },
+      "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/row {\"module\":{\"advanced\":{\"columnStructure\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.15.1\"} -->\r\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"301c29d7-909f-4542-ab88-8efae374b79a\"} -->\r\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Row component probe\"}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"e65f1a46-91ef-45ae-b013-a0ff5cb7046a\"} /-->\r\n\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"\\u003cp\\u003eRow body\\u003c/p\\u003e\"}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"f556efc5-d08f-40e8-91ba-e9650c789f0b\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- /wp:divi/row --><!-- /wp:divi/placeholder -->"
+    },
+    "module": {
+      "id": 229387,
+      "title": "AIED Module Comp",
+      "scope": [
+        "global"
+      ],
+      "layout_type": [
+        "module"
+      ],
+      "meta": {
+        "_et_pb_module_type": "divi/heading",
+        "_et_pb_excluded_global_options": "[]",
+        "_et_pb_built_for_post_type": "page",
+        "_et_pb_template_type": "module",
+        "_et_pb_use_divi_5": "on"
+      },
+      "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Module component probe\"}}},\"builderVersion\":\"5.15.1\"} /--><!-- /wp:divi/placeholder -->"
+    },
+    "nested": {
+      "id": 229389,
+      "title": "AIED Nested Comp",
+      "scope": [
+        "global"
+      ],
+      "layout_type": [
+        "section"
+      ],
+      "meta": {
+        "_et_pb_built_for_post_type": "page",
+        "_et_pb_template_type": "section",
+        "_et_pb_use_divi_5": "on"
+      },
+      "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.15.1\"} -->\r\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"columnStructure\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"9cbefea9-9cf6-4bbd-a537-6f1e4e1df34d\"} -->\r\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"1e7141aa-2eab-4051-8bd9-8a59f8ff433b\"} -->\r\n<!-- wp:divi/global-layout {\"globalModule\":\"229387\",\"blockName\":\"divi/heading\",\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"ebf454e6-5cab-4888-9c1b-82da877b5e83\",\"localAttrs\":{\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Module component probe\"}}},\"builderVersion\":\"5.15.1\"},\"localAttrOverridePaths\":[]} /-->\r\n\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"\\u003cp\\u003eModule body\\u003c/p\\u003e\"}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"c271902f-5210-45ba-9bc7-1cf0a9308b46\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- /wp:divi/row -->\r\n<!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+    }
+  }
+}

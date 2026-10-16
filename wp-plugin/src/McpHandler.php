@@ -6,6 +6,9 @@ namespace AiEditorDivi5\WP;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+require_once __DIR__ . '/ViolationReport.php';
+require_once __DIR__ . '/PageOutline.php';
+
 // The extension guard is also loaded by autoload.php; requiring it here keeps this file safe on its own.
 require_once __DIR__ . '/ExtensionGuard.php';
 require_once __DIR__ . '/PageAccess.php';
@@ -124,10 +127,10 @@ final class McpHandler
             ],
             [
                 'name'        => 'get_site_structure',
-                'description' => 'List how this site is set up (read-only): public post types, each with how many items it has (published), taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups, where each group applies (location rules) and its fields (names, labels, types and choices; never field values). Call it before building a page that lists custom post types, uses a given image size or should refer to ACF fields or other custom fields. Pass "include" to get only some sections: post_types, taxonomies, image_sizes, acf, custom_fields. The custom_fields section lists the custom field KEYS your recent posts use (a sample, never values); use get_custom_fields to read one post\'s values.',
+                'description' => 'List how this site is set up (read-only): public post types, each with how many items it has (published), taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups, where each group applies (location rules) and its fields (names, labels, types and choices; never field values). Call it before building a page that lists custom post types, uses a given image size or should refer to ACF fields or other custom fields. Pass "include" to get only some sections: post_types, taxonomies, image_sizes, acf, custom_fields, components. The custom_fields section lists the custom field KEYS your recent posts use (a sample, never values); use get_custom_fields to read one post\'s values. The components section lists the site\'s Divi 5.15 components (name, kind, the ids of their Slots, how many pages use each): a component is shared by every page that uses it, so read it before editing a page that holds one.',
                 'inputSchema' => [
                     'type'       => 'object',
-                    'properties' => ['include' => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => ['post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields']], 'description' => 'Optional. Sections to return; default all.']],
+                    'properties' => ['include' => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => ['post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields', 'components']], 'description' => 'Optional. Sections to return; default all.']],
                     'required'   => [],
                 ],
             ],
@@ -174,10 +177,14 @@ final class McpHandler
             ],
             [
                 'name'        => 'get_page_layout',
-                'description' => 'Get the full Divi 5 layout (Gutenberg block HTML) for a specific page or Divi Project by ID.',
+                'description' => 'Get the Divi 5 layout (Gutenberg block HTML) for a specific page or Divi Project by ID. A full read of a real page costs 8,000 to 16,000 tokens: pass view "outline" to list every block (path, name, size and the start of its text) for a fraction of that, then view "block" with a path to read just one block\'s exact markup.',
                 'inputSchema' => [
                     'type'       => 'object',
-                    'properties' => ['page_id' => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID']],
+                    'properties' => [
+                        'page_id' => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
+                        'view'    => ['type' => 'string', 'enum' => ['full', 'outline', 'block'], 'description' => 'Optional. full (default) = the whole layout; outline = a list of blocks; block = one block (needs path).'],
+                        'path'    => ['type' => 'string', 'description' => 'With view "block": the path from the outline, such as "0.1.2".'],
+                    ],
                     'required'   => ['page_id'],
                 ],
             ],
@@ -453,16 +460,30 @@ final class McpHandler
         }
         $post = $target['post'];
 
+        $view = PageOutline::parseView($args['view'] ?? null, $args['path'] ?? null);
+        if ($view['error'] !== null) {
+            UsageTracker::log('get_layout', $pageId, 'error');
+            return $this->rpcError($id, -32602, (string) $view['error']);
+        }
+
         UsageTracker::log('get_layout', $pageId, 'read');
 
+        $meta = [
+            'post_id'     => $post->ID,
+            'post_type'   => $post->post_type,
+            'post_title'  => get_the_title($post),
+            'post_status' => $post->post_status,
+        ];
+        if ($view['view'] !== 'full') {
+            $r = PageOutline::respond($meta, (string) $post->post_content, $view);
+
+            return $r['status'] === 200
+                ? $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => json_encode($r['body'])]]])
+                : $this->rpcError($id, -32602, (string) $r['body']['error']);
+        }
+
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode([
-                'post_id'      => $post->ID,
-                'post_type'    => $post->post_type,
-                'post_title'   => get_the_title($post),
-                'post_status'  => $post->post_status,
-                'post_content' => $post->post_content,
-            ])]],
+            'content' => [['type' => 'text', 'text' => json_encode($meta + ['post_content' => $post->post_content])]],
         ]);
     }
 
@@ -480,7 +501,7 @@ final class McpHandler
         UsageTracker::log('validate', null, $result->isValid() ? 'read' : 'invalid', count($result->violations()));
 
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($result->toArray(), $content))]],
+            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach(['valid' => $result->isValid(), 'violations' => ViolationReport::compact($result->violations())], $content))]],
         ]);
     }
 
@@ -537,7 +558,7 @@ final class McpHandler
             ApprovalMode::recordPreview($pageId, $plan['subject'], (bool) $preview['valid'], $plan['base']);
 
             return $this->rpcResult($id, [
-                'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($preview, $content))]],
+                'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($preview, $content, (string) $post->post_content))]],
             ]);
         }
 
@@ -549,7 +570,7 @@ final class McpHandler
                 'content' => [['type' => 'text', 'text' => json_encode([
                     'saved'      => false,
                     'valid'      => false,
-                    'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
+                    'violations' => ViolationReport::compact($result->violations()),
                 ])]],
                 'isError' => true,
             ]);
@@ -564,6 +585,7 @@ final class McpHandler
         }
 
         // Snapshots the previous content, then saves (wp_slash is applied inside HistoryService).
+        $previousContent = (string) $post->post_content;
         $write = HistoryService::write($pageId, $content, 'update_page_layout', $plan['writeTitle']);
 
         if (!$write['ok']) {
@@ -587,7 +609,7 @@ final class McpHandler
         }
 
         return $this->rpcResult($id, [
-            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($out, $content))]],
+            'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($out, $content, $previousContent))]],
         ]);
     }
 
@@ -709,7 +731,7 @@ final class McpHandler
             ApprovalMode::recordPreview($pageId, $edit['content'], (bool) $preview['valid'], (string) $post->post_content);
 
             return $this->rpcResult($id, [
-                'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($preview + ['replaced' => $edit['count']], $edit['content']))]],
+                'content' => [['type' => 'text', 'text' => json_encode(StyleReferences::attach($preview + ['replaced' => $edit['count']], $edit['content'], (string) $post->post_content))]],
             ]);
         }
 
@@ -722,7 +744,7 @@ final class McpHandler
                 'content' => [['type' => 'text', 'text' => json_encode([
                     'saved'      => false,
                     'valid'      => false,
-                    'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
+                    'violations' => ViolationReport::compact($result->violations()),
                 ])]],
                 'isError' => true,
             ]);
@@ -736,6 +758,7 @@ final class McpHandler
             ]);
         }
 
+        $previousContent = (string) $post->post_content;
         $write = HistoryService::write($pageId, $edit['content'], 'edit_page_content');
         if (!$write['ok']) {
             UsageTracker::log('edit_content', $pageId, 'error');
@@ -751,7 +774,7 @@ final class McpHandler
                 'replaced' => $edit['count'],
                 'history'  => $write['snapshot'],
                 'page'     => ['id' => $pageId, 'title' => get_the_title($pageId)],
-            ], $edit['content']))]],
+            ], $edit['content'], $previousContent))]],
         ]);
     }
 
@@ -1001,7 +1024,7 @@ final class McpHandler
                 'content' => [['type' => 'text', 'text' => json_encode([
                     'created'    => false,
                     'valid'      => false,
-                    'violations' => array_map(fn($v) => $v->toArray(), $result->violations()),
+                    'violations' => ViolationReport::compact($result->violations()),
                 ])]],
                 'isError' => true,
             ]);

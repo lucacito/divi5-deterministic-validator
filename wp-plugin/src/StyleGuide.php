@@ -138,6 +138,18 @@ semi-transparent + border recipe above for the glass look.
 
 **Divider** (`divi/divider`): `divider.advanced.line.{bp}.value.{color,weight}`
 
+**Sticky** (a header bar that stays on screen while the page scrolls), on a section, row or module:
+`module.decoration.sticky.{bp}.value.position` = "top" (or "bottom", or "topBottom"), and optionally
+`module.decoration.sticky.{bp}.value.offset.top` = "20px" (the gap from the top of the screen).
+**Scroll effects** (a section that drifts, fades, scales, rotates or blurs as the page scrolls):
+`module.decoration.scroll.{bp}.value.verticalMotion.enable` = "on". The same shape turns on
+`horizontalMotion`, `fade`, `scaling`, `rotating` and `blur` (each also has `viewport` {top, start, end, bottom} and
+`offset` {start, mid, end}; leave them out and Divi uses its own defaults, which are right for most pages).
+Checked on Divi 5.15.1: `position` "top"/"bottom"/"topBottom" and `offset.top`, and `verticalMotion.enable`, are exactly what the
+builder saves; a section with position "top" stays fixed near the top of the screen while the page scrolls, and with
+`verticalMotion` or `fade` on it moves or fades as it scrolls (`make verify-guide-shapes`). Use them sparingly: one sticky bar,
+one or two gentle effects. Do not guess other names under `sticky` or `scroll`.
+
 ## Font family, weight, style (serif headings + sans body)
 On any font element (`title.decoration.font.font`, `content.decoration.bodyFont.body.font`,
 `button.decoration.font.font`):
@@ -169,7 +181,7 @@ each child's `sizing.phone.value.flexType = "24_24"`.
 ## Per-device (responsive) settings
 Most settings have one value per device under the same attribute, keyed `desktop`, `tablet` and `phone`
 (`tabletWide` and `phoneWide` are the in-between devices). Set the desktop value, then add `tablet` and `phone` only where
-they differ. All of these are verified on Divi 5.14 by measuring a real page at three screen widths (`make verify-guide-shapes`).
+they differ. All of these are verified on Divi 5.14, and again on 5.15.1, by measuring a real page at three screen widths (`make verify-guide-shapes`).
 
 **Smaller headline on phones** (48px on desktop, 36px on a tablet, 24px on a phone):
 `title.decoration.font.font.desktop.value.size` = "48px", `...tablet.value.size` = "36px", `...phone.value.size` = "24px".
@@ -249,6 +261,9 @@ a layout with a CSS field (anything under a module's `css` attribute), a `divi/c
 decoration attributes above instead. Code already on a page (the owner's own) is left untouched when
 you edit that page; you cannot add or change it. If a design needs something the decoration attributes
 cannot express, tell the owner it is not possible through this plugin instead of working around it.
+Close every quote and bracket in a style value (`calc(10px + 2vw)`, `"Open Sans"`): Divi writes the value into the
+page's stylesheet as it is, so an unclosed `'`, `"` or `(` makes the browser drop every rule after it and the page loses
+all its custom styling. Such a value is rejected with `STYLE_VALUE_BREAKS_PAGE` (measured on Divi 5.15.1).
 
 ## Full-viewport height & background blend
 ```
@@ -291,6 +306,12 @@ small). If an edit was wrong and a snapshot was kept, `list_page_history` then
 `history.stored` is true. Prefer small `edit_page_content` edits over rewriting a
 whole page.
 
+## Read a big page cheaply
+A full `get_page_layout` read of a real page costs 8,000 to 16,000 tokens. Ask for `view: "outline"` first: it lists every
+block with a `path` (such as `0.0.1.2`), its name, its size in bytes and the start of its text, for about a sixth of the cost.
+Then `view: "block"` with a `path` returns that one block's exact markup, which you can use as an `edit_page_content` find
+string or to rebuild just that part. Leave `view` out for the whole layout (needed before replacing the whole page).
+
 ## Page title vs headline
 The **page title** is WordPress's own title for the page: what shows in the page list,
 the browser tab (usually) and search. Change it with `update_page_layout` and `title`
@@ -321,6 +342,11 @@ changed, then repeat the same call without `dry_run` to save. A preview of an in
 layout still returns normally, with `valid: false` and the violations; fix them before
 saving. A replaced or new section counts as one removed/added block; its children are
 not listed.
+If a preview or a save would remove more than half of the page's text, images or modules,
+the result carries `advisories.content_loss` (counts before and after, and which kinds
+were lost). That is a warning, not a refusal: check it against what the person asked for,
+read the page again with `get_page_layout` if you wrote from a partial copy, and put back
+what was dropped.
 
 ## Match the site's structure
 Call `get_site_structure` before building a page that should list a custom post type or
@@ -395,6 +421,22 @@ The tool is read-only: presets, colors and variables are created in Divi's Visua
 `advisories.style_references` note when a layout cites a preset, color or variable id the
 site does not have (`unknown_presets`, `unknown_colors`, `unknown_variables`); replace those
 ids with the site's own.
+## Components (Divi 5.15)
+A **component** is a section, a row or a single module that the site saved once and reuses on many pages. On a page it
+appears as a `divi/global-layout` block: it has `globalModule` (the component's id), `blockName` (`divi/section`, `divi/row`,
+or the module, such as `divi/heading`), `localAttrs` and `localAttrOverridePaths`. A section or row instance wraps that
+section's or row's own blocks; a module instance is one self-closing `divi/global-layout` inside a column. Blocks inside an
+instance carry a `syncNodeId`.
+- **Do not rewrite or restyle what a component owns.** Divi shows the component's own content on every page that uses it, so a
+  change to a block with a `syncNodeId` (its text, colors, spacing) does not appear. The save and preview tools add
+  `advisories.components.component_owned_edits` when that is what a change did. Change the component itself in the Divi
+  builder (Edit Component), or leave it as is. Never turn an instance into plain blocks to "edit" it: that detaches it.
+- **A Slot is the page's own place inside a component.** A `divi/global-slot` block (with its `slotId`) holds the modules this
+  page puts there; modules inside a Slot carry no `syncNodeId` and are yours to change. Keep the `slotId`. Do not add a module
+  in the same column next to a Slot: that edits the component itself, for every page.
+- Call `get_site_structure` with `include=components` to see which components exist, their kind, their Slot ids and how many pages
+  use each. A component id the site does not have (`advisories.components.unknown_components`) leaves a page that shows its own
+  stored copy and is linked to nothing; use ids from that list. To create or change a component, use the Divi builder.
 MD;
     }
 }

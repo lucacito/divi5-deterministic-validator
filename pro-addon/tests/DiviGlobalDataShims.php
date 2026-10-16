@@ -151,6 +151,8 @@ namespace ET\Builder\Packages\GlobalData {
             $GLOBALS['__divi_gv'] = [
                 'stored' => $stored, 'cache' => null, 'gets' => 0, 'set_calls' => [],
                 'throw_get' => false, 'throw_set' => false, 'mutate' => null, 'on_get' => null,
+                // Divi 5.15.1: a save that omits an existing gvid- id is refused with a WP_Error and writes nothing (5.14 replaced the map).
+                'strict_ids' => false,
             ];
         }
 
@@ -222,8 +224,11 @@ namespace ET\Builder\Packages\GlobalData {
             return $out;
         }
 
-        /** @param array<string,mixed> $data */
-        public static function set_global_variables( array $data ): void
+        /**
+         * @param array<string,mixed> $data
+         * @return \WP_Error|null Divi 5.15.1 returns a WP_Error for a refused save (and null otherwise); 5.14 returned nothing.
+         */
+        public static function set_global_variables( array $data )
         {
             if ( ! isset( $GLOBALS['__divi_gv'] ) ) {
                 self::resetVariablesForTests();
@@ -234,7 +239,19 @@ namespace ET\Builder\Packages\GlobalData {
                 throw new \RuntimeException( 'Divi refused the save' );
             }
             if ( ! current_user_can( 'edit_theme_options' ) || ! et_pb_is_allowed( 'variables_manager' ) ) {
-                return; // Divi's own SILENT no-op without the permission
+                return null; // Divi's own SILENT no-op without the permission
+            }
+            if ( ( $s['refuse'] ?? null ) instanceof \WP_Error ) {
+                return $s['refuse']; // a refusal Divi's own validation could give (malformed value, unknown status, ...)
+            }
+            if ( $s['strict_ids'] ) {
+                foreach ( (array) $s['stored'] as $type => $group ) {
+                    foreach ( array_keys( (array) $group ) as $existing ) {
+                        if ( 0 === strpos( (string) $existing, 'gvid-' ) && ! isset( $data[ $type ][ $existing ] ) ) {
+                            return new \WP_Error( 'global_variable_ids_missing', "CRITICAL: Global variable IDs are missing during sync! Type: {$type}.", [ 'status' => 400 ] );
+                        }
+                    }
+                }
             }
             $s['cache'] = null;
             $data       = self::sanitize_global_variables_data( $data );
@@ -243,6 +260,8 @@ namespace ET\Builder\Packages\GlobalData {
             }
             $s['stored'] = $data; // replace all
             \ET_Core_PageResource::remove_static_resources( 'all', 'all', true );
+
+            return null;
         }
     }
 

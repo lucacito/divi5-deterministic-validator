@@ -102,7 +102,7 @@ if ( ! function_exists( 'delete_transient' ) ) {
     function delete_transient( $key ): bool { unset( $GLOBALS['__wp_transients'][ $key ] ); return true; }
 }
 if ( ! class_exists( 'WP_Error' ) ) {
-    class WP_Error { public function __construct( public string $code = 'http_request_failed', public string $message = '', public mixed $data = '' ) {} public function get_error_message(): string { return $this->message; } }
+    class WP_Error { public function __construct( public string $code = 'http_request_failed', public string $message = '', public mixed $data = '' ) {} public function get_error_message(): string { return $this->message; } public function get_error_code(): string { return $this->code; } }
 }
 if ( ! function_exists( 'is_wp_error' ) ) {
     function is_wp_error( $thing ): bool { return $thing instanceof WP_Error; }

@@ -8,6 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+require_once __DIR__ . '/ViolationReport.php';
+
 /**
  * The one response body a dry run returns, shared by the MCP and REST transports: the checker's
  * verdict on the would-be content plus a diff against the current content. It saves nothing and
@@ -31,7 +33,7 @@ final class DryRun
             'saved'      => false,
             'dry_run'    => true,
             'valid'      => $verdict->isValid(),
-            'violations' => array_map( static fn ( $v ) => $v->toArray(), $verdict->violations() ),
+            'violations' => ViolationReport::compact( $verdict->violations() ),
         ] + LayoutDiff::compare( $before, $after );
         if ( null !== $title ) {
             $out['title'] = $title;

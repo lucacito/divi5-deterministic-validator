@@ -2,7 +2,7 @@
 Contributors:      lucaslopvet
 Requires at least: 6.0
 Requires PHP:      8.1
-Stable tag:        0.12.0
+Stable tag:        0.12.1
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,11 @@ Deleting the plugin removes its own data (licence state, batch history, saved co
 
 == Changelog ==
 
+= 0.12.1 =
+* Fix: Divi 5.15.1 no longer lets any save leave out an existing global variable (its own "delete" is archive), which made `undo_batch` unable to finish undoing a variable that `manage_global_variables` had created. Undoing a created variable now archives it (it keeps its label, value and place, and undoing that undo makes it active again). It still never deletes a variable, and it still leaves a variable alone that changed after the batch.
+* Fix: when Divi refuses a variable save, the tool now says so in Divi's own words instead of reporting only that nothing was stored.
+* Checked on Divi 5.15.1: global colors, module presets and Theme Builder header/footer tools are unaffected.
+
 = 0.12.0 =
 * New: `bulk_adjust_prices` raises or lowers the regular prices of every product a filter matches by a percent or a fixed amount: exact decimal arithmetic, your shop's rounding, an optional "end in" such as `0.95`, a preview with every price before and after, a single-use token for the real run, products that cannot be adjusted skipped with a reason, products changed since the preview skipped, a rollback if anything fails to save, and one undo. At most 100 products per call. It never changes sale prices, statuses or anything else.
 * Over MCP and REST only: this is the 21st Pro tool, and the ChatGPT importer's 30 operations are used up.
@@ -78,7 +83,7 @@ Deleting the plugin removes its own data (licence state, batch history, saved co
 * Needs the free plugin 4.8.0 or newer (the free plugin reads custom fields and edits Divi Projects from that version).
 
 = 0.8.0 =
-* New: `manage_global_variables` creates, edits and archives your site's Divi global variables of type numbers (for example `12px` or `clamp(1rem, 2vw + 1rem, 3rem)`) and strings (short plain text), so an assistant can set spacing, radius and size tokens before it builds pages. It never deletes a variable. Every real run needs the single-use preview token of a dry run of the same arguments; variables that changed since the preview are skipped and reported, never overwritten. Values are checked strictly (a number with an optional unit or calc, clamp, min, max of those; plain text without braces, semicolons, quotes, comment markers, unbalanced brackets or code). It needs Divi's Variables Manager permission as well as the theme options permission. One `undo_batch` puts it all back; undoing a created variable removes it, unless it changed since.
+* New: `manage_global_variables` creates, edits and archives your site's Divi global variables of type numbers (for example `12px` or `clamp(1rem, 2vw + 1rem, 3rem)`) and strings (short plain text), so an assistant can set spacing, radius and size tokens before it builds pages. It never deletes a variable. Every real run needs the single-use preview token of a dry run of the same arguments; variables that changed since the preview are skipped and reported, never overwritten. Values are checked strictly (a number with an optional unit or calc, clamp, min, max of those; plain text without braces, semicolons, quotes, comment markers, unbalanced brackets or code). It needs Divi's Variables Manager permission as well as the theme options permission. One `undo_batch` puts it all back; undoing a created variable archives it (Divi never deletes a variable), unless it changed since.
 * Variables are written in the same stored form as Divi's own Variables Manager (with their id, type and update time), so a layout that cites one renders it.
 * Images, links, fonts and gradients variables are carried through untouched (they are not written yet). A site whose stored variables Divi's own save would damage (for example a stored colors group) is refused with the reason instead of being changed.
 * Over MCP and REST only: this is the 16th Pro tool, and the ChatGPT importer's 30 operations are used up by the first 14 (16 free + 14 Pro).

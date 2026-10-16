@@ -32,6 +32,7 @@ final class CodePolicy
     public const E_CUSTOM_CSS  = 'CUSTOM_CSS_NOT_ALLOWED';
     public const E_CODE_MODULE = 'CODE_MODULE_NOT_ALLOWED';
     public const E_SCRIPT      = 'SCRIPT_CONTENT_NOT_ALLOWED';
+    public const E_STYLE_VALUE = 'STYLE_VALUE_BREAKS_PAGE';
 
     private const CODE_MODULES    = [ 'divi/code', 'divi/fullwidth-code' ];
     private const CSS_FIELDS      = [ 'freeForm', 'mainElement' ];
@@ -274,6 +275,13 @@ final class CodePolicy
                     $path,
                     'A style value contains CSS control characters ( { } ; < > ): this plugin never saves custom CSS. Use plain values (for example 16px or #ff0000).'
                 ) );
+            } elseif ( ( $decor || in_array( $key, self::STYLE_VALUE_LEAVES, true ) ) && self::styleValueIsUnclosed( $value ) ) {
+                self::push( $out, self::finding(
+                    self::E_STYLE_VALUE,
+                    'unclosed|' . $key . '|' . md5( $value ),
+                    $path,
+                    'A style value has an unclosed quote or bracket: Divi writes it into the page\'s stylesheet as it is, and a browser then drops every style rule after it, so all custom styling on the page is lost (measured on Divi 5.15.1: all sections fell back to the default padding). Close it or use a plain value (for example 16px or #ff0000).'
+                ) );
             }
             foreach ( self::stringUnits( $value, $urlish ) as [ $kind, $unit ] ) {
                 self::push( $out, self::unitFinding( $kind, $unit, $path ) );
@@ -481,6 +489,47 @@ final class CodePolicy
         $w = preg_replace( self::VARIABLE_TOKEN, '', $value );
 
         return null === $w || str_contains( $w, '$variable(' ) || str_contains( $w, ')$' ) || 1 === preg_match( self::CSS_CONTROL, $w );
+    }
+
+    /**
+     * True when a style value opens a quote or a parenthesis it never closes. Divi copies the value into a CSS declaration; an
+     * unclosed `'`, `"` or `(` makes a browser read on into the following rules, so one such value took the styling of the whole
+     * page with it (live measurement on Divi 5.15.1, scripts/spike-style-values.php: `10px'`, `10px"` and `calc(10px` in one
+     * section's padding made every section fall back to Divi's default padding). Balanced quotes and parentheses (font names, calc(),
+     * `$variable(...)$` tokens) are normal and pass; so does a stray `)`, which a browser ignores. 0 of the 5,332 style values in the
+     * real fixtures are unclosed.
+     */
+    private static function styleValueIsUnclosed( string $value ): bool
+    {
+        $w = preg_replace( self::VARIABLE_TOKEN, '', $value );
+        if ( null === $w ) {
+            return true;
+        }
+        $quote = '';
+        $depth = 0;
+        $n     = strlen( $w );
+        for ( $i = 0; $i < $n; $i++ ) {
+            $c = $w[ $i ];
+            if ( '\\' === $c ) {
+                ++$i;
+                continue;
+            }
+            if ( '' !== $quote ) {
+                if ( $c === $quote ) {
+                    $quote = '';
+                }
+                continue;
+            }
+            if ( '"' === $c || "'" === $c ) {
+                $quote = $c;
+            } elseif ( '(' === $c ) {
+                ++$depth;
+            } elseif ( ')' === $c && $depth > 0 ) {
+                --$depth;
+            }
+        }
+
+        return '' !== $quote || $depth > 0;
     }
 
     private static function isEventName( string $name ): bool

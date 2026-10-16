@@ -12,6 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once __DIR__ . '/CodePolicy.php';
+require_once __DIR__ . '/ComponentReader.php';
+require_once __DIR__ . '/ComponentAdvisory.php';
+require_once __DIR__ . '/ContentLoss.php';
 
 /**
  * Finds the preset ids, global color ids and global variable ids a layout cites that do not exist on this site. Divi
@@ -106,16 +109,35 @@ final class StyleReferences
 
     /**
      * Adds `advisories.style_references` to a response payload, only when the layout cites ids this
-     * site does not have. Otherwise the payload is returned unchanged, byte for byte.
+     * site does not have, `advisories.components` (ComponentAdvisory) when it does something with a Divi 5.15
+     * component that does nothing, and `advisories.content_loss` (ContentLoss) when a save removes most of the stored page. Otherwise the payload is returned unchanged, byte for byte.
      *
      * @param array<string,mixed> $payload
+     * @param ?string             $previous the stored content a save replaces (null for create and validate)
      * @return array<string,mixed>
      */
-    public static function attach( array $payload, string $content ): array
+    public static function attach( array $payload, string $content, ?string $previous = null ): array
     {
-        $advice = self::advise( $content, self::knownIds() );
+        $advisories = [];
+        $advice     = self::advise( $content, self::knownIds() );
+        if ( null !== $advice ) {
+            $advisories['style_references'] = $advice;
+        }
+        $components = ComponentAdvisory::advise(
+            $content,
+            $previous,
+            static fn ( string $id ): ?bool => ctype_digit( $id ) ? ComponentReader::isComponent( (int) $id ) : null,
+            static fn ( string $id ): ?string => ctype_digit( $id ) ? ComponentReader::templateContent( (int) $id ) : null
+        );
+        if ( null !== $components ) {
+            $advisories['components'] = $components;
+        }
+        $loss = null === $previous ? null : ContentLoss::assess( $previous, $content );
+        if ( null !== $loss ) {
+            $advisories['content_loss'] = $loss;
+        }
 
-        return null === $advice ? $payload : $payload + [ 'advisories' => [ 'style_references' => $advice ] ];
+        return [] === $advisories ? $payload : $payload + [ 'advisories' => $advisories ];
     }
 
     /**

@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes verify-components verify-style-values divi-currency
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -266,6 +266,24 @@ verify-test-connection:
 # ---------------------------------------------------------------
 verify-html-to-divi:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-html-to-divi.php --user=1
+
+# ---------------------------------------------------------------
+# verify-components — real-site check of Divi 5.15 Components: the builder-made instances (section, row, module), the Slot (empty and filled) and a nested component validate, save and render with the real Divi (Docker site on Divi 5.15 or newer; dev site only; everything it creates is deleted)
+# ---------------------------------------------------------------
+verify-components:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-components.php --user=1
+
+# ---------------------------------------------------------------
+# verify-style-values — proves in a real browser on the real Divi why a style value with an unclosed quote or bracket is refused (it takes the page's other styles with it) and that balanced values (calc, clamp) pass and apply (dev site only; every page it creates is deleted)
+# ---------------------------------------------------------------
+verify-style-values:
+	@node scripts/verify-style-values.cjs
+
+# ---------------------------------------------------------------
+# divi-currency — react to a new Divi release in one command: `make divi-currency ZIP=divi/Divi-X-Y-Z.zip [OLD=divi/old.zip] [INSTALL=1] [GATES=1]`. Writes docs/divi-currency-<version>.md (new and removed modules, changed definitions, new server code, the changelog since the old version); INSTALL=1 upgrades the Docker theme and runs schema-gap + verify-modules; GATES=1 also runs the unit suite and every Divi-dependent real-site gate. It reports; it never promotes a module.
+# ---------------------------------------------------------------
+divi-currency:
+	@bash scripts/divi-currency.sh "$(ZIP)" "$(OLD)" "$(INSTALL)" "$(GATES)"
 
 # ---------------------------------------------------------------
 # verify-guide-shapes — proves on the real Divi (and in a real browser) the per-device and equal-size-image shapes the guides teach, and that the converter's rows stack on a phone (Docker site; dev site only; every page it creates is deleted)

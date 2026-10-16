@@ -888,6 +888,62 @@ class CodePolicyTest extends TestCase
         $this->assertSame( [ CodePolicy::E_CUSTOM_CSS ], self::codes( self::layout( ',' . str_replace( '%V%', json_encode( $value ), $shape ) ) ), $value );
     }
 
+    /** @return array<string, array{0:string}> The values measured in a real browser on Divi 5.15.1 (scripts/spike-style-values.php): each made every section on the page lose its custom padding. */
+    public static function unclosedStyleValues(): array
+    {
+        return [
+            'an unclosed single quote'   => [ "10px'" ],
+            'an unclosed double quote'   => [ '10px"' ],
+            'an unclosed parenthesis'    => [ 'calc(10px' ],
+            'an unclosed url('           => [ 'url("https://example.com/a.png' ],
+            'a nested unclosed bracket'  => [ 'calc(10px + (2vw)' ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'unclosedStyleValues' )]
+    public function testAStyleValueThatOpensAQuoteOrBracketItNeverClosesIsRefused( string $value ): void
+    {
+        $shape = '"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":%V%}}}}}}';
+        $this->assertSame( [ CodePolicy::E_STYLE_VALUE ], self::codes( self::layout( ',' . str_replace( '%V%', json_encode( $value ), $shape ) ) ), $value );
+    }
+
+    /** @return array<string, array{0:string}> */
+    public static function balancedStyleValues(): array
+    {
+        return [
+            'plain'                       => [ '10px' ],
+            'calc'                        => [ 'calc(10px + 2vw)' ],
+            'clamp with nested calc'      => [ 'clamp(1rem, calc(2vw + 1rem), 3rem)' ],
+            'a quoted font family'        => [ "'Open Sans', sans-serif" ],
+            'a double quoted family'      => [ '"Open Sans", sans-serif' ],
+            'a paren inside a string'     => [ '"a(b"' ],
+            'an escaped quote in a string' => [ '"a\\"b"' ],
+            'a stray closing paren'       => [ '10px)' ],
+            'an escaped quote outside a string' => [ '10px\\"' ],
+            'a Divi variable token'       => [ '$variable({"type":"content","value":{"name":"gvid-abc","settings":{}}})$' ],
+            'an apostrophe-free rgba'     => [ 'rgba(0,0,0,0.5)' ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'balancedStyleValues' )]
+    public function testBalancedQuotesAndBracketsAreNormalAndPass( string $value ): void
+    {
+        $shape = '"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":%V%}}}}}}';
+        $this->assertSame( [], self::codes( self::layout( ',' . str_replace( '%V%', json_encode( $value ), $shape ) ) ), $value );
+    }
+
+    public function testAnUnclosedValueAlreadyStoredIsNotHeldAgainstAnEditElsewhere(): void
+    {
+        $bad   = '"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"10px\'"}}}}}}';
+        $stored = self::layout( ',' . $bad );
+        $this->assertSame( [], self::codes( $stored, $stored ), 'the same layout over itself' );
+    }
+
+    public function testTheTextContentOfAModuleMayHaveOddQuotes(): void
+    {
+        $this->assertSame( [], self::codes( self::layout( ',"title":{"innerContent":{"desktop":{"value":"It\'s a \"test\" (really"}}}' ) ) );
+    }
+
     public function testModulesThatWriteContentFieldsIntoCssAreCovered(): void
     {
         $P = self::INJECT;

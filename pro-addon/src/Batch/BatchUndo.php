@@ -81,7 +81,7 @@ final class BatchUndo
                     $r = [ 'ok' => false, 'reason' => 'exception' ];
                 }
                 if ( empty( $r['ok'] ) ) {
-                    $report[ $i ] = $row + [ 'result' => 'failed', 'reason' => (string) ( $r['reason'] ?? 'failed' ) ];
+                    $report[ $i ] = $row + [ 'result' => 'failed', 'reason' => (string) ( $r['reason'] ?? 'failed' ) ] + ( isset( $r['detail'] ) && is_string( $r['detail'] ) ? [ 'detail' => $r['detail'] ] : [] );
                     continue;
                 }
                 $restored++;

@@ -73,6 +73,22 @@ final class GuideShapesTest extends TestCase
         }
     }
 
+    public function testTheStickyAndScrollEffectExamplesValidateAndAreInTheGuide(): void
+    {
+        foreach ( [
+            [ 'sticky', [ 'desktop' => [ 'value' => [ 'position' => 'top', 'offset' => [ 'top' => '20px' ] ] ] ] ],
+            [ 'sticky', [ 'desktop' => [ 'value' => [ 'position' => 'topBottom' ] ] ] ],
+            [ 'scroll', [ 'desktop' => [ 'value' => [ 'verticalMotion' => [ 'enable' => 'on' ] ] ] ] ],
+            [ 'scroll', [ 'desktop' => [ 'value' => [ 'fade' => [ 'enable' => 'on' ] ] ] ] ],
+        ] as [ $key, $value ] ) {
+            $this->assertValid( '<!-- wp:divi/placeholder -->' . $this->block( 'section', [ 'module' => [ 'decoration' => [ $key => $value ] ], 'builderVersion' => '5.15.1' ], '' ) . '<!-- /wp:divi/placeholder -->' );
+        }
+        $g = StyleGuide::markdown();
+        foreach ( [ 'module.decoration.sticky.{bp}.value.position', '"topBottom"', 'offset.top', 'module.decoration.scroll.{bp}.value.verticalMotion.enable', '`fade`', 'Do not guess other names' ] as $needle ) {
+            $this->assertStringContainsString( $needle, $g, $needle );
+        }
+    }
+
     /** @return array<string,array{0:int,1:string,2:string,3:list<string>,4:array<string,string>}> */
     public static function rows(): array
     {

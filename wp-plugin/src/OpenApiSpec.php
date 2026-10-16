@@ -271,8 +271,12 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'getPageLayout',
                         'summary'     => 'Get a page layout',
-                        'description' => 'Returns the full Divi 5 post_content (Gutenberg block HTML) and metadata for a page or Divi Project.',
-                        'parameters'  => [self::idParam()],
+                        'description' => 'Returns the Divi 5 post_content (block HTML) and metadata for a page or Divi Project. view=outline lists the blocks (path, name, size, start of text) for far fewer tokens; view=block with a path returns one block exactly.',
+                        'parameters'  => [
+                            self::idParam(),
+                            ['name' => 'view', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'enum' => ['full', 'outline', 'block']], 'description' => 'full (default), outline, or block (needs path)'],
+                            ['name' => 'path', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string'], 'description' => 'With view=block: the path from the outline, such as 0.1.2'],
+                        ],
                         'responses'   => [
                             '200' => ['description' => 'Page layout', 'content' => ['application/json' => ['schema' => [
                                 'type'       => 'object',

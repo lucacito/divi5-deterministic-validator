@@ -40,6 +40,9 @@ class SiteStructureTest extends TestCase
                 [ 'name' => 'format', 'label' => 'Format', 'type' => 'select', 'choices' => [ 'hc' => 'Hardcover', 'pb' => 'Paperback' ] ],
             ] : false,
             'custom_fields' => static fn () => [ 'post_types' => [], 'truncated' => false ],
+            'components'  => static fn () => [ 'components' => [
+                [ 'id' => 12, 'name' => 'Hero card', 'kind' => 'section', 'slots' => [ 'slot-a' ], 'used_on' => 3, 'content' => 'NEVER SHOWN' ],
+            ], 'truncated' => false ],
         ];
     }
 
@@ -77,7 +80,7 @@ class SiteStructureTest extends TestCase
     {
         $d = SiteStructure::catalogWith( $this->readers() );
 
-        $this->assertSame( [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields', 'truncated', 'notes' ], array_keys( $d ) );
+        $this->assertSame( [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields', 'components', 'truncated', 'notes' ], array_keys( $d ) );
         $this->assertSame( [ 'page', 'book' ], array_column( $d['post_types'], 'name' ) );
         $this->assertSame( [ 'name' => 'book', 'label' => 'Books', 'supports' => [ 'title' ], 'taxonomies' => [ 'genre' ], 'has_archive' => true, 'hierarchical' => false, 'count' => 12 ], $d['post_types'][1] );
         $this->assertSame( [ [ 'name' => 'genre', 'label' => 'Genres', 'object_types' => [ 'book' ], 'hierarchical' => true ] ], $d['taxonomies'] );
@@ -172,6 +175,26 @@ class SiteStructureTest extends TestCase
         $this->assertSame( [], $d['taxonomies'] );
         $this->assertCount( 2, $d['notes'] );
         $this->assertNotEmpty( $d['image_sizes'], 'the other sections are unaffected' );
+        $this->assertTrue( $d['components']['active'], 'and so are components' );
+    }
+
+    public function testComponentsListNameKindSlotsAndUseAndNeverTheContent(): void
+    {
+        $d = SiteStructure::catalogWith( $this->readers(), [ 'components' ] );
+        $this->assertSame( [ 'components', 'truncated', 'notes' ], array_keys( $d ) );
+        $this->assertTrue( $d['components']['active'] );
+        $this->assertSame( [ [ 'id' => 12, 'name' => 'Hero card', 'kind' => 'section', 'slots' => [ 'slot-a' ], 'used_on' => 3 ] ], $d['components']['items'] );
+        $this->assertStringNotContainsString( 'NEVER SHOWN', json_encode( $d ) );
+        $this->assertStringContainsString( 'Slot', $d['components']['note'] );
+    }
+
+    public function testWithoutDiviComponentsTheSectionIsEmptyInactiveAndNoted(): void
+    {
+        $d = SiteStructure::catalogWith( $this->readers( [ 'components' => null ] ), [ 'components' ] );
+        $this->assertFalse( $d['components']['active'] );
+        $this->assertSame( [], $d['components']['items'] );
+        $this->assertCount( 1, $d['notes'] );
+        $this->assertStringContainsString( '5.15', $d['notes'][0] );
     }
 
     public function testLongListsAreCappedAndFlaggedTruncated(): void

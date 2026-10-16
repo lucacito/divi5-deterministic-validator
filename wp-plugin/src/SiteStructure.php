@@ -11,13 +11,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * A READ-ONLY view of how this site is set up: public post types, taxonomies, image sizes and, when
  * Advanced Custom Fields is active, its field groups and fields (names, labels, types, choices; never
- * field values). Also the custom field KEYS the site's recent posts use (a sample; keys only, never values). Everything comes from WordPress's and ACF's own public read functions, each behind a
+ * field values). Also the custom field KEYS the site's recent posts use (a sample; keys only, never values), and Divi 5.15's
+ * Components (name, kind, Slot ids and how many pages use each; never their content). Everything comes from WordPress's and ACF's own public read functions, each behind a
  * guard: a missing or throwing reader means an empty section plus a note. Nothing here writes anything,
  * and nothing reads theme files or menus.
  */
 final class SiteStructure
 {
-    public const SECTIONS    = [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields' ];
+    public const SECTIONS    = [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields', 'components' ];
     public const MAX_ITEMS   = 100;
     public const MAX_FIELDS  = 100;
     public const MAX_CHOICES = 50;
@@ -65,6 +66,7 @@ final class SiteStructure
             'acf_groups'  => function_exists( 'acf_get_field_groups' ) ? 'acf_get_field_groups' : null,
             'acf_fields'  => function_exists( 'acf_get_fields' ) ? 'acf_get_fields' : null,
             'custom_fields' => class_exists( CustomFieldReader::class ) ? [ CustomFieldReader::class, 'discover' ] : null,
+            'components'  => class_exists( ComponentReader::class ) ? [ ComponentReader::class, 'discover' ] : null,
         ];
     }
 
@@ -112,7 +114,7 @@ final class SiteStructure
     }
 
     /**
-     * @param array<string, ?callable> $readers post_types, taxonomies, image_sizes, acf_groups, acf_fields, custom_fields
+     * @param array<string, ?callable> $readers post_types, taxonomies, image_sizes, acf_groups, acf_fields, custom_fields, components
      * @param ?list<string>            $include sections to return; null = all
      * @return array<string,mixed>
      */
@@ -181,7 +183,50 @@ final class SiteStructure
             $truncated = $truncated || ! empty( $raw['truncated'] );
         }
 
+        if ( in_array( 'components', $include, true ) ) {
+            $raw = self::read( $readers['components'] ?? null );
+            if ( null === $raw ) {
+                $notes[] = 'Divi Components are not available on this site (they need Divi 5.15 or newer).';
+            }
+            $out['components'] = [
+                'active' => null !== $raw,
+                'items'  => self::componentRows( $raw['components'] ?? [] ),
+                'note'   => 'A component is shared: a change to a block that belongs to it shows on every page that uses it, and an instance on a page shows the component\'s own content. To give one page its own content, fill one of the component\'s Slots (slots lists their ids); adding a module next to a Slot changes the component itself.',
+            ];
+            $truncated = $truncated || ! empty( $raw['truncated'] );
+        }
+
         return $out + [ 'truncated' => $truncated, 'notes' => $notes ];
+    }
+
+    /**
+     * Each entry rebuilt from known fields, so nothing else a reader returns (such as a component's content) can pass through.
+     *
+     * @return list<array{id:int,name:string,kind:string,slots:list<string>,used_on:int}>
+     */
+    private static function componentRows( mixed $raw ): array
+    {
+        if ( ! is_array( $raw ) ) {
+            return [];
+        }
+        $list = [];
+        foreach ( $raw as $c ) {
+            if ( ! is_array( $c ) || ! is_int( $c['id'] ?? null ) ) {
+                continue;
+            }
+            if ( count( $list ) >= ComponentReader::MAX_COMPONENTS ) {
+                break;
+            }
+            $list[] = [
+                'id'      => $c['id'],
+                'name'    => self::text( $c['name'] ?? '' ),
+                'kind'    => in_array( $c['kind'] ?? '', [ 'section', 'row', 'module' ], true ) ? (string) $c['kind'] : '',
+                'slots'   => array_slice( self::strings( $c['slots'] ?? [] ), 0, ComponentReader::MAX_SLOTS ),
+                'used_on' => max( 0, (int) ( $c['used_on'] ?? 0 ) ),
+            ];
+        }
+
+        return $list;
     }
 
     /**

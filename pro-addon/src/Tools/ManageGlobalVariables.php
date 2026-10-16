@@ -223,6 +223,9 @@ final class ManageGlobalVariables implements ProTool
         }
 
         if ( [] === $recorded ) {
+            if ( null !== $res['error'] ) {
+                throw new \RuntimeException( "Divi refused the save: {$res['error']['message']} ({$res['error']['code']}). Nothing was changed or recorded." );
+            }
             if ( $res['threw'] ) {
                 throw new \RuntimeException( 'Divi did not save the variables, so nothing is recorded. Check list_global_styles for their current state.' );
             }
@@ -243,7 +246,9 @@ final class ManageGlobalVariables implements ProTool
                 $result[ $key ] = $list;
             }
         }
-        if ( $res['threw'] ) {
+        if ( null !== $res['error'] ) {
+            $result['warning'] = "Divi reported an error while saving ({$res['error']['message']}); what is stored now is what was recorded, and undo_batch can put the previous state back.";
+        } elseif ( $res['threw'] ) {
             $result['warning'] = 'Divi reported an error while saving; what is stored now is what was recorded, and undo_batch can put the previous state back.';
         }
 

@@ -249,6 +249,19 @@ final class Validator
                 return;
             }
 
+            // A Slot is matched to the component's own Slot by its slotId; Divi 5.15 ignores one without it
+            // (GlobalSlotUtils skips an empty id), so its content would silently never show.
+            if ($block->name() === 'divi/global-slot') {
+                $slotId = $block->attr('slotId');
+                if (!is_string($slotId) || $slotId === '') {
+                    $violations[] = new Violation(
+                        self::E_MISSING_REQUIRED_FIELD,
+                        "Block 'divi/global-slot' is missing required attribute 'slotId' (a non-empty string).",
+                        $path . '.slotId'
+                    );
+                }
+            }
+
             if ($block->attr('builderVersion') === null) {
                 $violations[] = new Violation(
                     self::E_MISSING_REQUIRED_FIELD,

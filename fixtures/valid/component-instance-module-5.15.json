@@ -1,0 +1,10 @@
+{
+  "source": "wp-divi5-export",
+  "format": "gutenberg-blocks",
+  "divi_version": "5.15.1",
+  "page_id": 229386,
+  "post_title": "aied comp module",
+  "post_status": "draft",
+  "note": "Real Divi 5.15.1 builder: a Heading module saved with Save As Component; in the column the module became a self-closing divi/global-layout with blockName divi/heading and localAttrs holding the heading's own attributes.",
+  "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.15.1\"} -->\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"columnStructure\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.15.1\"} -->\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.15.1\"} -->\n<!-- wp:divi/global-layout {\"globalModule\":\"229387\",\"blockName\":\"divi/heading\",\"builderVersion\":\"5.15.1\",\"localAttrs\":{\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Module component probe\"}}},\"builderVersion\":\"5.15.1\"},\"localAttrOverridePaths\":[]} /-->\n\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"\\u003cp\\u003eModule body\\u003c/p\\u003e\"}}},\"builderVersion\":\"5.15.1\"} /-->\n<!-- /wp:divi/column -->\n<!-- /wp:divi/row -->\n<!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+}

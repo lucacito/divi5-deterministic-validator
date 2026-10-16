@@ -1,0 +1,10 @@
+{
+  "source": "wp-divi5-export",
+  "format": "gutenberg-blocks",
+  "divi_version": "5.15.1",
+  "page_id": 229358,
+  "post_title": "aied comp a",
+  "post_status": "draft",
+  "note": "Real Divi 5.15.1 builder: a section saved with Save As Component; the page now holds a divi/global-layout instance (globalModule, blockName, localAttrs, localAttrOverridePaths) wrapping the component's blocks, each with a syncNodeId.",
+  "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/global-layout {\"globalModule\":\"229359\",\"blockName\":\"divi/section\",\"builderVersion\":\"5.15.1\",\"localAttrs\":{\"builderVersion\":\"5.15.1\"},\"localAttrOverridePaths\":[]} -->\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"columnStructure\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"f3d2ccb0-0696-4631-a193-4c44dc286332\",\"localAttrOverridePaths\":[]} -->\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"124eb517-8d22-4004-80b2-5bd9802eb5d3\",\"localAttrOverridePaths\":[]} -->\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Component probe\"}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"fc2c5484-71bd-485c-86a1-0ed9b523183b\",\"localAttrOverridePaths\":[]} /-->\n\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"\\u003cp\\u003eSome body text\\u003c/p\\u003e\"}}},\"builderVersion\":\"5.15.1\",\"syncNodeId\":\"4790835f-915c-4b55-ac74-4a7d3977c629\",\"localAttrOverridePaths\":[]} /-->\n<!-- /wp:divi/column -->\n<!-- /wp:divi/row -->\n<!-- /wp:divi/global-layout --><!-- /wp:divi/placeholder -->"
+}

@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class DiviCompat
 {
     /** Newest Divi major.minor whose modules have been render-verified (see docs/module-verification-*.json). */
-    public const TESTED = '5.14';
+    public const TESTED = '5.15';
 
     /** @return array{level:string, message:string} */
     public static function status( ?string $installed, string $tested = self::TESTED ): array

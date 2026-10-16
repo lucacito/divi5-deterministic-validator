@@ -32,6 +32,9 @@ class SchemaRules
         // Nested (inner) row/column — Divi 5's specialty nesting blocks
         'divi/row-inner',
         'divi/column-inner',
+        // Divi 5.15 Components: a Slot inside a component holds the instance's own (local) modules.
+        // Real 5.15.1 builder exports: fixtures/valid/component-instance-slot-*-5.15.json (docs/components-evidence-5.15.md).
+        'divi/global-slot',
         ...VerifiedModules::STRUCTURAL,
     ];
 
@@ -156,6 +159,11 @@ class SchemaRules
             'divi/post-nav',
             // WooCommerce products grid
             'divi/shop',
+            // Divi 5.15 Components, real builder exports (docs/components-evidence-5.15.md): a Module saved as a
+            // component sits in its column as a self-closing divi/global-layout (blockName = the module), and a
+            // Slot (divi/global-slot, slotId) sits in the column of a component's section or row instance.
+            'divi/global-layout',
+            'divi/global-slot',
             // Nested rows — Divi 5 lets a column contain a row (alongside modules),
             // recursing to arbitrary depth. Confirmed via real exports
             // (page-23: divi/row; layout-4: divi/row-inner).
@@ -252,6 +260,14 @@ class SchemaRules
         // children as top-level columns.
         if ($parentType === 'divi/column-inner' || $parentType === 'divi/group') {
             $parentType = 'divi/column';
+        }
+        // A Slot holds modules (proven in the real builder: a Button, a Contact Form with its fields) and module
+        // components. Rows and another Slot inside a Slot are NOT proven, so they stay refused.
+        if ($parentType === 'divi/global-slot') {
+            return array_values(array_diff(
+                self::ALLOWED_CHILDREN['divi/column'],
+                ['divi/row', 'divi/row-inner', 'divi/global-slot']
+            ));
         }
         return self::ALLOWED_CHILDREN[$parentType] ?? [];
     }
