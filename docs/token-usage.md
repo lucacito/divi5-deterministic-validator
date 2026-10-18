@@ -40,8 +40,8 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic typography | get_style_guide with topic "typography", only when asked for | 7,496 | 1,874 |
 | The style guide, topic imagery | get_style_guide with topic "imagery", only when asked for | 6,506 | 1,627 |
 | The style guide, topic controls | get_style_guide with topic "controls", only when asked for | 7,073 | 1,769 |
-| The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 2,103 | 526 |
-| The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 254 | 64 |
+| The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 2,924 | 731 |
+| The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 3,935 | 984 |
 | A served recipe (hero-cta, default look) | get_section_recipes with name "hero-cta" and no design_language | 3,044 | 761 |
 | A served recipe (hero-cta, glass-dark) | the same recipe with design_language "glass-dark" (tokens filled in; the size is the markup alone) | 3,017 | 755 |
 

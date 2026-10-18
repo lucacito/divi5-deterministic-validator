@@ -130,6 +130,35 @@ class SectionRecipesTest extends TestCase
         }
     }
 
+    /** Plan 2 Task 12: the hero and page-header batch, each with its role/layout, found by the filter, exactly one h1. */
+    public function testHeroAndPageHeaderBatchIsTaggedFilterableAndHasOneH1(): void
+    {
+        $batch = [
+            'hero-pattern-centered'   => ['hero', 'centered'],
+            'hero-split-right'        => ['hero', 'split'],
+            'hero-split-left-overlap' => ['hero', 'overlap'],
+            'hero-image-scrim'        => ['hero', 'stacked'],
+            'hero-gradient-stats'     => ['hero', 'overlap'],
+            'hero-editorial-minimal'  => ['hero', 'list'],
+            'hero-bordered-cells'     => ['hero', 'stacked'],
+            'hero-spec-card'          => ['hero', 'split'],
+            'hero-product-glow'       => ['hero', 'centered'],
+            'header-title-band'       => ['header', 'band'],
+            'header-divider-intro'    => ['header', 'centered'],
+            'header-image-band'       => ['header', 'band'],
+        ];
+        foreach ($batch as $name => [$role, $layout]) {
+            $tags = (array) SectionRecipes::tags($name);
+            $this->assertSame($role, $tags['role'] ?? null, "$name role");
+            $this->assertSame($layout, $tags['layout'] ?? null, "$name layout");
+            $this->assertStringContainsString($name, SectionRecipes::catalog($role, $layout), "$name is listed by the role + layout filter");
+            $markup = (string) SectionRecipes::rawMarkup($name);
+            $this->assertSame(1, preg_match_all('/"headingLevel":"h1"/', $markup), "$name has exactly one explicit h1");
+            // Every heading module states its level (a Divi heading without one is an h1).
+            $this->assertSame(substr_count($markup, '<!-- wp:divi/heading '), preg_match_all('/"headingLevel":"h[1-4]"/', $markup), "$name: every heading names its level, h1 to h4");
+        }
+    }
+
     public function testRetaggedRecipesDescribeTheirRealStructure(): void
     {
         $this->assertSame('split', ((array) SectionRecipes::tags('card-grid-3'))['layout']);
