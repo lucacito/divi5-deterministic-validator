@@ -552,5 +552,137 @@
             ]
         },
         "markup": "<!-- wp:divi/section {\"builderVersion\":\"5.8.0\",\"module\":{\"decoration\":{\"background\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:bg}}\"}}}}}} --><!-- wp:divi/row {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Shop Our Collection\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"family\":\"{{aied:font:display}}\",\"color\":\"{{aied:color:text}}\"}}}}}},\"builderVersion\":\"5.8.0\"} /--><!-- wp:divi/shop {\"builderVersion\":\"5.8.0\",\"title\":{\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:text}}\",\"family\":\"{{aied:font:display}}\"}}}}}},\"price\":{\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:text}}\"}}}}}},\"salePrice\":{\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:text}}\"}}}}}},\"saleBadge\":{\"decoration\":{\"background\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:accent}}\"}}},\"font\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:accent-text}}\"}}}}}}} /--><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->"
+    },
+    {
+        "name": "hero-pattern-centered",
+        "title": "Hero / centered type on a pattern",
+        "description": "Centered, type-led hero: a huge display headline, one short sentence and one button over a fine repeating pattern on the page colour.",
+        "when": "Top of a page when the message is strong enough to carry the first screen without a picture (studios, consultants, launches).",
+        "stage": "Hero",
+        "tags": {
+            "role": "hero",
+            "layout": "centered",
+            "mood": [
+                "editorial",
+                "tech-mono",
+                "corporate-trust",
+                "luxe"
+            ],
+            "density": "airy",
+            "background": "solid",
+            "needs_images": false,
+            "pairs": [
+                [
+                    "text",
+                    "bg"
+                ],
+                [
+                    "muted",
+                    "bg"
+                ],
+                [
+                    "accent-text",
+                    "accent"
+                ]
+            ]
+        },
+        "markup": "<!-- wp:divi/section {\"module\":{\"decoration\":{\"background\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:bg}}\",\"pattern\":{\"enabled\":\"on\",\"style\":\"squares\",\"color\":\"{{aied:color:border}}\"}}}},\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"top\":\"160px\",\"bottom\":\"160px\"}}},\"tablet\":{\"value\":{\"padding\":{\"top\":\"112px\",\"bottom\":\"112px\"}}},\"phone\":{\"value\":{\"padding\":{\"top\":\"72px\",\"bottom\":\"72px\"}}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"columnStructure\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Say the one thing that matters\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h1\",\"color\":\"{{aied:color:text}}\",\"family\":\"{{aied:font:display}}\",\"size\":\"96px\",\"lineHeight\":\"1.05em\",\"letterSpacing\":\"-1px\",\"textAlign\":\"center\",\"textWrap\":\"balance\"}},\"tablet\":{\"value\":{\"size\":\"64px\"}},\"phone\":{\"value\":{\"size\":\"42px\"}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/group {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"maxWidth\":\"600px\",\"alignment\":\"center\"}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>One short sentence that tells visitors what you do and who it is for.</p>\"}},\"decoration\":{\"bodyFont\":{\"body\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:muted}}\",\"family\":\"{{aied:font:body}}\",\"size\":\"20px\",\"lineHeight\":\"1.6em\"}}}}}}},\"module\":{\"advanced\":{\"text\":{\"text\":{\"desktop\":{\"value\":{\"orientation\":\"center\"}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- /wp:divi/group -->\n<!-- wp:divi/button {\"button\":{\"innerContent\":{\"desktop\":{\"value\":{\"text\":\"Start here\"}}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:accent-text}}\",\"family\":\"{{aied:font:body}}\"}}}},\"background\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:accent}}\"},\"hover\":{\"color\":\"{{aied:color:accent}}\"}}},\"border\":{\"desktop\":{\"value\":{\"styles\":{\"all\":{\"color\":\"{{aied:color:accent}}\"}}}}}}},\"module\":{\"advanced\":{\"alignment\":{\"desktop\":{\"value\":\"center\"}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- /wp:divi/column -->\n<!-- /wp:divi/row -->\n<!-- /wp:divi/section -->"
+    },
+    {
+        "name": "hero-split-right",
+        "title": "Hero / split, tall image right",
+        "description": "Asymmetric split hero: eyebrow, large headline, two lines of copy, a button and a quiet text link on a wide left column (two thirds); one tall portrait image on the right (one third).",
+        "when": "Top of a page for a service, studio or practice with one strong photograph; the classic editorial first screen.",
+        "stage": "Hero",
+        "tags": {
+            "role": "hero",
+            "layout": "split",
+            "mood": [
+                "editorial",
+                "corporate-trust",
+                "tech-mono",
+                "luxe"
+            ],
+            "density": "balanced",
+            "background": "solid",
+            "needs_images": true,
+            "pairs": [
+                [
+                    "text",
+                    "bg"
+                ],
+                [
+                    "muted",
+                    "bg"
+                ],
+                [
+                    "accent-text",
+                    "accent"
+                ]
+            ]
+        },
+        "markup": "<!-- wp:divi/section {\"module\":{\"decoration\":{\"background\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:bg}}\"}}},\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"top\":\"120px\",\"bottom\":\"120px\"}}},\"tablet\":{\"value\":{\"padding\":{\"top\":\"88px\",\"bottom\":\"88px\"}}},\"phone\":{\"value\":{\"padding\":{\"top\":\"56px\",\"bottom\":\"56px\"}}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"columnStructure\":{\"desktop\":{\"value\":\"1_2,1_2\"}},\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_2\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\"}},\"phone\":{\"value\":{\"flexWrap\":\"wrap\"}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"1_2\"}}},\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"16_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}}},\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"top\":\"48px\",\"bottom\":\"0px\",\"right\":\"48px\"}}},\"tablet\":{\"value\":{\"padding\":{\"top\":\"0px\",\"bottom\":\"0px\",\"right\":\"24px\"}}},\"phone\":{\"value\":{\"padding\":{\"top\":\"0px\",\"bottom\":\"32px\",\"right\":\"0px\"}}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Your field or speciality\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h4\",\"color\":\"{{aied:color:muted}}\",\"family\":\"{{aied:font:eyebrow}}\",\"size\":\"14px\",\"capitalization\":\"uppercase\",\"letterSpacing\":\"2px\",\"weight\":\"600\"}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"A clear promise in a large, confident headline\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h1\",\"color\":\"{{aied:color:text}}\",\"family\":\"{{aied:font:display}}\",\"size\":\"64px\",\"lineHeight\":\"1.1em\",\"textWrap\":\"balance\"}},\"tablet\":{\"value\":{\"size\":\"46px\"}},\"phone\":{\"value\":{\"size\":\"36px\"}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/group {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"maxWidth\":\"560px\",\"alignment\":\"left\"}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>Two short lines of copy: what you offer, who it is for and what changes for them.</p>\"}},\"decoration\":{\"bodyFont\":{\"body\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:muted}}\",\"family\":\"{{aied:font:body}}\",\"size\":\"19px\",\"lineHeight\":\"1.6em\"}}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- /wp:divi/group -->\n<!-- wp:divi/group {\"module\":{\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexDirection\":\"row\",\"flexWrap\":\"wrap\",\"columnGap\":\"28px\",\"rowGap\":\"12px\",\"alignItems\":\"center\"}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/button {\"button\":{\"innerContent\":{\"desktop\":{\"value\":{\"text\":\"Book a call\"}}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:accent-text}}\",\"family\":\"{{aied:font:body}}\"}}}},\"background\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:accent}}\"},\"hover\":{\"color\":\"{{aied:color:accent}}\"}}},\"border\":{\"desktop\":{\"value\":{\"styles\":{\"all\":{\"color\":\"{{aied:color:accent}}\"}}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p><a href=\\\"#\\\">See how it works</a></p>\"}},\"decoration\":{\"bodyFont\":{\"body\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:text}}\",\"family\":\"{{aied:font:body}}\",\"size\":\"17px\"}}}},\"link\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:text}}\",\"style\":[\"underline\"]}}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- /wp:divi/group -->\n<!-- /wp:divi/column -->\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"1_2\"}}},\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"8_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/image {\"module\":{\"advanced\":{\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"aspectRatio\":{\"width\":\"4\",\"height\":\"5\"}}}}}},\"image\":{\"innerContent\":{\"desktop\":{\"value\":{\"src\":\"{{aied:image:hero-sunset-1}}\",\"alt\":\"Placeholder photograph: replace with your own\"}}},\"decoration\":{\"fit\":{\"desktop\":{\"value\":{\"objectFit\":\"cover\"}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- /wp:divi/column -->\n<!-- /wp:divi/row -->\n<!-- /wp:divi/section -->"
+    },
+    {
+        "name": "hero-split-left-overlap",
+        "title": "Hero / image left, overlapping card",
+        "description": "Split hero: a large rounded image on the left and, on the right, a raised surface card holding eyebrow, headline, copy and button that slides over the image edge (on phones it overlaps the bottom of the image instead).",
+        "when": "Top of a page for warm, friendly or product brands that want depth on the first screen; needs one strong image.",
+        "stage": "Hero",
+        "tags": {
+            "role": "hero",
+            "layout": "overlap",
+            "mood": [
+                "glass-dark",
+                "organic-warm",
+                "playful-pastel"
+            ],
+            "density": "balanced",
+            "background": "solid",
+            "needs_images": true,
+            "pairs": [
+                [
+                    "text",
+                    "surface"
+                ],
+                [
+                    "muted",
+                    "surface"
+                ],
+                [
+                    "accent-text",
+                    "accent"
+                ]
+            ]
+        },
+        "markup": "<!-- wp:divi/section {\"module\":{\"decoration\":{\"background\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:bg}}\"}}},\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"top\":\"120px\",\"bottom\":\"120px\"}}},\"tablet\":{\"value\":{\"padding\":{\"top\":\"88px\",\"bottom\":\"88px\"}}},\"phone\":{\"value\":{\"padding\":{\"top\":\"56px\",\"bottom\":\"56px\"}}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"columnStructure\":{\"desktop\":{\"value\":\"1_2,1_2\"}},\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_2\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\"}},\"phone\":{\"value\":{\"flexWrap\":\"wrap\"}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"1_2\"}}},\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"12_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/image {\"module\":{\"advanced\":{\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"aspectRatio\":{\"width\":\"4\",\"height\":\"5\"}}}}}},\"image\":{\"innerContent\":{\"desktop\":{\"value\":{\"src\":\"{{aied:image:hero-teal-1}}\",\"alt\":\"Placeholder image: replace with your own photograph\"}}},\"decoration\":{\"border\":{\"desktop\":{\"value\":{\"radius\":{\"topLeft\":\"24px\",\"topRight\":\"24px\",\"bottomRight\":\"24px\",\"bottomLeft\":\"24px\"}}}},\"fit\":{\"desktop\":{\"value\":{\"objectFit\":\"cover\"}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- /wp:divi/column -->\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"1_2\"}}},\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"12_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/group {\"module\":{\"decoration\":{\"background\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:surface}}\"}}},\"border\":{\"desktop\":{\"value\":{\"radius\":{\"topLeft\":\"24px\",\"topRight\":\"24px\",\"bottomRight\":\"24px\",\"bottomLeft\":\"24px\"}}}},\"boxShadow\":{\"desktop\":{\"value\":{\"style\":\"preset1\",\"color\":\"rgba(0,0,0,0.18)\",\"blur\":\"40px\",\"vertical\":\"16px\"}}},\"zIndex\":{\"desktop\":{\"value\":\"5\"}},\"spacing\":{\"desktop\":{\"value\":{\"margin\":{\"top\":\"12%\",\"left\":\"-128px\"},\"padding\":{\"top\":\"56px\",\"bottom\":\"56px\",\"left\":\"152px\",\"right\":\"48px\"}}},\"tablet\":{\"value\":{\"margin\":{\"top\":\"8%\",\"left\":\"-96px\"},\"padding\":{\"top\":\"40px\",\"bottom\":\"40px\",\"left\":\"120px\",\"right\":\"32px\"}}},\"phone\":{\"value\":{\"margin\":{\"top\":\"-64px\",\"left\":\"0px\"},\"padding\":{\"top\":\"72px\",\"bottom\":\"32px\",\"left\":\"24px\",\"right\":\"24px\"}}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"A short eyebrow\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h4\",\"color\":\"{{aied:color:muted}}\",\"family\":\"{{aied:font:eyebrow}}\",\"size\":\"14px\",\"capitalization\":\"uppercase\",\"letterSpacing\":\"2px\",\"weight\":\"600\"}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"A headline that invites people in\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h1\",\"color\":\"{{aied:color:text}}\",\"family\":\"{{aied:font:display}}\",\"size\":\"52px\",\"lineHeight\":\"1.12em\",\"textWrap\":\"balance\"}},\"tablet\":{\"value\":{\"size\":\"40px\"}},\"phone\":{\"value\":{\"size\":\"32px\"}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>One or two sentences on what you offer and why it feels different.</p>\"}},\"decoration\":{\"bodyFont\":{\"body\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:muted}}\",\"family\":\"{{aied:font:body}}\",\"size\":\"18px\",\"lineHeight\":\"1.6em\"}}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/button {\"button\":{\"innerContent\":{\"desktop\":{\"value\":{\"text\":\"Get started\"}}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:accent-text}}\",\"family\":\"{{aied:font:body}}\"}}}},\"background\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:accent}}\"},\"hover\":{\"color\":\"{{aied:color:accent}}\"}}},\"border\":{\"desktop\":{\"value\":{\"styles\":{\"all\":{\"color\":\"{{aied:color:accent}}\"}},\"radius\":{\"topLeft\":\"999px\",\"topRight\":\"999px\",\"bottomRight\":\"999px\",\"bottomLeft\":\"999px\"}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- /wp:divi/group -->\n<!-- /wp:divi/column -->\n<!-- /wp:divi/row -->\n<!-- /wp:divi/section -->"
+    },
+    {
+        "name": "hero-image-scrim",
+        "title": "Hero / full-bleed photo with a scrim",
+        "description": "Tall full-bleed photograph (about 80% of the screen height) under a scrim in the overlay colour, with eyebrow, headline, copy, two buttons and a ruled strip of three short practical details, left-aligned in the inverse text colour.",
+        "when": "Top of a page when one atmospheric photograph sells the experience (hospitality, travel, events, upscale brands).",
+        "stage": "Hero",
+        "tags": {
+            "role": "hero",
+            "layout": "stacked",
+            "mood": [
+                "any"
+            ],
+            "density": "airy",
+            "background": "gradient",
+            "needs_images": true,
+            "pairs": [
+                [
+                    "inverse",
+                    "overlay"
+                ],
+                [
+                    "accent-text",
+                    "accent"
+                ]
+            ]
+        },
+        "markup": "<!-- wp:divi/section {\"module\":{\"decoration\":{\"background\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:bg}}\",\"image\":{\"url\":\"{{aied:image:hero-blue-1}}\",\"size\":\"cover\",\"position\":\"center center\"},\"gradient\":{\"enabled\":\"on\",\"overlaysImage\":\"on\",\"direction\":\"90deg\",\"stops\":[{\"position\":\"0\",\"color\":\"{{aied:color:overlay}}\"},{\"position\":\"100\",\"color\":\"{{aied:color:overlay}}\"}]}}}},\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"top\":\"0px\",\"bottom\":\"0px\"}}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"columnStructure\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/column {\"module\":{\"advanced\":{\"type\":{\"desktop\":{\"value\":\"4_4\"}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/group {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"minHeight\":\"80vh\"}},\"tablet\":{\"value\":{\"minHeight\":\"70vh\"}},\"phone\":{\"value\":{\"minHeight\":\"560px\"}}},\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"top\":\"80px\",\"bottom\":\"80px\"}}},\"tablet\":{\"value\":{\"padding\":{\"top\":\"64px\",\"bottom\":\"64px\"}}},\"phone\":{\"value\":{\"padding\":{\"top\":\"56px\",\"bottom\":\"56px\"}}}},\"layout\":{\"desktop\":{\"value\":{\"flexDirection\":\"column\",\"justifyContent\":\"center\"}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/group {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"maxWidth\":\"720px\",\"alignment\":\"left\"}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Your place or occasion\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h4\",\"color\":\"{{aied:color:inverse}}\",\"family\":\"{{aied:font:eyebrow}}\",\"size\":\"14px\",\"capitalization\":\"uppercase\",\"letterSpacing\":\"2px\",\"weight\":\"600\"}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"An evocative headline over the picture\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h1\",\"color\":\"{{aied:color:inverse}}\",\"family\":\"{{aied:font:display}}\",\"size\":\"72px\",\"lineHeight\":\"1.08em\",\"textWrap\":\"balance\"}},\"tablet\":{\"value\":{\"size\":\"52px\"}},\"phone\":{\"value\":{\"size\":\"38px\"}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>One line that sets the scene and says what visitors can do next.</p>\"}},\"decoration\":{\"bodyFont\":{\"body\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:inverse}}\",\"family\":\"{{aied:font:body}}\",\"size\":\"20px\",\"lineHeight\":\"1.6em\"}}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/group {\"module\":{\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexDirection\":\"row\",\"flexWrap\":\"wrap\",\"columnGap\":\"16px\",\"rowGap\":\"12px\",\"alignItems\":\"center\"}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/button {\"button\":{\"innerContent\":{\"desktop\":{\"value\":{\"text\":\"Reserve\"}}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:accent-text}}\",\"family\":\"{{aied:font:body}}\"}}}},\"background\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:accent}}\"},\"hover\":{\"color\":\"{{aied:color:accent}}\"}}},\"border\":{\"desktop\":{\"value\":{\"styles\":{\"all\":{\"color\":\"{{aied:color:accent}}\"}}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/button {\"button\":{\"innerContent\":{\"desktop\":{\"value\":{\"text\":\"Explore\"}}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:inverse}}\",\"family\":\"{{aied:font:body}}\"}}}},\"background\":{\"desktop\":{\"value\":{\"color\":\"rgba(255,255,255,0)\"},\"hover\":{\"color\":\"rgba(255,255,255,0)\"}}},\"border\":{\"desktop\":{\"value\":{\"styles\":{\"all\":{\"color\":\"{{aied:color:inverse}}\",\"width\":\"2px\"}}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- /wp:divi/group -->\n<!-- wp:divi/group {\"module\":{\"decoration\":{\"spacing\":{\"desktop\":{\"value\":{\"margin\":{\"top\":\"40px\"}}},\"phone\":{\"value\":{\"margin\":{\"top\":\"24px\"}}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/divider {\"divider\":{\"advanced\":{\"line\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:inverse}}\",\"weight\":\"1px\"}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- /wp:divi/group -->\n<!-- wp:divi/group {\"module\":{\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexDirection\":\"row\",\"flexWrap\":\"wrap\",\"columnGap\":\"32px\",\"rowGap\":\"12px\",\"alignItems\":\"center\"}}}}},\"builderVersion\":\"5.8.0\"} -->\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>Placeholder: location</p>\"}},\"decoration\":{\"bodyFont\":{\"body\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:inverse}}\",\"family\":\"{{aied:font:eyebrow}}\",\"size\":\"14px\",\"lineHeight\":\"1.4em\",\"capitalization\":\"uppercase\",\"letterSpacing\":\"1px\"}}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>Placeholder: opening hours</p>\"}},\"decoration\":{\"bodyFont\":{\"body\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:inverse}}\",\"family\":\"{{aied:font:eyebrow}}\",\"size\":\"14px\",\"lineHeight\":\"1.4em\",\"capitalization\":\"uppercase\",\"letterSpacing\":\"1px\"}}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>Placeholder: one practical detail</p>\"}},\"decoration\":{\"bodyFont\":{\"body\":{\"font\":{\"desktop\":{\"value\":{\"color\":\"{{aied:color:inverse}}\",\"family\":\"{{aied:font:eyebrow}}\",\"size\":\"14px\",\"lineHeight\":\"1.4em\",\"capitalization\":\"uppercase\",\"letterSpacing\":\"1px\"}}}}}}},\"builderVersion\":\"5.8.0\"} /-->\n<!-- /wp:divi/group -->\n<!-- /wp:divi/group -->\n<!-- /wp:divi/group -->\n<!-- /wp:divi/column -->\n<!-- /wp:divi/row -->\n<!-- /wp:divi/section -->"
     }
 ]
