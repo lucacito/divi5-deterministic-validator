@@ -287,6 +287,21 @@
             "evidence": "fixtures/valid/page-85-layout-4.json"
         },
         {
+            "path": "circle.advanced.background.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rs-circle-track-color"
+        },
+        {
+            "path": "circle.advanced.background.{bp}.value.opacity",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rs-circle-track-opacity"
+        },
+        {
+            "path": "circle.advanced.color.{bp}.value",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rs-circle-bar-color"
+        },
+        {
             "path": "closedToggle.decoration.background.{bp}.value.color",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#rf-acc-closed-bg"
@@ -2375,6 +2390,11 @@
             "path": "number.advanced.enablePercentSign.{bp}.value",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#ty-nc-percent-off"
+        },
+        {
+            "path": "number.advanced.percentSign.{bp}.value",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rs-circle-percent-off"
         },
         {
             "path": "number.decoration.font.font.{bp}.value.color",

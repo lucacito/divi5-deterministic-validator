@@ -15,11 +15,13 @@
  *   children a list of block specs ({ block, base, children }) placed INSIDE the candidate block, replacing the default filler
  *            (e.g. block group, children [heading]). Only container blocks (section, row, column, group) take children; a child
  *            has no `set`. Supported blocks: section, row, column, group, heading, text, image, button, blurb, divider,
- *            number-counter, testimonial, icon, group-carousel, blog, contact-form, contact-field, shop, tabs, tab, accordion, accordion-item (the
+ *            number-counter, testimonial, icon, group-carousel, blog, contact-form, contact-field, shop, tabs, tab, accordion, accordion-item, circle-counter (the
  *            last four were added for the features recipes task: an empty `tabs` holds two plain `tab` children and an empty `accordion` two plain
  *            `accordion-item` children, in the shapes of the real export fixtures/valid/page-17-newpage.json; the five before them were added for the legacy recipe
  *            module settings task: a `group-carousel` holds `group` children and a `contact-form` holds `contact-field` children, which a
- *            candidate lists in `children`; `blog` renders the site's own posts, `shop` the site's own WooCommerce products). Real-export content shapes are filled in for the content of each, `base` wins.
+ *            candidate lists in `children`; `blog` renders the site's own posts, `shop` the site's own WooCommerce products; `circle-counter` was
+ *            added for the proof and stats recipes task: a title and a number, the content attributes of Divi 5.15.1's circle-counter module.json).
+ *            Real-export content shapes are filled in for the content of each, `base` wins.
  *   neighbours  (section candidates only) { "before": [<section spec>], "after": [<section spec>] }: plain sections placed before/after the
  *            candidate section on the page, identical in the A and B pages (e.g. a differently coloured section so that a divider is
  *            visible). The measured element is then the candidate section, not a neighbour. Absent = the page is unchanged.
@@ -63,7 +65,11 @@
  *   text     (optional, true) also compare the rendered text of the measured element (`innerText`) as `text:innerText`. For a setting that
  *            changes WHAT is printed rather than how it is styled (the number counter's percent sign is a character, not a style). A change
  *            of text alone is reported as a difference in `changedProps` (`text:innerText`). Added in the typography task; absent = text is not compared.
- *   settleMs (optional) milliseconds to wait before measuring (default 600; 1200 with a `state`; 3000 for a number counter).
+ *   canvas   (optional, true) also compare what the measured element's <canvas> descendants DRAW: for every canvas, its size and its three most
+ *            frequent pixel colours (rgba of every pixel with alpha over 16, by count), as `canvas:<index>:size` and `canvas:<index>:colors`. Divi draws a circle
+ *            counter's bar and track on a canvas from script data (barColor / trackColor / trackAlpha), so no computed style or stylesheet text
+ *            shows them. Added in the proof and stats recipes task; absent = canvases are not read (older candidate files are unchanged).
+ *   settleMs (optional) milliseconds to wait before measuring (default 600; 1200 with a `state`; 3000 for a number or circle counter).
  *   ignore   (optional) computed property names (e.g. ["opacity","transform"]) left out of the comparison on BOTH pages. Needed when the
  *            effect under test is running while the page is measured (an entrance animation changes opacity from frame to frame, so two
  *            loads of the same page never agree on it). The names are listed in the candidate and in its evidence section.
@@ -135,7 +141,7 @@ const esc = (j) => j.split('--').join(BS + 'u002d' + BS + 'u002d').split('<').jo
 const block = (name, attrs, inner) => { const j = esc(JSON.stringify(attrs)); return inner === undefined ? `<!-- wp:divi/${name} ${j} /-->` : `<!-- wp:divi/${name} ${j} -->${inner}<!-- /wp:divi/${name} -->`; };
 const setp = (o, p, v) => { const k = p.split('.'); let d = o; for (const x of k.slice(0, -1)) { d = d[x] = d[x] || {}; } d[k[k.length - 1]] = v; };
 const withSite = (v) => (typeof v === 'string' ? v.split('@SITE@').join(SITE) : Array.isArray(v) ? v.map(withSite) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, withSite(x)])) : v);
-const SUPPORTED = ['section', 'row', 'column', 'group', 'heading', 'text', 'image', 'button', 'blurb', 'divider', 'number-counter', 'testimonial', 'icon', 'group-carousel', 'blog', 'contact-form', 'contact-field', 'shop', 'tabs', 'tab', 'accordion', 'accordion-item'];
+const SUPPORTED = ['section', 'row', 'column', 'group', 'heading', 'text', 'image', 'button', 'blurb', 'divider', 'number-counter', 'testimonial', 'icon', 'group-carousel', 'blog', 'contact-form', 'contact-field', 'shop', 'tabs', 'tab', 'accordion', 'accordion-item', 'circle-counter'];
 const CONTAINERS = ['section', 'row', 'column', 'group', 'group-carousel', 'contact-form', 'tabs', 'accordion'];
 // Content every block needs to render something; shapes are the ones real exports and recipes use. A candidate's `base` wins.
 const IMG = '@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg';
@@ -163,6 +169,8 @@ const DEFAULT_BASE = {
   tab: { title: { innerContent: { desktop: { value: 'Probe tab' } } }, content: { innerContent: { desktop: { value: '<p>probe tab text</p>' } } } },
   accordion: {},
   'accordion-item': { title: { innerContent: { desktop: { value: 'Probe toggle' } } }, content: { innerContent: { desktop: { value: '<p>probe toggle text</p>' } } } },
+  // Divi 5.15.1 circle-counter module.json: title.innerContent and number.innerContent (a number; the bar is drawn on a canvas).
+  'circle-counter': { title: { innerContent: { desktop: { value: 'PROBE' } } }, number: { innerContent: { desktop: { value: '50' } } } },
 };
 const deepMerge = (a, b) => {
   const out = JSON.parse(JSON.stringify(a));
@@ -318,7 +326,7 @@ function removeOrphans() {
 const classOf = (blockName) => 'et_pb_' + blockName.replace(/-/g, '_');
 
 /** Runs in the page: stylesheet text plus the computed styles of the module element and its descendants. */
-function snapshotInPage({ cls, index, withRect, attrs, ignore, geometry, pseudo, text }) {
+function snapshotInPage({ cls, index, withRect, attrs, ignore, geometry, pseudo, text, canvas }) {
   // Divi and WordPress attach their <style> blocks in a load-dependent order, so the blocks are sorted before comparing.
   const styleText = [...document.querySelectorAll('style')].map((s) => s.textContent.trim()).filter(Boolean).sort().join('\n/*--*/\n');
   // The page content, never the Theme Builder header/footer (their first column/row/section would be measured otherwise).
@@ -397,6 +405,19 @@ function snapshotInPage({ cls, index, withRect, attrs, ignore, geometry, pseudo,
       });
     }
     if (text) props['text:innerText'] = String(el.innerText);
+    if (canvas) {
+      [...el.querySelectorAll('canvas')].forEach((cv, i) => {
+        props['canvas:' + i + ':size'] = cv.width + 'x' + cv.height;
+        let colors = 'unreadable';
+        try {
+          const d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
+          const count = new Map();
+          for (let k = 0; k < d.length; k += 4) if (d[k + 3] > 16) { const key = 'rgba(' + d[k] + ',' + d[k + 1] + ',' + d[k + 2] + ',' + d[k + 3] + ')'; count.set(key, (count.get(key) || 0) + 1); }
+          colors = [...count.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([key]) => key).join(' ') || 'none';
+        } catch (e) { /* tainted or no 2d context: stays 'unreadable' */ }
+        props['canvas:' + i + ':colors'] = colors;
+      });
+    }
     for (const name of attrs) props['attr:' + name] = String(el.getAttribute(name));
     if (withRect) {
       const r = el.getBoundingClientRect();
@@ -478,7 +499,7 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
           fs.mkdirSync(process.env.AIED_DUMP_DIR, { recursive: true });
           fs.writeFileSync(path.join(process.env.AIED_DUMP_DIR, `${c.id}-${width}-${id}.html`), await p.evaluate(() => (document.querySelector('.et-l--post') || document.body).outerHTML));
         }
-        const r = await p.evaluate(snapshotInPage, { cls, index, withRect: c.state === 'scroll' || c.geometry === true, attrs: c.attrs || [], ignore: c.ignore || [], geometry: c.geometry === true, pseudo: c.pseudo || [], text: c.text === true });
+        const r = await p.evaluate(snapshotInPage, { cls, index, withRect: c.state === 'scroll' || c.geometry === true, attrs: c.attrs || [], ignore: c.ignore || [], geometry: c.geometry === true, pseudo: c.pseudo || [], text: c.text === true, canvas: c.canvas === true });
         // WordPress writes a random per-request placeholder comment into the block-library style.
         r.styleText = r.styleText.replace(/wp_block_styles_on_demand_placeholder:[0-9a-f]+/g, 'wp_block_styles_on_demand_placeholder:X');
         r.styleText = r.styleText.split(new RegExp('\\b' + id + '\\b', 'g')).join('PID');
@@ -501,13 +522,14 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
         if (c.ignore !== undefined && !(Array.isArray(c.ignore) && c.ignore.every((x) => typeof x === 'string'))) throw new Error('`ignore` must be a list of computed property names');
         if (c.pseudo !== undefined && !(Array.isArray(c.pseudo) && c.pseudo.every((x) => typeof x === 'string' && /^::[a-z-]+$/.test(x)))) throw new Error('`pseudo` must be a list of pseudo-elements such as "::before"');
         if (c.text !== undefined && c.text !== true) throw new Error('`text` must be true');
+        if (c.canvas !== undefined && c.canvas !== true) throw new Error('`canvas` must be true');
         if (c.attrs !== undefined && !(Array.isArray(c.attrs) && c.attrs.every((x) => typeof x === 'string'))) throw new Error('`attrs` must be a list of attribute names');
         const cls = classOf(c.block);
         // The candidate comes after its `before` neighbours (sections) and after its `before` siblings of the same block name.
         const index = neighbourNodes(c).before.length + siblingNodes(c).before.filter((n) => n.block === c.block).length + (c.parent === c.block ? 1 : 0);
         if (c.geometry !== undefined && c.geometry !== true) throw new Error('`geometry` must be true');
         // The number counter counts up after load: let it finish, or two loads of the same page never agree.
-        const settle = typeof c.settleMs === 'number' ? c.settleMs : c.block === 'number-counter' ? 3000 : c.state ? 1200 : 600;
+        const settle = typeof c.settleMs === 'number' ? c.settleMs : c.block === 'number-counter' || c.block === 'circle-counter' ? 3000 : c.state ? 1200 : 600;
         const a = makePage(c.id + ' A', pageFor(c, false));
         const b = makePage(c.id + ' B', pageFor(c, true));
         if (!a.valid || !b.valid) {

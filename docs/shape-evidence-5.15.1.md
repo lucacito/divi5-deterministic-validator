@@ -16384,3 +16384,155 @@ Registered paths added: none (every path was already registered by a builder exp
 Candidates from `recipe-features.json` that were measured and are not taught, with the reason:
 
 - `rf-size-grow-only-trap`: overflows a phone at 400 px (the page is 600 px wider than the screen). Control that documents the trap: sizing.size ["flexGrow"] alone on the same text group (base: no size setting, so the browser default flex-shrink 1 wraps the line). Divi writes flex-shrink 0 with it, the group takes its max-content width and the page becomes wider than a 400px phone. Never use ["flexGrow"] alone on a flex child that holds text. Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:140-175 (the size list: flexGrow in it writes flex-grow 1, otherwise 0; flexShrink absent writes flex-shrink 0, so the item keeps its max-content width).
+
+## rs-circle-bar-color
+
+Block: `circle-counter`, also comparing what its canvas elements draw (size and most frequent pixel colours). Set on top of the base block:
+
+- `circle.advanced.color.desktop.value` = `"#3dff9a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | no | `canvas:0:colors: rgba(46,163,242,255) rgba(45,162,241,187) rgba(46,163,242,246) -> rgba(61,255,154,255) rgba(60,255,154,187) rgba(60,255,153,246)` |
+| 900 px | yes | 1 | no | `canvas:0:colors: rgba(46,163,242,255) rgba(45,162,241,187) rgba(46,163,242,246) -> rgba(61,255,154,255) rgba(60,255,154,187) rgba(60,255,153,246)` |
+| 400 px | yes | 1 | no | `canvas:0:colors: rgba(46,163,242,255) rgba(45,162,241,187) rgba(46,163,242,246) -> rgba(61,255,154,255) rgba(60,255,154,187) rgba(60,255,153,246)` |
+
+Properties that changed (any width): `canvas:0:colors`.
+
+Phone overflow at 400 px: no.
+
+Note: Bar (fill) colour of the circle counter: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json attributes.circle.settings.advanced.circle fields.color, attrName circle.advanced.color (default the site primary colour gcid-primary-color); Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/CircleCounter/CircleCounterModule.php:522 passes it to the front-end script as barColor, and the easyPieChart script draws it on the counter canvas. No CSS shows it, so the probe compares the canvas pixels (canvas: true).
+
+Registered paths added:
+
+- `circle.advanced.color.{bp}.value`
+
+## rs-circle-track-color
+
+Block: `circle-counter`, also comparing what its canvas elements draw (size and most frequent pixel colours). Set on top of the base block:
+
+- `circle.advanced.background.desktop.value.color` = `"#ff3b00"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | no | `canvas:0:colors: rgba(46,163,242,255) rgba(45,162,241,187) rgba(46,163,242,246) -> rgba(46,163,242,255) rgba(255,59,0,26) rgba(255,51,0,25)` |
+| 900 px | yes | 1 | no | `canvas:0:colors: rgba(46,163,242,255) rgba(45,162,241,187) rgba(46,163,242,246) -> rgba(46,163,242,255) rgba(255,59,0,26) rgba(255,51,0,25)` |
+| 400 px | yes | 1 | no | `canvas:0:colors: rgba(46,163,242,255) rgba(45,162,241,187) rgba(46,163,242,246) -> rgba(46,163,242,255) rgba(255,59,0,26) rgba(255,51,0,25)` |
+
+Properties that changed (any width): `canvas:0:colors`.
+
+Phone overflow at 400 px: no.
+
+Note: Track (the unfilled ring) colour: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json fields Circle Background Color, attrName circle.advanced.background (value.color; empty by default, the track then takes the bar colour); Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/CircleCounter/CircleCounterModule.php:523 passes it as trackColor, drawn on the canvas at the track opacity (default 0.1). Compared by canvas pixels.
+
+Registered paths added:
+
+- `circle.advanced.background.{bp}.value.color`
+
+## rs-circle-track-opacity
+
+Block: `circle-counter`, also comparing what its canvas elements draw (size and most frequent pixel colours). Set on top of the base block:
+
+- `circle.advanced.background.desktop.value.opacity` = `"1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | no | `canvas:0:colors: rgba(46,163,242,255) rgba(255,59,0,26) rgba(255,51,0,25) -> rgba(46,163,242,255) rgba(255,59,0,255) rgba(255,58,0,254)` |
+| 900 px | yes | 1 | no | `canvas:0:colors: rgba(46,163,242,255) rgba(255,59,0,26) rgba(255,51,0,25) -> rgba(46,163,242,255) rgba(255,59,0,255) rgba(255,58,0,254)` |
+| 400 px | yes | 1 | no | `canvas:0:colors: rgba(46,163,242,255) rgba(255,59,0,26) rgba(255,51,0,25) -> rgba(46,163,242,255) rgba(255,59,0,255) rgba(255,58,0,254)` |
+
+Properties that changed (any width): `canvas:0:colors`.
+
+Phone overflow at 400 px: no.
+
+Note: Track opacity: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json field Circle Background Opacity, attrName circle.advanced.background (value.opacity, default 0.1); Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/CircleCounter/CircleCounterModule.php:524 passes it as trackAlpha. Compared by canvas pixels (the track pixels change alpha). The base sets a track colour (#ff3b00): a first run with no track colour in the base measured no change (DEAD), so the opacity is taught only together with a colour.
+
+Registered paths added:
+
+- `circle.advanced.background.{bp}.value.opacity`
+
+## rs-circle-percent-off
+
+Block: `circle-counter`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `number.advanced.percentSign.desktop.value` = `"off"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | no | `text:innerText: 50%
+
+PROBE -> 50
+
+PROBE` |
+| 900 px | yes | 1 | no | `text:innerText: 50%
+
+PROBE -> 50
+
+PROBE` |
+| 400 px | yes | 1 | no | `text:innerText: 50%
+
+PROBE -> 50
+
+PROBE` |
+
+Properties that changed (any width): `text:innerText`.
+
+Phone overflow at 400 px: no.
+
+Note: Percent sign after the number: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json attributes.number.settings.advanced.percentSign, attrName number.advanced.percentSign (default on); Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/CircleCounter/CircleCounterModule.php:731 prints the % sign only when it is on. A change of WHAT is printed, so the probe compares the rendered text (text: true). Not the number counter's enablePercentSign.
+
+Registered paths added:
+
+- `number.advanced.percentSign.{bp}.value`
+
+## rs-circle-number-color
+
+Block: `circle-counter`. Set on top of the base block:
+
+- `number.decoration.font.font.desktop.value.color` = `"#f2f4fa"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 51 | yes | `3:p:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 900 px | yes | 51 | yes | `3:p:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 400 px | yes | 51 | yes | `3:p:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Number text colour on the circle counter (path already registered from the number counter; this proves it on the circle counter): Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json attributes.number decoration.font, selector {{selector}}.et_pb_circle_counter .percent p (module.json line 302). Measured by computed colour.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rs-circle-title-color
+
+Block: `circle-counter`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.color` = `"#f2f4fa"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `7:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)` |
+| 900 px | yes | 17 | yes | `7:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)` |
+| 400 px | yes | 17 | yes | `7:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Title text colour on the circle counter (registered path, proven here on this module): Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json attributes.title decoration.font, selector {{selector}}.et_pb_circle_counter h3 ... .et_pb_module_header (module.json line 228). Measured by computed colour.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).

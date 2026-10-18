@@ -11,7 +11,7 @@
  * Candidates that rendered nothing (DEAD), overflow a phone, or ended in an ERROR are never added. A result the probe labelled
  * `cssOnly` (the emitted stylesheet changed but no computed style did) is promoted only when the candidate sets
  * `"allowCssOnly": true` AND has a non-empty `note` saying why a stylesheet-only effect is proof enough. A candidate's optional `parent`,
- * `neighbours`, `siblings`, `wrapperBase`, `geometry`, `children`, `state` (hover / scroll with `scrollAt` / click with `clickSelector`), `settleMs`, `ignore`, `pseudo`, `text` and `attrs` (see scripts/verify-shapes.cjs) are described in its evidence section,
+ * `neighbours`, `siblings`, `wrapperBase`, `geometry`, `children`, `state` (hover / scroll with `scrollAt` / click with `clickSelector`), `settleMs`, `ignore`, `pseudo`, `text`, `canvas` and `attrs` (see scripts/verify-shapes.cjs) are described in its evidence section,
  * which also lists the property names that changed (`changedProps` of the probe result, when present). Every candidate that is NOT promoted (dead, overflowing a
  * phone, an error, a stylesheet-only result without `allowCssOnly`, an unreliable measurement) is listed with its reason in a
  * `## Not taught (<candidates file name>)` section of the evidence file (followed by the items of the optional hand-written
@@ -170,6 +170,9 @@ foreach ( $candidates as $c ) {
         }
         if ( true === ( $c['text'] ?? null ) ) {
             $where .= ', also comparing the rendered text of the element';
+        }
+        if ( true === ( $c['canvas'] ?? null ) ) {
+            $where .= ', also comparing what its canvas elements draw (size and most frequent pixel colours)';
         }
         if ( is_array( $c['attrs'] ?? null ) && $c['attrs'] !== [] ) {
             $where .= ', also comparing the element attributes ' . implode( ', ', array_map( static fn ( $n ): string => '`' . $n . '`', $c['attrs'] ) );

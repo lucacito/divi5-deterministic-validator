@@ -1,0 +1,149 @@
+[
+    {
+        "id": "rs-circle-bar-color",
+        "block": "circle-counter",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#151c33"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "circle.advanced.color.desktop.value": "#3dff9a"
+        },
+        "expect": "PASS",
+        "note": "Bar (fill) colour of the circle counter: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json attributes.circle.settings.advanced.circle fields.color, attrName circle.advanced.color (default the site primary colour gcid-primary-color); Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/CircleCounter/CircleCounterModule.php:522 passes it to the front-end script as barColor, and the easyPieChart script draws it on the counter canvas. No CSS shows it, so the probe compares the canvas pixels (canvas: true).",
+        "canvas": true
+    },
+    {
+        "id": "rs-circle-track-color",
+        "block": "circle-counter",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#151c33"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "circle.advanced.background.desktop.value.color": "#ff3b00"
+        },
+        "expect": "PASS",
+        "note": "Track (the unfilled ring) colour: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json fields Circle Background Color, attrName circle.advanced.background (value.color; empty by default, the track then takes the bar colour); Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/CircleCounter/CircleCounterModule.php:523 passes it as trackColor, drawn on the canvas at the track opacity (default 0.1). Compared by canvas pixels.",
+        "canvas": true
+    },
+    {
+        "id": "rs-circle-track-opacity",
+        "block": "circle-counter",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#151c33"
+                            }
+                        }
+                    }
+                }
+            },
+            "circle": {
+                "advanced": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ff3b00"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "circle.advanced.background.desktop.value.opacity": "1"
+        },
+        "expect": "PASS",
+        "note": "Track opacity: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json field Circle Background Opacity, attrName circle.advanced.background (value.opacity, default 0.1); Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/CircleCounter/CircleCounterModule.php:524 passes it as trackAlpha. Compared by canvas pixels (the track pixels change alpha). The base sets a track colour (#ff3b00): a first run with no track colour in the base measured no change (DEAD), so the opacity is taught only together with a colour.",
+        "canvas": true
+    },
+    {
+        "id": "rs-circle-percent-off",
+        "block": "circle-counter",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#151c33"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "number.advanced.percentSign.desktop.value": "off"
+        },
+        "expect": "PASS",
+        "note": "Percent sign after the number: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json attributes.number.settings.advanced.percentSign, attrName number.advanced.percentSign (default on); Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/CircleCounter/CircleCounterModule.php:731 prints the % sign only when it is on. A change of WHAT is printed, so the probe compares the rendered text (text: true). Not the number counter's enablePercentSign.",
+        "text": true
+    },
+    {
+        "id": "rs-circle-number-color",
+        "block": "circle-counter",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#151c33"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "number.decoration.font.font.desktop.value.color": "#f2f4fa"
+        },
+        "expect": "PASS",
+        "note": "Number text colour on the circle counter (path already registered from the number counter; this proves it on the circle counter): Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json attributes.number decoration.font, selector {{selector}}.et_pb_circle_counter .percent p (module.json line 302). Measured by computed colour."
+    },
+    {
+        "id": "rs-circle-title-color",
+        "block": "circle-counter",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#151c33"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "title.decoration.font.font.desktop.value.color": "#f2f4fa"
+        },
+        "expect": "PASS",
+        "note": "Title text colour on the circle counter (registered path, proven here on this module): Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json attributes.title decoration.font, selector {{selector}}.et_pb_circle_counter h3 ... .et_pb_module_header (module.json line 228). Measured by computed colour."
+    }
+]
