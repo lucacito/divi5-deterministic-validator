@@ -49,7 +49,7 @@ skeleton:
   works) → testimonials/case studies → about/credibility → FAQ → final CTA
   (book a call).
 - **Local business**: hero (offer + location) → why us → services → gallery →
-  reviews → hours/location/map → final CTA (reserve / call now).
+  reviews → hours/location → final CTA (reserve / call now).
 - **Product / e-commerce**: hero (product shot + value) → problem → benefits →
   features → reviews → guarantee → FAQ → final CTA (buy now).
 - **Course / coaching**: hero (transformation promise) → pain → method → what you
@@ -58,46 +58,53 @@ Reorder and drop sections to fit — but keep the spine: **attention → problem
 solution → proof → action.**
 
 ## The conversion flow (in order)
-Each item: its job, and the recipe to start from (get_section_recipes
-{"name":"…"}). Skip a section only when the brief makes it irrelevant.
+Each item: its job and where to start. `role=<role>` means call get_section_recipes
+{"role":"<role>"} and pick by layout and mood; the named recipes are good first picks
+(fetch one with {"name":"…"}). Skip a section only when the brief makes it irrelevant.
 
-1. **Hero — "Am I in the right place?"** `hero-cta`
+1. **Hero — "Am I in the right place?"** `role=hero` (e.g. `hero-split-right`,
+   `hero-image-scrim`); an inner page opens with `role=header`.
    First viewport must say WHAT is offered, WHO it's for, WHY it matters, and the
    ONE action. Include: benefit headline, supporting sub-paragraph, primary CTA,
-   a relevant visual/mockup, and (if available) a small trust signal. The visual
-   sits in the hero recipe or via a `split-image-text` hero variant.
-2. **Problem / pain — "They get my situation."** `icon-features` / `card-grid-3`
-   / `split-image-text` (before-state). Name the visitor's current frustrations.
-   3 sharp pains beat one vague paragraph. Build emotional resonance before
-   pitching anything.
+   a relevant visual/mockup, and (if available) a small trust signal.
+2. **Problem / pain — "They get my situation."** `list-icon-dividers` or
+   `icon-features` (3 sharp pains beat one vague paragraph), `compare-two-panels`
+   (before vs after). Build emotional resonance before pitching anything.
 3. **Solution / value proposition — "Here's the better way."** `split-image-text`
    or `section-intro` + visual. Frame old-way-vs-new-way: the problem is hard →
    our approach solves it by X. Sell the mechanism in plain language.
-4. **Benefits — outcomes, not features.** `blurb-grid` / `icon-features` /
-   `icon-values` / `card-grid-4`. Each: icon + short title + one line +
-   the outcome for the visitor. Write "Save hours every week", not "Powerful
-   dashboard". 3–6 benefits.
-5. **Social proof / credibility — reduce risk.** `testimonial`, `stats-counter`
-   (animated metrics), `slider` (multiple quotes), `image-carousel` /
-   `image-gallery` (client logos / results gallery). Use realistic placeholders,
-   clearly marked for replacement — NEVER fabricate specific named testimonials
-   or invented metrics as if real. Mark them e.g. "[Replace with a real client
-   quote]".
-6. **How it works — make it feel easy.** `card-grid-3` / `icon-features` as
-   numbered steps (Step 1 → 2 → 3). Use for any product/service with a process.
-   Keep it to 3–4 steps, visually simple.
-7. **Feature / detail — substance after value.** alternating `split-image-text`
-   (image left, then image right). For each: what it does → why it matters →
-   what changes for the customer. Only after the visitor already wants the
-   outcome.
-8. **Objection handling / FAQ — remove friction before the ask.** Build from the
-   `divi/accordion > divi/accordion-item` compound module (see get_style_guide).
+4. **Benefits — outcomes, not features.** `blurb-grid`, `features-bento`,
+   `checklist-two-column`. Each: icon + short title + one line + the outcome for
+   the visitor. Write "Save hours every week", not "Powerful dashboard". 3–6 benefits.
+5. **Social proof / credibility — reduce risk.** `role=proof` (`proof-logo-wall`
+   right under the hero, `proof-rating-strip` near a price, `proof-press-quotes`),
+   `role=stats` (`stats-counter-band`) and `role=testimonials` (`quote-single-large`,
+   `testimonials-avatar-grid`). Use realistic placeholders, clearly marked for
+   replacement — NEVER fabricate specific named testimonials or invented metrics as
+   if real. Mark them e.g. "[Replace with a real client quote]". A counter needs a
+   number: the recipes show demo values; use a figure the owner can prove, or remove it.
+6. **How it works — make it feel easy.** `role=process`: `steps-numbered`,
+   `steps-horizontal` or `timeline-vertical`. Use for any product/service with a
+   process. Keep it to 3–4 steps, visually simple.
+7. **Feature / detail — substance after value.** `features-zigzag`,
+   `features-accordion-image` or alternating `split-image-text`. For each: what it
+   does → why it matters → what changes for the customer. Only after the visitor
+   already wants the outcome.
+8. **Pricing — "What does it cost?"** `role=pricing`: `pricing-three-tier`,
+   `pricing-two-plan-highlight`, `pricing-comparison-table`. Every price and plan
+   name is the owner's; mark the recommended plan with a label, not colour alone.
+9. **Objection handling / FAQ — remove friction before the ask.** `role=faq`:
+   `faq-accordion`, `faq-two-column` or `faq-toggle-list`.
    Answer the real doubts: Is it hard? How long? Who's it for? What happens next?
    What does it cost / is there a guarantee?
-9. **Final conversion — close.** `hero-cta` (restyled) / `contact-form` /
-   `newsletter-social`. Restate the promise, ONE clear action, minimal
-   distractions (no nav-like clutter, no competing links). This is where lead
-   capture forms belong.
+10. **Final conversion — close.** `role=cta`: `cta-band`, `cta-split-form` (lead
+   capture), `cta-card-over-image`; `cta-countdown` only for a real deadline the
+   owner gives. Restate the promise, ONE clear action, minimal distractions (no
+   nav-like clutter, no competing links). This is where lead capture forms belong.
+
+**Transitions — change the rhythm.** `role=transition`: `transition-wave-band`
+between two sections on the page colour; `transition-overlap-panel` after a hero
+or image-led section, followed by a section on the page colour.
 
 ## Copywriting rules (the page lives or dies here)
 - **Headline formula:** "Get [desired result] without [main frustration]" or
@@ -111,6 +118,8 @@ Each item: its job, and the recipe to start from (get_section_recipes
   fact (a stat, a client name, a quote, an address), write a plausible, on-brand
   placeholder and bracket it: "[Replace: client name]". Don't ship lorem ipsum
   and don't pass invented specifics off as real.
+- **Recipe placeholders are not copy.** Replace every bracketed text, demo counter
+  value and image alt text in a recipe with the owner's real content, or remove it.
 - Speak to ONE reader in second person ("you"), in the brief's language.
 
 ## CTA strategy

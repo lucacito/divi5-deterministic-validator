@@ -16379,12 +16379,6 @@ Note: The value used by list-icon-dividers and timeline-vertical: sizing.size ["
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
 
-## Not taught (recipe-features)
-
-Candidates from `recipe-features.json` that were measured and are not taught, with the reason:
-
-- `rf-size-grow-only-trap`: overflows a phone at 400 px (the page is 600 px wider than the screen). Control that documents the trap: sizing.size ["flexGrow"] alone on the same text group (base: no size setting, so the browser default flex-shrink 1 wraps the line). Divi writes flex-shrink 0 with it, the group takes its max-content width and the page becomes wider than a 400px phone. Never use ["flexGrow"] alone on a flex child that holds text. Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:140-175 (the size list: flexGrow in it writes flex-grow 1, otherwise 0; flexShrink absent writes flex-shrink 0, so the item keeps its max-content width).
-
 ## rs-circle-bar-color
 
 Block: `circle-counter`, also comparing what its canvas elements draw (size and most frequent pixel colours). Set on top of the base block:
@@ -17154,3 +17148,27 @@ Note: A fill for the captcha answer box through the captcha attribute. Divi 5.15
 Registered paths added:
 
 - `captcha.decoration.background.{bp}.value.color`
+
+## Not taught (recipe-features)
+
+Candidates from `recipe-features.json` that were measured and are not taught, with the reason:
+
+- `rf-size-grow-only-trap`: overflows a phone at 400 px (the page is 600 px wider than the screen). Control that documents the trap: sizing.size ["flexGrow"] alone on the same text group (base: no size setting, so the browser default flex-shrink 1 wraps the line). Divi writes flex-shrink 0 with it, the group takes its max-content width and the page becomes wider than a 400px phone. Never use ["flexGrow"] alone on a flex child that holds text. Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:140-175 (the size list: flexGrow in it writes flex-grow 1, otherwise 0; flexShrink absent writes flex-shrink 0, so the item keeps its max-content width).
+
+Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-recipe-features.json`):
+
+- Tabs: the tab bar background and the separator lines: no attribute this plugin may write reaches them (source, not rendered as a candidate). Divi 5.15.1 Divi/style-static.min.css paints the bar `ul.et_pb_tabs_controls{background-color:#f4f4f4}` and the frame and separators #d9d9d9 (`.et_pb_tabs{border:1px solid #d9d9d9}`, `.et_pb_tabs_controls li{border-right:1px solid #d9d9d9}`, `ul.et_pb_tabs_controls:after{border-top:1px solid #d9d9d9}`); the tabs module.json (includes/builder-5/visual-builder/packages/module-library/src/components/tabs/module.json, customCssFields.tabsControls, selectorSuffix ' .et_pb_tabs_controls') reaches the bar only through a custom CSS field, and the plugin never saves custom CSS. The tab, active tab and content colours (rf-tabs-*) were rendered, but on a dark or tinted look the bar and the lines stay light grey, so an accordion is the themable choice (the features-tabs recipe was dropped for this reason)
+- Accordion: an icon on the open item: Divi draws none (source, not rendered): Divi 5.15.1 Divi/style-static.min.css hides it with `.et_pb_accordion .et_pb_accordion_item.et_pb_toggle_open>.et_pb_toggle_title:before{display:none}`, and the accordion module.json (includes/builder-5/visual-builder/packages/module-library/src/components/accordion/module.json) has closedToggleIcon but no openToggleIcon. The stand-alone toggle has an open icon colour (rt-toggle-open-icon, rendered)
+
+## Not taught (recipe-cta)
+
+Candidates from `recipe-cta.json` that were measured and are not taught, with the reason:
+
+
+Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-recipe-cta.json`):
+
+- Countdown: a unit that has reached zero: Divi dims it (source): Divi 5.15.1 Divi/style-static.min.css has `.et_pb_countdown_timer .section.zero p{opacity:.4}`, so a past end date, and every unit at 00 near the end of a real deadline, prints faint numbers. Observed in the Task 16 recipe render (the cta-countdown recipe with a past date failed the contrast check at 1.8 to 2.5:1), not a separate candidate. The rc-cd-* candidates use Divi's own past default end date and compare colours, sizes and families only; no setting was probed against the dimming
+- Map module: not probed and not to be used: it needs a Google Maps API key (`et_pb_get_google_api_key()`, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Map/MapModule.php:182) and enqueues Google's script from maps.googleapis.com (MapModule.php:183-207), a third-party request the plugin never adds
+- Filterable portfolio module: not probed: it lists the site's own Divi Projects (post_type project, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/FilterablePortfolio/FilterablePortfolioModule.php:104; categories from project_category, :117-126), so a recipe cannot hold its items, and its filter bar keeps Divi's stylesheet colours (for example `.et_pb_filterable_portfolio .et_pb_portfolio_filters li a.active{color:#2ea3f2}`, Divi/style-static.min.css); no filter bar setting was probed
+- Before/after module: the label and handle settings: not probed: the before-after-compare recipe keeps Divi's neutral handle and shows no labels
+- Contact form: spam protection (`module.advanced.spamProtection`) and visible labels (`showLabels`): not probed: the forms keep Divi's basic captcha (on by default) and hidden labels (the placeholders are the only labels; their colour is rc-cf-placeholder-color)

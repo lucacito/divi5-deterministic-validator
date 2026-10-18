@@ -30,6 +30,19 @@ From the brief, choose pages. A typical business site:
 Add others the brief implies (Pricing, Case Studies, Blog, Careers…). Keep it
 focused — 4–6 pages is a strong v1.
 
+Sections per page type (`role=<role>`: browse get_section_recipes {"role":"<role>"}):
+- **Home**: `role=hero`, then the landing guide's flow (`role=proof`,
+  `role=features`, `role=process`, `role=testimonials`, `role=cta`).
+- **About**: `role=header`, `founder-note` or `story-timeline`, `values-list`,
+  `team-grid`, then `role=cta`.
+- **Services**: `role=header`, `role=features`, `role=process`, `role=faq`, `role=cta`.
+- **Pricing**: `role=header`, `role=pricing`, `role=faq`, `role=cta`.
+- **Portfolio**: `role=header`, `gallery-masonry-style`, `portfolio-featured-grid`
+  or `before-after-compare`, then `role=testimonials`.
+- **FAQ**: `role=header`, `role=faq`, then `role=contact`.
+- **Contact**: `role=header`, `contact-details-form` or `contact-location-form`.
+Inner pages open with a `role=header` page header (one h1), not a hero.
+
 ## 2. Lock ONE design system (reuse on EVERY page)
 Pick a design language first: call get_style_guide topic=design-languages, choose ONE design language
 for the whole site and state it before building any page. It is a design-system decision, so it never

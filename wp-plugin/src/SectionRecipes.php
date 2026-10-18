@@ -223,8 +223,11 @@ final class SectionRecipes
             'on this site. Call list_global_styles and swap them for this site\'s own ids, or remove the',
             '"modulePreset" attribute (a module without one gets this site\'s default preset).',
             '',
+            'Bracketed texts, demo counter values and image alt texts are placeholders: replace each with the owner\'s',
+            'real content or remove it; never keep an invented fact.',
+            '',
             'Persuasion stages the recipes serve (flow in get_landing_guide): Hero, Problem, Solution, Benefits,',
-            'Social proof, Final CTA, Resources. Pick a recipe per stage.',
+            'Social proof, How it works, Pricing, FAQ, Final CTA, Contact, Resources. Pick a recipe per stage.',
         ];
 
         $byRole = [];

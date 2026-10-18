@@ -1,0 +1,22 @@
+[
+  {
+    "item": "Countdown: a unit that has reached zero",
+    "reason": "Divi dims it (source): Divi 5.15.1 Divi/style-static.min.css has `.et_pb_countdown_timer .section.zero p{opacity:.4}`, so a past end date, and every unit at 00 near the end of a real deadline, prints faint numbers. Observed in the Task 16 recipe render (the cta-countdown recipe with a past date failed the contrast check at 1.8 to 2.5:1), not a separate candidate. The rc-cd-* candidates use Divi's own past default end date and compare colours, sizes and families only; no setting was probed against the dimming"
+  },
+  {
+    "item": "Map module",
+    "reason": "not probed and not to be used: it needs a Google Maps API key (`et_pb_get_google_api_key()`, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Map/MapModule.php:182) and enqueues Google's script from maps.googleapis.com (MapModule.php:183-207), a third-party request the plugin never adds"
+  },
+  {
+    "item": "Filterable portfolio module",
+    "reason": "not probed: it lists the site's own Divi Projects (post_type project, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/FilterablePortfolio/FilterablePortfolioModule.php:104; categories from project_category, :117-126), so a recipe cannot hold its items, and its filter bar keeps Divi's stylesheet colours (for example `.et_pb_filterable_portfolio .et_pb_portfolio_filters li a.active{color:#2ea3f2}`, Divi/style-static.min.css); no filter bar setting was probed"
+  },
+  {
+    "item": "Before/after module: the label and handle settings",
+    "reason": "not probed: the before-after-compare recipe keeps Divi's neutral handle and shows no labels"
+  },
+  {
+    "item": "Contact form: spam protection (`module.advanced.spamProtection`) and visible labels (`showLabels`)",
+    "reason": "not probed: the forms keep Divi's basic captcha (on by default) and hidden labels (the placeholders are the only labels; their colour is rc-cf-placeholder-color)"
+  }
+]
