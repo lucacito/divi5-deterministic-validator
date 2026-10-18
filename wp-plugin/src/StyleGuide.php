@@ -16,9 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 final class StyleGuide
 {
-    /** The one line the default guide ends with: how to ask for a topic. */
-    private const TOPIC_LINE = 'Topics: call get_style_guide with topic=<name>: design-languages, design-language:<id>.';
-
     /**
      * The topics served on request: `design-languages`, `design-language:<id>` for every design language, then the
      * vocabulary-family topics (each teaches only shapes proven on the real Divi; see docs/shape-evidence-5.15.1.md).
@@ -44,6 +41,23 @@ final class StyleGuide
     }
 
     /**
+     * The one line the default guide ends with: how to ask for a topic, naming every topic. Generated from topics() so it cannot
+     * drift; the design languages are one placeholder entry instead of one entry per id.
+     */
+    private static function topicLine(): string
+    {
+        $names = [];
+        foreach ( self::topics() as $topic ) {
+            $name = str_starts_with( $topic, 'design-language:' ) ? 'design-language:<id>' : $topic;
+            if ( ! in_array( $name, $names, true ) ) {
+                $names[] = $name;
+            }
+        }
+
+        return 'Topics: call get_style_guide with topic=<name>: ' . implode( ', ', $names ) . '.';
+    }
+
+    /**
      * The guide as Markdown. Pure — no WordPress calls — so it is trivially testable.
      * With no topic (null or ''), the default guide; with a topic, only that topic's text.
      * An unknown topic is a normal answer that lists the valid topics.
@@ -51,7 +65,7 @@ final class StyleGuide
     public static function markdown( ?string $topic = null ): string
     {
         if ( null === $topic || '' === $topic ) {
-            return self::guide() . "\n\n" . self::TOPIC_LINE;
+            return self::guide() . "\n\n" . self::topicLine();
         }
         if ( 'design-languages' === $topic ) {
             return DesignLanguages::markdown();

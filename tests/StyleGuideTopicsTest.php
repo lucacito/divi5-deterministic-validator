@@ -36,7 +36,16 @@ class StyleGuideTopicsTest extends TestCase
     private const ORIGINAL_LENGTH = 27908;
     private const MAX_GROWTH = 1200;
 
-    private const TOPIC_LINE = 'Topics: call get_style_guide with topic=<name>: design-languages, design-language:<id>.';
+    /** Ruling 19: the default guide's last line names EVERY topic; the languages collapse to one placeholder. */
+    private static function expectedTopicLine(): string
+    {
+        $names = [];
+        foreach ( StyleGuide::topics() as $topic ) {
+            $names[] = str_starts_with( $topic, 'design-language:' ) ? 'design-language:<id>' : $topic;
+        }
+
+        return 'Topics: call get_style_guide with topic=<name>: ' . implode( ', ', array_values( array_unique( $names ) ) ) . '.';
+    }
 
     /** @return array{0:?int,1:string} */
     private function mcp( array $args ): array
@@ -67,10 +76,38 @@ class StyleGuideTopicsTest extends TestCase
         // and Task 10 (the rewritten design paragraph with composition rules and the advisory instruction).
         $this->assertLessThanOrEqual( self::MAX_GROWTH, strlen( $text ) - self::ORIGINAL_LENGTH );
         $this->assertGreaterThan( 0, strlen( $text ) - self::ORIGINAL_LENGTH );
-        $this->assertStringEndsWith( self::TOPIC_LINE, $text );
+        $this->assertStringEndsWith( "\n\n" . self::expectedTopicLine(), $text );
         $this->assertSame( 1, substr_count( $text, 'Topics: call get_style_guide' ) );
         $this->assertSame( $text, StyleGuide::markdown( null ) );
         $this->assertSame( $text, StyleGuide::markdown( '' ), 'an empty topic means none' );
+    }
+
+    public function testTheTopicLineNamesEveryTopicAndEachNamedTopicIsServed(): void
+    {
+        $line = self::expectedTopicLine();
+        $this->assertStringNotContainsString( "\n", $line, 'one line' );
+        $this->assertStringStartsWith( 'Topics: call get_style_guide with topic=<name>: design-languages, design-language:<id>, backgrounds, ', $line );
+        $text = StyleGuide::markdown();
+        $this->assertSame( 1, substr_count( $text, 'design-language:<id>' ), 'the language ids are one placeholder, not ten entries' );
+        $last = substr( $text, (int) strrpos( $text, "\n\n" ) + 2 );
+        $this->assertSame( $line, $last, 'the final line of the default guide is exactly the generated line' );
+        $named = explode( ', ', substr( $line, strlen( 'Topics: call get_style_guide with topic=<name>: ' ), -1 ) );
+        foreach ( StyleGuide::topics() as $topic ) {
+            $key = str_starts_with( $topic, 'design-language:' ) ? 'design-language:<id>' : $topic;
+            $this->assertContains( $key, $named, $topic . ' is announced in the default guide' );
+            $reply = StyleGuide::markdown( $topic );
+            $this->assertNotSame( '', trim( $reply ) );
+            $this->assertStringNotContainsString( 'Unknown topic', $reply, $topic . ' is served' );
+        }
+        foreach ( $named as $key ) {
+            if ( 'design-language:<id>' === $key ) {
+                continue;
+            }
+            $this->assertContains( $key, StyleGuide::topics(), $key . ' named in the line is a real topic' );
+        }
+        $this->assertContains( 'typography', $named );
+        $this->assertContains( 'imagery', $named );
+        $this->assertContains( 'controls', $named );
     }
 
     public function testTopicsListIsTheIndexPlusEveryLanguageAndTheFamilyTopics(): void

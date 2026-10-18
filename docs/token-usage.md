@@ -19,7 +19,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | A refusal: 96 badly nested blocks | 96 violations, as sent now | 8,085 | 2,022 |
 | A refusal: 96 badly nested blocks (before the compact form) | the same 96 violations, each with the full allowed list | 143,650 | 35,913 |
 | A preview (dry run) of a one-line text change | verdict plus a capped diff, on the median page | 394 | 99 |
-| The style guide (default) | get_style_guide with no topic, read once before building a layout | 28,404 | 7,101 |
+| The style guide (default) | get_style_guide with no topic, read once before building a layout | 28,512 | 7,128 |
 | The style guide, topic design-languages | get_style_guide with topic "design-languages", only when asked for | 698 | 175 |
 | The style guide, topic design-language:editorial | get_style_guide with topic "design-language:editorial", only when asked for | 1,669 | 418 |
 | The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 1,931 | 483 |
