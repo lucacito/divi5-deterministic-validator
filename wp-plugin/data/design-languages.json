@@ -54,7 +54,7 @@
     "section_padding": "100px top and bottom on desktop, 72px on tablet, 48px on phone.",
     "shadow": "No drop shadows; depth comes from layers. Cards use a semi-transparent background (rgba of the text colour at about 6%) with a 1px border at about 12% white. Real frosted-glass blur is not available in Divi's settings, so do not promise it.",
     "motion": "lively",
-    "rhythm": "Every section sits on the same deep background; vary the gradient direction or depth from section to section (a lighter navy glow behind the hero, a deeper tone further down). Use a grid of translucent cards for features and proof, and keep the closing call to action on a gradient from the accent colour toward the background.",
+    "rhythm": "Every section sits on the same deep background; vary the gradient direction or depth from section to section (a lighter navy glow behind the hero, a deeper tone further down). Use a grid of translucent cards for the features and for any proof the owner supplied (logos, quotes or figures; never invented), and keep the closing call to action on a gradient from the accent colour toward the background.",
     "favors": ["grid", "bento", "centered", "carousel", "overlap"],
     "avoids": ["zigzag", "list"],
     "hero": "Centered: a short eyebrow, a bold headline in the text colour, one muted sentence, two buttons (solid accent plus a bordered ghost button), and a product image or card below with a soft glow behind it.",
@@ -114,11 +114,11 @@
     "section_padding": "88px top and bottom on desktop, 64px on tablet, 40px on phone. Tight, even, repeated: the same padding on every section.",
     "shadow": "No shadows at all. Structure comes from 1px hairline borders in the border colour and from visible grid lines between cells. The accent colour is reserved for the primary button and one small marker per section; links stay in the text colour with an underline.",
     "motion": "none",
-    "rhythm": "One near-black background for the whole page. Divide sections with a single hairline rule instead of a colour change, and lay features and proof out on a ruled grid of equal cells. Use small monospace labels for numbers, versions and steps. Reserve the neon accent for the primary button and one small marker per section, nothing else.",
+    "rhythm": "One near-black background for the whole page. Divide sections with a single hairline rule instead of a colour change, and lay the features, and any proof the owner supplied (logos, quotes or figures; never invented), out on a ruled grid of equal cells. Use small monospace labels for numbers, versions and steps. Reserve the neon accent for the primary button and one small marker per section, nothing else.",
     "favors": ["grid", "bento", "list", "form", "stacked"],
     "avoids": ["carousel", "overlap", "zigzag"],
     "hero": "Left-aligned and literal: a small monospace eyebrow that looks like a command or version label, a tight geometric headline, two lines of plain copy, a neon button and a quiet bordered button, and a ruled code-like card or screenshot on the right.",
-    "cta": "A bordered full-width block with a monospace headline, one line of copy and a single neon button; below it a one-line install or contact snippet in muted text."
+    "cta": "A bordered full-width block with a monospace headline, one line of copy and a single neon button; below it, only if the owner supplied one, a one-line install command or contact line in muted text (never invent a command, an address or a number)."
   },
   {
     "id": "playful-pastel",
@@ -204,7 +204,7 @@
     "section_padding": "104px top and bottom on desktop, 72px on tablet, 48px on phone. Cards inside a section sit 24px apart.",
     "shadow": "Soft and cool, never grey and never heavy. On a card or panel use box shadow preset3 with a vertical offset of 16px, a blur of 40px and the colour rgba(30,33,64,0.10); always set the preset first, because offsets and colours do nothing without it. Cards also carry a 1px border in the border colour. Buttons get no shadow of their own: the primary button has the accent background and, on hover, the deeper indigo #3730a3.",
     "motion": "subtle",
-    "rhythm": "Light all the way down, in gentle steps: the lavender page background for the hero, a white section, a section with a soft linear gradient at 180deg from the background colour to a deeper tint (#e8ebff), another white section, then one accent-coloured band that carries the inverse text colour. White rounded cards sit on the tints. Put a trust row right under the hero and a three-card feature grid after it, and let each card lift 8px on hover. Entrance motion: one fade on the hero headline and on the first row of cards, nothing else.",
+    "rhythm": "Light all the way down, in gentle steps: the lavender page background for the hero, a white section, a section with a soft linear gradient at 180deg from the background colour to a deeper tint (#e8ebff), another white section, then one accent-coloured band that carries the inverse text colour. White rounded cards sit on the tints. Put a trust row right under the hero (placeholders the owner replaces with real logos or facts, or leave it out: never invent names, ratings or figures) and a three-card feature grid after it, and let each card lift 8px on hover. Entrance motion: one fade on the hero headline and on the first row of cards, nothing else.",
     "favors": ["split", "centered", "grid", "carousel", "band"],
     "avoids": ["list", "form", "overlap"],
     "hero": "Split: on the left a short eyebrow, a two-line headline in the text colour, one muted sentence and two buttons (solid accent, then a quiet bordered one); on the right a product screenshot in a 16px-cornered card with a soft circular gradient glow behind it, from a low-opacity accent to fully transparent. Under the buttons sits a trust row of three short lines. The screenshot (Media Library first, otherwise a picture from the built-in pack) and every trust line are placeholders the owner replaces: never invent customer names, logos, ratings, awards or statistics.",

@@ -185,6 +185,67 @@ class RecipeLibraryTest extends TestCase
         }
     }
 
+    /** Frozen, shrink-only list of older recipes allowed to name a language that avoids their layout. */
+    private const MOOD_AVOIDS_EXEMPTIONS = __DIR__ . '/../fixtures/shapes/mood-avoids-exemptions.txt';
+
+    /** The most entries the mood/avoids exemption list may hold. It may only be LOWERED, never raised. */
+    private const MOOD_AVOIDS_EXEMPTION_CAP = 12;
+
+    /**
+     * Languages a recipe's mood names although they `avoid` its layout ('any' stands for every language).
+     *
+     * @param array<string,mixed> $tags
+     * @return list<string>
+     */
+    private static function moodsAvoidingLayout( array $tags ): array
+    {
+        $moods = (array) ( $tags['mood'] ?? [] );
+        $ids   = in_array( 'any', $moods, true ) ? DesignLanguages::ids() : $moods;
+        $bad   = [];
+        foreach ( $ids as $id ) {
+            $lang = DesignLanguages::get( (string) $id );
+            if ( null !== $lang && in_array( $tags['layout'] ?? null, (array) ( $lang['avoids'] ?? [] ), true ) ) {
+                $bad[] = (string) $id;
+            }
+        }
+        return $bad;
+    }
+
+    public function testNoMoodNamesALanguageThatAvoidsTheRecipeLayout(): void
+    {
+        // Every `avoids` entry is a layout, so the layout check below covers every avoid a language declares.
+        foreach ( DesignLanguages::ids() as $id ) {
+            foreach ( (array) ( DesignLanguages::get( $id )['avoids'] ?? [] ) as $avoid ) {
+                $this->assertContains( $avoid, SectionRecipes::LAYOUTS, "$id avoids `$avoid`, which is not a layout this test can check" );
+            }
+        }
+        $exempt = array_values( array_filter( array_map( 'trim', (array) file( self::MOOD_AVOIDS_EXEMPTIONS, FILE_IGNORE_NEW_LINES ) ), static fn ( string $l ): bool => '' !== $l && '#' !== $l[0] ) );
+        $this->assertLessThanOrEqual( self::MOOD_AVOIDS_EXEMPTION_CAP, count( $exempt ), 'the exemption list may only shrink' );
+        $this->assertSame( array_values( array_unique( $exempt ) ), $exempt, 'no duplicate exemption' );
+        $problems = [];
+        foreach ( SectionRecipes::names() as $name ) {
+            $bad = self::moodsAvoidingLayout( (array) SectionRecipes::tags( $name ) );
+            if ( [] !== $bad && ! in_array( $name, $exempt, true ) ) {
+                $problems[] = "$name (" . SectionRecipes::tags( $name )['layout'] . ') names ' . implode( ', ', $bad );
+            }
+        }
+        foreach ( $exempt as $name ) {
+            if ( ! in_array( $name, SectionRecipes::names(), true ) ) {
+                $problems[] = "exempt $name is not a recipe: remove it";
+            } elseif ( [] === self::moodsAvoidingLayout( (array) SectionRecipes::tags( $name ) ) ) {
+                $problems[] = "exempt $name no longer names an avoiding language: remove it from the list and lower the cap";
+            }
+        }
+        $this->assertSame( [], $problems );
+    }
+
+    public function testTheMoodAvoidsCheckCatchesWhatItShould(): void
+    {
+        $this->assertSame( [ 'luxe' ], self::moodsAvoidingLayout( [ 'layout' => 'form', 'mood' => [ 'luxe', 'tech-mono' ] ] ) );
+        $this->assertSame( [], self::moodsAvoidingLayout( [ 'layout' => 'form', 'mood' => [ 'tech-mono' ] ] ) );
+        $this->assertContains( 'brutalist-flat', self::moodsAvoidingLayout( [ 'layout' => 'centered', 'mood' => [ 'any' ] ] ) );
+    }
+
     public function testPairsAreValidAndMeetContrastInEveryLanguage(): void
     {
         $skipped = [];

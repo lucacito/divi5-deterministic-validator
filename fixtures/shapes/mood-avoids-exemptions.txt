@@ -1,0 +1,16 @@
+# Frozen list of older recipes whose `mood` names a design language that `avoids` the recipe's layout
+# (tests/RecipeLibraryTest.php::testNoMoodNamesALanguageThatAvoidsTheRecipeLayout; `any` counts as every language).
+# It may only SHRINK: an entry that no longer violates must be removed (the test fails while it stays), and a new
+# violation is fixed by trimming the mood, never by adding a line here. One recipe name per line.
+blog-feed
+blurb-grid
+card-grid-4
+header-divider-intro
+hero-cta
+icon-features
+icon-values
+image-carousel
+image-gallery
+section-intro
+shop-grid
+slider
