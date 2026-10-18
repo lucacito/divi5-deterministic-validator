@@ -290,6 +290,62 @@ class SectionRecipesTest extends TestCase
         }
     }
 
+    /** Plan 2 Task 16: the calls to action, gallery, contact and transition batch, each with its role/layout, found by the filter, no h1, placeholders only. */
+    public function testCtaGalleryContactAndTransitionBatchIsTaggedFilterableAndInventsNothing(): void
+    {
+        $batch = [
+            'cta-band'                 => ['cta', 'band'],
+            'cta-split-form'           => ['cta', 'split'],
+            'cta-card-over-image'      => ['cta', 'band'],
+            'cta-countdown'            => ['cta', 'centered'],
+            'gallery-masonry-style'    => ['gallery', 'grid'],
+            'portfolio-featured-grid'  => ['gallery', 'bento'],
+            'before-after-compare'     => ['gallery', 'split'],
+            'contact-location-form'    => ['contact', 'split'],
+            'contact-details-form'     => ['contact', 'form'],
+            'transition-wave-band'     => ['transition', 'band'],
+            'transition-overlap-panel' => ['transition', 'overlap'],
+        ];
+        $meta = [];
+        foreach ((array) json_decode((string) file_get_contents(__DIR__ . '/../wp-plugin/data/section-recipes.json'), true) as $r) {
+            $meta[(string) $r['name']] = $r;
+        }
+        $cards = 0;
+        foreach ($batch as $name => [$role, $layout]) {
+            $tags = (array) SectionRecipes::tags($name);
+            $this->assertSame($role, $tags['role'] ?? null, "$name role");
+            $this->assertSame($layout, $tags['layout'] ?? null, "$name layout");
+            $this->assertStringContainsString($name, SectionRecipes::catalog($role, $layout), "$name is listed by the role + layout filter");
+            $markup = (string) SectionRecipes::rawMarkup($name);
+            $this->assertSame(0, preg_match_all('/"headingLevel":"h1"/', $markup), "$name is not a hero: no h1");
+            $this->assertSame(substr_count($markup, '<!-- wp:divi/heading '), preg_match_all('/<!-- wp:divi\/heading [^\n]*"headingLevel":"h[2-4]"/', $markup), "$name: every heading names its level, h2 to h4");
+            $this->assertSame([], self::inventedTexts($markup), "$name: text values that are neither placeholders nor structural copy");
+            $this->assertMatchesRegularExpression('/placeholder/i', (string) ($meta[$name]['when'] ?? ''), "$name: the when text tells the owner to replace the placeholders");
+            // No map module (it needs a Google API key and loads a third-party script) and no filterable portfolio (its filter bar is not themed).
+            $this->assertDoesNotMatchRegularExpression('#wp:divi/(map|fullwidth-map|filterable-portfolio|signup) #', $markup, $name);
+            $fp = DesignVariety::fingerprints('<!-- wp:divi/placeholder -->' . (string) SectionRecipes::recipe($name) . '<!-- /wp:divi/placeholder -->');
+            $cards += $fp[0]['cards'] ? 1 : 0;
+        }
+        $this->assertLessThanOrEqual(2, $cards, 'not more than two of the batch measure as card grids');
+        // Every form keeps Divi's default receiver (the site admin email): no address is invented, none is written.
+        foreach (['cta-split-form', 'contact-location-form', 'contact-details-form'] as $name) {
+            $markup = (string) SectionRecipes::rawMarkup($name);
+            $this->assertStringContainsString('<!-- wp:divi/contact-form ', $markup, $name);
+            $this->assertStringNotContainsString('receiver', $markup, "$name writes no receiver");
+            $this->assertDoesNotMatchRegularExpression('/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/', $markup, "$name holds no email address");
+            $this->assertStringContainsString('"field":{"decoration":{"background"', $markup, "$name sets the field colours (Divi's default grey fields otherwise)");
+        }
+        // The countdown's end date is the labelled far-future placeholder, never a date that reads as a real deadline.
+        $this->assertStringContainsString('"dateTime":{"desktop":{"value":"2099-12-31 23:59"}}', (string) SectionRecipes::rawMarkup('cta-countdown'));
+        $this->assertStringContainsString('Placeholder: set the real end date', (string) SectionRecipes::rawMarkup('cta-countdown'));
+        // Transitions are what their names say: divider edges filled with the neighbours' colour, and a card pulled over a band's edge.
+        $wave = (string) SectionRecipes::rawMarkup('transition-wave-band');
+        $this->assertStringContainsString('"dividers":{"top":', $wave);
+        $this->assertStringContainsString('"bottom":{"desktop":{"value":{"style":"wave"', $wave);
+        $this->assertStringContainsString('"margin":{"top":"-160px"}', (string) SectionRecipes::rawMarkup('transition-overlap-panel'));
+        $this->assertStringContainsString('<!-- wp:divi/before-after-image ', (string) SectionRecipes::rawMarkup('before-after-compare'));
+    }
+
     /**
      * Generic words left beside a placeholder once it is stripped: units of a bracketed figure ("[0.0] out of 5", "[0]x") and the
      * kind of image in an alt ("[Logo 1 name] logo", "[Client name] portrait"). Not claims.
@@ -305,6 +361,9 @@ class SectionRecipesTest extends TestCase
         'Pricing', 'Pick the plan that fits', 'Two ways to work with us', 'Compare plans', 'Every plan, side by side', 'Features',
         'The team', 'The people you will work with', 'A note from the founder', 'What we stand for', 'Our values', 'FAQ',
         'Questions, answered', 'Good to know before you start', 'What people ask us', 'Our story', 'How we got here',
+        // Task 16: eyebrows and the labels of a contact list and a before/after pair (what a row is, not what it says).
+        'Get started', 'Next step', 'Gallery', 'Selected work', 'Before and after', 'Before', 'After', 'Visit or write', 'Address',
+        'Opening hours', 'Contact', 'Email', 'Phone', 'Hours',
     ];
 
     /**
@@ -379,6 +438,11 @@ class SectionRecipesTest extends TestCase
         $this->assertSame(['text: <p>Pro plan $29 [period]</p>', 'text: <p>Jane Doe [Role]</p>', 'text: <p>[Price] per month, billed 12 times</p>', 'text: <p>Placeholder: Pro plan at $29</p>'],
             self::inventedTexts($t('Pro plan $29 [period]') . $t('Jane Doe [Role]') . $t('[Price] per month, billed 12 times') . $t('Placeholder: Pro plan at $29')),
             'invented words, prices and figures beside a placeholder are caught');
+        // Task 16: invented contact details and an offer deadline are caught; the generic row labels pass.
+        $this->assertSame(['text: <p>hello@acme.com</p>', 'text: <p>+44 20 7946 0000</p>', 'text: <p>12 High Street, [Postcode and city]</p>', 'heading: Offer ends Friday'],
+            self::inventedTexts($t('hello@acme.com') . $t('+44 20 7946 0000') . $t('12 High Street, [Postcode and city]') . $h('Offer ends Friday')),
+            'invented contact details and deadlines are caught');
+        $this->assertSame([], self::inventedTexts($t('Email') . $t('[Email address]') . $h('Opening hours') . $t('Before')));
         $this->assertSame([], self::inventedTexts($t('[0.0] out of 5') . $t('[00]%') . $t('[Client name] / [Role, company]') . $t('&mdash; [Founder first name]') . $t('Placeholder: replace 80% with a figure you can prove')));
     }
 
