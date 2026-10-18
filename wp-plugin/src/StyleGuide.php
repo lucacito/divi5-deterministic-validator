@@ -49,7 +49,7 @@ final class StyleGuide
         if ( str_starts_with( $topic, 'design-language:' ) && in_array( $topic, self::topics(), true ) ) {
             return DesignLanguages::markdown( substr( $topic, strlen( 'design-language:' ) ) );
         }
-        $lines = [ '# Unknown topic', '', sprintf( 'There is no topic "%s". Valid topics:', $topic ), '' ];
+        $lines = [ '# Unknown topic', '', sprintf( 'There is no topic "%s". Valid topics:', SectionRecipes::plain( $topic ) ), '' ];
         foreach ( self::topics() as $valid ) {
             $lines[] = '- `' . $valid . '`';
         }

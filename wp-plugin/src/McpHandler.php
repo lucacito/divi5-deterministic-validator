@@ -437,7 +437,7 @@ final class McpHandler
                 $text = DesignLanguages::markdown($language);
             } else {
                 $markup = SectionRecipes::recipe($name, $language === '' ? null : $language);
-                $text = $markup ?? ("Unknown recipe '{$name}'.\n\n" . SectionRecipes::catalog());
+                $text = $markup ?? ("Unknown recipe '" . SectionRecipes::plain($name) . "'.\n\n" . SectionRecipes::catalog());
             }
         } else {
             $text = SectionRecipes::catalog($filters['role'], $filters['layout'], $filters['mood']);

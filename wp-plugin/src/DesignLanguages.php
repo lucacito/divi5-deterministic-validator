@@ -87,7 +87,7 @@ final class DesignLanguages
 
         $lang = self::get( $id );
         if ( null === $lang ) {
-            return sprintf( "Unknown design language \"%s\". Valid ids: %s.\n", $id, implode( ', ', self::ids() ) );
+            return sprintf( "Unknown design language \"%s\". Valid ids: %s.\n", SectionRecipes::plain( $id ), implode( ', ', self::ids() ) );
         }
 
         $c = (array) $lang['colors'];

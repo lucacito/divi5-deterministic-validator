@@ -230,11 +230,11 @@ final class RestController
         }
         if ($name !== '') {
             if ($language !== '' && DesignLanguages::get($language) === null) {
-                return new WP_REST_Response(['error' => "Unknown design language '{$language}'", 'languages' => DesignLanguages::ids()], 404);
+                return new WP_REST_Response(['error' => "Unknown design language '" . SectionRecipes::plain($language) . "'", 'languages' => DesignLanguages::ids()], 404);
             }
             $markup = SectionRecipes::recipe($name, $language === '' ? null : $language);
             if ($markup === null) {
-                return new WP_REST_Response(['error' => "Unknown recipe '{$name}'", 'catalog' => SectionRecipes::catalog()], 404);
+                return new WP_REST_Response(['error' => "Unknown recipe '" . SectionRecipes::plain($name) . "'", 'catalog' => SectionRecipes::catalog()], 404);
             }
             return new WP_REST_Response(['name' => $name, 'markup' => $markup], 200);
         }

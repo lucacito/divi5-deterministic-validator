@@ -162,14 +162,23 @@ final class SectionRecipes
         return $rows;
     }
 
+    /**
+     * Make a caller-supplied string safe to quote back in an answer the AI reads: trim, keep only plain
+     * characters (letters, digits, space, _ . : -; no newline, quote, backtick or Markdown syntax) and cut it
+     * to 40 characters. Every "Unknown ..." message that echoes input goes through this.
+     */
+    public static function plain( string $value, string $strip = '/[^A-Za-z0-9 _.:-]/' ): string
+    {
+        return substr( (string) preg_replace( $strip, '', trim( $value ) ), 0, 40 );
+    }
+
     /** Trim and lower-case a filter value, keeping it short and plain; empty means no filter. */
     private static function cleanFilter( ?string $value ): ?string
     {
         if ( null === $value ) {
             return null;
         }
-        $value = strtolower( trim( $value ) );
-        $value = substr( (string) preg_replace( '/[^a-z0-9 _-]/', '', $value ), 0, 40 );
+        $value = self::plain( strtolower( $value ), '/[^a-z0-9 _-]/' );
         return '' === $value ? null : $value;
     }
 
