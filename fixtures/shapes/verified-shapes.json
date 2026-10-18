@@ -707,9 +707,44 @@
             "evidence": "docs/shape-evidence-5.15.1.md#rm-cf-field-bg"
         },
         {
+            "path": "field.decoration.border.{bp}.value.radius.bottomLeft",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cf-field-radius"
+        },
+        {
+            "path": "field.decoration.border.{bp}.value.radius.bottomRight",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cf-field-radius"
+        },
+        {
             "path": "field.decoration.border.{bp}.value.radius.sync",
             "how": "export",
             "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "field.decoration.border.{bp}.value.radius.topLeft",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cf-field-radius"
+        },
+        {
+            "path": "field.decoration.border.{bp}.value.radius.topRight",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cf-field-radius"
+        },
+        {
+            "path": "field.decoration.border.{bp}.value.styles.all.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cf-field-border"
+        },
+        {
+            "path": "field.decoration.border.{bp}.value.styles.all.style",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cf-field-border"
+        },
+        {
+            "path": "field.decoration.border.{bp}.value.styles.all.width",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cf-field-border"
         },
         {
             "path": "field.decoration.font.font.{bp}.value.color",
@@ -995,6 +1030,21 @@
             "path": "jobTitle.innerContent",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#rm-ts-jobtitle"
+        },
+        {
+            "path": "label.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cd-label-color"
+        },
+        {
+            "path": "label.decoration.font.font.{bp}.value.family",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cd-label-family"
+        },
+        {
+            "path": "label.decoration.font.font.{bp}.value.size",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cd-label-size"
         },
         {
             "path": "locked.{bp}.value",
@@ -2412,6 +2462,11 @@
             "evidence": "docs/shape-evidence-5.15.1.md#ty-nc-number-family"
         },
         {
+            "path": "number.decoration.font.font.{bp}.value.lineHeight",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cd-number-lineheight"
+        },
+        {
             "path": "number.decoration.font.font.{bp}.value.size",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#ty-nc-number-size"
@@ -2540,6 +2595,26 @@
             "path": "searchIcon.decoration.font.font.{bp}.value.color",
             "how": "export",
             "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "separator.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cd-separator-color"
+        },
+        {
+            "path": "separator.decoration.font.font.{bp}.value.family",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cd-separator-family"
+        },
+        {
+            "path": "separator.decoration.font.font.{bp}.value.lineHeight",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cd-separator-lineheight"
+        },
+        {
+            "path": "separator.decoration.font.font.{bp}.value.size",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-cd-separator-size"
         },
         {
             "path": "separator.innerContent",

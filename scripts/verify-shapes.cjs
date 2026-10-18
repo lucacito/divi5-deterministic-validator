@@ -22,7 +22,8 @@
  *            candidate lists in `children`; `blog` renders the site's own posts, `shop` the site's own WooCommerce products; `circle-counter` was
  *            added for the proof and stats recipes task: a title and a number, the content attributes of Divi 5.15.1's circle-counter module.json;
  *            `toggle` was added for the pricing, team, FAQ and story recipes task: a stand-alone toggle with a title and a paragraph, the shape of the
- *            real export fixtures/valid/page-7-home.json).
+ *            real export fixtures/valid/page-7-home.json); `countdown-timer` was added for the calls to action, gallery, contact and transitions task: a
+ *            title and a past end date (Divi's own default), the shape of fixtures/valid/page-17-newpage.json, so the timer shows zeros on every load).
  *            Real-export content shapes are filled in for the content of each, `base` wins.
  *   neighbours  (section candidates only) { "before": [<section spec>], "after": [<section spec>] }: plain sections placed before/after the
  *            candidate section on the page, identical in the A and B pages (e.g. a differently coloured section so that a divider is
@@ -143,7 +144,7 @@ const esc = (j) => j.split('--').join(BS + 'u002d' + BS + 'u002d').split('<').jo
 const block = (name, attrs, inner) => { const j = esc(JSON.stringify(attrs)); return inner === undefined ? `<!-- wp:divi/${name} ${j} /-->` : `<!-- wp:divi/${name} ${j} -->${inner}<!-- /wp:divi/${name} -->`; };
 const setp = (o, p, v) => { const k = p.split('.'); let d = o; for (const x of k.slice(0, -1)) { d = d[x] = d[x] || {}; } d[k[k.length - 1]] = v; };
 const withSite = (v) => (typeof v === 'string' ? v.split('@SITE@').join(SITE) : Array.isArray(v) ? v.map(withSite) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, withSite(x)])) : v);
-const SUPPORTED = ['section', 'row', 'column', 'group', 'heading', 'text', 'image', 'button', 'blurb', 'divider', 'number-counter', 'testimonial', 'icon', 'group-carousel', 'blog', 'contact-form', 'contact-field', 'shop', 'tabs', 'tab', 'accordion', 'accordion-item', 'circle-counter', 'toggle'];
+const SUPPORTED = ['section', 'row', 'column', 'group', 'heading', 'text', 'image', 'button', 'blurb', 'divider', 'number-counter', 'testimonial', 'icon', 'group-carousel', 'blog', 'contact-form', 'contact-field', 'shop', 'tabs', 'tab', 'accordion', 'accordion-item', 'circle-counter', 'toggle', 'countdown-timer'];
 const CONTAINERS = ['section', 'row', 'column', 'group', 'group-carousel', 'contact-form', 'tabs', 'accordion'];
 // Content every block needs to render something; shapes are the ones real exports and recipes use. A candidate's `base` wins.
 const IMG = '@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg';
@@ -176,6 +177,10 @@ const DEFAULT_BASE = {
   // The shape of the real export fixtures/valid/page-7-home.json (divi/toggle: title.innerContent and content.innerContent; closed unless
   // module.advanced.open is on). Added for the pricing, team, FAQ and story recipes task.
   toggle: { title: { innerContent: { desktop: { value: 'Probe toggle' } } }, content: { innerContent: { desktop: { value: '<p>probe toggle text</p>' } } } },
+  // The shape of the real export fixtures/valid/page-17-newpage.json (divi/countdown-timer: title.innerContent and content.advanced.dateTime).
+  // The date is Divi 5.15.1's own default (module-default-render-attributes.json, in the past), so every unit shows 00 and the page is the
+  // same on every load (a future date would tick between the two pages). Added for the calls to action, gallery, contact and transitions task.
+  'countdown-timer': { title: { innerContent: { desktop: { value: 'Probe countdown' } } }, content: { advanced: { dateTime: { desktop: { value: '2020-03-23 01:30' } } } } },
 };
 const deepMerge = (a, b) => {
   const out = JSON.parse(JSON.stringify(a));

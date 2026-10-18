@@ -1,0 +1,270 @@
+[
+  {
+    "id": "rc-cf-field-radius",
+    "block": "contact-form",
+    "children": [
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Name"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Name"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Email"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "email"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Email"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Message"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "text"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Message"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "base": {
+      "module": {
+        "advanced": {
+          "spamProtection": {
+            "desktop": {
+              "value": {
+                "useBasicCaptcha": "off"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "field.decoration.border.desktop.value.radius.topLeft": "12px",
+      "field.decoration.border.desktop.value.radius.topRight": "12px",
+      "field.decoration.border.desktop.value.radius.bottomRight": "12px",
+      "field.decoration.border.desktop.value.radius.bottomLeft": "12px"
+    },
+    "expect": "PASS",
+    "note": "Corner radius of the input fields; the four corners are one setting written together (a declared set). Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:560-594 (FormFieldStyle on the 'field' attribute, border with border-radius) and visual-builder module-library contact-form/module.json:272 (attributes.field, selector '.input:not([type=checkbox]):not([type=radio])'). Form of three fields (name, email, message) with the basic captcha switched off in the base so that the page is stable (the captcha question is random on every load)."
+  },
+  {
+    "id": "rc-cf-field-border",
+    "block": "contact-form",
+    "children": [
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Name"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Name"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Email"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "email"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Email"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Message"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "text"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Message"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "base": {
+      "module": {
+        "advanced": {
+          "spamProtection": {
+            "desktop": {
+              "value": {
+                "useBasicCaptcha": "off"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "field.decoration.border.desktop.value.styles.all.width": "1px",
+      "field.decoration.border.desktop.value.styles.all.color": "#c2410c",
+      "field.decoration.border.desktop.value.styles.all.style": "solid"
+    },
+    "expect": "PASS",
+    "note": "A visible frame on the input fields: width, colour and style are written together (a declared set; Divi draws no field border by default). Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:560-594 (FormFieldStyle on the 'field' attribute, border with border-radius) and visual-builder module-library contact-form/module.json:272 (attributes.field, selector '.input:not([type=checkbox]):not([type=radio])'). Form of three fields (name, email, message) with the basic captcha switched off in the base so that the page is stable (the captcha question is random on every load)."
+  },
+  {
+    "id": "rc-cd-number-color",
+    "block": "countdown-timer",
+    "set": {
+      "number.decoration.font.font.desktop.value.color": "#c2410c"
+    },
+    "expect": "PASS",
+    "note": "Colour of the countdown numbers (attributes.number, Divi 5.15.1 visual-builder module-library countdown-timer/module.json:215-245, selector '.section p.value, .section.sep p', printed !important; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). The path is already registered from the number counter; measured here on the countdown. Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value)."
+  },
+  {
+    "id": "rc-cd-number-lineheight",
+    "block": "countdown-timer",
+    "set": {
+      "number.decoration.font.font.desktop.value.lineHeight": "1.4em"
+    },
+    "expect": "PASS",
+    "note": "Line height of the countdown numbers (Divi 5.15.1 visual-builder module-library countdown-timer/module.json:215-245; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value)."
+  },
+  {
+    "id": "rc-cd-separator-color",
+    "block": "countdown-timer",
+    "set": {
+      "separator.decoration.font.font.desktop.value.color": "#c2410c"
+    },
+    "expect": "PASS",
+    "note": "Colour of the countdown separators, the colons (attributes.separator, Divi 5.15.1 visual-builder module-library countdown-timer/module.json:246-281, selector '.et_pb_countdown_timer_container .section.sep p', printed !important; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value)."
+  },
+  {
+    "id": "rc-cd-separator-family",
+    "block": "countdown-timer",
+    "set": {
+      "separator.decoration.font.font.desktop.value.family": "Playfair Display"
+    },
+    "expect": "PASS",
+    "note": "Font family of the countdown separators (Divi 5.15.1 visual-builder module-library countdown-timer/module.json:246-281; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label); 'Playfair Display' is in Divi/core/json-data/google-fonts.json). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value)."
+  },
+  {
+    "id": "rc-cd-separator-size",
+    "block": "countdown-timer",
+    "set": {
+      "separator.decoration.font.font.desktop.value.size": "30px"
+    },
+    "expect": "PASS",
+    "note": "Font size of the countdown separators (Divi 5.15.1 visual-builder module-library countdown-timer/module.json:246-281; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value)."
+  },
+  {
+    "id": "rc-cd-separator-lineheight",
+    "block": "countdown-timer",
+    "set": {
+      "separator.decoration.font.font.desktop.value.lineHeight": "1.4em"
+    },
+    "expect": "PASS",
+    "note": "Line height of the countdown separators (Divi 5.15.1 visual-builder module-library countdown-timer/module.json:246-281; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value)."
+  },
+  {
+    "id": "rc-cd-label-color",
+    "block": "countdown-timer",
+    "set": {
+      "label.decoration.font.font.desktop.value.color": "#c2410c"
+    },
+    "expect": "PASS",
+    "note": "Colour of the countdown unit labels (Day(s), Hour(s) ...; attributes.label, Divi 5.15.1 visual-builder module-library countdown-timer/module.json:282-, selector '.section p.label'; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value)."
+  },
+  {
+    "id": "rc-cd-label-family",
+    "block": "countdown-timer",
+    "set": {
+      "label.decoration.font.font.desktop.value.family": "Playfair Display"
+    },
+    "expect": "PASS",
+    "note": "Font family of the countdown unit labels (Divi 5.15.1 visual-builder module-library countdown-timer/module.json:282-; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value)."
+  },
+  {
+    "id": "rc-cd-label-size",
+    "block": "countdown-timer",
+    "set": {
+      "label.decoration.font.font.desktop.value.size": "18px"
+    },
+    "expect": "PASS",
+    "note": "Font size of the countdown unit labels (Divi 5.15.1 visual-builder module-library countdown-timer/module.json:282-; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label); Divi prints its own 14px !important on the label line in the static stylesheet, so this one may lose: measured). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value)."
+  }
+]

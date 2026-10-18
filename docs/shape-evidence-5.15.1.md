@@ -16806,3 +16806,275 @@ Phone overflow at 400 px: no.
 Note: The generic title colour on an open h3 toggle styled as in the faq-toggle-list recipe (open and closed backgrounds, a bottom border, vertical padding, title size/line height/weight in the same font value as the colour). Checks whether those settings change the outcome of rt-toggle-title-color-open-h3 (in the recipe render the open title stayed #333 with only the generic colour set).
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rc-cf-field-radius
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.border.desktop.value.radius.topLeft` = `"12px"`
+- `field.decoration.border.desktop.value.radius.topRight` = `"12px"`
+- `field.decoration.border.desktop.value.radius.bottomRight` = `"12px"`
+- `field.decoration.border.desktop.value.radius.bottomLeft` = `"12px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `3:input:border-bottom-left-radius: 0px -> 12px` |
+| 900 px | yes | 24 | yes | `3:input:border-bottom-left-radius: 0px -> 12px` |
+| 400 px | yes | 24 | yes | `3:input:border-bottom-left-radius: 0px -> 12px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Corner radius of the input fields; the four corners are one setting written together (a declared set). Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:560-594 (FormFieldStyle on the 'field' attribute, border with border-radius) and visual-builder module-library contact-form/module.json:272 (attributes.field, selector '.input:not([type=checkbox]):not([type=radio])'). Form of three fields (name, email, message) with the basic captcha switched off in the base so that the page is stable (the captcha question is random on every load).
+
+Registered paths added:
+
+- `field.decoration.border.{bp}.value.radius.bottomLeft`
+- `field.decoration.border.{bp}.value.radius.bottomRight`
+- `field.decoration.border.{bp}.value.radius.topLeft`
+- `field.decoration.border.{bp}.value.radius.topRight`
+
+## rc-cf-field-border
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.border.desktop.value.styles.all.width` = `"1px"`
+- `field.decoration.border.desktop.value.styles.all.color` = `"#c2410c"`
+- `field.decoration.border.desktop.value.styles.all.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 68 | yes | `0:form:block-size: 347px -> 351px` |
+| 900 px | yes | 68 | yes | `0:form:block-size: 347px -> 351px` |
+| 400 px | yes | 68 | yes | `0:form:block-size: 347px -> 351px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-width`, `border-block-start-color`, `border-block-start-width`, `border-bottom-color`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-width`, `border-left-color`, `border-left-width`, `border-right-color`, `border-right-width`, `border-top-color`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: A visible frame on the input fields: width, colour and style are written together (a declared set; Divi draws no field border by default). Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:560-594 (FormFieldStyle on the 'field' attribute, border with border-radius) and visual-builder module-library contact-form/module.json:272 (attributes.field, selector '.input:not([type=checkbox]):not([type=radio])'). Form of three fields (name, email, message) with the basic captcha switched off in the base so that the page is stable (the captcha question is random on every load).
+
+Registered paths added:
+
+- `field.decoration.border.{bp}.value.styles.all.color`
+- `field.decoration.border.{bp}.value.styles.all.style`
+- `field.decoration.border.{bp}.value.styles.all.width`
+
+## rc-cd-number-color
+
+Block: `countdown-timer`. Set on top of the base block:
+
+- `number.decoration.font.font.desktop.value.color` = `"#c2410c"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 119 | yes | `4:p:border-block-end-color: rgb(255, 255, 255) -> rgb(194, 65, 12)` |
+| 900 px | yes | 119 | yes | `4:p:border-block-end-color: rgb(255, 255, 255) -> rgb(194, 65, 12)` |
+| 400 px | yes | 119 | yes | `4:p:border-block-end-color: rgb(255, 255, 255) -> rgb(194, 65, 12)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Colour of the countdown numbers (attributes.number, Divi 5.15.1 visual-builder module-library countdown-timer/module.json:215-245, selector '.section p.value, .section.sep p', printed !important; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). The path is already registered from the number counter; measured here on the countdown. Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rc-cd-number-lineheight
+
+Block: `countdown-timer`. Set on top of the base block:
+
+- `number.decoration.font.font.desktop.value.lineHeight` = `"1.4em"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 71 | yes | `0:div:block-size: 216.906px -> 238.5px` |
+| 900 px | yes | 71 | yes | `0:div:block-size: 198.594px -> 224.188px` |
+| 400 px | yes | 71 | yes | `0:div:block-size: 124.594px -> 137.391px` |
+
+Properties that changed (any width): `block-size`, `height`, `line-height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Line height of the countdown numbers (Divi 5.15.1 visual-builder module-library countdown-timer/module.json:215-245; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value).
+
+Registered paths added:
+
+- `number.decoration.font.font.{bp}.value.lineHeight`
+
+## rc-cd-separator-color
+
+Block: `countdown-timer`. Set on top of the base block:
+
+- `separator.decoration.font.font.desktop.value.color` = `"#c2410c"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 51 | yes | `7:p:border-block-end-color: rgb(255, 255, 255) -> rgb(194, 65, 12)` |
+| 900 px | yes | 51 | yes | `7:p:border-block-end-color: rgb(255, 255, 255) -> rgb(194, 65, 12)` |
+| 400 px | yes | 51 | yes | `7:p:border-block-end-color: rgb(255, 255, 255) -> rgb(194, 65, 12)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Colour of the countdown separators, the colons (attributes.separator, Divi 5.15.1 visual-builder module-library countdown-timer/module.json:246-281, selector '.et_pb_countdown_timer_container .section.sep p', printed !important; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value).
+
+Registered paths added:
+
+- `separator.decoration.font.font.{bp}.value.color`
+
+## rc-cd-separator-family
+
+Block: `countdown-timer`. Set on top of the base block:
+
+- `separator.decoration.font.font.desktop.value.family` = `"Playfair Display"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 27 | yes | `6:div:inline-size: 14.5px -> 14.7969px` |
+| 900 px | yes | 27 | yes | `6:div:inline-size: 17.1719px -> 17.5469px` |
+| 400 px | yes | 27 | yes | `6:div:inline-size: 8.59375px -> 8.78125px` |
+
+Properties that changed (any width): `font-family`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Font family of the countdown separators (Divi 5.15.1 visual-builder module-library countdown-timer/module.json:246-281; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label); 'Playfair Display' is in Divi/core/json-data/google-fonts.json). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value).
+
+Registered paths added:
+
+- `separator.decoration.font.font.{bp}.value.family`
+
+## rc-cd-separator-size
+
+Block: `countdown-timer`. Set on top of the base block:
+
+- `separator.decoration.font.font.desktop.value.size` = `"30px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 27 | yes | `6:div:inline-size: 14.5px -> 8.0625px` |
+| 900 px | yes | 27 | yes | `6:div:inline-size: 17.1719px -> 8.0625px` |
+| 400 px | yes | 27 | yes | `6:div:inline-size: 8.59375px -> 8.0625px` |
+
+Properties that changed (any width): `font-size`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Font size of the countdown separators (Divi 5.15.1 visual-builder module-library countdown-timer/module.json:246-281; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value).
+
+Registered paths added:
+
+- `separator.decoration.font.font.{bp}.value.size`
+
+## rc-cd-separator-lineheight
+
+Block: `countdown-timer`. Set on top of the base block:
+
+- `separator.decoration.font.font.desktop.value.lineHeight` = `"1.4em"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 27 | yes | `6:div:block-size: 54px -> 75.5938px` |
+| 900 px | yes | 35 | yes | `0:div:block-size: 198.594px -> 199.188px` |
+| 400 px | yes | 27 | yes | `6:div:block-size: 32px -> 44.7969px` |
+
+Properties that changed (any width): `block-size`, `height`, `line-height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Line height of the countdown separators (Divi 5.15.1 visual-builder module-library countdown-timer/module.json:246-281; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value).
+
+Registered paths added:
+
+- `separator.decoration.font.font.{bp}.value.lineHeight`
+
+## rc-cd-label-color
+
+Block: `countdown-timer`. Set on top of the base block:
+
+- `label.decoration.font.font.desktop.value.color` = `"#c2410c"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 68 | yes | `5:p:border-block-end-color: rgb(255, 255, 255) -> rgb(194, 65, 12)` |
+| 900 px | yes | 68 | yes | `5:p:border-block-end-color: rgb(255, 255, 255) -> rgb(194, 65, 12)` |
+| 400 px | yes | 68 | yes | `5:p:border-block-end-color: rgb(255, 255, 255) -> rgb(194, 65, 12)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Colour of the countdown unit labels (Day(s), Hour(s) ...; attributes.label, Divi 5.15.1 visual-builder module-library countdown-timer/module.json:282-, selector '.section p.label'; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value).
+
+Registered paths added:
+
+- `label.decoration.font.font.{bp}.value.color`
+
+## rc-cd-label-family
+
+Block: `countdown-timer`. Set on top of the base block:
+
+- `label.decoration.font.font.desktop.value.family` = `"Playfair Display"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 28 | yes | `5:p:font-family: "Open Sans" -> "Playfair Display", Georgia, "Times New Roman", serif` |
+| 900 px | yes | 4 | yes | `5:p:font-family: "Open Sans" -> "Playfair Display", Georgia, "Times New Roman", serif` |
+| 400 px | yes | 4 | yes | `5:p:font-family: "Open Sans" -> "Playfair Display", Georgia, "Times New Roman", serif` |
+
+Properties that changed (any width): `font-family`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Font family of the countdown unit labels (Divi 5.15.1 visual-builder module-library countdown-timer/module.json:282-; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label)). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value).
+
+Registered paths added:
+
+- `label.decoration.font.font.{bp}.value.family`
+
+## rc-cd-label-size
+
+Block: `countdown-timer`. Set on top of the base block:
+
+- `label.decoration.font.font.desktop.value.size` = `"18px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 40 | yes | `5:p:font-size: 14px -> 18px` |
+| 900 px | yes | 28 | yes | `5:p:font-size: 14px -> 18px` |
+| 400 px | yes | 4 | yes | `5:p:font-size: 14px -> 18px` |
+
+Properties that changed (any width): `font-size`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Font size of the countdown unit labels (Divi 5.15.1 visual-builder module-library countdown-timer/module.json:282-; includes/builder-5/server/Packages/ModuleLibrary/CountdownTimer/CountdownTimerModule.php:295-312 (font styles of number, separator and label); Divi prints its own 14px !important on the label line in the static stylesheet, so this one may lose: measured). Countdown with a title and Divi's own past default end date (every unit shows 00 on every load, so the two pages are identical except for the set value).
+
+Registered paths added:
+
+- `label.decoration.font.font.{bp}.value.size`
