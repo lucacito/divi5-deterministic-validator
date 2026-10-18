@@ -1194,9 +1194,9 @@ Rendered on `divi/tabs`:
 - `activeTab.decoration.background.{bp}.value.color`
 - `activeTab.decoration.font.font.{bp}.value.color`
 - `content.decoration.background.{bp}.value.color`
-Divi paints the tab bar #f4f4f4 and its frame and separators #d9d9d9, and no setting reaches them (source: Divi's stylesheet; only
-a custom CSS field reaches the bar, and custom CSS is never written). On a dark or tinted look the bar stays light grey: use an
-accordion or toggles instead.
+Divi paints the tab bar #f4f4f4 and the separators #d9d9d9, and no setting reaches them (source: Divi's stylesheet; only a
+custom CSS field reaches the bar, and custom CSS is never written; the outer frame was not tested). On a dark or tinted look the
+bar stays light grey: use an accordion or toggles instead.
 
 ## Worked example (validates)
 Two toggles on a dark section, the first open:

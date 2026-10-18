@@ -324,7 +324,8 @@ class StyleGuideRecipeVocabularyTopicTest extends TestCase
         $evidence = (string) file_get_contents( __DIR__ . '/../docs/shape-evidence-5.15.1.md' );
         foreach ( [
             'toggles' => [
-                [ 'Divi paints the tab bar #f4f4f4 and its frame and separators #d9d9d9, and no setting reaches them (source', [ 'ul.et_pb_tabs_controls{background-color:#f4f4f4}', '.et_pb_tabs{border:1px solid #d9d9d9}', 'customCssFields.tabsControls' ] ],
+                [ 'Divi paints the tab bar #f4f4f4 and the separators #d9d9d9, and no setting reaches them (source', [ 'ul.et_pb_tabs_controls{background-color:#f4f4f4}', '.et_pb_tabs_controls li{border-right:1px solid #d9d9d9}', 'customCssFields.tabsControls' ] ],
+                [ 'the outer frame was not tested', [ 'the outer frame (`.et_pb_tabs{border:1px solid #d9d9d9}`) is the module\'s own border and was not probed' ] ],
                 [ 'The accordion draws no icon on its open item (source', [ '.et_pb_toggle_open>.et_pb_toggle_title:before{display:none}', 'no openToggleIcon' ] ],
             ],
             'forms'   => [
@@ -342,6 +343,14 @@ class StyleGuideRecipeVocabularyTopicTest extends TestCase
                 }
             }
         }
+    }
+
+    /** A "Not taught" block lists measured candidates only when there are some: no empty lead line (scripts/promote-shapes.php). */
+    public function testTheEvidenceDocHasNoEmptyNotTaughtLead(): void
+    {
+        $evidence = (string) file_get_contents( __DIR__ . '/../docs/shape-evidence-5.15.1.md' );
+        $this->assertSame( 0, preg_match_all( '/that were measured and are not taught, with the reason:\n\n(?!- `)/', $evidence ), 'a lead line with no candidate under it' );
+        $this->assertGreaterThan( 0, preg_match_all( '/that were measured and are not taught, with the reason:\n\n- `/', $evidence ), 'the check sees the real blocks' );
     }
 
     // ---- worked examples ----

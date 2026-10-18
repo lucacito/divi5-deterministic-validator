@@ -259,7 +259,11 @@ if ( $notTaught !== [] || $notMeasured !== [] ) {
     foreach ( $candidates as $c ) {
         $byId[ (string) ( $c['id'] ?? '' ) ] = $c;
     }
-    $evidence = rtrim( $evidence, "\n" ) . "\n\n" . $heading . "\n\nCandidates from `" . $family . ".json` that were measured and are not taught, with the reason:\n\n";
+    $evidence = rtrim( $evidence, "\n" ) . "\n\n" . $heading . "\n";
+    // The lead line only when at least one measured candidate is not taught (no empty lead when every candidate passed).
+    if ( $notTaught !== [] ) {
+        $evidence .= "\nCandidates from `" . $family . ".json` that were measured and are not taught, with the reason:\n\n";
+    }
     foreach ( $notTaught as $id => $why ) {
         $note      = trim( (string) ( $byId[ $id ]['note'] ?? '' ) );
         $evidence .= '- `' . $id . '`: ' . $why . ( $note !== '' ? '. ' . $note : '' ) . "\n";

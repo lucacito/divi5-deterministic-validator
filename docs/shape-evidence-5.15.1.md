@@ -17157,13 +17157,10 @@ Candidates from `recipe-features.json` that were measured and are not taught, wi
 
 Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-recipe-features.json`):
 
-- Tabs: the tab bar background and the separator lines: no attribute this plugin may write reaches them (source, not rendered as a candidate). Divi 5.15.1 Divi/style-static.min.css paints the bar `ul.et_pb_tabs_controls{background-color:#f4f4f4}` and the frame and separators #d9d9d9 (`.et_pb_tabs{border:1px solid #d9d9d9}`, `.et_pb_tabs_controls li{border-right:1px solid #d9d9d9}`, `ul.et_pb_tabs_controls:after{border-top:1px solid #d9d9d9}`); the tabs module.json (includes/builder-5/visual-builder/packages/module-library/src/components/tabs/module.json, customCssFields.tabsControls, selectorSuffix ' .et_pb_tabs_controls') reaches the bar only through a custom CSS field, and the plugin never saves custom CSS. The tab, active tab and content colours (rf-tabs-*) were rendered, but on a dark or tinted look the bar and the lines stay light grey, so an accordion is the themable choice (the features-tabs recipe was dropped for this reason)
+- Tabs: the tab bar background and the separator lines: no attribute this plugin may write reaches them (source, not rendered as a candidate). Divi 5.15.1 Divi/style-static.min.css paints the bar `ul.et_pb_tabs_controls{background-color:#f4f4f4}` and the separators #d9d9d9 (`.et_pb_tabs_controls li{border-right:1px solid #d9d9d9}`, `ul.et_pb_tabs_controls:after{border-top:1px solid #d9d9d9}`); the outer frame (`.et_pb_tabs{border:1px solid #d9d9d9}`) is the module's own border and was not probed (the module border setting may reach it); the tabs module.json (includes/builder-5/visual-builder/packages/module-library/src/components/tabs/module.json, customCssFields.tabsControls, selectorSuffix ' .et_pb_tabs_controls') reaches the bar only through a custom CSS field, and the plugin never saves custom CSS. The tab, active tab and content colours (rf-tabs-*) were rendered, but on a dark or tinted look the bar and the lines stay light grey, so an accordion is the themable choice (the features-tabs recipe was dropped for this reason)
 - Accordion: an icon on the open item: Divi draws none (source, not rendered): Divi 5.15.1 Divi/style-static.min.css hides it with `.et_pb_accordion .et_pb_accordion_item.et_pb_toggle_open>.et_pb_toggle_title:before{display:none}`, and the accordion module.json (includes/builder-5/visual-builder/packages/module-library/src/components/accordion/module.json) has closedToggleIcon but no openToggleIcon. The stand-alone toggle has an open icon colour (rt-toggle-open-icon, rendered)
 
 ## Not taught (recipe-cta)
-
-Candidates from `recipe-cta.json` that were measured and are not taught, with the reason:
-
 
 Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-recipe-cta.json`):
 
