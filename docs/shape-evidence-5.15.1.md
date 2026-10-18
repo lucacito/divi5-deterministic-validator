@@ -16108,3 +16108,243 @@ Note: Text colour of the blog read-more link (attributes.readMore, selector '.et
 Registered paths added:
 
 - `readMore.decoration.font.font.{bp}.value.color`
+
+## rf-tabs-tab-bg
+
+Block: `tabs`. Set on top of the base block:
+
+- `tab.decoration.background.desktop.value.color` = `"#151c33"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `2:li:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 900 px | yes | 4 | yes | `2:li:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 400 px | yes | 4 | yes | `2:li:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Background of the tab controls (module.json attributes.tab, selector '{{selector}} .et_pb_tabs_controls li', settings.decoration.background with attrName tab.decoration.background; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/module.json; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Tabs/TabsModule.php:349). Divi draws the inactive tab in its own light grey on every design; measured by the computed background of the tab list items.
+
+Registered paths added:
+
+- `tab.decoration.background.{bp}.value.color`
+
+## rf-tabs-tab-color
+
+Block: `tabs`. Set on top of the base block:
+
+- `tab.decoration.font.font.desktop.value.color` = `"#f2f4fa"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 34 | yes | `3:a:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)` |
+| 900 px | yes | 34 | yes | `3:a:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)` |
+| 400 px | yes | 34 | yes | `3:a:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Text colour of the tab titles (module.json attributes.tab, styleProps font colour selector '{{selector}} .et_pb_tabs_controls li a', settings.decoration.font with attrName tab.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/module.json; conversion-outline.json maps the Divi 4 'tab' font to tab.decoration.font). Divi prints the titles in its own grey by default; measured by the computed colour of the tab links.
+
+Registered paths added:
+
+- `tab.decoration.font.font.{bp}.value.color`
+
+## rf-tabs-tab-size
+
+Block: `tabs`. Set on top of the base block:
+
+- `tab.decoration.font.font.desktop.value.size` = `"16px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 40 | yes | `0:div:block-size: 106.594px -> 110px` |
+| 900 px | yes | 40 | yes | `0:div:block-size: 136.594px -> 140px` |
+| 400 px | yes | 36 | yes | `0:div:block-size: 170.391px -> 177.203px` |
+
+Properties that changed (any width): `block-size`, `font-size`, `height`, `inline-size`, `line-height`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Font size of the tab titles (module.json attributes.tab, settings.decoration.font = divi/font group with attrName tab.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/module.json). Default 14px-ish small print; measured by the computed font size of the tab links.
+
+Registered paths added:
+
+- `tab.decoration.font.font.{bp}.value.size`
+
+## rf-tabs-tab-family
+
+Block: `tabs`. Set on top of the base block:
+
+- `tab.decoration.font.font.desktop.value.family` = `"Georgia"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 20 | yes | `2:li:font-family: "Open Sans" -> Georgia, "Times New Roman", serif` |
+| 900 px | yes | 20 | yes | `2:li:font-family: "Open Sans" -> Georgia, "Times New Roman", serif` |
+| 400 px | yes | 12 | yes | `2:li:font-family: "Open Sans" -> Georgia, "Times New Roman", serif` |
+
+Properties that changed (any width): `font-family`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Font family of the tab titles (module.json attributes.tab, settings.decoration.font = divi/font group with attrName tab.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/module.json). Measured by the computed font family of the tab links.
+
+Registered paths added:
+
+- `tab.decoration.font.font.{bp}.value.family`
+
+## rf-tabs-active-bg
+
+Block: `tabs`. Set on top of the base block:
+
+- `activeTab.decoration.background.desktop.value.color` = `"#151c33"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `2:li:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 900 px | yes | 2 | yes | `2:li:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 400 px | yes | 2 | yes | `2:li:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Background of the active tab (module.json attributes.activeTab, selector '{{selector}} .et_pb_tabs_controls li.et_pb_tab_active'; conversion-outline.json maps active_tab_background_color to activeTab.decoration.background.*.color; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Tabs/TabsModule.php:343). Default white; measured by the computed background of the active list item.
+
+Registered paths added:
+
+- `activeTab.decoration.background.{bp}.value.color`
+
+## rf-tabs-active-color
+
+Block: `tabs`. Set on top of the base block:
+
+- `activeTab.decoration.font.font.desktop.value.color` = `"#f2f4fa"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `3:a:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)` |
+| 900 px | yes | 17 | yes | `3:a:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)` |
+| 400 px | yes | 17 | yes | `3:a:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Text colour of the active tab title (module.json attributes.activeTab, styleProps font colour selector '{{selector}} .et_pb_tabs_controls li.et_pb_tab_active a'; conversion-outline.json maps active_tab_text_color to activeTab.decoration.font.font.*.color; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/). Measured by the computed colour of the active tab link.
+
+Registered paths added:
+
+- `activeTab.decoration.font.font.{bp}.value.color`
+
+## rf-tabs-content-bg
+
+Block: `tabs`. Set on top of the base block:
+
+- `content.decoration.background.desktop.value.color` = `"#151c33"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `6:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 900 px | yes | 1 | yes | `6:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 400 px | yes | 1 | yes | `6:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Background of the tab panel area (module.json attributes.content, selector '{{selector}} > .et_pb_all_tabs', settings.decoration.background; conversion-outline.json maps background to content.decoration.background; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Tabs/TabsModule.php:626). Default white; measured by the computed background of .et_pb_all_tabs.
+
+Registered paths added:
+
+- `content.decoration.background.{bp}.value.color`
+
+## rf-acc-open-bg
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `openToggle.decoration.background.desktop.value.color` = `"#151c33"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 900 px | yes | 1 | yes | `1:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 400 px | yes | 1 | yes | `1:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Background of the open accordion item (module.json attributes.openToggle, selector '{{selector}} .et_pb_toggle_open', settings.decoration.background with subName color; conversion-outline.json maps open_toggle_background_color to openToggle.decoration.background.*.color; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/accordion/; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Accordion/AccordionModule.php:373). Default white; the base opens the first item (module.advanced.open on, as in the real export fixtures/valid/page-17-newpage.json).
+
+Registered paths added:
+
+- `openToggle.decoration.background.{bp}.value.color`
+
+## rf-acc-closed-bg
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `closedToggle.decoration.background.desktop.value.color` = `"#151c33"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `5:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)` |
+| 900 px | yes | 1 | yes | `5:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)` |
+| 400 px | yes | 1 | yes | `5:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Background of the closed accordion items (module.json attributes.closedToggle, selector '{{selector}} .et_pb_toggle_close', subName color; conversion-outline.json maps closed_toggle_background_color to closedToggle.decoration.background.*.color; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/accordion/; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Accordion/AccordionModule.php:391). Default light grey; measured on the second (closed) item.
+
+Registered paths added:
+
+- `closedToggle.decoration.background.{bp}.value.color`
+
+## rf-acc-icon-color
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `closedToggleIcon.decoration.icon.desktop.value.color` = `"#f2f4fa"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 18 | yes | `6:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(242, 244, 250)` |
+| 900 px | yes | 18 | yes | `6:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(242, 244, 250)` |
+| 400 px | yes | 18 | yes | `6:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(242, 244, 250)` |
+
+Properties that changed (any width): `::before:-webkit-text-fill-color`, `::before:-webkit-text-stroke-color`, `::before:border-block-end-color`, `::before:border-block-start-color`, `::before:border-bottom-color`, `::before:border-inline-end-color`, `::before:border-inline-start-color`, `::before:border-left-color`, `::before:border-right-color`, `::before:border-top-color`, `::before:caret-color`, `::before:color`, `::before:column-rule-color`, `::before:outline-color`, `::before:row-rule-color`, `::before:text-decoration-color`, `::before:text-emphasis-color`, `::before:text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Colour of the toggle icon of the accordion items (module.json attributes.closedToggleIcon, selector '{{selector}} > .et_pb_toggle_close:not(.et_pb_toggle_empty) > .et_pb_toggle_title:before', settings.decoration.icon with a colour field; conversion-outline.json maps icon_color to closedToggleIcon.decoration.icon.*.color; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/accordion/; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Accordion/AccordionModule.php:347-354). Drawn on the title's ::before, so the probe compares pseudo-element styles.
+
+Registered paths added:
+
+- `closedToggleIcon.decoration.icon.{bp}.value.color`

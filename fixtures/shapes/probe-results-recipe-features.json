@@ -1,0 +1,749 @@
+[
+  {
+    "id": "rf-tabs-tab-bg",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 4,
+        "sample": [
+          "2:li:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)",
+          "3:a:background-color: rgba(0, 0, 0, 0) -> rgb(21, 28, 51)",
+          "4:li:background-color: rgba(0, 0, 0, 0) -> rgb(21, 28, 51)",
+          "5:a:background-color: rgba(0, 0, 0, 0) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 4,
+        "sample": [
+          "2:li:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)",
+          "3:a:background-color: rgba(0, 0, 0, 0) -> rgb(21, 28, 51)",
+          "4:li:background-color: rgba(0, 0, 0, 0) -> rgb(21, 28, 51)",
+          "5:a:background-color: rgba(0, 0, 0, 0) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 4,
+        "sample": [
+          "2:li:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)",
+          "3:a:background-color: rgba(0, 0, 0, 0) -> rgb(21, 28, 51)",
+          "4:li:background-color: rgba(0, 0, 0, 0) -> rgb(21, 28, 51)",
+          "5:a:background-color: rgba(0, 0, 0, 0) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rf-tabs-tab-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 34,
+        "sample": [
+          "3:a:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-block-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-bottom-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-inline-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-inline-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-left-color: rgb(51, 51, 51) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 34,
+        "sample": [
+          "3:a:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-block-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-bottom-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-inline-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-inline-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-left-color: rgb(51, 51, 51) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 34,
+        "sample": [
+          "3:a:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-block-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-bottom-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-inline-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-inline-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-left-color: rgb(51, 51, 51) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rf-tabs-tab-size",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 36,
+        "sample": [
+          "0:div:block-size: 170.391px -> 177.203px",
+          "0:div:height: 170.391px -> 177.203px",
+          "0:div:perspective-origin: 160px 85.1875px -> 160px 88.5938px",
+          "0:div:transform-origin: 160px 85.1953px -> 160px 88.6016px",
+          "1:ul:block-size: 66.5938px -> 73.4062px",
+          "1:ul:height: 66.5938px -> 73.4062px"
+        ],
+        "changedProps": [
+          "block-size",
+          "font-size",
+          "height",
+          "inline-size",
+          "line-height",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 40,
+        "sample": [
+          "0:div:block-size: 136.594px -> 140px",
+          "0:div:height: 136.594px -> 140px",
+          "0:div:perspective-origin: 360px 68.2969px -> 360px 70px",
+          "0:div:transform-origin: 360px 68.2969px -> 360px 70px",
+          "1:ul:block-size: 32.7969px -> 36.2031px",
+          "1:ul:height: 32.7969px -> 36.2031px"
+        ],
+        "changedProps": [
+          "block-size",
+          "font-size",
+          "height",
+          "inline-size",
+          "line-height",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 40,
+        "sample": [
+          "0:div:block-size: 106.594px -> 110px",
+          "0:div:height: 106.594px -> 110px",
+          "0:div:perspective-origin: 512px 53.2969px -> 512px 55px",
+          "0:div:transform-origin: 512px 53.2969px -> 512px 55px",
+          "1:ul:block-size: 32.7969px -> 36.2031px",
+          "1:ul:height: 32.7969px -> 36.2031px"
+        ],
+        "changedProps": [
+          "block-size",
+          "font-size",
+          "height",
+          "inline-size",
+          "line-height",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rf-tabs-tab-family",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 12,
+        "sample": [
+          "2:li:font-family: \"Open Sans\" -> Georgia, \"Times New Roman\", serif",
+          "3:a:font-family: \"Open Sans\" -> Georgia, \"Times New Roman\", serif",
+          "3:a:inline-size: 125.984px -> 129.547px",
+          "3:a:perspective-origin: 62.9844px 15.8906px -> 64.7656px 15.8906px",
+          "3:a:transform-origin: 62.9922px 15.8984px -> 64.7734px 15.8984px",
+          "3:a:width: 125.984px -> 129.547px"
+        ],
+        "changedProps": [
+          "font-family",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 20,
+        "sample": [
+          "2:li:font-family: \"Open Sans\" -> Georgia, \"Times New Roman\", serif",
+          "2:li:inline-size: 126.984px -> 130.547px",
+          "2:li:perspective-origin: 63.4844px 15.8906px -> 65.2656px 15.8906px",
+          "2:li:transform-origin: 63.4922px 15.8984px -> 65.2734px 15.8984px",
+          "2:li:width: 126.984px -> 130.547px",
+          "3:a:font-family: \"Open Sans\" -> Georgia, \"Times New Roman\", serif"
+        ],
+        "changedProps": [
+          "font-family",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 20,
+        "sample": [
+          "2:li:font-family: \"Open Sans\" -> Georgia, \"Times New Roman\", serif",
+          "2:li:inline-size: 126.984px -> 130.547px",
+          "2:li:perspective-origin: 63.4844px 15.8906px -> 65.2656px 15.8906px",
+          "2:li:transform-origin: 63.4922px 15.8984px -> 65.2734px 15.8984px",
+          "2:li:width: 126.984px -> 130.547px",
+          "3:a:font-family: \"Open Sans\" -> Georgia, \"Times New Roman\", serif"
+        ],
+        "changedProps": [
+          "font-family",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rf-tabs-active-bg",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 2,
+        "sample": [
+          "2:li:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)",
+          "3:a:background-color: rgba(0, 0, 0, 0) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 2,
+        "sample": [
+          "2:li:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)",
+          "3:a:background-color: rgba(0, 0, 0, 0) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 2,
+        "sample": [
+          "2:li:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)",
+          "3:a:background-color: rgba(0, 0, 0, 0) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rf-tabs-active-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 17,
+        "sample": [
+          "3:a:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-block-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-bottom-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-inline-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-inline-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-left-color: rgb(51, 51, 51) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 17,
+        "sample": [
+          "3:a:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-block-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-bottom-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-inline-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-inline-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-left-color: rgb(51, 51, 51) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 17,
+        "sample": [
+          "3:a:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-block-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-bottom-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-inline-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-inline-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "3:a:border-left-color: rgb(51, 51, 51) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rf-tabs-content-bg",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "6:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "6:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "6:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rf-acc-open-bg",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "1:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "1:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "1:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rf-acc-closed-bg",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "5:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "5:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "5:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rf-acc-icon-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 18,
+        "sample": [
+          "6:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-block-start-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-bottom-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-inline-end-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-inline-start-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-left-color: rgb(204, 204, 204) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "::before:-webkit-text-fill-color",
+          "::before:-webkit-text-stroke-color",
+          "::before:border-block-end-color",
+          "::before:border-block-start-color",
+          "::before:border-bottom-color",
+          "::before:border-inline-end-color",
+          "::before:border-inline-start-color",
+          "::before:border-left-color",
+          "::before:border-right-color",
+          "::before:border-top-color",
+          "::before:caret-color",
+          "::before:color",
+          "::before:column-rule-color",
+          "::before:outline-color",
+          "::before:row-rule-color",
+          "::before:text-decoration-color",
+          "::before:text-emphasis-color",
+          "::before:text-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 18,
+        "sample": [
+          "6:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-block-start-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-bottom-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-inline-end-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-inline-start-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-left-color: rgb(204, 204, 204) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "::before:-webkit-text-fill-color",
+          "::before:-webkit-text-stroke-color",
+          "::before:border-block-end-color",
+          "::before:border-block-start-color",
+          "::before:border-bottom-color",
+          "::before:border-inline-end-color",
+          "::before:border-inline-start-color",
+          "::before:border-left-color",
+          "::before:border-right-color",
+          "::before:border-top-color",
+          "::before:caret-color",
+          "::before:color",
+          "::before:column-rule-color",
+          "::before:outline-color",
+          "::before:row-rule-color",
+          "::before:text-decoration-color",
+          "::before:text-emphasis-color",
+          "::before:text-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 18,
+        "sample": [
+          "6:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-block-start-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-bottom-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-inline-end-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-inline-start-color: rgb(204, 204, 204) -> rgb(242, 244, 250)",
+          "6:h5:::before:border-left-color: rgb(204, 204, 204) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "::before:-webkit-text-fill-color",
+          "::before:-webkit-text-stroke-color",
+          "::before:border-block-end-color",
+          "::before:border-block-start-color",
+          "::before:border-bottom-color",
+          "::before:border-inline-end-color",
+          "::before:border-inline-start-color",
+          "::before:border-left-color",
+          "::before:border-right-color",
+          "::before:border-top-color",
+          "::before:caret-color",
+          "::before:color",
+          "::before:column-rule-color",
+          "::before:outline-color",
+          "::before:row-rule-color",
+          "::before:text-decoration-color",
+          "::before:text-emphasis-color",
+          "::before:text-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  }
+]

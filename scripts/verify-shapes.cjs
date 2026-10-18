@@ -15,7 +15,9 @@
  *   children a list of block specs ({ block, base, children }) placed INSIDE the candidate block, replacing the default filler
  *            (e.g. block group, children [heading]). Only container blocks (section, row, column, group) take children; a child
  *            has no `set`. Supported blocks: section, row, column, group, heading, text, image, button, blurb, divider,
- *            number-counter, testimonial, icon, group-carousel, blog, contact-form, contact-field, shop (the last five were added for the legacy recipe
+ *            number-counter, testimonial, icon, group-carousel, blog, contact-form, contact-field, shop, tabs, tab, accordion, accordion-item (the
+ *            last four were added for the features recipes task: an empty `tabs` holds two plain `tab` children and an empty `accordion` two plain
+ *            `accordion-item` children, in the shapes of the real export fixtures/valid/page-17-newpage.json; the five before them were added for the legacy recipe
  *            module settings task: a `group-carousel` holds `group` children and a `contact-form` holds `contact-field` children, which a
  *            candidate lists in `children`; `blog` renders the site's own posts, `shop` the site's own WooCommerce products). Real-export content shapes are filled in for the content of each, `base` wins.
  *   neighbours  (section candidates only) { "before": [<section spec>], "after": [<section spec>] }: plain sections placed before/after the
@@ -133,8 +135,8 @@ const esc = (j) => j.split('--').join(BS + 'u002d' + BS + 'u002d').split('<').jo
 const block = (name, attrs, inner) => { const j = esc(JSON.stringify(attrs)); return inner === undefined ? `<!-- wp:divi/${name} ${j} /-->` : `<!-- wp:divi/${name} ${j} -->${inner}<!-- /wp:divi/${name} -->`; };
 const setp = (o, p, v) => { const k = p.split('.'); let d = o; for (const x of k.slice(0, -1)) { d = d[x] = d[x] || {}; } d[k[k.length - 1]] = v; };
 const withSite = (v) => (typeof v === 'string' ? v.split('@SITE@').join(SITE) : Array.isArray(v) ? v.map(withSite) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, withSite(x)])) : v);
-const SUPPORTED = ['section', 'row', 'column', 'group', 'heading', 'text', 'image', 'button', 'blurb', 'divider', 'number-counter', 'testimonial', 'icon', 'group-carousel', 'blog', 'contact-form', 'contact-field', 'shop'];
-const CONTAINERS = ['section', 'row', 'column', 'group', 'group-carousel', 'contact-form'];
+const SUPPORTED = ['section', 'row', 'column', 'group', 'heading', 'text', 'image', 'button', 'blurb', 'divider', 'number-counter', 'testimonial', 'icon', 'group-carousel', 'blog', 'contact-form', 'contact-field', 'shop', 'tabs', 'tab', 'accordion', 'accordion-item'];
+const CONTAINERS = ['section', 'row', 'column', 'group', 'group-carousel', 'contact-form', 'tabs', 'accordion'];
 // Content every block needs to render something; shapes are the ones real exports and recipes use. A candidate's `base` wins.
 const IMG = '@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg';
 const DEFAULT_BASE = {
@@ -156,6 +158,11 @@ const DEFAULT_BASE = {
   shop: {},
   'contact-form': {},
   'contact-field': { fieldItem: { advanced: { id: { desktop: { value: 'Name' } } }, innerContent: { desktop: { value: 'Name' } } } },
+  // The shapes of the real export fixtures/valid/page-17-newpage.json (divi/tabs > divi/tab, divi/accordion > divi/accordion-item).
+  tabs: {},
+  tab: { title: { innerContent: { desktop: { value: 'Probe tab' } } }, content: { innerContent: { desktop: { value: '<p>probe tab text</p>' } } } },
+  accordion: {},
+  'accordion-item': { title: { innerContent: { desktop: { value: 'Probe toggle' } } }, content: { innerContent: { desktop: { value: '<p>probe toggle text</p>' } } } },
 };
 const deepMerge = (a, b) => {
   const out = JSON.parse(JSON.stringify(a));
@@ -184,6 +191,8 @@ function render(n) {
   if (CONTAINERS.includes(n.block) && !kids.length) {
     kids = n.block === 'section' ? [{ ...plain('row'), children: [{ ...plain('column'), children: [fillerNode()] }] }]
       : n.block === 'row' ? [{ ...plain('column'), children: [fillerNode()] }]
+      : n.block === 'tabs' ? [plain('tab'), plain('tab')]
+      : n.block === 'accordion' ? [plain('accordion-item'), plain('accordion-item')]
       : [fillerNode()];
   }
   return CONTAINERS.includes(n.block) ? block(n.block, n.attrs, kids.map(render).join('')) : block(n.block, n.attrs);

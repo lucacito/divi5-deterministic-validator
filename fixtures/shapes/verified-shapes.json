@@ -2,6 +2,16 @@
     "divi": "5.15.1",
     "shapes": [
         {
+            "path": "activeTab.decoration.background.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rf-tabs-active-bg"
+        },
+        {
+            "path": "activeTab.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rf-tabs-active-color"
+        },
+        {
             "path": "afterImage.innerContent",
             "how": "export",
             "evidence": "fixtures/valid/page-17-newpage.json"
@@ -277,6 +287,16 @@
             "evidence": "fixtures/valid/page-85-layout-4.json"
         },
         {
+            "path": "closedToggle.decoration.background.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rf-acc-closed-bg"
+        },
+        {
+            "path": "closedToggleIcon.decoration.icon.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rf-acc-icon-color"
+        },
+        {
             "path": "column2.decoration.background.{bp}.value.image.url",
             "how": "export",
             "evidence": "fixtures/valid/page-85-layout-4.json"
@@ -295,6 +315,11 @@
             "path": "content.advanced.dateTime.{bp}.value",
             "how": "export",
             "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "content.decoration.background.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rf-tabs-content-bg"
         },
         {
             "path": "content.decoration.bodyFont.body.font.{bp}.hover.color",
@@ -2377,6 +2402,11 @@
             "evidence": "fixtures/valid/page-17-newpage.json"
         },
         {
+            "path": "openToggle.decoration.background.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rf-acc-open-bg"
+        },
+        {
             "path": "pagination.advanced.enable.{bp}.value",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#rm-blog-pagination-off"
@@ -2495,6 +2525,26 @@
             "path": "subtitle.innerContent",
             "how": "export",
             "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "tab.decoration.background.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rf-tabs-tab-bg"
+        },
+        {
+            "path": "tab.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rf-tabs-tab-color"
+        },
+        {
+            "path": "tab.decoration.font.font.{bp}.value.family",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rf-tabs-tab-family"
+        },
+        {
+            "path": "tab.decoration.font.font.{bp}.value.size",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rf-tabs-tab-size"
         },
         {
             "path": "themeBuilderArea.{bp}.value",

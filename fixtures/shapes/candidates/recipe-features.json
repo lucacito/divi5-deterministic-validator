@@ -1,0 +1,152 @@
+[
+  {
+    "id": "rf-tabs-tab-bg",
+    "block": "tabs",
+    "set": {
+      "tab.decoration.background.desktop.value.color": "#151c33"
+    },
+    "expect": "PASS",
+    "note": "Background of the tab controls (module.json attributes.tab, selector '{{selector}} .et_pb_tabs_controls li', settings.decoration.background with attrName tab.decoration.background; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/module.json; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Tabs/TabsModule.php:349). Divi draws the inactive tab in its own light grey on every design; measured by the computed background of the tab list items."
+  },
+  {
+    "id": "rf-tabs-tab-color",
+    "block": "tabs",
+    "set": {
+      "tab.decoration.font.font.desktop.value.color": "#f2f4fa"
+    },
+    "expect": "PASS",
+    "note": "Text colour of the tab titles (module.json attributes.tab, styleProps font colour selector '{{selector}} .et_pb_tabs_controls li a', settings.decoration.font with attrName tab.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/module.json; conversion-outline.json maps the Divi 4 'tab' font to tab.decoration.font). Divi prints the titles in its own grey by default; measured by the computed colour of the tab links."
+  },
+  {
+    "id": "rf-tabs-tab-size",
+    "block": "tabs",
+    "set": {
+      "tab.decoration.font.font.desktop.value.size": "16px"
+    },
+    "expect": "PASS",
+    "note": "Font size of the tab titles (module.json attributes.tab, settings.decoration.font = divi/font group with attrName tab.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/module.json). Default 14px-ish small print; measured by the computed font size of the tab links."
+  },
+  {
+    "id": "rf-tabs-tab-family",
+    "block": "tabs",
+    "set": {
+      "tab.decoration.font.font.desktop.value.family": "Georgia"
+    },
+    "expect": "PASS",
+    "note": "Font family of the tab titles (module.json attributes.tab, settings.decoration.font = divi/font group with attrName tab.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/module.json). Measured by the computed font family of the tab links."
+  },
+  {
+    "id": "rf-tabs-active-bg",
+    "block": "tabs",
+    "set": {
+      "activeTab.decoration.background.desktop.value.color": "#151c33"
+    },
+    "expect": "PASS",
+    "note": "Background of the active tab (module.json attributes.activeTab, selector '{{selector}} .et_pb_tabs_controls li.et_pb_tab_active'; conversion-outline.json maps active_tab_background_color to activeTab.decoration.background.*.color; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Tabs/TabsModule.php:343). Default white; measured by the computed background of the active list item."
+  },
+  {
+    "id": "rf-tabs-active-color",
+    "block": "tabs",
+    "set": {
+      "activeTab.decoration.font.font.desktop.value.color": "#f2f4fa"
+    },
+    "expect": "PASS",
+    "note": "Text colour of the active tab title (module.json attributes.activeTab, styleProps font colour selector '{{selector}} .et_pb_tabs_controls li.et_pb_tab_active a'; conversion-outline.json maps active_tab_text_color to activeTab.decoration.font.font.*.color; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/). Measured by the computed colour of the active tab link."
+  },
+  {
+    "id": "rf-tabs-content-bg",
+    "block": "tabs",
+    "set": {
+      "content.decoration.background.desktop.value.color": "#151c33"
+    },
+    "expect": "PASS",
+    "note": "Background of the tab panel area (module.json attributes.content, selector '{{selector}} > .et_pb_all_tabs', settings.decoration.background; conversion-outline.json maps background to content.decoration.background; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/tabs/; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Tabs/TabsModule.php:626). Default white; measured by the computed background of .et_pb_all_tabs."
+  },
+  {
+    "id": "rf-acc-open-bg",
+    "block": "accordion",
+    "children": [
+      {
+        "block": "accordion-item",
+        "base": {
+          "module": {
+            "advanced": {
+              "open": {
+                "desktop": {
+                  "value": "on"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "accordion-item"
+      }
+    ],
+    "set": {
+      "openToggle.decoration.background.desktop.value.color": "#151c33"
+    },
+    "expect": "PASS",
+    "note": "Background of the open accordion item (module.json attributes.openToggle, selector '{{selector}} .et_pb_toggle_open', settings.decoration.background with subName color; conversion-outline.json maps open_toggle_background_color to openToggle.decoration.background.*.color; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/accordion/; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Accordion/AccordionModule.php:373). Default white; the base opens the first item (module.advanced.open on, as in the real export fixtures/valid/page-17-newpage.json)."
+  },
+  {
+    "id": "rf-acc-closed-bg",
+    "block": "accordion",
+    "children": [
+      {
+        "block": "accordion-item",
+        "base": {
+          "module": {
+            "advanced": {
+              "open": {
+                "desktop": {
+                  "value": "on"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "accordion-item"
+      }
+    ],
+    "set": {
+      "closedToggle.decoration.background.desktop.value.color": "#151c33"
+    },
+    "expect": "PASS",
+    "note": "Background of the closed accordion items (module.json attributes.closedToggle, selector '{{selector}} .et_pb_toggle_close', subName color; conversion-outline.json maps closed_toggle_background_color to closedToggle.decoration.background.*.color; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/accordion/; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Accordion/AccordionModule.php:391). Default light grey; measured on the second (closed) item."
+  },
+  {
+    "id": "rf-acc-icon-color",
+    "block": "accordion",
+    "children": [
+      {
+        "block": "accordion-item",
+        "base": {
+          "module": {
+            "advanced": {
+              "open": {
+                "desktop": {
+                  "value": "on"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "accordion-item"
+      }
+    ],
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "closedToggleIcon.decoration.icon.desktop.value.color": "#f2f4fa"
+    },
+    "expect": "PASS",
+    "note": "Colour of the toggle icon of the accordion items (module.json attributes.closedToggleIcon, selector '{{selector}} > .et_pb_toggle_close:not(.et_pb_toggle_empty) > .et_pb_toggle_title:before', settings.decoration.icon with a colour field; conversion-outline.json maps icon_color to closedToggleIcon.decoration.icon.*.color; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/accordion/; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Accordion/AccordionModule.php:347-354). Drawn on the title's ::before, so the probe compares pseudo-element styles."
+  }
+]
