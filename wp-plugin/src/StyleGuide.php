@@ -37,6 +37,9 @@ final class StyleGuide
         $topics[] = 'typography';
         $topics[] = 'imagery';
         $topics[] = 'controls';
+        $topics[] = 'toggles';
+        $topics[] = 'forms';
+        $topics[] = 'composition';
         return $topics;
     }
 
@@ -66,7 +69,7 @@ final class StyleGuide
     /** The description of the `topic` parameter in the MCP schema and the OpenAPI spec (generated, at most 300 characters). */
     public static function topicParameterDescription(): string
     {
-        return 'Optional. Serve one topic instead of the whole guide: ' . implode( ', ', self::topicNames() ) . '. design-languages lists the languages; design-language:<id> is one in full.';
+        return 'Optional. Serve one topic instead of the whole guide: ' . implode( ', ', self::topicNames() ) . '. design-language:<id> is one language in full.';
     }
 
     /**
@@ -108,6 +111,15 @@ final class StyleGuide
         }
         if ( 'controls' === $topic ) {
             return self::controlsTopic();
+        }
+        if ( 'toggles' === $topic ) {
+            return self::togglesTopic();
+        }
+        if ( 'forms' === $topic ) {
+            return self::formsTopic();
+        }
+        if ( 'composition' === $topic ) {
+            return self::compositionTopic();
         }
         if ( str_starts_with( $topic, 'design-language:' ) && in_array( $topic, self::topics(), true ) ) {
             return DesignLanguages::markdown( substr( $topic, strlen( 'design-language:' ) ) );
@@ -266,6 +278,7 @@ Set the two edges independently. Never write CSS for a divider.
 - Dark section into a light neighbour (or the reverse) shows the shape best. Use one shape family on a page; pick the same
   `height` for every divider so the rhythm holds.
 - No style overflowed a phone: all 26, top and bottom, rendered at 400 px with no horizontal scroll.
+- A band with a divider on both edges, each filled with the page colour: see the topic `composition`.
 
 ## Responsive
 `tablet` and `phone` override the desktop value, for example `module.advanced.dividers.bottom.tablet.value.height` and
@@ -653,8 +666,7 @@ MD;
 Every shape listed here was rendered on the real Divi 5.15.1 (the front end of a draft page preview, Chromium at 1280, 900 and
 400 px) and changed the page; the numbers marked rendered were measured, the worked examples use ordinary values. A rule marked
 (source) is read from Divi's own code and was not rendered, and the Limits section says what was not measured. The Visual Builder
-was not checked. Sizes were read from the rendered rectangles. Overlap, stacking, order, hiding and transforms are in the topic
-`layout-advanced`.
+was not checked. Overlap, stacking, order, hiding and transforms are in the topic `layout-advanced`.
 
 ## Sizing
 Paths below sit under `module.decoration.sizing.{bp}.value.` on a group; an image module keeps its sizing under
@@ -686,8 +698,7 @@ without `width` "100%" shrank a `maxWidth` "480px" group to its content (51px wi
 flexType 5 proven: 10_24, 16_24, 18_24, 20_24, 4_24. Each was the first column of a two-column row with the other column at 24
 minus N (the row and columns use the shapes Divi writes for equal columns that stack on a phone). The column got about N/24 of
 the row minus its share of the column gap: at 1280 px (row 1024px) 4_24 gave 124px, 10_24 394, 16_24 664, 18_24 754 and 20_24
-844px; at 900 px 87, 277, 467, 530 and 593px; at 400 px the phone value "24_24" kept the columns stacked. The default guide's 24_24,
-12_24, 8_24 and 6_24 were not measured again.
+844px; at 900 px 87, 277, 467, 530 and 593px; at 400 px the phone value "24_24" kept the columns stacked.
 
 ## Overflow
 Paths below sit under `module.decoration.overflow.{bp}.value.`.
@@ -723,6 +734,8 @@ effect on the children was not measured. `justifyContent` on a group whose `disp
 `alignContent` on a non-wrapping group did nothing (dead). A phone `flexDirection` "column" changed 400 px only.
 `sizing.size` takes a list: ["flexGrow"] widened a 120px child to 874, 570 and 170px at 1280, 900 and 400 px in a flex row;
 `alignSelf` "flex-end" dropped a stretched 200px child to the bottom of the row and did nothing when the parent was "block".
+["flexGrow"] alone also writes flex-shrink 0: text beside an icon in a nowrap row made a 400px page 600px too wide (not safe);
+["flexGrow","flexShrink"] let it wrap (rendered). Use both there.
 Grid: `gridColumnCount` "3" made six headings 110px high instead of 390px; a tablet "2" changed 900 and 400 px (180px high); a
 phone "1" changed 400 px only (110 to 390px); "equalMinimum" with "200px" gave 4 columns at 1280 px and 3 at 900 px (two rows of six items) and changed nothing at 400 px, where one
 column already fits;
@@ -1100,6 +1113,20 @@ Paths below sit under `divider.advanced.line.{bp}.value.` (the line is drawn on 
 Styles 3 proven: dashed, dotted, double. Positions 2 proven: bottom, center. Rendered: colour "#dc2626", weight "6px". Position "top" is
 the default and changed nothing (rendered: dead). The `show` switch could not be measured (source only).
 
+## Circle counter
+- `circle.advanced.color.{bp}.value`
+- `circle.advanced.background.{bp}.value.color`
+- `circle.advanced.background.{bp}.value.opacity`
+- `number.advanced.percentSign.{bp}.value`
+- `number.decoration.font.font.{bp}.value.color`
+- `title.decoration.font.font.{bp}.value.color`
+Divi draws the ring on a canvas, so its pixel colours were compared. Rendered: `circle.advanced.color` recoloured the bar (by
+default the site's primary colour, source); a track `color` drew the unfilled ring in that colour at Divi's faint default opacity
+0.1, and `opacity` "1" with that colour made it solid. Set the two together: opacity with no track colour changed nothing in a
+first run (the candidate note in the evidence file). `percentSign` "off" printed "50" instead of "50%"; the number and title took the
+set colours. Naming trap: the number counter's switch is `enablePercentSign`, the circle counter's `percentSign` (source).
+Every counter prints the figure you give it: recipes hold demo values; use a figure the owner can prove, or remove the counter.
+
 ## Worked example (validates)
 ```
 <!-- wp:divi/section {"builderVersion":"5.8.0"} -->
@@ -1115,10 +1142,254 @@ the default and changed nothing (rendered: dead). The `show` switch could not be
 
 ## Limits
 - Only the modules named here were measured; icon glyphs other than one Font Awesome code, the icon on tablet and phone, blurb image mode,
-  divider width and the circle and bar counters were not.
+  divider width and the bar counter were not.
 - Desktop values only: no tablet or phone override was rendered for any key here.
 - Computed styles (and the pseudo-elements above) were compared; how an icon or a line looks was not judged.
 - A button text colour and background need contrast; see the default guide.
+MD;
+    }
+
+    /** Topic `toggles`: accordion, toggle and tabs colours, every shape proven on the real Divi 5.15.1. At most 10,000 bytes. */
+    private static function togglesTopic(): string
+    {
+        return <<<'MD'
+# Toggles: accordion, toggle and tabs colours
+
+Every shape listed here was rendered on the real Divi 5.15.1 (the front end of a draft page preview, Chromium at 1280, 900 and
+400 px) and changed the computed styles of the page (the title's `::before` where Divi draws the icon); the worked example uses
+ordinary values. A rule marked (source) is read from Divi's own code and was not rendered, and the Limits section says what was
+not measured. The Visual Builder was not checked. Whole sections: the recipes `faq-accordion`, `faq-toggle-list` and
+`features-accordion-image` (get_section_recipes). Fonts are in the topic `typography`.
+
+## Accordion and toggle
+On a `divi/accordion` (the parent of its items) and on a stand-alone `divi/toggle`:
+- `openToggle.decoration.background.{bp}.value.color`
+- `closedToggle.decoration.background.{bp}.value.color`
+- `closedToggleIcon.decoration.icon.{bp}.value.color`
+Rendered: the open item's background (white by default) and the closed items' (Divi's #f4f4f4) took the set colour; the icon
+colour changed the closed title's `::before`.
+
+## Toggle only
+Rendered on the stand-alone `divi/toggle`:
+- `openToggle.decoration.font.font.{bp}.value.color`
+- `closedTitle.decoration.font.font.{bp}.value.color`
+- `openToggleIcon.decoration.icon.{bp}.value.color`
+- `title.decoration.font.font.{bp}.value.color`
+- `content.decoration.bodyFont.body.font.{bp}.value.color`
+`openToggle`'s font colour (printed !important, source) set the open title with the title at h5 and at h3; `closedTitle` set the closed
+titles; `openToggleIcon` coloured the open item's icon; the body colour reached the answer. The generic `title` colour reached an
+open and a closed title in the probe (h5, and the open title at h3), but not an open h3 title in one recipe render (observed, cause
+not isolated), so set the open title with `openToggle` and the closed ones with `closedTitle`.
+
+## The accordion's open item
+The accordion draws no icon on its open item (source: Divi's stylesheet hides it, and the accordion has no open-icon setting). Use
+toggles where an open-state icon matters (`faq-toggle-list`).
+
+## Tabs
+Rendered on `divi/tabs`:
+- `tab.decoration.background.{bp}.value.color`
+- `tab.decoration.font.font.{bp}.value.color`
+- `tab.decoration.font.font.{bp}.value.size`
+- `tab.decoration.font.font.{bp}.value.family`
+- `activeTab.decoration.background.{bp}.value.color`
+- `activeTab.decoration.font.font.{bp}.value.color`
+- `content.decoration.background.{bp}.value.color`
+Divi paints the tab bar #f4f4f4 and its frame and separators #d9d9d9, and no setting reaches them (source: Divi's stylesheet; only
+a custom CSS field reaches the bar, and custom CSS is never written). On a dark or tinted look the bar stays light grey: use an
+accordion or toggles instead.
+
+## Worked example (validates)
+Two toggles on a dark section, the first open:
+```
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#0f172a"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/toggle {"module":{"advanced":{"open":{"desktop":{"value":"on"}}}},"openToggle":{"decoration":{"background":{"desktop":{"value":{"color":"#1e293b"}}},"font":{"font":{"desktop":{"value":{"color":"#f8fafc"}}}}}},"closedToggle":{"decoration":{"background":{"desktop":{"value":{"color":"#1e293b"}}}}},"closedTitle":{"decoration":{"font":{"font":{"desktop":{"value":{"color":"#f8fafc"}}}}}},"openToggleIcon":{"decoration":{"icon":{"desktop":{"value":{"color":"#f8fafc"}}}}},"closedToggleIcon":{"decoration":{"icon":{"desktop":{"value":{"color":"#f8fafc"}}}}},"title":{"innerContent":{"desktop":{"value":"How long does a project take?"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"content":{"innerContent":{"desktop":{"value":"<p>Your answer in two or three plain sentences.</p>"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#cbd5e1"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/toggle {"openToggle":{"decoration":{"background":{"desktop":{"value":{"color":"#1e293b"}}},"font":{"font":{"desktop":{"value":{"color":"#f8fafc"}}}}}},"closedToggle":{"decoration":{"background":{"desktop":{"value":{"color":"#1e293b"}}}}},"closedTitle":{"decoration":{"font":{"font":{"desktop":{"value":{"color":"#f8fafc"}}}}}},"openToggleIcon":{"decoration":{"icon":{"desktop":{"value":{"color":"#f8fafc"}}}}},"closedToggleIcon":{"decoration":{"icon":{"desktop":{"value":{"color":"#f8fafc"}}}}},"title":{"innerContent":{"desktop":{"value":"What happens after I get in touch?"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"content":{"innerContent":{"desktop":{"value":"<p>Your answer in two or three plain sentences.</p>"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#cbd5e1"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+
+## Limits
+- Only colours were measured here (and one tab font size and family); the sizes, borders and spacing of these modules were not.
+- The items were measured in the state the page loaded with; clicking to open or close was not measured.
+- Desktop values only: no tablet or phone override was rendered for any key here.
+- Computed styles (and the icon's `::before`) were compared; check the contrast of every title and answer on its background.
+MD;
+    }
+
+    /** Topic `forms`: contact form fields, captcha, countdown timer, and the modules not to use, every shape proven on the real Divi 5.15.1. At most 10,000 bytes. */
+    private static function formsTopic(): string
+    {
+        return <<<'MD'
+# Forms: contact form fields, captcha and countdown
+
+Every shape listed here was rendered on the real Divi 5.15.1 (the front end of a draft page preview, Chromium at 1280, 900 and
+400 px) and changed the computed styles of the page (the `::placeholder` where named); the worked example uses ordinary values.
+A rule marked (source) is read from Divi's own code and was not rendered, and the Limits section says what was not measured. The
+Visual Builder was not checked. Whole sections: the recipes `contact-details-form`, `contact-location-form`, `cta-split-form` and
+`cta-countdown` (get_section_recipes).
+
+## Contact form fields
+On a `divi/contact-form` (the fields are its `divi/contact-field` children):
+- `field.decoration.background.{bp}.value.color`
+- `field.decoration.font.font.{bp}.value.color`
+- `field.decoration.font.font.{bp}.value.family`
+- `field.decoration.placeholderFont.font.{bp}.value.color`
+- `field.decoration.border.{bp}.value.radius.{topLeft,topRight,bottomRight,bottomLeft}`
+- `field.decoration.border.{bp}.value.styles.all.{width,color,style}`
+Rendered: the fill (Divi's #eeeeee by default), the typed text colour (#999999 by default) and the family took the set values.
+`placeholderFont` colour changed the `::placeholder` colour from Chrome's #757575; the field font colour does NOT reach the
+placeholder, so set both (with labels hidden, Divi's default, the placeholders are the only labels). Divi draws no frame on a
+field: width, colour and style set together drew one (1px rendered); the four corners set together rounded the inputs (12px
+rendered). On a dark look a frame in the border colour can be too faint; the recipes use the muted text colour for it.
+
+## Captcha
+- `captcha.decoration.font.font.{bp}.value.color`
+- `captcha.decoration.font.font.{bp}.value.family`
+- `captcha.decoration.border.{bp}.value.styles.all.{width,color,style}`
+- `captcha.decoration.background.{bp}.value.color`
+The basic captcha is on by default and its question prints Divi's #666666 (rendered), nearly invisible on a dark look: set its
+colour. The captcha border and background styled the paragraph that holds the question and the answer box together (rendered),
+not the box; the box sits in a field (source), so the field settings above style it.
+
+## Countdown timer
+On a `divi/countdown-timer`:
+- `number.decoration.font.font.{bp}.value.color`
+- `number.decoration.font.font.{bp}.value.lineHeight`
+- `separator.decoration.font.font.{bp}.value.{color,family,size,lineHeight}`
+- `label.decoration.font.font.{bp}.value.{color,family,size}`
+Rendered on a timer with Divi's own past default end date (every unit 00): each changed its element (numbers, the colons, the
+unit labels; the label size went from 14px to 18px). Divi dims a unit that has reached zero (source: its stylesheet sets opacity
+.4 on it), so a past date, and the last units of a real deadline, print faint numbers. Use only a real deadline the owner gives;
+the `cta-countdown` recipe holds a labelled placeholder date to replace.
+
+## Do not use
+- The map module: it needs a Google Maps API key and loads Google's script from a third-party host (source), which this plugin
+  never adds. Show the address as text, as `contact-location-form` does.
+- The filterable portfolio: it lists the site's own Divi Projects (source), so its items cannot be written into a page, and its
+  filter bar keeps Divi's own colours (no filter setting was probed). Use `portfolio-featured-grid` or `gallery-masonry-style`.
+- A receiver address: never write one. The form sends to the site admin email unless the owner sets another in Divi (source).
+
+## Worked example (validates)
+A contact form on a dark card with readable fields, placeholders and captcha:
+```
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#0f172a"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/contact-form {"module":{"advanced":{"uniqueId":{"desktop":{"value":"5b1f0c9e-2a4d-4c8e-9f3a-7d6e1b2c4a50"}}}},"field":{"decoration":{"background":{"desktop":{"value":{"color":"#1e293b"}}},"font":{"font":{"desktop":{"value":{"color":"#f8fafc"}}}},"placeholderFont":{"font":{"desktop":{"value":{"color":"#94a3b8"}}}},"border":{"desktop":{"value":{"radius":{"topLeft":"4px","topRight":"4px","bottomRight":"4px","bottomLeft":"4px"},"styles":{"all":{"width":"1px","color":"#94a3b8","style":"solid"}}}}}}},"captcha":{"decoration":{"font":{"font":{"desktop":{"value":{"color":"#f8fafc"}}}}}},"button":{"innerContent":{"desktop":{"value":{"text":"Send"}}},"decoration":{"background":{"desktop":{"value":{"color":"#2563eb"}}},"font":{"font":{"desktop":{"value":{"color":"#ffffff"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/contact-field {"fieldItem":{"advanced":{"id":{"desktop":{"value":"Name"}}},"innerContent":{"desktop":{"value":"Name"}}},"module":{"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/contact-field {"fieldItem":{"advanced":{"id":{"desktop":{"value":"Email"}},"type":{"desktop":{"value":"email"}}},"innerContent":{"desktop":{"value":"Email"}}},"module":{"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/contact-field {"fieldItem":{"advanced":{"id":{"desktop":{"value":"Message"}},"type":{"desktop":{"value":"text"}}},"innerContent":{"desktop":{"value":"Message"}}},"module":{"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/contact-form -->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+
+## Limits
+- Not measured: field types, required marks, visible labels, spam protection settings, the success and error messages, mail
+  delivery, and the countdown's own background (the recipe sets it with the plain module background).
+- The before/after module's label and handle settings were not probed.
+- Desktop values only: no tablet or phone override was rendered for any key here.
+- Computed styles were compared; check the contrast of fields, placeholders and the captcha on their fill.
+MD;
+    }
+
+    /** Topic `composition`: techniques built from registered shapes and used by library recipes that passed the render gate. At most 10,000 bytes. */
+    private static function compositionTopic(): string
+    {
+        return <<<'MD'
+# Composition: ruled grids, one-side rules, edged bands and full-width bands
+
+These techniques use only shapes that were rendered on the real Divi 5.15.1 (the front end of a draft page preview, Chromium at
+1280, 900 and 400 px; the settings are in the topics named) and each is used by a library recipe that the recipe render gate drew on
+the real Divi under the default look and at least the glass-dark, tech-mono and playful-pastel languages, with no phone
+overflow and no failing contrast. The technique as a whole was not probed, and its look was not measured (the gate measures
+overflow and text contrast). A rule marked (source) is read from Divi's own code and was not rendered, and the
+Limits section says what was not measured. The Visual Builder was not checked. Fetch the named recipe for the whole section.
+
+## Hairline-ruled grid
+A grid group whose background is the line colour, with 1px gaps; each cell is a group in the page or surface colour, so the gaps
+read as 1px rules (recipes `proof-logo-wall`, `stats-big-captions`, `pricing-comparison-table`). On the grid group:
+- `module.decoration.background.{bp}.value.color`: the line colour
+- `module.decoration.layout.{bp}.value.display`: "grid"
+- `module.decoration.layout.{bp}.value.gridColumnCount`: "3", with a phone value ("2" or "1")
+- `module.decoration.layout.{bp}.value.columnGap`: "1px"
+- `module.decoration.layout.{bp}.value.rowGap`: "1px"
+- `module.decoration.border.{bp}.value.styles.all.{width,color,style}`: "1px", the line colour, "solid", for the outer edge
+Each cell: a group with `module.decoration.background.{bp}.value.color` (the page or surface colour) and padding. Fill every row:
+an empty slot may show the line colour as a block. For a comparison table, tint one column's cells and keep labels short (phone
+cells are narrow; a five-column table broke words at 400 px in a draft, observed, not in the evidence file).
+
+## One-side rule
+A rule on one edge of a column or group (recipe `proof-press-quotes`, a rule over each column):
+- `module.decoration.border.{bp}.value.styles.all.{width,color,style}`: "0px", the rule colour, "solid"
+- `module.decoration.border.{bp}.value.styles.top.width`: "2px"
+The top edge takes the colour and style written on `all` (source: Divi's border styles write `all` first, then only what a side
+changes). Add top padding so the content clears the rule.
+
+## Two-edged divider band
+A section in a contrasting fill with a divider on both edges, each filled with the page colour, so the band seems to flow out of the
+section above and into the one below (recipe `transition-wave-band`). The settings are in the topic `dividers`:
+- `module.advanced.dividers.top.{bp}.value.{style,height,color}`: "wave", "80px", the page colour
+- `module.advanced.dividers.bottom.{bp}.value.{style,height,color,flip}`: the same, with `flip` ["horizontal"]
+Set `color` on both: the sections on either side share one colour, and with one shared colour and no `color` Divi paints the
+divider black (source). Give the band top and bottom padding larger than the divider height, with smaller heights on tablets and
+phones.
+
+## Full-width row band
+A row that spans the page width inside its section, with its own fill (recipe `transition-overlap-panel`):
+- `module.decoration.sizing.{bp}.value.width`: "100%", on the row
+- `module.decoration.sizing.{bp}.value.maxWidth`: "100%", on the row
+- `module.decoration.background.{bp}.value.color`: the band fill, on the row
+These sizing paths were probed on groups; on a row they are proven only by the render gate on that recipe, not by a probe of their
+own. Give the row side padding so the text keeps off the screen edge. A following row can be pulled over the band's lower edge with a
+negative `module.decoration.spacing.{bp}.value.margin.top` (the topic `layout-advanced`; the recipe pulls -160px, a strong value,
+and gives the band more bottom padding than the pull); follow it with a section on the page colour.
+
+## Worked examples (validate)
+A hairline-ruled row of three figures (replace each placeholder with a figure the owner can prove):
+```
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#ffffff"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#e2e8f0"}}},"border":{"desktop":{"value":{"styles":{"all":{"width":"1px","color":"#e2e8f0","style":"solid"}}}}},"layout":{"desktop":{"value":{"display":"grid","gridColumnCount":"3","columnGap":"1px","rowGap":"1px"}},"phone":{"value":{"gridColumnCount":"1"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#ffffff"}}},"spacing":{"desktop":{"value":{"padding":{"top":"32px","bottom":"32px","left":"24px","right":"24px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"[Figure 1]"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3","color":"#0f172a"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>[What the figure counts]</p>"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#475569"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/group -->
+<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#ffffff"}}},"spacing":{"desktop":{"value":{"padding":{"top":"32px","bottom":"32px","left":"24px","right":"24px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"[Figure 2]"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3","color":"#0f172a"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>[What the figure counts]</p>"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#475569"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/group -->
+<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#ffffff"}}},"spacing":{"desktop":{"value":{"padding":{"top":"32px","bottom":"32px","left":"24px","right":"24px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"[Figure 3]"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3","color":"#0f172a"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>[What the figure counts]</p>"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#475569"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/group -->
+<!-- /wp:divi/group -->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+A wave band between two sections on the page colour:
+```
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#0f172a"}}},"spacing":{"desktop":{"value":{"padding":{"top":"152px","bottom":"152px"}}},"phone":{"value":{"padding":{"top":"80px","bottom":"80px"}}}}},"advanced":{"dividers":{"top":{"desktop":{"value":{"style":"wave","height":"80px","color":"#ffffff"}},"phone":{"value":{"height":"32px"}}},"bottom":{"desktop":{"value":{"style":"wave","height":"80px","color":"#ffffff","flip":["horizontal"]}},"phone":{"value":{"height":"32px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"[One line that bridges this section and the next]"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2","color":"#ffffff","textAlign":"center"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+
+## Limits
+- Not probed as techniques: only their settings were (see the topics named) and the recipes were rendered; the look was not
+  measured.
+- Not measured: a ruled grid with an empty slot, rules on the other sides, other divider shapes on a two-edged band, and a full-width
+  row with a background image.
+- Every recipe text, figure and image alt is a placeholder: replace it with the owner's real content or remove it.
 MD;
     }
 
