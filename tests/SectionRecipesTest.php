@@ -199,7 +199,7 @@ class SectionRecipesTest extends TestCase
             'proof-press-quotes'        => ['proof', 'grid'],
             'proof-rating-strip'        => ['proof', 'band'],
             'stats-counter-band'        => ['stats', 'split'],
-            'stats-circle-counters'     => ['stats', 'centered'],
+            'stats-circle-counters'     => ['stats', 'grid'],
             'stats-big-captions'        => ['stats', 'band'],
             'quote-single-large'        => ['testimonials', 'centered'],
             'testimonials-slider-quote' => ['testimonials', 'carousel'],
@@ -220,9 +220,10 @@ class SectionRecipesTest extends TestCase
             $markup = (string) SectionRecipes::rawMarkup($name);
             $this->assertSame(0, preg_match_all('/"headingLevel":"h1"/', $markup), "$name is not a hero: no h1");
             $this->assertSame(substr_count($markup, '<!-- wp:divi/heading '), preg_match_all('/<!-- wp:divi\/heading [^\n]*"headingLevel":"h[2-4]"/', $markup), "$name: every heading names its level, h2 to h4");
-            // No invented proof: every name, quote, publication, score or caption is a bracketed placeholder or says Placeholder.
-            $this->assertMatchesRegularExpression('/\[[^\]]+\]|Placeholder/', $markup, "$name carries placeholders");
-            $this->assertMatchesRegularExpression('/placeholder|never invent|permission/i', (string) ($meta[$name]['when'] ?? ''), "$name: the when text tells the owner to replace the placeholders");
+            // No invented proof: every visible text value (and every image alt) is a bracketed placeholder, says Placeholder, is a
+            // demo number its own Placeholder label names, or is generic structural copy from the short allow-list.
+            $this->assertSame([], self::inventedTexts($markup), "$name: text values that are neither placeholders nor structural copy");
+            $this->assertMatchesRegularExpression('/placeholder|demo value/i', (string) ($meta[$name]['when'] ?? ''), "$name: the when text tells the owner to replace the placeholders");
             $fp = DesignVariety::fingerprints('<!-- wp:divi/placeholder -->' . (string) SectionRecipes::recipe($name) . '<!-- /wp:divi/placeholder -->');
             $cards += $fp[0]['cards'] ? 1 : 0;
         }
@@ -230,6 +231,66 @@ class SectionRecipesTest extends TestCase
         // Images come from the pack only: avatars and logos as tokens.
         $this->assertStringContainsString('{{aied:image:logo-1}}', (string) SectionRecipes::rawMarkup('proof-logo-wall'));
         $this->assertStringContainsString('{{aied:image:avatar-', (string) SectionRecipes::rawMarkup('testimonials-avatar-grid'));
+    }
+
+    /** Generic headings and eyebrows of the Task 14 batch: structure, not claims. */
+    private const STRUCTURAL_COPY = [
+        'In the press', 'What others have written', 'By the numbers', 'Figures that back up the promise', 'Results',
+        'Four results, at a glance', 'In figures', 'The work, counted', 'In their words', 'What clients say', 'Clients',
+        'Three clients, three kinds of result',
+    ];
+
+    /**
+     * The visible text values (headings, text, buttons, slides, counter titles and numbers) and image alts of a recipe that are NOT
+     * placeholders: a value passes when it holds a bracketed [placeholder], starts with "Placeholder", is only punctuation (a quote
+     * mark), is in STRUCTURAL_COPY, or is a counter number that the counter's own "Placeholder" title names.
+     *
+     * @return list<string>
+     */
+    private static function inventedTexts(string $markup): array
+    {
+        $parsed = (new \Divi5Validator\BlockParser())->parse('<!-- wp:divi/placeholder -->' . $markup . '<!-- /wp:divi/placeholder -->');
+        $bad = [];
+        $ok = static function (string $v): bool {
+            $v = trim(html_entity_decode(strip_tags($v), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+            return '' === $v || 1 === preg_match('/\[[^\]]+\]/', $v) || str_starts_with($v, 'Placeholder')
+                || 1 === preg_match('/^[\p{P}\s]+$/u', $v) || in_array($v, self::STRUCTURAL_COPY, true);
+        };
+        $parsed->root()->walk(static function (\Divi5Validator\Block $b) use (&$bad, $ok): void {
+            $name = preg_replace('#^divi/#', '', $b->name());
+            $values = [];
+            foreach (['title.innerContent.desktop.value', 'content.innerContent.desktop.value', 'button.innerContent.desktop.value.text', 'image.innerContent.desktop.value.alt'] as $path) {
+                $v = $b->attr($path);
+                if (is_string($v)) {
+                    $values[] = $v;
+                }
+            }
+            if (in_array($name, ['number-counter', 'circle-counter'], true)) {
+                $num   = (string) $b->attr('number.innerContent.desktop.value');
+                $title = (string) $b->attr('title.innerContent.desktop.value');
+                // A counter needs digits: the number is a demo value only when its own title is a Placeholder that names it.
+                if (!(str_starts_with($title, 'Placeholder') && 1 === preg_match('/\b' . preg_quote($num, '/') . '\b/', $title))) {
+                    $bad[] = "$name number $num";
+                }
+            }
+            foreach ($values as $v) {
+                if (!$ok($v)) {
+                    $bad[] = "$name: $v";
+                }
+            }
+        });
+        return $bad;
+    }
+
+    public function testTheInventedTextCheckCatchesInventedProof(): void
+    {
+        $h = static fn (string $t): string => '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":' . json_encode($t) . '}}}} /-->';
+        $c = static fn (string $n, string $t): string => '<!-- wp:divi/circle-counter {"title":{"innerContent":{"desktop":{"value":' . json_encode($t) . '}}},"number":{"innerContent":{"desktop":{"value":"' . $n . '"}}}} /-->';
+        $this->assertSame([], self::inventedTexts($h('[Client name]') . $h('Placeholder: what this counts') . $h('What clients say') . $h('&ldquo;') . $c('80', 'Placeholder: replace 80% with a figure you can prove')));
+        $this->assertSame(['heading: Trusted by 10,000 customers'], self::inventedTexts($h('Trusted by 10,000 customers')), 'an invented claim is caught');
+        $this->assertSame(['circle-counter number 97', 'circle-counter: Happy clients'], self::inventedTexts($c('97', 'Happy clients')), 'an invented figure and label are caught');
+        $this->assertSame(['circle-counter number 97'], self::inventedTexts($c('97', 'Placeholder: replace 80% with a figure you can prove')), 'a number its label does not name is caught');
+        $this->assertSame(['image: Acme Corp logo'], self::inventedTexts('<!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"x","alt":"Acme Corp logo"}}}}} /-->'), 'an invented brand in an alt text is caught');
     }
 
     public function testRetaggedRecipesDescribeTheirRealStructure(): void
