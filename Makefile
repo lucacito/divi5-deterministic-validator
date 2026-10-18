@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-components verify-style-values divi-currency
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-components verify-style-values divi-currency
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -296,3 +296,9 @@ verify-guide-shapes:
 # ---------------------------------------------------------------
 verify-shapes:
 	@node scripts/verify-shapes.cjs fixtures/shapes/candidates/known.json
+
+# ---------------------------------------------------------------
+# verify-recipes — renders every section recipe (default look and glass-dark, plus every design language on three recipes) on the real Divi at 1280, 900 and 400 px and fails on PHP errors, an empty or overflowing page, columns that do not stack on a phone or a console error; writes dist/contact-sheet/index.html (Docker site; dev site only; ONE run at a time; every page it creates is titled `aied recipe <runToken> ...` and deleted, `node scripts/verify-recipes.cjs --clean-orphans` removes leftovers when no run is going). Narrow it: node scripts/verify-recipes.cjs --names a,b --languages x,y
+# ---------------------------------------------------------------
+verify-recipes:
+	@node scripts/verify-recipes.cjs

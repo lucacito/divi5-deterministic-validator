@@ -1,0 +1,34 @@
+# Frozen baseline of known gaps in the recipe library. It may only SHRINK (tests/RecipeLibraryTest.php).
+# Plan 2 task 11 gives every recipe `pairs`, fixes or retires the ones that fail the render gate, and empties
+# the sections below. Never add to it to make a check pass.
+#
+# Section header lines are exactly "# no-pairs", "# duplicate-layouts" and "# render-failures".
+#
+# no-pairs: recipes allowed to lack a `pairs` tag (one recipe name per line).
+# duplicate-layouts: recipe pairs allowed to share a DesignVariety fingerprint layout ("a|b", names sorted).
+# render-failures: known `make verify-recipes` failures, "recipe|reason-code|explanation". Reason codes:
+#   php-error, empty, overflow, columns-side-by-side, console-error, gate. A listed (recipe, code) is printed as
+#   KNOWN-FAIL and does not fail the run; any other failure does.
+
+# no-pairs
+hero-cta
+section-intro
+card-grid-3
+card-grid-4
+blurb-grid
+icon-features
+split-image-text
+contact-form
+slider
+image-gallery
+image-carousel
+testimonial
+newsletter-social
+stats-counter
+blog-feed
+icon-values
+shop-grid
+
+# duplicate-layouts
+
+# render-failures
