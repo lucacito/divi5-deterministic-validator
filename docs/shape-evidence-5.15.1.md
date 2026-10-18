@@ -2701,3 +2701,1513 @@ Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-b
 - Width, height and offset units other than px and %: not rendered: Divi also allows em, rem, cm, mm, in, pc, ex, vh, vw (Functions.php:127-141), only px and % were tried
 - Gradient stop colours given as global colour or variable references, and a gradient length in a unit other than %: not rendered in these candidates (global styles are taught elsewhere and need the site's own ids)
 - Pattern and mask styles from add-on plugins: only the 24 pattern and 23 mask styles shipped in Divi 5.15.1 were rendered
+
+## dv-bottom-style-arrow
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"arrow"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `arrow` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added:
+
+- `module.advanced.dividers.bottom.{bp}.value.style`
+
+## dv-bottom-style-arrow2
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"arrow2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `arrow2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-arrow3
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"arrow3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `arrow3` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-asymmetric
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"asymmetric"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `asymmetric` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-asymmetric2
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"asymmetric2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `asymmetric2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-asymmetric3
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"asymmetric3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `asymmetric3` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-asymmetric4
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"asymmetric4"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `asymmetric4` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-clouds
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"clouds"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `clouds` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-clouds2
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"clouds2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `clouds2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-curve
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"curve"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `curve` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-curve2
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"curve2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `curve2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-graph
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"graph"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `graph` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-graph2
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"graph2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `graph2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-graph3
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"graph3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `graph3` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-graph4
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"graph4"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `graph4` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-mountains
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"mountains"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `mountains` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-mountains2
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"mountains2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `mountains2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-ramp
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"ramp"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `ramp` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-ramp2
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"ramp2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `ramp2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-slant
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"slant"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `slant` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-slant2
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"slant2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `slant2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-triangle
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"triangle"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `triangle` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-wave
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"wave"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `wave` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-wave2
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"wave2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `wave2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-waves
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"waves"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `waves` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-waves2
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"waves2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `waves2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-arrow
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"arrow"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M640 140L1280 0H0z'/%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M640 140L1280 0H0z'/%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M640 140L1280 0H0z'/%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `arrow` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added:
+
+- `module.advanced.dividers.top.{bp}.value.style`
+
+## dv-top-style-arrow2
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"arrow2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M640 140L1280 0H0z' fill-opacity='.5'/%3E%3Cpath d='M640 98l640-98H0z'/%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M640 140L1280 0H0z' fill-opacity='.5'/%3E%3Cpath d='M640 98l640-98H0z'/%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M640 140L1280 0H0z' fill-opacity='.5'/%3E%3Cpath d='M640 98l640-98H0z'/%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `arrow2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-arrow3
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"arrow3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0L640 70 0 0v140l640-70 640 70V0z' fill-opacity='.5'/%3E%3Cpath d='M1280 0H0l640 70 640-70z'/%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0L640 70 0 0v140l640-70 640 70V0z' fill-opacity='.5'/%3E%3Cpath d='M1280 0H0l640 70 640-70z'/%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0L640 70 0 0v140l640-70 640 70V0z' fill-opacity='.5'/%3E%3Cpath d='M1280 0H0l640 70 640-70z'/%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `arrow3` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-asymmetric
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"asymmetric"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `asymmetric` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-asymmetric2
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"asymmetric2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' fill-opacity='.5' /%3E%3Cpath d='M983.19 95.23L0 0h1280l-266 91.52a72.58 72.58 0 0 1-30.81 3.71z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' fill-opacity='.5' /%3E%3Cpath d='M983.19 95.23L0 0h1280l-266 91.52a72.58 72.58 0 0 1-30.81 3.71z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' fill-opacity='.5' /%3E%3Cpath d='M983.19 95.23L0 0h1280l-266 91.52a72.58 72.58 0 0 1-30.81 3.71z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `asymmetric2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-asymmetric3
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"asymmetric3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0l-131.81 111.68c-16.47 14-35.47 21-54.71 20.17L173 94a76.85 76.85 0 0 1-36.79-11.46L0 0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0l-131.81 111.68c-16.47 14-35.47 21-54.71 20.17L173 94a76.85 76.85 0 0 1-36.79-11.46L0 0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0l-131.81 111.68c-16.47 14-35.47 21-54.71 20.17L173 94a76.85 76.85 0 0 1-36.79-11.46L0 0z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `asymmetric3` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-asymmetric4
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"asymmetric4"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1093.48 131.85L173 94a76.85 76.85 0 0 1-36.79-11.46L0 0h1280l-131.81 111.68c-16.47 13.96-35.47 20.96-54.71 20.17z' fill-opacity='.5' /%3E%3Cpath d='M1094.44 119L172.7 68.72a74.54 74.54 0 0 1-25.19-5.95L0 0h1280l-133.85 102c-15.84 12.09-33.7 17.95-51.71 17z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1093.48 131.85L173 94a76.85 76.85 0 0 1-36.79-11.46L0 0h1280l-131.81 111.68c-16.47 13.96-35.47 20.96-54.71 20.17z' fill-opacity='.5' /%3E%3Cpath d='M1094.44 119L172.7 68.72a74.54 74.54 0 0 1-25.19-5.95L0 0h1280l-133.85 102c-15.84 12.09-33.7 17.95-51.71 17z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1093.48 131.85L173 94a76.85 76.85 0 0 1-36.79-11.46L0 0h1280l-131.81 111.68c-16.47 13.96-35.47 20.96-54.71 20.17z' fill-opacity='.5' /%3E%3Cpath d='M1094.44 119L172.7 68.72a74.54 74.54 0 0 1-25.19-5.95L0 0h1280l-133.85 102c-15.84 12.09-33.7 17.95-51.71 17z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `asymmetric4` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-clouds
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"clouds"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1884 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='xMidYMid slice' width='100%25' height='86px' viewBox='0 0 1280 86' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0H0v65.2c6.8 0 13.5.9 20.1 2.6 14-21.8 43.1-28 64.8-14 5.6 3.6 10.3 8.3 14 13.9 7.3-1.2 14.8-.6 21.8 1.6 2.1-37.3 34.1-65.8 71.4-63.7 24.3 1.4 46 15.7 56.8 37.6 19-17.6 48.6-16.5 66.3 2.4C323 54 327.4 65 327.7 76.5c.4.2.8.4 1.2.7 3.3 1.9 6.3 4.2 8.9 6.9 15.9-23.8 46.1-33.4 72.8-23.3 11.6-31.9 46.9-48.3 78.8-36.6 9.1 3.3 17.2 8.7 23.8 15.7 6.7-6.6 16.7-8.4 25.4-4.8 29.3-37.4 83.3-44 120.7-14.8 14 11 24.3 26.1 29.4 43.1 4.7.6 9.3 1.8 13.6 3.8 7.8-24.7 34.2-38.3 58.9-30.5 14.4 4.6 25.6 15.7 30.3 30 14.2 1.2 27.7 6.9 38.5 16.2 11.1-35.7 49-55.7 84.7-44.7 14.1 4.4 26.4 13.3 35 25.3 12-5.7 26.1-5.5 37.9.6 3.9-11.6 15.5-18.9 27.7-17.5.2-.3.3-.6.5-.9 23.3-41.4 75.8-56 117.2-32.6 14.1 7.9 25.6 19.7 33.3 33.8 28.8-23.8 71.5-19.8 95.3 9 2.6 3.1 4.9 6.5 6.9 10 3.8-.5 7.6-.8 11.4-.8L1280 0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1884 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='xMidYMid slice' width='100%25' height='86px' viewBox='0 0 1280 86' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0H0v65.2c6.8 0 13.5.9 20.1 2.6 14-21.8 43.1-28 64.8-14 5.6 3.6 10.3 8.3 14 13.9 7.3-1.2 14.8-.6 21.8 1.6 2.1-37.3 34.1-65.8 71.4-63.7 24.3 1.4 46 15.7 56.8 37.6 19-17.6 48.6-16.5 66.3 2.4C323 54 327.4 65 327.7 76.5c.4.2.8.4 1.2.7 3.3 1.9 6.3 4.2 8.9 6.9 15.9-23.8 46.1-33.4 72.8-23.3 11.6-31.9 46.9-48.3 78.8-36.6 9.1 3.3 17.2 8.7 23.8 15.7 6.7-6.6 16.7-8.4 25.4-4.8 29.3-37.4 83.3-44 120.7-14.8 14 11 24.3 26.1 29.4 43.1 4.7.6 9.3 1.8 13.6 3.8 7.8-24.7 34.2-38.3 58.9-30.5 14.4 4.6 25.6 15.7 30.3 30 14.2 1.2 27.7 6.9 38.5 16.2 11.1-35.7 49-55.7 84.7-44.7 14.1 4.4 26.4 13.3 35 25.3 12-5.7 26.1-5.5 37.9.6 3.9-11.6 15.5-18.9 27.7-17.5.2-.3.3-.6.5-.9 23.3-41.4 75.8-56 117.2-32.6 14.1 7.9 25.6 19.7 33.3 33.8 28.8-23.8 71.5-19.8 95.3 9 2.6 3.1 4.9 6.5 6.9 10 3.8-.5 7.6-.8 11.4-.8L1280 0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1884 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='xMidYMid slice' width='100%25' height='86px' viewBox='0 0 1280 86' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0H0v65.2c6.8 0 13.5.9 20.1 2.6 14-21.8 43.1-28 64.8-14 5.6 3.6 10.3 8.3 14 13.9 7.3-1.2 14.8-.6 21.8 1.6 2.1-37.3 34.1-65.8 71.4-63.7 24.3 1.4 46 15.7 56.8 37.6 19-17.6 48.6-16.5 66.3 2.4C323 54 327.4 65 327.7 76.5c.4.2.8.4 1.2.7 3.3 1.9 6.3 4.2 8.9 6.9 15.9-23.8 46.1-33.4 72.8-23.3 11.6-31.9 46.9-48.3 78.8-36.6 9.1 3.3 17.2 8.7 23.8 15.7 6.7-6.6 16.7-8.4 25.4-4.8 29.3-37.4 83.3-44 120.7-14.8 14 11 24.3 26.1 29.4 43.1 4.7.6 9.3 1.8 13.6 3.8 7.8-24.7 34.2-38.3 58.9-30.5 14.4 4.6 25.6 15.7 30.3 30 14.2 1.2 27.7 6.9 38.5 16.2 11.1-35.7 49-55.7 84.7-44.7 14.1 4.4 26.4 13.3 35 25.3 12-5.7 26.1-5.5 37.9.6 3.9-11.6 15.5-18.9 27.7-17.5.2-.3.3-.6.5-.9 23.3-41.4 75.8-56 117.2-32.6 14.1 7.9 25.6 19.7 33.3 33.8 28.8-23.8 71.5-19.8 95.3 9 2.6 3.1 4.9 6.5 6.9 10 3.8-.5 7.6-.8 11.4-.8L1280 0z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `clouds` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-clouds2
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"clouds2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1884 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='xMidYMid slice' width='100%25' height='86px' viewBox='0 0 1280 86' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M833.9 27.5c-5.8 3.2-11 7.3-15.5 12.2-7.1-6.9-17.5-8.8-26.6-5-30.6-39.2-87.3-46.1-126.5-15.5-1.4 1.1-2.8 2.2-4.1 3.4C674.4 33.4 684 48 688.8 64.3c4.7.6 9.3 1.8 13.6 3.8 7.8-24.7 34.2-38.3 58.9-30.5 14.4 4.6 25.6 15.7 30.3 30 14.2 1.2 27.7 6.9 38.5 16.2C840.6 49.6 876 29.5 910.8 38c-20.4-20.3-51.8-24.6-76.9-10.5zM384 43.9c-9 5-16.7 11.9-22.7 20.3 15.4-7.8 33.3-8.7 49.4-2.6 3.7-10.1 9.9-19.1 18.1-26-15.4-2.3-31.2.6-44.8 8.3zm560.2 13.6c2 2.2 3.9 4.5 5.7 6.9 5.6-2.6 11.6-4 17.8-4.1-7.6-2.4-15.6-3.3-23.5-2.8zM178.7 7c29-4.2 57.3 10.8 70.3 37 8.9-8.3 20.7-12.8 32.9-12.5C256.4 1.8 214.7-8.1 178.7 7zm146.5 56.3c1.5 4.5 2.4 9.2 2.5 14 .4.2.8.4 1.2.7 3.3 1.9 6.3 4.2 8.9 6.9 5.8-8.7 13.7-15.7 22.9-20.5-11.1-5.2-23.9-5.6-35.5-1.1zM33.5 54.9c21.6-14.4 50.7-8.5 65 13 .1.2.2.3.3.5 7.3-1.2 14.8-.6 21.8 1.6.6-10.3 3.5-20.4 8.6-29.4.3-.6.7-1.2 1.1-1.8-32.1-17.2-71.9-10.6-96.8 16.1zm1228.9 2.7c2.3 2.9 4.4 5.9 6.2 9.1 3.8-.5 7.6-.8 11.4-.8V48.3c-6.4 1.8-12.4 5-17.6 9.3zM1127.3 11c1.9.9 3.7 1.8 5.6 2.8 14.2 7.9 25.8 19.7 33.5 34 13.9-11.4 31.7-16.9 49.6-15.3-20.5-27.7-57.8-36.8-88.7-21.5z' fill-opacity='.5' /%3E%3Cpath d='M0 0v66c6.8 0 13.5.9 20.1 2.6 3.5-5.4 8.1-10.1 13.4-13.6 24.9-26.8 64.7-33.4 96.8-16 10.5-17.4 28.2-29.1 48.3-32 36.1-15.1 77.7-5.2 103.2 24.5 19.7.4 37.1 13.1 43.4 31.8 11.5-4.5 24.4-4.2 35.6 1.1l.4-.2c15.4-21.4 41.5-32.4 67.6-28.6 25-21 62.1-18.8 84.4 5.1 6.7-6.6 16.7-8.4 25.4-4.8 29.2-37.4 83.3-44.1 120.7-14.8l1.8 1.5c37.3-32.9 94.3-29.3 127.2 8 1.2 1.3 2.3 2.7 3.4 4.1 9.1-3.8 19.5-1.9 26.6 5 24.3-26 65-27.3 91-3.1.5.5 1 .9 1.5 1.4 12.8 3.1 24.4 9.9 33.4 19.5 7.9-.5 15.9.4 23.5 2.8 7-.1 13.9 1.5 20.1 4.7 3.9-11.6 15.5-18.9 27.7-17.5.2-.3.3-.6.5-.9 22.1-39.2 70.7-54.7 111.4-35.6 30.8-15.3 68.2-6.2 88.6 21.5 18.3 1.7 35 10.8 46.5 25.1 5.2-4.3 11.1-7.4 17.6-9.3V0H0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1884 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='xMidYMid slice' width='100%25' height='86px' viewBox='0 0 1280 86' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M833.9 27.5c-5.8 3.2-11 7.3-15.5 12.2-7.1-6.9-17.5-8.8-26.6-5-30.6-39.2-87.3-46.1-126.5-15.5-1.4 1.1-2.8 2.2-4.1 3.4C674.4 33.4 684 48 688.8 64.3c4.7.6 9.3 1.8 13.6 3.8 7.8-24.7 34.2-38.3 58.9-30.5 14.4 4.6 25.6 15.7 30.3 30 14.2 1.2 27.7 6.9 38.5 16.2C840.6 49.6 876 29.5 910.8 38c-20.4-20.3-51.8-24.6-76.9-10.5zM384 43.9c-9 5-16.7 11.9-22.7 20.3 15.4-7.8 33.3-8.7 49.4-2.6 3.7-10.1 9.9-19.1 18.1-26-15.4-2.3-31.2.6-44.8 8.3zm560.2 13.6c2 2.2 3.9 4.5 5.7 6.9 5.6-2.6 11.6-4 17.8-4.1-7.6-2.4-15.6-3.3-23.5-2.8zM178.7 7c29-4.2 57.3 10.8 70.3 37 8.9-8.3 20.7-12.8 32.9-12.5C256.4 1.8 214.7-8.1 178.7 7zm146.5 56.3c1.5 4.5 2.4 9.2 2.5 14 .4.2.8.4 1.2.7 3.3 1.9 6.3 4.2 8.9 6.9 5.8-8.7 13.7-15.7 22.9-20.5-11.1-5.2-23.9-5.6-35.5-1.1zM33.5 54.9c21.6-14.4 50.7-8.5 65 13 .1.2.2.3.3.5 7.3-1.2 14.8-.6 21.8 1.6.6-10.3 3.5-20.4 8.6-29.4.3-.6.7-1.2 1.1-1.8-32.1-17.2-71.9-10.6-96.8 16.1zm1228.9 2.7c2.3 2.9 4.4 5.9 6.2 9.1 3.8-.5 7.6-.8 11.4-.8V48.3c-6.4 1.8-12.4 5-17.6 9.3zM1127.3 11c1.9.9 3.7 1.8 5.6 2.8 14.2 7.9 25.8 19.7 33.5 34 13.9-11.4 31.7-16.9 49.6-15.3-20.5-27.7-57.8-36.8-88.7-21.5z' fill-opacity='.5' /%3E%3Cpath d='M0 0v66c6.8 0 13.5.9 20.1 2.6 3.5-5.4 8.1-10.1 13.4-13.6 24.9-26.8 64.7-33.4 96.8-16 10.5-17.4 28.2-29.1 48.3-32 36.1-15.1 77.7-5.2 103.2 24.5 19.7.4 37.1 13.1 43.4 31.8 11.5-4.5 24.4-4.2 35.6 1.1l.4-.2c15.4-21.4 41.5-32.4 67.6-28.6 25-21 62.1-18.8 84.4 5.1 6.7-6.6 16.7-8.4 25.4-4.8 29.2-37.4 83.3-44.1 120.7-14.8l1.8 1.5c37.3-32.9 94.3-29.3 127.2 8 1.2 1.3 2.3 2.7 3.4 4.1 9.1-3.8 19.5-1.9 26.6 5 24.3-26 65-27.3 91-3.1.5.5 1 .9 1.5 1.4 12.8 3.1 24.4 9.9 33.4 19.5 7.9-.5 15.9.4 23.5 2.8 7-.1 13.9 1.5 20.1 4.7 3.9-11.6 15.5-18.9 27.7-17.5.2-.3.3-.6.5-.9 22.1-39.2 70.7-54.7 111.4-35.6 30.8-15.3 68.2-6.2 88.6 21.5 18.3 1.7 35 10.8 46.5 25.1 5.2-4.3 11.1-7.4 17.6-9.3V0H0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1884 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='xMidYMid slice' width='100%25' height='86px' viewBox='0 0 1280 86' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M833.9 27.5c-5.8 3.2-11 7.3-15.5 12.2-7.1-6.9-17.5-8.8-26.6-5-30.6-39.2-87.3-46.1-126.5-15.5-1.4 1.1-2.8 2.2-4.1 3.4C674.4 33.4 684 48 688.8 64.3c4.7.6 9.3 1.8 13.6 3.8 7.8-24.7 34.2-38.3 58.9-30.5 14.4 4.6 25.6 15.7 30.3 30 14.2 1.2 27.7 6.9 38.5 16.2C840.6 49.6 876 29.5 910.8 38c-20.4-20.3-51.8-24.6-76.9-10.5zM384 43.9c-9 5-16.7 11.9-22.7 20.3 15.4-7.8 33.3-8.7 49.4-2.6 3.7-10.1 9.9-19.1 18.1-26-15.4-2.3-31.2.6-44.8 8.3zm560.2 13.6c2 2.2 3.9 4.5 5.7 6.9 5.6-2.6 11.6-4 17.8-4.1-7.6-2.4-15.6-3.3-23.5-2.8zM178.7 7c29-4.2 57.3 10.8 70.3 37 8.9-8.3 20.7-12.8 32.9-12.5C256.4 1.8 214.7-8.1 178.7 7zm146.5 56.3c1.5 4.5 2.4 9.2 2.5 14 .4.2.8.4 1.2.7 3.3 1.9 6.3 4.2 8.9 6.9 5.8-8.7 13.7-15.7 22.9-20.5-11.1-5.2-23.9-5.6-35.5-1.1zM33.5 54.9c21.6-14.4 50.7-8.5 65 13 .1.2.2.3.3.5 7.3-1.2 14.8-.6 21.8 1.6.6-10.3 3.5-20.4 8.6-29.4.3-.6.7-1.2 1.1-1.8-32.1-17.2-71.9-10.6-96.8 16.1zm1228.9 2.7c2.3 2.9 4.4 5.9 6.2 9.1 3.8-.5 7.6-.8 11.4-.8V48.3c-6.4 1.8-12.4 5-17.6 9.3zM1127.3 11c1.9.9 3.7 1.8 5.6 2.8 14.2 7.9 25.8 19.7 33.5 34 13.9-11.4 31.7-16.9 49.6-15.3-20.5-27.7-57.8-36.8-88.7-21.5z' fill-opacity='.5' /%3E%3Cpath d='M0 0v66c6.8 0 13.5.9 20.1 2.6 3.5-5.4 8.1-10.1 13.4-13.6 24.9-26.8 64.7-33.4 96.8-16 10.5-17.4 28.2-29.1 48.3-32 36.1-15.1 77.7-5.2 103.2 24.5 19.7.4 37.1 13.1 43.4 31.8 11.5-4.5 24.4-4.2 35.6 1.1l.4-.2c15.4-21.4 41.5-32.4 67.6-28.6 25-21 62.1-18.8 84.4 5.1 6.7-6.6 16.7-8.4 25.4-4.8 29.2-37.4 83.3-44.1 120.7-14.8l1.8 1.5c37.3-32.9 94.3-29.3 127.2 8 1.2 1.3 2.3 2.7 3.4 4.1 9.1-3.8 19.5-1.9 26.6 5 24.3-26 65-27.3 91-3.1.5.5 1 .9 1.5 1.4 12.8 3.1 24.4 9.9 33.4 19.5 7.9-.5 15.9.4 23.5 2.8 7-.1 13.9 1.5 20.1 4.7 3.9-11.6 15.5-18.9 27.7-17.5.2-.3.3-.6.5-.9 22.1-39.2 70.7-54.7 111.4-35.6 30.8-15.3 68.2-6.2 88.6 21.5 18.3 1.7 35 10.8 46.5 25.1 5.2-4.3 11.1-7.4 17.6-9.3V0H0z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `clouds2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-curve
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"curve"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M640 140C286.54 140 0 0 0 0h1280S993.46 140 640 140z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M640 140C286.54 140 0 0 0 0h1280S993.46 140 640 140z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M640 140C286.54 140 0 0 0 0h1280S993.46 140 640 140z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `curve` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-curve2
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"curve2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 0v.48C18.62 9.38 297.81 140 639.5 140 993.24 140 1280 0 1280 0z' fill-opacity='.3' /%3E%3Cpath d='M0 .6c14 8.28 176.54 99.8 555.45 119.14C952.41 140 1280 0 1280 0H0z' fill-opacity='.5' /%3E%3Cpath d='M726.29 101.2C1126.36 79.92 1281 0 1281 0H1c.05 0 325.25 122.48 725.29 101.2z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 0v.48C18.62 9.38 297.81 140 639.5 140 993.24 140 1280 0 1280 0z' fill-opacity='.3' /%3E%3Cpath d='M0 .6c14 8.28 176.54 99.8 555.45 119.14C952.41 140 1280 0 1280 0H0z' fill-opacity='.5' /%3E%3Cpath d='M726.29 101.2C1126.36 79.92 1281 0 1281 0H1c.05 0 325.25 122.48 725.29 101.2z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 0v.48C18.62 9.38 297.81 140 639.5 140 993.24 140 1280 0 1280 0z' fill-opacity='.3' /%3E%3Cpath d='M0 .6c14 8.28 176.54 99.8 555.45 119.14C952.41 140 1280 0 1280 0H0z' fill-opacity='.5' /%3E%3Cpath d='M726.29 101.2C1126.36 79.92 1281 0 1281 0H1c.05 0 325.25 122.48 725.29 101.2z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `curve2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-graph
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"graph"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M156.258 127.903l86.363-18.654 78.684 13.079L411.441 99.4l94.454 10.303L582.82 93.8l82.664 18.728 76.961-11.39L816.109 71.4l97.602 9.849L997.383 50.4l66.285 14.694 70.793-24.494h79.863L1280 0H0v122.138l60.613 9.965z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M156.258 127.903l86.363-18.654 78.684 13.079L411.441 99.4l94.454 10.303L582.82 93.8l82.664 18.728 76.961-11.39L816.109 71.4l97.602 9.849L997.383 50.4l66.285 14.694 70.793-24.494h79.863L1280 0H0v122.138l60.613 9.965z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M156.258 127.903l86.363-18.654 78.684 13.079L411.441 99.4l94.454 10.303L582.82 93.8l82.664 18.728 76.961-11.39L816.109 71.4l97.602 9.849L997.383 50.4l66.285 14.694 70.793-24.494h79.863L1280 0H0v122.138l60.613 9.965z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `graph` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-graph2
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"graph2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1214.323 66.051h-79.863l-70.793 18.224-66.285-10.933-83.672 22.953-97.601-7.328-73.664 22.125-76.961 8.475-82.664-13.934-76.926 11.832-94.453-7.666-90.137 17.059-78.684-9.731-86.363 13.879-95.644 3.125L0 126.717V0h1280l-.001 35.844z' fill-opacity='.5' /%3E%3Cpath d='M0 0h1280v.006l-70.676 36.578-74.863 4.641-70.793 23.334-66.285-11.678-83.672 29.618-97.602-7.07-63.664 21.421-76.961 12.649-91.664-20.798-77.926 17.66-94.453-7.574-90.137 21.595-78.683-9.884-86.363 16.074-95.645 6.211L0 127.905z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1214.323 66.051h-79.863l-70.793 18.224-66.285-10.933-83.672 22.953-97.601-7.328-73.664 22.125-76.961 8.475-82.664-13.934-76.926 11.832-94.453-7.666-90.137 17.059-78.684-9.731-86.363 13.879-95.644 3.125L0 126.717V0h1280l-.001 35.844z' fill-opacity='.5' /%3E%3Cpath d='M0 0h1280v.006l-70.676 36.578-74.863 4.641-70.793 23.334-66.285-11.678-83.672 29.618-97.602-7.07-63.664 21.421-76.961 12.649-91.664-20.798-77.926 17.66-94.453-7.574-90.137 21.595-78.683-9.884-86.363 16.074-95.645 6.211L0 127.905z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1214.323 66.051h-79.863l-70.793 18.224-66.285-10.933-83.672 22.953-97.601-7.328-73.664 22.125-76.961 8.475-82.664-13.934-76.926 11.832-94.453-7.666-90.137 17.059-78.684-9.731-86.363 13.879-95.644 3.125L0 126.717V0h1280l-.001 35.844z' fill-opacity='.5' /%3E%3Cpath d='M0 0h1280v.006l-70.676 36.578-74.863 4.641-70.793 23.334-66.285-11.678-83.672 29.618-97.602-7.07-63.664 21.421-76.961 12.649-91.664-20.798-77.926 17.66-94.453-7.574-90.137 21.595-78.683-9.884-86.363 16.074-95.645 6.211L0 127.905z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `graph2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-graph3
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"graph3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M156 35.51l95.46 34.84 120.04.24 71.5 33.35 90.09-3.91L640 137.65l102.39-37.17 85.55 10.65 88.11-7.19L992 65.28l73.21 5.31 66.79-22.1 77-.42L1280 0H0l64.8 38.69 91.2-3.18z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M156 35.51l95.46 34.84 120.04.24 71.5 33.35 90.09-3.91L640 137.65l102.39-37.17 85.55 10.65 88.11-7.19L992 65.28l73.21 5.31 66.79-22.1 77-.42L1280 0H0l64.8 38.69 91.2-3.18z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M156 35.51l95.46 34.84 120.04.24 71.5 33.35 90.09-3.91L640 137.65l102.39-37.17 85.55 10.65 88.11-7.19L992 65.28l73.21 5.31 66.79-22.1 77-.42L1280 0H0l64.8 38.69 91.2-3.18z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `graph3` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-graph4
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"graph4"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M156 35.41l95.46 34.73 120.04.25 71.5 33.24 90.09-3.89L640 137.25l102.39-37.06 85.55 10.61 88.11-7.17L992 65.08l73.21 5.31L1132 48.35l77-.42L1280 0H0l64.8 38.57 91.2-3.16z' fill-opacity='.5' /%3E%3Cpath d='M156 28.32l95.46 27.79 120.04.2L443 82.9l90.09-3.11L640 109.8l102.39-29.65 85.55 8.49 88.11-5.74L992 52.07l73.21 4.24L1132 38.68l77-.34L1280 0H0l64.8 30.86 91.2-2.54z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M156 35.41l95.46 34.73 120.04.25 71.5 33.24 90.09-3.89L640 137.25l102.39-37.06 85.55 10.61 88.11-7.17L992 65.08l73.21 5.31L1132 48.35l77-.42L1280 0H0l64.8 38.57 91.2-3.16z' fill-opacity='.5' /%3E%3Cpath d='M156 28.32l95.46 27.79 120.04.2L443 82.9l90.09-3.11L640 109.8l102.39-29.65 85.55 8.49 88.11-5.74L992 52.07l73.21 4.24L1132 38.68l77-.34L1280 0H0l64.8 30.86 91.2-2.54z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M156 35.41l95.46 34.73 120.04.25 71.5 33.24 90.09-3.89L640 137.25l102.39-37.06 85.55 10.61 88.11-7.17L992 65.08l73.21 5.31L1132 48.35l77-.42L1280 0H0l64.8 38.57 91.2-3.16z' fill-opacity='.5' /%3E%3Cpath d='M156 28.32l95.46 27.79 120.04.2L443 82.9l90.09-3.11L640 109.8l102.39-29.65 85.55 8.49 88.11-5.74L992 52.07l73.21 4.24L1132 38.68l77-.34L1280 0H0l64.8 30.86 91.2-2.54z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `graph4` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-mountains
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"mountains"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 69.65l-320 49.24L320 20.4 0 69.65V0h1280v69.65z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 69.65l-320 49.24L320 20.4 0 69.65V0h1280v69.65z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 69.65l-320 49.24L320 20.4 0 69.65V0h1280v69.65z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `mountains` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-mountains2
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"mountains2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 90.72l140-28.28 315.52 24.14L796.48 65.8 1140 104.89l140-14.17V0H0v90.72z' fill-opacity='.5' /%3E%3Cpath d='M0 0v47.44L170 0l626.48 94.89L1110 87.11l170-39.67V0H0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 90.72l140-28.28 315.52 24.14L796.48 65.8 1140 104.89l140-14.17V0H0v90.72z' fill-opacity='.5' /%3E%3Cpath d='M0 0v47.44L170 0l626.48 94.89L1110 87.11l170-39.67V0H0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 90.72l140-28.28 315.52 24.14L796.48 65.8 1140 104.89l140-14.17V0H0v90.72z' fill-opacity='.5' /%3E%3Cpath d='M0 0v47.44L170 0l626.48 94.89L1110 87.11l170-39.67V0H0z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `mountains2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-ramp
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"ramp"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 0s573.08 140 1280 140V0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 0s573.08 140 1280 140V0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 0s573.08 140 1280 140V0z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `ramp` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-ramp2
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"ramp2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 0v60s573.09 80 1280 80V0z' fill-opacity='.3' /%3E%3Cpath d='M0 0v30s573.09 110 1280 110V0z' fill-opacity='.5' /%3E%3Cpath d='M0 0s573.09 140 1280 140V0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 0v60s573.09 80 1280 80V0z' fill-opacity='.3' /%3E%3Cpath d='M0 0v30s573.09 110 1280 110V0z' fill-opacity='.5' /%3E%3Cpath d='M0 0s573.09 140 1280 140V0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 0v60s573.09 80 1280 80V0z' fill-opacity='.3' /%3E%3Cpath d='M0 0v30s573.09 110 1280 110V0z' fill-opacity='.5' /%3E%3Cpath d='M0 0s573.09 140 1280 140V0z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `ramp2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-slant
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"slant"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 140V0H0l1280 140z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 140V0H0l1280 140z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 140V0H0l1280 140z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `slant` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-slant2
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"slant2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 140V0H0l1280 140z' fill-opacity='.5' /%3E%3Cpath d='M1280 98V0H0l1280 98z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 140V0H0l1280 140z' fill-opacity='.5' /%3E%3Cpath d='M1280 98V0H0l1280 98z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 140V0H0l1280 140z' fill-opacity='.5' /%3E%3Cpath d='M1280 98V0H0l1280 98z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `slant2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-triangle
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"triangle"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1884 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='xMidYMid slice' width='100%25' height='100px' viewBox='0 0 1280 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M720 140L640 0l-80 140H0V0h1280v140H720z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1884 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='xMidYMid slice' width='100%25' height='100px' viewBox='0 0 1280 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M720 140L640 0l-80 140H0V0h1280v140H720z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1884 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='xMidYMid slice' width='100%25' height='100px' viewBox='0 0 1280 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M720 140L640 0l-80 140H0V0h1280v140H720z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `triangle` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-wave
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"wave"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M320 28C160 28 80 49 0 70V0h1280v70c-80 21-160 42-320 42-320 0-320-84-640-84z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M320 28C160 28 80 49 0 70V0h1280v70c-80 21-160 42-320 42-320 0-320-84-640-84z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M320 28C160 28 80 49 0 70V0h1280v70c-80 21-160 42-320 42-320 0-320-84-640-84z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `wave` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-wave2
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"wave2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 51.76c36.21-2.25 77.57-3.58 126.42-3.58 320 0 320 57 640 57 271.15 0 312.58-40.91 513.58-53.4V0H0z' fill-opacity='.3' /%3E%3Cpath d='M0 24.31c43.46-5.69 94.56-9.25 158.42-9.25 320 0 320 89.24 640 89.24 256.13 0 307.28-57.16 481.58-80V0H0z' fill-opacity='.5' /%3E%3Cpath d='M0 0v3.4C28.2 1.6 59.4.59 94.42.59c320 0 320 84.3 640 84.3 285 0 316.17-66.85 545.58-81.49V0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 51.76c36.21-2.25 77.57-3.58 126.42-3.58 320 0 320 57 640 57 271.15 0 312.58-40.91 513.58-53.4V0H0z' fill-opacity='.3' /%3E%3Cpath d='M0 24.31c43.46-5.69 94.56-9.25 158.42-9.25 320 0 320 89.24 640 89.24 256.13 0 307.28-57.16 481.58-80V0H0z' fill-opacity='.5' /%3E%3Cpath d='M0 0v3.4C28.2 1.6 59.4.59 94.42.59c320 0 320 84.3 640 84.3 285 0 316.17-66.85 545.58-81.49V0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 51.76c36.21-2.25 77.57-3.58 126.42-3.58 320 0 320 57 640 57 271.15 0 312.58-40.91 513.58-53.4V0H0z' fill-opacity='.3' /%3E%3Cpath d='M0 24.31c43.46-5.69 94.56-9.25 158.42-9.25 320 0 320 89.24 640 89.24 256.13 0 307.28-57.16 481.58-80V0H0z' fill-opacity='.5' /%3E%3Cpath d='M0 0v3.4C28.2 1.6 59.4.59 94.42.59c320 0 320 84.3 640 84.3 285 0 316.17-66.85 545.58-81.49V0z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `wave2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-waves
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"waves"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 0v100c20 17.3 40 29.51 80 29.51 51.79 0 74.69-48.57 151.75-48.57 73.72 0 91 54.88 191.56 54.88C543.95 135.8 554 14 665.69 14c109.46 0 98.85 87 188.2 87 70.37 0 69.81-33.73 115.6-33.73 55.85 0 62 39.62 115.6 39.62 58.08 0 57.52-46.59 115-46.59 39.8 0 60 22.48 79.89 39.69V0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 0v100c20 17.3 40 29.51 80 29.51 51.79 0 74.69-48.57 151.75-48.57 73.72 0 91 54.88 191.56 54.88C543.95 135.8 554 14 665.69 14c109.46 0 98.85 87 188.2 87 70.37 0 69.81-33.73 115.6-33.73 55.85 0 62 39.62 115.6 39.62 58.08 0 57.52-46.59 115-46.59 39.8 0 60 22.48 79.89 39.69V0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M0 0v100c20 17.3 40 29.51 80 29.51 51.79 0 74.69-48.57 151.75-48.57 73.72 0 91 54.88 191.56 54.88C543.95 135.8 554 14 665.69 14c109.46 0 98.85 87 188.2 87 70.37 0 69.81-33.73 115.6-33.73 55.85 0 62 39.62 115.6 39.62 58.08 0 57.52-46.59 115-46.59 39.8 0 60 22.48 79.89 39.69V0z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `waves` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-style-waves2
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"waves2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M504.854,80.066c7.812,0,14.893,0.318,21.41,0.879 c-25.925,22.475-56.093,40.852-102.946,40.852c-20.779,0-37.996-2.349-52.898-6.07C413.517,107.295,434.056,80.066,504.854,80.066z M775.938,51.947c19.145,18.596,39.097,35.051,77.956,35.051c46.907,0,62.299-14.986,80.912-24.98 c-21.357-15.783-46.804-28.348-85.489-28.348C816.829,33.671,794.233,41.411,775.938,51.947z' fill-opacity='.3' /%3E%3Cpath d='M1200.112,46.292c39.804,0,59.986,22.479,79.888,39.69v16.805 c-19.903-10.835-40.084-21.777-79.888-21.777c-72.014,0-78.715,43.559-147.964,43.559c-56.84,0-81.247-35.876-117.342-62.552 c9.309-4.998,19.423-8.749,34.69-8.749c55.846,0,61.99,39.617,115.602,39.617C1143.177,92.887,1142.618,46.292,1200.112,46.292z M80.011,115.488c-40.006,0-60.008-12.206-80.011-29.506v16.806c20.003,10.891,40.005,21.782,80.011,21.782 c80.004,0,78.597-30.407,137.669-30.407c55.971,0,62.526,24.026,126.337,24.026c9.858,0,18.509-0.916,26.404-2.461 c-57.186-14.278-80.177-48.808-138.66-48.808C154.698,66.919,131.801,115.488,80.011,115.488z M526.265,80.945 c56.848,4.902,70.056,28.726,137.193,28.726c54.001,0,73.43-35.237,112.48-57.724C751.06,27.782,727.548,0,665.691,0 C597.381,0,567.086,45.555,526.265,80.945z' fill-opacity='.5' /%3E%3Cpath d='M0,0v85.982c20.003,17.3,40.005,29.506,80.011,29.506c51.791,0,74.688-48.569,151.751-48.569 c58.482,0,81.473,34.531,138.66,48.808c43.096-8.432,63.634-35.662,134.433-35.662c7.812,0,14.893,0.318,21.41,0.879 C567.086,45.555,597.381,0,665.691,0c61.856,0,85.369,27.782,110.246,51.947c18.295-10.536,40.891-18.276,73.378-18.276 c38.685,0,64.132,12.564,85.489,28.348c9.309-4.998,19.423-8.749,34.69-8.749c55.846,0,61.99,39.617,115.602,39.617 c58.08,0,57.521-46.595,115.015-46.595c39.804,0,59.986,22.479,79.888,39.69V0H0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M504.854,80.066c7.812,0,14.893,0.318,21.41,0.879 c-25.925,22.475-56.093,40.852-102.946,40.852c-20.779,0-37.996-2.349-52.898-6.07C413.517,107.295,434.056,80.066,504.854,80.066z M775.938,51.947c19.145,18.596,39.097,35.051,77.956,35.051c46.907,0,62.299-14.986,80.912-24.98 c-21.357-15.783-46.804-28.348-85.489-28.348C816.829,33.671,794.233,41.411,775.938,51.947z' fill-opacity='.3' /%3E%3Cpath d='M1200.112,46.292c39.804,0,59.986,22.479,79.888,39.69v16.805 c-19.903-10.835-40.084-21.777-79.888-21.777c-72.014,0-78.715,43.559-147.964,43.559c-56.84,0-81.247-35.876-117.342-62.552 c9.309-4.998,19.423-8.749,34.69-8.749c55.846,0,61.99,39.617,115.602,39.617C1143.177,92.887,1142.618,46.292,1200.112,46.292z M80.011,115.488c-40.006,0-60.008-12.206-80.011-29.506v16.806c20.003,10.891,40.005,21.782,80.011,21.782 c80.004,0,78.597-30.407,137.669-30.407c55.971,0,62.526,24.026,126.337,24.026c9.858,0,18.509-0.916,26.404-2.461 c-57.186-14.278-80.177-48.808-138.66-48.808C154.698,66.919,131.801,115.488,80.011,115.488z M526.265,80.945 c56.848,4.902,70.056,28.726,137.193,28.726c54.001,0,73.43-35.237,112.48-57.724C751.06,27.782,727.548,0,665.691,0 C597.381,0,567.086,45.555,526.265,80.945z' fill-opacity='.5' /%3E%3Cpath d='M0,0v85.982c20.003,17.3,40.005,29.506,80.011,29.506c51.791,0,74.688-48.569,151.751-48.569 c58.482,0,81.473,34.531,138.66,48.808c43.096-8.432,63.634-35.662,134.433-35.662c7.812,0,14.893,0.318,21.41,0.879 C567.086,45.555,597.381,0,665.691,0c61.856,0,85.369,27.782,110.246,51.947c18.295-10.536,40.891-18.276,73.378-18.276 c38.685,0,64.132,12.564,85.489,28.348c9.309-4.998,19.423-8.749,34.69-8.749c55.846,0,61.99,39.617,115.602,39.617 c58.08,0,57.521-46.595,115.015-46.595c39.804,0,59.986,22.479,79.888,39.69V0H0z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1885 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M504.854,80.066c7.812,0,14.893,0.318,21.41,0.879 c-25.925,22.475-56.093,40.852-102.946,40.852c-20.779,0-37.996-2.349-52.898-6.07C413.517,107.295,434.056,80.066,504.854,80.066z M775.938,51.947c19.145,18.596,39.097,35.051,77.956,35.051c46.907,0,62.299-14.986,80.912-24.98 c-21.357-15.783-46.804-28.348-85.489-28.348C816.829,33.671,794.233,41.411,775.938,51.947z' fill-opacity='.3' /%3E%3Cpath d='M1200.112,46.292c39.804,0,59.986,22.479,79.888,39.69v16.805 c-19.903-10.835-40.084-21.777-79.888-21.777c-72.014,0-78.715,43.559-147.964,43.559c-56.84,0-81.247-35.876-117.342-62.552 c9.309-4.998,19.423-8.749,34.69-8.749c55.846,0,61.99,39.617,115.602,39.617C1143.177,92.887,1142.618,46.292,1200.112,46.292z M80.011,115.488c-40.006,0-60.008-12.206-80.011-29.506v16.806c20.003,10.891,40.005,21.782,80.011,21.782 c80.004,0,78.597-30.407,137.669-30.407c55.971,0,62.526,24.026,126.337,24.026c9.858,0,18.509-0.916,26.404-2.461 c-57.186-14.278-80.177-48.808-138.66-48.808C154.698,66.919,131.801,115.488,80.011,115.488z M526.265,80.945 c56.848,4.902,70.056,28.726,137.193,28.726c54.001,0,73.43-35.237,112.48-57.724C751.06,27.782,727.548,0,665.691,0 C597.381,0,567.086,45.555,526.265,80.945z' fill-opacity='.5' /%3E%3Cpath d='M0,0v85.982c20.003,17.3,40.005,29.506,80.011,29.506c51.791,0,74.688-48.569,151.751-48.569 c58.482,0,81.473,34.531,138.66,48.808c43.096-8.432,63.634-35.662,134.433-35.662c7.812,0,14.893,0.318,21.41,0.879 C567.086,45.555,597.381,0,665.691,0c61.856,0,85.369,27.782,110.246,51.947c18.295-10.536,40.891-18.276,73.378-18.276 c38.685,0,64.132,12.564,85.489,28.348c9.309-4.998,19.423-8.749,34.69-8.749c55.846,0,61.99,39.617,115.602,39.617 c58.08,0,57.521-46.595,115.015-46.595c39.804,0,59.986,22.479,79.888,39.69V0H0z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider style `waves2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-color
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.color` = `"#ef4444"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `6:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M320 28c320 0 320 84 640 84 160 0 240-21 320-42v70H0V70c80-21 160-42 320-42z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ef4444'%3E%3Cpath d='M320 28c320 0 320 84 640 84 160 0 240-21 320-42v70H0V70c80-21 160-42 320-42z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1 | yes | `6:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M320 28c320 0 320 84 640 84 160 0 240-21 320-42v70H0V70c80-21 160-42 320-42z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ef4444'%3E%3Cpath d='M320 28c320 0 320 84 640 84 160 0 240-21 320-42v70H0V70c80-21 160-42 320-42z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1 | yes | `6:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M320 28c320 0 320 84 640 84 160 0 240-21 320-42v70H0V70c80-21 160-42 320-42z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ef4444'%3E%3Cpath d='M320 28c320 0 320 84 640 84 160 0 240-21 320-42v70H0V70c80-21 160-42 320-42z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Explicit divider colour against the sibling-colour default (a light divider on a dark section next to a light section; the colour #ef4444 differs from the neighbour's #fde68a). Dividers.php:177-185 (explicit colour wins over the sibling colour) and DividersStyle.php:137-147 (a global colour is resolved to a value).
+
+Registered paths added:
+
+- `module.advanced.dividers.bottom.{bp}.value.color`
+
+## dv-bottom-height-200
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.height` = `"200px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `6:div:background-size: 100% 100px -> 100% 200px` |
+| 900 px | yes | 7 | yes | `6:div:background-size: 100% 100px -> 100% 200px` |
+| 400 px | yes | 7 | yes | `6:div:background-size: 100% 100px -> 100% 200px` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider height 200px against the 100px default (Dividers.php:41-54 default, :237-238 height written). Divi's own field allows 0-500 and the units % em rem px cm mm in pt pc ex vh vw (includes/builder/module/field/Divider.php:189-206).
+
+Registered paths added:
+
+- `module.advanced.dividers.bottom.{bp}.value.height`
+
+## dv-bottom-height-percent
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.height` = `"50%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `6:div:background-size: 100% 100px -> 100% 100%` |
+| 900 px | yes | 7 | yes | `6:div:background-size: 100% 100px -> 100% 100%` |
+| 400 px | yes | 7 | yes | `6:div:background-size: 100% 100px -> 100% 100%` |
+
+Phone overflow at 400 px: no.
+
+Note: Divider height in percent (Dividers.php:267-269: a percent height changes the background size). 50% against the 100px default.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-repeat-3x
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.repeat` = `"3x"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `6:div:background-size: 100% 100px -> 426px 100px` |
+| 900 px | yes | 1 | yes | `6:div:background-size: 100% 100px -> 299px 100px` |
+| 400 px | yes | 1 | yes | `6:div:background-size: 100% 100px -> 133px 100px` |
+
+Phone overflow at 400 px: no.
+
+Note: Repeat 3x on a repeatable style (wave). Dividers.php:241-273 (repeat divides the background width). Divi's own field allows 1-20 (includes/builder/module/field/Divider.php:208-224).
+
+Registered paths added:
+
+- `module.advanced.dividers.bottom.{bp}.value.repeat`
+
+## dv-bottom-flip-horizontal
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.flip` = `["horizontal"]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `6:div:transform: matrix(1, 0, 0, 1, 0, 0) -> matrix(-1, 0, 0, 1, 0, 0)` |
+| 900 px | yes | 1 | yes | `6:div:transform: matrix(1, 0, 0, 1, 0, 0) -> matrix(-1, 0, 0, 1, 0, 0)` |
+| 400 px | yes | 1 | yes | `6:div:transform: matrix(1, 0, 0, 1, 0, 0) -> matrix(-1, 0, 0, 1, 0, 0)` |
+
+Phone overflow at 400 px: no.
+
+Note: Flip horizontally: `flip` is a list of the words horizontal and/or vertical (DividersStyleUtils.php:62-80; Dividers.php:188-190 writes transform scale(-1, 1)). Asymmetric style so the flip is visible.
+
+Registered paths added:
+
+- `module.advanced.dividers.bottom.{bp}.value.flip.{n}`
+
+## dv-bottom-flip-vertical
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.flip` = `["vertical"]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `6:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0l-262.1 116.26a73.29 73.29 0 0 1-39.09 6L0 0v140h1280z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 2 | yes | `6:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0l-262.1 116.26a73.29 73.29 0 0 1-39.09 6L0 0v140h1280z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 2 | yes | `6:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0l-262.1 116.26a73.29 73.29 0 0 1-39.09 6L0 0v140h1280z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Flip vertically (Dividers.php:188-203: a vertical flip also swaps the top/bottom artwork).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-flip-both
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.flip` = `["horizontal","vertical"]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `6:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0l-262.1 116.26a73.29 73.29 0 0 1-39.09 6L0 0v140h1280z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 2 | yes | `6:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0l-262.1 116.26a73.29 73.29 0 0 1-39.09 6L0 0v140h1280z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 2 | yes | `6:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0l-262.1 116.26a73.29 73.29 0 0 1-39.09 6L0 0v140h1280z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Flip horizontally and vertically (a list of both words; DividersStyleUtils.php:62-80).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-arrangement-above
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.arrangement` = `"above"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `6:div:z-index: 1 -> 10` |
+| 900 px | yes | 1 | yes | `6:div:z-index: 1 -> 10` |
+| 400 px | yes | 1 | yes | `6:div:z-index: 1 -> 10` |
+
+Phone overflow at 400 px: no.
+
+Note: Arrangement above the section content (Dividers.php:276-281: above gives z-index 10, below gives 1; Divi's D4 conversion maps above_content to above, includes/builder-5/server/Packages/Conversion/Conversion.php:937-950). Measures the z-index change.
+
+Registered paths added:
+
+- `module.advanced.dividers.bottom.{bp}.value.arrangement`
+
+## dv-bottom-style-none-explicit
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"none"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: 5 -> auto` |
+| 900 px | yes | 609 | yes | `1:div:z-index: 5 -> auto` |
+| 400 px | yes | 609 | yes | `1:div:z-index: 5 -> auto` |
+
+Phone overflow at 400 px: no.
+
+Note: Hiding a divider that was set: style none explicitly gives display none (Dividers.php:117-121).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-height-tablet
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.tablet.value.height` = `"50px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 7 | yes | `6:div:background-size: 100% 100px -> 100% 50px` |
+| 400 px | yes | 7 | yes | `6:div:background-size: 100% 100px -> 100% 50px` |
+
+Phone overflow at 400 px: no.
+
+Note: Responsive: a tablet height override (50px) on a desktop divider. DividersStyle.php:183-220 normalises tablet/phone by inheriting the larger breakpoint. The 1280 px width legitimately shows no difference; 900 and 400 must.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-height-phone
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.phone.value.height` = `"30px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 7 | yes | `6:div:background-size: 100% 100px -> 100% 30px` |
+
+Phone overflow at 400 px: no.
+
+Note: Responsive: a phone height override (30px) on a desktop divider (DividersStyle.php:183-220). 1280 and 900 legitimately show no difference.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-none-phone
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.phone.value.style` = `"none"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 8 | yes | `6:div:display: block -> none` |
+
+Phone overflow at 400 px: no.
+
+Note: Responsive: hide the divider on phones only (style none at the phone breakpoint; DividersStyle.php:195-199 keeps an explicit none from inheriting the desktop style).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-top-color
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.color` = `"#ef4444"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M320 28C160 28 80 49 0 70V0h1280v70c-80 21-160 42-320 42-320 0-320-84-640-84z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ef4444'%3E%3Cpath d='M320 28C160 28 80 49 0 70V0h1280v70c-80 21-160 42-320 42-320 0-320-84-640-84z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 1 | yes | `1:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M320 28C160 28 80 49 0 70V0h1280v70c-80 21-160 42-320 42-320 0-320-84-640-84z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ef4444'%3E%3Cpath d='M320 28C160 28 80 49 0 70V0h1280v70c-80 21-160 42-320 42-320 0-320-84-640-84z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 1 | yes | `1:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M320 28C160 28 80 49 0 70V0h1280v70c-80 21-160 42-320 42-320 0-320-84-640-84z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ef4444'%3E%3Cpath d='M320 28C160 28 80 49 0 70V0h1280v70c-80 21-160 42-320 42-320 0-320-84-640-84z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Top divider with an explicit colour (#ef4444) against the previous sibling's light default (Dividers.php:177-185; SectionModule.php:482-492).
+
+Registered paths added:
+
+- `module.advanced.dividers.top.{bp}.value.color`
+
+## dv-top-height-200
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.height` = `"200px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `1:div:background-size: 100% 100px -> 100% 200px` |
+| 900 px | yes | 7 | yes | `1:div:background-size: 100% 100px -> 100% 200px` |
+| 400 px | yes | 7 | yes | `1:div:background-size: 100% 100px -> 100% 200px` |
+
+Phone overflow at 400 px: no.
+
+Note: Top divider height 200px against the 100px default (Dividers.php:237-238).
+
+Registered paths added:
+
+- `module.advanced.dividers.top.{bp}.value.height`
+
+## dv-top-flip-vertical
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.flip` = `["vertical"]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0l-262.1 116.26a73.29 73.29 0 0 1-39.09 6L0 0v140h1280z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 2 | yes | `1:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0l-262.1 116.26a73.29 73.29 0 0 1-39.09 6L0 0v140h1280z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 2 | yes | `1:div:background-image: url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M978.81 122.25L0 0h1280l-262.1 116.26a73.29 73.29 0 0 1-39.09 5.99z' /%3E%3C/g%3E%3C/svg%3E") -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M1280 0l-262.1 116.26a73.29 73.29 0 0 1-39.09 6L0 0v140h1280z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: Top divider flipped vertically (Dividers.php:188-203).
+
+Registered paths added:
+
+- `module.advanced.dividers.top.{bp}.value.flip.{n}`
+
+## dv-top-arrangement-above
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.arrangement` = `"above"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:div:z-index: 1 -> 10` |
+| 900 px | yes | 1 | yes | `1:div:z-index: 1 -> 10` |
+| 400 px | yes | 1 | yes | `1:div:z-index: 1 -> 10` |
+
+Phone overflow at 400 px: no.
+
+Note: Top divider on top of the content (Dividers.php:276-281).
+
+Registered paths added:
+
+- `module.advanced.dividers.top.{bp}.value.arrangement`
+
+## dv-top-repeat-3x
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.repeat` = `"3x"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:div:background-size: 100% 100px -> 426px 100px` |
+| 900 px | yes | 1 | yes | `1:div:background-size: 100% 100px -> 299px 100px` |
+| 400 px | yes | 1 | yes | `1:div:background-size: 100% 100px -> 133px 100px` |
+
+Phone overflow at 400 px: no.
+
+Note: Top divider repeated 3x (Dividers.php:241-273).
+
+Registered paths added:
+
+- `module.advanced.dividers.top.{bp}.value.repeat`
+
+## dv-both-top-and-bottom
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.advanced.dividers.top.desktop.value.style` = `"wave"`
+- `module.advanced.dividers.bottom.desktop.value.style` = `"curve"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2493 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M320 28C160 28 80 49 0 70V0h1280v70c-80 21-160 42-320 42-320 0-320-84-640-84z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 900 px | yes | 2493 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M320 28C160 28 80 49 0 70V0h1280v70c-80 21-160 42-320 42-320 0-320-84-640-84z' /%3E%3C/g%3E%3C/svg%3E")` |
+| 400 px | yes | 2493 | yes | `1:div:background-image: none -> url("data:image/svg+xml;utf8,%3Csvg preserveAspectRatio='none' width='100%25' height='140px' viewBox='0 0 1280 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fde68a'%3E%3Cpath d='M320 28C160 28 80 49 0 70V0h1280v70c-80 21-160 42-320 42-320 0-320-84-640-84z' /%3E%3C/g%3E%3C/svg%3E")` |
+
+Phone overflow at 400 px: no.
+
+Note: A pair, declared as one candidate: a top divider (wave) and a bottom divider (curve) on one section between two light sections. Dividers.php draws each in its own element (DividersComponent.php:114-135: et_pb_top_inside_divider / et_pb_bottom_inside_divider).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-bottom-style-no-neighbour
+
+Block: `section`. Set on top of the base block:
+
+- `module.advanced.dividers.bottom.desktop.value.style` = `"wave"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 900 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+| 400 px | yes | 609 | yes | `1:div:z-index: auto -> 5` |
+
+Phone overflow at 400 px: no.
+
+Note: No neighbouring section at all: the divider falls back to Divi's default colour (Dividers.php:130-132 white; :180-182 black when sibling and module colours match and no divider colour is set). Recorded to see whether a lone section still draws a divider.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-row-gutter-block-width-4
+
+Block: `row`, holding `column`, `column`. Set on top of the base block:
+
+- `module.advanced.gutter.desktop.value.width` = `"4"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 34 | no | `1:div:inline-size: 483.828px -> 471.031px` |
+| 900 px | no | 0 | no |  |
+| 400 px | no | 0 | no |  |
+
+Phone overflow at 400 px: no.
+
+Note: Row gutter width 4 on a row whose layout is display block (RowModule.php:104: the et_pb_gutters{width} class is added when the layout is not flex). The base row is a two-column block row with the default page gutter.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## dv-row-gutter-block-width-1
+
+Block: `row`, holding `column`, `column`. Set on top of the base block:
+
+- `module.advanced.gutter.desktop.value.width` = `"1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 34 | no | `1:div:inline-size: 483.828px -> 512px` |
+| 900 px | yes | 6 | no | `0:div:block-size: 170px -> 140px` |
+| 400 px | yes | 6 | no | `0:div:block-size: 170px -> 140px` |
+
+Phone overflow at 400 px: no.
+
+Note: Row gutter width 1 (the tightest) on a display block row (RowModule.php:104).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (dividers)
+
+Candidates from `dividers.json` that were measured and are not taught, with the reason:
+
+- `dv-bottom-repeat-3x-clouds`: no effect (dead). Precondition probe: repeat 3x on `clouds`, a NON-repeatable style. Dividers.php:248-266 gives it background-size cover and ignores repeat; Divi's own field hides repeat for none, clouds, clouds2 and triangle (includes/builder/module/field/Divider.php:221). Expected DEAD.
+- `dv-bottom-repeat-3x-triangle`: no effect (dead). Precondition probe: repeat 3x on `triangle`, a non-repeatable style (Dividers.php:248-266; field/Divider.php:221). Expected DEAD.
+- `dv-bottom-repeat-3x-clouds2`: no effect (dead). Precondition probe: repeat 3x on `clouds2`, a non-repeatable style (Dividers.php:248-266; field/Divider.php:221). Expected DEAD.
+- `dv-inner-shadow-on`: no effect (dead). Expected DEAD after a first smoke run and a check of the rendered HTML (no `et_pb_inner_shadow` class and no inset shadow on the page). `module.advanced.innerShadow` on a section (module.json attrName module.advanced.innerShadow, a toggle; default render attribute is "off": section/module-default-render-attributes.json:5-8). Divi's includes/builder/feature/dynamic-assets/assets/css/section.css defines `.et_pb_inner_shadow{box-shadow:inset 0 0 7px rgba(0,0,0,.07)}`.
+- `dv-row-gutter-flex`: no effect (dead). Precondition probe: row gutter width 4 on the DEFAULT flex layout. RowModule.php:104 adds the et_pb_gutters class only when the layout is not flex, and layout_style_declaration (RowModule.php:449-475) writes only for display block. Expected DEAD.
+
+Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-dividers.json`):
+
+- Inner shadow (`module.advanced.innerShadow`): dead: the candidate `dv-inner-shadow-on` changed nothing at any width. The 5.15.1 front-end render emits no `et_pb_inner_shadow` class and no inset shadow for it (checked in the rendered HTML), although the builder lists the toggle (section/module.json attrName module.advanced.innerShadow) and Divi's section.css still defines `.et_pb_inner_shadow`. The topic says so and never teaches it
+- Dividers on a row or a column: not offered: in module-library/src/components the section module.json carries `module.advanced.dividers`; the row and column module.json files do not (source). Never probed on a row or column
+- Divider `fullwidth` (section type fullwidth) and the `fullwidth` key: not rendered: Dividers.php:277-281 gives a fullwidth section a z-index of 10 like `arrangement: above`; it comes from the section's type, not from a divider setting. Only `arrangement` was probed
+- What `arrangement: above` does to overlapping content: only the z-index change (1 to 10) was measured; that rows and modules hide behind an `above` divider is Divi's own description (includes/builder/module/field/Divider.php:247-260), marked (source)
+- Height units other than px and %, heights outside the probed ones, and the 0-500 range: not rendered: only 100px (default), 200px, 50px and 30px and 50% were probed. The range 0-500 and the units em rem cm mm in pt pc ex vh vw are Divi's own field definition (field/Divider.php:189-206); the unit list is not taught
+- Repeat values other than 3x, and repeat 1x: only 3x was rendered (1x is the default). The field range 1-20 is Divi's own (field/Divider.php:208-224), marked (source)
+- Divider colour as rgba, a global colour reference or a gradient: not rendered: only a hex colour was probed. DividersStyle.php:137-147 resolves a global colour to a value (source); a sibling whose background is a gradient or image does not give its colour (DividersStyleUtils.php:143 reads only the sibling's `color`)
+- The black fallback when the neighbour and the section share a colour: source only (Dividers.php:180-182): with no divider `color`, the same colour on both sections and no image/gradient/pattern/mask, Divi paints the divider black. Not rendered as a separate case
+- Hover and sticky states of a divider, tablet/phone overrides other than height and style: not measured: the probe saves one state (value). Tablet and phone `height` and phone `style` were measured; tablet/phone `color`, `repeat`, `flip` and `arrangement` inherit in Divi's code (DividersStyle.php:183-220) but were not rendered with overrides
+- Divider between a page section and a Theme Builder header or footer, or a section inside a Theme Builder body: not measured: the probe renders ordinary sections in the page content
+- Add-on divider styles (the `divi_divider_library_divider` filter): excluded: only the 26 styles Divi ships (DividerSvg.php:50-77) were probed; a style an add-on registers is not taught
+- Row gutter widths 2 and 3, `makeEqual`, `alignColumns`, tablet/phone gutter overrides, and the section gutter of a specialty section: not rendered: only width 4 and width 1 on a display block row were probed (and width 4 on the default flex row, which is dead). The section gutter acts only on a specialty section (SectionModule.php:176-189); no specialty section was rendered

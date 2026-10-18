@@ -10,8 +10,8 @@
  * export stays the stronger evidence). A section per promoted candidate is appended to docs/shape-evidence-5.15.1.md.
  * Candidates that rendered nothing (DEAD), overflow a phone, or ended in an ERROR are never added. A result the probe labelled
  * `cssOnly` (the emitted stylesheet changed but no computed style did) is promoted only when the candidate sets
- * `"allowCssOnly": true` AND has a non-empty `note` saying why a stylesheet-only effect is proof enough. A candidate's optional `parent`
- * and `children` (see scripts/verify-shapes.cjs) are described in its evidence section. Every candidate that is NOT promoted (dead, overflowing a
+ * `"allowCssOnly": true` AND has a non-empty `note` saying why a stylesheet-only effect is proof enough. A candidate's optional `parent`,
+ * `neighbours` and `children` (see scripts/verify-shapes.cjs) are described in its evidence section. Every candidate that is NOT promoted (dead, overflowing a
  * phone, an error, a stylesheet-only result without `allowCssOnly`, an unreliable measurement) is listed with its reason in a
  * `## Not taught (<candidates file name>)` section of the evidence file (followed by the items of the optional hand-written
  * `fixtures/shapes/not-taught-<candidates file name>.json`, [{item, reason}]), which is rewritten on every run. Pure PHP, no WordPress, idempotent.
@@ -137,6 +137,12 @@ foreach ( $candidates as $c ) {
         }
         if ( $kids !== [] ) {
             $where .= ', holding ' . implode( ', ', $kids );
+        }
+        foreach ( [ 'before', 'after' ] as $side ) {
+            $count = is_array( $c['neighbours'][ $side ] ?? null ) ? count( $c['neighbours'][ $side ] ) : 0;
+            if ( $count > 0 ) {
+                $where .= ', with ' . $count . ' plain neighbour section(s) ' . $side . ' it';
+            }
         }
         $section .= 'Block: `' . $c['block'] . '`' . $where . ". Set on top of the base block:\n\n";
         foreach ( (array) $c['set'] as $p => $v ) {

@@ -32,6 +32,7 @@ final class StyleGuide
             $topics[] = 'design-language:' . $id;
         }
         $topics[] = 'backgrounds';
+        $topics[] = 'dividers';
         return $topics;
     }
 
@@ -50,6 +51,9 @@ final class StyleGuide
         }
         if ( 'backgrounds' === $topic ) {
             return self::backgroundsTopic();
+        }
+        if ( 'dividers' === $topic ) {
+            return self::dividersTopic();
         }
         if ( str_starts_with( $topic, 'design-language:' ) && in_array( $topic, self::topics(), true ) ) {
             return DesignLanguages::markdown( substr( $topic, strlen( 'design-language:' ) ) );
@@ -169,6 +173,107 @@ meaning. A `tablet` or `phone` value replaces the desktop one at that width (ren
 other settings inherit the same way in Divi's code but were not rendered with overrides). Not measured, so do not rely on
 them: hover and sticky states, blend modes beyond those named, units other than px and %, global colour references,
 and combinations (a pattern with a mask, a mask with a gradient on one element).
+MD;
+    }
+
+    /** Topic `dividers`: section top/bottom dividers, every one proven on the real Divi 5.15.1 (inner shadow is dead and says so). At most 10,000 bytes. */
+    private static function dividersTopic(): string
+    {
+        return <<<'MD'
+# Section dividers: wave, curve and slant edges between sections
+
+Every shape and style listed here was rendered on the real Divi 5.15.1 and changed the page; a rule marked (source) is read
+from Divi's own code and was not rendered, and the Limits section says what was not measured. Dividers exist on
+`divi/section` only (a row or a column has none, source). A divider is a shape painted inside the section along its top or
+bottom edge, over the section's own background.
+
+All paths below sit under `module.advanced.dividers.top.desktop.value.` (top edge) or
+`module.advanced.dividers.bottom.desktop.value.` (bottom edge), for example `module.advanced.dividers.bottom.desktop.value.style`.
+Set the two edges independently. Never write CSS for a divider.
+
+## Settings
+- `style`: a name, default "none" ("none" set explicitly hides a divider). 26 proven (each rendered as a top divider and as a bottom divider): arrow, arrow2, arrow3, asymmetric, asymmetric2, asymmetric3, asymmetric4, clouds, clouds2, curve, curve2, graph, graph2, graph3, graph4, mountains, mountains2, ramp, ramp2, slant, slant2, triangle, wave, wave2, waves, waves2.
+- `color`: a hex colour such as "#f8fafc". Without it the divider is filled with the plain background `color` of the
+  NEIGHBOURING section: the previous section for a top divider, the next section for a bottom divider (rendered: a top divider
+  took the colour of the section above, a bottom divider the colour of the section below). So the shape reads as the neighbour
+  rising into this section. Give the neighbour a plain `module.decoration.background.desktop.value.color` that differs from this
+  section's, or set `color` yourself (do this when the neighbour has only a gradient or image: its colour is not used, source).
+  When both sections share one colour and `color` is unset, Divi paints the divider black (source).
+- `height`: "100px" (default). "200px", "50px", "30px" and "50%" were rendered.
+- `repeat`: "1x" (default) or "3x" tiles the shape horizontally; "3x" was rendered. `repeat` has no effect on 3 styles: clouds, clouds2, triangle (rendered: dead; they always stretch to one piece).
+- `flip`: a list, ["horizontal"], ["vertical"] or ["horizontal","vertical"] (all three rendered). Use it to point an
+  asymmetric shape the other way; a vertical flip turns the shape upside down.
+- `arrangement`: "below" (default) or "above". Rendered: "above" raises the divider's z-index from 1 to 10; Divi describes
+  that as drawing it over rows and modules that overlap it (source). Leave the default unless content must tuck behind the shape.
+
+## Using them well
+- A divider is painted inside the section, so on a short section it crosses the content (rendered: a default-padding section
+  had its heading crossed by a 100px divider). Give that edge padding of at least the divider height, as in the examples.
+- Dark section into a light neighbour (or the reverse) shows the shape best. Use one shape family on a page; pick the same
+  `height` for every divider so the rhythm holds.
+- No style overflowed a phone: all 26, top and bottom, rendered at 400 px with no horizontal scroll.
+
+## Responsive
+`tablet` and `phone` override the desktop value, for example `module.advanced.dividers.bottom.tablet.value.height` and
+`module.advanced.dividers.bottom.phone.value.style`. Rendered: a tablet `height` of "50px" changed 900 and 400 px but not
+1280; a phone `height` of "30px" changed only 400 px; a phone `style` of "none" hid the divider only at 400 px. Other
+settings (`color`, `repeat`, `flip`, `arrangement`) were not rendered with overrides.
+
+## Row gutter (block layout rows only)
+`module.advanced.gutter.desktop.value.width` ("1" or "4", both rendered) sets the gap between a row's columns, but only on a
+row whose layout `module.decoration.layout.desktop.value.display` is "block": "1" removed the gap, "4" widened it. On the
+default flex row it does nothing (rendered: dead); use the layout's `columnGap` there.
+
+## Inner shadow
+Do not use `module.advanced.innerShadow`: Divi 5.15.1 saves it and draws nothing (rendered: dead).
+
+## Worked examples (each validates)
+A wave from a dark hero into a light section (the next section's colour fills the wave):
+```
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#1e3a8a"}}},"spacing":{"desktop":{"value":{"padding":{"top":"120px","bottom":"180px"}}}}},"advanced":{"dividers":{"bottom":{"desktop":{"value":{"style":"wave","height":"120px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"A wave into the next section"}},"decoration":{"font":{"font":{"desktop":{"value":{"color":"#ffffff"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#f1f5f9"}}},"spacing":{"desktop":{"value":{"padding":{"top":"80px","bottom":"80px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"The next section sets the divider colour"}},"decoration":{"font":{"font":{"desktop":{"value":{"color":"#0f172a"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+A section with a top curve (smaller on phones), a flipped bottom slant with an explicit colour, between two plain sections:
+```
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#fde68a"}}},"spacing":{"desktop":{"value":{"padding":{"top":"80px","bottom":"80px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Section above"}},"decoration":{"font":{"font":{"desktop":{"value":{"color":"#1e293b"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#0f766e"}}},"spacing":{"desktop":{"value":{"padding":{"top":"140px","bottom":"140px"}}}}},"advanced":{"dividers":{"top":{"desktop":{"value":{"style":"curve","height":"90px"}},"phone":{"value":{"height":"40px"}}},"bottom":{"desktop":{"value":{"style":"slant","flip":["horizontal"],"color":"#f8fafc"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Top curve, flipped bottom slant, smaller on phones"}},"decoration":{"font":{"font":{"desktop":{"value":{"color":"#ffffff"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#f8fafc"}}},"spacing":{"desktop":{"value":{"padding":{"top":"80px","bottom":"80px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Section below"}},"decoration":{"font":{"font":{"desktop":{"value":{"color":"#0f172a"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+
+## Limits
+Not measured, so do not rely on them: other height units, `repeat` values other than 3x, divider colours other than hex,
+hover and sticky states, tablet and phone `color`, `repeat`, `flip` and `arrangement`, dividers on sections outside the page's own content,
+the section gutter of a specialty section, and styles an add-on plugin registers.
 MD;
     }
 

@@ -1,0 +1,3528 @@
+[
+  {
+    "id": "dv-bottom-style-arrow",
+    "expect": "PASS",
+    "note": "Divider style `arrow` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "arrow"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-arrow2",
+    "expect": "PASS",
+    "note": "Divider style `arrow2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "arrow2"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-arrow3",
+    "expect": "PASS",
+    "note": "Divider style `arrow3` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "arrow3"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-asymmetric",
+    "expect": "PASS",
+    "note": "Divider style `asymmetric` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "asymmetric"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-asymmetric2",
+    "expect": "PASS",
+    "note": "Divider style `asymmetric2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "asymmetric2"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-asymmetric3",
+    "expect": "PASS",
+    "note": "Divider style `asymmetric3` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "asymmetric3"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-asymmetric4",
+    "expect": "PASS",
+    "note": "Divider style `asymmetric4` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "asymmetric4"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-clouds",
+    "expect": "PASS",
+    "note": "Divider style `clouds` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "clouds"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-clouds2",
+    "expect": "PASS",
+    "note": "Divider style `clouds2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "clouds2"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-curve",
+    "expect": "PASS",
+    "note": "Divider style `curve` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "curve"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-curve2",
+    "expect": "PASS",
+    "note": "Divider style `curve2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "curve2"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-graph",
+    "expect": "PASS",
+    "note": "Divider style `graph` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "graph"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-graph2",
+    "expect": "PASS",
+    "note": "Divider style `graph2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "graph2"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-graph3",
+    "expect": "PASS",
+    "note": "Divider style `graph3` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "graph3"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-graph4",
+    "expect": "PASS",
+    "note": "Divider style `graph4` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "graph4"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-mountains",
+    "expect": "PASS",
+    "note": "Divider style `mountains` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "mountains"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-mountains2",
+    "expect": "PASS",
+    "note": "Divider style `mountains2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "mountains2"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-ramp",
+    "expect": "PASS",
+    "note": "Divider style `ramp` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "ramp"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-ramp2",
+    "expect": "PASS",
+    "note": "Divider style `ramp2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "ramp2"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-slant",
+    "expect": "PASS",
+    "note": "Divider style `slant` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "slant"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-slant2",
+    "expect": "PASS",
+    "note": "Divider style `slant2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "slant2"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-triangle",
+    "expect": "PASS",
+    "note": "Divider style `triangle` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "triangle"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-wave",
+    "expect": "PASS",
+    "note": "Divider style `wave` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "wave"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-wave2",
+    "expect": "PASS",
+    "note": "Divider style `wave2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "wave2"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-waves",
+    "expect": "PASS",
+    "note": "Divider style `waves` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "waves"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-waves2",
+    "expect": "PASS",
+    "note": "Divider style `waves2` as the bottom divider of a dark section next to a light section (next sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "waves2"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-arrow",
+    "expect": "PASS",
+    "note": "Divider style `arrow` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "arrow"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-arrow2",
+    "expect": "PASS",
+    "note": "Divider style `arrow2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "arrow2"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-arrow3",
+    "expect": "PASS",
+    "note": "Divider style `arrow3` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "arrow3"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-asymmetric",
+    "expect": "PASS",
+    "note": "Divider style `asymmetric` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "asymmetric"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-asymmetric2",
+    "expect": "PASS",
+    "note": "Divider style `asymmetric2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "asymmetric2"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-asymmetric3",
+    "expect": "PASS",
+    "note": "Divider style `asymmetric3` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "asymmetric3"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-asymmetric4",
+    "expect": "PASS",
+    "note": "Divider style `asymmetric4` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "asymmetric4"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-clouds",
+    "expect": "PASS",
+    "note": "Divider style `clouds` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "clouds"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-clouds2",
+    "expect": "PASS",
+    "note": "Divider style `clouds2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "clouds2"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-curve",
+    "expect": "PASS",
+    "note": "Divider style `curve` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "curve"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-curve2",
+    "expect": "PASS",
+    "note": "Divider style `curve2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "curve2"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-graph",
+    "expect": "PASS",
+    "note": "Divider style `graph` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "graph"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-graph2",
+    "expect": "PASS",
+    "note": "Divider style `graph2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "graph2"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-graph3",
+    "expect": "PASS",
+    "note": "Divider style `graph3` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "graph3"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-graph4",
+    "expect": "PASS",
+    "note": "Divider style `graph4` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "graph4"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-mountains",
+    "expect": "PASS",
+    "note": "Divider style `mountains` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "mountains"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-mountains2",
+    "expect": "PASS",
+    "note": "Divider style `mountains2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "mountains2"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-ramp",
+    "expect": "PASS",
+    "note": "Divider style `ramp` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "ramp"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-ramp2",
+    "expect": "PASS",
+    "note": "Divider style `ramp2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "ramp2"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-slant",
+    "expect": "PASS",
+    "note": "Divider style `slant` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "slant"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-slant2",
+    "expect": "PASS",
+    "note": "Divider style `slant2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "slant2"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-triangle",
+    "expect": "PASS",
+    "note": "Divider style `triangle` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "triangle"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-wave",
+    "expect": "PASS",
+    "note": "Divider style `wave` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "wave"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-wave2",
+    "expect": "PASS",
+    "note": "Divider style `wave2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "wave2"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-waves",
+    "expect": "PASS",
+    "note": "Divider style `waves` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "waves"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-style-waves2",
+    "expect": "PASS",
+    "note": "Divider style `waves2` as the top divider of a dark section next to a light section (previous sibling), everything else at its default. the 26 style names are listed in includes/builder-5/server/Packages/DividerLibrary/DividerSvg/DividerSvg.php:50-77; Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Dividers/Dividers.php:41-54 (defaults style none, height 100px, repeat 1x, arrangement below) and :222-281 (what is rendered); colour source includes/builder-5/server/Packages/ModuleLibrary/Section/SectionModule.php:482-505 (top uses the previous sibling's background, bottom the next sibling's) and StyleLibrary/Declarations/Dividers/Utils/DividersStyleUtils.php:107-162; the divider colour defaults to that sibling colour (Dividers.php:177-185).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "waves2"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-color",
+    "expect": "PASS",
+    "note": "Explicit divider colour against the sibling-colour default (a light divider on a dark section next to a light section; the colour #ef4444 differs from the neighbour's #fde68a). Dividers.php:177-185 (explicit colour wins over the sibling colour) and DividersStyle.php:137-147 (a global colour is resolved to a value).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.color": "#ef4444"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-height-200",
+    "expect": "PASS",
+    "note": "Divider height 200px against the 100px default (Dividers.php:41-54 default, :237-238 height written). Divi's own field allows 0-500 and the units % em rem px cm mm in pt pc ex vh vw (includes/builder/module/field/Divider.php:189-206).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.height": "200px"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-height-percent",
+    "expect": "PASS",
+    "note": "Divider height in percent (Dividers.php:267-269: a percent height changes the background size). 50% against the 100px default.",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.height": "50%"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-repeat-3x",
+    "expect": "PASS",
+    "note": "Repeat 3x on a repeatable style (wave). Dividers.php:241-273 (repeat divides the background width). Divi's own field allows 1-20 (includes/builder/module/field/Divider.php:208-224).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.repeat": "3x"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-repeat-3x-clouds",
+    "expect": "DEAD",
+    "note": "Precondition probe: repeat 3x on `clouds`, a NON-repeatable style. Dividers.php:248-266 gives it background-size cover and ignores repeat; Divi's own field hides repeat for none, clouds, clouds2 and triangle (includes/builder/module/field/Divider.php:221). Expected DEAD.",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "clouds"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.repeat": "3x"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-repeat-3x-triangle",
+    "expect": "DEAD",
+    "note": "Precondition probe: repeat 3x on `triangle`, a non-repeatable style (Dividers.php:248-266; field/Divider.php:221). Expected DEAD.",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "triangle"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.repeat": "3x"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-repeat-3x-clouds2",
+    "expect": "DEAD",
+    "note": "Precondition probe: repeat 3x on `clouds2`, a non-repeatable style (Dividers.php:248-266; field/Divider.php:221). Expected DEAD.",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "clouds2"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.repeat": "3x"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-flip-horizontal",
+    "expect": "PASS",
+    "note": "Flip horizontally: `flip` is a list of the words horizontal and/or vertical (DividersStyleUtils.php:62-80; Dividers.php:188-190 writes transform scale(-1, 1)). Asymmetric style so the flip is visible.",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "asymmetric"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.flip": [
+        "horizontal"
+      ]
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-flip-vertical",
+    "expect": "PASS",
+    "note": "Flip vertically (Dividers.php:188-203: a vertical flip also swaps the top/bottom artwork).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "asymmetric"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.flip": [
+        "vertical"
+      ]
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-flip-both",
+    "expect": "PASS",
+    "note": "Flip horizontally and vertically (a list of both words; DividersStyleUtils.php:62-80).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "asymmetric"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.flip": [
+        "horizontal",
+        "vertical"
+      ]
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-arrangement-above",
+    "expect": "PASS",
+    "note": "Arrangement above the section content (Dividers.php:276-281: above gives z-index 10, below gives 1; Divi's D4 conversion maps above_content to above, includes/builder-5/server/Packages/Conversion/Conversion.php:937-950). Measures the z-index change.",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.arrangement": "above"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-none-explicit",
+    "expect": "PASS",
+    "note": "Hiding a divider that was set: style none explicitly gives display none (Dividers.php:117-121).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "none"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-height-tablet",
+    "expect": "PASS",
+    "note": "Responsive: a tablet height override (50px) on a desktop divider. DividersStyle.php:183-220 normalises tablet/phone by inheriting the larger breakpoint. The 1280 px width legitimately shows no difference; 900 and 400 must.",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.tablet.value.height": "50px"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-height-phone",
+    "expect": "PASS",
+    "note": "Responsive: a phone height override (30px) on a desktop divider (DividersStyle.php:183-220). 1280 and 900 legitimately show no difference.",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.phone.value.height": "30px"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-none-phone",
+    "expect": "PASS",
+    "note": "Responsive: hide the divider on phones only (style none at the phone breakpoint; DividersStyle.php:195-199 keeps an explicit none from inheriting the desktop style).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "bottom": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.phone.value.style": "none"
+    },
+    "neighbours": {
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-color",
+    "expect": "PASS",
+    "note": "Top divider with an explicit colour (#ef4444) against the previous sibling's light default (Dividers.php:177-185; SectionModule.php:482-492).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "top": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.color": "#ef4444"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-height-200",
+    "expect": "PASS",
+    "note": "Top divider height 200px against the 100px default (Dividers.php:237-238).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "top": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.height": "200px"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-flip-vertical",
+    "expect": "PASS",
+    "note": "Top divider flipped vertically (Dividers.php:188-203).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "top": {
+              "desktop": {
+                "value": {
+                  "style": "asymmetric"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.flip": [
+        "vertical"
+      ]
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-arrangement-above",
+    "expect": "PASS",
+    "note": "Top divider on top of the content (Dividers.php:276-281).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "top": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.arrangement": "above"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-top-repeat-3x",
+    "expect": "PASS",
+    "note": "Top divider repeated 3x (Dividers.php:241-273).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        },
+        "advanced": {
+          "dividers": {
+            "top": {
+              "desktop": {
+                "value": {
+                  "style": "wave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.repeat": "3x"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-both-top-and-bottom",
+    "expect": "PASS",
+    "note": "A pair, declared as one candidate: a top divider (wave) and a bottom divider (curve) on one section between two light sections. Dividers.php draws each in its own element (DividersComponent.php:114-135: et_pb_top_inside_divider / et_pb_bottom_inside_divider).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.top.desktop.value.style": "wave",
+      "module.advanced.dividers.bottom.desktop.value.style": "curve"
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "#fde68a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "dv-bottom-style-no-neighbour",
+    "expect": "PASS",
+    "note": "No neighbouring section at all: the divider falls back to Divi's default colour (Dividers.php:130-132 white; :180-182 black when sibling and module colours match and no divider colour is set). Recorded to see whether a lone section still draws a divider.",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.dividers.bottom.desktop.value.style": "wave"
+    }
+  },
+  {
+    "id": "dv-inner-shadow-on",
+    "expect": "DEAD",
+    "note": "Expected DEAD after a first smoke run and a check of the rendered HTML (no `et_pb_inner_shadow` class and no inset shadow on the page). `module.advanced.innerShadow` on a section (module.json attrName module.advanced.innerShadow, a toggle; default render attribute is \"off\": section/module-default-render-attributes.json:5-8). Divi's includes/builder/feature/dynamic-assets/assets/css/section.css defines `.et_pb_inner_shadow{box-shadow:inset 0 0 7px rgba(0,0,0,.07)}`.",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#fde68a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.advanced.innerShadow.desktop.value": "on"
+    }
+  },
+  {
+    "id": "dv-row-gutter-flex",
+    "expect": "DEAD",
+    "note": "Precondition probe: row gutter width 4 on the DEFAULT flex layout. RowModule.php:104 adds the et_pb_gutters class only when the layout is not flex, and layout_style_declaration (RowModule.php:449-475) writes only for display block. Expected DEAD.",
+    "block": "row",
+    "base": {
+      "module": {
+        "advanced": {
+          "columnStructure": {
+            "desktop": {
+              "value": "1_2,1_2"
+            }
+          }
+        }
+      }
+    },
+    "children": [
+      {
+        "block": "column",
+        "base": {
+          "module": {
+            "advanced": {
+              "type": {
+                "desktop": {
+                  "value": "1_2"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "column",
+        "base": {
+          "module": {
+            "advanced": {
+              "type": {
+                "desktop": {
+                  "value": "1_2"
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "set": {
+      "module.advanced.gutter.desktop.value.width": "4"
+    }
+  },
+  {
+    "id": "dv-row-gutter-block-width-4",
+    "expect": "PASS",
+    "note": "Row gutter width 4 on a row whose layout is display block (RowModule.php:104: the et_pb_gutters{width} class is added when the layout is not flex). The base row is a two-column block row with the default page gutter.",
+    "block": "row",
+    "base": {
+      "module": {
+        "advanced": {
+          "columnStructure": {
+            "desktop": {
+              "value": "1_2,1_2"
+            }
+          }
+        },
+        "decoration": {
+          "layout": {
+            "desktop": {
+              "value": {
+                "display": "block"
+              }
+            }
+          }
+        }
+      }
+    },
+    "children": [
+      {
+        "block": "column",
+        "base": {
+          "module": {
+            "advanced": {
+              "type": {
+                "desktop": {
+                  "value": "1_2"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "column",
+        "base": {
+          "module": {
+            "advanced": {
+              "type": {
+                "desktop": {
+                  "value": "1_2"
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "set": {
+      "module.advanced.gutter.desktop.value.width": "4"
+    }
+  },
+  {
+    "id": "dv-row-gutter-block-width-1",
+    "expect": "PASS",
+    "note": "Row gutter width 1 (the tightest) on a display block row (RowModule.php:104).",
+    "block": "row",
+    "base": {
+      "module": {
+        "advanced": {
+          "columnStructure": {
+            "desktop": {
+              "value": "1_2,1_2"
+            }
+          }
+        },
+        "decoration": {
+          "layout": {
+            "desktop": {
+              "value": {
+                "display": "block"
+              }
+            }
+          }
+        }
+      }
+    },
+    "children": [
+      {
+        "block": "column",
+        "base": {
+          "module": {
+            "advanced": {
+              "type": {
+                "desktop": {
+                  "value": "1_2"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "column",
+        "base": {
+          "module": {
+            "advanced": {
+              "type": {
+                "desktop": {
+                  "value": "1_2"
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "set": {
+      "module.advanced.gutter.desktop.value.width": "1"
+    }
+  }
+]

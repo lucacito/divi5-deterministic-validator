@@ -81,6 +81,7 @@ class StyleGuideTopicsTest extends TestCase
             $this->assertContains( 'design-language:' . $id, $topics );
         }
         $this->assertContains( 'backgrounds', $topics );
+        $this->assertContains( 'dividers', $topics );
         $this->assertSame( $topics, array_values( array_unique( $topics ) ), 'no topic is listed twice' );
         foreach ( $topics as $topic ) {
             $this->assertStringNotContainsString( 'Unknown topic', StyleGuide::markdown( $topic ), $topic . ' must be served' );
@@ -343,6 +344,202 @@ class StyleGuideTopicsTest extends TestCase
             }
         }
         $this->assertSame( [ 'gradient', 'image', 'mask', 'pattern' ], $this->sorted( array_keys( $kinds ) ) );
+    }
+
+    // ---- the dividers topic ----
+
+    /** @return array{0:array<string,array<string,mixed>>,1:array<string,array<string,mixed>>} candidates and probe results, both keyed by id */
+    private function dividerEvidence(): array
+    {
+        $dir        = __DIR__ . '/../fixtures/shapes/';
+        $candidates = json_decode( (string) file_get_contents( $dir . 'candidates/dividers.json' ), true );
+        $results    = json_decode( (string) file_get_contents( $dir . 'probe-results-dividers.json' ), true );
+        $this->assertIsArray( $candidates );
+        $this->assertIsArray( $results );
+        $c = [];
+        foreach ( $candidates as $cand ) {
+            $c[ $cand['id'] ] = $cand;
+        }
+        $r = [];
+        foreach ( $results as $res ) {
+            $r[ $res['id'] ] = $res;
+        }
+        $this->assertSame( array_keys( $c ), array_keys( $r ), 'every candidate has exactly one probe result' );
+
+        return [ $c, $r ];
+    }
+
+    private static function dividerPassed( array $r ): bool
+    {
+        return ! empty( $r['effect'] ) && empty( $r['phoneOverflow'] ) && empty( $r['error'] );
+    }
+
+    /** @return list<string> the divider styles that rendered as BOTH a top and a bottom divider (candidate set value of `.dividers.<placement>.desktop.value.style`), sorted */
+    private function provenDividerStyles(): array
+    {
+        [ $cands, $results ] = $this->dividerEvidence();
+        $by = [ 'top' => [], 'bottom' => [] ];
+        foreach ( $cands as $id => $c ) {
+            if ( ! self::dividerPassed( $results[ $id ] ) ) {
+                continue;
+            }
+            foreach ( $c['set'] as $path => $value ) {
+                if ( 1 === preg_match( '/\.dividers\.(top|bottom)\.desktop\.value\.style$/', (string) $path, $m ) && 'none' !== $value && 1 === count( $c['set'] ) ) {
+                    $by[ $m[1] ][ (string) $value ] = true;
+                }
+            }
+        }
+        $both = array_keys( array_intersect_key( $by['top'], $by['bottom'] ) );
+        sort( $both );
+
+        return $both;
+    }
+
+    /** @return list<string> the styles whose `repeat` candidate rendered nothing (the base style of every DEAD candidate that sets `.repeat`), sorted */
+    private function deadRepeatStyles(): array
+    {
+        [ $cands, $results ] = $this->dividerEvidence();
+        $dead = [];
+        foreach ( $cands as $id => $c ) {
+            $paths = array_keys( $c['set'] );
+            if ( 1 === count( $paths ) && str_ends_with( (string) $paths[0], '.repeat' ) && empty( $results[ $id ]['effect'] ) ) {
+                $dead[] = $c['base']['module']['advanced']['dividers']['bottom']['desktop']['value']['style'];
+            }
+        }
+        sort( $dead );
+
+        return $dead;
+    }
+
+    /** @return array{styles:list<string>,count:int,repeat:list<string>,repeatCount:int} the topic's own lists as exact tokens, sorted */
+    private function taughtDividerLists( string $text ): array
+    {
+        $this->assertSame( 1, preg_match( '/^- `style`: .*?(\d+) proven \(each rendered as a top divider and as a bottom divider\): ([a-z0-9, ]+)\.$/m', $text, $m ), 'one exact style line' );
+        $styles = array_map( 'trim', explode( ',', $m[2] ) );
+        $this->assertSame( $styles, array_values( array_unique( $styles ) ), 'no style named twice' );
+        $count = (int) $m[1];
+        $this->assertSame( 1, preg_match( '/`repeat` has no effect on (\d+) styles: ([a-z0-9, ]+)\s*\(/', $text, $n ), 'one exact repeat-exception line' );
+        $repeat = array_map( 'trim', explode( ',', $n[2] ) );
+        sort( $styles );
+        sort( $repeat );
+
+        return [ 'styles' => $styles, 'count' => $count, 'repeat' => $repeat, 'repeatCount' => (int) $n[1] ];
+    }
+
+    public function testDividersTopicIsServedWithinBudget(): void
+    {
+        $text = StyleGuide::markdown( 'dividers' );
+        $this->assertStringStartsWith( '# Section dividers', $text );
+        $this->assertLessThanOrEqual( self::TOPIC_BUDGET, strlen( $text ) );
+        $this->assertStringNotContainsString( '{{aied:', $text );
+        $this->assertStringNotContainsString( 'http', $text, 'no remote host in a topic' );
+        $this->assertDoesNotMatchRegularExpression( '/freeForm|mainElement|"css"/', $text, 'no custom CSS is ever taught' );
+        $this->assertStringContainsString( 'rendered on the real Divi 5.15.1', preg_replace( '/\s+/', ' ', $text ) ?? '' );
+        $this->assertSame( $text, ( $this->mcp( [ 'topic' => 'dividers' ] ) )[1], 'MCP serves the same text' );
+        $this->assertSame( [ 'guide' => $text ], $this->rest( [ 'topic' => 'dividers' ] )->get_data(), 'REST serves the same text' );
+    }
+
+    public function testDividersTopicNamesEveryProvenStyleAndNoOther(): void
+    {
+        $proven = $this->provenDividerStyles();
+        $this->assertGreaterThanOrEqual( 4, count( $proven ), 'several styles are proven' );
+        $taught = $this->taughtDividerLists( StyleGuide::markdown( 'dividers' ) );
+        $this->assertCount( $taught['count'], $taught['styles'], 'the stated count matches the list' );
+        $this->assertSame( $proven, $taught['styles'], 'divider styles: taught == proven (exact set, both placements)' );
+    }
+
+    public function testDividersTopicRepeatExceptionsAreExactlyTheMeasuredDeadStyles(): void
+    {
+        $dead = $this->deadRepeatStyles();
+        $this->assertNotSame( [], $dead, 'the precondition was probed' );
+        $taught = $this->taughtDividerLists( StyleGuide::markdown( 'dividers' ) );
+        $this->assertCount( $taught['repeatCount'], $taught['repeat'] );
+        $this->assertSame( $dead, $taught['repeat'], 'the styles repeat does nothing for: taught == measured dead' );
+        // ... and the repeat that is taught (3x on a repeatable style, both placements) did render.
+        [ , $results ] = $this->dividerEvidence();
+        foreach ( [ 'dv-bottom-repeat-3x', 'dv-top-repeat-3x' ] as $id ) {
+            $this->assertTrue( self::dividerPassed( $results[ $id ] ), $id );
+        }
+    }
+
+    public function testDividersResponsiveAndOtherClaimsRestOnMeasurements(): void
+    {
+        [ $cands, $results ] = $this->dividerEvidence();
+        $diffs = static fn ( string $id ): array => [
+            1280 => (int) $results[ $id ]['detail']['1280']['computedDiffs'],
+            900  => (int) $results[ $id ]['detail']['900']['computedDiffs'],
+            400  => (int) $results[ $id ]['detail']['400']['computedDiffs'],
+        ];
+        // The topic says a tablet override changed 900 and 400 only, a phone override only 400.
+        $tablet = $diffs( 'dv-bottom-height-tablet' );
+        $this->assertSame( 0, $tablet[1280] );
+        $this->assertGreaterThan( 0, $tablet[900] );
+        $this->assertGreaterThan( 0, $tablet[400] );
+        foreach ( [ 'dv-bottom-height-phone', 'dv-bottom-style-none-phone' ] as $id ) {
+            $d = $diffs( $id );
+            $this->assertSame( 0, $d[1280], $id );
+            $this->assertSame( 0, $d[900], $id );
+            $this->assertGreaterThan( 0, $d[400], $id );
+        }
+        // No divider style overflowed a phone, and every style candidate exists for both placements.
+        foreach ( $results as $id => $r ) {
+            $this->assertFalse( (bool) $r['phoneOverflow'], $id . ' overflows a phone' );
+        }
+        $proven = $this->provenDividerStyles();
+        $this->assertCount( 26, $proven, 'Divi ships 26 divider styles and all of them rendered' );
+        foreach ( $proven as $style ) {
+            $this->assertArrayHasKey( 'dv-top-style-' . $style, $cands );
+            $this->assertArrayHasKey( 'dv-bottom-style-' . $style, $cands );
+        }
+        // Inner shadow is dead (and the topic says not to use it); a flex row ignores the gutter, a block row does not.
+        $this->assertEmpty( $results['dv-inner-shadow-on']['effect'] );
+        $this->assertEmpty( $results['dv-row-gutter-flex']['effect'] );
+        $this->assertTrue( self::dividerPassed( $results['dv-row-gutter-block-width-4'] ) );
+        $this->assertTrue( self::dividerPassed( $results['dv-row-gutter-block-width-1'] ) );
+        $text = StyleGuide::markdown( 'dividers' );
+        $this->assertStringContainsString( 'Do not use `module.advanced.innerShadow`', $text );
+        $this->assertStringContainsString( '("1" or "4", both rendered)', $text );
+        $this->assertStringContainsString( '"3x" was rendered', $text );
+        // The values the topic names (height, colour, flip, arrangement) are the values that passed.
+        foreach ( [ '"200px"' => 'dv-bottom-height-200', '"50%"' => 'dv-bottom-height-percent', '"above"' => 'dv-bottom-arrangement-above' ] as $word => $id ) {
+            $this->assertTrue( self::dividerPassed( $results[ $id ] ), $id );
+            $this->assertStringContainsString( $word, $text );
+        }
+        foreach ( [ 'dv-bottom-flip-horizontal', 'dv-bottom-flip-vertical', 'dv-bottom-flip-both', 'dv-bottom-color', 'dv-top-color' ] as $id ) {
+            $this->assertTrue( self::dividerPassed( $results[ $id ] ), $id );
+        }
+    }
+
+    public function testDividersWorkedExamplesValidate(): void
+    {
+        $examples = $this->examples( 'dividers' );
+        $this->assertGreaterThanOrEqual( 2, count( $examples ), 'a bottom divider example and a top-and-bottom example' );
+        $registry = ShapeRegistry::load();
+        $proven   = $this->provenDividerStyles();
+        $used     = [];
+        foreach ( $examples as $i => $example ) {
+            $page   = '<!-- wp:divi/placeholder -->' . $example . '<!-- /wp:divi/placeholder -->';
+            $result = ( new Validator() )->validateContent( $page );
+            $this->assertTrue( $result->isValid(), "example $i: " . json_encode( array_map( static fn ( $v ) => $v->code() . ' ' . $v->path(), $result->violations() ) ) );
+            $this->assertTrue( LayoutGate::check( $page )->isValid(), "example $i passes the plugin gate" );
+            $this->assertStringNotContainsString( 'http', $example );
+            preg_match_all( '/<!-- wp:divi\/[a-z-]+ (\{.*?\}) \/?-->/', $example, $blocks );
+            foreach ( $blocks[1] as $json ) {
+                $attrs = json_decode( $json, true );
+                $this->assertIsArray( $attrs );
+                foreach ( ShapePaths::fromBlockAttrs( $attrs ) as $path ) {
+                    $this->assertTrue( $registry->covers( $path ), "example $i uses an unregistered path $path" );
+                }
+            }
+            preg_match_all( '/"style":"([a-z0-9]+)"/', $example, $styles );
+            foreach ( $styles[1] as $style ) {
+                $this->assertContains( $style, $proven, "example $i uses the divider style $style, which is not proven" );
+                $used[ $style ] = true;
+            }
+            // The neighbour is visible: a divider example has more than one section.
+            $this->assertGreaterThanOrEqual( 2, substr_count( $example, '<!-- wp:divi/section ' ), "example $i has a neighbour section" );
+        }
+        $this->assertGreaterThanOrEqual( 2, count( $used ) );
     }
 
     /** @param list<string> $a @return list<string> */

@@ -1,0 +1,50 @@
+[
+  {
+    "item": "Inner shadow (`module.advanced.innerShadow`)",
+    "reason": "dead: the candidate `dv-inner-shadow-on` changed nothing at any width. The 5.15.1 front-end render emits no `et_pb_inner_shadow` class and no inset shadow for it (checked in the rendered HTML), although the builder lists the toggle (section/module.json attrName module.advanced.innerShadow) and Divi's section.css still defines `.et_pb_inner_shadow`. The topic says so and never teaches it"
+  },
+  {
+    "item": "Dividers on a row or a column",
+    "reason": "not offered: in module-library/src/components the section module.json carries `module.advanced.dividers`; the row and column module.json files do not (source). Never probed on a row or column"
+  },
+  {
+    "item": "Divider `fullwidth` (section type fullwidth) and the `fullwidth` key",
+    "reason": "not rendered: Dividers.php:277-281 gives a fullwidth section a z-index of 10 like `arrangement: above`; it comes from the section's type, not from a divider setting. Only `arrangement` was probed"
+  },
+  {
+    "item": "What `arrangement: above` does to overlapping content",
+    "reason": "only the z-index change (1 to 10) was measured; that rows and modules hide behind an `above` divider is Divi's own description (includes/builder/module/field/Divider.php:247-260), marked (source)"
+  },
+  {
+    "item": "Height units other than px and %, heights outside the probed ones, and the 0-500 range",
+    "reason": "not rendered: only 100px (default), 200px, 50px and 30px and 50% were probed. The range 0-500 and the units em rem cm mm in pt pc ex vh vw are Divi's own field definition (field/Divider.php:189-206); the unit list is not taught"
+  },
+  {
+    "item": "Repeat values other than 3x, and repeat 1x",
+    "reason": "only 3x was rendered (1x is the default). The field range 1-20 is Divi's own (field/Divider.php:208-224), marked (source)"
+  },
+  {
+    "item": "Divider colour as rgba, a global colour reference or a gradient",
+    "reason": "not rendered: only a hex colour was probed. DividersStyle.php:137-147 resolves a global colour to a value (source); a sibling whose background is a gradient or image does not give its colour (DividersStyleUtils.php:143 reads only the sibling's `color`)"
+  },
+  {
+    "item": "The black fallback when the neighbour and the section share a colour",
+    "reason": "source only (Dividers.php:180-182): with no divider `color`, the same colour on both sections and no image/gradient/pattern/mask, Divi paints the divider black. Not rendered as a separate case"
+  },
+  {
+    "item": "Hover and sticky states of a divider, tablet/phone overrides other than height and style",
+    "reason": "not measured: the probe saves one state (value). Tablet and phone `height` and phone `style` were measured; tablet/phone `color`, `repeat`, `flip` and `arrangement` inherit in Divi's code (DividersStyle.php:183-220) but were not rendered with overrides"
+  },
+  {
+    "item": "Divider between a page section and a Theme Builder header or footer, or a section inside a Theme Builder body",
+    "reason": "not measured: the probe renders ordinary sections in the page content"
+  },
+  {
+    "item": "Add-on divider styles (the `divi_divider_library_divider` filter)",
+    "reason": "excluded: only the 26 styles Divi ships (DividerSvg.php:50-77) were probed; a style an add-on registers is not taught"
+  },
+  {
+    "item": "Row gutter widths 2 and 3, `makeEqual`, `alignColumns`, tablet/phone gutter overrides, and the section gutter of a specialty section",
+    "reason": "not rendered: only width 4 and width 1 on a display block row were probed (and width 4 on the default flex row, which is dead). The section gutter acts only on a specialty section (SectionModule.php:176-189); no specialty section was rendered"
+  }
+]

@@ -16,6 +16,9 @@
  *            (e.g. block group, children [heading]). Only container blocks (section, row, column, group) take children; a child
  *            has no `set`. Supported blocks: section, row, column, group, heading, text, image, button, blurb, divider,
  *            number-counter, testimonial, icon. Real-export content shapes are filled in for the content of each, `base` wins.
+ *   neighbours  (section candidates only) { "before": [<section spec>], "after": [<section spec>] }: plain sections placed before/after the
+ *            candidate section on the page, identical in the A and B pages (e.g. a differently coloured section so that a divider is
+ *            visible). The measured element is then the candidate section, not a neighbour. Absent = the page is unchanged.
  * "@SITE@" inside a string is replaced by the dev site URL.
  * Results (default fixtures/shapes/probe-results-<candidates file name>.json, never the committed probe-results-5.15.1.json
  * unless asked with --out): [{ id, effect, widths: {"1280","900","400"}, phoneOverflow, detail, error? }].
@@ -140,7 +143,25 @@ function pageFor(c, apply) {
     const w = l === 3 ? 'column' : l === 2 ? 'row' : 'section';
     node = { ...plain(w), children: [node] };
   }
-  return '<!-- wp:divi/placeholder -->' + render(node) + '<!-- /wp:divi/placeholder -->';
+  const nb = neighbourNodes(c);
+  return '<!-- wp:divi/placeholder -->' + nb.before.map(render).join('') + render(node) + nb.after.map(render).join('') + '<!-- /wp:divi/placeholder -->';
+}
+
+/** The plain sections around a section candidate: { before: [node], after: [node] } (empty lists when the candidate has none). */
+function neighbourNodes(c) {
+  const out = { before: [], after: [] };
+  if (c.neighbours === undefined || c.neighbours === null) return out;
+  if (c.block !== 'section') throw new Error('`neighbours` is only supported on a section candidate');
+  if (typeof c.neighbours !== 'object' || Array.isArray(c.neighbours)) throw new Error('`neighbours` must be an object { before: [...], after: [...] }');
+  for (const side of ['before', 'after']) {
+    const list = c.neighbours[side] || [];
+    if (!Array.isArray(list)) throw new Error('`neighbours.' + side + '` must be a list of section specs');
+    for (const spec of list) {
+      if (!spec || spec.block !== 'section') throw new Error('a neighbour must be a section spec');
+      out[side].push(nodeFromSpec(spec, false, false));
+    }
+  }
+  return out;
 }
 
 // Every throwaway page's title starts with RUN_PREFIX (the bare TITLE_PREFIX plus this run's token).
@@ -201,12 +222,13 @@ function removeOrphans() {
 const classOf = (blockName) => 'et_pb_' + blockName.replace(/-/g, '_');
 
 /** Runs in the page: stylesheet text plus the computed styles of the module element and its descendants. */
-function snapshotInPage(cls) {
+function snapshotInPage({ cls, index }) {
   // Divi and WordPress attach their <style> blocks in a load-dependent order, so the blocks are sorted before comparing.
   const styleText = [...document.querySelectorAll('style')].map((s) => s.textContent.trim()).filter(Boolean).sort().join('\n/*--*/\n');
   // The page content, never the Theme Builder header/footer (their first column/row/section would be measured otherwise).
   const inTb = (e) => /_tb_(header|footer|body)(\s|$)/.test(String(e.className)) || !!e.closest('.et-l--header, .et-l--footer');
-  const el = document.querySelector('.et-l--post .' + cls) || [...document.querySelectorAll('.' + cls)].find((e) => !inTb(e)) || null;
+  const inPost = [...document.querySelectorAll('.et-l--post .' + cls)];
+  const el = inPost[index] || (index === 0 ? [...document.querySelectorAll('.' + cls)].find((e) => !inTb(e)) : null) || null;
   const props = {};
   let found = false;
   if (el) {
@@ -257,14 +279,14 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
     if (foreign > 0) console.log(`WARNING ${foreign} leftover or concurrent probe pages (not deleted; run with --clean-orphans when no other probe is running)`);
     browser = await chromium.launch({ handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false });
     browserRef = browser;
-    const snap = async (id, width, cls, settle) => {
+    const snap = async (id, width, cls, settle, index) => {
       const ctx = await browser.newContext({ viewport: { width, height: 900 } });
       try {
         await ctx.addCookies(cookies.map(([name, value]) => ({ name, value, url: SITE })));
         const p = await ctx.newPage();
         await p.goto(`${SITE}/?page_id=${id}&preview=true`, { waitUntil: 'load' });
         await p.waitForTimeout(settle);
-        const r = await p.evaluate(snapshotInPage, cls);
+        const r = await p.evaluate(snapshotInPage, { cls, index });
         // WordPress writes a random per-request placeholder comment into the block-library style.
         r.styleText = r.styleText.replace(/wp_block_styles_on_demand_placeholder:[0-9a-f]+/g, 'wp_block_styles_on_demand_placeholder:X');
         r.styleText = r.styleText.split(new RegExp('\\b' + id + '\\b', 'g')).join('PID');
@@ -283,6 +305,7 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
         if (!c || typeof c.id !== 'string' || !c.id) throw new Error('a candidate needs a string `id`');
         if (!c.set || typeof c.set !== 'object' || !Object.keys(c.set).length) throw new Error('a candidate needs a non-empty `set`');
         const cls = classOf(c.block);
+        const index = neighbourNodes(c).before.length; // the candidate comes after its `before` neighbours
         // The number counter counts up after load: let it finish, or two loads of the same page never agree.
         const settle = c.block === 'number-counter' ? 3000 : 600;
         const a = makePage(c.id + ' A', pageFor(c, false));
@@ -292,9 +315,9 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
           throw new Error('the layout does not pass the validator - ' + entry.detail.validator);
         }
         for (const w of WIDTHS) {
-          const sa = await snap(a.id, w, cls, settle);
-          const sa2 = await snap(a.id, w, cls, settle);
-          const sb = await snap(b.id, w, cls, settle);
+          const sa = await snap(a.id, w, cls, settle, index);
+          const sa2 = await snap(a.id, w, cls, settle, index);
+          const sb = await snap(b.id, w, cls, settle, index);
           if (!sa.found || !sb.found) { entry.detail[w] = { error: 'module element .' + cls + ' not found' }; throw new Error('.' + cls + ' not found at ' + w + 'px'); }
           const noise = sa.styleText !== sa2.styleText || diffProps(sa.props, sa2.props).length > 0;
           const styleDiff = sa.styleText !== sb.styleText;
