@@ -194,7 +194,7 @@ final class McpHandler
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
-                        'topic' => ['type' => 'string', 'description' => 'Optional. Serve one topic instead of the whole guide: ' . implode(', ', StyleGuide::topics()) . '. design-languages lists the design languages; design-language:<id> is one in full.'],
+                        'topic' => ['type' => 'string', 'description' => StyleGuide::topicParameterDescription()],
                     ],
                     'required'   => [],
                 ],

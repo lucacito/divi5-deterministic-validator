@@ -377,7 +377,22 @@ class StyleGuideTypographyTopicTest extends TestCase
 
         $imagery = $this->section( 'Fit', 'imagery' );
         $this->assertSame( $this->provenValues( 'ty-i-fit-', 'objectFit' ), $this->provenLine( $imagery, 'Fit values' ), 'object-fit values' );
-        $this->assertSame( $this->provenValues( 'ty-i-shadow-preset', 'style' ), $this->provenLine( $this->section( 'Shadow', 'imagery' ), 'Presets' ), 'image shadow presets' );
+        // A preset counts as proven only where the probe SAW a box-shadow change; inner presets 6 and 7 changed the page structure instead.
+        [ , $results ] = $this->evidence();
+        $seen = [];
+        foreach ( $this->passedIds( 'ty-i-shadow-preset' ) as $id ) {
+            if ( in_array( 'box-shadow', $this->changedProps( $id ), true ) ) {
+                $seen[] = (string) $cands[ $id ]['set']['image.decoration.boxShadow.desktop.value.style'];
+            }
+        }
+        $this->assertSame( [ 'preset1', 'preset2', 'preset3', 'preset4', 'preset5' ], $this->sortedCopy( $seen ), 'presets with a measured box-shadow' );
+        $this->assertSame( $this->sortedCopy( $seen ), $this->provenLine( $this->section( 'Shadow', 'imagery' ), 'Presets' ), 'image shadow presets' );
+        foreach ( [ 'ty-i-shadow-preset6', 'ty-i-shadow-preset7' ] as $id ) {
+            $this->assertNotContains( 'box-shadow', $this->changedProps( $id ), $id . ': the probe never saw a shadow' );
+            $this->assertGreaterThan( 1000, $this->diffs( $id )[1280], $id . ': the page structure changed' );
+            $this->assertStringContainsString( 'undefined', implode( ' ', $this->sample( $id ) ), $id . ': an element stopped being what it was' );
+        }
+        $this->assertStringContainsString( 'Preset6 and preset7 are inner shadows (source); Divi adds an extra element for an inner shadow on an image module (source: ElementClassnames.php 96-100), and the probe saw the page structure change, not a shadow, so they are not proven on an image.', $this->flat( 'imagery' ) );
         $this->assertSame( $this->provenValues( 'ty-i-border-', 'all.style' ), $this->provenLine( $this->section( 'Border', 'imagery' ), 'Styles' ), 'image border styles' );
         $this->assertSame( $this->provenValues( 'ty-dv-style-', 'style' ), $this->provenLine( $this->section( 'Divider line', 'controls' ), 'Styles' ), 'divider styles' );
         $this->assertSame( $this->provenValues( 'ty-dv-position-', 'position' ), $this->provenLine( $this->section( 'Divider line', 'controls' ), 'Positions' ), 'divider positions' );
@@ -470,9 +485,9 @@ class StyleGuideTypographyTopicTest extends TestCase
         foreach ( [
             'A `style` list holding "uppercase", the shape the default guide shows, changed nothing on a heading or on a button label (rendered: dead). Use `capitalization`.',
             '`lineStyle` with no line in `style` changed nothing (rendered: dead)',
-            'They changed nothing without a `style` (rendered: dead). `style` "none" removed a preset2 shadow.',
+            '`color`, `vertical` and `blur` set without any `style` changed nothing (rendered: dead; `horizontal` was not tried without a `style`). `style` "none" removed a preset2 shadow.',
             'a phone `style` "none" does not remove a desktop shadow (rendered: dead, the desktop rule still applies)',
-            '"stroke-fill" is what a stroke wider than 1px already has (rendered: dead)',
+            '"stroke-fill" is what a stroke wider than 1px already has (source: TextEffects.php 278-286; rendered: dead)',
             'the same gradient without `fillType` changed nothing (rendered: dead)',
             '"1em" is a heading\'s own and changed only the stylesheet',
         ] as $sentence ) {
@@ -480,7 +495,7 @@ class StyleGuideTypographyTopicTest extends TestCase
         }
         foreach ( [
             '"fill" is the browser default and changed only the stylesheet (rendered: css-only)',
-            'Without a `style` the same keys changed nothing (rendered: dead), so always set `style`.',
+            '`horizontal`, `vertical`, `blur` and `color` set without a `style` changed nothing (rendered: dead; `spread` was not tried without one), so always set `style`.',
             '`use` "on" with no link changed nothing (rendered: dead)',
         ] as $sentence ) {
             $this->assertStringContainsString( $sentence, $img );
@@ -498,6 +513,31 @@ class StyleGuideTypographyTopicTest extends TestCase
             'The `show` switch could not be measured (source only).',
         ] as $sentence ) {
             $this->assertStringContainsString( $sentence, $ctl );
+        }
+        $this->assertSame( [ 'color', 'vertical', 'blur' ], array_map( static fn ( string $p ): string => substr( $p, strrpos( $p, '.' ) + 1 ), array_keys( $cands['ty-ts-needs-style']['set'] ) ), 'the keys tried without a style' );
+        $this->assertSame( [ 'horizontal', 'vertical', 'blur', 'color' ], array_map( static fn ( string $p ): string => substr( $p, strrpos( $p, '.' ) + 1 ), array_keys( $cands['ty-i-shadow-needs-style']['set'] ) ), 'the image keys tried without a style' );
+        // Lesson 18: what was measured is said, not the visual inference.
+        $this->assertStringContainsString( 'changed the computed text fill colour to transparent, so the text may be invisible unless a stroke is set', $typo );
+        $this->assertStringContainsString( 'set an image background clipped to the text', $typo );
+        $this->assertStringContainsString( 'Divi reads no grayscale key (source: Filters.php:117-135)', $img );
+        $this->assertStringNotContainsString( 'a circle', $img );
+        $this->assertStringContainsString( '`icon.enable` "off" changed the `::after` display from block to none.', $ctl );
+        $this->assertStringContainsString( 'by default the icon appears on hover', $ctl );
+        $this->assertSame( [ '0:a:::after:opacity: 0 -> 1' ], $this->sample( 'ty-b-icon-always' ), 'the default icon is hidden until hover' );
+        $this->assertStringContainsString( 'radius "999px" (a pill: a strong value)', $ctl );
+        $this->assertStringContainsString( 'only the title `weight` and the body `lineHeight` were rendered on a blurb; the others are not measured there.', $ctl );
+        $this->assertStringContainsString( 'a blurb title took `weight` only, see `controls`', $typo );
+        $this->assertStringNotContainsString( 'uses the same keys', $typo );
+        // Lesson 4: the topics that measured desktop values only say so.
+        $this->assertStringContainsString( 'Desktop values only: no tablet or phone override was rendered for any key here.', $img );
+        $this->assertStringContainsString( 'Desktop values only: no tablet or phone override was rendered for any key here.', $ctl );
+        $this->assertStringContainsString( 'Tablet and phone overrides were rendered only for `letterSpacing`, the zero text shadow and `columnCount`', $typo );
+        foreach ( $cands as $id => $c ) {
+            foreach ( array_keys( $c['set'] ) as $path ) {
+                if ( ! str_starts_with( $id, 'ty-h-spacing-' ) && ! str_starts_with( $id, 'ty-ts-phone-' ) && ! str_starts_with( $id, 'ty-tb-columns-phone' ) ) {
+                    $this->assertDoesNotMatchRegularExpression( '/\.(tablet|phone)\./', (string) $path, $id . ' sets no device override outside the three the typography topic names' );
+                }
+            }
         }
         // The dead results those sentences name come from these candidates (lesson 21).
         $this->assertSame( [ 'style' ], array_map( static fn ( string $p ): string => substr( $p, strrpos( $p, '.' ) + 1 ), array_keys( $cands['ty-h-style-uppercase']['set'] ) ) );

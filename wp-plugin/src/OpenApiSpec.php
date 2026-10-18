@@ -440,7 +440,7 @@ final class OpenApiSpec
                         'operationId' => 'getStyleGuide',
                         'summary'     => 'Get the Divi 5 authoring + styling guide',
                         'description' => 'Returns real block structure rules, required content keys, and styling attribute shapes (backgrounds, gradients, spacing, typography, borders, shadows, transforms, hover, animation). Call before building or restyling a layout so the result is styled, not plain.',
-                        'parameters'  => [['name' => 'topic', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Optional. Serve one topic instead of the whole guide: ' . implode(', ', StyleGuide::topics()) . '. design-languages lists the design languages; design-language:<id> is one in full.']]],
+                        'parameters'  => [['name' => 'topic', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => StyleGuide::topicParameterDescription()]]],
                         'responses'   => [
                             '200' => ['description' => 'The guide (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]],
                         ],

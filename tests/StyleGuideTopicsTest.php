@@ -260,6 +260,30 @@ class StyleGuideTopicsTest extends TestCase
         $this->assertLessThanOrEqual( 300, strlen( (string) $get['description'] ) );
     }
 
+    /** The ChatGPT importer may cap parameter descriptions too: every parameter description of the spec stays within 300 characters. */
+    public function testEveryOpenApiParameterDescriptionIsWithin300Characters(): void
+    {
+        $spec = OpenApiSpec::spec( 'https://acme.example/wp-json/ai-editor-divi5/v1', '9.9.9' );
+        $seen = 0;
+        foreach ( $spec['paths'] as $path => $methods ) {
+            foreach ( $methods as $method => $op ) {
+                foreach ( (array) ( $op['parameters'] ?? [] ) as $param ) {
+                    $desc = (string) ( $param['description'] ?? '' ) . (string) ( $param['schema']['description'] ?? '' );
+                    $this->assertLessThanOrEqual( 300, strlen( (string) ( $param['schema']['description'] ?? '' ) ), "$method $path ({$param['name']}) schema description" );
+                    $this->assertLessThanOrEqual( 300, strlen( (string) ( $param['description'] ?? '' ) ), "$method $path ({$param['name']}) description" );
+                    $seen += '' === $desc ? 0 : 1;
+                }
+            }
+        }
+        $this->assertGreaterThan( 5, $seen, 'the spec has parameter descriptions to check' );
+        $topic = $spec['paths']['/style-guide']['get']['parameters'][0]['schema']['description'];
+        $this->assertSame( StyleGuide::topicParameterDescription(), $topic, 'the generated description is the one served' );
+        foreach ( StyleGuide::topics() as $name ) {
+            $key = str_starts_with( $name, 'design-language:' ) ? 'design-language:<id>' : $name;
+            $this->assertStringContainsString( $key, $topic, $name . ' is named in the parameter description' );
+        }
+    }
+
     public function testMcpSchemaDeclaresTheStringTopic(): void
     {
         $req   = new \WP_REST_Request( [ 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list', 'params' => new \stdClass() ] );
@@ -272,6 +296,8 @@ class StyleGuideTopicsTest extends TestCase
         }
         $this->assertNotNull( $tool );
         $this->assertSame( 'string', $tool['inputSchema']['properties']['topic']['type'] );
+        $this->assertSame( StyleGuide::topicParameterDescription(), $tool['inputSchema']['properties']['topic']['description'] );
+        $this->assertLessThanOrEqual( 300, strlen( $tool['inputSchema']['properties']['topic']['description'] ) );
         $this->assertSame( [], $tool['inputSchema']['required'] );
     }
 

@@ -40,11 +40,8 @@ final class StyleGuide
         return $topics;
     }
 
-    /**
-     * The one line the default guide ends with: how to ask for a topic, naming every topic. Generated from topics() so it cannot
-     * drift; the design languages are one placeholder entry instead of one entry per id.
-     */
-    private static function topicLine(): string
+    /** @return list<string> every topic name, the design languages collapsed to one `design-language:<id>` entry */
+    private static function topicNames(): array
     {
         $names = [];
         foreach ( self::topics() as $topic ) {
@@ -54,7 +51,22 @@ final class StyleGuide
             }
         }
 
-        return 'Topics: call get_style_guide with topic=<name>: ' . implode( ', ', $names ) . '.';
+        return $names;
+    }
+
+    /**
+     * The one line the default guide ends with: how to ask for a topic, naming every topic. Generated from topics() so it cannot
+     * drift; the design languages are one placeholder entry instead of one entry per id.
+     */
+    private static function topicLine(): string
+    {
+        return 'Topics: call get_style_guide with topic=<name>: ' . implode( ', ', self::topicNames() ) . '.';
+    }
+
+    /** The description of the `topic` parameter in the MCP schema and the OpenAPI spec (generated, at most 300 characters). */
+    public static function topicParameterDescription(): string
+    {
+        return 'Optional. Serve one topic instead of the whole guide: ' . implode( ', ', self::topicNames() ) . '. design-languages lists the languages; design-language:<id> is one in full.';
     }
 
     /**
@@ -782,8 +794,8 @@ Divi's own code and was not rendered, and the Limits section says what was not m
 Images are in the topic `imagery`; buttons, icons, blurbs, counters and dividers are in `controls`.
 
 ## Heading font
-Paths below sit under `title.decoration.font.font.{bp}.value.` (a heading module; a blurb title uses the same keys, other modules
-name their own element).
+Paths below sit under `title.decoration.font.font.{bp}.value.` (a heading module; a blurb title took `weight` only, see `controls`;
+other modules name their own element).
 - `weight`
 - `style`
 - `capitalization`
@@ -844,7 +856,8 @@ Paths below sit under `title.decoration.font.textShadow.{bp}.value.` (a heading)
 - `blur`
 Presets 5 proven: preset1, preset2, preset3, preset4, preset5. They are em values, so they scale with the text (source).
 Overrides sit on top of a preset: `color` "#dc2626", `horizontal` "0.1em", `vertical` "0.2em" and `blur` "0.4em" were rendered over
-preset1. They changed nothing without a `style` (rendered: dead). `style` "none" removed a preset2 shadow.
+preset1. `color`, `vertical` and `blur` set without any `style` changed nothing (rendered: dead; `horizontal` was not tried without
+a `style`). `style` "none" removed a preset2 shadow.
 Phone: a phone `style` "none" does not remove a desktop shadow (rendered: dead, the desktop rule still applies). Set `horizontal`,
 `vertical` and `blur` to "0em" on the phone instead (rendered: 400 px only).
 
@@ -859,12 +872,13 @@ Paths below sit under `title.decoration.font.textEffects.{bp}.value.` (a heading
 - `gradient.stops`
 - `imageFill.url`
 Fill types 3 proven: gradient, image, transparent.
-`strokeWidth` "2px" with `strokeColor` "#dc2626" (set together) outlined the text. `strokePosition` "fill-stroke" changed the paint
-order; "stroke-fill" is what a stroke wider than 1px already has (rendered: dead). `fillType` "transparent" alone made the text fill
-transparent: the text is invisible unless a stroke is set, so for outline text set `fillType`, `strokeWidth` and `strokeColor`
-together (rendered). `fillType` "gradient" with `gradient.type` "linear", `gradient.direction` "90deg" and two `gradient.stops`
-(position "0" and "100" with a colour each) filled the text; the same gradient without `fillType` changed nothing (rendered: dead).
-`fillType` "image" with `imageFill.url` (an image address, see get_image_guide) filled the text with a picture.
+`strokeWidth` "2px" with `strokeColor` "#dc2626" (set together) set the text stroke width and colour. `strokePosition` "fill-stroke"
+changed the paint order from stroke to fill; "stroke-fill" is what a stroke wider than 1px already has (source: TextEffects.php
+278-286; rendered: dead). `fillType` "transparent" alone changed the computed text fill colour to transparent, so the text may be
+invisible unless a stroke is set; for outline text set `fillType`, `strokeWidth` and `strokeColor` together (rendered).
+`fillType` "gradient" with `gradient.type` "linear", `gradient.direction` "90deg" and two `gradient.stops` (position "0" and "100"
+with a colour each) set a gradient background clipped to the text; the same gradient without `fillType` changed nothing (rendered:
+dead). `fillType` "image" with `imageFill.url` (an image address, see get_image_guide) set an image background clipped to the text.
 Gradient, transparent and image text can be unreadable: check contrast against the lightest part of the fill.
 
 ## Worked example (validates)
@@ -885,6 +899,8 @@ Gradient, transparent and image text can be unreadable: check contrast against t
   other modules were not.
 - Variable-font axes, drop caps, vertical text, the column rule and whether a family has a face for a weight were not measured.
 - Text effects: one linear gradient with two stops, one image address and the stroke were measured, on a heading only.
+- Tablet and phone overrides were rendered only for `letterSpacing`, the zero text shadow and `columnCount`; every other key was measured
+  with desktop values only.
 - Computed styles were compared; legibility and contrast were not judged.
 MD;
     }
@@ -911,8 +927,8 @@ Paths below sit under `module.decoration.filters.{bp}.value.`.
 - `blur`
 - `opacity`
 - `blendMode`
-Rendered: `brightness` "130%", `contrast` "130%", `saturate` "0%" (grey) and "180%", `sepia` "100%", `invert` "100%", `hueRotate`
-"90deg", `blur` "4px", `opacity` "60%", `blendMode` "multiply". There is no grayscale key: use `saturate` "0%". A value of "0"
+Rendered: `brightness` "130%", `contrast` "130%", `saturate` "0%" (computed saturate(0)) and "180%", `sepia` "100%", `invert` "100%", `hueRotate`
+"90deg", `blur` "4px", `opacity` "60%", `blendMode` "multiply". Divi reads no grayscale key (source: Filters.php:117-135), so use `saturate` "0%". A value of "0"
 without a unit is skipped by Divi (source). Filters that blur what is behind an element are not taught.
 
 ## Fit
@@ -929,7 +945,7 @@ Paths below sit under `image.decoration.border.{bp}.value.radius.`.
 - `topRight`
 - `bottomRight`
 - `bottomLeft`
-Rendered: "16px" on all four corners, and "50%" on all four corners of a square image (a circle). Set every corner you want
+Rendered: "16px" on all four corners, and "50%" on all four corners of a square image. Set every corner you want
 rounded: `topLeft` alone rounded that corner only, and `sync` "on" with `topLeft` alone did the same (rendered), so `sync` does not
 copy a value to the other corners. A radius also set `overflow` hidden on the image wrapper (rendered).
 
@@ -952,17 +968,19 @@ Paths below sit under `image.decoration.boxShadow.{bp}.value.`. The shadow was c
 - `blur`
 - `vertical`
 - `spread`
-Presets 7 proven: preset1, preset2, preset3, preset4, preset5, preset6, preset7. Preset6 and preset7 are inner shadows (source); what
-they look like on a picture was not judged.
+Presets 5 proven: preset1, preset2, preset3, preset4, preset5. Preset6 and preset7 are inner shadows (source); Divi adds an extra
+element for an inner shadow on an image module (source: ElementClassnames.php 96-100), and the probe saw the page structure change,
+not a shadow, so they are not proven on an image.
 `color` "rgba(30,58,138,0.35)", `blur` "40px", `vertical` "24px" and `spread` "8px" were rendered over preset1; "40px" blur is a
-strong value. Without a `style` the same keys changed nothing (rendered: dead), so always set `style`.
+strong value. `horizontal`, `vertical`, `blur` and `color` set without a `style` changed nothing (rendered: dead; `spread` was not
+tried without one), so always set `style`.
 
 ## Hover overlay
 Paths below sit under `image.advanced.overlay.{bp}.value.`. The overlay needs a link on the image (`image.innerContent.{bp}.value.linkUrl`
 was "#") or the lightbox (source); `use` "on" with no link changed nothing (rendered: dead). Rendered with the pointer on the image.
 - `use`
 - `backgroundColor`
-`backgroundColor` "rgba(30,58,138,0.6)" coloured the overlay.
+`backgroundColor` "rgba(30,58,138,0.6)" changed the overlay's computed background colour.
 
 ## Overlay icon
 Paths below sit under `image.advanced.overlayIcon.{bp}.value.` (with the overlay on and a link, as above).
@@ -970,8 +988,8 @@ Paths below sit under `image.advanced.overlayIcon.{bp}.value.` (with the overlay
 - `hoverIcon.unicode`
 - `hoverIcon.type`
 - `hoverIcon.weight`
-`iconColor` "#ffffff" changed the icon colour. `hoverIcon.unicode`, `.type` and `.weight` (set together: "&#xf002;", "fa", "900")
-changed the glyph, its font and its weight.
+`iconColor` "#ffffff" changed the computed colour of the icon (`::before`). `hoverIcon.unicode`, `.type` and `.weight` (set together: "&#xf002;", "fa", "900")
+changed the `::before` content, font family and weight.
 
 ## Worked examples (each validates)
 Rounded picture with a soft shadow (replace IMAGE_URL with the url you chose):
@@ -998,6 +1016,7 @@ Square crop with a hover overlay:
 ## Limits
 - Only the image module was measured: other modules' filters, borders and shadows were not, and the filter hover state is in `hover-states`.
 - Border sides other than all and bottom, per-side colours, the lightbox, other icon glyphs and the overlay without hover were not measured.
+- Desktop values only: no tablet or phone override was rendered for any key here.
 - Computed styles were compared; how a shadow, filter or overlay looks on a particular picture was not judged.
 - Check text over a picture or an overlay for contrast.
 MD;
@@ -1016,8 +1035,9 @@ an icon or a line there; the rendered text where a character is printed); the wo
 was not checked. Fonts are in the topic `typography`, pictures in `imagery`.
 
 ## Button icon
-Paths below sit under `button.decoration.button.{bp}.value.`. A button already shows an arrow icon (rendered: setting only the
-placement and the colour changed the icon of a button that had no icon settings), so you change the icon, you do not switch it on.
+Paths below sit under `button.decoration.button.{bp}.value.`. A button already has an icon (rendered: placement and colour alone
+restyled the `::before` and `::after` of a button with no icon settings, and `icon.onHover` "off" changed the `::after` opacity from
+0 to 1, so by default the icon appears on hover), so you change the icon, you do not switch it on.
 - `icon.settings.unicode`
 - `icon.settings.type`
 - `icon.settings.weight`
@@ -1026,7 +1046,7 @@ placement and the colour changed the icon of a button that had no icon settings)
 - `icon.color`
 - `icon.enable`
 Rendered: the glyph "&#xf054;" with type "fa" and weight "900" (set together); `icon.placement` "left"; `icon.onHover` "off"
-(the icon is always visible, not only on hover); `icon.color` "#f59e0b"; `icon.enable` "off" hid the icon. `icon.enable` "on" is the
+(opacity 1 instead of 0: always visible, not only on hover); `icon.color` "#f59e0b"; `icon.enable` "off" changed the `::after` display from block to none. `icon.enable` "on" is the
 default and changed nothing (rendered: dead). An `enable` written beside `icon` (`value.enable`) changed nothing, on or off (rendered:
 dead), so write it inside `icon`.
 
@@ -1038,7 +1058,7 @@ dead), so write it inside `icon`.
 - `module.decoration.boxShadow.{bp}.value.style`
 - `module.advanced.alignment.{bp}.value`
 Rendered: weight "800", letterSpacing "2px", capitalization "uppercase", family "Inter"; padding "16px" top and bottom with "40px"
-left and right (the button's padding is the module's spacing); radius "999px" on all four corners; border "2px", "#1e3a8a", "solid";
+left and right (the button's padding is the module's spacing); radius "999px" (a pill: a strong value) on all four corners; border "2px", "#1e3a8a", "solid";
 box shadow "preset1"; alignment "center" and "right". A label `style` list with "uppercase" in it changed nothing (rendered: dead; use
 `capitalization`). Padding and box shadow written on the `button` element (`button.decoration.spacing`, `button.decoration.boxShadow`)
 changed nothing (rendered: dead); write them on the module.
@@ -1052,8 +1072,8 @@ changed nothing (rendered: dead); write them on the module.
 - `imageIcon.decoration.spacing.{bp}.value.padding.{top,right,bottom,left}`
 Rendered with an icon on (`useIcon` "on" with the glyph "&#xf054;", "fa", "900", set together): colour "#dc2626"; placement "left" and
 "right" ("top" is the default and changed nothing (rendered: dead)); `iconFontSize` "64px"; background "#e0e7ff"; padding "16px" on all
-four sides. The icon size is `iconFontSize`: the sizing `width` of the icon changed nothing (rendered: dead). The blurb
-title and body take the font keys of `typography` (title `weight` and body `lineHeight` rendered).
+four sides. The icon size is `iconFontSize`: the sizing `width` of the icon changed nothing (rendered: dead). Of the
+font keys of `typography` only the title `weight` and the body `lineHeight` were rendered on a blurb; the others are not measured there.
 
 ## Icon module
 Paths below sit under `icon.advanced.`.
@@ -1096,6 +1116,7 @@ the default and changed nothing (rendered: dead). The `show` switch could not be
 ## Limits
 - Only the modules named here were measured; icon glyphs other than one Font Awesome code, the icon on tablet and phone, blurb image mode,
   divider width and the circle and bar counters were not.
+- Desktop values only: no tablet or phone override was rendered for any key here.
 - Computed styles (and the pseudo-elements above) were compared; how an icon or a line looks was not judged.
 - A button text colour and background need contrast; see the default guide.
 MD;

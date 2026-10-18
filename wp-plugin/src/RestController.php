@@ -149,7 +149,7 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
-        // GET /style-guide — Divi 5 authoring + styling vocabulary (?topic=<name> serves one topic: design-languages, design-language:<id>)
+        // GET /style-guide — Divi 5 authoring + styling vocabulary (?topic=<name> serves one topic; the names are StyleGuide::topics(), also the last line of the default guide)
         register_rest_route(self::NS, '/style-guide', [
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => [$this, 'style_guide'],
