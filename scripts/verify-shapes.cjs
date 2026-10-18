@@ -163,7 +163,14 @@ function diffProps(a, b) {
     console.log('ERROR script: ' + (e && e.message ? e.message : e));
     failed = true;
   } finally {
-    for (const id of created) { try { wp('post', 'delete', id, '--force'); } catch (e) { console.log('WARNING could not delete page ' + id); failed = true; } }
+    // makePage records an id only after its whole call returned, so a failure after wp_insert_post would leak a page:
+    // also sweep by the throwaway title. Only numeric ids ever reach `wp post delete`.
+    let swept = [];
+    try { swept = wp('post', 'list', '--post_type=page', '--post_status=any', '--s=aied shape probe', '--format=ids').split(/\s+/); } catch (e) { console.log('WARNING could not list leftover probe pages'); failed = true; }
+    for (const id of [...new Set([...created, ...swept])].filter((x) => x !== '')) {
+      if (!/^\d+$/.test(String(id))) { console.log('WARNING ignoring non-numeric page id ' + id); failed = true; continue; }
+      try { wp('post', 'delete', String(id), '--force'); } catch (e) { console.log('WARNING could not delete page ' + id); failed = true; }
+    }
     if (browser) await browser.close();
   }
   console.log(failed ? '\nFAILED' : '\nProbe agrees with every expectation.');

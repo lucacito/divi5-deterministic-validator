@@ -4,7 +4,7 @@
  *
  *   php scripts/promote-shapes.php <probe-results.json> <candidates.json>
  *
- * For every candidate whose probe result says `effect: true` and `phoneOverflow: false` (and whose control loads were
+ * For every candidate (optional `note` string is copied into its evidence section) whose probe result says `effect: true` and `phoneOverflow: false` (and whose control loads were
  * stable), every attribute path of its `set` values is appended to fixtures/shapes/verified-shapes.json as
  * `how: probe` with `evidence: docs/shape-evidence-5.15.1.md#<id>`, unless that exact path is already registered (an
  * export stays the stronger evidence). A section per promoted candidate is appended to docs/shape-evidence-5.15.1.md.
@@ -120,10 +120,21 @@ foreach ( $candidates as $c ) {
                 isset( $d['sample'][0] ) ? '`' . str_replace( '|', '/', (string) $d['sample'][0] ) . '`' : ''
             );
         }
-        $section .= "\nPhone overflow at 400 px: " . ( ! empty( $r['phoneOverflow'] ) ? 'yes' : 'no' ) . ".\n\n";
-        $section .= $new === []
-            ? "Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).\n"
-            : "Registered paths added:\n\n" . implode( "\n", array_map( static fn ( string $p ): string => '- `' . $p . '`', $new ) ) . "\n";
+        $section .= "\nPhone overflow at 400 px: " . ( ! empty( $r['phoneOverflow'] ) ? 'yes' : 'no' ) . ".\n";
+        if ( isset( $c['note'] ) && trim( (string) $c['note'] ) !== '' ) {
+            $section .= "\nNote: " . trim( (string) $c['note'] ) . "\n";
+        }
+        // Every path registered with this section as its evidence (stable when the section is regenerated).
+        $mine = [];
+        foreach ( $registry['shapes'] as $e ) {
+            if ( $e['evidence'] === $evidenceRel . '#' . $id ) {
+                $mine[] = $e['path'];
+            }
+        }
+        sort( $mine, SORT_STRING );
+        $section .= $mine === []
+            ? "\nRegistered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).\n"
+            : "\nRegistered paths added:\n\n" . implode( "\n", array_map( static fn ( string $p ): string => '- `' . $p . '`', $mine ) ) . "\n";
         $evidence .= $section;
     }
 }

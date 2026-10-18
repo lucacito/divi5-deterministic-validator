@@ -13,6 +13,7 @@
     {
         "id": "image-aspect-ratio-4-3-cover",
         "expect": "PASS",
+        "note": "objectFit was measured only together with aspectRatio (see docs/guide-shapes-evidence-5.14.md) and is registered as part of the pair, not proven alone.",
         "block": "image",
         "base": { "image": { "innerContent": { "desktop": { "value": { "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg", "alt": "probe" } } } } },
         "set": {

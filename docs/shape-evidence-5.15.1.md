@@ -39,6 +39,8 @@ Measured (page A = base, page B = base + the values above):
 
 Phone overflow at 400 px: no.
 
+Note: objectFit was measured only together with aspectRatio (see docs/guide-shapes-evidence-5.14.md) and is registered as part of the pair, not proven alone.
+
 Registered paths added:
 
 - `image.decoration.fit.{bp}.value.objectFit`
