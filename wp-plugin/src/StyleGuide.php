@@ -6,6 +6,11 @@ namespace AiEditorDivi5\WP;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+require_once __DIR__ . '/StyleKits.php';
+require_once __DIR__ . '/KitAdapters.php';
+require_once __DIR__ . '/KitResolver.php';
+require_once __DIR__ . '/RecipeTokens.php';
+
 /**
  * AI-facing Divi 5 authoring guide.
  *
@@ -18,7 +23,8 @@ final class StyleGuide
 {
     /**
      * The topics served on request: `design-languages`, `design-language:<id>` for every design language, then the
-     * vocabulary-family topics (each teaches only shapes proven on the real Divi; see docs/shape-evidence-5.15.1.md).
+     * vocabulary-family topics (each teaches only shapes proven on the real Divi; see docs/shape-evidence-5.15.1.md),
+     * then `style-kits` and `style-kit:<id>` for every style kit.
      *
      * @return list<string>
      */
@@ -40,15 +46,24 @@ final class StyleGuide
         $topics[] = 'toggles';
         $topics[] = 'forms';
         $topics[] = 'composition';
+        $topics[] = 'style-kits';
+        foreach ( StyleKits::ids() as $id ) {
+            $topics[] = 'style-kit:' . $id;
+        }
         return $topics;
     }
 
-    /** @return list<string> every topic name, the design languages collapsed to one `design-language:<id>` entry */
+    /** @return list<string> every topic name, the design languages and the style kits each collapsed to one `<prefix>:<id>` entry */
     private static function topicNames(): array
     {
         $names = [];
         foreach ( self::topics() as $topic ) {
-            $name = str_starts_with( $topic, 'design-language:' ) ? 'design-language:<id>' : $topic;
+            $name = $topic;
+            if ( str_starts_with( $topic, 'design-language:' ) ) {
+                $name = 'design-language:<id>';
+            } elseif ( str_starts_with( $topic, 'style-kit:' ) ) {
+                $name = 'style-kit:<id>';
+            }
             if ( ! in_array( $name, $names, true ) ) {
                 $names[] = $name;
             }
@@ -69,7 +84,7 @@ final class StyleGuide
     /** The description of the `topic` parameter in the MCP schema and the OpenAPI spec (generated, at most 300 characters). */
     public static function topicParameterDescription(): string
     {
-        return 'Optional. Serve one topic instead of the whole guide: ' . implode( ', ', self::topicNames() ) . '. design-language:<id> is one language in full.';
+        return 'Optional. One topic instead of the whole guide: ' . implode( ', ', self::topicNames() ) . '. <id> topics serve one language or kit in full.';
     }
 
     /**
@@ -121,14 +136,183 @@ final class StyleGuide
         if ( 'composition' === $topic ) {
             return self::compositionTopic();
         }
+        if ( 'style-kits' === $topic ) {
+            return self::styleKitsTopic();
+        }
         if ( str_starts_with( $topic, 'design-language:' ) && in_array( $topic, self::topics(), true ) ) {
             return DesignLanguages::markdown( substr( $topic, strlen( 'design-language:' ) ) );
+        }
+        if ( str_starts_with( $topic, 'style-kit:' ) && in_array( $topic, self::topics(), true ) ) {
+            return self::styleKitTopic( substr( $topic, strlen( 'style-kit:' ) ) );
         }
         $lines = [ '# Unknown topic', '', sprintf( 'There is no topic "%s". Valid topics:', SectionRecipes::plain( $topic ) ), '' ];
         foreach ( self::topics() as $valid ) {
             $lines[] = '- `' . $valid . '`';
         }
         return implode( "\n", $lines ) . "\n";
+    }
+
+    /** Topic `style-kits`: what a kit is, the catalog, which language uses which kit and how to choose. At most 10,000 bytes. */
+    private static function styleKitsTopic(): string
+    {
+        $catalog = StyleKits::markdown();
+        $catalog = (string) preg_replace( '/\A# Style kits\n\n/', '', $catalog );
+        $catalog = (string) preg_replace( '/\n\nAsk for one kit in full with its id\.\n\z/', "\n", $catalog );
+
+        $byKit = [];
+        foreach ( DesignLanguages::ids() as $languageId ) {
+            $language = DesignLanguages::get( $languageId );
+            if ( null !== $language ) {
+                $byKit[ (string) ( $language['kit'] ?? '' ) ][] = $languageId;
+            }
+        }
+        $defaults = [];
+        foreach ( StyleKits::ids() as $id ) {
+            $defaults[] = sprintf( '- `%s`: %s', $id, [] === ( $byKit[ $id ] ?? [] ) ? 'no design language starts with it' : implode( ', ', $byKit[ $id ] ) );
+        }
+        $topics = implode( ', ', array_map( static fn ( string $id ): string => '`style-kit:' . $id . '`', StyleKits::ids() ) );
+
+        return "# Style kits: one shape for every control\n\n"
+            . "A style kit is a bundle of decisions applied to a module so that every module of that kind on the page matches: border width and style, corner radius, filled or outline, hover behaviour, label capitalization, weight and letter spacing, padding. "
+            . "Colour and font are NOT part of a kit: they always come from the page's design language, so one kit looks different in every language and stays readable in all of them.\n\n"
+            . "Every design language has a default kit (named in its brief). `get_section_recipes` takes `style_kit` together with `name` to serve one recipe in another kit; without it the recipe uses the language's own kit.\n\n"
+            . "## The kits\n\n" . $catalog . "\n"
+            . "Each kit in full, with ready-made primary and secondary buttons: topic=" . $topics . ".\n\n"
+            . "## Default kit of each design language\n\n" . implode( "\n", $defaults ) . "\n\n"
+            . "## How to choose\n\n"
+            . "- Start from the design language you picked and use its default kit; change kit only when the brief asks for another feel.\n"
+            . "- Match the kit to the language: its corner radius family (tight or soft) and its weight (outline and thin against filled and heavy) should read like the rest of the page.\n"
+            . "- One kit per page. Don't mix kits on one page: a soft filled button next to a tight outline one looks like two designs.\n"
+            . "- Buttons on an accent band or on a photo keep the kit's shape; only their colours change (each kit topic says how).\n\n"
+            . "## What is kit-driven today\n\n"
+            . "Only buttons are kit-driven so far. Cards, accordions, forms and the other modules still carry the recipe's own styling and will follow later; a kit's card radius and card padding are listed for that reason but are not applied yet. "
+            . "To build a button in a kit without a recipe, copy the block from the kit's topic and swap its colours for your design language's roles.\n";
+    }
+
+    /** Topic `style-kit:<id>`: one kit's decisions and its primary and secondary button, resolved by the real pipeline for the editorial language. At most 10,000 bytes. */
+    private static function styleKitTopic( string $id ): string
+    {
+        $kit      = StyleKits::get( $id );
+        $language = DesignLanguages::get( 'editorial' );
+        if ( null === $kit || null === $language ) {
+            return StyleKits::markdown( $id );
+        }
+
+        $primary   = self::kitButton( $kit, $language, 'control', 'Primary button' );
+        $secondary = self::kitButton( $kit, $language, 'control-secondary', 'Secondary button' );
+
+        $lines = [ rtrim( StyleKits::markdown( $id ) ), '' ];
+        if ( '' !== $primary && '' !== $secondary ) {
+            $lines[] = '## Buttons in this kit';
+            $lines[] = '';
+            $lines[] = 'Real blocks, resolved for the `editorial` language on a light section, with placeholder text. Put them inside a column. The hex colours are editorial\'s: '
+                . 'with another design language keep the structure and swap each colour for the same role of that language, listed here as role and value ('
+                . self::kitRoleLegend( $kit, $language ) . '), and the font family for your language\'s body font.';
+            $lines[] = '';
+            $lines[] = 'Primary:';
+            $lines[] = '';
+            $lines[] = '```';
+            $lines[] = $primary;
+            $lines[] = '```';
+            $lines[] = '';
+            $lines[] = 'Secondary:';
+            $lines[] = '';
+            $lines[] = '```';
+            $lines[] = $secondary;
+            $lines[] = '```';
+            $lines[] = '';
+            $lines[] = '## On an accent band and on a photo';
+            $lines[] = '';
+            $lines[] = 'Same shape, only the colour rules change. ' . self::kitSurfaceSentence( $kit, 'accent', 'on an accent band' ) . ' ' . self::kitSurfaceSentence( $kit, 'dark', 'on a photo or a dark overlay' );
+        }
+
+        return implode( "\n", $lines ) . "\n";
+    }
+
+    /**
+     * One button block of a kit for a language, produced by the real pipeline (KitAdapters through KitResolver, then
+     * RecipeTokens): never hand-typed attributes. Empty when anything stays unresolved.
+     *
+     * @param array<string,mixed> $kit
+     * @param array<string,mixed> $language
+     */
+    private static function kitButton( array $kit, array $language, string $role, string $text ): string
+    {
+        $attrs = [
+            'aied'           => [ 'kit' => $role ],
+            'module'         => [ 'decoration' => [ 'layout' => [ 'desktop' => [ 'value' => [ 'display' => 'block' ] ] ] ] ],
+            'button'         => [
+                'decoration'   => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'family' => '{{aied:font:body}}' ] ] ] ] ],
+                'innerContent' => [ 'desktop' => [ 'value' => [ 'text' => $text, 'id' => 0 ] ] ],
+            ],
+            'builderVersion' => '5.0.0-public-beta.1',
+        ];
+        $markup = '<!-- wp:divi/button ' . RecipeTokens::encodeJson( $attrs ) . ' /-->';
+        $markup = RecipeTokens::resolve( KitResolver::resolve( $markup, $kit ), $language );
+
+        return str_contains( $markup, 'aied' ) ? '' : $markup;
+    }
+
+    /**
+     * "accent #9a3b1f, accent-text #ffffff": the roles the kit's buttons use on a light surface (read from the adapter's
+     * own patches), with the language's value for each, in order of first use.
+     *
+     * @param array<string,mixed> $kit
+     * @param array<string,mixed> $language
+     */
+    private static function kitRoleLegend( array $kit, array $language ): string
+    {
+        $roles = [];
+        foreach ( [ 'control', 'control-secondary' ] as $role ) {
+            $patch = KitAdapters::patch( 'divi/button', $role, 'light', $kit );
+            if ( null !== $patch && false !== preg_match_all( '/\{\{aied:color:([a-z-]+)\}\}/', (string) json_encode( $patch ), $m ) ) {
+                $roles = array_merge( $roles, $m[1] );
+            }
+        }
+        $colors = (array) $language['colors'];
+        $parts  = [];
+        foreach ( array_values( array_unique( $roles ) ) as $role ) {
+            $hex = $colors[ str_replace( '-', '_', $role ) ] ?? null;
+            if ( is_string( $hex ) ) {
+                $parts[] = $role . ' ' . $hex;
+            }
+        }
+
+        return implode( ', ', $parts );
+    }
+
+    /**
+     * The colour rules of the kit's primary and secondary button on a surface, read from the adapter's own patch
+     * (role names only), e.g. "Primary: surface fill, text label, surface border."
+     *
+     * @param array<string,mixed> $kit
+     */
+    private static function kitSurfaceSentence( array $kit, string $on, string $where ): string
+    {
+        $out = [];
+        foreach ( [ 'control' => 'primary', 'control-secondary' => 'secondary' ] as $role => $name ) {
+            $patch = KitAdapters::patch( 'divi/button', $role, $on, $kit );
+            if ( null === $patch ) {
+                continue;
+            }
+            $d      = (array) $patch['button']['decoration'];
+            $out[] = sprintf(
+                'The %s button %s has %s fill, %s label and %s border.',
+                $name,
+                $where,
+                self::kitRole( $d['background']['desktop']['value']['color'] ),
+                self::kitRole( $d['font']['font']['desktop']['value']['color'] ),
+                self::kitRole( $d['border']['desktop']['value']['styles']['all']['color'] )
+            );
+        }
+
+        return implode( ' ', $out );
+    }
+
+    /** A colour role of an adapter patch in words: "text", "accent-text", or "a transparent". */
+    private static function kitRole( string $value ): string
+    {
+        return 1 === preg_match( '/^\{\{aied:color:([a-z-]+)\}\}$/', $value, $m ) ? 'the ' . $m[1] . ' colour as' : 'a transparent';
     }
 
     /** Topic `backgrounds`: gradient, image, pattern and mask shapes, every one proven on the real Divi 5.15.1. At most 10,000 bytes. */

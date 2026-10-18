@@ -6,7 +6,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 
 | What | Detail | Bytes | Approx. tokens |
 | --- | --- | ---: | ---: |
-| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 21,289 | 5,323 |
+| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 21,587 | 5,397 |
 | Reading a page (smallest) | the page's layout content (get_page_layout adds a little wrapper), from page-17-variable-heading.json | 1,152 | 288 |
 | Reading a page's outline (smallest) | get_page_layout with view "outline" on the same page: 5 blocks, each with path, name, size and the start of its text | 358 | 90 |
 | Reading a page (median) | the page's layout content (get_page_layout adds a little wrapper), from page-45-layout-3.json | 49,842 | 12,461 |
@@ -19,18 +19,18 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | A refusal: 96 badly nested blocks | 96 violations, as sent now | 8,085 | 2,022 |
 | A refusal: 96 badly nested blocks (before the compact form) | the same 96 violations, each with the full allowed list | 143,650 | 35,913 |
 | A preview (dry run) of a one-line text change | verdict plus a capped diff, on the median page | 394 | 99 |
-| The style guide (default) | get_style_guide with no topic, read once before building a layout | 28,711 | 7,178 |
+| The style guide (default) | get_style_guide with no topic, read once before building a layout | 28,739 | 7,185 |
 | The style guide, topic design-languages | get_style_guide with topic "design-languages", only when asked for | 2,592 | 648 |
-| The style guide, topic design-language:editorial | get_style_guide with topic "design-language:editorial", only when asked for | 1,793 | 449 |
-| The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 2,127 | 532 |
-| The style guide, topic design-language:organic-warm | get_style_guide with topic "design-language:organic-warm", only when asked for | 2,118 | 530 |
-| The style guide, topic design-language:tech-mono | get_style_guide with topic "design-language:tech-mono", only when asked for | 2,244 | 561 |
-| The style guide, topic design-language:playful-pastel | get_style_guide with topic "design-language:playful-pastel", only when asked for | 2,445 | 612 |
-| The style guide, topic design-language:corporate-trust | get_style_guide with topic "design-language:corporate-trust", only when asked for | 2,555 | 639 |
-| The style guide, topic design-language:soft-saas | get_style_guide with topic "design-language:soft-saas", only when asked for | 3,232 | 808 |
-| The style guide, topic design-language:bold-vibrant | get_style_guide with topic "design-language:bold-vibrant", only when asked for | 2,994 | 749 |
-| The style guide, topic design-language:brutalist-flat | get_style_guide with topic "design-language:brutalist-flat", only when asked for | 2,527 | 632 |
-| The style guide, topic design-language:luxe | get_style_guide with topic "design-language:luxe", only when asked for | 2,731 | 683 |
+| The style guide, topic design-language:editorial | get_style_guide with topic "design-language:editorial", only when asked for | 1,816 | 454 |
+| The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 2,151 | 538 |
+| The style guide, topic design-language:organic-warm | get_style_guide with topic "design-language:organic-warm", only when asked for | 2,142 | 536 |
+| The style guide, topic design-language:tech-mono | get_style_guide with topic "design-language:tech-mono", only when asked for | 2,267 | 567 |
+| The style guide, topic design-language:playful-pastel | get_style_guide with topic "design-language:playful-pastel", only when asked for | 2,469 | 618 |
+| The style guide, topic design-language:corporate-trust | get_style_guide with topic "design-language:corporate-trust", only when asked for | 2,578 | 645 |
+| The style guide, topic design-language:soft-saas | get_style_guide with topic "design-language:soft-saas", only when asked for | 3,256 | 814 |
+| The style guide, topic design-language:bold-vibrant | get_style_guide with topic "design-language:bold-vibrant", only when asked for | 3,018 | 755 |
+| The style guide, topic design-language:brutalist-flat | get_style_guide with topic "design-language:brutalist-flat", only when asked for | 2,550 | 638 |
+| The style guide, topic design-language:luxe | get_style_guide with topic "design-language:luxe", only when asked for | 2,754 | 689 |
 | The style guide, topic backgrounds | get_style_guide with topic "backgrounds", only when asked for | 8,894 | 2,224 |
 | The style guide, topic dividers | get_style_guide with topic "dividers", only when asked for | 8,869 | 2,218 |
 | The style guide, topic motion | get_style_guide with topic "motion", only when asked for | 8,690 | 2,173 |
@@ -43,6 +43,9 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic toggles | get_style_guide with topic "toggles", only when asked for | 5,602 | 1,401 |
 | The style guide, topic forms | get_style_guide with topic "forms", only when asked for | 6,315 | 1,579 |
 | The style guide, topic composition | get_style_guide with topic "composition", only when asked for | 8,589 | 2,148 |
+| The style guide, topic style-kits | get_style_guide with topic "style-kits", only when asked for | 2,198 | 550 |
+| The style guide, topic style-kit:soft-solid | get_style_guide with topic "style-kit:soft-solid", only when asked for | 3,267 | 817 |
+| The style guide, topic style-kit:outline-2 | get_style_guide with topic "style-kit:outline-2", only when asked for | 3,244 | 811 |
 | The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 6,270 | 1,568 |
 | The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 4,015 | 1,004 |
 | A served recipe (hero-cta, default look) | get_section_recipes with name "hero-cta" and no design_language | 3,044 | 761 |

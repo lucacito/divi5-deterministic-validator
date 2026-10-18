@@ -9,6 +9,7 @@ use AiEditorDivi5\WP\LandingGuide;
 use AiEditorDivi5\WP\SectionRecipes;
 use AiEditorDivi5\WP\SiteGuide;
 use AiEditorDivi5\WP\StyleGuide;
+use AiEditorDivi5\WP\StyleKits;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../wp-plugin/src/ImagePack.php';
@@ -76,7 +77,7 @@ class GuideRecipePointersTest extends TestCase
     private static function recipeMentions( string $text ): array
     {
         $names = SectionRecipes::names();
-        $skip  = array_merge( StyleGuide::topics(), DesignLanguages::ids(), self::NOT_RECIPES );
+        $skip  = array_merge( StyleGuide::topics(), DesignLanguages::ids(), StyleKits::ids(), self::NOT_RECIPES );
         $out   = [];
         preg_match_all( '/`([a-z][a-z0-9]*(?:-[a-z0-9]+)+)`/', $text, $m );
         foreach ( $m[1] as $word ) {

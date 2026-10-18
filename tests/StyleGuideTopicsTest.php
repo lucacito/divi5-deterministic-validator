@@ -36,12 +36,22 @@ class StyleGuideTopicsTest extends TestCase
     private const ORIGINAL_LENGTH = 27908;
     private const MAX_GROWTH = 1200;
 
+    /** The languages and the style kits each collapse to one placeholder entry. */
+    private static function collapse( string $topic ): string
+    {
+        if ( str_starts_with( $topic, 'design-language:' ) ) {
+            return 'design-language:<id>';
+        }
+
+        return str_starts_with( $topic, 'style-kit:' ) ? 'style-kit:<id>' : $topic;
+    }
+
     /** Ruling 19: the default guide's last line names EVERY topic; the languages collapse to one placeholder. */
     private static function expectedTopicLine(): string
     {
         $names = [];
         foreach ( StyleGuide::topics() as $topic ) {
-            $names[] = str_starts_with( $topic, 'design-language:' ) ? 'design-language:<id>' : $topic;
+            $names[] = self::collapse( $topic );
         }
 
         return 'Topics: call get_style_guide with topic=<name>: ' . implode( ', ', array_values( array_unique( $names ) ) ) . '.';
@@ -93,14 +103,14 @@ class StyleGuideTopicsTest extends TestCase
         $this->assertSame( $line, $last, 'the final line of the default guide is exactly the generated line' );
         $named = explode( ', ', substr( $line, strlen( 'Topics: call get_style_guide with topic=<name>: ' ), -1 ) );
         foreach ( StyleGuide::topics() as $topic ) {
-            $key = str_starts_with( $topic, 'design-language:' ) ? 'design-language:<id>' : $topic;
+            $key = self::collapse( $topic );
             $this->assertContains( $key, $named, $topic . ' is announced in the default guide' );
             $reply = StyleGuide::markdown( $topic );
             $this->assertNotSame( '', trim( $reply ) );
             $this->assertStringNotContainsString( 'Unknown topic', $reply, $topic . ' is served' );
         }
         foreach ( $named as $key ) {
-            if ( 'design-language:<id>' === $key ) {
+            if ( in_array( $key, [ 'design-language:<id>', 'style-kit:<id>' ], true ) ) {
                 continue;
             }
             $this->assertContains( $key, StyleGuide::topics(), $key . ' named in the line is a real topic' );
@@ -279,7 +289,7 @@ class StyleGuideTopicsTest extends TestCase
         $topic = $spec['paths']['/style-guide']['get']['parameters'][0]['schema']['description'];
         $this->assertSame( StyleGuide::topicParameterDescription(), $topic, 'the generated description is the one served' );
         foreach ( StyleGuide::topics() as $name ) {
-            $key = str_starts_with( $name, 'design-language:' ) ? 'design-language:<id>' : $name;
+            $key = self::collapse( $name );
             $this->assertStringContainsString( $key, $topic, $name . ' is named in the parameter description' );
         }
     }
