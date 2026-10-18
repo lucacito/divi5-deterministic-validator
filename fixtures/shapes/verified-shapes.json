@@ -612,6 +612,11 @@
             "evidence": "fixtures/valid/page-44-layout-2.json"
         },
         {
+            "path": "image.decoration.fit.{bp}.value.objectFit",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#image-aspect-ratio-4-3-cover"
+        },
+        {
             "path": "image.innerContent",
             "how": "export",
             "evidence": "fixtures/valid/page-17-newpage.json"
@@ -755,6 +760,16 @@
             "path": "module.advanced.savedSpecialtyColumnType.{bp}.value",
             "how": "export",
             "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.advanced.sizing.{bp}.value.aspectRatio.height",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#image-aspect-ratio-4-3-cover"
+        },
+        {
+            "path": "module.advanced.sizing.{bp}.value.aspectRatio.width",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#image-aspect-ratio-4-3-cover"
         },
         {
             "path": "module.advanced.sizing.{bp}.value.forceFullwidth",

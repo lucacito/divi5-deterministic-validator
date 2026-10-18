@@ -115,6 +115,17 @@ final class ShapeRegistryTest extends TestCase
         $this->assertSame( [], $new, "guide paths neither proven nor frozen as legacy:\n" . implode( "\n", $new ) );
     }
 
+    public function testProbeProvenShapesAreInAndDeadShapesAreOut(): void
+    {
+        $registry = ShapeRegistry::load();
+        // Proven by a real builder export (the heading size) or by the effect probe (the image fit).
+        $this->assertTrue( $registry->covers( 'title.decoration.font.font.{bp}.value.size' ) );
+        $this->assertTrue( $registry->covers( 'image.decoration.fit.{bp}.value.objectFit' ) );
+        $this->assertTrue( $registry->covers( 'module.advanced.sizing.{bp}.value.aspectRatio.width' ) );
+        // Measured on the real Divi 5.15.1: these pass the validator but emit no CSS (docs/guide-shapes-evidence-5.14.md).
+        $this->assertFalse( $registry->covers( 'image.decoration.fit.{bp}.value.type' ), 'a dead shape must never be registered' );
+    }
+
     /** @return array<string,int> the non-empty lines of a file in fixtures/shapes, as a set */
     private function lines( string $file ): array
     {
