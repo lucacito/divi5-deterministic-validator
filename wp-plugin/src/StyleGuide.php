@@ -33,6 +33,8 @@ final class StyleGuide
         }
         $topics[] = 'backgrounds';
         $topics[] = 'dividers';
+        $topics[] = 'motion';
+        $topics[] = 'hover-states';
         return $topics;
     }
 
@@ -54,6 +56,12 @@ final class StyleGuide
         }
         if ( 'dividers' === $topic ) {
             return self::dividersTopic();
+        }
+        if ( 'motion' === $topic ) {
+            return self::motionTopic();
+        }
+        if ( 'hover-states' === $topic ) {
+            return self::hoverStatesTopic();
         }
         if ( str_starts_with( $topic, 'design-language:' ) && in_array( $topic, self::topics(), true ) ) {
             return DesignLanguages::markdown( substr( $topic, strlen( 'design-language:' ) ) );
@@ -274,6 +282,187 @@ A section with a top curve (smaller on phones), a flipped bottom slant with an e
 Not measured, so do not rely on them: other height units, `repeat` values other than 3x, divider colours other than hex,
 hover and sticky states, tablet and phone `color`, `repeat`, `flip` and `arrangement`, dividers on sections outside the page's own content,
 the section gutter of a specialty section, and styles an add-on plugin registers.
+MD;
+    }
+
+    /** Topic `motion`: entrance animation, scroll effects and sticky, every shape proven on the real Divi 5.15.1. At most 10,000 bytes. */
+    private static function motionTopic(): string
+    {
+        return <<<'MD'
+# Motion: entrance animation, scroll effects, sticky
+
+Every shape and value listed here was rendered on the real Divi 5.15.1 (the front end of a draft page preview) and changed the
+page; a rule marked (source) is read
+from Divi's own code and was not rendered, and the Limits section says what was not measured. Motion was proven by what Divi
+writes and computes (classes and inline settings on the element, computed transform, opacity and position, the element's
+rectangle after scrolling), not by watching the motion play. Never claim how a motion looks, and never write CSS or script for
+motion. Hover effects and transitions are in the topic `hover-states`.
+
+## Entrance animation
+Paths below sit under `module.decoration.animation.{bp}.value.`. Divi writes the animation onto the element (the classes
+`et_animated` and the style name, and inline animation properties) and removes them when it ends (observed on a test page, not in the evidence file); the element starts at opacity 0
+unless `startingOpacity` says otherwise (rendered, with the element at the top of the page; that it starts when the element scrolls
+into view was not measured).
+- `style`: one of the styles below; with no style there is no animation
+- `direction`: only on styles that take one
+- `duration`: "2000ms" rendered; the default is 1000ms (source)
+- `delay`: "8000ms" rendered; the default is 0ms (source)
+- `repeat`: "loop" rendered; "once" is the default (source)
+- `speedCurve`: a hyphenated name
+- `startingOpacity`: "40%" rendered; the default is 0% (source)
+- `intensity.slide`: "20%" rendered; the default is 50% (source)
+- `intensity.zoom`: "20%" rendered
+- `intensity.flip`: "20%" rendered
+- `intensity.fold`: "20%" rendered
+- `intensity.roll`: "20%" rendered
+- `button.decoration.animation.{bp}.value.style`: the same on the button element path
+Styles: 7 proven: bounce, fade, flip, fold, roll, slide, zoom.
+Styles that take a direction: 6 proven: bounce, flip, fold, roll, slide, zoom. `direction` on fade did nothing (rendered: dead).
+Directions: 5 proven: bottom, center, left, right, top. center is the default (source).
+Speed curves: 5 proven: ease, ease-in, ease-in-out, ease-out, linear. The default is ease-in-out (source).
+Hosts: 8 proven: blurb, button, column, group, heading, image, row, section. The shape is the same on each.
+Rules: an `intensity.slide` on fade did nothing (rendered: dead); fade and bounce have no intensity (source). A tablet `duration` of
+"2500ms" changed the page at 900 px only; the phone width kept the desktop value. A phone `style` of "none" did not switch the
+animation off at 400 px (rendered: dead), so do not rely on a per-device off switch.
+
+## Scroll effects
+Paths below sit under `module.decoration.scroll.{bp}.value.`. Divi's script applies them while the page scrolls. Proven on a
+section only, by scrolling the section to a set position and comparing it with an identical section that had no effect.
+- `verticalMotion.enable`: "on"; moves the section up or down (changed transform; its rectangle moved)
+- `horizontalMotion.enable`: "on"; moves it sideways (changed transform; its rectangle moved)
+- `fade.enable`: "on"; changed opacity
+- `scaling.enable`: "on"; changed transform
+- `rotating.enable`: "on"; changed transform
+- `blur.enable`: "on"; changed the filter
+- `verticalMotion.offset.start`: "20" rendered; the default is "4" (source); `offset.end` and `offset.mid` are the other two
+- `verticalMotion.offset.end`: "-20" rendered; the default is "-4" (source)
+- `verticalMotion.viewport.top`: "60" rendered; it changed the render at 900 px only, so it depends on where the section sits
+- `fade.offset.start`: "50" rendered; the default is "0" (source)
+- `motionTriggerStart`: "top" rendered; "middle" is the default and "bottom" exists (source)
+Effects: 6 proven: blur, fade, horizontalMotion, rotating, scaling, verticalMotion.
+Rules: an `offset` without its effect switched on did nothing (rendered: dead); `viewport` has the same switch (source). Two effects together (fade and verticalMotion)
+rendered. A phone `verticalMotion.enable` of "off" removed the effect at 400 px only. Defaults for every `viewport` and `offset`
+are Divi's own (source).
+
+## Sticky
+Paths below sit under `module.decoration.sticky.{bp}.value.`. Proven on a section only: scrolled past, the section became
+`position: fixed` at the screen edge (computed at 1280 and 400 px).
+- `position`: top, bottom or topBottom
+- `offset.top`: "80px" rendered, with position top; the default is 0px (source)
+- `offset.bottom`: "60px" rendered, with position bottom
+Positions: 4 proven: bottom, none, top, topBottom. none was rendered as a phone override ("none" on phones turned a desktop sticky
+section off at 400 px only).
+An offset without a `position` did nothing (rendered: dead). Use one sticky bar per page.
+
+## Using motion well (strategy, not measured)
+One entrance style per page, applied to the hero and the main cards; stagger neighbours by 100 to 200ms of `delay`. Keep
+`scale` on hover small (103 to 108%) and transitions short (200 to 400ms). Scroll effects: one or two gentle ones.
+
+## Worked examples (each validates)
+A heading that slides in from the left, then a paragraph that fades in after it:
+```
+<!-- wp:divi/section {"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"80px","bottom":"80px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"module":{"decoration":{"animation":{"desktop":{"value":{"style":"slide","direction":"left","duration":"800ms","intensity":{"slide":"20%"}}}}}},"title":{"innerContent":{"desktop":{"value":"Slides in from the left"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"module":{"decoration":{"animation":{"desktop":{"value":{"style":"fade","duration":"800ms","delay":"200ms"}}}}},"content":{"innerContent":{"desktop":{"value":"<p>Fades in 200ms later.</p>"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+A bar that sticks to the top of the screen, and a section that fades as it scrolls:
+```
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#0f172a"}}},"sticky":{"desktop":{"value":{"position":"top","offset":{"top":"0px"}}}},"spacing":{"desktop":{"value":{"padding":{"top":"16px","bottom":"16px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Sticky bar"}},"decoration":{"font":{"font":{"desktop":{"value":{"color":"#ffffff"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"decoration":{"scroll":{"desktop":{"value":{"fade":{"enable":"on"}}}},"spacing":{"desktop":{"value":{"padding":{"top":"200px","bottom":"200px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Fades while scrolling"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+
+## Limits
+Not measured, so do not rely on them: `decoration.interactions` (not built, not taught), scroll effects and sticky on anything but
+a section, sticky limits, offset surrounding and its own transition, other durations, delays and percentages, animation of
+elements below the fold, and how any motion looks. Divi's animation, scroll and sticky code was searched for a reduced-motion
+rule and none was found, so keep motion short and gentle; the plugin cannot add one.
+MD;
+    }
+
+    /** Topic `hover-states`: hover values, transforms and transitions, every shape proven on the real Divi 5.15.1. At most 10,000 bytes. */
+    private static function hoverStatesTopic(): string
+    {
+        return <<<'MD'
+# Hover states, transforms and transitions
+
+Every shape and value listed here was rendered on the real Divi 5.15.1 (the front end of a draft page preview) and changed the
+page; a rule marked (source) is read
+from Divi's own code and was not rendered, and the Limits section says what was not measured. Motion was proven by what Divi
+writes and computes (the computed colour, shadow, transform and filter with the pointer on the element, the transition timing),
+not by watching the motion play. Never claim how a hover or a transition looks, and never write CSS or script for them. Entrance
+animation, scroll effects and sticky are in the topic `motion`.
+
+## Hover and transform
+A hover value sits next to the normal one under the key `hover` instead of `value`: `module.decoration.background.{bp}.hover.color`.
+Measured on the desktop hover state only, with the pointer on the element. A hover colour worked without a normal colour set,
+but set both so the starting colour is yours. Each setting is named with the element it was proven on.
+- `module.decoration.background.{bp}.hover.color`: hex, on a group
+- `module.decoration.border.{bp}.hover.styles.all.color`: hex, on a group with a normal border
+- `module.decoration.boxShadow.{bp}.hover.style`: a preset name; on a group and on the button module
+- `module.decoration.boxShadow.{bp}.hover.vertical`: "20px", on a group, together with `style`
+- `module.decoration.boxShadow.{bp}.hover.blur`: "40px", on a group, together with `style`
+- `module.decoration.boxShadow.{bp}.hover.color`: "rgba(0,0,0,0.35)", on a group, together with `style`
+- `module.decoration.transform.{bp}.hover.scale.x`: "105%" on a group, "108%" on the button module; set `scale.y` too
+- `module.decoration.transform.{bp}.hover.scale.y`: the same value as `scale.x`
+- `module.decoration.transform.{bp}.hover.translate.y`: "-8px", on a group (lifts a card)
+- `module.decoration.transform.{bp}.hover.rotate.z`: "3deg", on a group
+- `module.decoration.filters.{bp}.hover.brightness`: "120%", on a group
+- `module.decoration.filters.{bp}.hover.saturate`: "160%", on a group
+- `title.decoration.font.font.{bp}.hover.color`: text colour, on a heading
+- `button.decoration.background.{bp}.hover.color`: hex, on a button
+- `button.decoration.background.{bp}.hover.enableColor`: "on" next to the colour, as the builder saves it
+- `button.decoration.font.font.{bp}.hover.color`: text colour, on a button
+- `button.decoration.border.{bp}.hover.styles.all.color`: hex, on a button with a normal border
+- `module.decoration.transform.{bp}.value.scale.x`: "90%" (not hover: a resting scale), on a group; `scale.y` likewise
+- `module.decoration.transform.{bp}.value.scale.y`: "90%"
+- `module.decoration.transform.{bp}.value.skew.x`: "6deg", on a group
+Shadow presets: 3 proven: preset1, preset3, preset6. preset3 is outer; preset6 is inner (inset). preset2, preset4, preset5 and
+preset7 exist (source) but were not rendered. On a button, `button.decoration.boxShadow` and `button.decoration.transform` did
+nothing (rendered: dead); use the module paths above.
+
+## Transition
+Paths below sit under `module.decoration.transition.{bp}.value.`. A transition is emitted only for a state the module has
+(source; rendered: a duration on a group with no hover value did nothing), so give the element a hover value first.
+- `duration`: "800ms" and "1500ms" rendered; the default is 300ms (source)
+- `delay`: "200ms" rendered; the default is 0ms (source)
+- `speedCurve`: a camelCase name
+Speed curves: 5 proven: ease, easeIn, easeInOut, easeOut, linear. The default is ease (source); ease was shown against a linear base.
+Responsive: a tablet `duration` of "1500ms" changed the computed duration at 900 and 400 px and not at 1280.
+
+## Worked example (validates)
+A card that lifts, gains a shadow and a border colour on hover, with a transition:
+```
+<!-- wp:divi/section {"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"80px","bottom":"80px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#ffffff"}}},"border":{"desktop":{"value":{"styles":{"all":{"width":"2px","color":"#e2e8f0"}}},"hover":{"styles":{"all":{"color":"#1e3a8a"}}}}},"boxShadow":{"desktop":{"hover":{"style":"preset3"}}},"transform":{"desktop":{"hover":{"translate":{"y":"-8px"}}}},"transition":{"desktop":{"value":{"duration":"300ms","speedCurve":"easeOut"}}},"spacing":{"desktop":{"value":{"padding":{"top":"32px","right":"32px","bottom":"32px","left":"32px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"A card that lifts on hover"}},"decoration":{"font":{"font":{"desktop":{"value":{"color":"#0f172a"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/group -->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+## Limits
+Not measured, so do not rely on them: hover on other elements, hover at tablet and phone, the other hover settings (spacing, font
+size, text shadow, gradient or image background), transition on the sticky state, other durations, delays and percentages, and how
+any hover looks. Touch screens have no hover: never put essential information behind one.
 MD;
     }
 

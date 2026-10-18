@@ -11,7 +11,8 @@
  * Candidates that rendered nothing (DEAD), overflow a phone, or ended in an ERROR are never added. A result the probe labelled
  * `cssOnly` (the emitted stylesheet changed but no computed style did) is promoted only when the candidate sets
  * `"allowCssOnly": true` AND has a non-empty `note` saying why a stylesheet-only effect is proof enough. A candidate's optional `parent`,
- * `neighbours` and `children` (see scripts/verify-shapes.cjs) are described in its evidence section. Every candidate that is NOT promoted (dead, overflowing a
+ * `neighbours`, `children`, `state` (hover / scroll, with `scrollAt`), `settleMs`, `ignore` and `attrs` (see scripts/verify-shapes.cjs) are described in its evidence section,
+ * which also lists the property names that changed (`changedProps` of the probe result, when present). Every candidate that is NOT promoted (dead, overflowing a
  * phone, an error, a stylesheet-only result without `allowCssOnly`, an unreliable measurement) is listed with its reason in a
  * `## Not taught (<candidates file name>)` section of the evidence file (followed by the items of the optional hand-written
  * `fixtures/shapes/not-taught-<candidates file name>.json`, [{item, reason}]), which is rewritten on every run. Pure PHP, no WordPress, idempotent.
@@ -144,6 +145,15 @@ foreach ( $candidates as $c ) {
                 $where .= ', with ' . $count . ' plain neighbour section(s) ' . $side . ' it';
             }
         }
+        if ( isset( $c['state'] ) && is_string( $c['state'] ) ) {
+            $where .= ', measured in the `' . $c['state'] . '` state' . ( 'scroll' === $c['state'] ? ' (element centre at ' . ( is_numeric( $c['scrollAt'] ?? null ) ? (string) $c['scrollAt'] : '0.25' ) . ' x the viewport height)' : '' );
+        }
+        if ( is_array( $c['ignore'] ?? null ) && $c['ignore'] !== [] ) {
+            $where .= ', ignoring the computed properties ' . implode( ', ', array_map( static fn ( $n ): string => '`' . $n . '`', $c['ignore'] ) );
+        }
+        if ( is_array( $c['attrs'] ?? null ) && $c['attrs'] !== [] ) {
+            $where .= ', also comparing the element attributes ' . implode( ', ', array_map( static fn ( $n ): string => '`' . $n . '`', $c['attrs'] ) );
+        }
         $section .= 'Block: `' . $c['block'] . '`' . $where . ". Set on top of the base block:\n\n";
         foreach ( (array) $c['set'] as $p => $v ) {
             $section .= '- `' . $p . '` = `' . json_encode( $v, JSON_UNESCAPED_SLASHES ) . "`\n";
@@ -159,6 +169,17 @@ foreach ( $candidates as $c ) {
                 ! empty( $d['stylesheetDiffers'] ) ? 'yes' : 'no',
                 isset( $d['sample'][0] ) ? '`' . str_replace( '|', '/', (string) $d['sample'][0] ) . '`' : ''
             );
+        }
+        $changed = [];
+        foreach ( [ '1280', '900', '400' ] as $w ) {
+            foreach ( (array) ( $r['detail'][ $w ]['changedProps'] ?? [] ) as $name ) {
+                $changed[ (string) $name ] = true;
+            }
+        }
+        if ( $changed !== [] ) {
+            $names = array_keys( $changed );
+            sort( $names, SORT_STRING );
+            $section .= "\nProperties that changed (any width): " . implode( ', ', array_map( static fn ( string $n ): string => '`' . $n . '`', $names ) ) . ".\n";
         }
         $section .= "\nPhone overflow at 400 px: " . ( ! empty( $r['phoneOverflow'] ) ? 'yes' : 'no' ) . ".\n";
         if ( isset( $c['note'] ) && trim( (string) $c['note'] ) !== '' ) {

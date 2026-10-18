@@ -31,7 +31,6 @@ module.decoration.sizing.{bp}.value.alignSelf
 module.decoration.sizing.{bp}.value.size.{n}
 module.decoration.transform.{bp}.hover.translate.linked
 module.decoration.transform.{bp}.hover.translate.x
-module.decoration.transform.{bp}.hover.translate.y
 number.advanced.enablePercentSign.{bp}.value
 number.decoration.font.font.{bp}.value.size
 number.decoration.font.font.{bp}.value.weight

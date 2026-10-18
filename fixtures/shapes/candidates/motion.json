@@ -1,0 +1,3458 @@
+[
+  {
+    "id": "mo-tr-duration-800",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              },
+              "hover": {
+                "color": "#dc2626"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transition.desktop.value.duration": "800ms"
+    },
+    "note": "Transition duration 800ms on a group that has a hover background colour. Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease)."
+  },
+  {
+    "id": "mo-tr-duration-1500",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              },
+              "hover": {
+                "color": "#dc2626"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transition.desktop.value.duration": "1500ms"
+    },
+    "note": "Transition duration 1500ms. Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease)."
+  },
+  {
+    "id": "mo-tr-delay-200",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              },
+              "hover": {
+                "color": "#dc2626"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transition.desktop.value.delay": "200ms"
+    },
+    "note": "Transition delay 200ms. Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease)."
+  },
+  {
+    "id": "mo-tr-curve-easeInOut",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              },
+              "hover": {
+                "color": "#dc2626"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transition.desktop.value.speedCurve": "easeInOut"
+    },
+    "note": "Transition speed curve easeInOut against the default (ease). Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease)."
+  },
+  {
+    "id": "mo-tr-curve-easeIn",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              },
+              "hover": {
+                "color": "#dc2626"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transition.desktop.value.speedCurve": "easeIn"
+    },
+    "note": "Transition speed curve easeIn against the default (ease). Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease)."
+  },
+  {
+    "id": "mo-tr-curve-easeOut",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              },
+              "hover": {
+                "color": "#dc2626"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transition.desktop.value.speedCurve": "easeOut"
+    },
+    "note": "Transition speed curve easeOut against the default (ease). Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease)."
+  },
+  {
+    "id": "mo-tr-curve-linear",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              },
+              "hover": {
+                "color": "#dc2626"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transition.desktop.value.speedCurve": "linear"
+    },
+    "note": "Transition speed curve linear against the default (ease). Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease)."
+  },
+  {
+    "id": "mo-tr-curve-ease-from-linear",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              },
+              "hover": {
+                "color": "#dc2626"
+              }
+            }
+          },
+          "transition": {
+            "desktop": {
+              "value": {
+                "speedCurve": "linear"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transition.desktop.value.speedCurve": "ease"
+    },
+    "note": "Speed curve ease set over a base of linear (ease is also the default, so it can only be shown against another curve). Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease)."
+  },
+  {
+    "id": "mo-tr-needs-a-state",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transition.desktop.value.duration": "800ms"
+    },
+    "expect": "DEAD",
+    "note": "PRECONDITION: the same duration on a group with NO hover state (only a plain background). Source says no transition properties are emitted without a state, so this is expected to be DEAD. Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease)."
+  },
+  {
+    "id": "mo-tr-duration-tablet",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              },
+              "hover": {
+                "color": "#dc2626"
+              }
+            }
+          },
+          "transition": {
+            "desktop": {
+              "value": {
+                "duration": "300ms"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transition.tablet.value.duration": "1500ms"
+    },
+    "note": "A tablet override of the transition duration over an explicit desktop 300ms (a first run without the desktop value changed 1280 px too, because a tablet-only value made Divi emit the transition for every width, so the base now carries the desktop value). Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease)."
+  },
+  {
+    "id": "mo-hv-group-bg-color",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.hover.color": "#dc2626"
+    },
+    "state": "hover",
+    "attrs": [],
+    "note": "Group background colour on hover, a normal colour set. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-group-bg-color-without-normal",
+    "block": "group",
+    "set": {
+      "module.decoration.background.desktop.hover.color": "#dc2626"
+    },
+    "state": "hover",
+    "note": "PRECONDITION probe: hover colour on a group that has NO normal background colour. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-group-border-color",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "border": {
+            "desktop": {
+              "value": {
+                "styles": {
+                  "all": {
+                    "width": "3px",
+                    "color": "#1e3a8a",
+                    "style": "solid"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.border.desktop.hover.styles.all.color": "#dc2626"
+    },
+    "state": "hover",
+    "note": "Group border colour on hover over a normal 2px solid border. Export-proven path (registry: module.decoration.border.{bp}.hover.styles.all.color). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-group-shadow-preset3",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#ffffff"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.boxShadow.desktop.hover.style": "preset3"
+    },
+    "state": "hover",
+    "note": "Box shadow preset3 appearing on hover over a group with no shadow. Presets preset1..preset7 are defined in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-88 (preset3: 0px 12px 18px -6px, outer). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-group-shadow-custom",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#ffffff"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.boxShadow.desktop.hover.style": "preset1",
+      "module.decoration.boxShadow.desktop.hover.vertical": "20px",
+      "module.decoration.boxShadow.desktop.hover.blur": "40px",
+      "module.decoration.boxShadow.desktop.hover.color": "rgba(0,0,0,0.35)"
+    },
+    "state": "hover",
+    "note": "Hover shadow starting from preset1 with vertical, blur and colour overridden (the declared pair: style plus the overrides); values layer over the preset at Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:133-146. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-group-shadow-preset6-inner",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#ffffff"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.boxShadow.desktop.hover.style": "preset6"
+    },
+    "state": "hover",
+    "note": "Inner (inset) shadow preset6 on hover (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:72-79, position inner). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-group-scale",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#ffffff"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transform.desktop.hover.scale.x": "105%",
+      "module.decoration.transform.desktop.hover.scale.y": "105%"
+    },
+    "state": "hover",
+    "note": "Transform scale 105% (x and y together, the declared pair) on hover. Divi renders scale percentages as a factor (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:render_percentage, scaleX/scaleY). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-group-translate-y",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#ffffff"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transform.desktop.hover.translate.y": "-8px"
+    },
+    "state": "hover",
+    "note": "Transform translate y -8px on hover (export-proven value path module.decoration.transform.{bp}.value.translate.y; hover state per Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-group-rotate-z",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#ffffff"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transform.desktop.hover.rotate.z": "3deg"
+    },
+    "state": "hover",
+    "note": "Transform rotate z 3deg on hover. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-group-filter-brightness",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.filters.desktop.hover.brightness": "120%"
+    },
+    "state": "hover",
+    "note": "CSS filter brightness 120% on hover (filter names: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:120-128). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-group-filter-saturate",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.filters.desktop.hover.saturate": "160%"
+    },
+    "state": "hover",
+    "note": "CSS filter saturate 160% on hover. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-heading-font-color",
+    "block": "heading",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": "#1e3a8a"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.desktop.hover.color": "#dc2626"
+    },
+    "state": "hover",
+    "note": "Heading text colour on hover (export-proven path title.decoration.font.font.{bp}.hover.color). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-button-bg-color",
+    "block": "button",
+    "base": {
+      "button": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          },
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "button.decoration.background.desktop.hover.color": "#dc2626"
+    },
+    "state": "hover",
+    "note": "Button background colour on hover (export-proven path button.decoration.background.{bp}.hover.color). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-button-bg-color-with-enable",
+    "block": "button",
+    "base": {
+      "button": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          },
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "button.decoration.background.desktop.hover.color": "#dc2626",
+      "button.decoration.background.desktop.hover.enableColor": "on"
+    },
+    "state": "hover",
+    "note": "Button hover colour together with the `enableColor` flag the builder export carries (the declared pair). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-button-font-color",
+    "block": "button",
+    "base": {
+      "button": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          },
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "button.decoration.font.font.desktop.hover.color": "#fde68a"
+    },
+    "state": "hover",
+    "note": "Button text colour on hover. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-button-border-color",
+    "block": "button",
+    "base": {
+      "button": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          },
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": "#ffffff"
+                }
+              }
+            }
+          },
+          "border": {
+            "desktop": {
+              "value": {
+                "styles": {
+                  "all": {
+                    "width": "2px",
+                    "color": "#1e3a8a",
+                    "style": "solid"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "button.decoration.border.desktop.hover.styles.all.color": "#fde68a"
+    },
+    "state": "hover",
+    "note": "Button border colour on hover over a normal 2px border (export-proven path button.decoration.border.{bp}.hover.styles.all.color). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-button-shadow",
+    "block": "button",
+    "base": {
+      "button": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          },
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "button.decoration.boxShadow.desktop.hover.style": "preset3"
+    },
+    "state": "hover",
+    "note": "Button box shadow preset3 on hover (button.json lists boxShadow under the button element). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-button-scale",
+    "block": "button",
+    "base": {
+      "button": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          },
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "button.decoration.transform.desktop.hover.scale.x": "108%",
+      "button.decoration.transform.desktop.hover.scale.y": "108%"
+    },
+    "state": "hover",
+    "note": "Button transform scale 108% on hover (button.json lists transform under the button element). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-button-module-shadow",
+    "block": "button",
+    "base": {
+      "button": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          },
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.boxShadow.desktop.hover.style": "preset3"
+    },
+    "state": "hover",
+    "note": "Box shadow preset3 on hover set on the button MODULE (module.decoration.boxShadow), because the button-element path was dead. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-hv-button-module-scale",
+    "block": "button",
+    "base": {
+      "button": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1e3a8a"
+              }
+            }
+          },
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transform.desktop.hover.scale.x": "108%",
+      "module.decoration.transform.desktop.hover.scale.y": "108%"
+    },
+    "state": "hover",
+    "note": "Transform scale 108% on hover set on the button MODULE (module.decoration.transform), because the button-element path was dead. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "mo-tf-scale",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#ffffff"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transform.desktop.value.scale.x": "90%",
+      "module.decoration.transform.desktop.value.scale.y": "90%"
+    },
+    "note": "Normal-state transform scale 90% (x and y). Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php"
+  },
+  {
+    "id": "mo-tf-skew",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#ffffff"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.transform.desktop.value.skew.x": "6deg"
+    },
+    "note": "Normal-state transform skew x 6deg. Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php"
+  },
+  {
+    "id": "mo-an-style-fade",
+    "block": "heading",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "fade"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation style fade on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-style-slide",
+    "block": "heading",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "slide"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation style slide on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-style-bounce",
+    "block": "heading",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "bounce"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation style bounce on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-style-zoom",
+    "block": "heading",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "zoom"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation style zoom on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-style-flip",
+    "block": "heading",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "flip"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation style flip on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-style-fold",
+    "block": "heading",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "fold"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation style fold on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-style-roll",
+    "block": "heading",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "roll"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation style roll on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-slide-top",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "slide"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "top"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction top for style slide, over a base of slide with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-slide-bottom",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "slide"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "bottom"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction bottom for style slide, over a base of slide with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-slide-left",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "slide"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "left"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction left for style slide, over a base of slide with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-slide-right",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "slide"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "right"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction right for style slide, over a base of slide with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-bounce-top",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "bounce"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "top"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction top for style bounce, over a base of bounce with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-bounce-bottom",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "bounce"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "bottom"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction bottom for style bounce, over a base of bounce with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-bounce-left",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "bounce"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "left"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction left for style bounce, over a base of bounce with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-bounce-right",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "bounce"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "right"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction right for style bounce, over a base of bounce with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-zoom-top",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "zoom"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "top"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction top for style zoom, over a base of zoom with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-zoom-bottom",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "zoom"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "bottom"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction bottom for style zoom, over a base of zoom with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-zoom-left",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "zoom"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "left"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction left for style zoom, over a base of zoom with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-zoom-right",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "zoom"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "right"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction right for style zoom, over a base of zoom with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-flip-top",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "flip"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "top"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction top for style flip, over a base of flip with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-flip-bottom",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "flip"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "bottom"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction bottom for style flip, over a base of flip with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-flip-left",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "flip"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "left"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction left for style flip, over a base of flip with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-flip-right",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "flip"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "right"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction right for style flip, over a base of flip with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-fold-top",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fold"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "top"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction top for style fold, over a base of fold with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-fold-bottom",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fold"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "bottom"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction bottom for style fold, over a base of fold with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-fold-left",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fold"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "left"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction left for style fold, over a base of fold with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-fold-right",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fold"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "right"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction right for style fold, over a base of fold with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-roll-top",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "roll"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "top"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction top for style roll, over a base of roll with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-roll-bottom",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "roll"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "bottom"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction bottom for style roll, over a base of roll with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-roll-left",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "roll"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "left"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction left for style roll, over a base of roll with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-roll-right",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "roll"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "right"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction right for style roll, over a base of roll with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-slide-center-from-left",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "slide",
+                "direction": "left"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "center"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Direction center set over a base of slide + left. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-dir-fade-needs-no-direction",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.direction": "left"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "expect": "DEAD",
+    "note": "PRECONDITION: a direction on style fade. The options for fade have no direction (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:241-250), so this is expected to be DEAD. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-duration-2000",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.duration": "2000ms"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Duration 2000ms over the default 1000ms. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-delay-8000",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.delay": "8000ms"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Delay 8000ms over the 5000ms probe base. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-repeat-loop",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.repeat": "loop"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Repeat loop over once (the default). Values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:489-492. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-curve-ease",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade",
+                "speedCurve": "linear"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.speedCurve": "ease"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Speed curve ease over a base of linear. Values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:458-464 (ease-in-out, ease, ease-in, ease-out, linear). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-curve-ease-in",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.speedCurve": "ease-in"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Speed curve ease-in over the default ease-in-out. Values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:458-464 (ease-in-out, ease, ease-in, ease-out, linear). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-curve-ease-out",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.speedCurve": "ease-out"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Speed curve ease-out over the default ease-in-out. Values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:458-464 (ease-in-out, ease, ease-in, ease-out, linear). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-curve-linear",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.speedCurve": "linear"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Speed curve linear over the default ease-in-out. Values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:458-464 (ease-in-out, ease, ease-in, ease-out, linear). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-curve-ease-in-out",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade",
+                "speedCurve": "linear"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.speedCurve": "ease-in-out"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Speed curve ease-in-out over a base of linear. Values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:458-464 (ease-in-out, ease, ease-in, ease-out, linear). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-starting-opacity-40",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.startingOpacity": "40%"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Starting opacity 40% over the default 0%. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-intensity-slide",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "slide",
+                "direction": "left"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.intensity.slide": "20%"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "ignore": [],
+    "note": "Intensity of style slide 20% over the default 50%. Per-style intensity: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:403-436 (slide, zoom, flip, fold, roll have their own; fade and bounce are fixed at 50%). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-intensity-zoom",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "zoom",
+                "direction": "center"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.intensity.zoom": "20%"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "ignore": [],
+    "note": "Intensity of style zoom 20% over the default 50%. Per-style intensity: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:403-436 (slide, zoom, flip, fold, roll have their own; fade and bounce are fixed at 50%). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-intensity-flip",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "flip",
+                "direction": "center"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.intensity.flip": "20%"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "ignore": [],
+    "note": "Intensity of style flip 20% over the default 50%. Per-style intensity: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:403-436 (slide, zoom, flip, fold, roll have their own; fade and bounce are fixed at 50%). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-intensity-fold",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fold",
+                "direction": "center"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.intensity.fold": "20%"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "ignore": [],
+    "note": "Intensity of style fold 20% over the default 50%. Per-style intensity: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:403-436 (slide, zoom, flip, fold, roll have their own; fade and bounce are fixed at 50%). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-intensity-roll",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "roll",
+                "direction": "center"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.intensity.roll": "20%"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "ignore": [],
+    "note": "Intensity of style roll 20% over the default 50%. Per-style intensity: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:403-436 (slide, zoom, flip, fold, roll have their own; fade and bounce are fixed at 50%). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-intensity-fade-fixed",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.desktop.value.intensity.slide": "20%"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "expect": "DEAD",
+    "note": "PRECONDITION: an intensity (slide) on style fade. Source: fade and bounce ignore intensity (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:421-424), so this is expected to be DEAD. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-tablet-duration",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.tablet.value.duration": "2500ms"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "A tablet override of the duration (generate_data keys tablet/phone values separately, Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:110-157): should change 900 and 400 px only. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-phone-style-none",
+    "block": "heading",
+    "base": {
+      "module": {
+        "decoration": {
+          "animation": {
+            "desktop": {
+              "value": {
+                "delay": "5000ms",
+                "style": "fade"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.animation.phone.value.style": "none"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "A phone override of the style to none over a desktop fade: should change 400 px only. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-host-section",
+    "block": "section",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "fade"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation fade on a section (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-host-row",
+    "block": "row",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "fade"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation fade on a row (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-host-column",
+    "block": "column",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "fade"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation fade on a column (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-host-group",
+    "block": "group",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "fade"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation fade on a group (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-host-image",
+    "block": "image",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "fade"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation fade on a image (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-host-button",
+    "block": "button",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "fade"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation fade on a button (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-host-blurb",
+    "block": "blurb",
+    "set": {
+      "module.decoration.animation.desktop.value.style": "fade"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation fade on a blurb (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-an-host-button-own",
+    "block": "button",
+    "set": {
+      "button.decoration.animation.desktop.value.style": "fade"
+    },
+    "attrs": [
+      "class",
+      "style"
+    ],
+    "note": "Entrance animation set on the button element path (button.json lists animation under `button`). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
+  },
+  {
+    "id": "mo-sc-verticalMotion",
+    "block": "section",
+    "set": {
+      "module.decoration.scroll.desktop.value.verticalMotion.enable": "on"
+    },
+    "state": "scroll",
+    "scrollAt": 0.25,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Scroll effect verticalMotion switched on, section centre at 0.25 of the viewport height. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-horizontalMotion",
+    "block": "section",
+    "set": {
+      "module.decoration.scroll.desktop.value.horizontalMotion.enable": "on"
+    },
+    "state": "scroll",
+    "scrollAt": 0.25,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Scroll effect horizontalMotion switched on, section centre at 0.25 of the viewport height. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-fade",
+    "block": "section",
+    "set": {
+      "module.decoration.scroll.desktop.value.fade.enable": "on"
+    },
+    "state": "scroll",
+    "scrollAt": 0.9,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Scroll effect fade switched on, section centre at 0.9 of the viewport height. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-scaling",
+    "block": "section",
+    "set": {
+      "module.decoration.scroll.desktop.value.scaling.enable": "on"
+    },
+    "state": "scroll",
+    "scrollAt": 0.9,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Scroll effect scaling switched on, section centre at 0.9 of the viewport height. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-rotating",
+    "block": "section",
+    "set": {
+      "module.decoration.scroll.desktop.value.rotating.enable": "on"
+    },
+    "state": "scroll",
+    "scrollAt": 0.9,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Scroll effect rotating switched on, section centre at 0.9 of the viewport height. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-blur",
+    "block": "section",
+    "set": {
+      "module.decoration.scroll.desktop.value.blur.enable": "on"
+    },
+    "state": "scroll",
+    "scrollAt": 0.9,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Scroll effect blur switched on, section centre at 0.9 of the viewport height. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-offset-needs-enable",
+    "block": "section",
+    "set": {
+      "module.decoration.scroll.desktop.value.verticalMotion.offset.start": "20"
+    },
+    "state": "scroll",
+    "scrollAt": 0.25,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "expect": "DEAD",
+    "note": "PRECONDITION: an offset without the effect switched on. Expected DEAD. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-vertical-offset-start",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "scroll": {
+            "desktop": {
+              "value": {
+                "verticalMotion": {
+                  "enable": "on"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.scroll.desktop.value.verticalMotion.offset.start": "20"
+    },
+    "state": "scroll",
+    "scrollAt": 0.9,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Vertical motion offset start 20 over the default 4 (effect on in the base). Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-vertical-offset-end",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "scroll": {
+            "desktop": {
+              "value": {
+                "verticalMotion": {
+                  "enable": "on"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.scroll.desktop.value.verticalMotion.offset.end": "-20"
+    },
+    "state": "scroll",
+    "scrollAt": 0.05,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Vertical motion offset end -20 over the default -4, section centre near the top of the viewport. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-vertical-viewport-top",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "scroll": {
+            "desktop": {
+              "value": {
+                "verticalMotion": {
+                  "enable": "on"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.scroll.desktop.value.verticalMotion.viewport.top": "60"
+    },
+    "state": "scroll",
+    "scrollAt": 0.5,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Vertical motion viewport top 60 over the default 100 (effect on in the base). Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-trigger-top",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "scroll": {
+            "desktop": {
+              "value": {
+                "verticalMotion": {
+                  "enable": "on"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.scroll.desktop.value.motionTriggerStart": "top"
+    },
+    "state": "scroll",
+    "scrollAt": 0.5,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Motion trigger `top` over the default `middle` (effect on in the base; values top/middle/bottom: Divi 5.15.1 includes/builder/module/field/Scroll.php:81-91). Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-fade-offset-start",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "scroll": {
+            "desktop": {
+              "value": {
+                "fade": {
+                  "enable": "on"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.scroll.desktop.value.fade.offset.start": "50"
+    },
+    "state": "scroll",
+    "scrollAt": 0.95,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Fade offset start 50 over the default 0 (effect on in the base). Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-two-effects",
+    "block": "section",
+    "set": {
+      "module.decoration.scroll.desktop.value.fade.enable": "on",
+      "module.decoration.scroll.desktop.value.verticalMotion.enable": "on"
+    },
+    "state": "scroll",
+    "scrollAt": 0.9,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Two effects at once (fade and verticalMotion, the declared pair). Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-sc-phone-off",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "scroll": {
+            "desktop": {
+              "value": {
+                "verticalMotion": {
+                  "enable": "on"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.scroll.phone.value.verticalMotion.enable": "off"
+    },
+    "state": "scroll",
+    "scrollAt": 0.9,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Vertical motion on for desktop, switched off for phones (a phone override): should change 400 px only. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle."
+  },
+  {
+    "id": "mo-st-top",
+    "block": "section",
+    "set": {
+      "module.decoration.sticky.desktop.value.position": "top"
+    },
+    "state": "scroll",
+    "scrollAt": -0.5,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Sticky position top, section scrolled out of the top of the viewport. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically."
+  },
+  {
+    "id": "mo-st-bottom",
+    "block": "section",
+    "set": {
+      "module.decoration.sticky.desktop.value.position": "bottom"
+    },
+    "state": "scroll",
+    "scrollAt": 1.5,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Sticky position bottom, section below the viewport. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically."
+  },
+  {
+    "id": "mo-st-topBottom",
+    "block": "section",
+    "set": {
+      "module.decoration.sticky.desktop.value.position": "topBottom"
+    },
+    "state": "scroll",
+    "scrollAt": -0.5,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Sticky position topBottom, section scrolled out of the top. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically."
+  },
+  {
+    "id": "mo-st-topBottom-below",
+    "block": "section",
+    "set": {
+      "module.decoration.sticky.desktop.value.position": "topBottom"
+    },
+    "state": "scroll",
+    "scrollAt": 1.5,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Sticky position topBottom, section below the viewport. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically."
+  },
+  {
+    "id": "mo-st-offset-top-80",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "sticky": {
+            "desktop": {
+              "value": {
+                "position": "top"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.sticky.desktop.value.offset.top": "80px"
+    },
+    "state": "scroll",
+    "scrollAt": -0.5,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Sticky top offset 80px over a sticky `top` base (default offset 0px). Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically."
+  },
+  {
+    "id": "mo-st-offset-bottom-60",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "sticky": {
+            "desktop": {
+              "value": {
+                "position": "bottom"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.sticky.desktop.value.offset.bottom": "60px"
+    },
+    "state": "scroll",
+    "scrollAt": 1.5,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Sticky bottom offset 60px over a sticky `bottom` base. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically."
+  },
+  {
+    "id": "mo-st-offset-needs-position",
+    "block": "section",
+    "set": {
+      "module.decoration.sticky.desktop.value.offset.top": "80px"
+    },
+    "state": "scroll",
+    "scrollAt": -0.5,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "expect": "DEAD",
+    "note": "PRECONDITION: a top offset without a sticky position. Expected DEAD. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically."
+  },
+  {
+    "id": "mo-st-phone-none",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "sticky": {
+            "desktop": {
+              "value": {
+                "position": "top"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.sticky.phone.value.position": "none"
+    },
+    "state": "scroll",
+    "scrollAt": -0.5,
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "note": "Sticky top on desktop, switched off for phones (phone position none): should change 400 px only. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically."
+  }
+]

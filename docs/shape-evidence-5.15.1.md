@@ -4211,3 +4211,2398 @@ Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-d
 - Divider between a page section and a Theme Builder header or footer, or a section inside a Theme Builder body: not measured: the probe renders ordinary sections in the page content
 - Add-on divider styles (the `divi_divider_library_divider` filter): excluded: only the 26 styles Divi ships (DividerSvg.php:50-77) were probed; a style an add-on registers is not taught
 - Row gutter widths 2 and 3, `makeEqual`, `alignColumns`, tablet/phone gutter overrides, and the section gutter of a specialty section: not rendered: only width 4 and width 1 on a display block row were probed (and width 4 on the default flex row, which is dead). The section gutter acts only on a specialty section (SectionModule.php:176-189); no specialty section was rendered
+
+## mo-tr-duration-800
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.transition.desktop.value.duration` = `"800ms"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:background-color: rgb(30, 58, 138) -> rgba(30, 58, 138, 1)` |
+| 900 px | yes | 2 | yes | `0:div:background-color: rgb(30, 58, 138) -> rgba(30, 58, 138, 1)` |
+| 400 px | yes | 1 | yes | `0:div:transition-duration: 0.3s -> 0.8s` |
+
+Properties that changed (any width): `background-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Transition duration 800ms on a group that has a hover background colour. Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease).
+
+Registered paths added:
+
+- `module.decoration.transition.{bp}.value.duration`
+
+## mo-tr-duration-1500
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.transition.desktop.value.duration` = `"1500ms"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:background-color: rgb(30, 58, 138) -> rgba(30, 58, 138, 0.816)` |
+| 900 px | yes | 2 | yes | `0:div:background-color: rgb(30, 58, 138) -> rgba(30, 58, 138, 0.816)` |
+| 400 px | yes | 2 | yes | `0:div:background-color: rgb(30, 58, 138) -> rgba(30, 58, 138, 0.816)` |
+
+Properties that changed (any width): `background-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Transition duration 1500ms. Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-tr-delay-200
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.transition.desktop.value.delay` = `"200ms"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:transition-delay: 0s -> 0.2s` |
+| 900 px | yes | 1 | yes | `0:div:transition-delay: 0s -> 0.2s` |
+| 400 px | yes | 1 | yes | `0:div:transition-delay: 0s -> 0.2s` |
+
+Properties that changed (any width): `transition-delay`.
+
+Phone overflow at 400 px: no.
+
+Note: Transition delay 200ms. Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease).
+
+Registered paths added:
+
+- `module.decoration.transition.{bp}.value.delay`
+
+## mo-tr-curve-easeInOut
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.transition.desktop.value.speedCurve` = `"easeInOut"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:transition-timing-function: ease -> ease-in-out` |
+| 900 px | yes | 1 | yes | `0:div:transition-timing-function: ease -> ease-in-out` |
+| 400 px | yes | 1 | yes | `0:div:transition-timing-function: ease -> ease-in-out` |
+
+Properties that changed (any width): `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Transition speed curve easeInOut against the default (ease). Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease).
+
+Registered paths added:
+
+- `module.decoration.transition.{bp}.value.speedCurve`
+
+## mo-tr-curve-easeIn
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.transition.desktop.value.speedCurve` = `"easeIn"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:transition-timing-function: ease -> ease-in` |
+| 900 px | yes | 1 | yes | `0:div:transition-timing-function: ease -> ease-in` |
+| 400 px | yes | 1 | yes | `0:div:transition-timing-function: ease -> ease-in` |
+
+Properties that changed (any width): `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Transition speed curve easeIn against the default (ease). Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-tr-curve-easeOut
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.transition.desktop.value.speedCurve` = `"easeOut"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:transition-timing-function: ease -> ease-out` |
+| 900 px | yes | 1 | yes | `0:div:transition-timing-function: ease -> ease-out` |
+| 400 px | yes | 1 | yes | `0:div:transition-timing-function: ease -> ease-out` |
+
+Properties that changed (any width): `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Transition speed curve easeOut against the default (ease). Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-tr-curve-linear
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.transition.desktop.value.speedCurve` = `"linear"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:transition-timing-function: ease -> linear` |
+| 900 px | yes | 1 | yes | `0:div:transition-timing-function: ease -> linear` |
+| 400 px | yes | 1 | yes | `0:div:transition-timing-function: ease -> linear` |
+
+Properties that changed (any width): `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Transition speed curve linear against the default (ease). Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-tr-curve-ease-from-linear
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.transition.desktop.value.speedCurve` = `"ease"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:transition-timing-function: linear -> ease` |
+| 900 px | yes | 1 | yes | `0:div:transition-timing-function: linear -> ease` |
+| 400 px | yes | 1 | yes | `0:div:transition-timing-function: linear -> ease` |
+
+Properties that changed (any width): `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Speed curve ease set over a base of linear (ease is also the default, so it can only be shown against another curve). Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-tr-duration-tablet
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.transition.tablet.value.duration` = `"1500ms"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 2 | yes | `0:div:background-color: rgb(30, 58, 138) -> rgba(30, 58, 138, 0.82)` |
+| 400 px | yes | 2 | yes | `0:div:background-color: rgb(30, 58, 138) -> rgba(30, 58, 138, 0.816)` |
+
+Properties that changed (any width): `background-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: A tablet override of the transition duration over an explicit desktop 300ms (a first run without the desktop value changed 1280 px too, because a tablet-only value made Divi emit the transition for every width, so the base now carries the desktop value). Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-hv-group-bg-color
+
+Block: `group`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.background.desktop.hover.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:background-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+| 900 px | yes | 3 | yes | `0:div:background-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+| 400 px | yes | 3 | yes | `0:div:background-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `background-color`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Group background colour on hover, a normal colour set. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-hv-group-bg-color-without-normal
+
+Block: `group`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.background.desktop.hover.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:background-color: rgba(0, 0, 0, 0) -> rgb(220, 38, 38)` |
+| 900 px | yes | 3 | yes | `0:div:background-color: rgba(0, 0, 0, 0) -> rgb(220, 38, 38)` |
+| 400 px | yes | 3 | yes | `0:div:background-color: rgba(0, 0, 0, 0) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `background-color`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: PRECONDITION probe: hover colour on a group that has NO normal background colour. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-hv-group-border-color
+
+Block: `group`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.border.desktop.hover.styles.all.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 10 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+| 900 px | yes | 10 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+| 400 px | yes | 10 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Group border colour on hover over a normal 2px solid border. Export-proven path (registry: module.decoration.border.{bp}.hover.styles.all.color). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-hv-group-shadow-preset3
+
+Block: `group`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.hover.style` = `"preset3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 12px 18px -6px` |
+| 900 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 12px 18px -6px` |
+| 400 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 12px 18px -6px` |
+
+Properties that changed (any width): `box-shadow`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Box shadow preset3 appearing on hover over a group with no shadow. Presets preset1..preset7 are defined in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-88 (preset3: 0px 12px 18px -6px, outer). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added:
+
+- `module.decoration.boxShadow.{bp}.hover.style`
+
+## mo-hv-group-shadow-custom
+
+Block: `group`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.hover.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.hover.vertical` = `"20px"`
+- `module.decoration.boxShadow.desktop.hover.blur` = `"40px"`
+- `module.decoration.boxShadow.desktop.hover.color` = `"rgba(0,0,0,0.35)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.35) 0px 20px 40px 0px` |
+| 900 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.35) 0px 20px 40px 0px` |
+| 400 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.35) 0px 20px 40px 0px` |
+
+Properties that changed (any width): `box-shadow`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Hover shadow starting from preset1 with vertical, blur and colour overridden (the declared pair: style plus the overrides); values layer over the preset at Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:133-146. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added:
+
+- `module.decoration.boxShadow.{bp}.hover.blur`
+- `module.decoration.boxShadow.{bp}.hover.color`
+- `module.decoration.boxShadow.{bp}.hover.vertical`
+
+## mo-hv-group-shadow-preset6-inner
+
+Block: `group`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.hover.style` = `"preset6"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 0px 18px 0px inset` |
+| 900 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 0px 18px 0px inset` |
+| 400 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 0px 18px 0px inset` |
+
+Properties that changed (any width): `box-shadow`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Inner (inset) shadow preset6 on hover (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:72-79, position inner). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-hv-group-scale
+
+Block: `group`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.transform.desktop.hover.scale.x` = `"105%"`
+- `module.decoration.transform.desktop.hover.scale.y` = `"105%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform: none -> matrix(1.05, 0, 0, 1.05, 0, 0)` |
+| 900 px | yes | 3 | yes | `0:div:transform: none -> matrix(1.05, 0, 0, 1.05, 0, 0)` |
+| 400 px | yes | 3 | yes | `0:div:transform: none -> matrix(1.05, 0, 0, 1.05, 0, 0)` |
+
+Properties that changed (any width): `transform`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Transform scale 105% (x and y together, the declared pair) on hover. Divi renders scale percentages as a factor (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:render_percentage, scaleX/scaleY). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added:
+
+- `module.decoration.transform.{bp}.hover.scale.x`
+- `module.decoration.transform.{bp}.hover.scale.y`
+
+## mo-hv-group-translate-y
+
+Block: `group`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.transform.desktop.hover.translate.y` = `"-8px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -8)` |
+| 900 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -8)` |
+| 400 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -8)` |
+
+Properties that changed (any width): `transform`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Transform translate y -8px on hover (export-proven value path module.decoration.transform.{bp}.value.translate.y; hover state per Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added:
+
+- `module.decoration.transform.{bp}.hover.translate.y`
+
+## mo-hv-group-rotate-z
+
+Block: `group`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.transform.desktop.hover.rotate.z` = `"3deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform: none -> matrix(0.99863, 0.052336, -0.052336, 0.99863, 0, 0)` |
+| 900 px | yes | 3 | yes | `0:div:transform: none -> matrix(0.99863, 0.052336, -0.052336, 0.99863, 0, 0)` |
+| 400 px | yes | 3 | yes | `0:div:transform: none -> matrix(0.99863, 0.052336, -0.052336, 0.99863, 0, 0)` |
+
+Properties that changed (any width): `transform`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Transform rotate z 3deg on hover. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added:
+
+- `module.decoration.transform.{bp}.hover.rotate.z`
+
+## mo-hv-group-filter-brightness
+
+Block: `group`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.filters.desktop.hover.brightness` = `"120%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:filter: none -> brightness(1.2)` |
+| 900 px | yes | 3 | yes | `0:div:filter: none -> brightness(1.2)` |
+| 400 px | yes | 3 | yes | `0:div:filter: none -> brightness(1.2)` |
+
+Properties that changed (any width): `filter`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: CSS filter brightness 120% on hover (filter names: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:120-128). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added:
+
+- `module.decoration.filters.{bp}.hover.brightness`
+
+## mo-hv-group-filter-saturate
+
+Block: `group`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.filters.desktop.hover.saturate` = `"160%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:filter: none -> saturate(1.6)` |
+| 900 px | yes | 3 | yes | `0:div:filter: none -> saturate(1.6)` |
+| 400 px | yes | 3 | yes | `0:div:filter: none -> saturate(1.6)` |
+
+Properties that changed (any width): `filter`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: CSS filter saturate 160% on hover. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added:
+
+- `module.decoration.filters.{bp}.hover.saturate`
+
+## mo-hv-heading-font-color
+
+Block: `heading`, measured in the `hover` state. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.hover.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 19 | yes | `2:h1:border-block-end-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+| 900 px | yes | 19 | yes | `2:h1:border-block-end-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+| 400 px | yes | 19 | yes | `2:h1:border-block-end-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text colour on hover (export-proven path title.decoration.font.font.{bp}.hover.color). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-hv-button-bg-color
+
+Block: `button`, measured in the `hover` state. Set on top of the base block:
+
+- `button.decoration.background.desktop.hover.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+| 900 px | yes | 2 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+| 400 px | yes | 2 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `background-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Button background colour on hover (export-proven path button.decoration.background.{bp}.hover.color). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-hv-button-bg-color-with-enable
+
+Block: `button`, measured in the `hover` state. Set on top of the base block:
+
+- `button.decoration.background.desktop.hover.color` = `"#dc2626"`
+- `button.decoration.background.desktop.hover.enableColor` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+| 900 px | yes | 2 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+| 400 px | yes | 2 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `background-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Button hover colour together with the `enableColor` flag the builder export carries (the declared pair). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-hv-button-font-color
+
+Block: `button`, measured in the `hover` state. Set on top of the base block:
+
+- `button.decoration.font.font.desktop.hover.color` = `"#fde68a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 10 | yes | `0:a:caret-color: rgb(255, 255, 255) -> rgb(253, 230, 138)` |
+| 900 px | yes | 10 | yes | `0:a:caret-color: rgb(255, 255, 255) -> rgb(253, 230, 138)` |
+| 400 px | yes | 10 | yes | `0:a:caret-color: rgb(255, 255, 255) -> rgb(253, 230, 138)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Button text colour on hover. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added:
+
+- `button.decoration.font.font.{bp}.hover.color`
+
+## mo-hv-button-border-color
+
+Block: `button`, measured in the `hover` state. Set on top of the base block:
+
+- `button.decoration.border.desktop.hover.styles.all.color` = `"#fde68a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 9 | yes | `0:a:border-block-end-color: rgb(30, 58, 138) -> rgb(253, 230, 138)` |
+| 900 px | yes | 9 | yes | `0:a:border-block-end-color: rgb(30, 58, 138) -> rgb(253, 230, 138)` |
+| 400 px | yes | 9 | yes | `0:a:border-block-end-color: rgb(30, 58, 138) -> rgb(253, 230, 138)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Button border colour on hover over a normal 2px border (export-proven path button.decoration.border.{bp}.hover.styles.all.color). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-hv-button-module-shadow
+
+Block: `button`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.hover.style` = `"preset3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 12px 18px -6px` |
+| 900 px | yes | 2 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 12px 18px -6px` |
+| 400 px | yes | 2 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 12px 18px -6px` |
+
+Properties that changed (any width): `box-shadow`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Box shadow preset3 on hover set on the button MODULE (module.decoration.boxShadow), because the button-element path was dead. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-hv-button-module-scale
+
+Block: `button`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.transform.desktop.hover.scale.x` = `"108%"`
+- `module.decoration.transform.desktop.hover.scale.y` = `"108%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:a:transform: none -> matrix(1.08, 0, 0, 1.08, 0, 0)` |
+| 900 px | yes | 2 | yes | `0:a:transform: none -> matrix(1.08, 0, 0, 1.08, 0, 0)` |
+| 400 px | yes | 2 | yes | `0:a:transform: none -> matrix(1.08, 0, 0, 1.08, 0, 0)` |
+
+Properties that changed (any width): `transform`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Transform scale 108% on hover set on the button MODULE (module.decoration.transform), because the button-element path was dead. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-tf-scale
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.scale.x` = `"90%"`
+- `module.decoration.transform.desktop.value.scale.y` = `"90%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:transform: none -> matrix(0.9, 0, 0, 0.9, 0, 0)` |
+| 900 px | yes | 1 | yes | `0:div:transform: none -> matrix(0.9, 0, 0, 0.9, 0, 0)` |
+| 400 px | yes | 1 | yes | `0:div:transform: none -> matrix(0.9, 0, 0, 0.9, 0, 0)` |
+
+Properties that changed (any width): `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Normal-state transform scale 90% (x and y). Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php
+
+Registered paths added:
+
+- `module.decoration.transform.{bp}.value.scale.x`
+- `module.decoration.transform.{bp}.value.scale.y`
+
+## mo-tf-skew
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.skew.x` = `"6deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:transform: none -> matrix(1, 0, 0.105104, 1, 0, 0)` |
+| 900 px | yes | 1 | yes | `0:div:transform: none -> matrix(1, 0, 0.105104, 1, 0, 0)` |
+| 400 px | yes | 1 | yes | `0:div:transform: none -> matrix(1, 0, 0.105104, 1, 0, 0)` |
+
+Properties that changed (any width): `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Normal-state transform skew x 6deg. Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php
+
+Registered paths added:
+
+- `module.decoration.transform.{bp}.value.skew.x`
+
+## mo-an-style-fade
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"fade"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 900 px | yes | 7 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 400 px | yes | 7 | no | `0:div:animation-duration: 0.2s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation style fade on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `module.decoration.animation.{bp}.value.style`
+
+## mo-an-style-slide
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"slide"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 900 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 400 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation style slide on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-style-bounce
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"bounce"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 900 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 400 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation style bounce on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-style-zoom
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"zoom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 900 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 400 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation style zoom on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-style-flip
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"flip"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 900 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 400 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation style flip on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-style-fold
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"fold"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 900 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 400 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation style fold on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-style-roll
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"roll"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 900 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 400 px | yes | 8 | no | `0:div:animation-duration: 0.2s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation style roll on a heading against no animation. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-slide-top
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | no | `0:div:animation-name: et_pb_slide -> et_pb_slideTop` |
+| 900 px | yes | 4 | no | `0:div:animation-name: et_pb_slide -> et_pb_slideTop` |
+| 400 px | yes | 4 | no | `0:div:animation-name: et_pb_slide -> et_pb_slideTop` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction top for style slide, over a base of slide with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `module.decoration.animation.{bp}.value.direction`
+
+## mo-an-dir-slide-bottom
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | no | `0:div:animation-name: et_pb_slide -> et_pb_slideBottom` |
+| 900 px | yes | 4 | no | `0:div:animation-name: et_pb_slide -> et_pb_slideBottom` |
+| 400 px | yes | 4 | no | `0:div:animation-name: et_pb_slide -> et_pb_slideBottom` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction bottom for style slide, over a base of slide with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-slide-left
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | no | `0:div:animation-name: et_pb_slide -> et_pb_slideLeft` |
+| 900 px | yes | 4 | no | `0:div:animation-name: et_pb_slide -> et_pb_slideLeft` |
+| 400 px | yes | 4 | no | `0:div:animation-name: et_pb_slide -> et_pb_slideLeft` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction left for style slide, over a base of slide with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-slide-right
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | no | `0:div:animation-name: et_pb_slide -> et_pb_slideRight` |
+| 900 px | yes | 4 | no | `0:div:animation-name: et_pb_slide -> et_pb_slideRight` |
+| 400 px | yes | 4 | no | `0:div:animation-name: et_pb_slide -> et_pb_slideRight` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction right for style slide, over a base of slide with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-bounce-top
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | no | `0:div:animation-name: et_pb_bounce -> et_pb_bounceTop` |
+| 900 px | yes | 3 | no | `0:div:animation-name: et_pb_bounce -> et_pb_bounceTop` |
+| 400 px | yes | 3 | no | `0:div:animation-name: et_pb_bounce -> et_pb_bounceTop` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction top for style bounce, over a base of bounce with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-bounce-bottom
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | no | `0:div:animation-name: et_pb_bounce -> et_pb_bounceBottom` |
+| 900 px | yes | 3 | no | `0:div:animation-name: et_pb_bounce -> et_pb_bounceBottom` |
+| 400 px | yes | 3 | no | `0:div:animation-name: et_pb_bounce -> et_pb_bounceBottom` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction bottom for style bounce, over a base of bounce with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-bounce-left
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | no | `0:div:animation-name: et_pb_bounce -> et_pb_bounceLeft` |
+| 900 px | yes | 3 | no | `0:div:animation-name: et_pb_bounce -> et_pb_bounceLeft` |
+| 400 px | yes | 3 | no | `0:div:animation-name: et_pb_bounce -> et_pb_bounceLeft` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction left for style bounce, over a base of bounce with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-bounce-right
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | no | `0:div:animation-name: et_pb_bounce -> et_pb_bounceRight` |
+| 900 px | yes | 3 | no | `0:div:animation-name: et_pb_bounce -> et_pb_bounceRight` |
+| 400 px | yes | 3 | no | `0:div:animation-name: et_pb_bounce -> et_pb_bounceRight` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction right for style bounce, over a base of bounce with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-zoom-top
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | no | `0:div:animation-name: et_pb_zoom -> et_pb_zoomTop` |
+| 900 px | yes | 3 | no | `0:div:animation-name: et_pb_zoom -> et_pb_zoomTop` |
+| 400 px | yes | 3 | no | `0:div:animation-name: et_pb_zoom -> et_pb_zoomTop` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction top for style zoom, over a base of zoom with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-zoom-bottom
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | no | `0:div:animation-name: et_pb_zoom -> et_pb_zoomBottom` |
+| 900 px | yes | 3 | no | `0:div:animation-name: et_pb_zoom -> et_pb_zoomBottom` |
+| 400 px | yes | 3 | no | `0:div:animation-name: et_pb_zoom -> et_pb_zoomBottom` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction bottom for style zoom, over a base of zoom with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-zoom-left
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | no | `0:div:animation-name: et_pb_zoom -> et_pb_zoomLeft` |
+| 900 px | yes | 3 | no | `0:div:animation-name: et_pb_zoom -> et_pb_zoomLeft` |
+| 400 px | yes | 3 | no | `0:div:animation-name: et_pb_zoom -> et_pb_zoomLeft` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction left for style zoom, over a base of zoom with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-zoom-right
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | no | `0:div:animation-name: et_pb_zoom -> et_pb_zoomRight` |
+| 900 px | yes | 3 | no | `0:div:animation-name: et_pb_zoom -> et_pb_zoomRight` |
+| 400 px | yes | 3 | no | `0:div:animation-name: et_pb_zoom -> et_pb_zoomRight` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction right for style zoom, over a base of zoom with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-flip-top
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:animation-name: et_pb_flip -> et_pb_flipTop` |
+| 900 px | yes | 2 | no | `0:div:animation-name: et_pb_flip -> et_pb_flipTop` |
+| 400 px | yes | 2 | no | `0:div:animation-name: et_pb_flip -> et_pb_flipTop` |
+
+Properties that changed (any width): `animation-name`, `attr:class`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction top for style flip, over a base of flip with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-flip-bottom
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | no | `0:div:animation-name: et_pb_flip -> et_pb_flipBottom` |
+| 900 px | yes | 4 | no | `0:div:animation-name: et_pb_flip -> et_pb_flipBottom` |
+| 400 px | yes | 4 | no | `0:div:animation-name: et_pb_flip -> et_pb_flipBottom` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction bottom for style flip, over a base of flip with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-flip-left
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | no | `0:div:animation-name: et_pb_flip -> et_pb_flipLeft` |
+| 900 px | yes | 4 | no | `0:div:animation-name: et_pb_flip -> et_pb_flipLeft` |
+| 400 px | yes | 4 | no | `0:div:animation-name: et_pb_flip -> et_pb_flipLeft` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction left for style flip, over a base of flip with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-flip-right
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | no | `0:div:animation-name: et_pb_flip -> et_pb_flipRight` |
+| 900 px | yes | 4 | no | `0:div:animation-name: et_pb_flip -> et_pb_flipRight` |
+| 400 px | yes | 4 | no | `0:div:animation-name: et_pb_flip -> et_pb_flipRight` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction right for style flip, over a base of flip with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-fold-top
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | no | `0:div:animation-name: et_pb_fold -> et_pb_foldTop` |
+| 900 px | yes | 5 | no | `0:div:animation-name: et_pb_fold -> et_pb_foldTop` |
+| 400 px | yes | 5 | no | `0:div:animation-name: et_pb_fold -> et_pb_foldTop` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction top for style fold, over a base of fold with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-fold-bottom
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | no | `0:div:animation-name: et_pb_fold -> et_pb_foldBottom` |
+| 900 px | yes | 5 | no | `0:div:animation-name: et_pb_fold -> et_pb_foldBottom` |
+| 400 px | yes | 5 | no | `0:div:animation-name: et_pb_fold -> et_pb_foldBottom` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction bottom for style fold, over a base of fold with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-fold-left
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | no | `0:div:animation-name: et_pb_fold -> et_pb_foldLeft` |
+| 900 px | yes | 5 | no | `0:div:animation-name: et_pb_fold -> et_pb_foldLeft` |
+| 400 px | yes | 5 | no | `0:div:animation-name: et_pb_fold -> et_pb_foldLeft` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction left for style fold, over a base of fold with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-fold-right
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | no | `0:div:animation-name: et_pb_fold -> et_pb_foldRight` |
+| 900 px | yes | 3 | no | `0:div:animation-name: et_pb_fold -> et_pb_foldRight` |
+| 400 px | yes | 3 | no | `0:div:animation-name: et_pb_fold -> et_pb_foldRight` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction right for style fold, over a base of fold with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-roll-top
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | no | `0:div:animation-name: et_pb_roll -> et_pb_rollTop` |
+| 900 px | yes | 3 | no | `0:div:animation-name: et_pb_roll -> et_pb_rollTop` |
+| 400 px | yes | 3 | no | `0:div:animation-name: et_pb_roll -> et_pb_rollTop` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction top for style roll, over a base of roll with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-roll-bottom
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | no | `0:div:animation-name: et_pb_roll -> et_pb_rollBottom` |
+| 900 px | yes | 4 | no | `0:div:animation-name: et_pb_roll -> et_pb_rollBottom` |
+| 400 px | yes | 4 | no | `0:div:animation-name: et_pb_roll -> et_pb_rollBottom` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction bottom for style roll, over a base of roll with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-roll-left
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | no | `0:div:animation-name: et_pb_roll -> et_pb_rollLeft` |
+| 900 px | yes | 3 | no | `0:div:animation-name: et_pb_roll -> et_pb_rollLeft` |
+| 400 px | yes | 3 | no | `0:div:animation-name: et_pb_roll -> et_pb_rollLeft` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction left for style roll, over a base of roll with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-roll-right
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | no | `0:div:animation-name: et_pb_roll -> et_pb_rollRight` |
+| 900 px | yes | 4 | no | `0:div:animation-name: et_pb_roll -> et_pb_rollRight` |
+| 400 px | yes | 4 | no | `0:div:animation-name: et_pb_roll -> et_pb_rollRight` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction right for style roll, over a base of roll with the default direction. Direction values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:364-370 (center, top, bottom, left, right; anything else becomes center); it is appended to the style name (:335-345). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-dir-slide-center-from-left
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.direction` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | no | `0:div:animation-name: et_pb_slideLeft -> et_pb_slide` |
+| 900 px | yes | 4 | no | `0:div:animation-name: et_pb_slideLeft -> et_pb_slide` |
+| 400 px | yes | 4 | no | `0:div:animation-name: et_pb_slideLeft -> et_pb_slide` |
+
+Properties that changed (any width): `animation-name`, `attr:class`, `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Direction center set over a base of slide + left. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-duration-2000
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.duration` = `"2000ms"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:animation-duration: 1s -> 2s` |
+| 900 px | yes | 2 | no | `0:div:animation-duration: 1s -> 2s` |
+| 400 px | yes | 2 | no | `0:div:animation-duration: 1s -> 2s` |
+
+Properties that changed (any width): `animation-duration`, `attr:style`.
+
+Phone overflow at 400 px: no.
+
+Note: Duration 2000ms over the default 1000ms. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `module.decoration.animation.{bp}.value.duration`
+
+## mo-an-delay-8000
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.delay` = `"8000ms"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:animation-delay: 5s -> 8s` |
+| 900 px | yes | 2 | no | `0:div:animation-delay: 5s -> 8s` |
+| 400 px | yes | 2 | no | `0:div:animation-delay: 5s -> 8s` |
+
+Properties that changed (any width): `animation-delay`, `attr:style`.
+
+Phone overflow at 400 px: no.
+
+Note: Delay 8000ms over the 5000ms probe base. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `module.decoration.animation.{bp}.value.delay`
+
+## mo-an-repeat-loop
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.repeat` = `"loop"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:animation-iteration-count: 1 -> infinite` |
+| 900 px | yes | 2 | no | `0:div:animation-iteration-count: 1 -> infinite` |
+| 400 px | yes | 2 | no | `0:div:animation-iteration-count: 1 -> infinite` |
+
+Properties that changed (any width): `animation-iteration-count`, `attr:class`.
+
+Phone overflow at 400 px: no.
+
+Note: Repeat loop over once (the default). Values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:489-492. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `module.decoration.animation.{bp}.value.repeat`
+
+## mo-an-curve-ease
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.speedCurve` = `"ease"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:animation-timing-function: linear -> ease` |
+| 900 px | yes | 2 | no | `0:div:animation-timing-function: linear -> ease` |
+| 400 px | yes | 2 | no | `0:div:animation-timing-function: linear -> ease` |
+
+Properties that changed (any width): `animation-timing-function`, `attr:style`.
+
+Phone overflow at 400 px: no.
+
+Note: Speed curve ease over a base of linear. Values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:458-464 (ease-in-out, ease, ease-in, ease-out, linear). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `module.decoration.animation.{bp}.value.speedCurve`
+
+## mo-an-curve-ease-in
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.speedCurve` = `"ease-in"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:animation-timing-function: ease-in-out -> ease-in` |
+| 900 px | yes | 2 | no | `0:div:animation-timing-function: ease-in-out -> ease-in` |
+| 400 px | yes | 2 | no | `0:div:animation-timing-function: ease-in-out -> ease-in` |
+
+Properties that changed (any width): `animation-timing-function`, `attr:style`.
+
+Phone overflow at 400 px: no.
+
+Note: Speed curve ease-in over the default ease-in-out. Values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:458-464 (ease-in-out, ease, ease-in, ease-out, linear). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-curve-ease-out
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.speedCurve` = `"ease-out"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:animation-timing-function: ease-in-out -> ease-out` |
+| 900 px | yes | 2 | no | `0:div:animation-timing-function: ease-in-out -> ease-out` |
+| 400 px | yes | 2 | no | `0:div:animation-timing-function: ease-in-out -> ease-out` |
+
+Properties that changed (any width): `animation-timing-function`, `attr:style`.
+
+Phone overflow at 400 px: no.
+
+Note: Speed curve ease-out over the default ease-in-out. Values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:458-464 (ease-in-out, ease, ease-in, ease-out, linear). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-curve-linear
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.speedCurve` = `"linear"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:animation-timing-function: ease-in-out -> linear` |
+| 900 px | yes | 2 | no | `0:div:animation-timing-function: ease-in-out -> linear` |
+| 400 px | yes | 2 | no | `0:div:animation-timing-function: ease-in-out -> linear` |
+
+Properties that changed (any width): `animation-timing-function`, `attr:style`.
+
+Phone overflow at 400 px: no.
+
+Note: Speed curve linear over the default ease-in-out. Values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:458-464 (ease-in-out, ease, ease-in, ease-out, linear). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-curve-ease-in-out
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.speedCurve` = `"ease-in-out"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:animation-timing-function: linear -> ease-in-out` |
+| 900 px | yes | 2 | no | `0:div:animation-timing-function: linear -> ease-in-out` |
+| 400 px | yes | 2 | no | `0:div:animation-timing-function: linear -> ease-in-out` |
+
+Properties that changed (any width): `animation-timing-function`, `attr:style`.
+
+Phone overflow at 400 px: no.
+
+Note: Speed curve ease-in-out over a base of linear. Values: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:458-464 (ease-in-out, ease, ease-in, ease-out, linear). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-starting-opacity-40
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.startingOpacity` = `"40%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:opacity: 0 -> 0.4` |
+| 900 px | yes | 2 | no | `0:div:opacity: 0 -> 0.4` |
+| 400 px | yes | 2 | no | `0:div:opacity: 0 -> 0.4` |
+
+Properties that changed (any width): `attr:style`, `opacity`.
+
+Phone overflow at 400 px: no.
+
+Note: Starting opacity 40% over the default 0%. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `module.decoration.animation.{bp}.value.startingOpacity`
+
+## mo-an-intensity-slide
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.intensity.slide` = `"20%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:transform: matrix(1, 0, 0, 1, -1024, 0) -> matrix(1, 0, 0, 1, -409.6, 0)` |
+| 900 px | yes | 2 | no | `0:div:transform: matrix(1, 0, 0, 1, -720, 0) -> matrix(1, 0, 0, 1, -288, 0)` |
+| 400 px | yes | 2 | no | `0:div:transform: matrix(1, 0, 0, 1, -320, 0) -> matrix(1, 0, 0, 1, -128, 0)` |
+
+Properties that changed (any width): `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Intensity of style slide 20% over the default 50%. Per-style intensity: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:403-436 (slide, zoom, flip, fold, roll have their own; fade and bounce are fixed at 50%). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `module.decoration.animation.{bp}.value.intensity.slide`
+
+## mo-an-intensity-zoom
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.intensity.zoom` = `"20%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:transform: matrix3d(0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1) -> matrix3d(0.8, 0, 0, 0, 0, 0.8, 0, 0, 0, 0, 0.8, 0, 0, 0, 0, 1)` |
+| 900 px | yes | 2 | no | `0:div:transform: matrix3d(0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1) -> matrix3d(0.8, 0, 0, 0, 0, 0.8, 0, 0, 0, 0, 0.8, 0, 0, 0, 0, 1)` |
+| 400 px | yes | 2 | no | `0:div:transform: matrix3d(0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1) -> matrix3d(0.8, 0, 0, 0, 0, 0.8, 0, 0, 0, 0, 0.8, 0, 0, 0, 0, 1)` |
+
+Properties that changed (any width): `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Intensity of style zoom 20% over the default 50%. Per-style intensity: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:403-436 (slide, zoom, flip, fold, roll have their own; fade and bounce are fixed at 50%). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `module.decoration.animation.{bp}.value.intensity.zoom`
+
+## mo-an-intensity-flip
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.intensity.flip` = `"20%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:transform: matrix3d(1, 0, 0, 0, 0, 0.707107, 0.707107, -0.000353553, 0, -0.707107, 0.707107, -0.000353553, 0, 0, 0, 1) -> matrix3d(1, 0, 0, 0, 0, 0.951057, 0.309017, -0.000154508, 0, -0.309017, 0.951057, -0.000475528, 0, 0, 0, 1)` |
+| 900 px | yes | 2 | no | `0:div:transform: matrix3d(1, 0, 0, 0, 0, 0.707107, 0.707107, -0.000353553, 0, -0.707107, 0.707107, -0.000353553, 0, 0, 0, 1) -> matrix3d(1, 0, 0, 0, 0, 0.951057, 0.309017, -0.000154508, 0, -0.309017, 0.951057, -0.000475528, 0, 0, 0, 1)` |
+| 400 px | yes | 2 | no | `0:div:transform: matrix3d(1, 0, 0, 0, 0, 0.707107, 0.707107, -0.000353553, 0, -0.707107, 0.707107, -0.000353553, 0, 0, 0, 1) -> matrix3d(1, 0, 0, 0, 0, 0.951057, 0.309017, -0.000154508, 0, -0.309017, 0.951057, -0.000475528, 0, 0, 0, 1)` |
+
+Properties that changed (any width): `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Intensity of style flip 20% over the default 50%. Per-style intensity: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:403-436 (slide, zoom, flip, fold, roll have their own; fade and bounce are fixed at 50%). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `module.decoration.animation.{bp}.value.intensity.flip`
+
+## mo-an-intensity-fold
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.intensity.fold` = `"20%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:transform: matrix3d(0.707107, 0, 0.707107, -0.000353553, 0, 1, 0, 0, -0.707107, 0, 0.707107, -0.000353553, 0, 0, 0, 1) -> matrix3d(0.951057, 0, 0.309017, -0.000154508, 0, 1, 0, 0, -0.309017, 0, 0.951057, -0.000475528, 0, 0, 0, 1)` |
+| 900 px | yes | 2 | no | `0:div:transform: matrix3d(0.707107, 0, 0.707107, -0.000353553, 0, 1, 0, 0, -0.707107, 0, 0.707107, -0.000353553, 0, 0, 0, 1) -> matrix3d(0.951057, 0, 0.309017, -0.000154508, 0, 1, 0, 0, -0.309017, 0, 0.951057, -0.000475528, 0, 0, 0, 1)` |
+| 400 px | yes | 2 | no | `0:div:transform: matrix3d(0.707107, 0, 0.707107, -0.000353553, 0, 1, 0, 0, -0.707107, 0, 0.707107, -0.000353553, 0, 0, 0, 1) -> matrix3d(0.951057, 0, 0.309017, -0.000154508, 0, 1, 0, 0, -0.309017, 0, 0.951057, -0.000475528, 0, 0, 0, 1)` |
+
+Properties that changed (any width): `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Intensity of style fold 20% over the default 50%. Per-style intensity: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:403-436 (slide, zoom, flip, fold, roll have their own; fade and bounce are fixed at 50%). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `module.decoration.animation.{bp}.value.intensity.fold`
+
+## mo-an-intensity-roll
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.intensity.roll` = `"20%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | no | `0:div:transform: matrix(-1, 0, 0, -1, 0, 0) -> matrix(0.309017, 0.951057, -0.951057, 0.309017, 0, 0)` |
+| 900 px | yes | 2 | no | `0:div:transform: matrix(-1, 0, 0, -1, 0, 0) -> matrix(0.309017, 0.951057, -0.951057, 0.309017, 0, 0)` |
+| 400 px | yes | 2 | no | `0:div:transform: matrix(-1, 0, 0, -1, 0, 0) -> matrix(0.309017, 0.951057, -0.951057, 0.309017, 0, 0)` |
+
+Properties that changed (any width): `attr:style`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Intensity of style roll 20% over the default 50%. Per-style intensity: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:403-436 (slide, zoom, flip, fold, roll have their own; fade and bounce are fixed at 50%). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `module.decoration.animation.{bp}.value.intensity.roll`
+
+## mo-an-tablet-duration
+
+Block: `heading`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.tablet.value.duration` = `"2500ms"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | no | 0 | no |  |
+| 900 px | yes | 2 | no | `0:div:animation-duration: 1s -> 2.5s` |
+| 400 px | no | 0 | no |  |
+
+Properties that changed (any width): `animation-duration`, `attr:style`.
+
+Phone overflow at 400 px: no.
+
+Note: A tablet override of the duration (generate_data keys tablet/phone values separately, Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:110-157): should change 900 and 400 px only. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-host-section
+
+Block: `section`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"fade"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:div:animation-duration: 0s -> 1s` |
+| 900 px | yes | 7 | no | `0:div:animation-duration: 0s -> 1s` |
+| 400 px | yes | 7 | no | `0:div:animation-duration: 0s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation fade on a section (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-host-row
+
+Block: `row`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"fade"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:div:animation-duration: 0s -> 1s` |
+| 900 px | yes | 7 | no | `0:div:animation-duration: 0s -> 1s` |
+| 400 px | yes | 7 | no | `0:div:animation-duration: 0s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation fade on a row (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-host-column
+
+Block: `column`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"fade"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:div:animation-duration: 0s -> 1s` |
+| 900 px | yes | 7 | no | `0:div:animation-duration: 0s -> 1s` |
+| 400 px | yes | 7 | no | `0:div:animation-duration: 0s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation fade on a column (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-host-group
+
+Block: `group`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"fade"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 900 px | yes | 7 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 400 px | yes | 7 | no | `0:div:animation-duration: 0.2s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation fade on a group (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-host-image
+
+Block: `image`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"fade"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 900 px | yes | 7 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 400 px | yes | 7 | no | `0:div:animation-duration: 0.2s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation fade on a image (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-host-button
+
+Block: `button`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"fade"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:a:animation-duration: 0.2s -> 1s` |
+| 900 px | yes | 7 | no | `0:a:animation-duration: 0.2s -> 1s` |
+| 400 px | yes | 7 | no | `0:a:animation-duration: 0.2s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation fade on a button (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-host-blurb
+
+Block: `blurb`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `module.decoration.animation.desktop.value.style` = `"fade"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 900 px | yes | 7 | no | `0:div:animation-duration: 0.2s -> 1s` |
+| 400 px | yes | 7 | no | `0:div:animation-duration: 0.2s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation fade on a blurb (module.decoration.animation). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-an-host-button-own
+
+Block: `button`, also comparing the element attributes `class`, `style`. Set on top of the base block:
+
+- `button.decoration.animation.desktop.value.style` = `"fade"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:a:animation-duration: 0.2s -> 1s` |
+| 900 px | yes | 7 | no | `0:a:animation-duration: 0.2s -> 1s` |
+| 400 px | yes | 7 | no | `0:a:animation-duration: 0.2s -> 1s` |
+
+Properties that changed (any width): `animation-duration`, `animation-fill-mode`, `animation-name`, `animation-timing-function`, `attr:class`, `attr:style`, `opacity`.
+
+Phone overflow at 400 px: no.
+
+Note: Entrance animation set on the button element path (button.json lists animation under `button`). Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+
+Registered paths added:
+
+- `button.decoration.animation.{bp}.value.style`
+
+## mo-sc-verticalMotion
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.25 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.desktop.value.verticalMotion.enable` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -196)` |
+| 900 px | yes | 5 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -202)` |
+| 400 px | yes | 5 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -199)` |
+
+Properties that changed (any width): `rect:top`, `transform`, `transition-duration`, `transition-property`, `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Scroll effect verticalMotion switched on, section centre at 0.25 of the viewport height. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-sc-horizontalMotion
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.25 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.desktop.value.horizontalMotion.enable` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, -196, 0)` |
+| 900 px | yes | 5 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, -202, 0)` |
+| 400 px | yes | 5 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, -199, 0)` |
+
+Properties that changed (any width): `rect:left`, `transform`, `transition-duration`, `transition-property`, `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Scroll effect horizontalMotion switched on, section centre at 0.25 of the viewport height. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added:
+
+- `module.decoration.scroll.{bp}.value.horizontalMotion.enable`
+
+## mo-sc-fade
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.9 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.desktop.value.fade.enable` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `0:div:opacity: 1 -> 0.191` |
+| 900 px | yes | 4 | yes | `0:div:opacity: 1 -> 0.204` |
+| 400 px | yes | 4 | yes | `0:div:opacity: 1 -> 0.198` |
+
+Properties that changed (any width): `opacity`, `transition-duration`, `transition-property`, `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Scroll effect fade switched on, section centre at 0.9 of the viewport height. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-sc-scaling
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.9 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.desktop.value.scaling.enable` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:transform: none -> matrix3d(0.757, 0, 0, 0, 0, 0.757, 0, 0, 0, 0, 0.757, 0, 0, 0, 0, 1)` |
+| 900 px | yes | 8 | yes | `0:div:transform: none -> matrix3d(0.761, 0, 0, 0, 0, 0.761, 0, 0, 0, 0, 0.761, 0, 0, 0, 0, 1)` |
+| 400 px | yes | 8 | yes | `0:div:transform: none -> matrix3d(0.759, 0, 0, 0, 0, 0.759, 0, 0, 0, 0, 0.759, 0, 0, 0, 0, 1)` |
+
+Properties that changed (any width): `rect:height`, `rect:left`, `rect:top`, `rect:width`, `transform`, `transition-duration`, `transition-property`, `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Scroll effect scaling switched on, section centre at 0.9 of the viewport height. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-sc-rotating
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.9 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.desktop.value.rotating.enable` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:transform: none -> matrix(0.295708, 0.955278, -0.955278, 0.295708, 0, 0)` |
+| 900 px | yes | 8 | yes | `0:div:transform: none -> matrix(0.315649, 0.948876, -0.948876, 0.315649, 0, 0)` |
+| 400 px | yes | 8 | yes | `0:div:transform: none -> matrix(0.305695, 0.952129, -0.952129, 0.305695, 0, 0)` |
+
+Properties that changed (any width): `rect:height`, `rect:left`, `rect:top`, `rect:width`, `transform`, `transition-duration`, `transition-property`, `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Scroll effect rotating switched on, section centre at 0.9 of the viewport height. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added:
+
+- `module.decoration.scroll.{bp}.value.rotating.enable`
+
+## mo-sc-blur
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.9 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.desktop.value.blur.enable` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `0:div:filter: none -> blur(8px)` |
+| 900 px | yes | 4 | yes | `0:div:filter: none -> blur(7px)` |
+| 400 px | yes | 4 | yes | `0:div:filter: none -> blur(8px)` |
+
+Properties that changed (any width): `filter`, `transition-duration`, `transition-property`, `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Scroll effect blur switched on, section centre at 0.9 of the viewport height. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-sc-vertical-offset-start
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.9 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.desktop.value.verticalMotion.offset.start` = `"20"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:transform: matrix(1, 0, 0, 1, 0, 324) -> matrix(1, 0, 0, 1, 0, 1618)` |
+| 900 px | yes | 2 | yes | `0:div:transform: matrix(1, 0, 0, 1, 0, 318) -> matrix(1, 0, 0, 1, 0, 1591)` |
+| 400 px | yes | 2 | yes | `0:div:transform: matrix(1, 0, 0, 1, 0, 321) -> matrix(1, 0, 0, 1, 0, 1604)` |
+
+Properties that changed (any width): `rect:top`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Vertical motion offset start 20 over the default 4 (effect on in the base). Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-sc-vertical-offset-end
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.05 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.desktop.value.verticalMotion.offset.end` = `"-20"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:transform: matrix(1, 0, 0, 1, 0, -356) -> matrix(1, 0, 0, 1, 0, -1782)` |
+| 900 px | yes | 2 | yes | `0:div:transform: matrix(1, 0, 0, 1, 0, -362) -> matrix(1, 0, 0, 1, 0, -1809)` |
+| 400 px | yes | 2 | yes | `0:div:transform: matrix(1, 0, 0, 1, 0, -359) -> matrix(1, 0, 0, 1, 0, -1796)` |
+
+Properties that changed (any width): `rect:top`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Vertical motion offset end -20 over the default -4, section centre near the top of the viewport. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-sc-vertical-viewport-top
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.5 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.desktop.value.verticalMotion.viewport.top` = `"60"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 2 | yes | `0:div:transform: matrix(1, 0, 0, 1, 0, -2) -> matrix(1, 0, 0, 1, 0, -9)` |
+| 400 px | yes | 0 | yes |  |
+
+Properties that changed (any width): `rect:top`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Vertical motion viewport top 60 over the default 100 (effect on in the base). Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-sc-trigger-top
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.5 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.desktop.value.motionTriggerStart` = `"top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:transform: matrix(1, 0, 0, 1, 0, 4) -> matrix(1, 0, 0, 1, 0, -64)` |
+| 900 px | yes | 2 | yes | `0:div:transform: matrix(1, 0, 0, 1, 0, -2) -> matrix(1, 0, 0, 1, 0, -69)` |
+| 400 px | yes | 2 | yes | `0:div:transform: matrix(1, 0, 0, 1, 0, 1) -> matrix(1, 0, 0, 1, 0, -67)` |
+
+Properties that changed (any width): `rect:top`, `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Motion trigger `top` over the default `middle` (effect on in the base; values top/middle/bottom: Divi 5.15.1 includes/builder/module/field/Scroll.php:81-91). Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-sc-fade-offset-start
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.95 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.desktop.value.fade.offset.start` = `"50"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:opacity: 0.091 -> 0.546` |
+| 900 px | yes | 1 | yes | `0:div:opacity: 0.104 -> 0.552` |
+| 400 px | yes | 1 | yes | `0:div:opacity: 0.098 -> 0.549` |
+
+Properties that changed (any width): `opacity`.
+
+Phone overflow at 400 px: no.
+
+Note: Fade offset start 50 over the default 0 (effect on in the base). Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-sc-two-effects
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.9 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.desktop.value.fade.enable` = `"on"`
+- `module.decoration.scroll.desktop.value.verticalMotion.enable` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:opacity: 1 -> 0.191` |
+| 900 px | yes | 8 | yes | `0:div:opacity: 1 -> 0.204` |
+| 400 px | yes | 8 | yes | `0:div:opacity: 1 -> 0.198` |
+
+Properties that changed (any width): `opacity`, `rect:top`, `transform`, `transition-behavior`, `transition-delay`, `transition-duration`, `transition-property`, `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Two effects at once (fade and verticalMotion, the declared pair). Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-sc-phone-off
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 0.9 x the viewport height). Set on top of the base block:
+
+- `module.decoration.scroll.phone.value.verticalMotion.enable` = `"off"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | no | 0 | no |  |
+| 900 px | no | 0 | no |  |
+| 400 px | yes | 5 | yes | `0:div:transform: matrix(1, 0, 0, 1, 0, 321) -> none` |
+
+Properties that changed (any width): `rect:top`, `transform`, `transition-duration`, `transition-property`, `transition-timing-function`.
+
+Phone overflow at 400 px: no.
+
+Note: Vertical motion on for desktop, switched off for phones (a phone override): should change 400 px only. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-st-top
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at -0.5 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.desktop.value.position` = `"top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:div:bottom: 0px -> 716px` |
+| 900 px | yes | 7 | no | `0:div:bottom: 0px -> 716px` |
+| 400 px | yes | 5 | no | `0:div:bottom: 0px -> 748px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `position`, `rect:top`, `top`, `z-index`.
+
+Phone overflow at 400 px: no.
+
+Note: Sticky position top, section scrolled out of the top of the viewport. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically.
+
+Registered paths added:
+
+- `module.decoration.sticky.{bp}.value.position`
+
+## mo-st-bottom
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 1.5 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.desktop.value.position` = `"bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:div:bottom: 0px -> 371px` |
+| 900 px | yes | 7 | no | `0:div:bottom: 0px -> 425px` |
+| 400 px | yes | 7 | no | `0:div:bottom: 0px -> 443px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `position`, `rect:top`, `top`, `z-index`.
+
+Phone overflow at 400 px: no.
+
+Note: Sticky position bottom, section below the viewport. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-st-topBottom
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at -0.5 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.desktop.value.position` = `"topBottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:div:bottom: 0px -> 371px` |
+| 900 px | yes | 7 | no | `0:div:bottom: 0px -> 425px` |
+| 400 px | yes | 7 | no | `0:div:bottom: 0px -> 443px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `position`, `rect:top`, `top`, `z-index`.
+
+Phone overflow at 400 px: no.
+
+Note: Sticky position topBottom, section scrolled out of the top. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-st-topBottom-below
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 1.5 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.desktop.value.position` = `"topBottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | no | `0:div:bottom: 0px -> 371px` |
+| 900 px | yes | 7 | no | `0:div:bottom: 0px -> 425px` |
+| 400 px | yes | 7 | no | `0:div:bottom: 0px -> 443px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `position`, `rect:top`, `top`, `z-index`.
+
+Phone overflow at 400 px: no.
+
+Note: Sticky position topBottom, section below the viewport. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-st-offset-top-80
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at -0.5 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.desktop.value.offset.top` = `"80px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | no | `0:div:bottom: 716px -> 636px` |
+| 900 px | yes | 5 | no | `0:div:bottom: 716px -> 636px` |
+| 400 px | yes | 5 | no | `0:div:bottom: 748px -> 668px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `rect:top`, `top`.
+
+Phone overflow at 400 px: no.
+
+Note: Sticky top offset 80px over a sticky `top` base (default offset 0px). Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically.
+
+Registered paths added:
+
+- `module.decoration.sticky.{bp}.value.offset.top`
+
+## mo-st-offset-bottom-60
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at 1.5 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.desktop.value.offset.bottom` = `"60px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | no | `0:div:bottom: 371px -> 431px` |
+| 900 px | yes | 5 | no | `0:div:bottom: 425px -> 485px` |
+| 400 px | yes | 5 | no | `0:div:bottom: 443px -> 503px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `rect:top`, `top`.
+
+Phone overflow at 400 px: no.
+
+Note: Sticky bottom offset 60px over a sticky `bottom` base. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically.
+
+Registered paths added:
+
+- `module.decoration.sticky.{bp}.value.offset.bottom`
+
+## mo-st-phone-none
+
+Block: `section`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, measured in the `scroll` state (element centre at -0.5 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.phone.value.position` = `"none"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | no | 0 | no |  |
+| 900 px | no | 0 | no |  |
+| 400 px | yes | 5 | no | `0:div:bottom: 748px -> 0px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `position`, `rect:top`, `z-index`.
+
+Phone overflow at 400 px: no.
+
+Note: Sticky top on desktop, switched off for phones (phone position none): should change 400 px only. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (motion)
+
+Candidates from `motion.json` that were measured and are not taught, with the reason:
+
+- `mo-tr-needs-a-state`: no effect (dead). PRECONDITION: the same duration on a group with NO hover state (only a plain background). Source says no transition properties are emitted without a state, so this is expected to be DEAD. Transition properties exist only for a state the module has (hover here): Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transition/TransitionTraits/StyleDeclarationTrait.php:68 get_transition_properties, empty list returns '' at :100-102; defaults duration 300ms (:69), delay 0ms (:70), speedCurve names easeInOut/ease/easeIn/easeOut/linear mapped to the CSS timing functions at :80-98 (anything else falls back to ease).
+- `mo-hv-button-shadow`: no effect (dead). Button box shadow preset3 on hover (button.json lists boxShadow under the button element). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+- `mo-hv-button-scale`: no effect (dead). Button transform scale 108% on hover (button.json lists transform under the button element). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+- `mo-an-dir-fade-needs-no-direction`: no effect (dead). PRECONDITION: a direction on style fade. The options for fade have no direction (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:241-250), so this is expected to be DEAD. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+- `mo-an-intensity-fade-fixed`: no effect (dead). PRECONDITION: an intensity (slide) on style fade. Source: fade and bounce ignore intensity (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php:421-424), so this is expected to be DEAD. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+- `mo-an-phone-style-none`: no effect (dead). A phone override of the style to none over a desktop fade: should change 400 px only. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style.
+- `mo-sc-offset-needs-enable`: no effect (dead). PRECONDITION: an offset without the effect switched on. Expected DEAD. Scroll effects are applied by Divi's script on scroll: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Scroll/ScrollEffectsUtils.php:37-124 defaults (each effect has enable, viewport top/start/end/bottom, offset start/mid/end; motionTriggerStart middle), resolver map :136-141 (blur=blur, fade=opacity, rotating=rotate, scaling=scale, horizontalMotion=translateX, verticalMotion=translateY). Measured by scrolling the section's centre to a fixed viewport position (the control page is scrolled identically) and comparing computed styles and the bounding rectangle.
+- `mo-st-offset-needs-position`: no effect (dead). PRECONDITION: a top offset without a sticky position. Expected DEAD. Sticky is applied by Divi's script on scroll: valid positions top, bottom, topBottom (Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sticky/StickyUtils.php:507-515); offsets and limits are separate settings (Sticky.php field: top offset hidden for position bottom :138, bottom offset hidden for top :157). Measured by scrolling so that the section's natural place is off screen (scrollAt -0.5: above) or below it (1.5) and comparing computed position and the bounding rectangle with the control scrolled identically.
+
+Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-motion.json`):
+
+- Interactions (`module.decoration.interactions`: click, hover or scroll triggers that start an effect on another element): not built, so not taught. Divi 5.15.1 reads the saved list in includes/builder-5/server/Packages/Module/Options/Interactions/InteractionsScriptData.php:128-160 (each entry needs an id, a triggerClass, a trigger, an effect and a target class, which the builder generates), but the lists of valid triggers and effects live only in the builder's JavaScript, no real export of an interaction is held, and a hand-written entry could not be checked against a source or an export. Never probed
+- Hover on a row, column, section, image, blurb or any module other than the group, heading and button measured here: not rendered: hover was measured on `divi/group` (module-level background, border, box shadow, transform, filters), on `divi/heading` (title text colour) and on `divi/button` (button background, text and border colour, plus the module-level box shadow and scale). Other hosts use the same option groups (module.json lists them) but were not rendered
+- Hover box shadow and hover transform set through the button ELEMENT paths (`button.decoration.boxShadow`, `button.decoration.transform`): dead: candidates mo-hv-button-shadow and mo-hv-button-scale changed nothing at any width although the button's module.json lists those groups under `button`. The module-level paths (`module.decoration.boxShadow`, `module.decoration.transform`) rendered and are the ones taught
+- Hover states at tablet and phone, and the hover of any setting not listed in the topic (spacing hover, font size or weight hover, text shadow, icon, gradient or image background hover, filters other than brightness and saturate, box shadow `spread`/`horizontal`/`position` on their own, transform skew and origin on hover): not rendered: the probe measured the desktop hover state only. Touch screens have no hover, so a hover-only effect is not a phone design
+- Transition on the sticky state, `advancedProperties`, and transition settings other than duration, delay and speedCurve: not rendered: TransitionTraits/StyleDeclarationTrait.php:56 reads `advancedProperties` and the sticky state, but only the hover state was probed
+- Entrance animation: elements below the fold, and the moment it starts: not watched: the animated element was at the top of the page. Divi starts the animation when the element comes into view (source: AnimationUtils.php generate_data; the script lives in the builder bundle script-library-animation.js); that was not measured
+- Entrance animation on a phone switched off through a phone `style` of none: dead: candidate mo-an-phone-style-none changed nothing at 400 px. Divi decides whether an element animates from the DESKTOP style (AnimationUtils.php:571-574); the topic does not teach a per-device off switch
+- Entrance animation `direction` on fade, `intensity` on fade and bounce: dead, as the source says: fade has no direction and fade and bounce have a fixed intensity (AnimationUtils.php:241-262, 421-424); candidates mo-an-dir-fade-needs-no-direction and mo-an-intensity-fade-fixed measured nothing
+- How an entrance animation LOOKS, its smoothness, and the order of several animated elements: never claimed. The probe holds the element at its first frame (a long delay in the control and the candidate) and compares the classes, the inline animation settings and the computed styles; it did not watch a motion play
+- Animation values outside the probed ones: durations and delays other than 1000/2000/3000/4000/5000/8000ms, intensity percentages other than 20%, starting opacity other than 40%: not rendered: one non-default value per setting was measured. The defaults are Divi's own (AnimationUtils.php:383-385, 440-443, 473)
+- Scroll effects: `viewport` and `offset` on the effects other than the ones measured, `motionTriggerStart` bottom, and units: not rendered: only the vertical-motion offset start/end, the vertical-motion viewport top, the trigger `top` and the fade offset start were measured, with one value each. The defaults are Divi's own (ScrollEffectsUtils.php:37-124)
+- Grid motion (`gridMotion`): not offered: it is commented out in the preset map (ScrollPresetAttrsMap.php:35-39) and acts on child modules of a parent with `gridMotion.enable`; never probed
+- Scroll effects on a row, column or module, and the tablet override of a scroll effect: not rendered: every scroll candidate was a `divi/section`. Only a phone override (`enable: off` on phones) was measured
+- Sticky on a row, column or module; `limit.top`, `limit.bottom`, `offset.surrounding` and `transition`: not rendered: every sticky candidate was a `divi/section` (the probe's neighbour sections exist only for sections). The limit values (none, body, section, row, column) and the toggles are Divi's own field definition (includes/builder/module/field/Sticky.php:164-210, 244-269) and are not taught. The default guide's sticky text is left as it is
+- Sticky or scroll effects inside a Theme Builder header or footer: not measured: the probe renders ordinary sections in the page content
+- Respecting a visitor's reduced-motion setting: no claim: the 5.15.1 theme files (CSS, JavaScript and PHP, including the animation, scroll-effect and sticky code) were searched for `prefers-reduced-motion` and the only hits are the builder's AI app, onboarding and a WordPress library, not Divi's animation, scroll or sticky code. The plugin cannot add CSS, so the topic only advises keeping motion gentle
+- Motion from add-on plugins and the `divi_module_options_animation_data` filter: excluded: only what Divi ships was probed

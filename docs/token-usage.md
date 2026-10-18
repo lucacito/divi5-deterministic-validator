@@ -6,7 +6,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 
 | What | Detail | Bytes | Approx. tokens |
 | --- | --- | ---: | ---: |
-| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 20,779 | 5,195 |
+| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 20,801 | 5,201 |
 | Reading a page (smallest) | the page's layout content (get_page_layout adds a little wrapper), from page-17-variable-heading.json | 1,152 | 288 |
 | Reading a page's outline (smallest) | get_page_layout with view "outline" on the same page: 5 blocks, each with path, name, size and the start of its text | 358 | 90 |
 | Reading a page (median) | the page's layout content (get_page_layout adds a little wrapper), from page-45-layout-3.json | 49,842 | 12,461 |
@@ -25,6 +25,8 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 1,931 | 483 |
 | The style guide, topic backgrounds | get_style_guide with topic "backgrounds", only when asked for | 8,881 | 2,221 |
 | The style guide, topic dividers | get_style_guide with topic "dividers", only when asked for | 8,767 | 2,192 |
+| The style guide, topic motion | get_style_guide with topic "motion", only when asked for | 8,172 | 2,043 |
+| The style guide, topic hover-states | get_style_guide with topic "hover-states", only when asked for | 5,453 | 1,364 |
 | The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 2,103 | 526 |
 | The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 254 | 64 |
 | A served recipe (hero-cta, default look) | get_section_recipes with name "hero-cta" and no design_language | 2,835 | 709 |

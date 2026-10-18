@@ -1,0 +1,70 @@
+[
+  {
+    "item": "Interactions (`module.decoration.interactions`: click, hover or scroll triggers that start an effect on another element)",
+    "reason": "not built, so not taught. Divi 5.15.1 reads the saved list in includes/builder-5/server/Packages/Module/Options/Interactions/InteractionsScriptData.php:128-160 (each entry needs an id, a triggerClass, a trigger, an effect and a target class, which the builder generates), but the lists of valid triggers and effects live only in the builder's JavaScript, no real export of an interaction is held, and a hand-written entry could not be checked against a source or an export. Never probed"
+  },
+  {
+    "item": "Hover on a row, column, section, image, blurb or any module other than the group, heading and button measured here",
+    "reason": "not rendered: hover was measured on `divi/group` (module-level background, border, box shadow, transform, filters), on `divi/heading` (title text colour) and on `divi/button` (button background, text and border colour, plus the module-level box shadow and scale). Other hosts use the same option groups (module.json lists them) but were not rendered"
+  },
+  {
+    "item": "Hover box shadow and hover transform set through the button ELEMENT paths (`button.decoration.boxShadow`, `button.decoration.transform`)",
+    "reason": "dead: candidates mo-hv-button-shadow and mo-hv-button-scale changed nothing at any width although the button's module.json lists those groups under `button`. The module-level paths (`module.decoration.boxShadow`, `module.decoration.transform`) rendered and are the ones taught"
+  },
+  {
+    "item": "Hover states at tablet and phone, and the hover of any setting not listed in the topic (spacing hover, font size or weight hover, text shadow, icon, gradient or image background hover, filters other than brightness and saturate, box shadow `spread`/`horizontal`/`position` on their own, transform skew and origin on hover)",
+    "reason": "not rendered: the probe measured the desktop hover state only. Touch screens have no hover, so a hover-only effect is not a phone design"
+  },
+  {
+    "item": "Transition on the sticky state, `advancedProperties`, and transition settings other than duration, delay and speedCurve",
+    "reason": "not rendered: TransitionTraits/StyleDeclarationTrait.php:56 reads `advancedProperties` and the sticky state, but only the hover state was probed"
+  },
+  {
+    "item": "Entrance animation: elements below the fold, and the moment it starts",
+    "reason": "not watched: the animated element was at the top of the page. Divi starts the animation when the element comes into view (source: AnimationUtils.php generate_data; the script lives in the builder bundle script-library-animation.js); that was not measured"
+  },
+  {
+    "item": "Entrance animation on a phone switched off through a phone `style` of none",
+    "reason": "dead: candidate mo-an-phone-style-none changed nothing at 400 px. Divi decides whether an element animates from the DESKTOP style (AnimationUtils.php:571-574); the topic does not teach a per-device off switch"
+  },
+  {
+    "item": "Entrance animation `direction` on fade, `intensity` on fade and bounce",
+    "reason": "dead, as the source says: fade has no direction and fade and bounce have a fixed intensity (AnimationUtils.php:241-262, 421-424); candidates mo-an-dir-fade-needs-no-direction and mo-an-intensity-fade-fixed measured nothing"
+  },
+  {
+    "item": "How an entrance animation LOOKS, its smoothness, and the order of several animated elements",
+    "reason": "never claimed. The probe holds the element at its first frame (a long delay in the control and the candidate) and compares the classes, the inline animation settings and the computed styles; it did not watch a motion play"
+  },
+  {
+    "item": "Animation values outside the probed ones: durations and delays other than 1000/2000/3000/4000/5000/8000ms, intensity percentages other than 20%, starting opacity other than 40%",
+    "reason": "not rendered: one non-default value per setting was measured. The defaults are Divi's own (AnimationUtils.php:383-385, 440-443, 473)"
+  },
+  {
+    "item": "Scroll effects: `viewport` and `offset` on the effects other than the ones measured, `motionTriggerStart` bottom, and units",
+    "reason": "not rendered: only the vertical-motion offset start/end, the vertical-motion viewport top, the trigger `top` and the fade offset start were measured, with one value each. The defaults are Divi's own (ScrollEffectsUtils.php:37-124)"
+  },
+  {
+    "item": "Grid motion (`gridMotion`)",
+    "reason": "not offered: it is commented out in the preset map (ScrollPresetAttrsMap.php:35-39) and acts on child modules of a parent with `gridMotion.enable`; never probed"
+  },
+  {
+    "item": "Scroll effects on a row, column or module, and the tablet override of a scroll effect",
+    "reason": "not rendered: every scroll candidate was a `divi/section`. Only a phone override (`enable: off` on phones) was measured"
+  },
+  {
+    "item": "Sticky on a row, column or module; `limit.top`, `limit.bottom`, `offset.surrounding` and `transition`",
+    "reason": "not rendered: every sticky candidate was a `divi/section` (the probe's neighbour sections exist only for sections). The limit values (none, body, section, row, column) and the toggles are Divi's own field definition (includes/builder/module/field/Sticky.php:164-210, 244-269) and are not taught. The default guide's sticky text is left as it is"
+  },
+  {
+    "item": "Sticky or scroll effects inside a Theme Builder header or footer",
+    "reason": "not measured: the probe renders ordinary sections in the page content"
+  },
+  {
+    "item": "Respecting a visitor's reduced-motion setting",
+    "reason": "no claim: the 5.15.1 theme files (CSS, JavaScript and PHP, including the animation, scroll-effect and sticky code) were searched for `prefers-reduced-motion` and the only hits are the builder's AI app, onboarding and a WordPress library, not Divi's animation, scroll or sticky code. The plugin cannot add CSS, so the topic only advises keeping motion gentle"
+  },
+  {
+    "item": "Motion from add-on plugins and the `divi_module_options_animation_data` filter",
+    "reason": "excluded: only what Divi ships was probed"
+  }
+]

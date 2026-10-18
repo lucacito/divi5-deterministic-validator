@@ -19,9 +19,30 @@
  *   neighbours  (section candidates only) { "before": [<section spec>], "after": [<section spec>] }: plain sections placed before/after the
  *            candidate section on the page, identical in the A and B pages (e.g. a differently coloured section so that a divider is
  *            visible). The measured element is then the candidate section, not a neighbour. Absent = the page is unchanged.
+ *   state    (optional) how the measured element is put in the state under test before it is measured. The same action is done on the
+ *            A page (control, base only) and on the B page, so only the candidate's `set` can make them differ:
+ *              "hover"   the pointer is moved onto the measured element (Playwright hover) and the page waits `settleMs` (default 1200) so a
+ *                        CSS transition has finished; a `.hover.` value (hover background colour, hover box shadow ...) is applied only then.
+ *              "scroll"  the page is scrolled so that the CENTRE of the measured element sits at `scrollAt` x the viewport height from the
+ *                        top of the viewport (default 0.25; a negative number puts it above the viewport, which is how a sticky element is
+ *                        proven: it must still be on screen), then waits `settleMs` (default 1200). The target is computed from the layout
+ *                        (offsetTop chain), not from the transformed rectangle. With this state the measured element's bounding rectangle
+ *                        (viewport top/left/width/height, rounded) is added to the compared properties as `rect:*`. Give the page height with
+ *                        `neighbours` (tall plain sections) so that there is something to scroll. Scroll effects and sticky elements are driven
+ *                        by Divi's script on scroll events, so this is the only way to see them.
+ *            Absent = the page is measured as loaded.
+ *   settleMs (optional) milliseconds to wait before measuring (default 600; 1200 with a `state`; 3000 for a number counter).
+ *   ignore   (optional) computed property names (e.g. ["opacity","transform"]) left out of the comparison on BOTH pages. Needed when the
+ *            effect under test is running while the page is measured (an entrance animation changes opacity from frame to frame, so two
+ *            loads of the same page never agree on it). The names are listed in the candidate and in its evidence section.
+ *   attrs    (optional) attribute names (e.g. ["class","style"]) of the measured element whose values are compared too, as `attr:<name>`.
+ *            For settings that Divi's script writes into the element (an entrance animation adds the classes `et_animated fade` and an
+ *            inline `animation-duration`). Absent = attributes are not compared (so results of older candidate files are unchanged).
  * "@SITE@" inside a string is replaced by the dev site URL.
  * Results (default fixtures/shapes/probe-results-<candidates file name>.json, never the committed probe-results-5.15.1.json
- * unless asked with --out): [{ id, effect, widths: {"1280","900","400"}, phoneOverflow, detail, error? }].
+ * unless asked with --out): [{ id, effect, widths: {"1280","900","400"}, phoneOverflow, detail, error? }]; detail[width] holds the number
+ * of computed differences, a sample of six, and `changedProps` (the distinct property names that differ, e.g. transform, opacity, attr:class,
+ * rect:top; added in the motion task, absent from older result files).
  * One line per candidate: PASS | PASS(css-only) | DEAD | OVERFLOW (it changed the page but overflows a phone) | ERROR <id>: reason.
  * PASS needs a measured computed-style difference of the module's element (or its descendants) at some width; when only the emitted
  * stylesheet text differs at every width the result is PASS(css-only) (`cssOnly: true` in the results; the field is absent otherwise) and `expect: "PASS"` disagrees
@@ -222,7 +243,7 @@ function removeOrphans() {
 const classOf = (blockName) => 'et_pb_' + blockName.replace(/-/g, '_');
 
 /** Runs in the page: stylesheet text plus the computed styles of the module element and its descendants. */
-function snapshotInPage({ cls, index }) {
+function snapshotInPage({ cls, index, withRect, attrs, ignore }) {
   // Divi and WordPress attach their <style> blocks in a load-dependent order, so the blocks are sorted before comparing.
   const styleText = [...document.querySelectorAll('style')].map((s) => s.textContent.trim()).filter(Boolean).sort().join('\n/*--*/\n');
   // The page content, never the Theme Builder header/footer (their first column/row/section would be measured otherwise).
@@ -236,8 +257,16 @@ function snapshotInPage({ cls, index }) {
     const all = [el, ...el.querySelectorAll('*')];
     all.forEach((e, i) => {
       const cs = getComputedStyle(e);
-      for (let k = 0; k < cs.length; k++) props[i + ':' + e.tagName.toLowerCase() + ':' + cs[k]] = cs.getPropertyValue(cs[k]);
+      for (let k = 0; k < cs.length; k++) {
+        if (ignore.includes(cs[k])) continue;
+        props[i + ':' + e.tagName.toLowerCase() + ':' + cs[k]] = cs.getPropertyValue(cs[k]);
+      }
     });
+    for (const name of attrs) props['attr:' + name] = String(el.getAttribute(name));
+    if (withRect) {
+      const r = el.getBoundingClientRect();
+      for (const key of ['top', 'left', 'width', 'height']) props['rect:' + key] = String(Math.round(r[key]));
+    }
   }
   return { styleText, props, found, overflow: document.documentElement.scrollWidth > window.innerWidth };
 }
@@ -247,6 +276,14 @@ function diffProps(a, b) {
   const out = [];
   for (const k of keys) if (a[k] !== b[k]) out.push(`${k}: ${a[k]} -> ${b[k]}`);
   return out;
+}
+
+/** The distinct property names that differ (the element index and tag are dropped: `0:div:transform` -> `transform`), sorted, at most 40. */
+function changedNames(a, b) {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  const names = new Set();
+  for (const k of keys) if (a[k] !== b[k]) names.add(k.replace(/^\d+:[a-z0-9-]+:/, ''));
+  return [...names].sort().slice(0, 40);
 }
 
 if (cleanOrphans) process.exit(removeOrphans() ? 0 : 1);
@@ -279,14 +316,26 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
     if (foreign > 0) console.log(`WARNING ${foreign} leftover or concurrent probe pages (not deleted; run with --clean-orphans when no other probe is running)`);
     browser = await chromium.launch({ handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false });
     browserRef = browser;
-    const snap = async (id, width, cls, settle, index) => {
+    const snap = async (id, width, cls, settle, index, c) => {
       const ctx = await browser.newContext({ viewport: { width, height: 900 } });
       try {
         await ctx.addCookies(cookies.map(([name, value]) => ({ name, value, url: SITE })));
         const p = await ctx.newPage();
         await p.goto(`${SITE}/?page_id=${id}&preview=true`, { waitUntil: 'load' });
         await p.waitForTimeout(settle);
-        const r = await p.evaluate(snapshotInPage, { cls, index });
+        if (c.state === 'hover') {
+          await p.locator('.et-l--post .' + cls).nth(index).hover({ timeout: 10000 });
+          await p.waitForTimeout(settle);
+        } else if (c.state === 'scroll') {
+          await p.evaluate(({ cls, index, at }) => {
+            const el = [...document.querySelectorAll('.et-l--post .' + cls)][index];
+            let top = 0;
+            for (let e = el; e; e = e.offsetParent) top += e.offsetTop;
+            window.scrollTo(0, Math.max(0, top + el.offsetHeight / 2 - at * window.innerHeight));
+          }, { cls, index, at: typeof c.scrollAt === 'number' ? c.scrollAt : 0.25 });
+          await p.waitForTimeout(settle);
+        }
+        const r = await p.evaluate(snapshotInPage, { cls, index, withRect: c.state === 'scroll', attrs: c.attrs || [], ignore: c.ignore || [] });
         // WordPress writes a random per-request placeholder comment into the block-library style.
         r.styleText = r.styleText.replace(/wp_block_styles_on_demand_placeholder:[0-9a-f]+/g, 'wp_block_styles_on_demand_placeholder:X');
         r.styleText = r.styleText.split(new RegExp('\\b' + id + '\\b', 'g')).join('PID');
@@ -304,10 +353,13 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
       try {
         if (!c || typeof c.id !== 'string' || !c.id) throw new Error('a candidate needs a string `id`');
         if (!c.set || typeof c.set !== 'object' || !Object.keys(c.set).length) throw new Error('a candidate needs a non-empty `set`');
+        if (c.state !== undefined && c.state !== 'hover' && c.state !== 'scroll') throw new Error('`state` must be "hover" or "scroll"');
+        if (c.ignore !== undefined && !(Array.isArray(c.ignore) && c.ignore.every((x) => typeof x === 'string'))) throw new Error('`ignore` must be a list of computed property names');
+        if (c.attrs !== undefined && !(Array.isArray(c.attrs) && c.attrs.every((x) => typeof x === 'string'))) throw new Error('`attrs` must be a list of attribute names');
         const cls = classOf(c.block);
         const index = neighbourNodes(c).before.length; // the candidate comes after its `before` neighbours
         // The number counter counts up after load: let it finish, or two loads of the same page never agree.
-        const settle = c.block === 'number-counter' ? 3000 : 600;
+        const settle = typeof c.settleMs === 'number' ? c.settleMs : c.block === 'number-counter' ? 3000 : c.state ? 1200 : 600;
         const a = makePage(c.id + ' A', pageFor(c, false));
         const b = makePage(c.id + ' B', pageFor(c, true));
         if (!a.valid || !b.valid) {
@@ -315,15 +367,15 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
           throw new Error('the layout does not pass the validator - ' + entry.detail.validator);
         }
         for (const w of WIDTHS) {
-          const sa = await snap(a.id, w, cls, settle, index);
-          const sa2 = await snap(a.id, w, cls, settle, index);
-          const sb = await snap(b.id, w, cls, settle, index);
+          const sa = await snap(a.id, w, cls, settle, index, c);
+          const sa2 = await snap(a.id, w, cls, settle, index, c);
+          const sb = await snap(b.id, w, cls, settle, index, c);
           if (!sa.found || !sb.found) { entry.detail[w] = { error: 'module element .' + cls + ' not found' }; throw new Error('.' + cls + ' not found at ' + w + 'px'); }
           const noise = sa.styleText !== sa2.styleText || diffProps(sa.props, sa2.props).length > 0;
           const styleDiff = sa.styleText !== sb.styleText;
           const computed = diffProps(sa.props, sb.props);
           entry.widths[w] = styleDiff || computed.length > 0;
-          entry.detail[w] = { stylesheetDiffers: styleDiff, computedDiffs: computed.length, sample: computed.slice(0, 6), controlNoise: noise };
+          entry.detail[w] = { stylesheetDiffers: styleDiff, computedDiffs: computed.length, sample: computed.slice(0, 6), changedProps: changedNames(sa.props, sb.props), controlNoise: noise };
           if (noise) { entry.detail[w].warning = 'two loads of the same page differ: the result at this width is not reliable'; throw new Error('page A differs from itself at ' + w + 'px'); }
           if (w === 400) entry.phoneOverflow = sb.overflow;
         }

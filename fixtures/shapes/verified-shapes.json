@@ -37,6 +37,11 @@
             "evidence": "fixtures/valid/page-17-newpage.json"
         },
         {
+            "path": "button.decoration.animation.{bp}.value.style",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-host-button-own"
+        },
+        {
             "path": "button.decoration.background.{bp}.hover.color",
             "how": "export",
             "evidence": "fixtures/valid/page-43-layout-1.json"
@@ -130,6 +135,11 @@
             "path": "button.decoration.button.{bp}.value.icon.settings.weight",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.font.font.{bp}.hover.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-button-font-color"
         },
         {
             "path": "button.decoration.font.font.{bp}.value.color",
@@ -917,6 +927,66 @@
             "evidence": "fixtures/valid/component-instance-slot-filled-5.15.json"
         },
         {
+            "path": "module.decoration.animation.{bp}.value.delay",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-delay-8000"
+        },
+        {
+            "path": "module.decoration.animation.{bp}.value.direction",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-dir-slide-top"
+        },
+        {
+            "path": "module.decoration.animation.{bp}.value.duration",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-duration-2000"
+        },
+        {
+            "path": "module.decoration.animation.{bp}.value.intensity.flip",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-intensity-flip"
+        },
+        {
+            "path": "module.decoration.animation.{bp}.value.intensity.fold",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-intensity-fold"
+        },
+        {
+            "path": "module.decoration.animation.{bp}.value.intensity.roll",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-intensity-roll"
+        },
+        {
+            "path": "module.decoration.animation.{bp}.value.intensity.slide",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-intensity-slide"
+        },
+        {
+            "path": "module.decoration.animation.{bp}.value.intensity.zoom",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-intensity-zoom"
+        },
+        {
+            "path": "module.decoration.animation.{bp}.value.repeat",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-repeat-loop"
+        },
+        {
+            "path": "module.decoration.animation.{bp}.value.speedCurve",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-curve-ease"
+        },
+        {
+            "path": "module.decoration.animation.{bp}.value.startingOpacity",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-starting-opacity-40"
+        },
+        {
+            "path": "module.decoration.animation.{bp}.value.style",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-an-style-fade"
+        },
+        {
             "path": "module.decoration.attributes.attributes.{n}.adminLabel",
             "how": "export",
             "evidence": "fixtures/valid/themebuilder-header-224959.json"
@@ -1282,6 +1352,26 @@
             "evidence": "fixtures/valid/page-45-layout-3.json"
         },
         {
+            "path": "module.decoration.boxShadow.{bp}.hover.blur",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-shadow-custom"
+        },
+        {
+            "path": "module.decoration.boxShadow.{bp}.hover.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-shadow-custom"
+        },
+        {
+            "path": "module.decoration.boxShadow.{bp}.hover.style",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-shadow-preset3"
+        },
+        {
+            "path": "module.decoration.boxShadow.{bp}.hover.vertical",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-shadow-custom"
+        },
+        {
             "path": "module.decoration.boxShadow.{bp}.value.blur",
             "how": "export",
             "evidence": "fixtures/valid/page-44-layout-2.json"
@@ -1315,6 +1405,16 @@
             "path": "module.decoration.boxShadow.{bp}.value.vertical",
             "how": "export",
             "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.filters.{bp}.hover.brightness",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-filter-brightness"
+        },
+        {
+            "path": "module.decoration.filters.{bp}.hover.saturate",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-filter-saturate"
         },
         {
             "path": "module.decoration.interactionTarget",
@@ -1452,9 +1552,19 @@
             "evidence": "fixtures/valid/page-44-layout-2.json"
         },
         {
+            "path": "module.decoration.scroll.{bp}.value.horizontalMotion.enable",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-sc-horizontalMotion"
+        },
+        {
             "path": "module.decoration.scroll.{bp}.value.motionTriggerStart",
             "how": "export",
             "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.rotating.enable",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-sc-rotating"
         },
         {
             "path": "module.decoration.scroll.{bp}.value.scaling.enable",
@@ -1652,6 +1762,41 @@
             "evidence": "fixtures/valid/page-23-style-reference.json"
         },
         {
+            "path": "module.decoration.sticky.{bp}.value.offset.bottom",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-st-offset-bottom-60"
+        },
+        {
+            "path": "module.decoration.sticky.{bp}.value.offset.top",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-st-offset-top-80"
+        },
+        {
+            "path": "module.decoration.sticky.{bp}.value.position",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-st-top"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.hover.rotate.z",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-rotate-z"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.hover.scale.x",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-scale"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.hover.scale.y",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-scale"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.hover.translate.y",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-translate-y"
+        },
+        {
             "path": "module.decoration.transform.{bp}.value.rotate.x",
             "how": "export",
             "evidence": "fixtures/valid/page-85-layout-4.json"
@@ -1667,6 +1812,21 @@
             "evidence": "fixtures/valid/page-85-layout-4.json"
         },
         {
+            "path": "module.decoration.transform.{bp}.value.scale.x",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-tf-scale"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.value.scale.y",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-tf-scale"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.value.skew.x",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-tf-skew"
+        },
+        {
             "path": "module.decoration.transform.{bp}.value.translate.linked",
             "how": "export",
             "evidence": "fixtures/valid/page-45-layout-3.json"
@@ -1680,6 +1840,21 @@
             "path": "module.decoration.transform.{bp}.value.translate.y",
             "how": "export",
             "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.transition.{bp}.value.delay",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-tr-delay-200"
+        },
+        {
+            "path": "module.decoration.transition.{bp}.value.duration",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-tr-duration-800"
+        },
+        {
+            "path": "module.decoration.transition.{bp}.value.speedCurve",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#mo-tr-curve-easeInOut"
         },
         {
             "path": "module.decoration.zIndex.{bp}.value",
