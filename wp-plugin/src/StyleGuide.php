@@ -320,7 +320,8 @@ Styles: 7 proven: bounce, fade, flip, fold, roll, slide, zoom.
 Styles that take a direction: 6 proven: bounce, flip, fold, roll, slide, zoom. `direction` on fade did nothing (rendered: dead).
 Directions: 5 proven: bottom, center, left, right, top. center is the default (source).
 Speed curves: 5 proven: ease, ease-in, ease-in-out, ease-out, linear. The default is ease-in-out (source).
-Hosts: 8 proven: blurb, button, column, group, heading, image, row, section. The shape is the same on each.
+Hosts: 8 proven: blurb, button, column, group, heading, image, row, section. Only `style` "fade" was measured on the seven hosts
+other than the heading; direction, duration and the rest were measured on the heading only.
 Rules: an `intensity.slide` on fade did nothing (rendered: dead); fade and bounce have no intensity (source). A tablet `duration` of
 "2500ms" changed the page at 900 px only; the phone width kept the desktop value. A phone `style` of "none" did not switch the
 animation off at 400 px (rendered: dead), so do not rely on a per-device off switch.
@@ -334,8 +335,9 @@ section only, by scrolling the section to a set position and comparing it with a
 - `scaling.enable`: "on"; changed transform
 - `rotating.enable`: "on"; changed transform
 - `blur.enable`: "on"; changed the filter
-- `verticalMotion.offset.start`: "20" rendered; the default is "4" (source); `offset.end` and `offset.mid` are the other two
-- `verticalMotion.offset.end`: "-20" rendered; the default is "-4" (source)
+- `verticalMotion.offset.start`: "20" rendered, and it moved the section about five times as far as the default "4" (source); bigger numbers
+  move it further, so the default is the gentle choice; `offset.end` and `offset.mid` are the other two
+- `verticalMotion.offset.end`: "-20" rendered (a strong value); the default is "-4" (source)
 - `verticalMotion.viewport.top`: "60" rendered; it changed the render at 900 px only, so it depends on where the section sits
 - `fade.offset.start`: "50" rendered; the default is "0" (source)
 - `motionTriggerStart`: "top" rendered; "middle" is the default and "bottom" exists (source)
@@ -345,8 +347,10 @@ rendered. A phone `verticalMotion.enable` of "off" removed the effect at 400 px 
 are Divi's own (source).
 
 ## Sticky
-Paths below sit under `module.decoration.sticky.{bp}.value.`. Proven on a section only: scrolled past, the section became
-`position: fixed` at the screen edge (computed at 1280 and 400 px).
+Paths below sit under `module.decoration.sticky.{bp}.value.`. Proven on a section only. With `top`, a section scrolled past became
+`position: fixed` at the top edge of the screen (400 px; at 900 and 1280 px it sat 32px down, below the preview's admin bar), and an
+`offset.top` of 80px moved it 80px. With `bottom` and `topBottom` the section became `position: fixed` (computed) and `offset`
+changed where it sat, but no edge placement was measured for them.
 - `position`: top, bottom or topBottom
 - `offset.top`: "80px" rendered, with position top; the default is 0px (source)
 - `offset.bottom`: "60px" rendered, with position bottom
@@ -434,8 +438,8 @@ but set both so the starting colour is yours. Each setting is named with the ele
 - `module.decoration.transform.{bp}.value.scale.y`: "90%"
 - `module.decoration.transform.{bp}.value.skew.x`: "6deg", on a group
 Shadow presets: 3 proven: preset1, preset3, preset6. preset3 is outer; preset6 is inner (inset). preset2, preset4, preset5 and
-preset7 exist (source) but were not rendered. On a button, `button.decoration.boxShadow` and `button.decoration.transform` did
-nothing (rendered: dead); use the module paths above.
+preset7 exist (source) but were not rendered. On a button, a hover value under `button.decoration.boxShadow` or
+`button.decoration.transform` did nothing (rendered: dead); use the module paths above.
 
 ## Transition
 Paths below sit under `module.decoration.transition.{bp}.value.`. A transition is emitted only for a state the module has
@@ -444,7 +448,9 @@ Paths below sit under `module.decoration.transition.{bp}.value.`. A transition i
 - `delay`: "200ms" rendered; the default is 0ms (source)
 - `speedCurve`: a camelCase name
 Speed curves: 5 proven: ease, easeIn, easeInOut, easeOut, linear. The default is ease (source); ease was shown against a linear base.
-Responsive: a tablet `duration` of "1500ms" changed the computed duration at 900 and 400 px and not at 1280.
+Responsive: with an explicit desktop `duration` of "300ms", a tablet `duration` of "1500ms" changed the computed duration at 900
+and 400 px and not at 1280. Set the desktop `duration` whenever you set a tablet one: a tablet-only value also changed desktop in the
+first run.
 
 ## Worked example (validates)
 A card that lifts, gains a shadow and a border colour on hover, with a transition:

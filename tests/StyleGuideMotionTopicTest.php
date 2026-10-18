@@ -378,7 +378,6 @@ class StyleGuideMotionTopicTest extends TestCase
         $this->assertStringContainsString( 'an `offset` without its effect switched on did nothing (rendered: dead)', $motion );
         $this->assertStringContainsString( 'An offset without a `position` did nothing (rendered: dead)', $motion );
         $this->assertStringContainsString( 'rendered: a duration on a group with no hover value did nothing', $hover );
-        $this->assertStringContainsString( '`button.decoration.boxShadow` and `button.decoration.transform` did nothing (rendered: dead)', $hover );
         $this->assertStringContainsString( 'A hover colour worked without a normal colour set', $hover );
     }
 
@@ -406,7 +405,41 @@ class StyleGuideMotionTopicTest extends TestCase
         $this->assertStringContainsString( 'removed the effect at 400 px only', $motion );
         $this->assertStringContainsString( 'it changed the render at 900 px only', $motion );
         $this->assertStringContainsString( 'turned a desktop sticky section off at 400 px only', $motion );
-        $this->assertStringContainsString( 'changed the computed duration at 900 and 400 px and not at 1280', $hover );
+        $this->assertStringContainsString( 'with an explicit desktop `duration` of "300ms", a tablet `duration` of "1500ms" changed the computed duration at 900 and 400 px and not at 1280', $hover );
+        $this->assertStringContainsString( 'a tablet-only value also changed desktop in the first run', $hover );
+        // ... and the evidence for that condition: the candidate carries the explicit desktop duration.
+        [ $cands ] = $this->evidence();
+        $this->assertSame( '300ms', $cands['mo-tr-duration-tablet']['base']['module']['decoration']['transition']['desktop']['value']['duration'] );
+    }
+
+    public function testStickyEdgeClaimIsOnlyForTopAndHostsAreScopedToWhatWasMeasured(): void
+    {
+        [ $cands ] = $this->evidence();
+        $motion = preg_replace( '/\s+/', ' ', $this->topic( 'motion' ) ) ?? '';
+        $hover  = preg_replace( '/\s+/', ' ', $this->topic( 'hover-states' ) ) ?? '';
+        $this->assertStringContainsString( 'With `top`, a section scrolled past became `position: fixed` at the top edge of the screen', $motion );
+        $this->assertStringContainsString( 'no edge placement was measured for them', $motion );
+        $this->assertStringNotContainsString( 'at the screen edge (computed at 1280 and 400 px)', $motion );
+        // The top candidate moved to the top edge at 400 px; bottom/topBottom are only known to be position fixed.
+        foreach ( [ 'mo-st-top', 'mo-st-bottom', 'mo-st-topBottom', 'mo-st-topBottom-below' ] as $id ) {
+            $this->assertContains( 'position', $this->changedProps( $id ), $id );
+        }
+        // Every non-heading host candidate sets only the style; the heading carries the other settings.
+        foreach ( [ 'section', 'row', 'column', 'group', 'image', 'button', 'blurb' ] as $host ) {
+            $this->assertSame( [ 'module.decoration.animation.desktop.value.style' ], array_keys( $cands[ 'mo-an-host-' . $host ]['set'] ) );
+        }
+        $this->assertStringContainsString( 'Only `style` "fade" was measured on the seven hosts other than the heading', $motion );
+        // Button: only a HOVER value on the element paths was probed.
+        $this->assertSame( [ 'button.decoration.boxShadow.desktop.hover.style' ], array_keys( $cands['mo-hv-button-shadow']['set'] ) );
+        $this->assertStringContainsString( 'a hover value under `button.decoration.boxShadow` or `button.decoration.transform` did nothing (rendered: dead)', $hover );
+        // Scroll offsets: the taught 20 is a strong value, not a typical one.
+        $this->assertStringContainsString( 'moved the section about five times as far as the default', $motion );
+        $this->assertStringContainsString( 'the default is the gentle choice', $motion );
+        $this->assertStringContainsString( '"-20" rendered (a strong value)', $motion );
+        // The three taught-dead candidates carry expect DEAD.
+        foreach ( [ 'mo-an-phone-style-none', 'mo-hv-button-shadow', 'mo-hv-button-scale' ] as $id ) {
+            $this->assertSame( 'DEAD', $cands[ $id ]['expect'] ?? null, $id );
+        }
     }
 
     public function testStateAndHostEnumerationsAreTheMeasuredSets(): void

@@ -682,6 +682,7 @@
       "button.decoration.boxShadow.desktop.hover.style": "preset3"
     },
     "state": "hover",
+    "expect": "DEAD",
     "note": "Button box shadow preset3 on hover (button.json lists boxShadow under the button element). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
   },
   {
@@ -714,6 +715,7 @@
       "button.decoration.transform.desktop.hover.scale.y": "108%"
     },
     "state": "hover",
+    "expect": "DEAD",
     "note": "Button transform scale 108% on hover (button.json lists transform under the button element). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
   },
   {
@@ -2037,6 +2039,7 @@
       "class",
       "style"
     ],
+    "expect": "DEAD",
     "note": "A phone override of the style to none over a desktop fade: should change 400 px only. Entrance animation is read by Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Animation/AnimationUtils.php: is_enabled (:571) needs a desktop style other than none; options per style at :239-284; presets and defaults at :316-503 (duration 1000ms, delay 0ms, intensity 50%, starting opacity 0%, speed curve ease-in-out, repeat once, direction center). Divi writes the result into the element on load (classes `et_animated <style>`, inline animation-duration/delay/opacity/timing-function) and removes them when the animation ends. Probe technique: the control and the candidate carry a 5000ms delay (set last wins), so at the moment of measuring the element still waits at its first frame and two loads agree; the compared attributes are the element's class and style."
   },
   {
