@@ -77,20 +77,7 @@ final class SectionRecipes
         }
 
         $lines = [];
-        foreach ( self::all() as $r ) {
-            $tags = isset( $r['tags'] ) && is_array( $r['tags'] ) ? $r['tags'] : [];
-            if ( null !== $role && ( $tags['role'] ?? null ) !== $role ) {
-                continue;
-            }
-            if ( null !== $layout && ( $tags['layout'] ?? null ) !== $layout ) {
-                continue;
-            }
-            if ( null !== $mood ) {
-                $moods = isset( $tags['mood'] ) && is_array( $tags['mood'] ) ? $tags['mood'] : [];
-                if ( ! in_array( $mood, $moods, true ) && ! in_array( 'any', $moods, true ) ) {
-                    continue;
-                }
-            }
+        foreach ( self::matchingRows( $role, $layout, $mood ) as $r ) {
             $stage   = isset( $r['stage'] ) ? (string) $r['stage'] : 'Supporting';
             $lines[] = sprintf( '- **%s** — %s _Stage:_ %s. _When:_ %s', $r['name'], $r['description'], $stage, $r['when'] );
         }
@@ -120,6 +107,56 @@ final class SectionRecipes
             ],
             $lines
         ) );
+    }
+
+    /**
+     * Names of the recipes the role, layout and mood filters select, in catalog order. An unknown
+     * value matches nothing (catalog() explains it); no filter at all matches every recipe.
+     *
+     * @return list<string>
+     */
+    public static function matchingNames( ?string $role = null, ?string $layout = null, ?string $mood = null ): array
+    {
+        $role   = self::cleanFilter( $role );
+        $layout = self::cleanFilter( $layout );
+        $mood   = self::cleanFilter( $mood );
+        if (
+            ( null !== $role && ! in_array( $role, self::ROLES, true ) )
+            || ( null !== $layout && ! in_array( $layout, self::LAYOUTS, true ) )
+            || ( null !== $mood && ! in_array( $mood, self::moods(), true ) )
+        ) {
+            return [];
+        }
+
+        return array_map( static fn ( array $r ): string => $r['name'], self::matchingRows( $role, $layout, $mood ) );
+    }
+
+    /**
+     * @param string|null $role   already cleaned
+     * @param string|null $layout already cleaned
+     * @param string|null $mood   already cleaned
+     * @return list<array{name:string,title:string,description:string,when:string,stage:string,tags?:array<string,mixed>,markup:string}>
+     */
+    private static function matchingRows( ?string $role, ?string $layout, ?string $mood ): array
+    {
+        $rows = [];
+        foreach ( self::all() as $r ) {
+            $tags = isset( $r['tags'] ) && is_array( $r['tags'] ) ? $r['tags'] : [];
+            if ( null !== $role && ( $tags['role'] ?? null ) !== $role ) {
+                continue;
+            }
+            if ( null !== $layout && ( $tags['layout'] ?? null ) !== $layout ) {
+                continue;
+            }
+            if ( null !== $mood ) {
+                $moods = isset( $tags['mood'] ) && is_array( $tags['mood'] ) ? $tags['mood'] : [];
+                if ( ! in_array( $mood, $moods, true ) && ! in_array( 'any', $moods, true ) ) {
+                    continue;
+                }
+            }
+            $rows[] = $r;
+        }
+        return $rows;
     }
 
     /** Trim and lower-case a filter value, keeping it short and plain; empty means no filter. */

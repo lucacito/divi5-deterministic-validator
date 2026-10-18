@@ -521,8 +521,13 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'getSectionRecipes',
                         'summary'     => 'Get proven section recipes',
-                        'description' => 'Library of complete, validated Divi 5 section patterns (hero, feature grids, split, slider, CTA, footer). With no query, returns the catalog of recipe names; pass ?name=<recipe> to get that section\'s full block markup to copy and fill.',
-                        'parameters'  => [['name' => 'name', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Recipe name (omit to list all)']]],
+                        'description' => 'Library of validated Divi 5 section patterns. No query: compact catalog of names. ?role=, ?layout=, ?mood= list only the matches. ?name=<recipe> returns that section\'s full block markup to copy and fill.',
+                        'parameters'  => [
+                            ['name' => 'name', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Recipe name (omit to list all). Wins over the filters.']],
+                            ['name' => 'role', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes for this role: ' . implode(', ', SectionRecipes::ROLES)]],
+                            ['name' => 'layout', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes with this layout: ' . implode(', ', SectionRecipes::LAYOUTS)]],
+                            ['name' => 'mood', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes that fit this mood: ' . implode(', ', SectionRecipes::moods())]],
+                        ],
                         'responses'   => [
                             '200' => ['description' => 'Catalog or a single recipe', 'content' => ['application/json' => ['schema' => [
                                 'type'       => 'object',

@@ -156,7 +156,7 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
-        // GET /section-recipes — library of proven section patterns (?name=<recipe> for one)
+        // GET /section-recipes — library of proven section patterns (?name=<recipe> for one; ?role=, ?layout=, ?mood= filter the list)
         register_rest_route(self::NS, '/section-recipes', [
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => [$this, 'section_recipes'],
@@ -212,12 +212,26 @@ final class RestController
         if ($name === null) {
             return new WP_REST_Response(['error' => 'Invalid parameter: "name" must be a string'], 400);
         }
+        $filters = [];
+        foreach (['role', 'layout', 'mood'] as $key) {
+            $value = PageAccess::stringArg([$key => $request->get_param($key)], $key);
+            if ($value === null) {
+                return new WP_REST_Response(['error' => "Invalid parameter: \"{$key}\" must be a string"], 400);
+            }
+            $filters[$key] = $value === '' ? null : $value;
+        }
         if ($name !== '') {
             $markup = SectionRecipes::recipe($name);
             if ($markup === null) {
                 return new WP_REST_Response(['error' => "Unknown recipe '{$name}'", 'catalog' => SectionRecipes::catalog()], 404);
             }
             return new WP_REST_Response(['name' => $name, 'markup' => $markup], 200);
+        }
+        if ($filters['role'] !== null || $filters['layout'] !== null || $filters['mood'] !== null) {
+            return new WP_REST_Response([
+                'catalog' => SectionRecipes::catalog($filters['role'], $filters['layout'], $filters['mood']),
+                'names'   => SectionRecipes::matchingNames($filters['role'], $filters['layout'], $filters['mood']),
+            ], 200);
         }
         return new WP_REST_Response(['catalog' => SectionRecipes::catalog(), 'names' => SectionRecipes::names()], 200);
     }

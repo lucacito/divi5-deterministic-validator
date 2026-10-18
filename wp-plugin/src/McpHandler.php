@@ -210,10 +210,15 @@ final class McpHandler
             ],
             [
                 'name'        => 'get_section_recipes',
-                'description' => 'Get a library of complete, validated Divi 5 section recipes (hero, feature grids, split, slider, CTA, footer). With no arguments, returns the catalog of recipe names. Pass {"name":"<recipe>"} to get that section\'s full block markup to copy and fill with the user\'s content. Use these to assemble well-composed pages instead of building sections from scratch.',
+                'description' => 'Get a library of complete, validated Divi 5 section recipes (hero, feature grids, split, slider, CTA, footer). With no arguments, returns a compact catalog of recipe names grouped by role. Pass {"role":"hero"}, {"layout":"split"} and/or {"mood":"any"} to list only the matching recipes with their full descriptions (an unknown value answers with the valid values). Pass {"name":"<recipe>"} to get that section\'s full block markup to copy and fill with the user\'s content; a name ignores the filters. Use these to assemble well-composed pages instead of building sections from scratch.',
                 'inputSchema' => [
                     'type'       => 'object',
-                    'properties' => ['name' => ['type' => 'string', 'description' => 'Recipe name from the catalog (omit to list all)']],
+                    'properties' => [
+                        'name'   => ['type' => 'string', 'description' => 'Recipe name from the catalog (omit to list all). Wins over the filters.'],
+                        'role'   => ['type' => 'string', 'description' => 'Only recipes for this role: ' . implode(', ', SectionRecipes::ROLES)],
+                        'layout' => ['type' => 'string', 'description' => 'Only recipes with this layout: ' . implode(', ', SectionRecipes::LAYOUTS)],
+                        'mood'   => ['type' => 'string', 'description' => 'Only recipes that fit this mood: ' . implode(', ', SectionRecipes::moods())],
+                    ],
                     'required'   => [],
                 ],
             ],
@@ -399,11 +404,19 @@ final class McpHandler
         if ($name === null) {
             return $this->rpcError($id, -32602, 'Invalid params — recipe "name" must be a string');
         }
+        $filters = [];
+        foreach (['role', 'layout', 'mood'] as $key) {
+            $value = PageAccess::stringArg($args, $key);
+            if ($value === null) {
+                return $this->rpcError($id, -32602, "Invalid params — recipe \"{$key}\" must be a string");
+            }
+            $filters[$key] = $value === '' ? null : $value;
+        }
         if ($name !== '') {
             $markup = SectionRecipes::recipe($name);
             $text = $markup ?? ("Unknown recipe '{$name}'.\n\n" . SectionRecipes::catalog());
         } else {
-            $text = SectionRecipes::catalog();
+            $text = SectionRecipes::catalog($filters['role'], $filters['layout'], $filters['mood']);
         }
         return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => $text]]]);
     }
