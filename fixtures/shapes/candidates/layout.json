@@ -55,7 +55,7 @@
     "set": {
       "module.decoration.position.desktop.value.mode": "relative"
     },
-    "note": "position.mode \"relative\" alone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:114 (valid modes relative, absolute, fixed), Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:136-164 (relative) and :167-194 (absolute and fixed: top/left 0px unless an origin and offsets say otherwise). Placed in a column on a purple 160px x 80px group (\"decor\"), followed by a light grey 200px-tall group (\"card\") in the same column; the probe records where the decor sits and how much it overlaps the card."
+    "note": "position.mode \"relative\" alone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:114 (valid modes relative, absolute, fixed), Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:136-164 (relative) and :167-194 (absolute and fixed: top/left 0px unless an origin and offsets say otherwise). Placed in a column on a purple 160px x 80px group (\"decor\"), followed by a light grey 200px-tall group (\"card\") in the same column; the probe records where the decor sits and how much it overlaps the card. Measured: css-only (the stylesheet changed, no computed style, the rectangle did not move): modules are already position relative on the page."
   },
   {
     "id": "lay-pos-mode-absolute",
@@ -287,7 +287,7 @@
     "set": {
       "module.decoration.position.desktop.value.offset.vertical": "24px"
     },
-    "note": "An offset WITHOUT a mode. Source Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:108 falls back to the relative branch when no mode is given (the module already sits in a relative position context in the page), so the offset may still move the module; this measures it. Placed in a column on a purple 160px x 80px group (\"decor\"), followed by a light grey 200px-tall group (\"card\") in the same column; the probe records where the decor sits and how much it overlaps the card."
+    "note": "An offset WITHOUT a mode. Source Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:108 falls back to the relative branch when no mode is given (the module already sits in a relative position context in the page), so the offset may still move the module; this measures it. Placed in a column on a purple 160px x 80px group (\"decor\"), followed by a light grey 200px-tall group (\"card\") in the same column; the probe records where the decor sits and how much it overlaps the card. Measured: PASS: the module moved 24px down at all three widths, so an offset needs no mode (modules are already position relative). This replaced the first prediction (DEAD)."
   },
   {
     "id": "lay-pos-origin-needs-mode",
@@ -345,7 +345,7 @@
     "set": {
       "module.decoration.position.desktop.value.origin.absolute": "top right"
     },
-    "note": "An origin without a mode: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:107-123 reads origin[mode], so an origin for absolute does nothing for a module that is not absolute. Precondition probe. Placed in a column on a purple 160px x 80px group (\"decor\"), followed by a light grey 200px-tall group (\"card\") in the same column; the probe records where the decor sits and how much it overlaps the card."
+    "note": "An origin without a mode: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:107-123 reads origin[mode], so an origin for absolute does nothing for a module that is not absolute. Precondition probe. Placed in a column on a purple 160px x 80px group (\"decor\"), followed by a light grey 200px-tall group (\"card\") in the same column; the probe records where the decor sits and how much it overlaps the card. Measured: css-only (the stylesheet changed, no computed style): the origin is read for the module's own mode."
   },
   {
     "id": "lay-pos-origin-top-left",
@@ -2144,6 +2144,122 @@
       "module.decoration.zIndex.desktop.value": -1
     },
     "note": "zIndex -1 on an absolute decor that has zIndex 5 in the base: does a negative z-index put it behind the card? Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ZIndex/ZIndex.php:71. Placed in a column on a purple 160px x 80px group (\"decor\"), followed by a light grey 200px-tall group (\"card\") in the same column; the probe records where the decor sits and how much it overlaps the card."
+  },
+  {
+    "id": "lay-z-behind-coloured-section",
+    "block": "group",
+    "expect": "PASS",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#7c3aed"
+              }
+            }
+          },
+          "sizing": {
+            "desktop": {
+              "value": {
+                "width": "160px",
+                "minHeight": "80px"
+              }
+            }
+          },
+          "position": {
+            "desktop": {
+              "value": {
+                "mode": "absolute"
+              }
+            }
+          },
+          "zIndex": {
+            "desktop": {
+              "value": 5
+            }
+          }
+        }
+      }
+    },
+    "wrapperBase": {
+      "section": {
+        "module": {
+          "decoration": {
+            "background": {
+              "desktop": {
+                "value": {
+                  "color": "#0f172a"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "geometry": true,
+    "set": {
+      "module.decoration.zIndex.desktop.value": -1
+    },
+    "note": "zIndex -1 on an absolute decor (zIndex 5 in the base) that sits in a section with a DARK background colour (set on the section in the base) and has no card next to it: is the decor still on top at its own centre, or does the negative z-index put it behind the section background? Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ZIndex/ZIndex.php:71. The probe asks which element is on top at the decor's centre (hitCentre)."
+  },
+  {
+    "id": "lay-z-behind-coloured-column",
+    "block": "group",
+    "expect": "PASS",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#7c3aed"
+              }
+            }
+          },
+          "sizing": {
+            "desktop": {
+              "value": {
+                "width": "160px",
+                "minHeight": "80px"
+              }
+            }
+          },
+          "position": {
+            "desktop": {
+              "value": {
+                "mode": "absolute"
+              }
+            }
+          },
+          "zIndex": {
+            "desktop": {
+              "value": 5
+            }
+          }
+        }
+      }
+    },
+    "wrapperBase": {
+      "column": {
+        "module": {
+          "decoration": {
+            "background": {
+              "desktop": {
+                "value": {
+                  "color": "#0f172a"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "geometry": true,
+    "set": {
+      "module.decoration.zIndex.desktop.value": -1
+    },
+    "note": "zIndex -1 on an absolute decor (zIndex 5 in the base) that sits in a column with a DARK background colour (set on the column in the base) and has no card next to it. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ZIndex/ZIndex.php:71. The probe asks which element is on top at the decor's centre (hitCentre)."
   },
   {
     "id": "lay-z-static-module",
@@ -4062,7 +4178,7 @@
     "set": {
       "module.decoration.overflow.desktop.value.x": "visible"
     },
-    "note": "overflow.x \"visible\" is the CSS default: expected to change nothing computed. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83-99 (the allowed values are visible, scroll, hidden, auto)."
+    "note": "overflow.x \"visible\" is the CSS default: expected to change nothing computed. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83-99 (the allowed values are visible, scroll, hidden, auto). Measured: css-only: overflow \"visible\" is the browser default, so the stylesheet changes and no computed style does. This replaced the first prediction (DEAD)."
   },
   {
     "id": "lay-ovf-wrong-value",
@@ -4571,6 +4687,37 @@
       "module.decoration.spacing.desktop.value.margin.right": "auto"
     },
     "note": "margin.left and margin.right \"auto\" on a group with width 100% and maxWidth 480px (base): the guide's centring recipe, a declared pair. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110."
+  },
+  {
+    "id": "lay-siz-center-auto-margins-no-width",
+    "block": "group",
+    "expect": "PASS",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#e2e8f0"
+              }
+            }
+          },
+          "sizing": {
+            "desktop": {
+              "value": {
+                "maxWidth": "480px"
+              }
+            }
+          }
+        }
+      }
+    },
+    "geometry": true,
+    "set": {
+      "module.decoration.spacing.desktop.value.margin.left": "auto",
+      "module.decoration.spacing.desktop.value.margin.right": "auto"
+    },
+    "note": "margin.left and margin.right \"auto\" on a group with maxWidth 480px but NO width (base): the same pair as lay-siz-center-auto-margins without the width 100%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110. Compared with the version that has width 100%: does the group keep its 480px?"
   },
   {
     "id": "lay-siz-aspect-16-9",
@@ -6241,7 +6388,7 @@
     "set": {
       "module.decoration.layout.desktop.value.display": "flex"
     },
-    "note": "layout.display \"flex\" on a plain group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:66-69 (display is read from the desktop value), :255-291 (the flex branch). A group may already be a flex container, which this checks."
+    "note": "layout.display \"flex\" on a plain group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:66-69 (display is read from the desktop value), :255-291 (the flex branch). A group may already be a flex container, which this checks. Measured: DEAD: a plain group is already display: flex (the computed display of a hidden group read \"flex -> none\" in lay-dis-phone), so display \"flex\" adds nothing. This replaced the first prediction (PASS)."
   },
   {
     "id": "lay-flx-dir-row-from-default",

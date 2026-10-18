@@ -489,9 +489,8 @@ MD;
 Every shape listed here was rendered on the real Divi 5.15.1 (the front end of a draft page preview, Chromium at 1280, 900 and
 400 px) and changed the page; the numbers marked rendered were measured, the worked examples use ordinary values. A rule marked
 (source) is read from Divi's own code and was not rendered, and the Limits section says what was not measured. The Visual Builder
-was not checked. Overlap was proven by measuring rectangles and which
-element is on top at the centre of the overlap. Sizing, flex, grid and spacing are in the topic
-`layout-sizing`. An overlap that made a phone page wider than the screen is not taught as safe.
+was not checked. Overlap was proven from measured rectangles. Sizing, flex, grid and
+spacing are in the topic `layout-sizing`. An overlap that made a phone page wider than the screen is not taught as safe.
 
 ## Position
 Paths below sit under `module.decoration.position.{bp}.value.`. A module already sits in a relative position context: an `offset`
@@ -504,34 +503,35 @@ alone moved it 24px down (rendered), while `mode` "relative" alone changed only 
 - `offset.horizontal`: "24px" rendered
 Absolute origins 8 proven: bottom center, bottom left, bottom right, center center, center left, center right, top center, top right. The
 first word is the vertical side, the second the horizontal side (source). "top left" is the default and changed nothing (rendered:
-dead). "center" is placed at 50% and shifted back by half its size (source), so "center center" centred the 160px module in its
-column (left 560 at 1280 px).
+dead). "center" is placed at 50% and shifted back by half its size (source); "center center" centred the 160px module (left 560
+at 1280 px).
 Hosts 6 proven: blurb, button, group, heading, image, text. Only the group was measured in every mode; the others with "absolute"
-and `origin.absolute` "top right".
+and `origin.absolute` "top right" (image: a computed position change only; its box was not laid out when measured).
 Rules (rendered): `mode` "default" did nothing; the origin is read for the module's own mode, so `origin.absolute` on a relative
 module did nothing. An absolute group left the flow: the card after it moved up and covered all 160 x 80 of it (12,800 square pixels) at all
 three widths, with the card on top. A fixed group with `origin.fixed` "bottom right" and both offsets "24px" sat 24px from the
 bottom right corner of a 900px-high screen at 1280, 900 and 400 px. `origin.relative` "bottom left" with `offset.vertical` "24px"
-moved the module 48px higher than the same offset from the top (the offset counts from the bottom).
+moved the module 48px higher than the same offset from the top.
 Phone: `mode` "relative" on the phone only changed 400 px only; the offsets stay (the module sat 24px right and down of its natural
-place), so a decor with offsets does not simply fall back to where it was. A tablet `offset.vertical` of "60px" changed 900 and
-400 px: the phone inherits the tablet value.
+place).
 Overflow: an absolute group hanging 60px outside the right edge of its column made a 400px page 20px wider than the screen (not
-safe). The same group inside a section with `module.decoration.overflow.{bp}.value.x` "hidden" did not overflow (rendered).
+safe). The same group inside a section with `module.decoration.overflow.{bp}.value.x` "hidden" did not overflow (rendered); that
+also computes the other axis as auto (see `layout-sizing`, Overflow), so it clips vertical bleed (sticky children
+were not measured).
 
 ## Stacking and overlap
 - `module.decoration.zIndex.{bp}.value`: a number (5 rendered; "5" worked too)
 - `module.decoration.spacing.{bp}.value.margin.top`: "-40px" rendered; a negative value pulls the module over what is above it
 - `module.decoration.spacing.{bp}.value.margin.left`: "-40px" rendered
-- `module.decoration.spacing.{bp}.value.margin.right`: no visible move for the module itself (below)
-- `module.decoration.spacing.{bp}.value.margin.bottom`: no visible move for the module itself
+- `module.decoration.spacing.{bp}.value.margin.right`: moved nothing of the module (below)
+- `module.decoration.spacing.{bp}.value.margin.bottom`: moved nothing of the module
 Rules (rendered): `zIndex` 5 put an absolute group above the card after it at 1280, 900 and 400 px; with 5 in the base, -1 put it
-behind the card. `zIndex` 5 on a group with no position mode also put it above a card pulled over it. Divi left 30px
-between the two groups, so margin.top "-40px" overlapped the card above by only 10px; "-25%" (a share of the column width) moved the
-module 256, 180 and 80px at 1280, 900 and 400 px. `margin.left` "-40px" moved the module 40px left; `margin.right` and
+behind the card (a section with no background colour). In a section, and in a column, with a dark background colour, -1 left the
+decor on top at its own centre at all three widths, so do not count on -1 to tuck a decor behind a coloured block. `zIndex` 5 on a group with no position mode also put it above a card pulled over it. Divi left 30px
+between the two groups, so margin.top "-40px" overlapped the card above by only 10px; "-25%" (a share of the column width; a strong
+value) moved the module 256, 180 and 80px at 1280, 900 and 400 px. `margin.left` "-40px" moved the module 40px left; `margin.right` and
 `margin.bottom` "-40px" moved nothing of the module (they pull what follows; no neighbour was measured). A row with margin.top
-"-80px" overlapped the row above by 20px; a section with "-80px" covered 80px of the dark section before it and was on top;
-`zIndex` 2 on that section changed nothing about who was on top. A phone `margin.top` of "0px" reset the pull at 400 px only; a
+"-80px" overlapped the row above by 20px; a section with "-80px" (a strong pull) covered 80px of the dark section before it and was on top. A phone `margin.top` of "0px" reset the pull at 400 px only; a
 tablet value reached 900 and 400 px.
 
 ## Order
@@ -552,20 +552,20 @@ Paths below sit under `module.decoration.transform.{bp}.value.`. A transform mov
 - `translate.x`: "24px" rendered
 - `translate.y`: "-24px" and "-25%" rendered (a share of the module's own height)
 - `rotate.z`: "3deg" rendered
-- `rotate.x`: "20deg" squashed the module (no perspective)
-- `rotate.y`: "20deg" squashed the module
+- `rotate.x`: "20deg" (squashes; no perspective)
+- `rotate.y`: "20deg" (squashes; no perspective)
 - `skew.y`: "6deg" rendered
 - `scale.x`: "105%", set `scale.y` too
 - `scale.y`: "105%"
 - `origin.x`: "0%"; the other axis defaults to 50%
 - `origin.y`: "0%"
-Rules (rendered): `translate.y` "48px" covered the card below by 18px. `rotate.z` "3deg" grew the box from 160 x 80 to 164 x 88.
+Rules (rendered): `translate.y` "48px" covered the card below by 18px.
 With `rotate.z` "12deg", `origin.x` and `origin.y` "0%" moved the rotated box from left 121, top 445 to left 111, top 461 at 1280 px.
-`origin` without a transform moved nothing. `translate.x` "20%" on a module as wide as its column made a 400px page 24px wider than the screen (not safe). On the
+`translate.x` "20%" on a module as wide as its column made a 400px page 24px wider than the screen (not safe; 54px at 900 and 77px at 1280 too). On the
 phone only, translate.y "0px" with rotate.z "0deg" reset a lifted, tilted module at 400 px only. A resting `scale` and `skew.x`, and every hover transform, are in the topic `hover-states`.
 
 ## Worked examples (validate)
-A light section that overlaps the dark section before it:
+A light section that overlaps the dark section before it (-80px is a strong pull):
 ```
 <!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#0f172a"}}},"spacing":{"desktop":{"value":{"padding":{"top":"120px","bottom":"120px"}}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
@@ -584,10 +584,10 @@ A light section that overlaps the dark section before it:
 ```
 A badge pinned to the top right corner of a card, hidden on phones:
 ```
-<!-- wp:divi/section {"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"80px","bottom":"80px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/section {"builderVersion":"5.8.0"} -->
 <!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#7c3aed"}}},"position":{"desktop":{"value":{"mode":"absolute","origin":{"absolute":"top right"},"offset":{"vertical":"24px","horizontal":"24px"}}}},"zIndex":{"desktop":{"value":5}},"disabledOn":{"phone":{"value":"on"}},"sizing":{"desktop":{"value":{"width":"160px"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#7c3aed"}}},"position":{"desktop":{"value":{"mode":"absolute","origin":{"absolute":"top right"},"offset":{"vertical":"24px","horizontal":"24px"}}}},"zIndex":{"desktop":{"value":5}},"disabledOn":{"phone":{"value":"on"}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"New"}},"decoration":{"font":{"font":{"desktop":{"value":{"color":"#ffffff"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/group -->
 <!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#e2e8f0"}}},"sizing":{"desktop":{"value":{"minHeight":"200px"}}}}},"builderVersion":"5.8.0"} -->
@@ -600,8 +600,9 @@ A badge pinned to the top right corner of a card, hidden on phones:
 
 ## Limits
 Not measured, so do not rely on them: position on rows, columns and sections, stacking against a sticky or fixed header, other
-sizes of overlap, readability of an overlap, hiding at tabletWide, phoneWide and in between, widths other than 1280, 900 and
-400 px, 3D rotation with a perspective, and transforms on the tablet.
+sizes of overlap, hiding at tabletWide, phoneWide and in between, widths other than 1280, 900 and
+400 px, 3D rotation with a perspective, transforms on the tablet, and a two-column row: every position candidate sat in a
+one-column row, so a badge in the corner of a card depends on the column being the positioned ancestor.
 MD;
     }
 
@@ -614,8 +615,8 @@ MD;
 Every shape listed here was rendered on the real Divi 5.15.1 (the front end of a draft page preview, Chromium at 1280, 900 and
 400 px) and changed the page; the numbers marked rendered were measured, the worked examples use ordinary values. A rule marked
 (source) is read from Divi's own code and was not rendered, and the Limits section says what was not measured. The Visual Builder
-was not checked. Sizes were read from the rendered rectangles. Overlap,
-stacking, order, hiding and transforms are in the topic `layout-advanced`.
+was not checked. Sizes were read from the rendered rectangles. Overlap, stacking, order, hiding and transforms are in the topic
+`layout-advanced`.
 
 ## Sizing
 Paths below sit under `module.decoration.sizing.{bp}.value.` on a group; an image module keeps its sizing under
@@ -637,8 +638,9 @@ Paths below sit under `module.decoration.sizing.{bp}.value.` on a group; an imag
 Rules (rendered): "16" and "9" on a full-width group made it 576, 405 and 180px high at 1024, 720 and 320px wide; "1" and "1"
 made a square of 320px (the group had `maxWidth` "320px"); "auto" on both did nothing (dead). `maxWidth` "480px" narrowed the group at 1280 and 900 px; at 400 px the
 column was already narrower. `alignment` moved a group that had `width` "100%" and `maxWidth` "480px" (left 400 for "center",
-672 for "right", against 128 at 1280 px); `alignment` "center" with no width setting did nothing (dead). Without `width` "100%"
-the auto margins shrank the group to its content, so set both. The margin pair "auto" centred it the same way. A phone `width`
+672 for "right", against 128 at 1280 px); `alignment` "center" with no width setting did nothing (dead). Margin "auto" on both sides
+without `width` "100%" shrank a `maxWidth` "480px" group to its content (51px wide at 1280, 900 and 400 px), so set both; with
+`width` "100%" the margin pair centred it the same way. A phone `width`
 "100%" over a desktop "50%" changed 400 px only. `minWidth` "600px" made a 400px page 240px wider than the screen (not safe).
 
 ## Column widths
@@ -684,7 +686,8 @@ effect on the children was not measured. `justifyContent` on a group whose `disp
 `sizing.size` takes a list: ["flexGrow"] widened a 120px child to 874, 570 and 170px at 1280, 900 and 400 px in a flex row;
 `alignSelf` "flex-end" dropped a stretched 200px child to the bottom of the row and did nothing when the parent was "block".
 Grid: `gridColumnCount` "3" made six headings 110px high instead of 390px; a tablet "2" changed 900 and 400 px (180px high); a
-phone "1" changed 400 px only (110 to 390px); "equalMinimum" with "200px" gave one row at 1280 and 900 px and one column at 400 px;
+phone "1" changed 400 px only (110 to 390px); "equalMinimum" with "200px" gave 4 columns at 1280 px and 3 at 900 px (two rows of six items) and changed nothing at 400 px, where one
+column already fits;
 `gridColumnMinWidth` without "equalMinimum" did nothing (dead); `gridColumnSpan` "2" widened a child from 321 to 673px, and did
 nothing when the parent was not a grid (dead).
 
@@ -694,8 +697,7 @@ Paths below sit under `module.decoration.spacing.{bp}.value.`.
 - `padding.bottom`: "40px"
 - `padding.left`: "5%" rendered (a share of the width)
 - `padding.right`: "5%"
-- `padding.syncVertical`: "on"
-Rules (rendered): `syncVertical` "on" alone did nothing (dead); with only `padding.top` "40px" the group grew by 40px, not 80, so
+Rules (rendered): `padding.syncVertical` "on" is only a builder toggle: alone it did nothing (dead); with only `padding.top` "40px" the group grew by 40px, not 80, so
 set every side you want. Section padding per device, 120px, 80px and 48px at top and bottom (desktop, tablet, phone), gave
 sections of 280, 200 and 136px (content 40px). One fluid value, `clamp(48px, 8vw, 120px)` on top and bottom, gave 245, 184 and 136px.
 
@@ -719,13 +721,13 @@ Three cards in a grid that is 3 columns, then 2, then 1:
 <!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/group {"module":{"decoration":{"layout":{"desktop":{"value":{"display":"grid","gridColumnCount":"3","columnGap":"32px","rowGap":"32px"}},"tablet":{"value":{"gridColumnCount":"2"}},"phone":{"value":{"gridColumnCount":"1"}}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#e2e8f0"}}},"spacing":{"desktop":{"value":{"padding":{"top":"24px","bottom":"24px","left":"24px","right":"24px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#e2e8f0"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Card one"}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/group -->
-<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#e2e8f0"}}},"spacing":{"desktop":{"value":{"padding":{"top":"24px","bottom":"24px","left":"24px","right":"24px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#e2e8f0"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Card two"}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/group -->
-<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#e2e8f0"}}},"spacing":{"desktop":{"value":{"padding":{"top":"24px","bottom":"24px","left":"24px","right":"24px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/group {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#e2e8f0"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Card three"}}},"builderVersion":"5.8.0"} /-->
 <!-- /wp:divi/group -->
 <!-- /wp:divi/group -->
@@ -735,9 +737,10 @@ Three cards in a grid that is 3 columns, then 2, then 1:
 ```
 
 ## Limits
-Not measured, so do not rely on them: flex and grid on rows, columns and sections, flexType values other than the five listed,
-rows of three or more columns, the other grid options (fixed and manual column widths, row heights, auto flow, density), custom
-flex grow and shrink numbers, how overflow cuts content, spacing in calc() or vw, and the Visual Builder.
+Not measured, so do not rely on them: flex and grid settings on rows, columns and sections (the row `flexWrap` of example 1 is only
+the base of the measured column-width candidates), flexType values other than the five listed, rows of three or more columns, the
+other grid options (fixed and manual column widths, row heights, auto flow, density), custom flex grow and shrink numbers, how
+overflow cuts content, spacing in calc() or vw other than the one clamp() shown, and the Visual Builder.
 MD;
     }
 

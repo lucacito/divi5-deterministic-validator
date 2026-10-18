@@ -6693,7 +6693,7 @@ Geometry (document coordinates, rounded px; control = page A, candidate = page B
 
 Phone overflow at 400 px: no.
 
-Note: An offset WITHOUT a mode. Source Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:108 falls back to the relative branch when no mode is given (the module already sits in a relative position context in the page), so the offset may still move the module; this measures it. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+Note: An offset WITHOUT a mode. Source Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:108 falls back to the relative branch when no mode is given (the module already sits in a relative position context in the page), so the offset may still move the module; this measures it. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card. Measured: PASS: the module moved 24px down at all three widths, so an offset needs no mode (modules are already position relative). This replaced the first prediction (DEAD).
 
 Registered paths added:
 
@@ -7492,6 +7492,66 @@ Geometry (document coordinates, rounded px; control = page A, candidate = page B
 Phone overflow at 400 px: no.
 
 Note: zIndex -1 on an absolute decor that has zIndex 5 in the base: does a negative z-index put it behind the card? Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ZIndex/ZIndex.php:71. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-z-behind-coloured-section
+
+Block: `group`, with base settings on its wrapper(s) `section`. Set on top of the base block:
+
+- `module.decoration.zIndex.desktop.value` = `-1`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:z-index: 5 -> -1` |
+| 900 px | yes | 1 | yes | `0:div:z-index: 5 -> -1` |
+| 400 px | yes | 1 | yes | `0:div:z-index: 5 -> -1` |
+
+Properties that changed (any width): `z-index`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 461, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 90, 515, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 40, 547, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: zIndex -1 on an absolute decor (zIndex 5 in the base) that sits in a section with a DARK background colour (set on the section in the base) and has no card next to it: is the decor still on top at its own centre, or does the negative z-index put it behind the section background? Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ZIndex/ZIndex.php:71. The probe asks which element is on top at the decor's centre (hitCentre).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-z-behind-coloured-column
+
+Block: `group`, with base settings on its wrapper(s) `column`. Set on top of the base block:
+
+- `module.decoration.zIndex.desktop.value` = `-1`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:z-index: 5 -> -1` |
+| 900 px | yes | 1 | yes | `0:div:z-index: 5 -> -1` |
+| 400 px | yes | 1 | yes | `0:div:z-index: 5 -> -1` |
+
+Properties that changed (any width): `z-index`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 461, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 90, 515, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 40, 547, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: zIndex -1 on an absolute decor (zIndex 5 in the base) that sits in a column with a DARK background colour (set on the column in the base) and has no card next to it. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ZIndex/ZIndex.php:71. The probe asks which element is on top at the decor's centre (hitCentre).
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
 
@@ -9096,6 +9156,37 @@ Geometry (document coordinates, rounded px; control = page A, candidate = page B
 Phone overflow at 400 px: no.
 
 Note: margin.left and margin.right "auto" on a group with width 100% and maxWidth 480px (base): the guide's centring recipe, a declared pair. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-center-auto-margins-no-width
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.margin.left` = `"auto"`
+- `module.decoration.spacing.desktop.value.margin.right` = `"auto"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 22 | yes | `0:div:inline-size: 480px -> 50.6719px` |
+| 900 px | yes | 22 | yes | `0:div:inline-size: 480px -> 50.6719px` |
+| 400 px | yes | 22 | yes | `0:div:inline-size: 320px -> 50.6719px` |
+
+Properties that changed (any width): `inline-size`, `margin-inline-end`, `margin-inline-start`, `margin-left`, `margin-right`, `perspective-origin`, `rect:left`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 480 x 40 | 615, 461, 51 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 480 x 40 | 425, 515, 51 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 175, 547, 51 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: margin.left and margin.right "auto" on a group with maxWidth 480px but NO width (base): the same pair as lay-siz-center-auto-margins without the width 100%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110. Compared with the version that has width 100%: does the group keep its 480px?
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
 
@@ -11007,21 +11098,21 @@ Registered paths added: none (every path was already registered by a builder exp
 
 Candidates from `layout.json` that were measured and are not taught, with the reason:
 
-- `lay-pos-mode-relative`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). position.mode "relative" alone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:114 (valid modes relative, absolute, fixed), Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:136-164 (relative) and :167-194 (absolute and fixed: top/left 0px unless an origin and offsets say otherwise). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+- `lay-pos-mode-relative`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). position.mode "relative" alone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:114 (valid modes relative, absolute, fixed), Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:136-164 (relative) and :167-194 (absolute and fixed: top/left 0px unless an origin and offsets say otherwise). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card. Measured: css-only (the stylesheet changed, no computed style, the rectangle did not move): modules are already position relative on the page.
 - `lay-pos-mode-default`: no effect (dead). position.mode "default" is not one of the valid modes (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:114, :122): precondition probe, expected to do nothing. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
-- `lay-pos-origin-needs-mode`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). An origin without a mode: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:107-123 reads origin[mode], so an origin for absolute does nothing for a module that is not absolute. Precondition probe. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+- `lay-pos-origin-needs-mode`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). An origin without a mode: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:107-123 reads origin[mode], so an origin for absolute does nothing for a module that is not absolute. Precondition probe. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card. Measured: css-only (the stylesheet changed, no computed style): the origin is read for the module's own mode.
 - `lay-pos-origin-top-left`: no effect (dead). position.origin.absolute "top left" on an absolute decor (mode set in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 (the first word is the vertical side, the second the horizontal side; the default is "top left"), :167-194 (the named sides get the offsets, a "center" side gets 50% and the transform translate of Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:120-128). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card. "top left" is the default, so this is expected to do nothing.
 - `lay-pos-rel-origin-needs-relative-mode`: no effect (dead). origin.absolute on a decor whose mode is relative: Source Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123 reads origin[mode], so origin.absolute is ignored when the mode is relative. Precondition probe. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
 - `lay-pos-abs-outside-right`: overflows a phone at 400 px (the page is 20 px wider than the screen). An absolute decor hanging 60px outside the right edge of its column (mode absolute, origin.absolute "top right", offset.horizontal "-60px": a declared triple). The phone overflow check decides whether this is safe. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:167-194.
 - `lay-order-direct-value`: no effect (dead). order written directly as the value (value: 1) instead of value.order: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Order/Order.php:55 reads $attr_value["order"], so a bare number should do nothing. Shape probe. Placed in a row of two half-width columns (the row and columns use the shapes Divi writes for two equal columns that stack on a phone); the probe records where the candidate column sits.
 - `lay-dis-wrong-value`: no effect (dead). disabledOn given a value other than "on" ("true"). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56 compares with "on" exactly. Shape probe. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
-- `lay-ovf-x-visible`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). overflow.x "visible" is the CSS default: expected to change nothing computed. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83-99 (the allowed values are visible, scroll, hidden, auto).
+- `lay-ovf-x-visible`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). overflow.x "visible" is the CSS default: expected to change nothing computed. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83-99 (the allowed values are visible, scroll, hidden, auto). Measured: css-only: overflow "visible" is the browser default, so the stylesheet changes and no computed style does. This replaced the first prediction (DEAD).
 - `lay-ovf-wrong-value`: no effect (dead). overflow.x "clip" is not in the allowed list: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83 and :94 skip it. Shape probe.
 - `lay-siz-minwidth-overflow`: overflows a phone at 400 px (the page is 240 px wider than the screen). sizing.minWidth "600px": wider than a phone column, so the phone overflow check decides. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:200-202.
 - `lay-siz-align-center-needs-width`: no effect (dead). sizing.alignment "center" with NO width, maxWidth or minWidth: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:212-216 only centres in a custom width context. Precondition probe.
 - `lay-siz-aspect-auto`: no effect (dead). sizing.aspectRatio with "auto" on both sides: Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:244-252 skips it. Shape probe.
 - `lay-tf-translate-x-wide`: overflows a phone at 400 px (the page is 24 px wider than the screen). translate.x "20%" on a decor that is as wide as its column (no 160px width): the shifted module pokes out of the column; the phone overflow check decides. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:155.
-- `lay-flx-display-flex-default`: no effect (dead). layout.display "flex" on a plain group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:66-69 (display is read from the desktop value), :255-291 (the flex branch). A group may already be a flex container, which this checks.
+- `lay-flx-display-flex-default`: no effect (dead). layout.display "flex" on a plain group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:66-69 (display is read from the desktop value), :255-291 (the flex branch). A group may already be a flex container, which this checks. Measured: DEAD: a plain group is already display: flex (the computed display of a hidden group read "flex -> none" in lay-dis-phone), so display "flex" adds nothing. This replaced the first prediction (PASS).
 - `lay-flx-wrap-nowrap`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). layout.flexWrap "nowrap" on a flex row group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:283-290.
 - `lay-flx-align-content-nowrap`: no effect (dead). layout.alignContent "center" on a NON-wrapping flex group: A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:283-290 only writes it with a wrap. Precondition probe.
 - `lay-flx-justify-needs-flex`: no effect (dead). layout.justifyContent "center" on a group whose display is "block" (base): A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:100 skips every flex and grid property for a block display. Precondition probe.
@@ -11048,6 +11139,9 @@ Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-l
 - Flex and grid layout on a row, column, section or module: not rendered: every layout candidate was a group holding three or six headings. Row, column, section and the text-like modules list `layout` in their module.json
 - Grid options: gridColumnWidths "equalFixed", "auto" and "manual" (gridColumnWidth, gridTemplateColumns), gridRowHeights and its row settings, gridAutoFlow, gridDensity, gridAutoColumns and gridAutoRows, collapseEmptyColumns, gridJustifyItems and gridOffsetRules: not rendered: read in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:110-254 (source). Measured: display grid, gridColumnCount (desktop, tablet, phone), gap, gridColumnWidths "equalMinimum" with gridColumnMinWidth, alignItems
 - Overflow clipping as a picture: whether content is visibly cut, a scroll bar appears, or a sticky child stops working inside an overflow container: never claimed: the probe compares computed `overflow` values (and the page width). Setting one axis changed the other computed axis too (a CSS rule), which the topic records
-- Spacing units other than px, a percentage padding and clamp(); calc() and vw in spacing; margin sync flags and `padding.syncHorizontal`: not rendered: clamp(48px, 8vw, 120px) and a 5% padding were measured. A spacing value with a semicolon, backslash or brace is refused by the plugin's own gate (CUSTOM_CSS_NOT_ALLOWED) before it could be probed, and Divi drops it as well (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:143-154, source)
+- Spacing units and flags beyond the ones measured: calc(), vw outside the one clamp(), margin sync flags and `padding.syncHorizontal`: not rendered. Measured: px, a 5% padding and clamp(48px, 8vw, 120px) (top and bottom padding of a section). A spacing value with a semicolon, backslash or brace is refused by the plugin's own gate (CUSTOM_CSS_NOT_ALLOWED) before it could be probed, and Divi drops it as well (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:143-154, source)
+- Flex settings on a row: `layout.flexWrap` on a row appears only as the base of the column-width and order candidates: not measured on its own: the row shape is the one Divi writes for equal columns that stack on a phone (nowrap on desktop, wrap on phones); the candidates change the columns, not the row
+- A two-column row as the positioned ancestor: not measured: every position candidate sat in a one-column row, so a decor anchored to a column corner depends on the column being the positioned ancestor
+- z-index -1 behind a coloured row, a coloured image or a card inside a coloured section: not measured: -1 was measured behind a card in a section with no background colour, and with no card in a section and in a column with a dark background colour (the decor stayed on top at its own centre)
 - Transform on hosts other than the group and the image; `translate.linked`; 3D rotation with a perspective; transform in a hover or sticky state; transform on the tablet: not rendered or covered elsewhere: hover transforms and a resting scale/skew.x are in the topic `hover-states`. Measured here: translate x/y, rotate x/y/z, skew.y, scale x and y together, origin x/y and a phone reset
 - The Visual Builder: not checked: every result is a front-end render of a draft page preview on the Docker dev site (Divi 5.15.1, Chromium at 1280, 900 and 400 px)

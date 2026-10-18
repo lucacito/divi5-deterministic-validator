@@ -291,7 +291,7 @@ class StyleGuideLayoutTopicTest extends TestCase
         foreach ( $groups as $heading => [ $topic, $prefixes ] ) {
             $proven = $this->provenPaths( $prefixes );
             // `size` is a list, written in prose as ["flexGrow"]; its candidate is pinned below.
-            $proven = array_values( array_filter( $proven, static fn ( string $p ): bool => ! str_ends_with( $p, '.value.size' ) ) );
+            $proven = array_values( array_filter( $proven, static fn ( string $p ): bool => ! str_ends_with( $p, '.value.size' ) && ! str_ends_with( $p, '.padding.syncVertical' ) ) );
             $this->assertNotSame( [], $proven, $heading . ' has proven paths' );
             $this->assertSame( $proven, $this->taughtPaths( $this->section( $heading, $topic ) ), $heading . ': taught settings == probe-proven paths (exact set)' );
             foreach ( $proven as $path ) {
@@ -386,7 +386,7 @@ class StyleGuideLayoutTopicTest extends TestCase
         $this->assertStringContainsString( '"top left" is the default and changed nothing (rendered: dead)', $adv );
         $this->assertStringContainsString( 'made a 400px page 20px wider than the screen (not safe)', $adv );
         $this->assertStringContainsString( 'did not overflow (rendered)', $adv );
-        $this->assertStringContainsString( 'made a 400px page 24px wider than the screen (not safe)', $adv );
+        $this->assertStringContainsString( 'made a 400px page 24px wider than the screen (not safe; 54px at 900 and 77px at 1280 too)', $adv );
         $this->assertStringContainsString( 'A bare `value` (value: 1) did nothing (dead)', $adv );
         $this->assertStringContainsString( 'any other value ("true") did nothing (dead)', $adv );
         $this->assertStringContainsString( '"auto" on both did nothing (dead)', $siz );
@@ -399,7 +399,7 @@ class StyleGuideLayoutTopicTest extends TestCase
         $this->assertStringContainsString( 'did nothing when the parent was "block"', $siz );
         $this->assertStringContainsString( '`gridColumnMinWidth` without "equalMinimum" did nothing (dead)', $siz );
         $this->assertStringContainsString( 'nothing when the parent was not a grid (dead)', $siz );
-        $this->assertStringContainsString( '`syncVertical` "on" alone did nothing (dead)', $siz );
+        $this->assertStringContainsString( '`padding.syncVertical` "on" is only a builder toggle: alone it did nothing (dead)', $siz );
         $this->assertStringContainsString( '"nowrap" changed only the stylesheet (rendered: css-only)', $siz );
         $this->assertStringContainsString( '"visible" is the default and changed only the stylesheet (rendered: css-only)', $siz );
         $this->assertStringContainsString( '`mode` "relative" alone changed only the stylesheet (rendered: css-only)', $adv );
@@ -432,7 +432,6 @@ class StyleGuideLayoutTopicTest extends TestCase
         $adv = $this->flat( 'layout-advanced' );
         $siz = $this->flat( 'layout-sizing' );
         $this->assertStringContainsString( '`mode` "relative" on the phone only changed 400 px only', $adv );
-        $this->assertStringContainsString( 'A tablet `offset.vertical` of "60px" changed 900 and 400 px: the phone inherits the tablet value', $adv );
         $this->assertStringContainsString( 'A phone `margin.top` of "0px" reset the pull at 400 px only; a tablet value reached 900 and 400 px', $adv );
         $this->assertStringContainsString( 'put it above the first at 400 px only. A tablet "-1" also reached 400 px; a phone "0" cancelled it', $adv );
         $this->assertStringContainsString( 'Each hid the module at its own width only: desktop at 1280, tablet at 900, phone at 400 px; tablet and phone together hid it at 900 and 400', $adv );
@@ -528,13 +527,93 @@ class StyleGuideLayoutTopicTest extends TestCase
             'Divi left 30px between the two groups',
             'overlapped the row above by 20px',
             'covered 80px of the dark section before it and was on top',
-            'changed nothing about who was on top',
             '`translate.y` "48px" covered the card below by 18px',
-            'grew the box from 160 x 80 to 164 x 88',
             'from left 121, top 445 to left 111, top 461 at 1280 px',
         ] as $sentence ) {
             $this->assertStringContainsString( $sentence, $adv );
         }
+    }
+
+    /** Fix round 1: claims that used to rest on prose pins are backed by candidate data. */
+    public function testFixRoundClaimsAreBackedByCandidateData(): void
+    {
+        [ $cands, $results ] = $this->evidence();
+        $adv = $this->flat( 'layout-advanced' );
+        $siz = $this->flat( 'layout-sizing' );
+
+        // 1. equalMinimum: the measured grid-template-columns and rows, not a "row" count.
+        $samples = static fn ( string $w ): array => $results['lay-grd-min-width']['detail'][ $w ]['sample'];
+        $this->assertContains( '0:div:grid-template-columns: 1024px -> 233.5px 233.5px 233.5px 233.5px', $samples( '1280' ), '4 columns at 1280' );
+        $this->assertContains( '0:div:grid-template-columns: 720px -> 220px 220px 220px', $samples( '900' ), '3 columns at 900' );
+        $this->assertContains( '0:div:grid-template-rows: 40px 40px 40px 40px 40px 40px -> 40px 40px', $samples( '1280' ), 'two rows of six items' );
+        $this->assertContains( '0:div:grid-template-rows: 40px 40px 40px 40px 40px 40px -> 40px 40px', $samples( '900' ) );
+        $this->assertNotContains( 'grid-template-columns', $results['lay-grd-min-width']['detail']['400']['changedProps'], 'nothing changed in the columns at 400' );
+        $this->assertSame( 390, $this->geo( 'lay-grd-min-width', 400 )['control']['rect']['height'] );
+        $this->assertSame( 390, $this->geo( 'lay-grd-min-width', 400 )['candidate']['rect']['height'], 'identical to the one-column control' );
+        $this->assertStringNotContainsString( 'one row at 1280', $siz );
+
+        // 2. auto margins without a width: the candidate exists and measured 51px; with width 100% the group keeps 480px.
+        $this->assertArrayNotHasKey( 'width', $cands['lay-siz-center-auto-margins-no-width']['base']['module']['decoration']['sizing']['desktop']['value'] );
+        $this->assertSame( '480px', $cands['lay-siz-center-auto-margins-no-width']['base']['module']['decoration']['sizing']['desktop']['value']['maxWidth'] );
+        foreach ( [ 1280, 900, 400 ] as $w ) {
+            $this->assertSame( 51, $this->geo( 'lay-siz-center-auto-margins-no-width', $w )['candidate']['rect']['width'], 'shrunk at ' . $w );
+        }
+        $this->assertSame( 480, $this->geo( 'lay-siz-center-auto-margins', 1280 )['candidate']['rect']['width'], 'with width 100% it keeps 480px' );
+
+        // 3. z-index -1: the condition of the behind-the-card result and what the coloured section and column measured.
+        $this->assertArrayNotHasKey( 'wrapperBase', $cands['lay-z-behind-card'], 'the card result was measured in a section with no background colour' );
+        foreach ( [ 'lay-z-behind-coloured-section' => 'section', 'lay-z-behind-coloured-column' => 'column' ] as $id => $wrapper ) {
+            $this->assertSame( '#0f172a', $cands[ $id ]['wrapperBase'][ $wrapper ]['module']['decoration']['background']['desktop']['value']['color'] );
+            $this->assertEmpty( $cands[ $id ]['siblings'] ?? [], $id . ' has no card: it asks about the section or column background' );
+            foreach ( [ 1280, 900, 400 ] as $w ) {
+                $g = $this->geo( $id, $w );
+                $this->assertSame( [ 'measured', 'measured' ], [ $g['control']['hitCentre'], $g['candidate']['hitCentre'] ], $id . ' at ' . $w . ': the decor stayed on top at its own centre' );
+            }
+        }
+        $this->assertStringContainsString( 'behind the card (a section with no background colour). In a section, and in a column, with a dark background colour, -1 left the decor on top at its own centre at all three widths, so do not count on -1 to tuck a decor behind a coloured block', $adv );
+
+        // 4. the image host label.
+        $this->assertContains( 'position', $this->changedProps( 'lay-pos-host-image' ) );
+        $this->assertSame( 16, $this->geo( 'lay-pos-host-image', 1280 )['control']['rect']['height'], 'the image box was not laid out when measured' );
+        $this->assertStringContainsString( '(image: a computed position change only; its box was not laid out when measured)', $adv );
+
+        // 5. the corrected candidates record the surprise in their notes.
+        foreach ( [
+            'lay-pos-mode-relative'        => 'modules are already position relative',
+            'lay-pos-origin-needs-mode'    => 'css-only',
+            'lay-flx-display-flex-default' => 'already display: flex',
+            'lay-ovf-x-visible'            => 'browser default',
+            'lay-pos-offset-without-mode'  => 'an offset needs no mode',
+        ] as $id => $phrase ) {
+            $this->assertStringContainsString( ' Measured: ', $cands[ $id ]['note'], $id );
+            $this->assertStringContainsString( $phrase, $cands[ $id ]['note'], $id );
+        }
+
+        // 6. syncVertical is not a taught bullet, it is a rule.
+        $this->assertDoesNotMatchRegularExpression( '/^- `padding\.syncVertical`/m', $this->section( 'Spacing', 'layout-sizing' ) );
+        $this->assertSame(
+            [ 'module.decoration.spacing.{bp}.value.padding.bottom', 'module.decoration.spacing.{bp}.value.padding.left', 'module.decoration.spacing.{bp}.value.padding.right', 'module.decoration.spacing.{bp}.value.padding.top' ],
+            $this->taughtPaths( $this->section( 'Spacing', 'layout-sizing' ) )
+        );
+
+        // 7. strong values are flagged and the overflow figures cover every width.
+        $this->assertSame( [ 77, 54, 24 ], [ $results['lay-tf-translate-x-wide']['detail']['1280']['overflowPx'], $results['lay-tf-translate-x-wide']['detail']['900']['overflowPx'], $results['lay-tf-translate-x-wide']['detail']['400']['overflowPx'] ] );
+        $this->assertStringContainsString( '"-25%" (a share of the column width; a strong value) moved the module 256, 180 and 80px', $adv );
+        $this->assertStringContainsString( 'a section with "-80px" (a strong pull) covered 80px', $adv );
+        $this->assertStringContainsString( 'A light section that overlaps the dark section before it (-80px is a strong pull):', $adv );
+
+        // 8. the clip recommendation carries its side effect.
+        $this->assertContains( 'overflow-y', $this->changedProps( 'lay-ovf-x-hidden' ) );
+        $this->assertStringContainsString( 'that also computes the other axis as auto (see `layout-sizing`, Overflow), so it clips vertical bleed (sticky children were not measured)', $adv );
+
+        // 9. containing block.
+        $this->assertStringContainsString( 'a two-column row: every position candidate sat in a one-column row, so a badge in the corner of a card depends on the column being the positioned ancestor', $adv );
+
+        // 10. limits are consistent with the measured clamp and the row flexWrap.
+        $this->assertSame( 245, $this->geo( 'lay-spc-clamp', 1280 )['candidate']['rect']['height'] );
+        $this->assertStringContainsString( 'spacing in calc() or vw other than the one clamp() shown', $siz );
+        $this->assertStringContainsString( 'the row `flexWrap` of example 1 is only the base of the measured column-width candidates', $siz );
+        $this->assertStringNotContainsString( 'spacing in calc() or vw, and the Visual Builder', $siz );
     }
 
     public function testSizingNumbersMatchTheRenderedRectangles(): void
@@ -576,12 +655,12 @@ class StyleGuideLayoutTopicTest extends TestCase
         foreach ( [
             'gave 540px', 'made it 576, 405 and 180px high at 1024, 720 and 320px wide', 'made a square of 320px (the group had `maxWidth` "320px")',
             'capped a group set to 300px', '(left 400 for "center", 672 for "right", against 128 at 1280 px)',
-            'the auto margins shrank the group to its content, so set both', 'The margin pair "auto" centred it the same way',
+            'Margin "auto" on both sides without `width` "100%" shrank a `maxWidth` "480px" group to its content (51px wide at 1280, 900 and 400 px), so set both; with `width` "100%" the margin pair centred it the same way',
             'at 1280 px (row 1024px) 4_24 gave 124px, 10_24 394, 16_24 664, 18_24 754 and 20_24 844px; at 900 px 87, 277, 467, 530 and 593px',
             'the phone value "24_24" kept the columns stacked',
             'widened a 120px child to 874, 570 and 170px at 1280, 900 and 400 px in a flex row',
             '`alignSelf` "flex-end" dropped a stretched 200px child to the bottom of the row',
-            'made six headings 110px high instead of 390px', '"equalMinimum" with "200px" gave one row at 1280 and 900 px and one column at 400 px',
+            'made six headings 110px high instead of 390px', '"equalMinimum" with "200px" gave 4 columns at 1280 px and 3 at 900 px (two rows of six items) and changed nothing at 400 px, where one column already fits',
             '`gridColumnSpan` "2" widened a child from 321 to 673px',
             'with only `padding.top` "40px" the group grew by 40px, not 80, so set every side you want',
             'gave sections of 280, 200 and 136px (content 40px)', 'gave 245, 184 and 136px',

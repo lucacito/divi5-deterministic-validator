@@ -27,8 +27,8 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic dividers | get_style_guide with topic "dividers", only when asked for | 8,767 | 2,192 |
 | The style guide, topic motion | get_style_guide with topic "motion", only when asked for | 8,690 | 2,173 |
 | The style guide, topic hover-states | get_style_guide with topic "hover-states", only when asked for | 5,637 | 1,410 |
-| The style guide, topic layout-advanced | get_style_guide with topic "layout-advanced", only when asked for | 9,920 | 2,480 |
-| The style guide, topic layout-sizing | get_style_guide with topic "layout-sizing", only when asked for | 9,924 | 2,481 |
+| The style guide, topic layout-advanced | get_style_guide with topic "layout-advanced", only when asked for | 9,973 | 2,494 |
+| The style guide, topic layout-sizing | get_style_guide with topic "layout-sizing", only when asked for | 9,898 | 2,475 |
 | The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 2,103 | 526 |
 | The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 254 | 64 |
 | A served recipe (hero-cta, default look) | get_section_recipes with name "hero-cta" and no design_language | 2,835 | 709 |

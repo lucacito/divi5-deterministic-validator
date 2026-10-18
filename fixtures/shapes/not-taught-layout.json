@@ -64,8 +64,20 @@
     "reason": "never claimed: the probe compares computed `overflow` values (and the page width). Setting one axis changed the other computed axis too (a CSS rule), which the topic records"
   },
   {
-    "item": "Spacing units other than px, a percentage padding and clamp(); calc() and vw in spacing; margin sync flags and `padding.syncHorizontal`",
-    "reason": "not rendered: clamp(48px, 8vw, 120px) and a 5% padding were measured. A spacing value with a semicolon, backslash or brace is refused by the plugin's own gate (CUSTOM_CSS_NOT_ALLOWED) before it could be probed, and Divi drops it as well (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:143-154, source)"
+    "item": "Spacing units and flags beyond the ones measured: calc(), vw outside the one clamp(), margin sync flags and `padding.syncHorizontal`",
+    "reason": "not rendered. Measured: px, a 5% padding and clamp(48px, 8vw, 120px) (top and bottom padding of a section). A spacing value with a semicolon, backslash or brace is refused by the plugin's own gate (CUSTOM_CSS_NOT_ALLOWED) before it could be probed, and Divi drops it as well (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:143-154, source)"
+  },
+  {
+    "item": "Flex settings on a row: `layout.flexWrap` on a row appears only as the base of the column-width and order candidates",
+    "reason": "not measured on its own: the row shape is the one Divi writes for equal columns that stack on a phone (nowrap on desktop, wrap on phones); the candidates change the columns, not the row"
+  },
+  {
+    "item": "A two-column row as the positioned ancestor",
+    "reason": "not measured: every position candidate sat in a one-column row, so a decor anchored to a column corner depends on the column being the positioned ancestor"
+  },
+  {
+    "item": "z-index -1 behind a coloured row, a coloured image or a card inside a coloured section",
+    "reason": "not measured: -1 was measured behind a card in a section with no background colour, and with no card in a section and in a column with a dark background colour (the decor stayed on top at its own centre)"
   },
   {
     "item": "Transform on hosts other than the group and the image; `translate.linked`; 3D rotation with a perspective; transform in a hover or sticky state; transform on the tablet",

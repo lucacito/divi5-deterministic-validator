@@ -44,7 +44,9 @@
  *            of its parent and of its previous and next element siblings, the area where the measured element overlaps a sibling and WHICH element
  *            is on top at the centre of that overlap (document.elementFromPoint: "measured" | "sibling" | "other"). The rectangle (top, left,
  *            width, height, rounded) is also added to the compared properties as `rect:*`, so a moved element counts as a computed difference.
- *            Result: detail[width].geometry = { control, candidate } (each: rect, parent, prev, next, overlap {area, with, top}). Added in the
+ *            Result: detail[width].geometry = { control, candidate } (each: rect, parent, prev, next, overlap {area, with, top}, hitCentre:
+ *            "measured" when the measured element itself is the one on top at its own centre, "other" when something covers it, "none" when it
+ *            has no box or the centre is off the page; hitCentre was added in fix round 1 of the layout task, absent from older result files). Added in the
  *            layout task; absent = nothing changes for older candidate files.
  *   settleMs (optional) milliseconds to wait before measuring (default 600; 1200 with a `state`; 3000 for a number counter).
  *   ignore   (optional) computed property names (e.g. ["opacity","transform"]) left out of the comparison on BOTH pages. Needed when the
@@ -305,6 +307,22 @@ function snapshotInPage({ cls, index, withRect, attrs, ignore, geometry }) {
     const next = sibOf(m.nextElementSibling);
     const rm = docRect(m);
     const out = { rect: rm, parent: m.parentElement ? docRect(m.parentElement) : null, prev: prev ? docRect(prev) : null, next: next ? docRect(next) : null, overlap: { area: 0, with: null, top: null } };
+    // Which element is on top at the centre of the measured element itself (is it hidden behind a background?).
+    {
+      const cxd = rm.left + rm.width / 2;
+      const cyd = rm.top + rm.height / 2;
+      const back0 = window.scrollY;
+      let yv = cyd - window.scrollY;
+      if (rm.width > 0 && rm.height > 0) {
+        if (yv < 0 || yv >= window.innerHeight) { window.scrollTo(0, Math.max(0, cyd - window.innerHeight / 2)); yv = cyd - window.scrollY; }
+        const xv = cxd - window.scrollX;
+        const hit0 = xv >= 0 && xv < window.innerWidth && yv >= 0 && yv < window.innerHeight ? document.elementFromPoint(xv, yv) : null;
+        out.hitCentre = !hit0 ? 'none' : m.contains(hit0) ? 'measured' : 'other';
+        window.scrollTo(0, back0);
+      } else {
+        out.hitCentre = 'none';
+      }
+    }
     let best = null;
     for (const [name, e] of [['prev', prev], ['next', next]]) {
       if (!e) continue;
