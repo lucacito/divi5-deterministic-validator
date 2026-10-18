@@ -38,6 +38,14 @@ final class RecipeTokens
     /** Every colour or font token, whatever its role. */
     private const ANY = '/\{\{aied:(?:color|font):[^{}]*\}\}/';
 
+    /** Every {{aied:...}} token of any kind (color, font, image or something else). */
+    private const ANY_AIED = '/\{\{aied:[^{}]*\}\}/';
+
+    /** At most this many distinct tokens are listed in advise(). */
+    public const MAX_LISTED = 20;
+
+    public const UNRESOLVED_MESSAGE = "This layout still contains the placeholder tokens listed in tokens. A token is not a real value: Divi will not understand it, so a color or font would be wrong and an image would not load. It is valid and saved as is; this is only a hint. Fetch the recipe again through get_section_recipes (the recipe it returns has every token already replaced with a real value, and you can pass a design language), or replace each listed token with a real value yourself.";
+
     /** A well-formed colour or font token (role characters only). */
     private const TOKEN = '/\{\{aied:(color|font):([a-z-]+)\}\}/';
 
@@ -112,5 +120,33 @@ final class RecipeTokens
         preg_match_all( self::ANY, $text, $m );
 
         return array_values( $m[0] );
+    }
+
+    /**
+     * Every {{aied:...}} token of any kind in $text (color, font, image, unknown), in order, repeats included.
+     *
+     * @return list<string>
+     */
+    public static function foundAll( string $text ): array
+    {
+        preg_match_all( self::ANY_AIED, $text, $m );
+
+        return array_values( $m[0] );
+    }
+
+    /**
+     * The advisory for content that still carries a token: each distinct token once, in order of first use (at most
+     * MAX_LISTED), plus what to do. Null when there is none. Advisory only; it never changes a verdict or the content.
+     *
+     * @return ?array{tokens: list<string>, message: string}
+     */
+    public static function advise( string $text ): ?array
+    {
+        $tokens = array_values( array_unique( self::foundAll( $text ) ) );
+        if ( [] === $tokens ) {
+            return null;
+        }
+
+        return [ 'tokens' => array_slice( $tokens, 0, self::MAX_LISTED ), 'message' => self::UNRESOLVED_MESSAGE ];
     }
 }

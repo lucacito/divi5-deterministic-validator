@@ -144,4 +144,31 @@ class RecipeTokensTest extends TestCase
             $this->assertGreaterThanOrEqual( 4.5, DesignLanguages::contrast( (string) $c['accent_text'], (string) $c['accent'] ), "$id text on accent" );
         }
     }
+
+    public function testAdviseListsEveryAiedTokenOnceInOrderAndIsSilentWithoutOne(): void
+    {
+        $this->assertNull( RecipeTokens::advise( '<!-- wp:divi/placeholder --><!-- /wp:divi/placeholder -->' ) );
+        $this->assertNull( RecipeTokens::advise( '' ) );
+        $this->assertNull( RecipeTokens::advise( 'half a token {{aied:color' ) );
+
+        $text   = '{"a":"{{aied:color:accent}}","b":"{{aied:image:hero-1}}","c":"{{aied:color:accent}}","d":"{{aied:font:display}}","e":"{{aied:color:nonsense}}"}';
+        $advice = RecipeTokens::advise( $text );
+        $this->assertNotNull( $advice );
+        $this->assertSame( [ '{{aied:color:accent}}', '{{aied:image:hero-1}}', '{{aied:font:display}}', '{{aied:color:nonsense}}' ], $advice['tokens'] );
+        $this->assertStringContainsString( 'get_section_recipes', $advice['message'] );
+        $this->assertCount( 5, RecipeTokens::foundAll( $text ), 'foundAll keeps repeats; advise lists each token once' );
+    }
+
+    public function testAdviseCapsTheListAndIsSafeOnGarbage(): void
+    {
+        $many = '';
+        for ( $i = 0; $i < 60; ++$i ) {
+            $many .= '{{aied:image:img-' . $i . '}} ';
+        }
+        $advice = RecipeTokens::advise( $many );
+        $this->assertNotNull( $advice );
+        $this->assertCount( RecipeTokens::MAX_LISTED, $advice['tokens'] );
+        $this->assertNull( RecipeTokens::advise( "\xff\xfe not utf-8 \x00" ) );
+        $this->assertSame( [ '{{aied:color:accent}}', '{{aied:color:accent}}' ], RecipeTokens::foundAll( "\xff{{aied:color:accent}}\xfe{{aied:color:accent}}" ) );
+    }
 }

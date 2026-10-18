@@ -111,6 +111,8 @@ final class OpenApiSpec
                         'description' => 'Present only when there is something to report. Advisories never change valid or the save.',
                         'properties'  => [
                             'style_references' => ['$ref' => '#/components/schemas/StyleAdvisory'],
+                            'design_variety'    => ['type' => 'object', 'description' => 'A valid page of three or more sections that looks repetitive: findings (code, sections, message, try) and a message. A hint only; the page is saved as is.'],
+                            'unresolved_tokens' => ['type' => 'object', 'description' => 'tokens: the aied placeholder tokens (double curly braces) still in the layout, each once. A hint only: fetch the recipe again through get_section_recipes or use a real value.'],
                         ],
                     ],
                     'GlobalPreset' => [
