@@ -35,8 +35,8 @@ class GuideDesignDirectionTest extends TestCase
     public function testPicksALanguageFirstAndStatesIt( string $md ): void
     {
         $this->assertStringContainsString( 'design-languages', $md );
-        $this->assertMatchesRegularExpression( '/pick a design language first/i', $md );
-        $this->assertMatchesRegularExpression( '/state (it|which|the)/i', $md );
+        $flat = self::flat( $md );
+        $this->assertMatchesRegularExpression( '/pick a design language first[^.]*?(choose|read)[^.]*?\bstate it\b/i', $flat );
     }
 
     /** @dataProvider guides */
@@ -55,9 +55,31 @@ class GuideDesignDirectionTest extends TestCase
     /** @dataProvider guides */
     public function testActsOnTheVarietyAdvisory( string $md ): void
     {
-        $this->assertStringContainsString( 'advisories.design_variety', $md );
-        $this->assertMatchesRegularExpression( '/`try`/', $md );
-        $this->assertMatchesRegularExpression( '/save again/i', $md );
+        $flat = self::flat( $md );
+        $this->assertStringContainsString( 'advisories.design_variety', $flat );
+        $this->assertMatchesRegularExpression( '/`try` has names|`try` names|`try` if it has any/', $flat );
+        $this->assertStringContainsString( 'it never blocks a save, and the page is saved as it is', $flat );
+        $this->assertMatchesRegularExpression( '/save again/i', $flat );
+    }
+
+    /** @dataProvider guides */
+    public function testEmptyTryIsNotTreatedAsAReplacementList( string $md ): void
+    {
+        $this->assertMatchesRegularExpression( "/`try` is empty, follow the finding's `message`/", self::flat( $md ) );
+    }
+
+    public function testDesignLanguageIsTaughtTogetherWithName(): void
+    {
+        foreach ( [ LandingGuide::markdown(), SiteGuide::markdown() ] as $md ) {
+            $this->assertMatchesRegularExpression( '/`name` plus (the site\'s )?`design_language`/', self::flat( $md ) );
+            $this->assertStringContainsString( 'works only together with `name`', self::flat( $md ) );
+        }
+        $this->assertStringContainsString( 'used together with name', self::flat( SectionRecipes::catalog() ) );
+    }
+
+    private static function flat( string $md ): string
+    {
+        return (string) preg_replace( '/\s+/', ' ', $md );
     }
 
     public function testStyleGuideNoLongerSaysOneAestheticWithoutThePointer(): void

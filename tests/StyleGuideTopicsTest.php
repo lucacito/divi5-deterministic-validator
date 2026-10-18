@@ -22,6 +22,7 @@ class StyleGuideTopicsTest extends TestCase
 {
     /** Bytes of StyleGuide::markdown() measured on commit c777962, before the topics existed. */
     private const ORIGINAL_LENGTH = 27908;
+    private const MAX_GROWTH = 1200;
 
     private const TOPIC_LINE = 'Topics: call get_style_guide with topic=<name>: design-languages, design-language:<id>.';
 
@@ -50,7 +51,9 @@ class StyleGuideTopicsTest extends TestCase
     public function testDefaultGuideOnlyGrowsByTheTopicLine(): void
     {
         $text = StyleGuide::markdown();
-        $this->assertLessThanOrEqual( 400, strlen( $text ) - self::ORIGINAL_LENGTH );
+        // Ruling 5: growth over the original guide is capped at MAX_GROWTH (1200) across Task 7 (topic line)
+        // and Task 10 (the rewritten design paragraph with composition rules and the advisory instruction).
+        $this->assertLessThanOrEqual( self::MAX_GROWTH, strlen( $text ) - self::ORIGINAL_LENGTH );
         $this->assertGreaterThan( 0, strlen( $text ) - self::ORIGINAL_LENGTH );
         $this->assertStringEndsWith( self::TOPIC_LINE, $text );
         $this->assertSame( 1, substr_count( $text, 'Topics: call get_style_guide' ) );

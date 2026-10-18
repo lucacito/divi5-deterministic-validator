@@ -317,7 +317,7 @@ Pick a design language first: call get_style_guide topic=design-languages, choos
 - at most one card grid per three sections
 - give the first section a focal element (image, gradient or large type)
 Use a dominant + accent color, generous vertical padding (5–8vw), round cards (12–20px), box-shadow and subtle transforms for depth, entrance animations sparingly. Check text contrast against the lightest part of its background (on gradients, the lightest stop).
-If a save or validate result carries `advisories.design_variety`, act on it: swap a section for a different recipe from its `try` names (get_section_recipes), then save again.
+If a save or validate result carries `advisories.design_variety`, act on it: if a finding's `try` has names, swap that section for one of them (get_section_recipes); if `try` is empty, follow the finding's `message`. Then save again. It is a hint only: it never blocks a save, and the page is saved as it is.
 
 ## Worked example — one styled section
 ```

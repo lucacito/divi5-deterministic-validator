@@ -42,14 +42,15 @@ same tokens so the site reads as one brand.
 
 ## 3. Build each page (call create_page per page)
 - Pass a stable `slug` to create_page so URLs are predictable for linking.
-- Reuse section recipes (get_section_recipes, with the site's `design_language`) and the same
+- Reuse section recipes (get_section_recipes: browse by `role`, then fetch with `name` plus the site's `design_language`, which works only together with `name`) and the same
   hero/card/CTA styling, but vary the layouts per page:
   - never the same layout in adjacent sections
   - alternate background treatment
   - at most one card grid per three sections
   - give the first section a focal element (image, gradient or large type)
 - If a save or validate result carries `advisories.design_variety`, act on it: swap a section
-  for a different recipe from its `try` names, then save again.
+  for one of its `try` names if it has any; if `try` is empty, follow the finding's `message`. Then save
+  again. It is a hint only: it never blocks a save, and the page is saved as it is.
 - Each page: one h1 (its main headline), h2 section titles, number-counters for
   stats, all-four-corner radii, side-by-side button pairs, multi-column rows that
   stack on phone — exactly as in get_style_guide.
