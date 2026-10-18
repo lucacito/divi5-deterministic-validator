@@ -4080,5 +4080,838 @@
         "controlNoise": false
       }
     }
+  },
+  {
+    "id": "bg-image-position-right-top",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 100% 0%"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 100% 0%"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 100% 0%"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-image-position-right-center",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 100% 50%"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 100% 50%"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 100% 50%"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-image-position-center-top",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 50% 0%"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 50% 0%"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 50% 0%"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-image-position-left-bottom",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 0% 100%"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 0% 100%"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 0% 100%"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-image-position-right-bottom",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 100% 100%"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 100% 100%"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 100% 100%"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-image-position-left-center",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 0% 50%"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 0% 50%"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-position: 50% 50% -> 0% 50%"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-linear-keyword-to-top",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-linear-keyword-to-top-right",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to right top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to right top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to right top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-linear-keyword-to-bottom-right",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to right bottom, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to right bottom, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to right bottom, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-linear-keyword-to-bottom",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-linear-keyword-to-bottom-left",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left bottom, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left bottom, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left bottom, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-linear-keyword-to-left",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-linear-keyword-to-top-left",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-radial-word-center",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-radial-word-top",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 50% 0%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 50% 0%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 50% 0%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-radial-word-bottom",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 50% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 50% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 50% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-radial-word-left",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 0% 50%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 0% 50%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 0% 50%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-radial-word-right",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 100% 50%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 100% 50%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 100% 50%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-gradient-tablet-phone-override",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(45deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-pattern-offset-without-origin",
+    "effect": false,
+    "widths": {
+      "400": false,
+      "900": false,
+      "1280": false
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-pattern-offset-repeat-space",
+    "effect": false,
+    "widths": {
+      "400": false,
+      "900": false,
+      "1280": false
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-pattern-offset-size-stretch",
+    "effect": false,
+    "widths": {
+      "400": false,
+      "900": false,
+      "1280": false
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "bg-image-offset-without-position",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      }
+    },
+    "cssOnly": true
+  },
+  {
+    "id": "bg-mask-offset-without-position",
+    "effect": false,
+    "widths": {
+      "400": false,
+      "900": false,
+      "1280": false
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      }
+    }
   }
 ]

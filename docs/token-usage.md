@@ -23,7 +23,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic design-languages | get_style_guide with topic "design-languages", only when asked for | 698 | 175 |
 | The style guide, topic design-language:editorial | get_style_guide with topic "design-language:editorial", only when asked for | 1,669 | 418 |
 | The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 1,931 | 483 |
-| The style guide, topic backgrounds | get_style_guide with topic "backgrounds", only when asked for | 7,606 | 1,902 |
+| The style guide, topic backgrounds | get_style_guide with topic "backgrounds", only when asked for | 8,881 | 2,221 |
 | The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 2,103 | 526 |
 | The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 254 | 64 |
 | A served recipe (hero-cta, default look) | get_section_recipes with name "hero-cta" and no design_language | 2,835 | 709 |

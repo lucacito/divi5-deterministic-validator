@@ -1,0 +1,42 @@
+[
+  {
+    "item": "Background video (video.mp4 / video.webm)",
+    "reason": "excluded by policy: it needs a media file or URL, and the plugin never teaches remote or invented media"
+  },
+  {
+    "item": "Image blend modes other than multiply and soft-light",
+    "reason": "not rendered: the other modes in Functions.php:152-171 (screen, overlay, darken, lighten, color-dodge, color-burn, hard-light, difference, exclusion, hue, saturation, color, luminosity) were not sampled"
+  },
+  {
+    "item": "Pattern and mask blend modes other than multiply",
+    "reason": "not rendered: only multiply was probed for patterns and for masks"
+  },
+  {
+    "item": "Setting a default back explicitly: mask size stretch, mask aspectRatio landscape, pattern size initial, image repeat no-repeat",
+    "reason": "not rendered as a set value (they are the defaults); the topic names them only as defaults"
+  },
+  {
+    "item": "Hover and sticky states of any background setting",
+    "reason": "not measured (the probe saves one state, value)"
+  },
+  {
+    "item": "tablet and phone overrides for anything except the gradient direction",
+    "reason": "only bg-gradient-tablet-phone-override was probed; the other families use the same breakpoint inheritance in Divi's code but were not rendered with overrides"
+  },
+  {
+    "item": "A pattern and a mask, or a mask and a gradient, on the same element",
+    "reason": "combinations were not probed; every candidate changes one family at a time"
+  },
+  {
+    "item": "Width, height and offset units other than px and %",
+    "reason": "not rendered: Divi also allows em, rem, cm, mm, in, pc, ex, vh, vw (Functions.php:127-141), only px and % were tried"
+  },
+  {
+    "item": "Gradient stop colours given as global colour or variable references, and a gradient length in a unit other than %",
+    "reason": "not rendered in these candidates (global styles are taught elsewhere and need the site's own ids)"
+  },
+  {
+    "item": "Pattern and mask styles from add-on plugins",
+    "reason": "only the 24 pattern and 23 mask styles shipped in Divi 5.15.1 were rendered"
+  }
+]

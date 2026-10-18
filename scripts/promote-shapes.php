@@ -13,7 +13,8 @@
  * `"allowCssOnly": true` AND has a non-empty `note` saying why a stylesheet-only effect is proof enough. A candidate's optional `parent`
  * and `children` (see scripts/verify-shapes.cjs) are described in its evidence section. Every candidate that is NOT promoted (dead, overflowing a
  * phone, an error, a stylesheet-only result without `allowCssOnly`, an unreliable measurement) is listed with its reason in a
- * `## Not taught (<candidates file name>)` section of the evidence file, which is rewritten on every run. Pure PHP, no WordPress, idempotent.
+ * `## Not taught (<candidates file name>)` section of the evidence file (followed by the items of the optional hand-written
+ * `fixtures/shapes/not-taught-<candidates file name>.json`, [{item, reason}]), which is rewritten on every run. Pure PHP, no WordPress, idempotent.
  */
 
 declare(strict_types=1);
@@ -175,7 +176,13 @@ foreach ( $candidates as $c ) {
 // The "Not taught" section of this candidates file: rewritten each run (replaced when it exists, appended otherwise).
 $heading = "## Not taught ($family)";
 $evidence = (string) preg_replace( '/\n' . preg_quote( $heading, '/' ) . '\n.*?(?=\n## |\z)/s', '', $evidence );
-if ( $notTaught !== [] ) {
+// Optional hand-written list of what was deliberately NOT measured: fixtures/shapes/not-taught-<family>.json = [{"item","reason"}, ...].
+$notMeasured = [];
+$notMeasuredFile = $root . '/fixtures/shapes/not-taught-' . $family . '.json';
+if ( is_file( $notMeasuredFile ) ) {
+    $notMeasured = $read( $notMeasuredFile );
+}
+if ( $notTaught !== [] || $notMeasured !== [] ) {
     $byId = [];
     foreach ( $candidates as $c ) {
         $byId[ (string) ( $c['id'] ?? '' ) ] = $c;
@@ -184,6 +191,12 @@ if ( $notTaught !== [] ) {
     foreach ( $notTaught as $id => $why ) {
         $note      = trim( (string) ( $byId[ $id ]['note'] ?? '' ) );
         $evidence .= '- `' . $id . '`: ' . $why . ( $note !== '' ? '. ' . $note : '' ) . "\n";
+    }
+    if ( $notMeasured !== [] ) {
+        $evidence .= "\nNot measured, therefore not taught as proven (from `fixtures/shapes/not-taught-" . $family . ".json`):\n\n";
+        foreach ( $notMeasured as $row ) {
+            $evidence .= '- ' . trim( (string) ( $row['item'] ?? '' ) ) . ': ' . trim( (string) ( $row['reason'] ?? '' ) ) . "\n";
+        }
     }
 }
 

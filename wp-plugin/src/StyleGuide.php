@@ -67,7 +67,8 @@ final class StyleGuide
         return <<<'MD'
 # Backgrounds: gradients, images, patterns, masks
 
-Every shape here was rendered on the real Divi 5.15.1 and changed the page; nothing is guessed. They work on a
+Every shape and style listed here was rendered on the real Divi 5.15.1 and changed the page; a rule marked (source) is read
+from Divi's own code and was not rendered, and the Limits section says what was not measured. They work on a
 `divi/section`, a `divi/row` and a `divi/column`. All paths below sit under
 `module.decoration.background.desktop.value.` (for example `module.decoration.background.desktop.value.gradient.type`);
 use `desktop`, Divi cascades it to tablet and phone. `color` is the plain fill under the rest.
@@ -77,8 +78,10 @@ Never use video (it needs a media file) and never write CSS.
 - `enabled` = "on" and `stops`: a list of `{"position":"0","color":"#hex"}` (position is a string, 0 to 100, in the unit of
   `length`). Two or more stops; three or more make a multi-stop blend.
 - `type`: "linear" (default), "circular", "elliptical", "conic".
-- `direction` (linear): an angle such as "135deg" or the keyword "to right". For "conic" it is the start angle ("90deg").
-- `directionRadial` (circular, elliptical, conic): where the centre sits, a pair of words such as "top right".
+- `direction` (linear): an angle such as "135deg", or one of the eight keywords "to top", "to top right", "to right",
+  "to bottom right", "to bottom", "to bottom left", "to left", "to top left". For "conic" it is the start angle ("90deg").
+- `directionRadial` (circular, elliptical, conic): where the centre sits: one word (center, top, bottom, left, right) or a
+  vertical-and-horizontal pair such as "top right".
 - Repeating stripes: `repeat` = "on" together with a short `length` such as "25%".
 - `overlaysImage` = "on" draws the gradient above the section's image (use a translucent gradient for text over a photo).
 - A conic gradient has a hard seam at its start angle unless the first and last stop share a colour.
@@ -86,8 +89,10 @@ Never use video (it needs a media file) and never write CSS.
 ## Image (`image.*`)
 - `url`: an image token from get_image_guide or a Media Library URL; never a remote or invented URL.
 - `size`: "cover", "contain", or "custom" with `width` and `height` ("320px", "auto"); width and height only apply with "custom".
-- `position`: a horizontal word (left, center, right) plus a vertical word (top, center, bottom), "left top".
-  `horizontalOffset` and `verticalOffset` ("40px") move it away from the named edge; set them together.
+- `position`: a horizontal word plus a vertical word: "left top", "center top", "right top", "left center", "right center",
+  "left bottom", "center bottom", "right bottom". `horizontalOffset` and `verticalOffset` ("40px") move the image away from
+  the named edge, so they only act next to a named left or right (horizontal) and top or bottom (vertical) `position`; with
+  the default centre they move nothing (source; measured as a stylesheet-only change). Set both together.
 - `repeat`: "repeat", "repeat-x", "repeat-y", "space", "round" (default no-repeat); useful with a small custom size.
 - `blend`: "multiply" or "soft-light" mix the image with the section's `color` (set a colour to blend with).
 - `parallax.enabled` = "on" scrolls the image slower than the page; `parallax.method` = "off" selects Divi's other parallax method.
@@ -97,8 +102,10 @@ A repeating texture. Set `enabled` = "on", a `style` and a `color` (use a low al
 text stays readable).
 - `style`, 24 proven: 3d-diamonds, checkerboard, confetti, crosses, cubes, diagonal-stripes, diagonal-stripes-2, diamonds, honeycomb, inverted-chevrons, inverted-chevrons-2, ogees, pills, pinwheel, polka-dots, scallops, shippo, smiles, squares, triangles, tufted, waves, zig-zag, zig-zag-2.
 - `size`: "cover", "contain", "stretch", or "custom" with `width` and `height` ("60px") as the tile size.
-- `repeat`: "repeat-x", "repeat-y", "space", "round". `repeatOrigin`: "right bottom" style words;
-  `horizontalOffset` and `verticalOffset` shift the start (set together). Repeat and origin need a `size` other than "stretch".
+- `repeat`: "repeat-x", "repeat-y", "space", "round". `repeatOrigin`: "left top" or "right bottom" style words.
+  `horizontalOffset` and `verticalOffset` shift the start, but only when `repeatOrigin` is also set, `repeat` is not "space"
+  and `size` is not "stretch"; without those they change nothing (each missing case measured). Set both together.
+  `repeat` and `repeatOrigin` also need a `size` other than "stretch" (source).
 - `blend` = "multiply". `transform`: a list of "flipHorizontal", "flipVertical", "invert", "rotate"
   (rotate does nothing for crosses, pinwheel, polka-dots, shippo, tufted: their artwork is symmetric).
 
@@ -108,9 +115,11 @@ only inside the shape. Set `color` to the colour behind the section (the page or
 Set `enabled` = "on", a `style` and a `color`.
 - `style`, 23 proven: arch, bean, blades, caret, chevrons, corner-blob, corner-lake, corner-paint, corner-pill, corner-square, diagonal, diagonal-bars, diagonal-bars-2, diagonal-pills, ellipse, floating-squares, honeycomb, layer-blob, paint, rock-stack, square-stripes, triangles, wave.
 - `aspectRatio`: "landscape" (default), "square", "portrait".
-- `size`: "cover", "contain", or "custom" with `width` and `height` ("60%", "auto"); `position` ("right top") and the
-  offsets apply only when `size` is not the default stretch.
-- `blend` = "multiply". `transform`: the same four words as a pattern.
+- `size`: "cover", "contain", or "custom" with `width` and `height` ("60%", "auto"); `position` ("right top") applies
+  only when `size` is not the default stretch (source), and `horizontalOffset` and `verticalOffset` ("40px") also need a
+  `position` (without one they change nothing, measured); set both offsets together.
+- `blend` = "multiply". `transform`: the same four words as a pattern; the rotate exception above is pattern-only (in Divi's
+  files every one of the 23 mask styles has distinct rotated artwork; source).
 
 ## Worked examples (each validates)
 Gradient:
@@ -156,8 +165,10 @@ Mask:
 
 ## Limits
 Text over a pattern, photo or conic gradient needs a contrast check; patterns and masks are decoration, never carry
-meaning. Per-breakpoint overrides use `tablet` and `phone` the same way. Combinations (a pattern with a mask, a mask
-with a gradient on one element) and any value not listed here are not proven: do not use them.
+meaning. A `tablet` or `phone` value replaces the desktop one at that width (rendered for the gradient `direction`;
+other settings inherit the same way in Divi's code but were not rendered with overrides). Not measured, so do not rely on
+them: hover and sticky states, blend modes beyond those named, units other than px and %, global colour references,
+and combinations (a pattern with a mask, a mask with a gradient on one element).
 MD;
     }
 

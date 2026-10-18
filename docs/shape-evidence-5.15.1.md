@@ -2297,8 +2297,407 @@ Note: A column background image size. Row and column take the same module.decora
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
 
+## bg-image-position-right-top
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.image.position` = `"right top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 100% 0%` |
+| 900 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 100% 0%` |
+| 400 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 100% 0%` |
+
+Phone overflow at 400 px: no.
+
+Note: background-position right top: a horizontal word and a vertical word separated by a space (BackgroundStyleUtils.php:37-77); together with left top and center bottom above, eight of the nine combinations are rendered (center center is the bare word center). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-image-position-right-center
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.image.position` = `"right center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 100% 50%` |
+| 900 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 100% 50%` |
+| 400 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 100% 50%` |
+
+Phone overflow at 400 px: no.
+
+Note: background-position right center: a horizontal word and a vertical word separated by a space (BackgroundStyleUtils.php:37-77); together with left top and center bottom above, eight of the nine combinations are rendered (center center is the bare word center). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-image-position-center-top
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.image.position` = `"center top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 50% 0%` |
+| 900 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 50% 0%` |
+| 400 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 50% 0%` |
+
+Phone overflow at 400 px: no.
+
+Note: background-position center top: a horizontal word and a vertical word separated by a space (BackgroundStyleUtils.php:37-77); together with left top and center bottom above, eight of the nine combinations are rendered (center center is the bare word center). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-image-position-left-bottom
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.image.position` = `"left bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 0% 100%` |
+| 900 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 0% 100%` |
+| 400 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 0% 100%` |
+
+Phone overflow at 400 px: no.
+
+Note: background-position left bottom: a horizontal word and a vertical word separated by a space (BackgroundStyleUtils.php:37-77); together with left top and center bottom above, eight of the nine combinations are rendered (center center is the bare word center). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-image-position-right-bottom
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.image.position` = `"right bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 100% 100%` |
+| 900 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 100% 100%` |
+| 400 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 100% 100%` |
+
+Phone overflow at 400 px: no.
+
+Note: background-position right bottom: a horizontal word and a vertical word separated by a space (BackgroundStyleUtils.php:37-77); together with left top and center bottom above, eight of the nine combinations are rendered (center center is the bare word center). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-image-position-left-center
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.image.position` = `"left center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 0% 50%` |
+| 900 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 0% 50%` |
+| 400 px | yes | 1 | yes | `0:div:background-position: 50% 50% -> 0% 50%` |
+
+Phone overflow at 400 px: no.
+
+Note: background-position left center: a horizontal word and a vertical word separated by a space (BackgroundStyleUtils.php:37-77); together with left top and center bottom above, eight of the nine combinations are rendered (center center is the bare word center). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-linear-keyword-to-top
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.gradient.direction` = `"to top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: Linear direction keyword "to top" (the allow-list is GradientUtils.php:701-722) against a 90deg base so a keyword equal to the 180deg default is still a change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-linear-keyword-to-top-right
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.gradient.direction` = `"to top right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to right top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to right top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to right top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: Linear direction keyword "to top right" (the allow-list is GradientUtils.php:701-722) against a 90deg base so a keyword equal to the 180deg default is still a change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-linear-keyword-to-bottom-right
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.gradient.direction` = `"to bottom right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to right bottom, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to right bottom, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to right bottom, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: Linear direction keyword "to bottom right" (the allow-list is GradientUtils.php:701-722) against a 90deg base so a keyword equal to the 180deg default is still a change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-linear-keyword-to-bottom
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.gradient.direction` = `"to bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: Linear direction keyword "to bottom" (the allow-list is GradientUtils.php:701-722) against a 90deg base so a keyword equal to the 180deg default is still a change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-linear-keyword-to-bottom-left
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.gradient.direction` = `"to bottom left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left bottom, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left bottom, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left bottom, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: Linear direction keyword "to bottom left" (the allow-list is GradientUtils.php:701-722) against a 90deg base so a keyword equal to the 180deg default is still a change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-linear-keyword-to-left
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.gradient.direction` = `"to left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: Linear direction keyword "to left" (the allow-list is GradientUtils.php:701-722) against a 90deg base so a keyword equal to the 180deg default is still a change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-linear-keyword-to-top-left
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.gradient.direction` = `"to top left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(to left top, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: Linear direction keyword "to top left" (the allow-list is GradientUtils.php:701-722) against a 90deg base so a keyword equal to the 180deg default is still a change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-radial-word-center
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.gradient.directionRadial` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: A single-word radial centre "center" (GradientUtils.php:681-690 accepts one word or a vertical+horizontal pair); the base uses bottom right so each word is a change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-radial-word-top
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.gradient.directionRadial` = `"top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 50% 0%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 50% 0%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 50% 0%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: A single-word radial centre "top" (GradientUtils.php:681-690 accepts one word or a vertical+horizontal pair); the base uses bottom right so each word is a change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-radial-word-bottom
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.gradient.directionRadial` = `"bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 50% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 50% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 50% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: A single-word radial centre "bottom" (GradientUtils.php:681-690 accepts one word or a vertical+horizontal pair); the base uses bottom right so each word is a change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-radial-word-left
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.gradient.directionRadial` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 0% 50%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 0% 50%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 0% 50%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: A single-word radial centre "left" (GradientUtils.php:681-690 accepts one word or a vertical+horizontal pair); the base uses bottom right so each word is a change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-radial-word-right
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.gradient.directionRadial` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 100% 50%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 100% 50%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: radial-gradient(circle at 100% 100%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> radial-gradient(circle at 100% 50%, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: A single-word radial centre "right" (GradientUtils.php:681-690 accepts one word or a vertical+horizontal pair); the base uses bottom right so each word is a change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## bg-gradient-tablet-phone-override
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.background.tablet.value.gradient.direction` = `"180deg"`
+- `module.decoration.background.phone.value.gradient.direction` = `"45deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:div:background-image: linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%) -> linear-gradient(45deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Phone overflow at 400 px: no.
+
+Note: Per-breakpoint override: tablet and phone values on top of a desktop gradient (the breakpoint keys of ModuleUtils::get_attr_subname_value, used by GradientUtils.php:211-232, which inherit from the larger breakpoint). The set paths use the tablet and phone keys, so the measured change at 900 px and 400 px is the override itself. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
 ## Not taught (backgrounds)
 
 Candidates from `backgrounds.json` that were measured and are not taught, with the reason:
 
 - `bg-pattern-transform-rotate`: no effect (dead). Pattern transform: a list holding any of flipHorizontal, flipVertical, rotate, invert (BackgroundStyleUtils.php:165-189). Measured DEAD on polka-dots: its rotated artwork is byte-identical to its default (visual-builder/packages/mask-and-pattern-library/src/components/pattern-svg/components/polka-dots.json, regular.default == regular.rotated), so rotate changes nothing for this style; the same holds for crosses, pinwheel, shippo and tufted. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).
+- `bg-pattern-offset-without-origin`: no effect (dead). Missing precondition: the pattern offsets with NO repeatOrigin. Background.php:266 prints background-position only when repeatOrigin is set, so this is expected to change nothing. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).
+- `bg-pattern-offset-repeat-space`: no effect (dead). Missing precondition: the pattern offsets while repeat is space. Background.php:266 skips background-position when repeat is space, so this is expected to change nothing. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).
+- `bg-pattern-offset-size-stretch`: no effect (dead). Missing precondition: the pattern offsets while size is stretch. Background.php:266 skips background-position when size is stretch, so this is expected to change nothing. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).
+- `bg-image-offset-without-position`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Missing precondition: the image offsets with no named position. BackgroundStyleUtils.php:44-52 applies an offset only next to left/right and :57-66 only next to top/bottom; with the default centre it prints plain "center". Divi still emits that one declaration, so the probe can only call this css-only (no visible movement). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).
+- `bg-mask-offset-without-position`: no effect (dead). Missing precondition: the mask offsets with no position set. Background.php:155 prints background-position only when position is set, so this is expected to change nothing. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).
+
+Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-backgrounds.json`):
+
+- Background video (video.mp4 / video.webm): excluded by policy: it needs a media file or URL, and the plugin never teaches remote or invented media
+- Image blend modes other than multiply and soft-light: not rendered: the other modes in Functions.php:152-171 (screen, overlay, darken, lighten, color-dodge, color-burn, hard-light, difference, exclusion, hue, saturation, color, luminosity) were not sampled
+- Pattern and mask blend modes other than multiply: not rendered: only multiply was probed for patterns and for masks
+- Setting a default back explicitly: mask size stretch, mask aspectRatio landscape, pattern size initial, image repeat no-repeat: not rendered as a set value (they are the defaults); the topic names them only as defaults
+- Hover and sticky states of any background setting: not measured (the probe saves one state, value)
+- tablet and phone overrides for anything except the gradient direction: only bg-gradient-tablet-phone-override was probed; the other families use the same breakpoint inheritance in Divi's code but were not rendered with overrides
+- A pattern and a mask, or a mask and a gradient, on the same element: combinations were not probed; every candidate changes one family at a time
+- Width, height and offset units other than px and %: not rendered: Divi also allows em, rem, cm, mm, in, pc, ex, vh, vw (Functions.php:127-141), only px and % were tried
+- Gradient stop colours given as global colour or variable references, and a gradient length in a unit other than %: not rendered in these candidates (global styles are taught elsewhere and need the site's own ids)
+- Pattern and mask styles from add-on plugins: only the 24 pattern and 23 mask styles shipped in Divi 5.15.1 were rendered

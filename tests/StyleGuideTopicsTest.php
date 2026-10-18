@@ -250,10 +250,13 @@ class StyleGuideTopicsTest extends TestCase
         $this->assertSame( [ 'guide' => $text ], $this->rest( [ 'topic' => 'backgrounds' ] )->get_data(), 'REST serves the same text' );
     }
 
-    public function testBackgroundsTopicNamesEveryProvenStyleAndNoOther(): void
+    /** @return array{pattern:list<string>,mask:list<string>} the styles whose candidate passed the probe (rendered, no phone overflow, no error), exact names, sorted */
+    private function provenStyles(): array
     {
-        $text = StyleGuide::markdown( 'backgrounds' );
-        $results = json_decode( (string) file_get_contents( __DIR__ . '/../fixtures/shapes/probe-results-backgrounds.json' ), true );
+        $dir        = __DIR__ . '/../fixtures/shapes/';
+        $candidates = json_decode( (string) file_get_contents( $dir . 'candidates/backgrounds.json' ), true );
+        $results    = json_decode( (string) file_get_contents( $dir . 'probe-results-backgrounds.json' ), true );
+        $this->assertIsArray( $candidates );
         $this->assertIsArray( $results );
         $passed = [];
         foreach ( $results as $r ) {
@@ -261,18 +264,56 @@ class StyleGuideTopicsTest extends TestCase
                 $passed[ $r['id'] ] = true;
             }
         }
-        $this->assertGreaterThanOrEqual( 4, count( array_filter( array_keys( $passed ), static fn ( string $id ): bool => str_starts_with( $id, 'bg-pattern-style-' ) ) ), 'at least 4 pattern styles' );
-        $this->assertGreaterThanOrEqual( 4, count( array_filter( array_keys( $passed ), static fn ( string $id ): bool => str_starts_with( $id, 'bg-mask-style-' ) ) ), 'at least 4 mask styles' );
-        foreach ( array_keys( $passed ) as $id ) {
-            if ( preg_match( '/^bg-(pattern|mask)-style-(.+)$/', $id, $m ) ) {
-                $this->assertStringContainsString( $m[2], $text, $id . ' passed the probe and is taught' );
+        $styles = [ 'pattern' => [], 'mask' => [] ];
+        foreach ( $candidates as $c ) {
+            if ( ! isset( $passed[ $c['id'] ] ) ) {
+                continue;
+            }
+            foreach ( $c['set'] as $path => $value ) {
+                if ( preg_match( '/\.(pattern|mask)\.style$/', (string) $path, $m ) ) {
+                    $styles[ $m[1] ][ (string) $value ] = true;
+                }
             }
         }
-        foreach ( $results as $r ) {
-            if ( preg_match( '/^bg-(pattern|mask)-style-(.+)$/', (string) $r['id'], $m ) && ! isset( $passed[ $r['id'] ] ) ) {
-                $this->fail( $r['id'] . ' did not pass the probe: it must not be taught (and this test must be updated with a Not taught entry)' );
-            }
+        $out = [];
+        foreach ( $styles as $kind => $set ) {
+            $names = array_keys( $set );
+            sort( $names );
+            $out[ $kind ] = $names;
         }
+
+        return $out;
+    }
+
+    /** @return array{pattern:list<string>,mask:list<string>} the topic's own `style` lists as exact tokens, sorted */
+    private function taughtStyles( string $text ): array
+    {
+        $out = [];
+        foreach ( [ 'pattern' => '## Pattern', 'mask' => '## Mask' ] as $kind => $heading ) {
+            $start = strpos( $text, "\n" . $heading );
+            $this->assertNotFalse( $start, $heading . ' section exists' );
+            $end     = strpos( $text, "\n## ", $start + 1 );
+            $section = substr( $text, $start, false === $end ? null : $end - $start );
+            $this->assertSame( 1, preg_match( '/^- `style`, (\d+) proven: ([a-z0-9, -]+)\.$/m', $section, $m ), $heading . ' has one exact style line' );
+            $names = array_map( 'trim', explode( ',', $m[2] ) );
+            $this->assertCount( (int) $m[1], $names, $heading . ': the stated count matches the list' );
+            $this->assertSame( $names, array_values( array_unique( $names ) ), $heading . ': no name twice' );
+            sort( $names );
+            $out[ $kind ] = $names;
+        }
+
+        return $out;
+    }
+
+    public function testBackgroundsTopicNamesEveryProvenStyleAndNoOther(): void
+    {
+        $proven = $this->provenStyles();
+        $this->assertGreaterThanOrEqual( 4, count( $proven['pattern'] ), 'at least 4 pattern styles' );
+        $this->assertGreaterThanOrEqual( 4, count( $proven['mask'] ), 'at least 4 mask styles' );
+        $taught = $this->taughtStyles( StyleGuide::markdown( 'backgrounds' ) );
+        // Exact set equality: a style deleted from the topic, or a name nobody proved, fails.
+        $this->assertSame( $proven['pattern'], $taught['pattern'], 'pattern styles: taught == proven' );
+        $this->assertSame( $proven['mask'], $taught['mask'], 'mask styles: taught == proven' );
     }
 
     public function testBackgroundsWorkedExamplesValidate(): void
