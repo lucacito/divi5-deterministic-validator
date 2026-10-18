@@ -292,7 +292,7 @@ verify-guide-shapes:
 	@node scripts/verify-guide-shapes.cjs
 
 # ---------------------------------------------------------------
-# verify-shapes — the effect probe: renders the known-good and known-dead shape candidates on the real Divi in a real browser and fails when the measured effect disagrees with the expectation (Docker site; dev site only; every page it creates is deleted). New candidates: node scripts/verify-shapes.cjs <file>, then php scripts/promote-shapes.php <results> <file>
+# verify-shapes — the effect probe: renders the known-good and known-dead shape candidates on the real Divi in a real browser and fails when the measured effect disagrees with the expectation (Docker site; dev site only; every page it creates is deleted; run ONE probe at a time: each run titles its pages `aied shape probe <runToken> ...` and deletes only its own, a run warns about other probe pages and `node scripts/verify-shapes.cjs --clean-orphans` removes all of them when no probe is running). New candidates: node scripts/verify-shapes.cjs <file>, then php scripts/promote-shapes.php <results> <file>
 # ---------------------------------------------------------------
 verify-shapes:
 	@node scripts/verify-shapes.cjs fixtures/shapes/candidates/known.json

@@ -8,7 +8,9 @@
  * stable), every attribute path of its `set` values is appended to fixtures/shapes/verified-shapes.json as
  * `how: probe` with `evidence: docs/shape-evidence-5.15.1.md#<id>`, unless that exact path is already registered (an
  * export stays the stronger evidence). A section per promoted candidate is appended to docs/shape-evidence-5.15.1.md.
- * Candidates that rendered nothing (DEAD), overflow a phone, or ended in an ERROR are never added. A candidate's optional `parent`
+ * Candidates that rendered nothing (DEAD), overflow a phone, or ended in an ERROR are never added. A result the probe labelled
+ * `cssOnly` (the emitted stylesheet changed but no computed style did) is promoted only when the candidate sets
+ * `"allowCssOnly": true` AND has a non-empty `note` saying why a stylesheet-only effect is proof enough. A candidate's optional `parent`
  * and `children` (see scripts/verify-shapes.cjs) are described in its evidence section. Pure PHP, no WordPress, idempotent.
  */
 
@@ -90,6 +92,10 @@ foreach ( $candidates as $c ) {
     }
     if ( isset( $r['error'] ) ) {
         $notes[] = "not promoted $id: the probe reported an error";
+        continue;
+    }
+    if ( ! empty( $r['cssOnly'] ) && ( ( $c['allowCssOnly'] ?? false ) !== true || trim( (string) ( $c['note'] ?? '' ) ) === '' ) ) {
+        $notes[] = "not promoted $id: only the stylesheet changed, no computed style (set allowCssOnly: true and a note to promote it)";
         continue;
     }
     if ( empty( $r['effect'] ) || ! empty( $r['phoneOverflow'] ) || $noisy || isset( $r['detail']['validator'] ) ) {

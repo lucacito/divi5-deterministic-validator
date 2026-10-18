@@ -143,20 +143,41 @@
     "detail": {
       "400": {
         "stylesheetDiffers": true,
-        "computedDiffs": 0,
-        "sample": [],
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 16px -> 96px",
+          "0:div:height: 16px -> 96px",
+          "0:div:padding-block-end: 0px -> 40px",
+          "0:div:padding-block-start: 0px -> 40px",
+          "0:div:padding-bottom: 0px -> 40px",
+          "0:div:padding-top: 0px -> 40px"
+        ],
         "controlNoise": false
       },
       "900": {
         "stylesheetDiffers": true,
-        "computedDiffs": 0,
-        "sample": [],
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 16px -> 96px",
+          "0:div:height: 16px -> 96px",
+          "0:div:padding-block-end: 0px -> 40px",
+          "0:div:padding-block-start: 0px -> 40px",
+          "0:div:padding-bottom: 0px -> 40px",
+          "0:div:padding-top: 0px -> 40px"
+        ],
         "controlNoise": false
       },
       "1280": {
         "stylesheetDiffers": true,
-        "computedDiffs": 0,
-        "sample": [],
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 16px -> 96px",
+          "0:div:height: 16px -> 96px",
+          "0:div:padding-block-end: 0px -> 40px",
+          "0:div:padding-block-start: 0px -> 40px",
+          "0:div:padding-bottom: 0px -> 40px",
+          "0:div:padding-top: 0px -> 40px"
+        ],
         "controlNoise": false
       }
     }

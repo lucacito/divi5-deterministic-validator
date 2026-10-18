@@ -19,9 +19,20 @@
  * "@SITE@" inside a string is replaced by the dev site URL.
  * Results (default fixtures/shapes/probe-results-<candidates file name>.json, never the committed probe-results-5.15.1.json
  * unless asked with --out): [{ id, effect, widths: {"1280","900","400"}, phoneOverflow, detail, error? }].
- * One line per candidate: PASS | DEAD | OVERFLOW (it changed the page but overflows a phone) | ERROR <id>: reason. A candidate that
- * ERRORs does not stop the others. Exit 1 when any candidate ERRORs or an `expect` disagrees. Dev site only (localhost); every page
- * it creates is deleted again, also when it fails or on SIGINT/SIGTERM (only pages whose title starts with the probe prefix).
+ * One line per candidate: PASS | PASS(css-only) | DEAD | OVERFLOW (it changed the page but overflows a phone) | ERROR <id>: reason.
+ * PASS needs a measured computed-style difference of the module's element (or its descendants) at some width; when only the emitted
+ * stylesheet text differs at every width the result is PASS(css-only) (`cssOnly: true` in the results; the field is absent otherwise) and `expect: "PASS"` disagrees
+ * unless the candidate says `"allowCssOnly": true` (promote-shapes.php then promotes it only with that flag, and a `note` should say why).
+ * The measured element is the first match inside the page content (.et-l--post), never one of the Theme Builder header/footer.
+ * A candidate that ERRORs does not stop the others. Exit 1 when any candidate ERRORs or an `expect` disagrees.
+ *
+ * Dev site only (localhost). RUN ONE PROBE AT A TIME. Every throwaway page is titled `aied shape probe <runToken> <label>`, where the
+ * runToken (process id + 3 random bytes in hex) is made once per run; the run deletes ONLY pages whose title starts with
+ * `aied shape probe <runToken> ` (after every candidate, at the end, and on SIGINT/SIGTERM/SIGHUP), so another probe running at the
+ * same time, or the leftovers of a crashed run, are never touched. At startup the probe warns when pages with the bare prefix
+ * `aied shape probe ` (another run's, or leftovers) exist. `node scripts/verify-shapes.cjs --clean-orphans` deletes ALL pages whose
+ * title starts with the bare prefix (an exact prefix filter on the full page list, numeric ids only, never a search) and exits:
+ * use it only when no other probe is running.
  */
 'use strict';
 
@@ -37,19 +48,22 @@ if (!/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(SITE)) {
   console.error('Dev site only (localhost). Refusing ' + SITE);
   process.exit(2);
 }
-const USAGE = 'usage: node scripts/verify-shapes.cjs <candidates.json> [--out <results.json>]';
+const USAGE = 'usage: node scripts/verify-shapes.cjs <candidates.json> [--out <results.json>]\n       node scripts/verify-shapes.cjs --clean-orphans';
 let candFile = null;
 let outArg = null;
+let cleanOrphans = false;
 {
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--out') { outArg = args[++i]; if (!outArg) { console.error(USAGE); process.exit(2); } }
+    else if (args[i] === '--clean-orphans') cleanOrphans = true;
     else if (args[i].startsWith('--') || candFile) { console.error(USAGE); process.exit(2); }
     else candFile = args[i];
   }
 }
-if (!candFile) { console.error(USAGE); process.exit(2); }
-const outFile = outArg ? path.resolve(outArg) : path.join(ROOT, 'fixtures', 'shapes', 'probe-results-' + path.basename(candFile).replace(/\.json$/i, '') + '.json');
+if (cleanOrphans ? (candFile || outArg) : !candFile) { console.error(USAGE); process.exit(2); }
+const outFile = !candFile ? null : outArg ? path.resolve(outArg) : path.join(ROOT, 'fixtures', 'shapes', 'probe-results-' + path.basename(candFile).replace(/\.json$/i, '') + '.json');
+const crypto = require('crypto');
 const { chromium } = require(PW);
 
 const WIDTHS = [1280, 900, 400];
@@ -129,38 +143,58 @@ function pageFor(c, apply) {
   return '<!-- wp:divi/placeholder -->' + render(node) + '<!-- /wp:divi/placeholder -->';
 }
 
-// Every throwaway page's title starts with this; the leak sweep deletes only pages whose title starts with it.
+// Every throwaway page's title starts with RUN_PREFIX (the bare TITLE_PREFIX plus this run's token).
 const TITLE_PREFIX = 'aied shape probe ';
+// Made once per run: this run creates and deletes only pages titled with RUN_PREFIX.
+const RUN_TOKEN = process.pid + '-' + crypto.randomBytes(3).toString('hex');
+const RUN_PREFIX = TITLE_PREFIX + RUN_TOKEN + ' ';
 const created = [];
 let cleaning = false; // set by the signal handler: nothing new is created after it
 function makePage(label, content) {
   if (cleaning) throw new Error('interrupted');
   // Title and content travel as one base64 JSON payload, so no candidate id can break out of the PHP string.
-  const b64 = Buffer.from(JSON.stringify({ title: TITLE_PREFIX + label, content })).toString('base64');
+  const b64 = Buffer.from(JSON.stringify({ title: RUN_PREFIX + label, content })).toString('base64');
   const out = wp('eval', `$p=json_decode(base64_decode('${b64}'),true);$c=$p['content'];$g=AiEditorDivi5${BS}WP${BS}LayoutGate::check($c);$id=wp_insert_post(wp_slash(['post_type'=>'page','post_title'=>$p['title'],'post_content'=>$c,'post_status'=>'draft','meta_input'=>['_et_pb_use_divi_5'=>'on','_et_pb_use_builder'=>'on']]));echo $id.'|'.($g->isValid()?'valid':'INVALID '.json_encode(array_map(fn($v)=>$v->toArray(),$g->violations())));`);
   const [id, verdict] = out.split('|');
   created.push(id);
   return { id, valid: verdict === 'valid', verdict };
 }
 
+/** Every page's { ID, post_title } (a full list, never a content search). */
+function allPages() {
+  return JSON.parse(wp('post', 'list', '--post_type=page', '--post_status=any', '--fields=ID,post_title', '--format=json') || '[]');
+}
+const idsWithPrefix = (rows, prefix) => rows.filter((r) => typeof r.post_title === 'string' && r.post_title.startsWith(prefix)).map((r) => String(r.ID));
+
 /**
- * Deletes the throwaway pages. makePage records an id only after its whole call returned, so a failure after wp_insert_post
- * would leak a page: also sweep by title. `wp post list --s` is a content search (it would match unrelated pages), so list ALL
- * pages with their titles and keep only rows whose post_title starts with the exact prefix used by makePage. Never a search,
- * never a page without the prefix. Safe to call twice. Returns true when everything went well.
+ * Deletes this run's throwaway pages. makePage records an id only after its whole call returned, so a failure after
+ * wp_insert_post would leak a page: also sweep by title. `wp post list --s` is a content search (it would match unrelated
+ * pages), so list ALL pages with their titles and keep only rows whose post_title starts with the exact RUN_PREFIX (the probe
+ * prefix plus this run's token). Never a search, never a page without that prefix, never another run's page. Safe to call twice.
+ * Returns true when everything went well.
  */
 function sweep() {
   let ok = true;
   let swept = [];
-  try {
-    const rows = JSON.parse(wp('post', 'list', '--post_type=page', '--post_status=any', '--fields=ID,post_title', '--format=json') || '[]');
-    swept = rows.filter((r) => typeof r.post_title === 'string' && r.post_title.startsWith(TITLE_PREFIX)).map((r) => String(r.ID));
-  } catch (e) { console.log('WARNING could not list leftover probe pages'); ok = false; }
+  try { swept = idsWithPrefix(allPages(), RUN_PREFIX); } catch (e) { console.log('WARNING could not list leftover probe pages'); ok = false; }
   for (const id of [...new Set([...created, ...swept])]) {
     if (!/^\d+$/.test(String(id))) { console.log('WARNING ignoring non-numeric page id ' + id); ok = false; continue; }
     try { wp('post', 'delete', String(id), '--force'); } catch (e) { console.log('WARNING could not delete page ' + id); ok = false; }
   }
   created.length = 0;
+  return ok;
+}
+
+/** --clean-orphans: deletes ALL pages whose title starts with the bare probe prefix (only when no other probe is running). */
+function removeOrphans() {
+  let ok = true;
+  let ids = [];
+  try { ids = idsWithPrefix(allPages(), TITLE_PREFIX); } catch (e) { console.log('ERROR could not list pages'); return false; }
+  for (const id of ids) {
+    if (!/^\d+$/.test(id)) { console.log('WARNING ignoring non-numeric page id ' + id); ok = false; continue; }
+    try { wp('post', 'delete', id, '--force'); console.log('deleted orphan probe page ' + id); } catch (e) { console.log('WARNING could not delete page ' + id); ok = false; }
+  }
+  console.log(`removed ${ids.length} orphan probe page(s)`);
   return ok;
 }
 
@@ -170,7 +204,9 @@ const classOf = (blockName) => 'et_pb_' + blockName.replace(/-/g, '_');
 function snapshotInPage(cls) {
   // Divi and WordPress attach their <style> blocks in a load-dependent order, so the blocks are sorted before comparing.
   const styleText = [...document.querySelectorAll('style')].map((s) => s.textContent.trim()).filter(Boolean).sort().join('\n/*--*/\n');
-  const el = document.querySelector('#page-container .' + cls + ', .et-l--post .' + cls + ', .' + cls);
+  // The page content, never the Theme Builder header/footer (their first column/row/section would be measured otherwise).
+  const inTb = (e) => /_tb_(header|footer|body)(\s|$)/.test(String(e.className)) || !!e.closest('.et-l--header, .et-l--footer');
+  const el = document.querySelector('.et-l--post .' + cls) || [...document.querySelectorAll('.' + cls)].find((e) => !inTb(e)) || null;
   const props = {};
   let found = false;
   if (el) {
@@ -191,6 +227,8 @@ function diffProps(a, b) {
   return out;
 }
 
+if (cleanOrphans) process.exit(removeOrphans() ? 0 : 1);
+
 let browserRef = null;
 // SIGINT / SIGTERM / SIGHUP: delete the throwaway pages the same way the normal end does, then leave.
 for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
@@ -200,7 +238,7 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
     console.log('\n' + sig + ': removing the throwaway pages');
     try { if (browserRef) await browserRef.close(); } catch (e) { /* leaving anyway */ }
     const ok = sweep();
-    console.log(ok ? 'Cleaned up.' : 'WARNING cleanup was incomplete; run `wp post list --post_type=page --fields=ID,post_title` and look for "' + TITLE_PREFIX + '"');
+    console.log(ok ? 'Cleaned up.' : 'WARNING cleanup was incomplete; run `wp post list --post_type=page --fields=ID,post_title` and look for "' + RUN_PREFIX + '"');
     process.exit(sig === 'SIGINT' ? 130 : sig === 'SIGHUP' ? 129 : 143);
   });
 }
@@ -214,6 +252,9 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
     if (!Array.isArray(candidates)) throw new Error('the candidates file must be a JSON array');
     const cookies = JSON.parse(wp('eval', '$u=1;$e=time()+3600;$t=WP_Session_Tokens::get_instance($u)->create($e);echo json_encode([[AUTH_COOKIE,wp_generate_auth_cookie($u,$e,"auth",$t)],[LOGGED_IN_COOKIE,wp_generate_auth_cookie($u,$e,"logged_in",$t)]]);'));
     // Playwright would otherwise install its own SIGINT/SIGTERM handlers and exit before the page cleanup below finishes.
+    // Nothing is ours yet, so every page with the bare prefix is another run's or a leftover; it is reported, never deleted.
+    const foreign = idsWithPrefix(allPages(), TITLE_PREFIX).length;
+    if (foreign > 0) console.log(`WARNING ${foreign} leftover or concurrent probe pages (not deleted; run with --clean-orphans when no other probe is running)`);
     browser = await chromium.launch({ handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false });
     browserRef = browser;
     const snap = async (id, width, cls, settle) => {
@@ -264,6 +305,8 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
           if (w === 400) entry.phoneOverflow = sb.overflow;
         }
         entry.effect = Object.values(entry.widths).some(Boolean);
+        // A PASS must rest on a measured computed-style difference; a changed stylesheet text alone is labelled, never silent.
+        if (entry.effect && WIDTHS.every((w) => entry.detail[w].computedDiffs === 0)) entry.cssOnly = true; // the field exists only when true
       } catch (e) {
         error = e && e.message ? e.message : String(e);
       } finally {
@@ -279,10 +322,10 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
         continue;
       }
       results.push(entry);
-      const verdict = entry.effect ? (entry.phoneOverflow ? 'OVERFLOW' : 'PASS') : 'DEAD';
+      const verdict = entry.effect ? (entry.phoneOverflow ? 'OVERFLOW' : entry.cssOnly ? 'PASS(css-only)' : 'PASS') : 'DEAD';
       const w = entry.widths;
       console.log(`${verdict}  ${id}  1280=${w[1280]} 900=${w[900]} 400=${w[400]} phoneOverflow=${entry.phoneOverflow}`);
-      if (c.expect && c.expect !== verdict) { console.log(`MISMATCH ${id}: expected ${c.expect}, measured ${verdict}`); failed = true; }
+      if (c.expect && c.expect !== verdict && !(c.allowCssOnly === true && c.expect === 'PASS' && verdict === 'PASS(css-only)')) { console.log(`MISMATCH ${id}: expected ${c.expect}, measured ${verdict}`); failed = true; }
     }
     if (cleaning) return;
     fs.mkdirSync(path.dirname(outFile), { recursive: true });
