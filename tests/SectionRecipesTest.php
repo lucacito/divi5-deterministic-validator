@@ -233,17 +233,79 @@ class SectionRecipesTest extends TestCase
         $this->assertStringContainsString('{{aied:image:avatar-', (string) SectionRecipes::rawMarkup('testimonials-avatar-grid'));
     }
 
-    /** Generic headings and eyebrows of the Task 14 batch: structure, not claims. */
+    /** Plan 2 Task 15: the pricing, team, FAQ and story batch, each with its role/layout, found by the filter, no h1, placeholders only. */
+    public function testPricingTeamFaqAndStoryBatchIsTaggedFilterableAndInventsNothing(): void
+    {
+        $batch = [
+            'pricing-three-tier'         => ['pricing', 'grid'],
+            'pricing-two-plan-highlight' => ['pricing', 'split'],
+            'pricing-comparison-table'   => ['pricing', 'list'],
+            'team-grid'                  => ['team', 'grid'],
+            'founder-note'               => ['team', 'split'],
+            'values-list'                => ['content', 'stacked'],
+            'faq-accordion'              => ['faq', 'centered'],
+            'faq-two-column'             => ['faq', 'split'],
+            'faq-toggle-list'            => ['faq', 'list'],
+            'story-timeline'             => ['content', 'band'],
+        ];
+        $meta = [];
+        foreach ((array) json_decode((string) file_get_contents(__DIR__ . '/../wp-plugin/data/section-recipes.json'), true) as $r) {
+            $meta[(string) $r['name']] = $r;
+        }
+        $cards = 0;
+        foreach ($batch as $name => [$role, $layout]) {
+            $tags = (array) SectionRecipes::tags($name);
+            $this->assertSame($role, $tags['role'] ?? null, "$name role");
+            $this->assertSame($layout, $tags['layout'] ?? null, "$name layout");
+            $this->assertStringContainsString($name, SectionRecipes::catalog($role, $layout), "$name is listed by the role + layout filter");
+            $markup = (string) SectionRecipes::rawMarkup($name);
+            $this->assertSame(0, preg_match_all('/"headingLevel":"h1"/', $markup), "$name is not a hero: no h1");
+            $this->assertSame(substr_count($markup, '<!-- wp:divi/heading '), preg_match_all('/<!-- wp:divi\/heading [^\n]*"headingLevel":"h[2-4]"/', $markup), "$name: every heading names its level, h2 to h4");
+            // No invented prices, plans, people, dates or answers: every visible text value and alt is a placeholder or structural copy.
+            $this->assertSame([], self::inventedTexts($markup), "$name: text values that are neither placeholders nor structural copy");
+            $this->assertMatchesRegularExpression('/placeholder/i', (string) ($meta[$name]['when'] ?? ''), "$name: the when text tells the owner to replace the placeholders");
+            $fp = DesignVariety::fingerprints('<!-- wp:divi/placeholder -->' . (string) SectionRecipes::recipe($name) . '<!-- /wp:divi/placeholder -->');
+            $cards += $fp[0]['cards'] ? 1 : 0;
+        }
+        $this->assertLessThanOrEqual(2, $cards, 'not more than two of the batch measure as card grids');
+        // A highlighted plan never relies on colour alone: it carries a label.
+        $this->assertStringContainsString('[Most popular]', (string) SectionRecipes::rawMarkup('pricing-three-tier'));
+        $this->assertStringContainsString('[Most popular]', (string) SectionRecipes::rawMarkup('pricing-comparison-table'));
+        $this->assertStringContainsString('[Recommended]', (string) SectionRecipes::rawMarkup('pricing-two-plan-highlight'));
+        // People come from the pack only, each portrait with its own placeholder alt.
+        $team = (string) SectionRecipes::rawMarkup('team-grid');
+        for ($n = 1; $n <= 4; $n++) {
+            $this->assertStringContainsString('[Team member ' . $n . ' name] portrait', $team);
+        }
+        $this->assertStringContainsString('{{aied:image:avatar-', $team);
+        $this->assertStringContainsString('{{aied:image:avatar-', (string) SectionRecipes::rawMarkup('founder-note'));
+        // The FAQ recipes use the accordion, the stand-alone toggle and plain text, so they differ in kind, not only in look.
+        $this->assertStringContainsString('<!-- wp:divi/accordion ', (string) SectionRecipes::rawMarkup('faq-accordion'));
+        $this->assertStringContainsString('<!-- wp:divi/toggle ', (string) SectionRecipes::rawMarkup('faq-toggle-list'));
+        $this->assertStringNotContainsString('wp:divi/toggle', (string) SectionRecipes::rawMarkup('faq-two-column'));
+        $this->assertStringNotContainsString('wp:divi/accordion', (string) SectionRecipes::rawMarkup('faq-two-column'));
+        // No pricing-table, team-member or tabs module: their default colours cannot all be set from the registered shapes.
+        foreach (array_keys($batch) as $name) {
+            $this->assertDoesNotMatchRegularExpression('#wp:divi/(pricing-tables?|team-member|tabs?) #', (string) SectionRecipes::rawMarkup($name), $name);
+        }
+    }
+
+    /** Generic headings and eyebrows of the Task 14 and Task 15 batches: structure, not claims. */
     private const STRUCTURAL_COPY = [
         'In the press', 'What others have written', 'By the numbers', 'Figures that back up the promise', 'Results',
         'Four results, at a glance', 'In figures', 'The work, counted', 'In their words', 'What clients say', 'Clients',
         'Three clients, three kinds of result',
+        // Task 15: pricing, team, FAQ and story.
+        'Pricing', 'Pick the plan that fits', 'Two ways to work with us', 'Compare plans', 'Every plan, side by side', 'Features',
+        'The team', 'The people you will work with', 'A note from the founder', 'What we stand for', 'Our values', 'FAQ',
+        'Questions, answered', 'Good to know before you start', 'What people ask us', 'Our story', 'How we got here',
     ];
 
     /**
      * The visible text values (headings, text, buttons, slides, counter titles and numbers) and image alts of a recipe that are NOT
      * placeholders: a value passes when it holds a bracketed [placeholder], starts with "Placeholder", is only punctuation (a quote
-     * mark), is in STRUCTURAL_COPY, or is a counter number that the counter's own "Placeholder" title names.
+     * mark), is in STRUCTURAL_COPY, is a two-digit list ordinal (01 to 09: a numbered list, not a figure), or is a counter number
+     * that the counter's own "Placeholder" title names.
      *
      * @return list<string>
      */
@@ -254,7 +316,7 @@ class SectionRecipesTest extends TestCase
         $ok = static function (string $v): bool {
             $v = trim(html_entity_decode(strip_tags($v), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
             return '' === $v || 1 === preg_match('/\[[^\]]+\]/', $v) || str_starts_with($v, 'Placeholder')
-                || 1 === preg_match('/^[\p{P}\s]+$/u', $v) || in_array($v, self::STRUCTURAL_COPY, true);
+                || 1 === preg_match('/^[\p{P}\s]+$/u', $v) || in_array($v, self::STRUCTURAL_COPY, true) || 1 === preg_match('/^0[1-9]$/', $v);
         };
         $parsed->root()->walk(static function (\Divi5Validator\Block $b) use (&$bad, $ok): void {
             $name = preg_replace('#^divi/#', '', $b->name());
@@ -291,6 +353,12 @@ class SectionRecipesTest extends TestCase
         $this->assertSame(['circle-counter number 97', 'circle-counter: Happy clients'], self::inventedTexts($c('97', 'Happy clients')), 'an invented figure and label are caught');
         $this->assertSame(['circle-counter number 97'], self::inventedTexts($c('97', 'Placeholder: replace 80% with a figure you can prove')), 'a number its label does not name is caught');
         $this->assertSame(['image: Acme Corp logo'], self::inventedTexts('<!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"x","alt":"Acme Corp logo"}}}}} /-->'), 'an invented brand in an alt text is caught');
+        // Task 15: invented prices, plan names, people, dates and answers are caught; ordinals and placeholders are not.
+        $t = static fn (string $v): string => '<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":' . json_encode('<p>' . $v . '</p>') . '}}}} /-->';
+        $g = static fn (string $q, string $a): string => '<!-- wp:divi/toggle {"title":{"innerContent":{"desktop":{"value":' . json_encode($q) . '}}},"content":{"innerContent":{"desktop":{"value":' . json_encode('<p>' . $a . '</p>') . '}}}} /-->';
+        $this->assertSame([], self::inventedTexts($t('01') . $t('[Price]') . $t('/ [period]') . $h('Our values') . $g('[Question 1]', '[The answer.]')));
+        $this->assertSame(['text: <p>$29</p>', 'heading: Pro', 'text: <p>Jane Doe, founder</p>', 'text: <p>1998</p>', 'text: <p>100</p>'], self::inventedTexts($t('$29') . $h('Pro') . $t('Jane Doe, founder') . $t('1998') . $t('100')), 'invented prices, plan names, people and years are caught (only 01 to 09 pass as ordinals)');
+        $this->assertSame(['toggle: Is there a refund?', 'toggle: <p>Yes, within 30 days.</p>'], self::inventedTexts($g('Is there a refund?', 'Yes, within 30 days.')), 'an invented question and answer are caught');
     }
 
     public function testRetaggedRecipesDescribeTheirRealStructure(): void
