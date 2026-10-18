@@ -13,15 +13,19 @@
  * looks), `--languages` narrows the looks (`default` = no language; every recipe), both together = their product.
  *
  * A cell FAILs when: the HTML contains PHP error text (Fatal error, Parse error, Warning:, Notice:, Deprecated:, Uncaught),
- * the post content renders nothing visible, document.documentElement.scrollWidth > innerWidth, a row (`.et_pb_row`) with more
- * than one column shows those columns side by side at 400 px (unless the recipe is listed in
+ * the post content renders nothing visible, document.documentElement.scrollWidth > innerWidth, a row (top-level `.et_pb_row`, nested
+ * `divi/row` which is also `.et_pb_row`, or nested `divi/row-inner` = `.et_pb_row_inner`) with more
+ * than one column (`.et_pb_column` / `.et_pb_column_inner`) shows those columns side by side at 400 px (unless the recipe is listed in
  * fixtures/shapes/recipe-render-allowances.json with a reason; the Theme Builder header/footer is never measured: everything is
  * measured inside `.et-l--post`), or the page itself logs a console error / uncaught exception. A recipe the validator gate
  * rejects FAILs once as `<recipe>/<language>/gate` with the violation codes.
- * Reason codes (used by the baseline): php-error, empty, overflow, columns-side-by-side, console-error, gate.
+ * Reason codes (the baseline may name the first six): php-error, empty, overflow, columns-side-by-side, console-error, gate.
+ * `render-error` (a timeout, navigation crash or any exception in the script's own page handling) is ALWAYS a FAIL and can never be baselined.
  *
- * KNOWN-FAIL. fixtures/shapes/recipe-baseline.txt may list `recipe|reason-code|explanation` under `# render-failures`; such a
- * failure is printed as KNOWN-FAIL and does not fail the run. Any other failure does. The run goes through every selection and
+ * KNOWN-FAIL. fixtures/shapes/recipe-baseline.txt may list `recipe|language|width|code|explanation` under `# render-failures`
+ * (language `default` for no language, width exactly 1280/900/400 or `gate` for code gate, no wildcard); ONLY that exact
+ * recipe/language/width/code is printed as KNOWN-FAIL and does not fail the run. Any other failure does, including the same
+ * recipe at another width, in another language or for another reason. A malformed entry stops the run. The run goes through every selection and
  * reports every failure; the exit code is 1 when anything FAILs, 2 for a usage error, otherwise 0.
  *
  * Output. Full-page screenshots dist/contact-sheet/<recipe>-<language|default>-<width>.png and dist/contact-sheet/index.html
@@ -78,6 +82,7 @@ let cleanOrphans = false;
 }
 
 const { chromium } = require(PW);
+const { parseBaseline, knownFailures, isKnownFail, cellKey, measureInPage, PHP_ERROR } = require('./lib/recipe-checks.cjs');
 
 const wp = (...a) => execFileSync('docker', ['compose', 'exec', '-T', 'wpcli', 'php', '-d', 'memory_limit=1G', '/usr/local/bin/wp', ...a], { cwd: ROOT, encoding: 'utf8' }).trim();
 
@@ -151,20 +156,9 @@ const recipes = JSON.parse(fs.readFileSync(RECIPES_FILE, 'utf8'));
 const recipeNames = recipes.map((r) => r.name);
 const languageIds = JSON.parse(fs.readFileSync(LANGUAGES_FILE, 'utf8')).map((l) => l.id);
 
-/** fixtures/shapes/recipe-baseline.txt, `# render-failures` section: Map "recipe|code" => explanation. */
+/** fixtures/shapes/recipe-baseline.txt `# render-failures`: Map of exact cell key (recipe|language|width|code) => entry. A malformed line is a hard error. */
 function readKnownFailures() {
-  const known = new Map();
-  let section = null;
-  for (const raw of fs.readFileSync(BASELINE_FILE, 'utf8').split('\n')) {
-    const line = raw.trim();
-    if (!line) continue;
-    const h = /^# (no-pairs|duplicate-layouts|render-failures)$/.exec(line);
-    if (h) { section = h[1]; continue; }
-    if (line[0] === '#' || section !== 'render-failures') continue;
-    const [name, code, ...why] = line.split('|').map((s) => s.trim());
-    if (name && code) known.set(name + '|' + code, why.join('|'));
-  }
-  return known;
+  return knownFailures(parseBaseline(fs.readFileSync(BASELINE_FILE, 'utf8')).renderFailures);
 }
 const allowances = fs.existsSync(ALLOWANCES_FILE) ? JSON.parse(fs.readFileSync(ALLOWANCES_FILE, 'utf8')) : {};
 
@@ -184,37 +178,6 @@ function selection() {
   const seen = new Set();
   return cells.filter(([n, l]) => { const k = n + '/' + l; if (seen.has(k)) return false; seen.add(k); return true; });
 }
-
-// ---- in-page measurement ---------------------------------------------------------------------------------------------
-/** Runs in the page. Everything is measured inside the page content (.et-l--post), never the Theme Builder header/footer. */
-function measureInPage() {
-  const root = document.querySelector('.et-l--post');
-  const out = { hasRoot: !!root, overflow: document.documentElement.scrollWidth > window.innerWidth, scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth, visible: false, sideBySide: [] };
-  if (!root) return out;
-  const sections = [...root.querySelectorAll('.et_pb_section')];
-  const hasMedia = (el) => [...el.querySelectorAll('img, svg, video, canvas, iframe')].some((m) => { const r = m.getBoundingClientRect(); return r.width > 0 && r.height > 0; })
-    || [...el.querySelectorAll('*')].some((m) => { const bg = getComputedStyle(m).backgroundImage; return bg && bg !== 'none' && m.getBoundingClientRect().height > 0; });
-  out.visible = sections.some((s) => {
-    const r = s.getBoundingClientRect();
-    return r.height > 20 && r.width > 0 && ((s.innerText || '').trim().length > 0 || hasMedia(s));
-  });
-  const rows = [...root.querySelectorAll('.et_pb_row')];
-  rows.forEach((row, i) => {
-    const cols = [...row.children].filter((c) => c.classList.contains('et_pb_column') && c.getBoundingClientRect().width > 0 && c.getBoundingClientRect().height > 0);
-    if (cols.length < 2) return;
-    const rects = cols.map((c) => c.getBoundingClientRect());
-    const sameLeft = rects.every((r) => Math.abs(r.left - rects[0].left) <= 2);
-    const stacked = rects.every((r, k) => k === 0 || r.top >= rects[k - 1].bottom - 2);
-    if (!sameLeft && !stacked) out.sideBySide.push({ row: i, columns: cols.length, lefts: rects.map((r) => Math.round(r.left)) });
-  });
-  return out;
-}
-
-const PHP_ERROR = [
-  /(?:Fatal error|Parse error|Warning|Notice|Deprecated)(?:<\/b>)?:[^\n]{0,500}?\bon line\b/i,
-  /(?:^|\n)\s*(?:<br \/>\s*)?(?:<b>)?(?:Fatal error|Parse error|Warning|Notice|Deprecated)(?:<\/b>)?: /,
-  /\bUncaught (?:[\w\\]*)?(?:Error|Exception)\b/,
-];
 
 // ---- run ---------------------------------------------------------------------------------------------------------------
 let browserRef = null;
@@ -305,9 +268,12 @@ ${rows}
     const report = (name, lang, width, outcome, code, reason) => {
       if (cleaning) return; // interrupted: the in-flight cell's errors are noise
       let label = outcome;
-      if (outcome === 'FAIL') {
-        const key = name + '|' + code;
-        if (known.has(key)) { label = 'KNOWN-FAIL'; seenKnown.add(key); reason += ' [known: ' + known.get(key) + ']'; }
+      // Only the EXACT cell (recipe, language, width, code) listed in the baseline is a known failure; render-error never is.
+      if (outcome === 'FAIL' && isKnownFail(known, name, lang, width, code)) {
+        const e = known.get(cellKey(name, lang, width, code));
+        label = 'KNOWN-FAIL';
+        seenKnown.add(cellKey(name, lang, width, code));
+        reason += ' [known: ' + e.explanation + ']';
       }
       if (label === 'FAIL') failures++; else if (label === 'KNOWN-FAIL') knownFails++; else passes++;
       const k = name + '/' + lang;
@@ -356,19 +322,19 @@ ${rows}
             if (!problems.length) report(name, lang, width, 'PASS', null, 'ok');
             else for (const [code, reason] of problems) report(name, lang, width, 'FAIL', code, `${code}: ${reason}`);
           } catch (e) {
-            report(name, lang, width, 'FAIL', 'console-error', 'render error: ' + (e && e.message ? e.message : e));
+            report(name, lang, width, 'FAIL', 'render-error', 'render-error: ' + (e && e.message ? e.message : e));
           } finally {
             await ctx.close();
           }
         }
       } catch (e) {
-        report(name, lang, 'gate', 'FAIL', 'gate', 'could not prepare the page: ' + (e && e.message ? e.message : e));
+        report(name, lang, 'prepare', 'FAIL', 'render-error', 'render-error: could not prepare the page: ' + (e && e.message ? e.message : e));
       } finally {
         if (page && /^\d+$/.test(page.id) && page.id !== '0') dropPage(page.id);
       }
     }
     if (cleaning) return;
-    for (const key of known.keys()) if (!seenKnown.has(key) && cells.some(([n]) => n === key.split('|')[0])) console.log(`NOTE baseline render-failure "${key}" did not occur in this run: remove it if it is fixed`);
+    for (const [key, e] of known) if (!seenKnown.has(key) && cells.some(([n, l]) => n === e.recipe && l === e.language)) console.log(`NOTE baseline render-failure "${key}" did not occur in this run: remove it if it is fixed`);
     writeContactSheet(status);
   } catch (e) {
     console.log('ERROR script: ' + (e && e.message ? e.message : e));

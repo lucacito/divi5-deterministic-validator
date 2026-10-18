@@ -43,8 +43,14 @@ class RecipeLibraryTest extends TestCase
         'overlay'       => 'overlay',
     ];
 
-    /** Failure reasons verify-recipes.cjs reports (a render-failures baseline entry names one). */
+    /** Failure reasons verify-recipes.cjs reports that a render-failures baseline entry may name. `render-error` never may. */
     private const RENDER_CODES = [ 'php-error', 'empty', 'overflow', 'columns-side-by-side', 'console-error', 'gate' ];
+
+    /**
+     * The most `# render-failures` entries the baseline may hold. It may only be LOWERED (to the new count, in the commit that
+     * removes entries), never raised: a new render failure is fixed or the recipe retired, not frozen. Plan task 11 sets it to 0.
+     */
+    private const RENDER_FAILURE_CAP = 0;
 
     /** @return array{no-pairs:list<string>,duplicate-layouts:list<string>,render-failures:list<string>} */
     private function baseline(): array
@@ -310,16 +316,88 @@ class RecipeLibraryTest extends TestCase
         }
     }
 
-    public function testRenderFailureBaselineEntriesNameARealRecipeAndAKnownReason(): void
+    /**
+     * What is wrong with one `# render-failures` line `recipe|language|width|code|explanation` ([] = fine). Mirrors
+     * scripts/lib/recipe-checks.cjs parseEntry (the JS side is tested by scripts/test-recipe-baseline-matcher.cjs).
+     *
+     * @param list<string> $recipes
+     * @param list<string> $languages
+     * @return list<string>
+     */
+    private static function renderFailureProblems( string $line, array $recipes, array $languages ): array
     {
-        $names = SectionRecipes::names();
-        foreach ( $this->baseline()['render-failures'] as $line ) {
-            $parts = array_map( 'trim', explode( '|', $line, 3 ) );
-            $this->assertCount( 3, $parts, "render-failures entry \"$line\" must be recipe|reason-code|explanation" );
-            $this->assertContains( $parts[0], $names, "render-failures lists \"{$parts[0]}\", which is not a recipe: remove it" );
-            $this->assertContains( $parts[1], self::RENDER_CODES, "render-failures reason code \"{$parts[1]}\" is unknown" );
-            $this->assertNotSame( '', $parts[2], 'a render-failures entry needs a written reason' );
+        $parts = array_map( 'trim', explode( '|', $line, 5 ) );
+        if ( count( $parts ) < 5 ) {
+            return [ 'must be recipe|language|width|code|explanation' ];
         }
+        [ $recipe, $language, $width, $code, $why ] = $parts;
+        $bad = [];
+        if ( ! in_array( $recipe, $recipes, true ) ) {
+            $bad[] = "\"$recipe\" is not a recipe";
+        }
+        if ( 'default' !== $language && ! in_array( $language, $languages, true ) ) {
+            $bad[] = "\"$language\" is not default or a design language";
+        }
+        if ( 'render-error' === $code ) {
+            $bad[] = 'render-error can never be baselined';
+        } elseif ( ! in_array( $code, self::RENDER_CODES, true ) ) {
+            $bad[] = "unknown reason code \"$code\"";
+        }
+        if ( ( 'gate' === $code ) !== ( 'gate' === $width ) ) {
+            $bad[] = 'width "gate" goes with code gate, and only with it';
+        } elseif ( 'gate' !== $code && ! in_array( $width, [ '1280', '900', '400' ], true ) ) {
+            $bad[] = 'width must be exactly 1280, 900 or 400 (no wildcard)';
+        }
+        if ( '' === $why ) {
+            $bad[] = 'an entry needs a written explanation';
+        }
+        return $bad;
+    }
+
+    public function testRenderFailureBaselineIsWellFormedAndWithinTheFrozenCap(): void
+    {
+        $entries = $this->baseline()['render-failures'];
+        $this->assertLessThanOrEqual( self::RENDER_FAILURE_CAP, count( $entries ), 'the render-failures baseline may only shrink: fix or retire the recipe instead of listing it (lower RENDER_FAILURE_CAP when you remove entries)' );
+        foreach ( $entries as $line ) {
+            $problems = self::renderFailureProblems( $line, SectionRecipes::names(), DesignLanguages::ids() );
+            $this->assertSame( [], $problems, "render-failures entry \"$line\": " . implode( '; ', $problems ) );
+        }
+    }
+
+    public function testTheRenderFailureEntryRulesRejectWhatTheyShould(): void
+    {
+        $r = SectionRecipes::names();
+        $l = DesignLanguages::ids();
+        $this->assertSame( [], self::renderFailureProblems( 'hero-cta|default|400|overflow|a documented reason', $r, $l ) );
+        $this->assertSame( [], self::renderFailureProblems( 'hero-cta|glass-dark|gate|gate|rejected by the gate', $r, $l ) );
+        $bad = [
+            'old three-field format'       => 'hero-cta|overflow|why',
+            'wildcard width'               => 'hero-cta|default|*|overflow|why',
+            'width not one of the three'   => 'hero-cta|default|500|overflow|why',
+            'unknown recipe'               => 'no-such-recipe|default|400|overflow|why',
+            'unknown language'             => 'hero-cta|no-such-language|400|overflow|why',
+            'unknown code'                 => 'hero-cta|default|400|sparkle|why',
+            'render-error never baselined' => 'hero-cta|default|400|render-error|why',
+            'gate code, non-gate width'    => 'hero-cta|default|400|gate|why',
+            'gate width, non-gate code'    => 'hero-cta|default|gate|overflow|why',
+            'empty explanation'            => 'hero-cta|default|400|overflow|',
+        ];
+        foreach ( $bad as $label => $line ) {
+            $this->assertNotSame( [], self::renderFailureProblems( $line, $r, $l ), $label );
+        }
+    }
+
+    public function testTheNodeMatcherOnlyKnowsTheExactCell(): void
+    {
+        $node = trim( (string) ( function_exists( 'shell_exec' ) ? @shell_exec( 'command -v node 2>/dev/null' ) : '' ) );
+        if ( '' === $node ) {
+            $this->markTestSkipped( 'node is not available (or shell_exec is disabled): scripts/test-recipe-baseline-matcher.cjs was not run' );
+        }
+        $out = [];
+        $code = 1;
+        exec( escapeshellarg( $node ) . ' ' . escapeshellarg( __DIR__ . '/../scripts/test-recipe-baseline-matcher.cjs' ) . ' 2>&1', $out, $code );
+        $this->assertSame( 0, $code, implode( "\n", $out ) );
+        $this->assertStringContainsString( 'OK recipe baseline parser', implode( "\n", $out ) );
     }
 
     public function testTheRenderAllowanceFileNamesRealRecipes(): void

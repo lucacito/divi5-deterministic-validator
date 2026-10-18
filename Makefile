@@ -298,7 +298,8 @@ verify-shapes:
 	@node scripts/verify-shapes.cjs fixtures/shapes/candidates/known.json
 
 # ---------------------------------------------------------------
-# verify-recipes — renders every section recipe (default look and glass-dark, plus every design language on three recipes) on the real Divi at 1280, 900 and 400 px and fails on PHP errors, an empty or overflowing page, columns that do not stack on a phone or a console error; writes dist/contact-sheet/index.html (Docker site; dev site only; ONE run at a time; every page it creates is titled `aied recipe <runToken> ...` and deleted, `node scripts/verify-recipes.cjs --clean-orphans` removes leftovers when no run is going). Narrow it: node scripts/verify-recipes.cjs --names a,b --languages x,y
+# verify-recipes — renders every section recipe (default look and glass-dark, plus every design language on three recipes) on the real Divi at 1280, 900 and 400 px and fails on PHP errors, an empty or overflowing page, columns that do not stack on a phone or a console error; writes dist/contact-sheet/index.html; first proves the stacking measurement on synthetic pages, nested rows included (Docker site; dev site only; ONE run at a time; every page it creates is titled `aied recipe <runToken> ...` and deleted, `node scripts/verify-recipes.cjs --clean-orphans` removes leftovers when no run is going). Narrow it: node scripts/verify-recipes.cjs --names a,b --languages x,y
 # ---------------------------------------------------------------
 verify-recipes:
+	@node scripts/test-recipe-measure.cjs
 	@node scripts/verify-recipes.cjs
