@@ -19,29 +19,32 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | A refusal: 96 badly nested blocks | 96 violations, as sent now | 8,085 | 2,022 |
 | A refusal: 96 badly nested blocks (before the compact form) | the same 96 violations, each with the full allowed list | 143,650 | 35,913 |
 | A preview (dry run) of a one-line text change | verdict plus a capped diff, on the median page | 394 | 99 |
-| The style guide (default) | get_style_guide with no topic, read once before building a layout | 28,682 | 7,171 |
+| The style guide (default) | get_style_guide with no topic, read once before building a layout | 28,711 | 7,178 |
 | The style guide, topic design-languages | get_style_guide with topic "design-languages", only when asked for | 2,592 | 648 |
 | The style guide, topic design-language:editorial | get_style_guide with topic "design-language:editorial", only when asked for | 1,793 | 449 |
-| The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 2,053 | 514 |
+| The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 2,127 | 532 |
 | The style guide, topic design-language:organic-warm | get_style_guide with topic "design-language:organic-warm", only when asked for | 2,118 | 530 |
-| The style guide, topic design-language:tech-mono | get_style_guide with topic "design-language:tech-mono", only when asked for | 2,085 | 522 |
+| The style guide, topic design-language:tech-mono | get_style_guide with topic "design-language:tech-mono", only when asked for | 2,244 | 561 |
 | The style guide, topic design-language:playful-pastel | get_style_guide with topic "design-language:playful-pastel", only when asked for | 2,445 | 612 |
 | The style guide, topic design-language:corporate-trust | get_style_guide with topic "design-language:corporate-trust", only when asked for | 2,555 | 639 |
-| The style guide, topic design-language:soft-saas | get_style_guide with topic "design-language:soft-saas", only when asked for | 3,116 | 779 |
+| The style guide, topic design-language:soft-saas | get_style_guide with topic "design-language:soft-saas", only when asked for | 3,232 | 808 |
 | The style guide, topic design-language:bold-vibrant | get_style_guide with topic "design-language:bold-vibrant", only when asked for | 2,994 | 749 |
 | The style guide, topic design-language:brutalist-flat | get_style_guide with topic "design-language:brutalist-flat", only when asked for | 2,527 | 632 |
 | The style guide, topic design-language:luxe | get_style_guide with topic "design-language:luxe", only when asked for | 2,731 | 683 |
 | The style guide, topic backgrounds | get_style_guide with topic "backgrounds", only when asked for | 8,881 | 2,221 |
-| The style guide, topic dividers | get_style_guide with topic "dividers", only when asked for | 8,767 | 2,192 |
+| The style guide, topic dividers | get_style_guide with topic "dividers", only when asked for | 8,869 | 2,218 |
 | The style guide, topic motion | get_style_guide with topic "motion", only when asked for | 8,690 | 2,173 |
 | The style guide, topic hover-states | get_style_guide with topic "hover-states", only when asked for | 5,637 | 1,410 |
 | The style guide, topic layout-advanced | get_style_guide with topic "layout-advanced", only when asked for | 9,973 | 2,494 |
-| The style guide, topic layout-sizing | get_style_guide with topic "layout-sizing", only when asked for | 9,898 | 2,475 |
+| The style guide, topic layout-sizing | get_style_guide with topic "layout-sizing", only when asked for | 9,972 | 2,493 |
 | The style guide, topic typography | get_style_guide with topic "typography", only when asked for | 7,496 | 1,874 |
 | The style guide, topic imagery | get_style_guide with topic "imagery", only when asked for | 6,506 | 1,627 |
-| The style guide, topic controls | get_style_guide with topic "controls", only when asked for | 7,073 | 1,769 |
-| The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 5,946 | 1,487 |
-| The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 3,935 | 984 |
+| The style guide, topic controls | get_style_guide with topic "controls", only when asked for | 8,123 | 2,031 |
+| The style guide, topic toggles | get_style_guide with topic "toggles", only when asked for | 5,602 | 1,401 |
+| The style guide, topic forms | get_style_guide with topic "forms", only when asked for | 6,315 | 1,579 |
+| The style guide, topic composition | get_style_guide with topic "composition", only when asked for | 8,589 | 2,148 |
+| The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 6,145 | 1,537 |
+| The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 4,015 | 1,004 |
 | A served recipe (hero-cta, default look) | get_section_recipes with name "hero-cta" and no design_language | 3,044 | 761 |
 | A served recipe (hero-cta, glass-dark) | the same recipe with design_language "glass-dark" (tokens filled in; the size is the markup alone) | 3,017 | 755 |
 
