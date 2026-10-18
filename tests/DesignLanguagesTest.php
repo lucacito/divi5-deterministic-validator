@@ -124,11 +124,14 @@ class DesignLanguagesTest extends TestCase
         $this->assertStringContainsString('surface (cards) `#ffffff`', DesignLanguages::markdown('editorial'));
     }
 
-    public function testThereAreSixLanguagesAndTheMoodsFollow(): void
+    public function testThereAreTenLanguagesAndTheMoodsFollow(): void
     {
-        $this->assertSame(['editorial', 'glass-dark', 'organic-warm', 'tech-mono', 'playful-pastel', 'corporate-trust'], DesignLanguages::ids());
+        $this->assertSame(
+            ['editorial', 'glass-dark', 'organic-warm', 'tech-mono', 'playful-pastel', 'corporate-trust', 'soft-saas', 'bold-vibrant', 'brutalist-flat', 'luxe'],
+            DesignLanguages::ids()
+        );
         $this->assertSame(['any', ...DesignLanguages::ids()], SectionRecipes::moods());
-        foreach (['organic-warm', 'tech-mono', 'playful-pastel', 'corporate-trust'] as $id) {
+        foreach (['organic-warm', 'tech-mono', 'playful-pastel', 'corporate-trust', 'soft-saas', 'bold-vibrant', 'brutalist-flat', 'luxe'] as $id) {
             $this->assertContains($id, SectionRecipes::moods());
         }
     }
@@ -162,6 +165,8 @@ class DesignLanguagesTest extends TestCase
         $texts  = ['hero' => [], 'rhythm' => [], 'summary' => [], 'cta' => []];
         $accents = [];
         $bgs     = [];
+        $displays = [];
+        $bodies   = [];
         foreach (DesignLanguages::ids() as $id) {
             $lang = DesignLanguages::get($id);
             $set = $lang['favors'];
@@ -177,6 +182,139 @@ class DesignLanguagesTest extends TestCase
             $accents[] = strtolower($lang['colors']['accent']);
             $this->assertNotContains(strtolower($lang['colors']['bg']), $bgs, "$id background repeats");
             $bgs[] = strtolower($lang['colors']['bg']);
+            $this->assertNotContains($lang['fonts']['display'], $displays, "$id display font repeats");
+            $displays[] = $lang['fonts']['display'];
+            $this->assertNotContains($lang['fonts']['body'], $bodies, "$id body font repeats");
+            $bodies[] = $lang['fonts']['body'];
+        }
+    }
+
+    /**
+     * The seven things that make two pages look different at a glance. Two languages must differ in at least
+     * MIN_FEATURE_DIFFERENCES of them AND their `favors` sets must differ by at least MIN_FAVORS_DISTANCE layouts
+     * (the symmetric difference). The shipped ten meet both; a language copied from another does not.
+     */
+    private const MIN_FEATURE_DIFFERENCES = 4;
+    private const MIN_FAVORS_DISTANCE     = 3;
+
+    /** @return array<string,mixed> */
+    private function features(array $lang): array
+    {
+        $favors = $lang['favors'];
+        sort($favors);
+        return [
+            'motion'  => $lang['motion'],
+            'radius'  => $lang['radius'],
+            'display' => $lang['fonts']['display'],
+            'body'    => $lang['fonts']['body'],
+            'bg'      => strtolower($lang['colors']['bg']),
+            'accent'  => strtolower($lang['colors']['accent']),
+            'favors'  => implode(',', $favors),
+        ];
+    }
+
+    public function testEveryPairOfLanguagesIsFarApart(): void
+    {
+        $ids = DesignLanguages::ids();
+        $this->assertCount(10, $ids);
+        $min = PHP_INT_MAX;
+        $minFavors = PHP_INT_MAX;
+        for ($i = 0; $i < count($ids); $i++) {
+            for ($j = $i + 1; $j < count($ids); $j++) {
+                $a = DesignLanguages::get($ids[$i]);
+                $b = DesignLanguages::get($ids[$j]);
+                $fa = $this->features($a);
+                $fb = $this->features($b);
+                $differ = array_keys(array_filter($fa, static fn($v, $k): bool => $v !== $fb[$k], ARRAY_FILTER_USE_BOTH));
+                $min = min($min, count($differ));
+                $this->assertGreaterThanOrEqual(self::MIN_FEATURE_DIFFERENCES, count($differ), "{$ids[$i]} vs {$ids[$j]} differ only in: " . implode(', ', $differ));
+                $distance = count(array_merge(array_diff($a['favors'], $b['favors']), array_diff($b['favors'], $a['favors'])));
+                $minFavors = min($minFavors, $distance);
+                $this->assertGreaterThanOrEqual(self::MIN_FAVORS_DISTANCE, $distance, "{$ids[$i]} vs {$ids[$j]} favor almost the same layouts");
+            }
+        }
+        $this->assertGreaterThanOrEqual(self::MIN_FEATURE_DIFFERENCES, $min);
+        $this->assertGreaterThanOrEqual(self::MIN_FAVORS_DISTANCE, $minFavors);
+    }
+
+    public function testBoldVibrantAndLuxeDoNotOpenWithTheSameHero(): void
+    {
+        $bold = DesignLanguages::get('bold-vibrant');
+        $luxe = DesignLanguages::get('luxe');
+        $this->assertNotSame($bold['hero'], $luxe['hero']);
+        $this->assertMatchesRegularExpression('/\bstacked\b/i', $bold['hero']);
+        $this->assertMatchesRegularExpression('/\bcentered\b/i', $luxe['hero']);
+        $this->assertStringNotContainsStringIgnoringCase('centered', $bold['hero']);
+        $this->assertStringNotContainsStringIgnoringCase('stacked', $luxe['hero']);
+    }
+
+    /** @return list<string> */
+    private static function newLanguageIds(): array
+    {
+        return ['soft-saas', 'bold-vibrant', 'brutalist-flat', 'luxe'];
+    }
+
+    /** Things the guides do not prove (or prove dead). The four new languages never name them, not even to forbid them. */
+    public function testNewLanguagesNameNothingTheGuidesDoNotProve(): void
+    {
+        $banned = ['backdrop', 'frosted', 'glass', 'blurred', 'blurry', 'bounce', 'sticker', 'video', 'cursor', 'marquee', 'ticker', 'noise', 'grain', 'scroll-snap',
+            'snap', 'inner shadow', 'inset', 'gradient text', 'highlight', 'squiggle', 'floating shape', 'hand-', 'real-looking', 'parallax scroll'];
+        foreach (self::newLanguageIds() as $id) {
+            $lang = DesignLanguages::get($id);
+            $this->assertIsArray($lang, $id);
+            foreach (['summary', 'radius', 'section_padding', 'shadow', 'rhythm', 'hero', 'cta'] as $field) {
+                foreach ($banned as $phrase) {
+                    $this->assertStringNotContainsStringIgnoringCase($phrase, $lang[$field], "$id.$field names \"$phrase\"");
+                }
+                // Upper case is `capitalization`; a `style` list holding "uppercase" is dead.
+                $this->assertDoesNotMatchRegularExpression('/style[^.]*uppercase/i', $lang[$field], "$id.$field");
+                // Divi's divider styles are the 26 proven ones; "curve" and "wave" and "slant" are among them, "zigzag"/"torn" are not.
+                $this->assertStringNotContainsStringIgnoringCase('torn', $lang[$field], "$id.$field");
+            }
+        }
+    }
+
+    /** A hex named in the prose is paired with the text or the inverse colour: it must be readable with one of them. */
+    public function testEveryHexNamedInTheNewProseReadsWithItsPairedTextColour(): void
+    {
+        foreach (self::newLanguageIds() as $id) {
+            $lang = DesignLanguages::get($id);
+            $c = $lang['colors'];
+            foreach (['summary', 'radius', 'section_padding', 'shadow', 'rhythm', 'hero', 'cta'] as $field) {
+                preg_match_all('/#[0-9a-f]{6}\b/i', $lang[$field], $m);
+                foreach ($m[0] as $hex) {
+                    $best = max(DesignLanguages::contrast($hex, $c['text']), DesignLanguages::contrast($hex, $c['inverse']));
+                    $this->assertGreaterThanOrEqual(4.5, $best, "$id.$field names $hex, which reads with neither the text nor the inverse colour");
+                }
+            }
+        }
+    }
+
+    public function testNewLanguagesCallPlaceholdersPlaceholdersAndNeverAskForInventedFacts(): void
+    {
+        foreach (self::newLanguageIds() as $id) {
+            $lang = DesignLanguages::get($id);
+            foreach (['rhythm', 'hero', 'cta'] as $field) {
+                if (1 === preg_match('/logo|testimonial|review|rating|award|statistic|client|customer name|price|quote/i', $lang[$field])) {
+                    $this->assertStringContainsStringIgnoringCase('placeholder', $lang[$field], "$id.$field mentions proof or prices without calling them placeholders");
+                }
+            }
+        }
+        // Where logos or testimonials appear at all, the owner is told to replace them and the assistant not to invent them.
+        $text = strtolower(DesignLanguages::get('soft-saas')['hero']);
+        $this->assertStringContainsString('placeholder', $text);
+        $this->assertStringContainsString('never invent', $text);
+    }
+
+    /** Low-contrast accents (the bright ones) are never text colour; the brief says so where the accent is not readable on the page background. */
+    public function testNewLanguagesWithUnreadableAccentTextSayNeverUseItAsTextColour(): void
+    {
+        foreach (self::newLanguageIds() as $id) {
+            $c = DesignLanguages::get($id)['colors'];
+            if (DesignLanguages::contrast($c['accent'], $c['bg']) < 4.5 || DesignLanguages::contrast($c['accent'], $c['surface']) < 4.5) {
+                $prose = strtolower(DesignLanguages::get($id)['shadow'] . DesignLanguages::get($id)['rhythm']);
+                $this->assertMatchesRegularExpression('/never[^.]*(as|for)[^.]*text/', $prose, "$id accent is not readable as text on its own background and the brief must say so");
+            }
         }
     }
 
