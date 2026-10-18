@@ -191,6 +191,47 @@ class SectionRecipesTest extends TestCase
         $this->assertLessThanOrEqual(2, $cards, 'not more than two of the batch measure as card grids');
     }
 
+    /** Plan 2 Task 14: the proof, stats and testimonial batch, each with its role/layout, found by the filter, no h1, placeholders only. */
+    public function testProofStatsAndTestimonialBatchIsTaggedFilterableAndInventsNothing(): void
+    {
+        $batch = [
+            'proof-logo-wall'           => ['proof', 'band'],
+            'proof-press-quotes'        => ['proof', 'grid'],
+            'proof-rating-strip'        => ['proof', 'band'],
+            'stats-counter-band'        => ['stats', 'split'],
+            'stats-circle-counters'     => ['stats', 'centered'],
+            'stats-big-captions'        => ['stats', 'band'],
+            'quote-single-large'        => ['testimonials', 'centered'],
+            'testimonials-slider-quote' => ['testimonials', 'carousel'],
+            'testimonials-avatar-grid'  => ['testimonials', 'grid'],
+            'quote-over-image'          => ['testimonials', 'band'],
+        ];
+        $meta = [];
+        foreach ((array) json_decode((string) file_get_contents(__DIR__ . '/../wp-plugin/data/section-recipes.json'), true) as $r) {
+            $meta[(string) $r['name']] = $r;
+        }
+        $cards = 0;
+        foreach ($batch as $name => [$role, $layout]) {
+            $tags = (array) SectionRecipes::tags($name);
+            $this->assertSame($role, $tags['role'] ?? null, "$name role");
+            $this->assertSame($layout, $tags['layout'] ?? null, "$name layout");
+            $this->assertStringContainsString($name, SectionRecipes::catalog($role, $layout), "$name is listed by the role + layout filter");
+            $this->assertStringStartsWith('Social proof', (string) ($meta[$name]['stage'] ?? ''), "$name is a social-proof section");
+            $markup = (string) SectionRecipes::rawMarkup($name);
+            $this->assertSame(0, preg_match_all('/"headingLevel":"h1"/', $markup), "$name is not a hero: no h1");
+            $this->assertSame(substr_count($markup, '<!-- wp:divi/heading '), preg_match_all('/<!-- wp:divi\/heading [^\n]*"headingLevel":"h[2-4]"/', $markup), "$name: every heading names its level, h2 to h4");
+            // No invented proof: every name, quote, publication, score or caption is a bracketed placeholder or says Placeholder.
+            $this->assertMatchesRegularExpression('/\[[^\]]+\]|Placeholder/', $markup, "$name carries placeholders");
+            $this->assertMatchesRegularExpression('/placeholder|never invent|permission/i', (string) ($meta[$name]['when'] ?? ''), "$name: the when text tells the owner to replace the placeholders");
+            $fp = DesignVariety::fingerprints('<!-- wp:divi/placeholder -->' . (string) SectionRecipes::recipe($name) . '<!-- /wp:divi/placeholder -->');
+            $cards += $fp[0]['cards'] ? 1 : 0;
+        }
+        $this->assertLessThanOrEqual(2, $cards, 'not more than two of the batch measure as card grids');
+        // Images come from the pack only: avatars and logos as tokens.
+        $this->assertStringContainsString('{{aied:image:logo-1}}', (string) SectionRecipes::rawMarkup('proof-logo-wall'));
+        $this->assertStringContainsString('{{aied:image:avatar-', (string) SectionRecipes::rawMarkup('testimonials-avatar-grid'));
+    }
+
     public function testRetaggedRecipesDescribeTheirRealStructure(): void
     {
         $this->assertSame('split', ((array) SectionRecipes::tags('card-grid-3'))['layout']);
