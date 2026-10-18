@@ -56,10 +56,15 @@ class SectionRecipesLockstepTest extends TestCase
         $this->assertStringContainsString( 'contact-form', $text );
         $this->assertStringNotContainsString( 'hero-cta', $text );
 
-        [ , $both ] = $this->mcp( [ 'role' => 'features', 'layout' => 'split', 'mood' => 'any' ] );
+        // A mood filter keeps the recipes tagged with that language plus the ones tagged "any"; filtering by "any" itself keeps
+        // only the ones tagged "any" (since plan 2 task 11 a recipe may list only the languages it suits).
+        [ , $both ] = $this->mcp( [ 'role' => 'features', 'layout' => 'split', 'mood' => 'editorial' ] );
         $this->assertStringContainsString( 'split-image-text', $both );
-        $this->assertStringContainsString( 'card-grid-3', $both, 'card-grid-3 is a split (an intro row, then an image beside text)' );
+        $this->assertStringContainsString( 'card-grid-3', $both, 'card-grid-3 is a split (an intro row, then an image beside text) and lists editorial' );
         $this->assertStringNotContainsString( 'blurb-grid', $both );
+        [ , $anyOnly ] = $this->mcp( [ 'role' => 'features', 'layout' => 'split', 'mood' => 'any' ] );
+        $this->assertStringContainsString( 'split-image-text', $anyOnly );
+        $this->assertStringNotContainsString( 'blurb-grid', $anyOnly );
     }
 
     public function testMcpUnknownFilterValueIsANormalAnswerListingTheValidValues(): void
@@ -195,7 +200,9 @@ class SectionRecipesLockstepTest extends TestCase
     public function testMatchingNamesFollowsTheSameRulesAsTheCatalog(): void
     {
         $this->assertSame( [], SectionRecipes::matchingNames( 'nonsense' ) );
-        $this->assertSame( SectionRecipes::names(), SectionRecipes::matchingNames( null, null, 'any' ) );
+        $this->assertSame( array_values( array_filter( SectionRecipes::names(), static fn ( string $n ): bool => in_array( 'any', (array) ( SectionRecipes::tags( $n )['mood'] ?? [] ), true ) ) ), SectionRecipes::matchingNames( null, null, 'any' ) );
+        // A language mood selects the recipes tagged "any" plus the ones listing that language: never fewer than the "any" ones.
+        $this->assertSame( [], array_diff( SectionRecipes::matchingNames( null, null, 'any' ), SectionRecipes::matchingNames( null, null, 'editorial' ) ) );
         foreach ( SectionRecipes::matchingNames( 'features', 'grid' ) as $n ) {
             $this->assertSame( 'features', SectionRecipes::tags( $n )['role'] );
             $this->assertSame( 'grid', SectionRecipes::tags( $n )['layout'] );

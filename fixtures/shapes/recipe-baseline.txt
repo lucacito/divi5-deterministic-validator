@@ -15,11 +15,6 @@
 #   by RENDER_FAILURE_CAP in tests/RecipeLibraryTest.php (currently 0), which may only be lowered.
 
 # no-pairs
-hero-cta
-section-intro
-card-grid-3
-card-grid-4
-blurb-grid
 icon-features
 split-image-text
 contact-form

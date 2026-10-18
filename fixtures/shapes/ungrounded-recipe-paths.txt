@@ -1,7 +1,4 @@
 email.advanced.receiver.{bp}.value
-imageIcon.advanced.alignment.{bp}.value
-imageIcon.advanced.width.{bp}.value.icon
-imageIcon.advanced.width.{bp}.value.image
 module.decoration.transform.{bp}.hover.translate.linked
 post.advanced.categories.{bp}.value.{n}
 post.decoration.border.{bp}.value.radius.sync

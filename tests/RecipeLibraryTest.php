@@ -206,6 +206,48 @@ class RecipeLibraryTest extends TestCase
         }
     }
 
+    /**
+     * Literal colours left in a recipe's markup, minus the documented neutral ones (pure white or black in any opacity, which
+     * includes the transparent white Divi's own slider writes) and minus tokens. `$variable(` global-colour references are
+     * site-specific ids and never allowed in a recipe.
+     *
+     * @return list<string>
+     */
+    private static function literalColours( string $markup ): array
+    {
+        $bad = [];
+        if ( str_contains( $markup, '$variable(' ) ) {
+            $bad[] = '$variable(...) (a site-specific global colour id)';
+        }
+        preg_match_all( '/#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)/', $markup, $m );
+        foreach ( $m[0] as $c ) {
+            $rgba = self::rgba( strtolower( $c ) );
+            $neutral = null !== $rgba && ( ( 255 === $rgba[0] && 255 === $rgba[1] && 255 === $rgba[2] ) || ( 0 === $rgba[0] && 0 === $rgba[1] && 0 === $rgba[2] ) );
+            if ( ! $neutral ) {
+                $bad[] = $c;
+            }
+        }
+        return array_values( array_unique( $bad ) );
+    }
+
+    public function testTokenisedRecipesHaveNoLiteralColoursOrGlobalColourIds(): void
+    {
+        $checked = 0;
+        foreach ( SectionRecipes::names() as $name ) {
+            // A recipe that declares `pairs` is a tokenised one (the baseline lists the others and only shrinks).
+            if ( ! array_key_exists( 'pairs', (array) SectionRecipes::tags( $name ) ) ) {
+                continue;
+            }
+            ++$checked;
+            $this->assertSame( [], self::literalColours( (string) SectionRecipes::rawMarkup( $name ) ), "$name still holds literal colours (use a {{aied:color:<role>}} token)" );
+            $this->assertDoesNotMatchRegularExpression( '/"family":"(?!\{\{aied:font:)[^"]*"/', (string) SectionRecipes::rawMarkup( $name ), "$name still holds a literal font family (use {{aied:font:<role>}})" );
+        }
+        $this->assertGreaterThan( 0, $checked );
+        // The checker itself.
+        $this->assertSame( [ '#0cf57e', 'rgba(42,42,42,0.85)' ], self::literalColours( '"a":"#0cf57e","b":"#FFFFFF","c":"rgba(42,42,42,0.85)","d":"RGBA(255,255,255,0)","e":"rgba(0,0,0,0.4)","f":"#000"' ) );
+        $this->assertNotSame( [], self::literalColours( '"c":"$variable({"type":1})$"' ) );
+    }
+
     public function testThePairCheckerCatchesWhatItShould(): void
     {
         $lang    = (array) DesignLanguages::get( 'editorial' );
