@@ -1,0 +1,50 @@
+{
+  "divi": "5.15.1",
+  "source": "Divi/core/json-data/google-fonts.json inside divi/Divi-5-15-1.zip (the file Divi 5.15.1 ships); only the families the typography topic names",
+  "families": {
+    "Barlow Condensed": {
+      "category": "sans-serif",
+      "variants": [
+        "100",
+        "100italic",
+        "200",
+        "200italic",
+        "300",
+        "300italic",
+        "regular",
+        "italic",
+        "500",
+        "500italic",
+        "600",
+        "600italic",
+        "700",
+        "700italic",
+        "800",
+        "800italic",
+        "900",
+        "900italic"
+      ]
+    },
+    "Inter": {
+      "category": "sans-serif",
+      "variants": [
+        "regular",
+        "italic"
+      ]
+    },
+    "Playfair Display": {
+      "category": "serif",
+      "variants": [
+        "regular",
+        "italic"
+      ]
+    },
+    "Source Sans 3": {
+      "category": "sans-serif",
+      "variants": [
+        "regular",
+        "italic"
+      ]
+    }
+  }
+}

@@ -1,0 +1,82 @@
+[
+  {
+    "item": "Variable-font axes and fine weights: `weightFineTune`, `variationSettings`, `opticalSizing`",
+    "reason": "not rendered: Font.php:336-487 turns them into font-variation-settings (source), but no variable family was loaded and the dev render never fetched a font file"
+  },
+  {
+    "item": "Whether a font family or a weight is actually available to the browser",
+    "reason": "not measured: only the computed `font-family` and `font-weight` were compared. The probe never checked that Divi loaded the family's files from the font host, or that the family has a face for the weight; the family names named in the topic come from Divi's own `google-fonts.json` (fixtures/shapes/fonts-5.15.1.json)"
+  },
+  {
+    "item": "Drop caps (`dropCapLineSize`, `dropCapSpacing`), vertical text (`writingMode`) and the column rule (`columnRuleWidth`, `columnRuleStyle`, `columnRuleColor`)",
+    "reason": "not rendered: read from Font.php:628-734 only; the topic does not teach them"
+  },
+  {
+    "item": "`columnGap` on its own, and `columnCount` on a heading or on a module other than the text module",
+    "reason": "not rendered: the gap was measured together with a column count in a text module's body only"
+  },
+  {
+    "item": "The divider line `show` switch (\"off\" hides the line)",
+    "reason": "not measured: with show off Divi removes the `et_pb_divider` class (DividerModule.php:186-194) and the probe finds a module by that class, so the candidate ended in an ERROR and was dropped from the committed run. Source only"
+  },
+  {
+    "item": "Divider width, height and spacing, and a divider line on hover",
+    "reason": "not rendered: only the line's colour, weight, style and position were measured"
+  },
+  {
+    "item": "Backdrop filters (`backdropBlur`, `backdropInvert`, `backdropSepia`)",
+    "reason": "never taught: a frosted-glass look needs a backdrop blur, which this project excludes; they were not probed"
+  },
+  {
+    "item": "A grayscale filter",
+    "reason": "Divi 5.15.1 has no `grayscale` key (Filters.php:117-135, source); `saturate` \"0%\" was measured instead. A filter value of \"0\" without a unit is skipped by Divi (Filters.php:11-23, source)"
+  },
+  {
+    "item": "Filters and blend modes on modules other than the image, and the filter `hover` state",
+    "reason": "not rendered here: only the image module's `module.decoration.filters` value state; hover is in the topic `hover-states`"
+  },
+  {
+    "item": "Text effects beyond fill, stroke and the stroke position: gradient `repeat`, `length`, radial direction, `imageFill.size`, `position`, `repeat`, `blend`, `width`, `height`, `horizontalOffset`, `verticalOffset`, and text effects on a text module",
+    "reason": "not rendered: one linear gradient with two stops and one image fill url were measured on a heading"
+  },
+  {
+    "item": "Text shadow on the heading levels or the link and quote groups of a text module, on a button or on a blurb",
+    "reason": "not rendered: the heading and the text module body were measured"
+  },
+  {
+    "item": "Text shadow and text effects with tablet or phone values other than the phone zero shadow",
+    "reason": "not rendered with overrides, except the one measured candidate"
+  },
+  {
+    "item": "Font settings (size, spacing, case) of modules other than the heading, the text module, the button, the blurb title and body, and the number counter",
+    "reason": "not rendered: accordion, tabs, pricing table, slider, menu and the other modules were not probed"
+  },
+  {
+    "item": "Image overlay settings beyond `use`, `backgroundColor`, `overlayIcon.iconColor` and `overlayIcon.hoverIcon`, the lightbox, and an overlay without a link",
+    "reason": "not rendered: the overlay needs a link (or the lightbox) and was measured with the pointer on the image and a link of #"
+  },
+  {
+    "item": "Which icon glyphs exist, and icon libraries other than the one Font Awesome glyph used",
+    "reason": "not measured: the Font Awesome code `&#xf054;` and the library defaults were the only glyphs rendered; the topic does not list glyph codes"
+  },
+  {
+    "item": "Border sides other than the bottom, per-side colours, border on modules other than the image and the button, and a box shadow with `position` inner on modules other than the image",
+    "reason": "not rendered: the all-sides border, the bottom border and presets 1 to 7 on the image were measured"
+  },
+  {
+    "item": "Blurb image mode (an image instead of an icon): image width, alignment and an icon in a circle",
+    "reason": "not rendered here; only the icon mode was measured"
+  },
+  {
+    "item": "Button icon on tablet and phone, and button hover states beyond those in `hover-states`",
+    "reason": "not rendered; the button alignment measured is `module.advanced.alignment`"
+  },
+  {
+    "item": "Number counter behaviour (count speed, start value) and the circle counter and bar counter modules",
+    "reason": "not rendered: only the fonts, the percent sign and the alignment of the number counter module were measured"
+  },
+  {
+    "item": "The Visual Builder",
+    "reason": "not checked: every result is a front-end render of a draft page preview"
+  }
+]

@@ -37,6 +37,9 @@ final class StyleGuide
         $topics[] = 'hover-states';
         $topics[] = 'layout-advanced';
         $topics[] = 'layout-sizing';
+        $topics[] = 'typography';
+        $topics[] = 'imagery';
+        $topics[] = 'controls';
         return $topics;
     }
 
@@ -70,6 +73,15 @@ final class StyleGuide
         }
         if ( 'layout-sizing' === $topic ) {
             return self::layoutSizingTopic();
+        }
+        if ( 'typography' === $topic ) {
+            return self::typographyTopic();
+        }
+        if ( 'imagery' === $topic ) {
+            return self::imageryTopic();
+        }
+        if ( 'controls' === $topic ) {
+            return self::controlsTopic();
         }
         if ( str_starts_with( $topic, 'design-language:' ) && in_array( $topic, self::topics(), true ) ) {
             return DesignLanguages::markdown( substr( $topic, strlen( 'design-language:' ) ) );
@@ -741,6 +753,337 @@ Not measured, so do not rely on them: flex and grid settings on rows, columns an
 the base of the measured column-width candidates), flexType values other than the five listed, rows of three or more columns, the
 other grid options (fixed and manual column widths, row heights, auto flow, density), custom flex grow and shrink numbers, how
 overflow cuts content, spacing in calc() or vw other than the one clamp() shown, and the Visual Builder.
+MD;
+    }
+
+    /** Topic `typography`: heading and body fonts, lines, shadows and text effects, every shape proven on the real Divi 5.15.1. At most 10,000 bytes. */
+    private static function typographyTopic(): string
+    {
+        return <<<'MD'
+# Typography: weight, case, spacing, shadows and text effects
+
+Every shape listed here was rendered on the real Divi 5.15.1 (the front end of a draft page preview, Chromium at 1280, 900 and
+400 px) and changed the computed styles of the page; the worked example uses ordinary values. A rule marked (source) is read from
+Divi's own code and was not rendered, and the Limits section says what was not measured. The Visual Builder was not checked.
+Images are in the topic `imagery`; buttons, icons, blurbs, counters and dividers are in `controls`.
+
+## Heading font
+Paths below sit under `title.decoration.font.font.{bp}.value.` (a heading module; a blurb title uses the same keys, other modules
+name their own element).
+- `weight`
+- `style`
+- `capitalization`
+- `letterSpacing`
+- `lineHeight`
+- `family`
+- `textWrap`
+- `hyphens`
+Weights 4 proven: 300, 600, 800, 900. A heading's own weight is 500.
+Style 4 proven: italic, overline, strikethrough, underline. It is a list, for example ["italic"].
+Capitalization 5 proven: allSmallCaps, capitalize, lowercase, smallCaps, uppercase.
+Families 4 proven: Barlow Condensed, Inter, Playfair Display, Source Sans 3. Each is in Divi's own Google Fonts list
+(google-fonts.json in the Divi theme); the computed font-family named it with a fallback stack. Whether the font file loaded
+was not checked.
+Also rendered: `letterSpacing` "-1px", "2px" and "0.1em"; `lineHeight` "1.6em" ("1em" is a heading's own and changed only the
+stylesheet); `textWrap` "balance" and "pretty"; `hyphens` "on".
+Upper case is `capitalization` "uppercase". A `style` list holding "uppercase", the shape the default guide shows, changed nothing
+on a heading or on a button label (rendered: dead). Use `capitalization`.
+Responsive: `letterSpacing` "4px" on desktop with "0px" on the phone changed 400 px only; "0px" on the tablet changed 900 and 400 px.
+
+## Underline and lines
+Paths below sit under `title.decoration.font.font.{bp}.value.` (as above). `style` ["underline"] (or overline, strikethrough) draws the line, and these restyle it (all rendered with ["underline"]):
+- `lineColor`
+- `lineStyle`
+- `lineThickness`
+- `underlineOffset`
+Line styles 4 proven: dashed, dotted, double, wavy. `lineStyle` with no line in `style` changed nothing (rendered: dead); colour,
+thickness and offset without a line have nothing to draw on (source).
+
+## Text module headings
+Paths below sit under `content.decoration.headingFont.h2.font.{bp}.value.` (h1 to h6; the content must hold that tag).
+Levels 6 proven: h1, h2, h3, h4, h5, h6. `weight` "300" changed the computed weight of that level's tag only.
+Keys on h2 6 proven: capitalization, family, letterSpacing, lineHeight, style, weight. On h3: capitalization.
+
+## Text module body
+Paths below sit under `content.decoration.bodyFont.body.font.{bp}.value.`.
+- `weight`
+- `lineHeight`
+- `letterSpacing`
+- `style`
+- `capitalization`
+- `family`
+- `textWrap`
+- `hyphens`
+- `columnCount`
+- `columnGap`
+Rendered: weight "300" and "600", lineHeight "1.8em", letterSpacing "0.5px", style ["italic"], capitalization "uppercase",
+family "Inter", textWrap "pretty", hyphens "on". Columns: `columnCount` "2" with `columnGap` "48px" (set together) printed two
+columns at 1280, 900 and 400 px; a phone `columnCount` "1" changed 400 px only. `columnGap` alone was not rendered.
+
+## Text shadow
+Paths below sit under `title.decoration.font.textShadow.{bp}.value.` (a heading). The body of a text module takes
+`content.decoration.bodyFont.body.textShadow.{bp}.value.style` the same way ("preset1" rendered).
+- `style`
+- `color`
+- `horizontal`
+- `vertical`
+- `blur`
+Presets 5 proven: preset1, preset2, preset3, preset4, preset5. They are em values, so they scale with the text (source).
+Overrides sit on top of a preset: `color` "#dc2626", `horizontal` "0.1em", `vertical` "0.2em" and `blur` "0.4em" were rendered over
+preset1. They changed nothing without a `style` (rendered: dead). `style` "none" removed a preset2 shadow.
+Phone: a phone `style` "none" does not remove a desktop shadow (rendered: dead, the desktop rule still applies). Set `horizontal`,
+`vertical` and `blur` to "0em" on the phone instead (rendered: 400 px only).
+
+## Text effects
+Paths below sit under `title.decoration.font.textEffects.{bp}.value.` (a heading).
+- `strokeWidth`
+- `strokeColor`
+- `strokePosition`
+- `fillType`
+- `gradient.type`
+- `gradient.direction`
+- `gradient.stops`
+- `imageFill.url`
+Fill types 3 proven: gradient, image, transparent.
+`strokeWidth` "2px" with `strokeColor` "#dc2626" (set together) outlined the text. `strokePosition` "fill-stroke" changed the paint
+order; "stroke-fill" is what a stroke wider than 1px already has (rendered: dead). `fillType` "transparent" alone made the text fill
+transparent: the text is invisible unless a stroke is set, so for outline text set `fillType`, `strokeWidth` and `strokeColor`
+together (rendered). `fillType` "gradient" with `gradient.type` "linear", `gradient.direction` "90deg" and two `gradient.stops`
+(position "0" and "100" with a colour each) filled the text; the same gradient without `fillType` changed nothing (rendered: dead).
+`fillType` "image" with `imageFill.url` (an image address, see get_image_guide) filled the text with a picture.
+Gradient, transparent and image text can be unreadable: check contrast against the lightest part of the fill.
+
+## Worked example (validates)
+```
+<!-- wp:divi/section {"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Our approach"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h4","size":"14px","weight":"600","capitalization":"uppercase","letterSpacing":"2px","color":"#dc2626"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Careful work, clearly explained"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2","size":"44px","weight":"800","lineHeight":"1.2em","family":"Playfair Display","color":"#0f172a","textWrap":"balance"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>We plan, build and test every page.</p>"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"size":"18px","lineHeight":"1.8em","color":"#334155"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+
+## Limits
+- Only a heading and the body of a text module were measured for the keys above (a blurb title also took `weight`); the fonts of
+  other modules were not.
+- Variable-font axes, drop caps, vertical text, the column rule and whether a family has a face for a weight were not measured.
+- Text effects: one linear gradient with two stops, one image address and the stroke were measured, on a heading only.
+- Computed styles were compared; legibility and contrast were not judged.
+MD;
+    }
+
+    /** Topic `imagery`: image filters, fit, corners, borders, shadows and hover overlay, every shape proven on the real Divi 5.15.1. At most 10,000 bytes. */
+    private static function imageryTopic(): string
+    {
+        return <<<'MD'
+# Imagery: filters, fit, corners, borders, shadows and hover overlay
+
+Every shape listed here was rendered on the real Divi 5.15.1 (the front end of a draft page preview, Chromium at 1280, 900 and
+400 px) on an image module and changed the computed styles of the page; the worked examples use ordinary values. A rule marked
+(source) is read from Divi's own code and was not rendered, and the Limits section says what was not measured. The Visual Builder
+was not checked. Which picture to use is in get_image_guide; fonts are in the topic `typography`.
+
+## Filters
+Paths below sit under `module.decoration.filters.{bp}.value.`.
+- `brightness`
+- `contrast`
+- `saturate`
+- `sepia`
+- `invert`
+- `hueRotate`
+- `blur`
+- `opacity`
+- `blendMode`
+Rendered: `brightness` "130%", `contrast` "130%", `saturate` "0%" (grey) and "180%", `sepia` "100%", `invert` "100%", `hueRotate`
+"90deg", `blur` "4px", `opacity` "60%", `blendMode` "multiply". There is no grayscale key: use `saturate` "0%". A value of "0"
+without a unit is skipped by Divi (source). Filters that blur what is behind an element are not taught.
+
+## Fit
+Paths below sit under `image.decoration.fit.{bp}.value.`. They matter when the image box is not the picture's own shape; they
+were rendered in a 1:1 box (`module.advanced.sizing.{bp}.value.aspectRatio.width` and `.height` "1", see `layout-sizing`).
+- `objectFit`
+- `objectPosition`
+Fit values 4 proven: contain, cover, none, scale-down. "fill" is the browser default and changed only the stylesheet (rendered:
+css-only). `objectPosition` "left top" and "right bottom" were rendered with `objectFit` "cover".
+
+## Corners
+Paths below sit under `image.decoration.border.{bp}.value.radius.`.
+- `topLeft`
+- `topRight`
+- `bottomRight`
+- `bottomLeft`
+Rendered: "16px" on all four corners, and "50%" on all four corners of a square image (a circle). Set every corner you want
+rounded: `topLeft` alone rounded that corner only, and `sync` "on" with `topLeft` alone did the same (rendered), so `sync` does not
+copy a value to the other corners. A radius also set `overflow` hidden on the image wrapper (rendered).
+
+## Border
+Paths below sit under `image.decoration.border.{bp}.value.styles.`.
+- `all.width`
+- `all.color`
+- `all.style`
+- `bottom.width`
+- `bottom.color`
+- `bottom.style`
+Rendered: width "4px", colour "#1e3a8a" and style "solid" set together on all sides, and the same three on the bottom side only.
+`all.width` alone printed a border in a dark grey (computed rgb(51, 51, 51)), so give the colour too. Styles 3 proven: dashed, dotted, double.
+They were rendered with width and colour in the base.
+
+## Shadow
+Paths below sit under `image.decoration.boxShadow.{bp}.value.`. The shadow was computed on the image wrapper, not on the picture.
+- `style`
+- `color`
+- `blur`
+- `vertical`
+- `spread`
+Presets 7 proven: preset1, preset2, preset3, preset4, preset5, preset6, preset7. Preset6 and preset7 are inner shadows (source); what
+they look like on a picture was not judged.
+`color` "rgba(30,58,138,0.35)", `blur` "40px", `vertical` "24px" and `spread` "8px" were rendered over preset1; "40px" blur is a
+strong value. Without a `style` the same keys changed nothing (rendered: dead), so always set `style`.
+
+## Hover overlay
+Paths below sit under `image.advanced.overlay.{bp}.value.`. The overlay needs a link on the image (`image.innerContent.{bp}.value.linkUrl`
+was "#") or the lightbox (source); `use` "on" with no link changed nothing (rendered: dead). Rendered with the pointer on the image.
+- `use`
+- `backgroundColor`
+`backgroundColor` "rgba(30,58,138,0.6)" coloured the overlay.
+
+## Overlay icon
+Paths below sit under `image.advanced.overlayIcon.{bp}.value.` (with the overlay on and a link, as above).
+- `iconColor`
+- `hoverIcon.unicode`
+- `hoverIcon.type`
+- `hoverIcon.weight`
+`iconColor` "#ffffff" changed the icon colour. `hoverIcon.unicode`, `.type` and `.weight` (set together: "&#xf002;", "fa", "900")
+changed the glyph, its font and its weight.
+
+## Worked examples (each validates)
+Rounded picture with a soft shadow (replace IMAGE_URL with the url you chose):
+```
+<!-- wp:divi/section {"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"IMAGE_URL","alt":"Our team at work"}}},"decoration":{"border":{"desktop":{"value":{"radius":{"topLeft":"16px","topRight":"16px","bottomRight":"16px","bottomLeft":"16px"}}}},"boxShadow":{"desktop":{"value":{"style":"preset1"}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+Square crop with a hover overlay:
+```
+<!-- wp:divi/section {"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/image {"module":{"advanced":{"sizing":{"desktop":{"value":{"aspectRatio":{"width":"1","height":"1"}}}}}},"image":{"innerContent":{"desktop":{"value":{"src":"IMAGE_URL","alt":"A finished project","linkUrl":"#"}}},"decoration":{"fit":{"desktop":{"value":{"objectFit":"cover"}}}},"advanced":{"overlay":{"desktop":{"value":{"use":"on","backgroundColor":"rgba(30,58,138,0.6)"}}},"overlayIcon":{"desktop":{"value":{"iconColor":"#ffffff"}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+
+## Limits
+- Only the image module was measured: other modules' filters, borders and shadows were not, and the filter hover state is in `hover-states`.
+- Border sides other than all and bottom, per-side colours, the lightbox, other icon glyphs and the overlay without hover were not measured.
+- Computed styles were compared; how a shadow, filter or overlay looks on a particular picture was not judged.
+- Check text over a picture or an overlay for contrast.
+MD;
+    }
+
+    /** Topic `controls`: button, blurb, icon, number counter and divider styling, every shape proven on the real Divi 5.15.1. At most 10,000 bytes. */
+    private static function controlsTopic(): string
+    {
+        return <<<'MD'
+# Controls: buttons, blurbs, icons, counters and dividers
+
+Every shape listed here was rendered on the real Divi 5.15.1 (the front end of a draft page preview, Chromium at 1280, 900 and
+400 px) and changed the computed styles of the page (the pseudo-elements `::before` and `::after` were compared where Divi draws
+an icon or a line there; the rendered text where a character is printed); the worked example uses ordinary values. A rule marked
+(source) is read from Divi's own code and was not rendered, and the Limits section says what was not measured. The Visual Builder
+was not checked. Fonts are in the topic `typography`, pictures in `imagery`.
+
+## Button icon
+Paths below sit under `button.decoration.button.{bp}.value.`. A button already shows an arrow icon (rendered: setting only the
+placement and the colour changed the icon of a button that had no icon settings), so you change the icon, you do not switch it on.
+- `icon.settings.unicode`
+- `icon.settings.type`
+- `icon.settings.weight`
+- `icon.placement`
+- `icon.onHover`
+- `icon.color`
+- `icon.enable`
+Rendered: the glyph "&#xf054;" with type "fa" and weight "900" (set together); `icon.placement` "left"; `icon.onHover` "off"
+(the icon is always visible, not only on hover); `icon.color` "#f59e0b"; `icon.enable` "off" hid the icon. `icon.enable` "on" is the
+default and changed nothing (rendered: dead). An `enable` written beside `icon` (`value.enable`) changed nothing, on or off (rendered:
+dead), so write it inside `icon`.
+
+## Button label, box and position
+- `button.decoration.font.font.{bp}.value.{weight,letterSpacing,capitalization,family}`
+- `module.decoration.spacing.{bp}.value.padding.{top,right,bottom,left}`
+- `button.decoration.border.{bp}.value.radius.{topLeft,topRight,bottomRight,bottomLeft}`
+- `button.decoration.border.{bp}.value.styles.all.{width,color,style}`
+- `module.decoration.boxShadow.{bp}.value.style`
+- `module.advanced.alignment.{bp}.value`
+Rendered: weight "800", letterSpacing "2px", capitalization "uppercase", family "Inter"; padding "16px" top and bottom with "40px"
+left and right (the button's padding is the module's spacing); radius "999px" on all four corners; border "2px", "#1e3a8a", "solid";
+box shadow "preset1"; alignment "center" and "right". A label `style` list with "uppercase" in it changed nothing (rendered: dead; use
+`capitalization`). Padding and box shadow written on the `button` element (`button.decoration.spacing`, `button.decoration.boxShadow`)
+changed nothing (rendered: dead); write them on the module.
+
+## Blurb icon
+- `imageIcon.innerContent.{bp}.value.{useIcon,icon.unicode,icon.type,icon.weight}`
+- `imageIcon.advanced.color.{bp}.value`
+- `imageIcon.advanced.placement.{bp}.value`
+- `imageIcon.decoration.sizing.{bp}.value.iconFontSize`
+- `imageIcon.decoration.background.{bp}.value.color`
+- `imageIcon.decoration.spacing.{bp}.value.padding.{top,right,bottom,left}`
+Rendered with an icon on (`useIcon` "on" with the glyph "&#xf054;", "fa", "900", set together): colour "#dc2626"; placement "left" and
+"right" ("top" is the default and changed nothing (rendered: dead)); `iconFontSize` "64px"; background "#e0e7ff"; padding "16px" on all
+four sides. The icon size is `iconFontSize`: the sizing `width` of the icon changed nothing (rendered: dead). The blurb
+title and body take the font keys of `typography` (title `weight` and body `lineHeight` rendered).
+
+## Icon module
+Paths below sit under `icon.advanced.`.
+- `color.{bp}.value`
+- `size.{bp}.value`
+- `align.{bp}.value`
+Rendered: colour "#dc2626", size "64px", align "left" and "right"; align "center" is the default and changed nothing (rendered: dead).
+
+## Number counter
+- `number.decoration.font.font.{bp}.value.{size,weight,color,family}`
+- `title.decoration.font.font.{bp}.value.{capitalization,letterSpacing,color}`
+- `number.advanced.enablePercentSign.{bp}.value`
+- `module.advanced.text.text.{bp}.value.orientation`
+Rendered: number size "48px" (its own size is 72px), weight "800", colour "#dc2626", family "Playfair Display"; title capitalization
+"uppercase", letterSpacing "2px", colour "#64748b". `enablePercentSign` "off" removed the % from the printed text; "on" is the default and
+changed nothing (rendered: dead). `orientation` "left" aligned the module's text left; "center" is the default and changed nothing (rendered: dead).
+
+## Divider line
+Paths below sit under `divider.advanced.line.{bp}.value.` (the line is drawn on the module's `::before`).
+- `color`
+- `weight`
+- `style`
+- `position`
+Styles 3 proven: dashed, dotted, double. Positions 2 proven: bottom, center. Rendered: colour "#dc2626", weight "6px". Position "top" is
+the default and changed nothing (rendered: dead). The `show` switch could not be measured (source only).
+
+## Worked example (validates)
+```
+<!-- wp:divi/section {"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/number-counter {"title":{"innerContent":{"desktop":{"value":"Projects delivered"}},"decoration":{"font":{"font":{"desktop":{"value":{"capitalization":"uppercase","letterSpacing":"2px","color":"#64748b"}}}}}},"number":{"innerContent":{"desktop":{"value":"120"}},"advanced":{"enablePercentSign":{"desktop":{"value":"off"}}},"decoration":{"font":{"font":{"desktop":{"value":{"size":"48px","weight":"800","color":"#0f172a"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/divider {"divider":{"advanced":{"line":{"desktop":{"value":{"color":"#dc2626","weight":"2px","style":"dashed"}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"See our work"}}},"decoration":{"font":{"font":{"desktop":{"value":{"weight":"600","capitalization":"uppercase","letterSpacing":"1px","color":"#ffffff"}}}},"background":{"desktop":{"value":{"color":"#1e3a8a"}}},"border":{"desktop":{"value":{"radius":{"topLeft":"8px","topRight":"8px","bottomRight":"8px","bottomLeft":"8px"}}}},"button":{"desktop":{"value":{"icon":{"placement":"left"}}}}}},"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"14px","right":"32px","bottom":"14px","left":"32px"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+
+## Limits
+- Only the modules named here were measured; icon glyphs other than one Font Awesome code, the icon on tablet and phone, blurb image mode,
+  divider width and the circle and bar counters were not.
+- Computed styles (and the pseudo-elements above) were compared; how an icon or a line looks was not judged.
+- A button text colour and background need contrast; see the default guide.
 MD;
     }
 

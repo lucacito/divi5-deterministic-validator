@@ -48,6 +48,14 @@
  *            "measured" when the measured element itself is the one on top at its own centre, "other" when something covers it, "none" when it
  *            has no box or the centre is off the page; hitCentre was added in fix round 1 of the layout task, absent from older result files). Added in the
  *            layout task; absent = nothing changes for older candidate files.
+ *   pseudo   (optional) a list of pseudo-elements (e.g. ["::before","::after"]): the computed styles of those pseudo-elements of the measured
+ *            element and of every descendant are compared too, as `<index>:<tag>:<pseudo>:<property>` (changedProps shows `::before:color`).
+ *            Needed where Divi draws the effect on a pseudo-element (the divider line is `.et_pb_divider:before`, a button icon is
+ *            `.et_pb_button:after`): getComputedStyle(element) alone does not see it and the result would be a mere stylesheet difference.
+ *            Added in the typography task; absent = nothing is compared beyond the elements, so older candidate files are unchanged.
+ *   text     (optional, true) also compare the rendered text of the measured element (`innerText`) as `text:innerText`. For a setting that
+ *            changes WHAT is printed rather than how it is styled (the number counter's percent sign is a character, not a style). A change
+ *            of text alone is reported as a difference in `changedProps` (`text:innerText`). Added in the typography task; absent = text is not compared.
  *   settleMs (optional) milliseconds to wait before measuring (default 600; 1200 with a `state`; 3000 for a number counter).
  *   ignore   (optional) computed property names (e.g. ["opacity","transform"]) left out of the comparison on BOTH pages. Needed when the
  *            effect under test is running while the page is measured (an entrance animation changes opacity from frame to frame, so two
@@ -289,7 +297,7 @@ function removeOrphans() {
 const classOf = (blockName) => 'et_pb_' + blockName.replace(/-/g, '_');
 
 /** Runs in the page: stylesheet text plus the computed styles of the module element and its descendants. */
-function snapshotInPage({ cls, index, withRect, attrs, ignore, geometry }) {
+function snapshotInPage({ cls, index, withRect, attrs, ignore, geometry, pseudo, text }) {
   // Divi and WordPress attach their <style> blocks in a load-dependent order, so the blocks are sorted before comparing.
   const styleText = [...document.querySelectorAll('style')].map((s) => s.textContent.trim()).filter(Boolean).sort().join('\n/*--*/\n');
   // The page content, never the Theme Builder header/footer (their first column/row/section would be measured otherwise).
@@ -358,6 +366,16 @@ function snapshotInPage({ cls, index, withRect, attrs, ignore, geometry }) {
         props[i + ':' + e.tagName.toLowerCase() + ':' + cs[k]] = cs.getPropertyValue(cs[k]);
       }
     });
+    for (const ps of pseudo) {
+      all.forEach((e, i) => {
+        const cs = getComputedStyle(e, ps);
+        for (let k = 0; k < cs.length; k++) {
+          if (ignore.includes(cs[k])) continue;
+          props[i + ':' + e.tagName.toLowerCase() + ':' + ps + ':' + cs[k]] = cs.getPropertyValue(cs[k]);
+        }
+      });
+    }
+    if (text) props['text:innerText'] = String(el.innerText);
     for (const name of attrs) props['attr:' + name] = String(el.getAttribute(name));
     if (withRect) {
       const r = el.getBoundingClientRect();
@@ -432,7 +450,7 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
           }, { cls, index, at: typeof c.scrollAt === 'number' ? c.scrollAt : 0.25 });
           await p.waitForTimeout(settle);
         }
-        const r = await p.evaluate(snapshotInPage, { cls, index, withRect: c.state === 'scroll' || c.geometry === true, attrs: c.attrs || [], ignore: c.ignore || [], geometry: c.geometry === true });
+        const r = await p.evaluate(snapshotInPage, { cls, index, withRect: c.state === 'scroll' || c.geometry === true, attrs: c.attrs || [], ignore: c.ignore || [], geometry: c.geometry === true, pseudo: c.pseudo || [], text: c.text === true });
         // WordPress writes a random per-request placeholder comment into the block-library style.
         r.styleText = r.styleText.replace(/wp_block_styles_on_demand_placeholder:[0-9a-f]+/g, 'wp_block_styles_on_demand_placeholder:X');
         r.styleText = r.styleText.split(new RegExp('\\b' + id + '\\b', 'g')).join('PID');
@@ -452,6 +470,8 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
         if (!c.set || typeof c.set !== 'object' || !Object.keys(c.set).length) throw new Error('a candidate needs a non-empty `set`');
         if (c.state !== undefined && c.state !== 'hover' && c.state !== 'scroll') throw new Error('`state` must be "hover" or "scroll"');
         if (c.ignore !== undefined && !(Array.isArray(c.ignore) && c.ignore.every((x) => typeof x === 'string'))) throw new Error('`ignore` must be a list of computed property names');
+        if (c.pseudo !== undefined && !(Array.isArray(c.pseudo) && c.pseudo.every((x) => typeof x === 'string' && /^::[a-z-]+$/.test(x)))) throw new Error('`pseudo` must be a list of pseudo-elements such as "::before"');
+        if (c.text !== undefined && c.text !== true) throw new Error('`text` must be true');
         if (c.attrs !== undefined && !(Array.isArray(c.attrs) && c.attrs.every((x) => typeof x === 'string'))) throw new Error('`attrs` must be a list of attribute names');
         const cls = classOf(c.block);
         // The candidate comes after its `before` neighbours (sections) and after its `before` siblings of the same block name.

@@ -1,6 +1,5 @@
 arrows.advanced.showArrows.{bp}.value
 blogGrid.decoration.layout.{bp}.value.gridColumnCount
-button.decoration.button.{bp}.value.icon.enable
 captcha.decoration.font.font.{bp}.value.family
 company.innerContent
 content.decoration.bodyFont.ul.font.{bp}.value.color
@@ -13,7 +12,6 @@ email.advanced.receiver.{bp}.value
 field.decoration.background.{bp}.value.color
 field.decoration.font.font.{bp}.value.color
 field.decoration.font.font.{bp}.value.family
-icon.advanced.align.{bp}.value
 imageIcon.advanced.alignment.{bp}.value
 imageIcon.advanced.width.{bp}.value.icon
 imageIcon.advanced.width.{bp}.value.image
@@ -28,9 +26,6 @@ module.advanced.slidesToScroll.{bp}.value
 module.advanced.slidesToShow.{bp}.value
 module.decoration.transform.{bp}.hover.translate.linked
 module.decoration.transform.{bp}.hover.translate.x
-number.advanced.enablePercentSign.{bp}.value
-number.decoration.font.font.{bp}.value.size
-number.decoration.font.font.{bp}.value.weight
 pagination.advanced.enable.{bp}.value
 post.advanced.categories.{bp}.value.{n}
 post.advanced.type.{bp}.value

@@ -11145,3 +11145,3755 @@ Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-l
 - z-index -1 behind a coloured row, a coloured image or a card inside a coloured section: not measured: -1 was measured behind a card in a section with no background colour, and with no card in a section and in a column with a dark background colour (the decor stayed on top at its own centre)
 - Transform on hosts other than the group and the image; `translate.linked`; 3D rotation with a perspective; transform in a hover or sticky state; transform on the tablet: not rendered or covered elsewhere: hover transforms and a resting scale/skew.x are in the topic `hover-states`. Measured here: translate x/y, rotate x/y/z, skew.y, scale x and y together, origin x/y and a phone reset
 - The Visual Builder: not checked: every result is a front-end render of a draft page preview on the Docker dev site (Divi 5.15.1, Chromium at 1280, 900 and 400 px)
+
+
+## ty-h-weight-300
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"300"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 300` |
+| 900 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 300` |
+| 400 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading font weight 300. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432 (font-weight from `weight`).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-weight-600
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"600"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 600` |
+| 900 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 600` |
+| 400 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 600` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading font weight 600. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432 (font-weight from `weight`).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-weight-800
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"800"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 800` |
+| 900 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 800` |
+| 400 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 800` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading font weight 800. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432 (font-weight from `weight`).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-weight-900
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"900"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 900` |
+| 900 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 900` |
+| 400 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 900` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading font weight 900. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432 (font-weight from `weight`).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-style-italic
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.style` = `["italic"]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:font-style: normal -> italic` |
+| 900 px | yes | 1 | yes | `2:h1:font-style: normal -> italic` |
+| 400 px | yes | 1 | yes | `2:h1:font-style: normal -> italic` |
+
+Properties that changed (any width): `font-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading font style italic (a list). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:511-512 (italic in `style`).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-style-underline
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.style` = `["underline"]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `2:h1:text-decoration: none -> underline` |
+| 900 px | yes | 3 | yes | `2:h1:text-decoration: none -> underline` |
+| 400 px | yes | 3 | yes | `2:h1:text-decoration: none -> underline` |
+
+Properties that changed (any width): `-webkit-text-decorations-in-effect`, `text-decoration`, `text-decoration-line`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading font style underline. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:519-532 (underline/overline/strikethrough in `style` give text-decoration-line).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-style-strikethrough
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.style` = `["strikethrough"]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `2:h1:text-decoration: none -> line-through` |
+| 900 px | yes | 3 | yes | `2:h1:text-decoration: none -> line-through` |
+| 400 px | yes | 3 | yes | `2:h1:text-decoration: none -> line-through` |
+
+Properties that changed (any width): `-webkit-text-decorations-in-effect`, `text-decoration`, `text-decoration-line`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading font style strikethrough. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:527-532 (strikethrough gives line-through).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-style-overline
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.style` = `["overline"]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `2:h1:text-decoration: none -> overline` |
+| 900 px | yes | 3 | yes | `2:h1:text-decoration: none -> overline` |
+| 400 px | yes | 3 | yes | `2:h1:text-decoration: none -> overline` |
+
+Properties that changed (any width): `-webkit-text-decorations-in-effect`, `text-decoration`, `text-decoration-line`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading font style overline. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:523-532.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-cap-uppercase
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-transform: none -> uppercase` |
+| 900 px | yes | 1 | yes | `2:h1:text-transform: none -> uppercase` |
+| 400 px | yes | 1 | yes | `2:h1:text-transform: none -> uppercase` |
+
+Properties that changed (any width): `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading capitalization uppercase. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-579 (uppercase/lowercase/capitalize give text-transform, smallCaps/allSmallCaps give font-variant-caps).
+
+Registered paths added:
+
+- `title.decoration.font.font.{bp}.value.capitalization`
+
+## ty-h-cap-lowercase
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.capitalization` = `"lowercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-transform: none -> lowercase` |
+| 900 px | yes | 1 | yes | `2:h1:text-transform: none -> lowercase` |
+| 400 px | yes | 1 | yes | `2:h1:text-transform: none -> lowercase` |
+
+Properties that changed (any width): `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading capitalization lowercase. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-579 (uppercase/lowercase/capitalize give text-transform, smallCaps/allSmallCaps give font-variant-caps).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-cap-capitalize
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.capitalization` = `"capitalize"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-transform: none -> capitalize` |
+| 900 px | yes | 1 | yes | `2:h1:text-transform: none -> capitalize` |
+| 400 px | yes | 1 | yes | `2:h1:text-transform: none -> capitalize` |
+
+Properties that changed (any width): `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading capitalization capitalize. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-579 (uppercase/lowercase/capitalize give text-transform, smallCaps/allSmallCaps give font-variant-caps).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-cap-smallCaps
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.capitalization` = `"smallCaps"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `2:h1:font-variant: normal -> small-caps` |
+| 900 px | yes | 2 | yes | `2:h1:font-variant: normal -> small-caps` |
+| 400 px | yes | 2 | yes | `2:h1:font-variant: normal -> small-caps` |
+
+Properties that changed (any width): `font-variant`, `font-variant-caps`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading capitalization smallCaps. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-579 (uppercase/lowercase/capitalize give text-transform, smallCaps/allSmallCaps give font-variant-caps).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-cap-allSmallCaps
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.capitalization` = `"allSmallCaps"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `2:h1:font-variant: normal -> all-small-caps` |
+| 900 px | yes | 2 | yes | `2:h1:font-variant: normal -> all-small-caps` |
+| 400 px | yes | 2 | yes | `2:h1:font-variant: normal -> all-small-caps` |
+
+Properties that changed (any width): `font-variant`, `font-variant-caps`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading capitalization allSmallCaps. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-579 (uppercase/lowercase/capitalize give text-transform, smallCaps/allSmallCaps give font-variant-caps).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-spacing-minus1
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"-1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:letter-spacing: normal -> -1px` |
+| 900 px | yes | 1 | yes | `2:h1:letter-spacing: normal -> -1px` |
+| 400 px | yes | 1 | yes | `2:h1:letter-spacing: normal -> -1px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading letter spacing -1px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691.
+
+Registered paths added:
+
+- `title.decoration.font.font.{bp}.value.letterSpacing`
+
+## ty-h-spacing-2px
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:letter-spacing: normal -> 2px` |
+| 900 px | yes | 1 | yes | `2:h1:letter-spacing: normal -> 2px` |
+| 400 px | yes | 1 | yes | `2:h1:letter-spacing: normal -> 2px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading letter spacing 2px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-spacing-em
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"0.1em"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:letter-spacing: normal -> 3px` |
+| 900 px | yes | 1 | yes | `2:h1:letter-spacing: normal -> 3px` |
+| 400 px | yes | 1 | yes | `2:h1:letter-spacing: normal -> 3px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading letter spacing 0.1em. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-lineheight-1-6em
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.lineHeight` = `"1.6em"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 13 | yes | `0:div:block-size: 40px -> 58px` |
+| 900 px | yes | 13 | yes | `0:div:block-size: 40px -> 58px` |
+| 400 px | yes | 13 | yes | `0:div:block-size: 40px -> 58px` |
+
+Properties that changed (any width): `block-size`, `height`, `line-height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading line height 1.6em. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:693-695.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-family-playfair-display
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.family` = `"Playfair Display"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:font-family: Abel -> "Playfair Display", Georgia, "Times New Roman", serif` |
+| 900 px | yes | 1 | yes | `2:h1:font-family: Abel -> "Playfair Display", Georgia, "Times New Roman", serif` |
+| 400 px | yes | 1 | yes | `2:h1:font-family: Abel -> "Playfair Display", Georgia, "Times New Roman", serif` |
+
+Properties that changed (any width): `font-family`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading font family Playfair Display (a family listed in Divi/core/json-data/google-fonts.json of the 5.15.1 zip). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333 (family becomes font-family with a fallback stack).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-family-inter
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.family` = `"Inter"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:font-family: Abel -> Inter, Helvetica, Arial, Lucida, sans-serif` |
+| 900 px | yes | 1 | yes | `2:h1:font-family: Abel -> Inter, Helvetica, Arial, Lucida, sans-serif` |
+| 400 px | yes | 1 | yes | `2:h1:font-family: Abel -> Inter, Helvetica, Arial, Lucida, sans-serif` |
+
+Properties that changed (any width): `font-family`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading font family Inter (a family listed in Divi/core/json-data/google-fonts.json of the 5.15.1 zip). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333 (family becomes font-family with a fallback stack).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-family-source-sans-3
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.family` = `"Source Sans 3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:font-family: Abel -> "Source Sans 3", Helvetica, Arial, Lucida, sans-serif` |
+| 900 px | yes | 1 | yes | `2:h1:font-family: Abel -> "Source Sans 3", Helvetica, Arial, Lucida, sans-serif` |
+| 400 px | yes | 1 | yes | `2:h1:font-family: Abel -> "Source Sans 3", Helvetica, Arial, Lucida, sans-serif` |
+
+Properties that changed (any width): `font-family`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading font family Source Sans 3 (a family listed in Divi/core/json-data/google-fonts.json of the 5.15.1 zip). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333 (family becomes font-family with a fallback stack).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-family-barlow-condensed
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.family` = `"Barlow Condensed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:font-family: Abel -> "Barlow Condensed", Helvetica, Arial, Lucida, sans-serif` |
+| 900 px | yes | 1 | yes | `2:h1:font-family: Abel -> "Barlow Condensed", Helvetica, Arial, Lucida, sans-serif` |
+| 400 px | yes | 1 | yes | `2:h1:font-family: Abel -> "Barlow Condensed", Helvetica, Arial, Lucida, sans-serif` |
+
+Properties that changed (any width): `font-family`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading font family Barlow Condensed (a family listed in Divi/core/json-data/google-fonts.json of the 5.15.1 zip). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333 (family becomes font-family with a fallback stack).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-textwrap-balance
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.textWrap` = `"balance"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-wrap-style: auto -> balance` |
+| 900 px | yes | 1 | yes | `2:h1:text-wrap-style: auto -> balance` |
+| 400 px | yes | 1 | yes | `2:h1:text-wrap-style: auto -> balance` |
+
+Properties that changed (any width): `text-wrap-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text-wrap balance. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:606-608.
+
+Registered paths added:
+
+- `title.decoration.font.font.{bp}.value.textWrap`
+
+## ty-h-textwrap-pretty
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.textWrap` = `"pretty"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-wrap-style: auto -> pretty` |
+| 900 px | yes | 1 | yes | `2:h1:text-wrap-style: auto -> pretty` |
+| 400 px | yes | 1 | yes | `2:h1:text-wrap-style: auto -> pretty` |
+
+Properties that changed (any width): `text-wrap-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text-wrap pretty. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:606-608.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-hyphens-on
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.hyphens` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `2:h1:hyphens: manual -> auto` |
+| 900 px | yes | 2 | yes | `2:h1:hyphens: manual -> auto` |
+| 400 px | yes | 2 | yes | `2:h1:hyphens: manual -> auto` |
+
+Properties that changed (any width): `hyphens`, `overflow-wrap`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading hyphens on (auto hyphenation). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:610-613.
+
+Registered paths added:
+
+- `title.decoration.font.font.{bp}.value.hyphens`
+
+## ty-h-line-color
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.lineColor` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline rgb(220, 38, 38)` |
+| 900 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline rgb(220, 38, 38)` |
+| 400 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline rgb(220, 38, 38)` |
+
+Properties that changed (any width): `text-decoration`, `text-decoration-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Underline colour (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:581-583 (text-decoration-color).
+
+Registered paths added:
+
+- `title.decoration.font.font.{bp}.value.lineColor`
+
+## ty-h-line-style-dashed
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.lineStyle` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline dashed` |
+| 900 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline dashed` |
+| 400 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline dashed` |
+
+Properties that changed (any width): `text-decoration`, `text-decoration-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Underline style dashed (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:585-596 (text-decoration-style, emitted only when `style` holds underline, overline or strikethrough).
+
+Registered paths added:
+
+- `title.decoration.font.font.{bp}.value.lineStyle`
+
+## ty-h-line-style-dotted
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.lineStyle` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline dotted` |
+| 900 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline dotted` |
+| 400 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline dotted` |
+
+Properties that changed (any width): `text-decoration`, `text-decoration-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Underline style dotted (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:585-596 (text-decoration-style, emitted only when `style` holds underline, overline or strikethrough).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-line-style-double
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.lineStyle` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline double` |
+| 900 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline double` |
+| 400 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline double` |
+
+Properties that changed (any width): `text-decoration`, `text-decoration-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Underline style double (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:585-596 (text-decoration-style, emitted only when `style` holds underline, overline or strikethrough).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-line-style-wavy
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.lineStyle` = `"wavy"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline wavy` |
+| 900 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline wavy` |
+| 400 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline wavy` |
+
+Properties that changed (any width): `text-decoration`, `text-decoration-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Underline style wavy (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:585-596 (text-decoration-style, emitted only when `style` holds underline, overline or strikethrough).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-line-thickness
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.lineThickness` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline 3px` |
+| 900 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline 3px` |
+| 400 px | yes | 2 | yes | `2:h1:text-decoration: underline -> underline 3px` |
+
+Properties that changed (any width): `text-decoration`, `text-decoration-thickness`.
+
+Phone overflow at 400 px: no.
+
+Note: Underline thickness 3px (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:598-600.
+
+Registered paths added:
+
+- `title.decoration.font.font.{bp}.value.lineThickness`
+
+## ty-h-line-offset
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.underlineOffset` = `"6px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-underline-offset: auto -> 6px` |
+| 900 px | yes | 1 | yes | `2:h1:text-underline-offset: auto -> 6px` |
+| 400 px | yes | 1 | yes | `2:h1:text-underline-offset: auto -> 6px` |
+
+Properties that changed (any width): `text-underline-offset`.
+
+Phone overflow at 400 px: no.
+
+Note: Underline offset 6px (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:602-604.
+
+Registered paths added:
+
+- `title.decoration.font.font.{bp}.value.underlineOffset`
+
+## ty-h-spacing-phone-reset
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.phone.value.letterSpacing` = `"0px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 1 | yes | `2:h1:letter-spacing: 4px -> normal` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading letter spacing 4px on desktop (base), reset to 0px on the phone only. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-h-spacing-tablet-reset
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.tablet.value.letterSpacing` = `"0px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 1 | yes | `2:h1:letter-spacing: 4px -> normal` |
+| 400 px | yes | 1 | yes | `2:h1:letter-spacing: 4px -> normal` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading letter spacing 4px on desktop (base), 0px on the tablet: the phone inherits the tablet value. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ts-preset1
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textShadow.desktop.value.style` = `"preset1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 0px 3px 3px` |
+| 900 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 0px 3px 3px` |
+| 400 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 0px 3px 3px` |
+
+Properties that changed (any width): `text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text shadow preset1. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:13-44 (presets), :70-93 (value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ts-preset2
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textShadow.desktop.value.style` = `"preset2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 2.4px 2.4px 2.4px` |
+| 900 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 2.4px 2.4px 2.4px` |
+| 400 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 2.4px 2.4px 2.4px` |
+
+Properties that changed (any width): `text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text shadow preset2. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:13-44 (presets), :70-93 (value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ts-preset3
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textShadow.desktop.value.style` = `"preset3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 0px 0px 9px` |
+| 900 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 0px 0px 9px` |
+| 400 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 0px 0px 9px` |
+
+Properties that changed (any width): `text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text shadow preset3. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:13-44 (presets), :70-93 (value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ts-preset4
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textShadow.desktop.value.style` = `"preset4"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 0px 2.4px 0px` |
+| 900 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 0px 2.4px 0px` |
+| 400 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 0px 2.4px 0px` |
+
+Properties that changed (any width): `text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text shadow preset4. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:13-44 (presets), :70-93 (value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ts-preset5
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textShadow.desktop.value.style` = `"preset5"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 2.4px 2.4px 0px` |
+| 900 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 2.4px 2.4px 0px` |
+| 400 px | yes | 1 | yes | `2:h1:text-shadow: none -> rgba(0, 0, 0, 0.4) 2.4px 2.4px 0px` |
+
+Properties that changed (any width): `text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text shadow preset5. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:13-44 (presets), :70-93 (value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ts-none
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textShadow.desktop.value.style` = `"none"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 2.4px 2.4px 2.4px -> none` |
+| 900 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 2.4px 2.4px 2.4px -> none` |
+| 400 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 2.4px 2.4px 2.4px -> none` |
+
+Properties that changed (any width): `text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text shadow preset1 in the base, style none set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:50-52 (style none returns no shadow).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ts-override-color
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textShadow.desktop.value.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgb(220, 38, 38) 0px 3px 3px` |
+| 900 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgb(220, 38, 38) 0px 3px 3px` |
+| 400 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgb(220, 38, 38) 0px 3px 3px` |
+
+Properties that changed (any width): `text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text shadow preset1 in the base, color #dc2626 set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:74-93 (preset values overridden by the given keys).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ts-override-vertical
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textShadow.desktop.value.vertical` = `"0.2em"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgba(0, 0, 0, 0.4) 0px 6px 3px` |
+| 900 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgba(0, 0, 0, 0.4) 0px 6px 3px` |
+| 400 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgba(0, 0, 0, 0.4) 0px 6px 3px` |
+
+Properties that changed (any width): `text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text shadow preset1 in the base, vertical 0.2em set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:74-93 (preset values overridden by the given keys).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ts-override-horizontal
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textShadow.desktop.value.horizontal` = `"0.1em"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgba(0, 0, 0, 0.4) 3px 3px 3px` |
+| 900 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgba(0, 0, 0, 0.4) 3px 3px 3px` |
+| 400 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgba(0, 0, 0, 0.4) 3px 3px 3px` |
+
+Properties that changed (any width): `text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text shadow preset1 in the base, horizontal 0.1em set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:74-93 (preset values overridden by the given keys).
+
+Registered paths added:
+
+- `title.decoration.font.textShadow.{bp}.value.horizontal`
+
+## ty-ts-override-blur
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textShadow.desktop.value.blur` = `"0.4em"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgba(0, 0, 0, 0.4) 0px 3px 12px` |
+| 900 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgba(0, 0, 0, 0.4) 0px 3px 12px` |
+| 400 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgba(0, 0, 0, 0.4) 0px 3px 12px` |
+
+Properties that changed (any width): `text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text shadow preset1 in the base, blur 0.4em set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:74-93 (preset values overridden by the given keys).
+
+Registered paths added:
+
+- `title.decoration.font.textShadow.{bp}.value.blur`
+
+## ty-ts-phone-zero
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textShadow.phone.value.horizontal` = `"0em"`
+- `title.decoration.font.textShadow.phone.value.vertical` = `"0em"`
+- `title.decoration.font.textShadow.phone.value.blur` = `"0em"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 1 | yes | `2:h1:text-shadow: rgba(0, 0, 0, 0.4) 0px 3px 3px -> rgba(0, 0, 0, 0.4) 0px 0px 0px` |
+
+Properties that changed (any width): `text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Desktop preset1 in the base, phone horizontal/vertical/blur all 0em (a zero shadow). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:59-68 (a phone value with horizontal, vertical or blur is merged with the preset and printed).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ts-body-preset1
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.textShadow.desktop.value.style` = `"preset1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:text-shadow: none -> rgba(0, 0, 0, 0.4) 0px 1.4px 1.4px` |
+| 900 px | yes | 2 | yes | `1:div:text-shadow: none -> rgba(0, 0, 0, 0.4) 0px 1.4px 1.4px` |
+| 400 px | yes | 2 | yes | `1:div:text-shadow: none -> rgba(0, 0, 0, 0.4) 0px 1.4px 1.4px` |
+
+Properties that changed (any width): `text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Body text shadow preset1 in a text module. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:70-93.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-te-stroke
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textEffects.desktop.value.strokeWidth` = `"2px"`
+- `title.decoration.font.textEffects.desktop.value.strokeColor` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `2:h1:paint-order: normal -> stroke` |
+| 900 px | yes | 3 | yes | `2:h1:paint-order: normal -> stroke` |
+| 400 px | yes | 3 | yes | `2:h1:paint-order: normal -> stroke` |
+
+Properties that changed (any width): `-webkit-text-stroke-color`, `-webkit-text-stroke-width`, `paint-order`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading text outline: strokeWidth and strokeColor set together (a declared pair). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:270-277 (-webkit-text-stroke).
+
+Registered paths added:
+
+- `title.decoration.font.textEffects.{bp}.value.strokeColor`
+- `title.decoration.font.textEffects.{bp}.value.strokeWidth`
+
+## ty-te-stroke-position
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textEffects.desktop.value.strokePosition` = `"fill-stroke"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:paint-order: stroke -> fill` |
+| 900 px | yes | 1 | yes | `2:h1:paint-order: stroke -> fill` |
+| 400 px | yes | 1 | yes | `2:h1:paint-order: stroke -> fill` |
+
+Properties that changed (any width): `paint-order`.
+
+Phone overflow at 400 px: no.
+
+Note: Stroke position fill-stroke with a 2px stroke in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:278-279 (paint-order: fill-stroke prints fill first, anything else prints the stroke first).
+
+Registered paths added:
+
+- `title.decoration.font.textEffects.{bp}.value.strokePosition`
+
+## ty-te-fill-transparent
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textEffects.desktop.value.fillType` = `"transparent"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:-webkit-text-fill-color: rgb(51, 51, 51) -> rgba(0, 0, 0, 0)` |
+| 900 px | yes | 1 | yes | `2:h1:-webkit-text-fill-color: rgb(51, 51, 51) -> rgba(0, 0, 0, 0)` |
+| 400 px | yes | 1 | yes | `2:h1:-webkit-text-fill-color: rgb(51, 51, 51) -> rgba(0, 0, 0, 0)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`.
+
+Phone overflow at 400 px: no.
+
+Note: fillType transparent ALONE: the text fill colour becomes transparent (the text disappears unless a stroke is set). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:289-292 (background-image none, text fill colour transparent).
+
+Registered paths added:
+
+- `title.decoration.font.textEffects.{bp}.value.fillType`
+
+## ty-te-outline
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textEffects.desktop.value.fillType` = `"transparent"`
+- `title.decoration.font.textEffects.desktop.value.strokeWidth` = `"2px"`
+- `title.decoration.font.textEffects.desktop.value.strokeColor` = `"#1e3a8a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `2:h1:paint-order: normal -> stroke` |
+| 900 px | yes | 4 | yes | `2:h1:paint-order: normal -> stroke` |
+| 400 px | yes | 4 | yes | `2:h1:paint-order: normal -> stroke` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `-webkit-text-stroke-width`, `paint-order`.
+
+Phone overflow at 400 px: no.
+
+Note: Outline text: fillType transparent with strokeWidth and strokeColor (a declared set of three). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:270-292.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-te-gradient
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textEffects.desktop.value.fillType` = `"gradient"`
+- `title.decoration.font.textEffects.desktop.value.gradient.type` = `"linear"`
+- `title.decoration.font.textEffects.desktop.value.gradient.direction` = `"90deg"`
+- `title.decoration.font.textEffects.desktop.value.gradient.stops` = `[{"position":"0","color":"#1e3a8a"},{"position":"100","color":"#dc2626"}]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `2:h1:background-clip: border-box -> text` |
+| 900 px | yes | 4 | yes | `2:h1:background-clip: border-box -> text` |
+| 400 px | yes | 4 | yes | `2:h1:background-clip: border-box -> text` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `background-clip`, `background-image`, `background-repeat`.
+
+Phone overflow at 400 px: no.
+
+Note: Gradient text: fillType gradient with type, direction and two stops (a declared set). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:292-345 (gradient fill clipped to the text).
+
+Registered paths added:
+
+- `title.decoration.font.textEffects.{bp}.value.gradient.direction`
+- `title.decoration.font.textEffects.{bp}.value.gradient.stops.{n}.color`
+- `title.decoration.font.textEffects.{bp}.value.gradient.stops.{n}.position`
+- `title.decoration.font.textEffects.{bp}.value.gradient.type`
+
+## ty-te-image-fill
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.textEffects.desktop.value.fillType` = `"image"`
+- `title.decoration.font.textEffects.desktop.value.imageFill.url` = `"@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `2:h1:background-clip: border-box -> text` |
+| 900 px | yes | 6 | yes | `2:h1:background-clip: border-box -> text` |
+| 400 px | yes | 6 | yes | `2:h1:background-clip: border-box -> text` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `background-clip`, `background-image`, `background-position`, `background-repeat`, `background-size`.
+
+Phone overflow at 400 px: no.
+
+Note: Image text: fillType image with imageFill.url (a declared pair; the url is a local pack image). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:346-376 (image clipped to the text).
+
+Registered paths added:
+
+- `title.decoration.font.textEffects.{bp}.value.imageFill.url`
+
+## ty-th-h1-weight
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h1.font.desktop.value.weight` = `"300"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 300` |
+| 900 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 300` |
+| 400 px | yes | 1 | yes | `2:h1:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module: weight 300 on the h1 level only (the content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432; the heading level map is Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Font/FontPresetAttrsMap.php and the text module.json (headingFont).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-th-h2-weight
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h2.font.desktop.value.weight` = `"300"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `3:h2:font-weight: 500 -> 300` |
+| 900 px | yes | 1 | yes | `3:h2:font-weight: 500 -> 300` |
+| 400 px | yes | 1 | yes | `3:h2:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module: weight 300 on the h2 level only (the content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432; the heading level map is Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Font/FontPresetAttrsMap.php and the text module.json (headingFont).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-th-h3-weight
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h3.font.desktop.value.weight` = `"300"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `4:h3:font-weight: 500 -> 300` |
+| 900 px | yes | 1 | yes | `4:h3:font-weight: 500 -> 300` |
+| 400 px | yes | 1 | yes | `4:h3:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module: weight 300 on the h3 level only (the content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432; the heading level map is Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Font/FontPresetAttrsMap.php and the text module.json (headingFont).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-th-h4-weight
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h4.font.desktop.value.weight` = `"300"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `5:h4:font-weight: 500 -> 300` |
+| 900 px | yes | 1 | yes | `5:h4:font-weight: 500 -> 300` |
+| 400 px | yes | 1 | yes | `5:h4:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module: weight 300 on the h4 level only (the content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432; the heading level map is Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Font/FontPresetAttrsMap.php and the text module.json (headingFont).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-th-h5-weight
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h5.font.desktop.value.weight` = `"300"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `6:h5:font-weight: 500 -> 300` |
+| 900 px | yes | 1 | yes | `6:h5:font-weight: 500 -> 300` |
+| 400 px | yes | 1 | yes | `6:h5:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module: weight 300 on the h5 level only (the content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432; the heading level map is Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Font/FontPresetAttrsMap.php and the text module.json (headingFont).
+
+Registered paths added:
+
+- `content.decoration.headingFont.h5.font.{bp}.value.weight`
+
+## ty-th-h6-weight
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h6.font.desktop.value.weight` = `"300"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `7:h6:font-weight: 500 -> 300` |
+| 900 px | yes | 1 | yes | `7:h6:font-weight: 500 -> 300` |
+| 400 px | yes | 1 | yes | `7:h6:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module: weight 300 on the h6 level only (the content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432; the heading level map is Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Font/FontPresetAttrsMap.php and the text module.json (headingFont).
+
+Registered paths added:
+
+- `content.decoration.headingFont.h6.font.{bp}.value.weight`
+
+## ty-th-h2-letterspacing
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h2.font.desktop.value.letterSpacing` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `3:h2:letter-spacing: normal -> 2px` |
+| 900 px | yes | 1 | yes | `3:h2:letter-spacing: normal -> 2px` |
+| 400 px | yes | 1 | yes | `3:h2:letter-spacing: normal -> 2px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module: letterSpacing on the h2 level (content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691.
+
+Registered paths added:
+
+- `content.decoration.headingFont.h2.font.{bp}.value.letterSpacing`
+
+## ty-th-h2-style
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h2.font.desktop.value.style` = `["italic"]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `3:h2:font-style: normal -> italic` |
+| 900 px | yes | 1 | yes | `3:h2:font-style: normal -> italic` |
+| 400 px | yes | 1 | yes | `3:h2:font-style: normal -> italic` |
+
+Properties that changed (any width): `font-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module: style on the h2 level (content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:511-512.
+
+Registered paths added:
+
+- `content.decoration.headingFont.h2.font.{bp}.value.style.{n}`
+
+## ty-th-h2-capitalization
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h2.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `3:h2:text-transform: none -> uppercase` |
+| 900 px | yes | 1 | yes | `3:h2:text-transform: none -> uppercase` |
+| 400 px | yes | 1 | yes | `3:h2:text-transform: none -> uppercase` |
+
+Properties that changed (any width): `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module: capitalization on the h2 level (content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-545.
+
+Registered paths added:
+
+- `content.decoration.headingFont.h2.font.{bp}.value.capitalization`
+
+## ty-th-h2-family
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h2.font.desktop.value.family` = `"Playfair Display"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `3:h2:font-family: Abel -> "Playfair Display", Georgia, "Times New Roman", serif` |
+| 900 px | yes | 1 | yes | `3:h2:font-family: Abel -> "Playfair Display", Georgia, "Times New Roman", serif` |
+| 400 px | yes | 1 | yes | `3:h2:font-family: Abel -> "Playfair Display", Georgia, "Times New Roman", serif` |
+
+Properties that changed (any width): `font-family`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module: family on the h2 level (content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-th-h2-lineheight
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h2.font.desktop.value.lineHeight` = `"1.1em"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 13 | yes | `0:div:block-size: 209.797px -> 212.391px` |
+| 900 px | yes | 13 | yes | `0:div:block-size: 209.797px -> 212.391px` |
+| 400 px | yes | 13 | yes | `0:div:block-size: 209.797px -> 212.391px` |
+
+Properties that changed (any width): `block-size`, `height`, `line-height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module: lineHeight on the h2 level (content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:693-695.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-th-h3-capitalization
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h3.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `4:h3:text-transform: none -> uppercase` |
+| 900 px | yes | 1 | yes | `4:h3:text-transform: none -> uppercase` |
+| 400 px | yes | 1 | yes | `4:h3:text-transform: none -> uppercase` |
+
+Properties that changed (any width): `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module: capitalization uppercase on the h3 level. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-545.
+
+Registered paths added:
+
+- `content.decoration.headingFont.h3.font.{bp}.value.capitalization`
+
+## ty-tb-weight-300
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.weight` = `"300"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `1:div:font-weight: 500 -> 300` |
+| 900 px | yes | 7 | yes | `1:div:font-weight: 500 -> 300` |
+| 400 px | yes | 7 | yes | `1:div:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module body: weight "300". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-tb-weight-600
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.weight` = `"600"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `1:div:font-weight: 500 -> 600` |
+| 900 px | yes | 7 | yes | `1:div:font-weight: 500 -> 600` |
+| 400 px | yes | 7 | yes | `1:div:font-weight: 500 -> 600` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module body: weight "600". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-tb-lineheight
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.lineHeight` = `"1.8em"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 39 | yes | `0:div:block-size: 212.781px -> 221.219px` |
+| 900 px | yes | 39 | yes | `0:div:block-size: 355.562px -> 372.438px` |
+| 400 px | yes | 39 | yes | `0:div:block-size: 498.344px -> 523.656px` |
+
+Properties that changed (any width): `block-size`, `height`, `line-height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module body: lineHeight "1.8em". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:693-695.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-tb-spacing
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.letterSpacing` = `"0.5px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `1:div:letter-spacing: normal -> 0.5px` |
+| 900 px | yes | 7 | yes | `1:div:letter-spacing: normal -> 0.5px` |
+| 400 px | yes | 7 | yes | `1:div:letter-spacing: normal -> 0.5px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module body: letterSpacing "0.5px". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691.
+
+Registered paths added:
+
+- `content.decoration.bodyFont.body.font.{bp}.value.letterSpacing`
+
+## ty-tb-italic
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.style` = `["italic"]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `1:div:font-style: normal -> italic` |
+| 900 px | yes | 7 | yes | `1:div:font-style: normal -> italic` |
+| 400 px | yes | 7 | yes | `1:div:font-style: normal -> italic` |
+
+Properties that changed (any width): `font-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module body: style ["italic"]. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:511-512.
+
+Registered paths added:
+
+- `content.decoration.bodyFont.body.font.{bp}.value.style.{n}`
+
+## ty-tb-uppercase
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `1:div:text-transform: none -> uppercase` |
+| 900 px | yes | 7 | yes | `1:div:text-transform: none -> uppercase` |
+| 400 px | yes | 39 | yes | `0:div:block-size: 498.344px -> 641.125px` |
+
+Properties that changed (any width): `block-size`, `height`, `perspective-origin`, `text-transform`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module body: capitalization "uppercase". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-545.
+
+Registered paths added:
+
+- `content.decoration.bodyFont.body.font.{bp}.value.capitalization`
+
+## ty-tb-family
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.family` = `"Inter"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `1:div:font-family: "Open Sans" -> Inter, Helvetica, Arial, Lucida, sans-serif` |
+| 900 px | yes | 7 | yes | `1:div:font-family: "Open Sans" -> Inter, Helvetica, Arial, Lucida, sans-serif` |
+| 400 px | yes | 7 | yes | `1:div:font-family: "Open Sans" -> Inter, Helvetica, Arial, Lucida, sans-serif` |
+
+Properties that changed (any width): `font-family`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module body: family "Inter". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-tb-textwrap
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.textWrap` = `"pretty"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `1:div:text-wrap-style: auto -> pretty` |
+| 900 px | yes | 7 | yes | `1:div:text-wrap-style: auto -> pretty` |
+| 400 px | yes | 7 | yes | `1:div:text-wrap-style: auto -> pretty` |
+
+Properties that changed (any width): `text-wrap-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module body: textWrap "pretty". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:606-608.
+
+Registered paths added:
+
+- `content.decoration.bodyFont.body.font.{bp}.value.textWrap`
+
+## ty-tb-hyphens
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.hyphens` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `1:div:hyphens: manual -> auto` |
+| 900 px | yes | 7 | yes | `1:div:hyphens: manual -> auto` |
+| 400 px | yes | 7 | yes | `1:div:hyphens: manual -> auto` |
+
+Properties that changed (any width): `hyphens`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module body: hyphens "on". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:610-613.
+
+Registered paths added:
+
+- `content.decoration.bodyFont.body.font.{bp}.value.hyphens`
+
+## ty-tb-columns
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.columnCount` = `"2"`
+- `content.decoration.bodyFont.body.font.desktop.value.columnGap` = `"48px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 46 | yes | `0:div:block-size: 212.781px -> 184.781px` |
+| 900 px | yes | 46 | yes | `0:div:block-size: 355.562px -> 256.172px` |
+| 400 px | yes | 46 | yes | `0:div:block-size: 498.344px -> 541.734px` |
+
+Properties that changed (any width): `block-size`, `column-count`, `column-gap`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Text module body in two columns with a 48px gap (a declared pair). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:621-641 (column-count above 1 and column-gap).
+
+Registered paths added:
+
+- `content.decoration.bodyFont.body.font.{bp}.value.columnCount`
+- `content.decoration.bodyFont.body.font.{bp}.value.columnGap`
+
+## ty-tb-columns-phone-one
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.phone.value.columnCount` = `"1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 45 | yes | `0:div:block-size: 541.734px -> 498.344px` |
+
+Properties that changed (any width): `block-size`, `column-count`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Two columns on desktop (base), one column on the phone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:628-668 (a column count of 1 is printed when an inherited count is above 1).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-filter-brightness
+
+Block: `image`. Set on top of the base block:
+
+- `module.decoration.filters.desktop.value.brightness` = `"130%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:filter: none -> brightness(1.3)` |
+| 900 px | yes | 1 | yes | `0:div:filter: none -> brightness(1.3)` |
+| 400 px | yes | 1 | yes | `0:div:filter: none -> brightness(1.3)` |
+
+Properties that changed (any width): `filter`.
+
+Phone overflow at 400 px: no.
+
+Note: Image module filter brightness 130%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode).
+
+Registered paths added:
+
+- `module.decoration.filters.{bp}.value.brightness`
+
+## ty-i-filter-contrast
+
+Block: `image`. Set on top of the base block:
+
+- `module.decoration.filters.desktop.value.contrast` = `"130%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:filter: none -> contrast(1.3)` |
+| 900 px | yes | 1 | yes | `0:div:filter: none -> contrast(1.3)` |
+| 400 px | yes | 1 | yes | `0:div:filter: none -> contrast(1.3)` |
+
+Properties that changed (any width): `filter`.
+
+Phone overflow at 400 px: no.
+
+Note: Image module filter contrast 130%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode).
+
+Registered paths added:
+
+- `module.decoration.filters.{bp}.value.contrast`
+
+## ty-i-filter-saturate-0
+
+Block: `image`. Set on top of the base block:
+
+- `module.decoration.filters.desktop.value.saturate` = `"0%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:filter: none -> saturate(0)` |
+| 900 px | yes | 1 | yes | `0:div:filter: none -> saturate(0)` |
+| 400 px | yes | 1 | yes | `0:div:filter: none -> saturate(0)` |
+
+Properties that changed (any width): `filter`.
+
+Phone overflow at 400 px: no.
+
+Note: Image module filter saturate 0%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode).
+
+Registered paths added:
+
+- `module.decoration.filters.{bp}.value.saturate`
+
+## ty-i-filter-saturate-180
+
+Block: `image`. Set on top of the base block:
+
+- `module.decoration.filters.desktop.value.saturate` = `"180%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:filter: none -> saturate(1.8)` |
+| 900 px | yes | 1 | yes | `0:div:filter: none -> saturate(1.8)` |
+| 400 px | yes | 1 | yes | `0:div:filter: none -> saturate(1.8)` |
+
+Properties that changed (any width): `filter`.
+
+Phone overflow at 400 px: no.
+
+Note: Image module filter saturate 180%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-filter-sepia
+
+Block: `image`. Set on top of the base block:
+
+- `module.decoration.filters.desktop.value.sepia` = `"100%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:filter: none -> sepia(1)` |
+| 900 px | yes | 1 | yes | `0:div:filter: none -> sepia(1)` |
+| 400 px | yes | 1 | yes | `0:div:filter: none -> sepia(1)` |
+
+Properties that changed (any width): `filter`.
+
+Phone overflow at 400 px: no.
+
+Note: Image module filter sepia 100%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode).
+
+Registered paths added:
+
+- `module.decoration.filters.{bp}.value.sepia`
+
+## ty-i-filter-invert
+
+Block: `image`. Set on top of the base block:
+
+- `module.decoration.filters.desktop.value.invert` = `"100%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:filter: none -> invert(1)` |
+| 900 px | yes | 1 | yes | `0:div:filter: none -> invert(1)` |
+| 400 px | yes | 1 | yes | `0:div:filter: none -> invert(1)` |
+
+Properties that changed (any width): `filter`.
+
+Phone overflow at 400 px: no.
+
+Note: Image module filter invert 100%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode).
+
+Registered paths added:
+
+- `module.decoration.filters.{bp}.value.invert`
+
+## ty-i-filter-hue
+
+Block: `image`. Set on top of the base block:
+
+- `module.decoration.filters.desktop.value.hueRotate` = `"90deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:filter: none -> hue-rotate(90deg)` |
+| 900 px | yes | 1 | yes | `0:div:filter: none -> hue-rotate(90deg)` |
+| 400 px | yes | 1 | yes | `0:div:filter: none -> hue-rotate(90deg)` |
+
+Properties that changed (any width): `filter`.
+
+Phone overflow at 400 px: no.
+
+Note: Image module filter hueRotate 90deg. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode).
+
+Registered paths added:
+
+- `module.decoration.filters.{bp}.value.hueRotate`
+
+## ty-i-filter-blur
+
+Block: `image`. Set on top of the base block:
+
+- `module.decoration.filters.desktop.value.blur` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:filter: none -> blur(4px)` |
+| 900 px | yes | 1 | yes | `0:div:filter: none -> blur(4px)` |
+| 400 px | yes | 1 | yes | `0:div:filter: none -> blur(4px)` |
+
+Properties that changed (any width): `filter`.
+
+Phone overflow at 400 px: no.
+
+Note: Image module filter blur 4px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode).
+
+Registered paths added:
+
+- `module.decoration.filters.{bp}.value.blur`
+
+## ty-i-filter-opacity
+
+Block: `image`. Set on top of the base block:
+
+- `module.decoration.filters.desktop.value.opacity` = `"60%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:filter: none -> opacity(0.6)` |
+| 900 px | yes | 1 | yes | `0:div:filter: none -> opacity(0.6)` |
+| 400 px | yes | 1 | yes | `0:div:filter: none -> opacity(0.6)` |
+
+Properties that changed (any width): `filter`.
+
+Phone overflow at 400 px: no.
+
+Note: Image module filter opacity 60%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode).
+
+Registered paths added:
+
+- `module.decoration.filters.{bp}.value.opacity`
+
+## ty-i-blend-multiply
+
+Block: `image`. Set on top of the base block:
+
+- `module.decoration.filters.desktop.value.blendMode` = `"multiply"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:mix-blend-mode: normal -> multiply` |
+| 900 px | yes | 1 | yes | `0:div:mix-blend-mode: normal -> multiply` |
+| 400 px | yes | 1 | yes | `0:div:mix-blend-mode: normal -> multiply` |
+
+Properties that changed (any width): `mix-blend-mode`.
+
+Phone overflow at 400 px: no.
+
+Note: Image module blend mode multiply. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:149-151 (mix-blend-mode).
+
+Registered paths added:
+
+- `module.decoration.filters.{bp}.value.blendMode`
+
+## ty-i-fit-cover
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.fit.desktop.value.objectFit` = `"cover"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:img:object-fit: fill -> cover` |
+| 900 px | yes | 1 | yes | `2:img:object-fit: fill -> cover` |
+| 400 px | yes | 1 | yes | `2:img:object-fit: fill -> cover` |
+
+Properties that changed (any width): `object-fit`.
+
+Phone overflow at 400 px: no.
+
+Note: Image object-fit cover in a 1:1 box (the aspect ratio is in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:44-45.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-fit-contain
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.fit.desktop.value.objectFit` = `"contain"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:img:object-fit: fill -> contain` |
+| 900 px | yes | 1 | yes | `2:img:object-fit: fill -> contain` |
+| 400 px | yes | 1 | yes | `2:img:object-fit: fill -> contain` |
+
+Properties that changed (any width): `object-fit`.
+
+Phone overflow at 400 px: no.
+
+Note: Image object-fit contain in a 1:1 box (the aspect ratio is in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:44-45.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-fit-none
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.fit.desktop.value.objectFit` = `"none"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:img:object-fit: fill -> none` |
+| 900 px | yes | 1 | yes | `2:img:object-fit: fill -> none` |
+| 400 px | yes | 1 | yes | `2:img:object-fit: fill -> none` |
+
+Properties that changed (any width): `object-fit`.
+
+Phone overflow at 400 px: no.
+
+Note: Image object-fit none in a 1:1 box (the aspect ratio is in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:44-45.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-fit-scale-down
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.fit.desktop.value.objectFit` = `"scale-down"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:img:object-fit: fill -> scale-down` |
+| 900 px | yes | 1 | yes | `2:img:object-fit: fill -> scale-down` |
+| 400 px | yes | 1 | yes | `2:img:object-fit: fill -> scale-down` |
+
+Properties that changed (any width): `object-fit`.
+
+Phone overflow at 400 px: no.
+
+Note: Image object-fit scale-down in a 1:1 box (the aspect ratio is in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:44-45.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-position-left-top
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.fit.desktop.value.objectPosition` = `"left top"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:img:object-position: 50% 50% -> 0% 0%` |
+| 900 px | yes | 1 | yes | `2:img:object-position: 50% 50% -> 0% 0%` |
+| 400 px | yes | 1 | yes | `2:img:object-position: 50% 50% -> 0% 0%` |
+
+Properties that changed (any width): `object-position`.
+
+Phone overflow at 400 px: no.
+
+Note: Image object-position left top with cover in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:46-51, :60-73 (a string, or {x, y}).
+
+Registered paths added:
+
+- `image.decoration.fit.{bp}.value.objectPosition`
+
+## ty-i-position-right-bottom
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.fit.desktop.value.objectPosition` = `"right bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:img:object-position: 50% 50% -> 100% 100%` |
+| 900 px | yes | 1 | yes | `2:img:object-position: 50% 50% -> 100% 100%` |
+| 400 px | yes | 1 | yes | `2:img:object-position: 50% 50% -> 100% 100%` |
+
+Properties that changed (any width): `object-position`.
+
+Phone overflow at 400 px: no.
+
+Note: Image object-position right bottom with cover in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:46-51, :60-73 (a string, or {x, y}).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-radius-16
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.border.desktop.value.radius.topLeft` = `"16px"`
+- `image.decoration.border.desktop.value.radius.topRight` = `"16px"`
+- `image.decoration.border.desktop.value.radius.bottomRight` = `"16px"`
+- `image.decoration.border.desktop.value.radius.bottomLeft` = `"16px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 20 | yes | `1:span:border-bottom-left-radius: 0px -> 16px` |
+| 900 px | yes | 20 | yes | `1:span:border-bottom-left-radius: 0px -> 16px` |
+| 400 px | yes | 20 | yes | `1:span:border-bottom-left-radius: 0px -> 16px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Image border radius 16px on all four corners. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:92-102 (each corner of radius becomes border-<corner>-radius).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-radius-pill
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.border.desktop.value.radius.topLeft` = `"50%"`
+- `image.decoration.border.desktop.value.radius.topRight` = `"50%"`
+- `image.decoration.border.desktop.value.radius.bottomRight` = `"50%"`
+- `image.decoration.border.desktop.value.radius.bottomLeft` = `"50%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 20 | yes | `1:span:border-bottom-left-radius: 0px -> 50%` |
+| 900 px | yes | 20 | yes | `1:span:border-bottom-left-radius: 0px -> 50%` |
+| 400 px | yes | 20 | yes | `1:span:border-bottom-left-radius: 0px -> 50%` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Image border radius 50% on all four corners (a circle on a square image). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:92-102.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-radius-one-corner
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.border.desktop.value.radius.topLeft` = `"32px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `1:span:border-start-start-radius: 0px -> 32px` |
+| 900 px | yes | 8 | yes | `1:span:border-start-start-radius: 0px -> 32px` |
+| 400 px | yes | 8 | yes | `1:span:border-start-start-radius: 0px -> 32px` |
+
+Properties that changed (any width): `border-start-start-radius`, `border-top-left-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Image border radius on the top left corner only. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:92-102 (only the corners that are set are printed).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-radius-sync-only
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.border.desktop.value.radius.sync` = `"on"`
+- `image.decoration.border.desktop.value.radius.topLeft` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `1:span:border-start-start-radius: 0px -> 24px` |
+| 900 px | yes | 8 | yes | `1:span:border-start-start-radius: 0px -> 24px` |
+| 400 px | yes | 8 | yes | `1:span:border-start-start-radius: 0px -> 24px` |
+
+Properties that changed (any width): `border-start-start-radius`, `border-top-left-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: sync on with a single corner set: only that corner is printed (the other three stay square). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:92-102 (`sync` is not read by the style code).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-border-solid
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.border.desktop.value.styles.all.width` = `"4px"`
+- `image.decoration.border.desktop.value.styles.all.color` = `"#1e3a8a"`
+- `image.decoration.border.desktop.value.styles.all.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 32 | yes | `0:div:block-size: 16px -> 24px` |
+| 900 px | yes | 32 | yes | `0:div:block-size: 16px -> 24px` |
+| 400 px | yes | 32 | yes | `0:div:block-size: 16px -> 24px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-block-start-color`, `border-block-start-style`, `border-block-start-width`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-style`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-style`, `border-inline-start-width`, `border-left-color`, `border-left-style`, `border-left-width`, `border-right-color`, `border-right-style`, `border-right-width`, `border-top-color`, `border-top-style`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Image border on all sides: width, colour and style (a declared set of three). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:110-165 (all side: border-width, -color, -style).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-border-width-only
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.border.desktop.value.styles.all.width` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 32 | yes | `0:div:block-size: 16px -> 24px` |
+| 900 px | yes | 32 | yes | `0:div:block-size: 16px -> 24px` |
+| 400 px | yes | 32 | yes | `0:div:block-size: 16px -> 24px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-block-start-color`, `border-block-start-style`, `border-block-start-width`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-style`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-style`, `border-inline-start-width`, `border-left-color`, `border-left-style`, `border-left-width`, `border-right-color`, `border-right-style`, `border-right-width`, `border-top-color`, `border-top-style`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Image border width alone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:140-165 (a width with no colour or style falls back to #333 and solid).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-border-dashed
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `1:span:border-block-end-style: solid -> dashed` |
+| 900 px | yes | 8 | yes | `1:span:border-block-end-style: solid -> dashed` |
+| 400 px | yes | 8 | yes | `1:span:border-block-end-style: solid -> dashed` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Image border style dashed with width and colour in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:150-165.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-border-dotted
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.border.desktop.value.styles.all.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `1:span:border-block-end-style: solid -> dotted` |
+| 900 px | yes | 8 | yes | `1:span:border-block-end-style: solid -> dotted` |
+| 400 px | yes | 8 | yes | `1:span:border-block-end-style: solid -> dotted` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Image border style dotted with width and colour in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:150-165.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-border-double
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.border.desktop.value.styles.all.style` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `1:span:border-block-end-style: solid -> double` |
+| 900 px | yes | 8 | yes | `1:span:border-block-end-style: solid -> double` |
+| 400 px | yes | 8 | yes | `1:span:border-block-end-style: solid -> double` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Image border style double with width and colour in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:150-165.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-border-bottom
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.border.desktop.value.styles.bottom.width` = `"4px"`
+- `image.decoration.border.desktop.value.styles.bottom.color` = `"#1e3a8a"`
+- `image.decoration.border.desktop.value.styles.bottom.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 14 | yes | `0:div:block-size: 16px -> 20px` |
+| 900 px | yes | 14 | yes | `0:div:block-size: 16px -> 20px` |
+| 400 px | yes | 14 | yes | `0:div:block-size: 16px -> 20px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Image border on the bottom side only: width, colour and style (a declared set of three). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:110-165 (one side: border-bottom-*).
+
+Registered paths added:
+
+- `image.decoration.border.{bp}.value.styles.bottom.color`
+- `image.decoration.border.{bp}.value.styles.bottom.style`
+- `image.decoration.border.{bp}.value.styles.bottom.width`
+
+## ty-i-shadow-preset1
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.boxShadow.desktop.value.style` = `"preset1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 2px 18px 0px` |
+| 900 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 2px 18px 0px` |
+| 400 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 2px 18px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Image box shadow preset1. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value).
+
+Registered paths added:
+
+- `image.decoration.boxShadow.{bp}.value.style`
+
+## ty-i-shadow-preset2
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.boxShadow.desktop.value.style` = `"preset2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 6px 6px 18px 0px` |
+| 900 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 6px 6px 18px 0px` |
+| 400 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 6px 6px 18px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Image box shadow preset2. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-shadow-preset3
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.boxShadow.desktop.value.style` = `"preset3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 12px 18px -6px` |
+| 900 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 12px 18px -6px` |
+| 400 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 12px 18px -6px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Image box shadow preset3. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-shadow-preset4
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.boxShadow.desktop.value.style` = `"preset4"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 10px 10px 0px 0px` |
+| 900 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 10px 10px 0px 0px` |
+| 400 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 10px 10px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Image box shadow preset4. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-shadow-preset5
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.boxShadow.desktop.value.style` = `"preset5"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 6px 0px 10px` |
+| 900 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 6px 0px 10px` |
+| 400 px | yes | 1 | yes | `1:span:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 6px 0px 10px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Image box shadow preset5. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-shadow-preset6
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.boxShadow.desktop.value.style` = `"preset6"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1830 | yes | `2:img:accent-color: auto -> undefined` |
+| 900 px | yes | 1830 | yes | `2:img:accent-color: auto -> undefined` |
+| 400 px | yes | 1830 | yes | `2:img:accent-color: auto -> undefined` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Image box shadow preset6. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-shadow-preset7
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.boxShadow.desktop.value.style` = `"preset7"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1830 | yes | `2:img:accent-color: auto -> undefined` |
+| 900 px | yes | 1830 | yes | `2:img:accent-color: auto -> undefined` |
+| 400 px | yes | 1830 | yes | `2:img:accent-color: auto -> undefined` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Image box shadow preset7. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-shadow-color
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.boxShadow.desktop.value.color` = `"rgba(30,58,138,0.35)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:span:box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 18px 0px -> rgba(30, 58, 138, 0.35) 0px 2px 18px 0px` |
+| 900 px | yes | 1 | yes | `1:span:box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 18px 0px -> rgba(30, 58, 138, 0.35) 0px 2px 18px 0px` |
+| 400 px | yes | 1 | yes | `1:span:box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 18px 0px -> rgba(30, 58, 138, 0.35) 0px 2px 18px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Image box shadow preset1 in the base, color rgba(30,58,138,0.35) set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:131-146 (preset values overridden by the given keys).
+
+Registered paths added:
+
+- `image.decoration.boxShadow.{bp}.value.color`
+
+## ty-i-shadow-blur
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.boxShadow.desktop.value.blur` = `"40px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:span:box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 18px 0px -> rgba(0, 0, 0, 0.3) 0px 2px 40px 0px` |
+| 900 px | yes | 1 | yes | `1:span:box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 18px 0px -> rgba(0, 0, 0, 0.3) 0px 2px 40px 0px` |
+| 400 px | yes | 1 | yes | `1:span:box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 18px 0px -> rgba(0, 0, 0, 0.3) 0px 2px 40px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Image box shadow preset1 in the base, blur 40px set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:131-146 (preset values overridden by the given keys).
+
+Registered paths added:
+
+- `image.decoration.boxShadow.{bp}.value.blur`
+
+## ty-i-shadow-vertical
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.boxShadow.desktop.value.vertical` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:span:box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 18px 0px -> rgba(0, 0, 0, 0.3) 0px 24px 18px 0px` |
+| 900 px | yes | 1 | yes | `1:span:box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 18px 0px -> rgba(0, 0, 0, 0.3) 0px 24px 18px 0px` |
+| 400 px | yes | 1 | yes | `1:span:box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 18px 0px -> rgba(0, 0, 0, 0.3) 0px 24px 18px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Image box shadow preset1 in the base, vertical 24px set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:131-146 (preset values overridden by the given keys).
+
+Registered paths added:
+
+- `image.decoration.boxShadow.{bp}.value.vertical`
+
+## ty-i-shadow-spread
+
+Block: `image`. Set on top of the base block:
+
+- `image.decoration.boxShadow.desktop.value.spread` = `"8px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:span:box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 18px 0px -> rgba(0, 0, 0, 0.3) 0px 2px 18px 8px` |
+| 900 px | yes | 1 | yes | `1:span:box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 18px 0px -> rgba(0, 0, 0, 0.3) 0px 2px 18px 8px` |
+| 400 px | yes | 1 | yes | `1:span:box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 18px 0px -> rgba(0, 0, 0, 0.3) 0px 2px 18px 8px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Image box shadow preset1 in the base, spread 8px set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:131-146 (preset values overridden by the given keys).
+
+Registered paths added:
+
+- `image.decoration.boxShadow.{bp}.value.spread`
+
+## ty-i-overlay-on
+
+Block: `image`, measured in the `hover` state, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `image.advanced.overlay.desktop.value.use` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1220 | no | `4:span:accent-color: undefined -> auto` |
+| 900 px | yes | 1220 | no | `4:span:accent-color: undefined -> auto` |
+| 400 px | yes | 1220 | no | `4:span:accent-color: undefined -> auto` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Image hover overlay on, with a link (linkUrl #) in the base; measured with the pointer on the image. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Image/ImageModule.php:97-106 (the overlay needs a link or the lightbox).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-overlay-color
+
+Block: `image`, measured in the `hover` state, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `image.advanced.overlay.desktop.value.backgroundColor` = `"rgba(30,58,138,0.6)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `4:span:background-color: rgba(255, 255, 255, 0.9) -> rgba(30, 58, 138, 0.6)` |
+| 900 px | yes | 1 | yes | `4:span:background-color: rgba(255, 255, 255, 0.9) -> rgba(30, 58, 138, 0.6)` |
+| 400 px | yes | 1 | yes | `4:span:background-color: rgba(255, 255, 255, 0.9) -> rgba(30, 58, 138, 0.6)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Image overlay background colour, overlay on and a link in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Image/ImageModule.php:399-412 (overlay_background_style_declaration).
+
+Registered paths added:
+
+- `image.advanced.overlay.{bp}.value.backgroundColor`
+
+## ty-i-overlay-icon-color
+
+Block: `image`, measured in the `hover` state, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `image.advanced.overlayIcon.desktop.value.iconColor` = `"#ffffff"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 18 | yes | `4:span:::before:border-block-end-color: rgb(46, 163, 242) -> rgb(255, 255, 255)` |
+| 900 px | yes | 18 | yes | `4:span:::before:border-block-end-color: rgb(46, 163, 242) -> rgb(255, 255, 255)` |
+| 400 px | yes | 18 | yes | `4:span:::before:border-block-end-color: rgb(46, 163, 242) -> rgb(255, 255, 255)` |
+
+Properties that changed (any width): `::before:-webkit-text-fill-color`, `::before:-webkit-text-stroke-color`, `::before:border-block-end-color`, `::before:border-block-start-color`, `::before:border-bottom-color`, `::before:border-inline-end-color`, `::before:border-inline-start-color`, `::before:border-left-color`, `::before:border-right-color`, `::before:border-top-color`, `::before:caret-color`, `::before:color`, `::before:column-rule-color`, `::before:outline-color`, `::before:row-rule-color`, `::before:text-decoration-color`, `::before:text-emphasis-color`, `::before:text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Image overlay icon colour, overlay on and a link in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Image/ImageModule.php:447-461 (overlay_icon_style_declaration).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-i-overlay-hover-icon
+
+Block: `image`, measured in the `hover` state, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `image.advanced.overlayIcon.desktop.value.hoverIcon.unicode` = `"&#xf002;"`
+- `image.advanced.overlayIcon.desktop.value.hoverIcon.type` = `"fa"`
+- `image.advanced.overlayIcon.desktop.value.hoverIcon.weight` = `"900"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `4:span:::before:content: "" -> ""` |
+| 900 px | yes | 3 | yes | `4:span:::before:content: "" -> ""` |
+| 400 px | yes | 3 | yes | `4:span:::before:content: "" -> ""` |
+
+Properties that changed (any width): `::before:content`, `::before:font-family`, `::before:font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Image overlay icon glyph (a Font Awesome code), overlay on and a link in the base: unicode, type and weight set together. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Image/ImageModule.php:447-475 (the hover icon becomes the overlay :before content).
+
+Registered paths added:
+
+- `image.advanced.overlayIcon.{bp}.value.hoverIcon.type`
+- `image.advanced.overlayIcon.{bp}.value.hoverIcon.unicode`
+- `image.advanced.overlayIcon.{bp}.value.hoverIcon.weight`
+
+## ty-b-icon-on
+
+Block: `button`, also comparing the computed styles of the pseudo-elements `::before`, `::after`. Set on top of the base block:
+
+- `button.decoration.button.desktop.value.icon.settings.unicode` = `"&#xf054;"`
+- `button.decoration.button.desktop.value.icon.settings.type` = `"fa"`
+- `button.decoration.button.desktop.value.icon.settings.weight` = `"900"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 9 | yes | `0:a:::after:content: "$" -> ""` |
+| 900 px | yes | 9 | yes | `0:a:::after:content: "$" -> ""` |
+| 400 px | yes | 9 | yes | `0:a:::after:content: "$" -> ""` |
+
+Properties that changed (any width): `::after:content`, `::after:font-family`, `::after:font-weight`, `::after:inline-size`, `::after:inset-inline-end`, `::after:perspective-origin`, `::after:right`, `::after:transform-origin`, `::after:width`.
+
+Phone overflow at 400 px: no.
+
+Note: Button icon glyph: a Font Awesome code with its type and weight (a declared set of three; the icon itself is on by default). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:167-192 (font family, weight and content of the icon).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-b-icon-placement-left
+
+Block: `button`, also comparing the computed styles of the pseudo-elements `::before`, `::after`. Set on top of the base block:
+
+- `button.decoration.button.desktop.value.icon.placement` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 42 | yes | `0:a:::before:block-size: auto -> 14px` |
+| 900 px | yes | 42 | yes | `0:a:::before:block-size: auto -> 14px` |
+| 400 px | yes | 42 | yes | `0:a:::before:block-size: auto -> 14px` |
+
+Properties that changed (any width): `::after:block-size`, `::after:bottom`, `::after:content`, `::after:display`, `::after:font-family`, `::after:font-weight`, `::after:height`, `::after:inline-size`, `::after:inset-block-end`, `::after:inset-block-start`, `::after:inset-inline-end`, `::after:inset-inline-start`, `::after:left`, `::after:perspective-origin`, `::after:right`, `::after:top`, `::after:transform`, `::after:transform-origin`, `::after:width`, `::before:block-size`, `::before:bottom`, `::before:content`, `::before:display`, `::before:font-family`, `::before:font-size`, `::before:font-weight`, `::before:height`, `::before:inline-size`, `::before:inset-block-end`, `::before:inset-block-start`, `::before:inset-inline-end`, `::before:inset-inline-start`, `::before:left`, `::before:line-height`, `::before:margin-inline-start`, `::before:margin-left`, `::before:perspective-origin`, `::before:right`, `::before:top`, `::before:transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Button icon placement left, glyph in the base (the icon is on by default). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:200-203 (left moves the icon before the label), :260-262, :310-312.
+
+Registered paths added:
+
+- `button.decoration.button.{bp}.value.icon.placement`
+
+## ty-b-icon-always
+
+Block: `button`, also comparing the computed styles of the pseudo-elements `::before`, `::after`. Set on top of the base block:
+
+- `button.decoration.button.desktop.value.icon.onHover` = `"off"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:::after:opacity: 0 -> 1` |
+| 900 px | yes | 1 | yes | `0:a:::after:opacity: 0 -> 1` |
+| 400 px | yes | 1 | yes | `0:a:::after:opacity: 0 -> 1` |
+
+Properties that changed (any width): `::after:opacity`.
+
+Phone overflow at 400 px: no.
+
+Note: Button icon always visible (onHover off), glyph in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:210-212 (opacity 1 when onHover is off).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-b-icon-color
+
+Block: `button`, also comparing the computed styles of the pseudo-elements `::before`, `::after`. Set on top of the base block:
+
+- `button.decoration.button.desktop.value.icon.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `0:a:::after:border-block-end-color: rgb(255, 255, 255) -> rgb(245, 158, 11)` |
+| 900 px | yes | 17 | yes | `0:a:::after:border-block-end-color: rgb(255, 255, 255) -> rgb(245, 158, 11)` |
+| 400 px | yes | 17 | yes | `0:a:::after:border-block-end-color: rgb(255, 255, 255) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `::after:-webkit-text-fill-color`, `::after:-webkit-text-stroke-color`, `::after:border-block-end-color`, `::after:border-block-start-color`, `::after:border-bottom-color`, `::after:border-inline-end-color`, `::after:border-inline-start-color`, `::after:border-left-color`, `::after:border-right-color`, `::after:border-top-color`, `::after:caret-color`, `::after:color`, `::after:column-rule-color`, `::after:outline-color`, `::after:row-rule-color`, `::after:text-decoration-color`, `::after:text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Button icon colour, glyph in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:205-208 (colour of the icon).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-b-icon-default-on
+
+Block: `button`, also comparing the computed styles of the pseudo-elements `::before`, `::after`. Set on top of the base block:
+
+- `button.decoration.button.desktop.value.icon.placement` = `"left"`
+- `button.decoration.button.desktop.value.icon.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 54 | yes | `0:a:::before:block-size: auto -> 14px` |
+| 900 px | yes | 54 | yes | `0:a:::before:block-size: auto -> 14px` |
+| 400 px | yes | 54 | yes | `0:a:::before:block-size: auto -> 14px` |
+
+Properties that changed (any width): `::after:block-size`, `::after:bottom`, `::after:display`, `::after:height`, `::after:inline-size`, `::after:inset-block-end`, `::after:inset-block-start`, `::after:inset-inline-end`, `::after:inset-inline-start`, `::after:left`, `::after:perspective-origin`, `::after:right`, `::after:top`, `::after:transform`, `::after:transform-origin`, `::after:width`, `::before:-webkit-text-fill-color`, `::before:-webkit-text-stroke-color`, `::before:block-size`, `::before:border-block-end-color`, `::before:border-block-start-color`, `::before:border-bottom-color`, `::before:border-inline-end-color`, `::before:border-inline-start-color`, `::before:border-left-color`, `::before:border-right-color`, `::before:border-top-color`, `::before:bottom`, `::before:caret-color`, `::before:color`, `::before:column-rule-color`, `::before:content`, `::before:display`, `::before:font-size`, `::before:height`, `::before:inline-size`, `::before:inset-block-end`, `::before:inset-block-start`, `::before:inset-inline-end`, `::before:inset-inline-start`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon placement and colour with NO enable switch set: they still apply, so the icon is on by default. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:108 (the enable switch). Measured: the default button already shows an icon.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-b-icon-off-nested
+
+Block: `button`, also comparing the computed styles of the pseudo-elements `::before`, `::after`. Set on top of the base block:
+
+- `button.decoration.button.desktop.value.icon.enable` = `"off"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 16 | yes | `0:a:::after:block-size: 14px -> auto` |
+| 900 px | yes | 16 | yes | `0:a:::after:block-size: 14px -> auto` |
+| 400 px | yes | 16 | yes | `0:a:::after:block-size: 14px -> auto` |
+
+Properties that changed (any width): `::after:block-size`, `::after:bottom`, `::after:display`, `::after:height`, `::after:inline-size`, `::after:inset-block-end`, `::after:inset-block-start`, `::after:inset-inline-end`, `::after:inset-inline-start`, `::after:left`, `::after:perspective-origin`, `::after:right`, `::after:top`, `::after:transform`, `::after:transform-origin`, `::after:width`.
+
+Phone overflow at 400 px: no.
+
+Note: Button icon switched off with enable written inside the icon object (the shape the style code reads). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:349-358 reads icon.enable.
+
+Registered paths added:
+
+- `button.decoration.button.{bp}.value.icon.enable`
+
+## ty-b-font-weight
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.font.font.desktop.value.weight` = `"800"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:a:font-weight: 700 -> 800` |
+| 900 px | yes | 5 | yes | `0:a:font-weight: 700 -> 800` |
+| 400 px | yes | 5 | yes | `0:a:font-weight: 700 -> 800` |
+
+Properties that changed (any width): `font-weight`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Button label weight "800". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-b-font-spacing
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.font.font.desktop.value.letterSpacing` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:a:inline-size: 119.359px -> 124.359px` |
+| 900 px | yes | 5 | yes | `0:a:inline-size: 119.359px -> 124.359px` |
+| 400 px | yes | 5 | yes | `0:a:inline-size: 119.359px -> 124.359px` |
+
+Properties that changed (any width): `inline-size`, `letter-spacing`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Button label letterSpacing "2px". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-b-font-cap-uppercase
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.font.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:a:inline-size: 119.359px -> 126.578px` |
+| 900 px | yes | 5 | yes | `0:a:inline-size: 119.359px -> 126.578px` |
+| 400 px | yes | 5 | yes | `0:a:inline-size: 119.359px -> 126.578px` |
+
+Properties that changed (any width): `inline-size`, `perspective-origin`, `text-transform`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Button label capitalization "uppercase". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-545.
+
+Registered paths added:
+
+- `button.decoration.font.font.{bp}.value.capitalization`
+
+## ty-b-font-family
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.font.font.desktop.value.family` = `"Inter"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:a:font-family: "Encode Sans Condensed", Helvetica, Arial, Lucida, sans-serif -> Inter, Helvetica, Arial, Lucida, sans-serif` |
+| 900 px | yes | 5 | yes | `0:a:font-family: "Encode Sans Condensed", Helvetica, Arial, Lucida, sans-serif -> Inter, Helvetica, Arial, Lucida, sans-serif` |
+| 400 px | yes | 5 | yes | `0:a:font-family: "Encode Sans Condensed", Helvetica, Arial, Lucida, sans-serif -> Inter, Helvetica, Arial, Lucida, sans-serif` |
+
+Properties that changed (any width): `font-family`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Button label family "Inter". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-b-padding
+
+Block: `button`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"16px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"16px"`
+- `module.decoration.spacing.desktop.value.padding.left` = `"40px"`
+- `module.decoration.spacing.desktop.value.padding.right` = `"40px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:a:block-size: 59.7969px -> 55.7969px` |
+| 900 px | yes | 8 | yes | `0:a:block-size: 59.7969px -> 55.7969px` |
+| 400 px | yes | 8 | yes | `0:a:block-size: 59.7969px -> 55.7969px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Button padding 16px 40px set on the module spacing: all four sides. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:762-800 (the module spacing padding is printed on the button element itself).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-b-radius
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.radius.topLeft` = `"999px"`
+- `button.decoration.border.desktop.value.radius.topRight` = `"999px"`
+- `button.decoration.border.desktop.value.radius.bottomRight` = `"999px"`
+- `button.decoration.border.desktop.value.radius.bottomLeft` = `"999px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:a:border-bottom-left-radius: 0px -> 999px` |
+| 900 px | yes | 8 | yes | `0:a:border-bottom-left-radius: 0px -> 999px` |
+| 400 px | yes | 8 | yes | `0:a:border-bottom-left-radius: 0px -> 999px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Button pill radius 999px on all four corners. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:92-102.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-b-border
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"2px"`
+- `button.decoration.border.desktop.value.styles.all.color` = `"#1e3a8a"`
+- `button.decoration.border.desktop.value.styles.all.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 22 | yes | `0:a:block-size: 59.7969px -> 63.7969px` |
+| 900 px | yes | 22 | yes | `0:a:block-size: 59.7969px -> 63.7969px` |
+| 400 px | yes | 22 | yes | `0:a:block-size: 59.7969px -> 63.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-width`, `border-block-start-color`, `border-block-start-width`, `border-bottom-color`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-width`, `border-left-color`, `border-left-width`, `border-right-color`, `border-right-width`, `border-top-color`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Button border: width, colour and style set together. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:110-165.
+
+Registered paths added:
+
+- `button.decoration.border.{bp}.value.styles.all.style`
+
+## ty-b-shadow-module
+
+Block: `button`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 2px 18px 0px` |
+| 900 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 2px 18px 0px` |
+| 400 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 2px 18px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Button box shadow preset1 written on the module. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:131-146; the box shadow of the button is a module option (button module.json lists boxShadow on module and button).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-b-align-center
+
+Block: `button`. Set on top of the base block:
+
+- `module.advanced.alignment.desktop.value` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:text-align: start -> center` |
+| 900 px | yes | 1 | yes | `0:a:text-align: start -> center` |
+| 400 px | yes | 1 | yes | `0:a:text-align: start -> center` |
+
+Properties that changed (any width): `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: Button alignment centre (module.advanced.alignment). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:432-480 (button_alignment_*_declaration) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Button/Button.php:56-65.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-b-align-right
+
+Block: `button`. Set on top of the base block:
+
+- `module.advanced.alignment.desktop.value` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:text-align: start -> right` |
+| 900 px | yes | 1 | yes | `0:a:text-align: start -> right` |
+| 400 px | yes | 1 | yes | `0:a:text-align: start -> right` |
+
+Properties that changed (any width): `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: Button alignment right. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:432-480 and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Button/Button.php:56-65.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-bl-icon-on
+
+Block: `blurb`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `imageIcon.innerContent.desktop.value.useIcon` = `"on"`
+- `imageIcon.innerContent.desktop.value.icon.unicode` = `"&#xf054;"`
+- `imageIcon.innerContent.desktop.value.icon.type` = `"fa"`
+- `imageIcon.innerContent.desktop.value.icon.weight` = `"900"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 11001 | yes | `0:div:block-size: 51.7969px -> 177.797px` |
+| 900 px | yes | 11001 | yes | `0:div:block-size: 51.7969px -> 177.797px` |
+| 400 px | yes | 11001 | yes | `0:div:block-size: 51.7969px -> 177.797px` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Blurb shows an icon instead of an image: useIcon on with a Font Awesome glyph (a declared set of four). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:171 (useIcon on), :1519-1530 (the icon value).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-bl-icon-color
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.advanced.color.desktop.value` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `4:span:border-block-end-color: rgb(46, 163, 242) -> rgb(220, 38, 38)` |
+| 900 px | yes | 17 | yes | `4:span:border-block-end-color: rgb(46, 163, 242) -> rgb(220, 38, 38)` |
+| 400 px | yes | 17 | yes | `4:span:border-block-end-color: rgb(46, 163, 242) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Blurb icon colour, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:1350-1362 (icon colour).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-bl-icon-size
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.decoration.sizing.desktop.value.iconFontSize` = `"64px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 177.797px -> 145.797px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 177.797px -> 145.797px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 177.797px -> 145.797px` |
+
+Properties that changed (any width): `block-size`, `font-size`, `height`, `inline-size`, `line-height`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Blurb icon size through imageIcon sizing iconFontSize, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:746-760 (icon_width_style_declaration reads iconFontSize), :1094-1105.
+
+Registered paths added:
+
+- `imageIcon.decoration.sizing.{bp}.value.iconFontSize`
+
+## ty-bl-placement-left
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.advanced.placement.desktop.value` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 78 | no | `0:div:block-size: 177.797px -> 51.7969px` |
+| 900 px | yes | 78 | no | `0:div:block-size: 177.797px -> 51.7969px` |
+| 400 px | yes | 78 | no | `0:div:block-size: 177.797px -> 51.7969px` |
+
+Properties that changed (any width): `block-size`, `display`, `font-size`, `height`, `inline-size`, `line-height`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `padding-inline-start`, `padding-left`, `perspective-origin`, `text-align`, `transform-origin`, `vertical-align`, `width`, `word-break`.
+
+Phone overflow at 400 px: no.
+
+Note: Blurb icon placement left, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:98, :1007 (placement class et_pb_blurb_position_<value>; top is the default).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-bl-placement-right
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.advanced.placement.desktop.value` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 83 | no | `0:div:block-size: 177.797px -> 51.7969px` |
+| 900 px | yes | 83 | no | `0:div:block-size: 177.797px -> 51.7969px` |
+| 400 px | yes | 83 | no | `0:div:block-size: 177.797px -> 51.7969px` |
+
+Properties that changed (any width): `block-size`, `display`, `font-size`, `height`, `inline-size`, `inset-inline-end`, `line-height`, `margin-inline-start`, `margin-left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `padding-inline-end`, `padding-right`, `perspective-origin`, `right`, `text-align`, `transform-origin`, `vertical-align`, `width`, `word-break`.
+
+Phone overflow at 400 px: no.
+
+Note: Blurb icon placement right, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:98, :1007 (placement class et_pb_blurb_position_<value>; top is the default).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-bl-icon-background
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.decoration.background.desktop.value.color` = `"#e0e7ff"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `4:span:background-color: rgba(0, 0, 0, 0) -> rgb(224, 231, 255)` |
+| 900 px | yes | 1 | yes | `4:span:background-color: rgba(0, 0, 0, 0) -> rgb(224, 231, 255)` |
+| 400 px | yes | 1 | yes | `4:span:background-color: rgba(0, 0, 0, 0) -> rgb(224, 231, 255)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Blurb icon background colour, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php (imageIcon.decoration.background, listed in the blurb module.json).
+
+Registered paths added:
+
+- `imageIcon.decoration.background.{bp}.value.color`
+
+## ty-bl-icon-padding
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.decoration.spacing.desktop.value.padding.top` = `"16px"`
+- `imageIcon.decoration.spacing.desktop.value.padding.right` = `"16px"`
+- `imageIcon.decoration.spacing.desktop.value.padding.bottom` = `"16px"`
+- `imageIcon.decoration.spacing.desktop.value.padding.left` = `"16px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 30 | yes | `0:div:block-size: 177.797px -> 209.797px` |
+| 900 px | yes | 30 | yes | `0:div:block-size: 177.797px -> 209.797px` |
+| 400 px | yes | 30 | yes | `0:div:block-size: 177.797px -> 209.797px` |
+
+Properties that changed (any width): `block-size`, `height`, `inline-size`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-inline-end`, `padding-inline-start`, `padding-left`, `padding-right`, `padding-top`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Blurb icon padding 16px on all four sides, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php (imageIcon.decoration.spacing, listed in the blurb module.json).
+
+Registered paths added:
+
+- `imageIcon.decoration.spacing.{bp}.value.padding.bottom`
+- `imageIcon.decoration.spacing.{bp}.value.padding.left`
+- `imageIcon.decoration.spacing.{bp}.value.padding.right`
+- `imageIcon.decoration.spacing.{bp}.value.padding.top`
+
+## ty-bl-title-weight
+
+Block: `blurb`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"800"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `3:h4:font-weight: 500 -> 800` |
+| 900 px | yes | 1 | yes | `3:h4:font-weight: 500 -> 800` |
+| 400 px | yes | 1 | yes | `3:h4:font-weight: 500 -> 800` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Blurb title font weight 800. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-bl-body-lineheight
+
+Block: `blurb`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.lineHeight` = `"1.8em"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 22 | yes | `0:div:block-size: 51.7969px -> 53.2031px` |
+| 900 px | yes | 22 | yes | `0:div:block-size: 51.7969px -> 53.2031px` |
+| 400 px | yes | 22 | yes | `0:div:block-size: 51.7969px -> 53.2031px` |
+
+Properties that changed (any width): `block-size`, `height`, `line-height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Blurb body line height 1.8em. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:693-695.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ic-color
+
+Block: `icon`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `icon.advanced.color.desktop.value` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 34 | yes | `2:span:border-block-end-color: rgb(46, 163, 242) -> rgb(220, 38, 38)` |
+| 900 px | yes | 34 | yes | `2:span:border-block-end-color: rgb(46, 163, 242) -> rgb(220, 38, 38)` |
+| 400 px | yes | 34 | yes | `2:span:border-block-end-color: rgb(46, 163, 242) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `::before:-webkit-text-fill-color`, `::before:-webkit-text-stroke-color`, `::before:border-block-end-color`, `::before:border-block-start-color`, `::before:border-bottom-color`, `::before:border-inline-end-color`, `::before:border-inline-start-color`, `::before:border-left-color`, `::before:border-right-color`, `::before:border-top-color`, `::before:caret-color`, `::before:color`, `::before:column-rule-color`, `::before:outline-color`, `::before:row-rule-color`, `::before:text-decoration-color`, `::before:text-emphasis-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon module colour. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Icon/IconModule.php (icon.advanced.color) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Icon/Icon.php:66-68.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ic-size
+
+Block: `icon`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `icon.advanced.size.desktop.value` = `"64px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 22 | yes | `0:div:block-size: 96px -> 64px` |
+| 900 px | yes | 22 | yes | `0:div:block-size: 96px -> 64px` |
+| 400 px | yes | 22 | yes | `0:div:block-size: 96px -> 64px` |
+
+Properties that changed (any width): `::before:font-size`, `::before:line-height`, `block-size`, `font-size`, `height`, `inline-size`, `line-height`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon module size 64px. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Icon/IconModule.php (icon.advanced.size) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Icon/Icon.php:69-72.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-ic-align-left
+
+Block: `icon`. Set on top of the base block:
+
+- `icon.advanced.align.desktop.value` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:align-self: center -> flex-start` |
+| 900 px | yes | 8 | yes | `0:div:align-self: center -> flex-start` |
+| 400 px | yes | 8 | yes | `0:div:align-self: center -> flex-start` |
+
+Properties that changed (any width): `--et-pb-icon-self-align`, `align-self`, `justify-content`, `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon module alignment left. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Icon/IconModule.php:457-467 (icon_alignment_declaration).
+
+Registered paths added:
+
+- `icon.advanced.align.{bp}.value`
+
+## ty-ic-align-right
+
+Block: `icon`. Set on top of the base block:
+
+- `icon.advanced.align.desktop.value` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:align-self: center -> flex-end` |
+| 900 px | yes | 8 | yes | `0:div:align-self: center -> flex-end` |
+| 400 px | yes | 8 | yes | `0:div:align-self: center -> flex-end` |
+
+Properties that changed (any width): `--et-pb-icon-self-align`, `align-self`, `justify-content`, `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon module alignment right. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Icon/IconModule.php:481-488.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-nc-number-size
+
+Block: `number-counter`. Set on top of the base block:
+
+- `number.decoration.font.font.desktop.value.size` = `"48px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `2:p:font-size: 72px -> 48px` |
+| 900 px | yes | 3 | yes | `2:p:font-size: 72px -> 48px` |
+| 400 px | yes | 3 | yes | `2:p:font-size: 72px -> 48px` |
+
+Properties that changed (any width): `font-size`.
+
+Phone overflow at 400 px: no.
+
+Note: Number counter: number size 48px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:674-687 (the number element, number.decoration.font in the module.json).
+
+Registered paths added:
+
+- `number.decoration.font.font.{bp}.value.size`
+
+## ty-nc-number-weight
+
+Block: `number-counter`. Set on top of the base block:
+
+- `number.decoration.font.font.desktop.value.weight` = `"800"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `2:p:font-weight: 500 -> 800` |
+| 900 px | yes | 3 | yes | `2:p:font-weight: 500 -> 800` |
+| 400 px | yes | 3 | yes | `2:p:font-weight: 500 -> 800` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Number counter: number weight 800. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432 (the number element, number.decoration.font in the module.json).
+
+Registered paths added:
+
+- `number.decoration.font.font.{bp}.value.weight`
+
+## ty-nc-number-color
+
+Block: `number-counter`. Set on top of the base block:
+
+- `number.decoration.font.font.desktop.value.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 51 | yes | `2:p:border-block-end-color: rgb(46, 163, 242) -> rgb(220, 38, 38)` |
+| 900 px | yes | 51 | yes | `2:p:border-block-end-color: rgb(46, 163, 242) -> rgb(220, 38, 38)` |
+| 400 px | yes | 51 | yes | `2:p:border-block-end-color: rgb(46, 163, 242) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Number counter: number color #dc2626. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:670-672 (the number element, number.decoration.font in the module.json).
+
+Registered paths added:
+
+- `number.decoration.font.font.{bp}.value.color`
+
+## ty-nc-number-family
+
+Block: `number-counter`. Set on top of the base block:
+
+- `number.decoration.font.font.desktop.value.family` = `"Playfair Display"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `2:p:font-family: "Open Sans" -> "Playfair Display", Georgia, "Times New Roman", serif` |
+| 900 px | yes | 3 | yes | `2:p:font-family: "Open Sans" -> "Playfair Display", Georgia, "Times New Roman", serif` |
+| 400 px | yes | 3 | yes | `2:p:font-family: "Open Sans" -> "Playfair Display", Georgia, "Times New Roman", serif` |
+
+Properties that changed (any width): `font-family`.
+
+Phone overflow at 400 px: no.
+
+Note: Number counter: number family Playfair Display. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333 (the number element, number.decoration.font in the module.json).
+
+Registered paths added:
+
+- `number.decoration.font.font.{bp}.value.family`
+
+## ty-nc-title-upper
+
+Block: `number-counter`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `5:h3:text-transform: none -> uppercase` |
+| 900 px | yes | 1 | yes | `5:h3:text-transform: none -> uppercase` |
+| 400 px | yes | 1 | yes | `5:h3:text-transform: none -> uppercase` |
+
+Properties that changed (any width): `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Number counter: title capitalization uppercase. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-545 (the title element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-nc-title-spacing
+
+Block: `number-counter`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `5:h3:letter-spacing: normal -> 2px` |
+| 900 px | yes | 1 | yes | `5:h3:letter-spacing: normal -> 2px` |
+| 400 px | yes | 1 | yes | `5:h3:letter-spacing: normal -> 2px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Number counter: title letterSpacing 2px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691 (the title element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-nc-title-color
+
+Block: `number-counter`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.color` = `"#64748b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `5:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(100, 116, 139)` |
+| 900 px | yes | 17 | yes | `5:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(100, 116, 139)` |
+| 400 px | yes | 17 | yes | `5:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(100, 116, 139)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Number counter: title color #64748b. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:670-672 (the title element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-nc-percent-off
+
+Block: `number-counter`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `number.advanced.enablePercentSign.desktop.value` = `"off"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | no | `text:innerText: 42%
+
+PROBE -> 42
+
+PROBE` |
+| 900 px | yes | 1 | no | `text:innerText: 42%
+
+PROBE -> 42
+
+PROBE` |
+| 400 px | yes | 1 | no | `text:innerText: 42%
+
+PROBE -> 42
+
+PROBE` |
+
+Properties that changed (any width): `text:innerText`.
+
+Phone overflow at 400 px: no.
+
+Note: Number counter percent sign off (the rendered text loses the % character). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/NumberCounter/NumberCounterModule.php:377 (the percent sign defaults to on), :367-385 (the sign is a printed character).
+
+Registered paths added:
+
+- `number.advanced.enablePercentSign.{bp}.value`
+
+## ty-nc-align-left
+
+Block: `number-counter`. Set on top of the base block:
+
+- `module.advanced.text.text.desktop.value.orientation` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `0:div:text-align: center -> left` |
+| 900 px | yes | 7 | yes | `0:div:text-align: center -> left` |
+| 400 px | yes | 7 | yes | `0:div:text-align: center -> left` |
+
+Properties that changed (any width): `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: Number counter text alignment left. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/NumberCounter/NumberCounterModule.php:71, :559 (module.advanced.text) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Text/Text.php:65-70.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-dv-color
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:::before:border-block-start-color: rgb(46, 163, 242) -> rgb(220, 38, 38)` |
+| 900 px | yes | 2 | yes | `0:div:::before:border-block-start-color: rgb(46, 163, 242) -> rgb(220, 38, 38)` |
+| 400 px | yes | 2 | yes | `0:div:::before:border-block-start-color: rgb(46, 163, 242) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `::before:border-block-start-color`, `::before:border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider line color #dc2626. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-dv-weight
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.weight` = `"6px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 1px -> 6px` |
+| 900 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 1px -> 6px` |
+| 400 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 1px -> 6px` |
+
+Properties that changed (any width): `::before:border-block-start-width`, `::before:border-top-width`, `::before:bottom`, `::before:inset-block-end`, `::before:perspective-origin`, `::before:transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider line weight 6px. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-dv-style-dashed
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dashed` |
+| 900 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dashed` |
+| 400 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dashed` |
+
+Properties that changed (any width): `::before:border-block-start-style`, `::before:border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider line style dashed. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-dv-style-dotted
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dotted` |
+| 900 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dotted` |
+| 400 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dotted` |
+
+Properties that changed (any width): `::before:border-block-start-style`, `::before:border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider line style dotted. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-dv-style-double
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.style` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> double` |
+| 900 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> double` |
+| 400 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> double` |
+
+Properties that changed (any width): `::before:border-block-start-style`, `::before:border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider line style double. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-dv-position-center
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.position` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `0:div:::before:bottom: 21px -> 9.5px` |
+| 900 px | yes | 4 | yes | `0:div:::before:bottom: 21px -> 9.5px` |
+| 400 px | yes | 4 | yes | `0:div:::before:bottom: 21px -> 9.5px` |
+
+Properties that changed (any width): `::before:bottom`, `::before:inset-block-end`, `::before:inset-block-start`, `::before:top`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider line position center. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ty-dv-position-bottom
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.position` = `"bottom"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `0:div:::before:bottom: 21px -> 0px` |
+| 900 px | yes | 4 | yes | `0:div:::before:bottom: 21px -> 0px` |
+| 400 px | yes | 4 | yes | `0:div:::before:bottom: 21px -> 0px` |
+
+Properties that changed (any width): `::before:bottom`, `::before:inset-block-end`, `::before:inset-block-start`, `::before:top`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider line position bottom. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (typography)
+
+Candidates from `typography.json` that were measured and are not taught, with the reason:
+
+- `ty-h-style-uppercase`: no effect (dead). Heading font style ["uppercase"], the shape the default guide teaches and real 5.x exports contain. Font.php reads upper case from `capitalization`, not from `style` (a style list only handles italic, underline, overline and strikethrough). Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:489-545 (style list) against 543-562 (capitalization).
+- `ty-h-lineheight-1em`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Heading line height 1em, the default of a heading: only the stylesheet changes (css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:693-695.
+- `ty-h-line-style-needs-line`: no effect (dead). PRECONDITION: lineStyle dashed with NO underline/overline/strikethrough in `style`. Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:587-596 (text-decoration-style is only emitted with a line in `style`).
+- `ty-ts-needs-style`: no effect (dead). PRECONDITION: colour, vertical and blur set with NO `style`. Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:70-72 (no style: no shadow at desktop).
+- `ty-ts-phone-none`: no effect (dead). Desktop preset1 in the base, phone style none. Expected DEAD: the desktop shadow still applies on the phone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:50-52 (none returns an empty string, so the phone gets no rule of its own and the desktop rule stays).
+- `ty-te-stroke-position-default`: no effect (dead). Stroke position stroke-fill with a 2px stroke in the base: the same as the default for a wide stroke. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:278-286 (a stroke wider than 1px already prints the stroke first). Expected DEAD.
+- `ty-te-gradient-needs-fill`: no effect (dead). PRECONDITION: the same gradient WITHOUT fillType. Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:292 (the gradient is read only when fillType is gradient).
+- `ty-i-fit-fill`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Image object-fit fill (the browser default) in a 1:1 box. Expected: only the stylesheet changes (css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:44-45.
+- `ty-i-shadow-needs-style`: no effect (dead). PRECONDITION: horizontal, vertical, blur and colour set with NO `style`. Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:113-121 (no `style` key: no shadow).
+- `ty-i-overlay-needs-link`: no effect (dead). PRECONDITION: overlay on with NO link. Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Image/ImageModule.php:99 (is_overlay is false without a link or the lightbox).
+- `ty-b-icon-enable-on`: no effect (dead). Button icon enable on (beside icon, the shape the real exports use): the default, so nothing changes. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:108. Expected DEAD (the default).
+- `ty-b-icon-enable-nested`: no effect (dead). Button icon enable on written INSIDE the icon object: the default, so nothing changes. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:71-74 (the style code reads icon.enable). Expected DEAD (the default).
+- `ty-b-icon-off`: no effect (dead). Button icon switched off with enable off beside icon (the shape the real exports use). Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:349-358 (disable_style_declaration: display none when enable is off).
+- `ty-b-font-style-uppercase`: no effect (dead). Button label style ["uppercase"]. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:489-545.
+- `ty-b-padding-element`: no effect (dead). Button padding written on the button element (button.decoration.spacing) instead of the module. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:762-800 (padding comes from module.decoration.spacing). Expected DEAD.
+- `ty-b-shadow`: no effect (dead). Button box shadow written on the button element (button.decoration.boxShadow). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:131-146. Expected DEAD (the button module prints its shadow from the module).
+- `ty-bl-placement-top`: no effect (dead). Blurb icon placement top, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:98, :1007 (placement class et_pb_blurb_position_<value>; top is the default).
+- `ty-bl-icon-size-width`: no effect (dead). Blurb icon size written as the sizing width, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:746-760 (the icon size is read from iconFontSize, not width). Expected DEAD.
+- `ty-ic-align-center`: no effect (dead). Icon module alignment centre (the default). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Icon/IconModule.php:468-480 (centre prints only text-align; the module is centred by default). Expected DEAD or near-DEAD.
+- `ty-nc-percent-on`: no effect (dead). Number counter percent sign on (the default). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/NumberCounter/NumberCounterModule.php:377 (default on). Expected DEAD.
+- `ty-nc-align-center`: no effect (dead). Number counter text alignment centre. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/NumberCounter/NumberCounterModule.php:71, :559 and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Text/Text.php:65-70. Expected DEAD (centre is the default).
+- `ty-dv-position-top`: no effect (dead). Divider line position top. Expected DEAD (the default). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line).
+- `ty-dv-show-on`: no effect (dead). Divider line show on (the default). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83 (show defaults to on). Expected DEAD.
+
+Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-typography.json`):
+
+- Variable-font axes and fine weights: `weightFineTune`, `variationSettings`, `opticalSizing`: not rendered: Font.php:336-487 turns them into font-variation-settings (source), but no variable family was loaded and the dev render never fetched a font file
+- Whether a font family or a weight is actually available to the browser: not measured: only the computed `font-family` and `font-weight` were compared. The probe never checked that Divi loaded the family's files from the font host, or that the family has a face for the weight; the family names named in the topic come from Divi's own `google-fonts.json` (fixtures/shapes/fonts-5.15.1.json)
+- Drop caps (`dropCapLineSize`, `dropCapSpacing`), vertical text (`writingMode`) and the column rule (`columnRuleWidth`, `columnRuleStyle`, `columnRuleColor`): not rendered: read from Font.php:628-734 only; the topic does not teach them
+- `columnGap` on its own, and `columnCount` on a heading or on a module other than the text module: not rendered: the gap was measured together with a column count in a text module's body only
+- The divider line `show` switch ("off" hides the line): not measured: with show off Divi removes the `et_pb_divider` class (DividerModule.php:186-194) and the probe finds a module by that class, so the candidate ended in an ERROR and was dropped from the committed run. Source only
+- Divider width, height and spacing, and a divider line on hover: not rendered: only the line's colour, weight, style and position were measured
+- Backdrop filters (`backdropBlur`, `backdropInvert`, `backdropSepia`): never taught: a frosted-glass look needs a backdrop blur, which this project excludes; they were not probed
+- A grayscale filter: Divi 5.15.1 has no `grayscale` key (Filters.php:117-135, source); `saturate` "0%" was measured instead. A filter value of "0" without a unit is skipped by Divi (Filters.php:11-23, source)
+- Filters and blend modes on modules other than the image, and the filter `hover` state: not rendered here: only the image module's `module.decoration.filters` value state; hover is in the topic `hover-states`
+- Text effects beyond fill, stroke and the stroke position: gradient `repeat`, `length`, radial direction, `imageFill.size`, `position`, `repeat`, `blend`, `width`, `height`, `horizontalOffset`, `verticalOffset`, and text effects on a text module: not rendered: one linear gradient with two stops and one image fill url were measured on a heading
+- Text shadow on the heading levels or the link and quote groups of a text module, on a button or on a blurb: not rendered: the heading and the text module body were measured
+- Text shadow and text effects with tablet or phone values other than the phone zero shadow: not rendered with overrides, except the one measured candidate
+- Font settings (size, spacing, case) of modules other than the heading, the text module, the button, the blurb title and body, and the number counter: not rendered: accordion, tabs, pricing table, slider, menu and the other modules were not probed
+- Image overlay settings beyond `use`, `backgroundColor`, `overlayIcon.iconColor` and `overlayIcon.hoverIcon`, the lightbox, and an overlay without a link: not rendered: the overlay needs a link (or the lightbox) and was measured with the pointer on the image and a link of #
+- Which icon glyphs exist, and icon libraries other than the one Font Awesome glyph used: not measured: the Font Awesome code `&#xf054;` and the library defaults were the only glyphs rendered; the topic does not list glyph codes
+- Border sides other than the bottom, per-side colours, border on modules other than the image and the button, and a box shadow with `position` inner on modules other than the image: not rendered: the all-sides border, the bottom border and presets 1 to 7 on the image were measured
+- Blurb image mode (an image instead of an icon): image width, alignment and an icon in a circle: not rendered here; only the icon mode was measured
+- Button icon on tablet and phone, and button hover states beyond those in `hover-states`: not rendered; the button alignment measured is `module.advanced.alignment`
+- Number counter behaviour (count speed, start value) and the circle counter and bar counter modules: not rendered: only the fonts, the percent sign and the alignment of the number counter module were measured
+- The Visual Builder: not checked: every result is a front-end render of a draft page preview

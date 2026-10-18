@@ -102,6 +102,11 @@
             "evidence": "fixtures/valid/page-23-style-reference.json"
         },
         {
+            "path": "button.decoration.border.{bp}.value.styles.all.style",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-b-border"
+        },
+        {
             "path": "button.decoration.border.{bp}.value.styles.all.width",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
@@ -117,9 +122,19 @@
             "evidence": "fixtures/valid/page-44-layout-2.json"
         },
         {
+            "path": "button.decoration.button.{bp}.value.icon.enable",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-b-icon-off-nested"
+        },
+        {
             "path": "button.decoration.button.{bp}.value.icon.onHover",
             "how": "export",
             "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "button.decoration.button.{bp}.value.icon.placement",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-b-icon-placement-left"
         },
         {
             "path": "button.decoration.button.{bp}.value.icon.settings.type",
@@ -140,6 +155,11 @@
             "path": "button.decoration.font.font.{bp}.hover.color",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-button-font-color"
+        },
+        {
+            "path": "button.decoration.font.font.{bp}.value.capitalization",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-b-font-cap-uppercase"
         },
         {
             "path": "button.decoration.font.font.{bp}.value.color",
@@ -247,14 +267,39 @@
             "evidence": "fixtures/valid/page-86-layout-5.json"
         },
         {
+            "path": "content.decoration.bodyFont.body.font.{bp}.value.capitalization",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-tb-uppercase"
+        },
+        {
             "path": "content.decoration.bodyFont.body.font.{bp}.value.color",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
         },
         {
+            "path": "content.decoration.bodyFont.body.font.{bp}.value.columnCount",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-tb-columns"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.font.{bp}.value.columnGap",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-tb-columns"
+        },
+        {
             "path": "content.decoration.bodyFont.body.font.{bp}.value.family",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.font.{bp}.value.hyphens",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-tb-hyphens"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.font.{bp}.value.letterSpacing",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-tb-spacing"
         },
         {
             "path": "content.decoration.bodyFont.body.font.{bp}.value.lineHeight",
@@ -265,6 +310,16 @@
             "path": "content.decoration.bodyFont.body.font.{bp}.value.size",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.font.{bp}.value.style.{n}",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-tb-italic"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.font.{bp}.value.textWrap",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-tb-textwrap"
         },
         {
             "path": "content.decoration.bodyFont.body.font.{bp}.value.weight",
@@ -352,6 +407,11 @@
             "evidence": "fixtures/valid/page-86-layout-5.json"
         },
         {
+            "path": "content.decoration.headingFont.h2.font.{bp}.value.capitalization",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-th-h2-capitalization"
+        },
+        {
             "path": "content.decoration.headingFont.h2.font.{bp}.value.color",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
@@ -360,6 +420,11 @@
             "path": "content.decoration.headingFont.h2.font.{bp}.value.family",
             "how": "export",
             "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h2.font.{bp}.value.letterSpacing",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-th-h2-letterspacing"
         },
         {
             "path": "content.decoration.headingFont.h2.font.{bp}.value.lineHeight",
@@ -372,9 +437,19 @@
             "evidence": "fixtures/valid/page-44-layout-2.json"
         },
         {
+            "path": "content.decoration.headingFont.h2.font.{bp}.value.style.{n}",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-th-h2-style"
+        },
+        {
             "path": "content.decoration.headingFont.h2.font.{bp}.value.weight",
             "how": "export",
             "evidence": "fixtures/valid/themebuilder-footer-224970.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h3.font.{bp}.value.capitalization",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-th-h3-capitalization"
         },
         {
             "path": "content.decoration.headingFont.h3.font.{bp}.value.color",
@@ -435,6 +510,16 @@
             "path": "content.decoration.headingFont.h4.font.{bp}.value.weight",
             "how": "export",
             "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h5.font.{bp}.value.weight",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-th-h5-weight"
+        },
+        {
+            "path": "content.decoration.headingFont.h6.font.{bp}.value.weight",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-th-h6-weight"
         },
         {
             "path": "content.innerContent",
@@ -552,6 +637,11 @@
             "evidence": "fixtures/valid/page-17-newpage.json"
         },
         {
+            "path": "icon.advanced.align.{bp}.value",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-ic-align-left"
+        },
+        {
             "path": "icon.advanced.color.{bp}.value",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
@@ -572,9 +662,29 @@
             "evidence": "fixtures/valid/page-23-style-reference.json"
         },
         {
+            "path": "image.advanced.overlay.{bp}.value.backgroundColor",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-overlay-color"
+        },
+        {
             "path": "image.advanced.overlay.{bp}.value.use",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "image.advanced.overlayIcon.{bp}.value.hoverIcon.type",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-overlay-hover-icon"
+        },
+        {
+            "path": "image.advanced.overlayIcon.{bp}.value.hoverIcon.unicode",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-overlay-hover-icon"
+        },
+        {
+            "path": "image.advanced.overlayIcon.{bp}.value.hoverIcon.weight",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-overlay-hover-icon"
         },
         {
             "path": "image.advanced.overlayIcon.{bp}.value.iconColor",
@@ -622,9 +732,54 @@
             "evidence": "fixtures/valid/page-44-layout-2.json"
         },
         {
+            "path": "image.decoration.border.{bp}.value.styles.bottom.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-border-bottom"
+        },
+        {
+            "path": "image.decoration.border.{bp}.value.styles.bottom.style",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-border-bottom"
+        },
+        {
+            "path": "image.decoration.border.{bp}.value.styles.bottom.width",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-border-bottom"
+        },
+        {
+            "path": "image.decoration.boxShadow.{bp}.value.blur",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-shadow-blur"
+        },
+        {
+            "path": "image.decoration.boxShadow.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-shadow-color"
+        },
+        {
+            "path": "image.decoration.boxShadow.{bp}.value.spread",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-shadow-spread"
+        },
+        {
+            "path": "image.decoration.boxShadow.{bp}.value.style",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-shadow-preset1"
+        },
+        {
+            "path": "image.decoration.boxShadow.{bp}.value.vertical",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-shadow-vertical"
+        },
+        {
             "path": "image.decoration.fit.{bp}.value.objectFit",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#image-aspect-ratio-4-3-cover"
+        },
+        {
+            "path": "image.decoration.fit.{bp}.value.objectPosition",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-position-left-top"
         },
         {
             "path": "image.innerContent",
@@ -662,6 +817,11 @@
             "evidence": "fixtures/valid/page-86-layout-5.json"
         },
         {
+            "path": "imageIcon.decoration.background.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-bl-icon-background"
+        },
+        {
             "path": "imageIcon.decoration.filters.{bp}.hover.brightness",
             "how": "export",
             "evidence": "fixtures/valid/page-86-layout-5.json"
@@ -670,6 +830,31 @@
             "path": "imageIcon.decoration.sizing.{bp}.value.alignment",
             "how": "export",
             "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "imageIcon.decoration.sizing.{bp}.value.iconFontSize",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-bl-icon-size"
+        },
+        {
+            "path": "imageIcon.decoration.spacing.{bp}.value.padding.bottom",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-bl-icon-padding"
+        },
+        {
+            "path": "imageIcon.decoration.spacing.{bp}.value.padding.left",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-bl-icon-padding"
+        },
+        {
+            "path": "imageIcon.decoration.spacing.{bp}.value.padding.right",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-bl-icon-padding"
+        },
+        {
+            "path": "imageIcon.decoration.spacing.{bp}.value.padding.top",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-bl-icon-padding"
         },
         {
             "path": "imageIcon.innerContent",
@@ -1422,6 +1607,51 @@
             "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-filter-saturate"
         },
         {
+            "path": "module.decoration.filters.{bp}.value.blendMode",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-blend-multiply"
+        },
+        {
+            "path": "module.decoration.filters.{bp}.value.blur",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-filter-blur"
+        },
+        {
+            "path": "module.decoration.filters.{bp}.value.brightness",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-filter-brightness"
+        },
+        {
+            "path": "module.decoration.filters.{bp}.value.contrast",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-filter-contrast"
+        },
+        {
+            "path": "module.decoration.filters.{bp}.value.hueRotate",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-filter-hue"
+        },
+        {
+            "path": "module.decoration.filters.{bp}.value.invert",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-filter-invert"
+        },
+        {
+            "path": "module.decoration.filters.{bp}.value.opacity",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-filter-opacity"
+        },
+        {
+            "path": "module.decoration.filters.{bp}.value.saturate",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-filter-saturate-0"
+        },
+        {
+            "path": "module.decoration.filters.{bp}.value.sepia",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-i-filter-sepia"
+        },
+        {
             "path": "module.decoration.interactionTarget",
             "how": "export",
             "evidence": "fixtures/valid/themebuilder-footer-224970.json"
@@ -1977,6 +2207,31 @@
             "evidence": "fixtures/valid/page-17-newpage.json"
         },
         {
+            "path": "number.advanced.enablePercentSign.{bp}.value",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-nc-percent-off"
+        },
+        {
+            "path": "number.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-nc-number-color"
+        },
+        {
+            "path": "number.decoration.font.font.{bp}.value.family",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-nc-number-family"
+        },
+        {
+            "path": "number.decoration.font.font.{bp}.value.size",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-nc-number-size"
+        },
+        {
+            "path": "number.decoration.font.font.{bp}.value.weight",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-nc-number-weight"
+        },
+        {
             "path": "number.innerContent",
             "how": "export",
             "evidence": "fixtures/valid/page-17-newpage.json"
@@ -2052,6 +2307,11 @@
             "evidence": "fixtures/valid/page-86-layout-5.json"
         },
         {
+            "path": "title.decoration.font.font.{bp}.value.capitalization",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-h-cap-uppercase"
+        },
+        {
             "path": "title.decoration.font.font.{bp}.value.color",
             "how": "export",
             "evidence": "fixtures/valid/page-17-variable-heading.json"
@@ -2067,9 +2327,34 @@
             "evidence": "fixtures/valid/page-23-style-reference.json"
         },
         {
+            "path": "title.decoration.font.font.{bp}.value.hyphens",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-h-hyphens-on"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.letterSpacing",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-h-spacing-minus1"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.lineColor",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-h-line-color"
+        },
+        {
             "path": "title.decoration.font.font.{bp}.value.lineHeight",
             "how": "export",
             "evidence": "fixtures/valid/page-17-variable-heading.json"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.lineStyle",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-h-line-style-dashed"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.lineThickness",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-h-line-thickness"
         },
         {
             "path": "title.decoration.font.font.{bp}.value.size",
@@ -2087,14 +2372,79 @@
             "evidence": "fixtures/valid/page-23-style-reference.json"
         },
         {
+            "path": "title.decoration.font.font.{bp}.value.textWrap",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-h-textwrap-balance"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.underlineOffset",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-h-line-offset"
+        },
+        {
             "path": "title.decoration.font.font.{bp}.value.weight",
             "how": "export",
             "evidence": "fixtures/valid/page-17-variable-heading.json"
         },
         {
+            "path": "title.decoration.font.textEffects.{bp}.value.fillType",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-te-fill-transparent"
+        },
+        {
+            "path": "title.decoration.font.textEffects.{bp}.value.gradient.direction",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-te-gradient"
+        },
+        {
+            "path": "title.decoration.font.textEffects.{bp}.value.gradient.stops.{n}.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-te-gradient"
+        },
+        {
+            "path": "title.decoration.font.textEffects.{bp}.value.gradient.stops.{n}.position",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-te-gradient"
+        },
+        {
+            "path": "title.decoration.font.textEffects.{bp}.value.gradient.type",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-te-gradient"
+        },
+        {
+            "path": "title.decoration.font.textEffects.{bp}.value.imageFill.url",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-te-image-fill"
+        },
+        {
+            "path": "title.decoration.font.textEffects.{bp}.value.strokeColor",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-te-stroke"
+        },
+        {
+            "path": "title.decoration.font.textEffects.{bp}.value.strokePosition",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-te-stroke-position"
+        },
+        {
+            "path": "title.decoration.font.textEffects.{bp}.value.strokeWidth",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-te-stroke"
+        },
+        {
+            "path": "title.decoration.font.textShadow.{bp}.value.blur",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-ts-override-blur"
+        },
+        {
             "path": "title.decoration.font.textShadow.{bp}.value.color",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "title.decoration.font.textShadow.{bp}.value.horizontal",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#ty-ts-override-horizontal"
         },
         {
             "path": "title.decoration.font.textShadow.{bp}.value.style",

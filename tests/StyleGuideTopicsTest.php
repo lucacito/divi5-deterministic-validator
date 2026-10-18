@@ -86,6 +86,9 @@ class StyleGuideTopicsTest extends TestCase
         $this->assertContains( 'hover-states', $topics );
         $this->assertContains( 'layout-advanced', $topics );
         $this->assertContains( 'layout-sizing', $topics );
+        $this->assertContains( 'typography', $topics );
+        $this->assertContains( 'imagery', $topics );
+        $this->assertContains( 'controls', $topics );
         $this->assertSame( $topics, array_values( array_unique( $topics ) ), 'no topic is listed twice' );
         foreach ( $topics as $topic ) {
             $this->assertStringNotContainsString( 'Unknown topic', StyleGuide::markdown( $topic ), $topic . ' must be served' );

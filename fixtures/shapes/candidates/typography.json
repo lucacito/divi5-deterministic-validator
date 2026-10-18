@@ -1,0 +1,2876 @@
+[
+  {
+    "id": "ty-h-weight-300",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.weight": "300"
+    },
+    "note": "Heading font weight 300. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432 (font-weight from `weight`)."
+  },
+  {
+    "id": "ty-h-weight-600",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.weight": "600"
+    },
+    "note": "Heading font weight 600. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432 (font-weight from `weight`)."
+  },
+  {
+    "id": "ty-h-weight-800",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.weight": "800"
+    },
+    "note": "Heading font weight 800. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432 (font-weight from `weight`)."
+  },
+  {
+    "id": "ty-h-weight-900",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.weight": "900"
+    },
+    "note": "Heading font weight 900. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432 (font-weight from `weight`)."
+  },
+  {
+    "id": "ty-h-style-italic",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.style": [
+        "italic"
+      ]
+    },
+    "note": "Heading font style italic (a list). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:511-512 (italic in `style`)."
+  },
+  {
+    "id": "ty-h-style-underline",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.style": [
+        "underline"
+      ]
+    },
+    "note": "Heading font style underline. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:519-532 (underline/overline/strikethrough in `style` give text-decoration-line)."
+  },
+  {
+    "id": "ty-h-style-strikethrough",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.style": [
+        "strikethrough"
+      ]
+    },
+    "note": "Heading font style strikethrough. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:527-532 (strikethrough gives line-through)."
+  },
+  {
+    "id": "ty-h-style-overline",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.style": [
+        "overline"
+      ]
+    },
+    "note": "Heading font style overline. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:523-532."
+  },
+  {
+    "id": "ty-h-style-uppercase",
+    "block": "heading",
+    "expect": "DEAD",
+    "set": {
+      "title.decoration.font.font.desktop.value.style": [
+        "uppercase"
+      ]
+    },
+    "note": "Heading font style [\"uppercase\"], the shape the default guide teaches and real 5.x exports contain. Font.php reads upper case from `capitalization`, not from `style` (a style list only handles italic, underline, overline and strikethrough). Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:489-545 (style list) against 543-562 (capitalization)."
+  },
+  {
+    "id": "ty-h-cap-uppercase",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.capitalization": "uppercase"
+    },
+    "note": "Heading capitalization uppercase. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-579 (uppercase/lowercase/capitalize give text-transform, smallCaps/allSmallCaps give font-variant-caps)."
+  },
+  {
+    "id": "ty-h-cap-lowercase",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.capitalization": "lowercase"
+    },
+    "note": "Heading capitalization lowercase. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-579 (uppercase/lowercase/capitalize give text-transform, smallCaps/allSmallCaps give font-variant-caps)."
+  },
+  {
+    "id": "ty-h-cap-capitalize",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.capitalization": "capitalize"
+    },
+    "note": "Heading capitalization capitalize. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-579 (uppercase/lowercase/capitalize give text-transform, smallCaps/allSmallCaps give font-variant-caps)."
+  },
+  {
+    "id": "ty-h-cap-smallCaps",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.capitalization": "smallCaps"
+    },
+    "note": "Heading capitalization smallCaps. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-579 (uppercase/lowercase/capitalize give text-transform, smallCaps/allSmallCaps give font-variant-caps)."
+  },
+  {
+    "id": "ty-h-cap-allSmallCaps",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.capitalization": "allSmallCaps"
+    },
+    "note": "Heading capitalization allSmallCaps. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-579 (uppercase/lowercase/capitalize give text-transform, smallCaps/allSmallCaps give font-variant-caps)."
+  },
+  {
+    "id": "ty-h-spacing-minus1",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.letterSpacing": "-1px"
+    },
+    "note": "Heading letter spacing -1px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691."
+  },
+  {
+    "id": "ty-h-spacing-2px",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.letterSpacing": "2px"
+    },
+    "note": "Heading letter spacing 2px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691."
+  },
+  {
+    "id": "ty-h-spacing-em",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.letterSpacing": "0.1em"
+    },
+    "note": "Heading letter spacing 0.1em. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691."
+  },
+  {
+    "id": "ty-h-lineheight-1em",
+    "block": "heading",
+    "expect": "PASS(css-only)",
+    "set": {
+      "title.decoration.font.font.desktop.value.lineHeight": "1em"
+    },
+    "note": "Heading line height 1em, the default of a heading: only the stylesheet changes (css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:693-695."
+  },
+  {
+    "id": "ty-h-lineheight-1-6em",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.lineHeight": "1.6em"
+    },
+    "note": "Heading line height 1.6em. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:693-695."
+  },
+  {
+    "id": "ty-h-family-playfair-display",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.family": "Playfair Display"
+    },
+    "note": "Heading font family Playfair Display (a family listed in Divi/core/json-data/google-fonts.json of the 5.15.1 zip). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333 (family becomes font-family with a fallback stack)."
+  },
+  {
+    "id": "ty-h-family-inter",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.family": "Inter"
+    },
+    "note": "Heading font family Inter (a family listed in Divi/core/json-data/google-fonts.json of the 5.15.1 zip). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333 (family becomes font-family with a fallback stack)."
+  },
+  {
+    "id": "ty-h-family-source-sans-3",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.family": "Source Sans 3"
+    },
+    "note": "Heading font family Source Sans 3 (a family listed in Divi/core/json-data/google-fonts.json of the 5.15.1 zip). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333 (family becomes font-family with a fallback stack)."
+  },
+  {
+    "id": "ty-h-family-barlow-condensed",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.family": "Barlow Condensed"
+    },
+    "note": "Heading font family Barlow Condensed (a family listed in Divi/core/json-data/google-fonts.json of the 5.15.1 zip). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333 (family becomes font-family with a fallback stack)."
+  },
+  {
+    "id": "ty-h-textwrap-balance",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.textWrap": "balance"
+    },
+    "note": "Heading text-wrap balance. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:606-608."
+  },
+  {
+    "id": "ty-h-textwrap-pretty",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.textWrap": "pretty"
+    },
+    "note": "Heading text-wrap pretty. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:606-608."
+  },
+  {
+    "id": "ty-h-hyphens-on",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.hyphens": "on"
+    },
+    "note": "Heading hyphens on (auto hyphenation). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:610-613."
+  },
+  {
+    "id": "ty-h-line-color",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "style": [
+                    "underline"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.desktop.value.lineColor": "#dc2626"
+    },
+    "note": "Underline colour (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:581-583 (text-decoration-color)."
+  },
+  {
+    "id": "ty-h-line-style-dashed",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "style": [
+                    "underline"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.desktop.value.lineStyle": "dashed"
+    },
+    "note": "Underline style dashed (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:585-596 (text-decoration-style, emitted only when `style` holds underline, overline or strikethrough)."
+  },
+  {
+    "id": "ty-h-line-style-dotted",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "style": [
+                    "underline"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.desktop.value.lineStyle": "dotted"
+    },
+    "note": "Underline style dotted (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:585-596 (text-decoration-style, emitted only when `style` holds underline, overline or strikethrough)."
+  },
+  {
+    "id": "ty-h-line-style-double",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "style": [
+                    "underline"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.desktop.value.lineStyle": "double"
+    },
+    "note": "Underline style double (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:585-596 (text-decoration-style, emitted only when `style` holds underline, overline or strikethrough)."
+  },
+  {
+    "id": "ty-h-line-style-wavy",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "style": [
+                    "underline"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.desktop.value.lineStyle": "wavy"
+    },
+    "note": "Underline style wavy (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:585-596 (text-decoration-style, emitted only when `style` holds underline, overline or strikethrough)."
+  },
+  {
+    "id": "ty-h-line-thickness",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "style": [
+                    "underline"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.desktop.value.lineThickness": "3px"
+    },
+    "note": "Underline thickness 3px (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:598-600."
+  },
+  {
+    "id": "ty-h-line-offset",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "style": [
+                    "underline"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.desktop.value.underlineOffset": "6px"
+    },
+    "note": "Underline offset 6px (with style underline in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:602-604."
+  },
+  {
+    "id": "ty-h-line-style-needs-line",
+    "block": "heading",
+    "expect": "DEAD",
+    "set": {
+      "title.decoration.font.font.desktop.value.lineStyle": "dashed"
+    },
+    "note": "PRECONDITION: lineStyle dashed with NO underline/overline/strikethrough in `style`. Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:587-596 (text-decoration-style is only emitted with a line in `style`)."
+  },
+  {
+    "id": "ty-h-spacing-phone-reset",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "letterSpacing": "4px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.phone.value.letterSpacing": "0px"
+    },
+    "note": "Heading letter spacing 4px on desktop (base), reset to 0px on the phone only. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691."
+  },
+  {
+    "id": "ty-h-spacing-tablet-reset",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "letterSpacing": "4px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.tablet.value.letterSpacing": "0px"
+    },
+    "note": "Heading letter spacing 4px on desktop (base), 0px on the tablet: the phone inherits the tablet value. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691."
+  },
+  {
+    "id": "ty-ts-preset1",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.textShadow.desktop.value.style": "preset1"
+    },
+    "note": "Heading text shadow preset1. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:13-44 (presets), :70-93 (value)."
+  },
+  {
+    "id": "ty-ts-preset2",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.textShadow.desktop.value.style": "preset2"
+    },
+    "note": "Heading text shadow preset2. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:13-44 (presets), :70-93 (value)."
+  },
+  {
+    "id": "ty-ts-preset3",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.textShadow.desktop.value.style": "preset3"
+    },
+    "note": "Heading text shadow preset3. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:13-44 (presets), :70-93 (value)."
+  },
+  {
+    "id": "ty-ts-preset4",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.textShadow.desktop.value.style": "preset4"
+    },
+    "note": "Heading text shadow preset4. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:13-44 (presets), :70-93 (value)."
+  },
+  {
+    "id": "ty-ts-preset5",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.textShadow.desktop.value.style": "preset5"
+    },
+    "note": "Heading text shadow preset5. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:13-44 (presets), :70-93 (value)."
+  },
+  {
+    "id": "ty-ts-none",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "textShadow": {
+              "desktop": {
+                "value": {
+                  "style": "preset2"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.textShadow.desktop.value.style": "none"
+    },
+    "note": "Heading text shadow preset1 in the base, style none set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:50-52 (style none returns no shadow)."
+  },
+  {
+    "id": "ty-ts-override-color",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "textShadow": {
+              "desktop": {
+                "value": {
+                  "style": "preset1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.textShadow.desktop.value.color": "#dc2626"
+    },
+    "note": "Heading text shadow preset1 in the base, color #dc2626 set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:74-93 (preset values overridden by the given keys)."
+  },
+  {
+    "id": "ty-ts-override-vertical",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "textShadow": {
+              "desktop": {
+                "value": {
+                  "style": "preset1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.textShadow.desktop.value.vertical": "0.2em"
+    },
+    "note": "Heading text shadow preset1 in the base, vertical 0.2em set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:74-93 (preset values overridden by the given keys)."
+  },
+  {
+    "id": "ty-ts-override-horizontal",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "textShadow": {
+              "desktop": {
+                "value": {
+                  "style": "preset1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.textShadow.desktop.value.horizontal": "0.1em"
+    },
+    "note": "Heading text shadow preset1 in the base, horizontal 0.1em set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:74-93 (preset values overridden by the given keys)."
+  },
+  {
+    "id": "ty-ts-override-blur",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "textShadow": {
+              "desktop": {
+                "value": {
+                  "style": "preset1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.textShadow.desktop.value.blur": "0.4em"
+    },
+    "note": "Heading text shadow preset1 in the base, blur 0.4em set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:74-93 (preset values overridden by the given keys)."
+  },
+  {
+    "id": "ty-ts-needs-style",
+    "block": "heading",
+    "expect": "DEAD",
+    "set": {
+      "title.decoration.font.textShadow.desktop.value.color": "#dc2626",
+      "title.decoration.font.textShadow.desktop.value.vertical": "0.1em",
+      "title.decoration.font.textShadow.desktop.value.blur": "0.1em"
+    },
+    "note": "PRECONDITION: colour, vertical and blur set with NO `style`. Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:70-72 (no style: no shadow at desktop)."
+  },
+  {
+    "id": "ty-ts-phone-none",
+    "block": "heading",
+    "expect": "DEAD",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "textShadow": {
+              "desktop": {
+                "value": {
+                  "style": "preset1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.textShadow.phone.value.style": "none"
+    },
+    "note": "Desktop preset1 in the base, phone style none. Expected DEAD: the desktop shadow still applies on the phone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:50-52 (none returns an empty string, so the phone gets no rule of its own and the desktop rule stays)."
+  },
+  {
+    "id": "ty-ts-phone-zero",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "textShadow": {
+              "desktop": {
+                "value": {
+                  "style": "preset1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.textShadow.phone.value.horizontal": "0em",
+      "title.decoration.font.textShadow.phone.value.vertical": "0em",
+      "title.decoration.font.textShadow.phone.value.blur": "0em"
+    },
+    "note": "Desktop preset1 in the base, phone horizontal/vertical/blur all 0em (a zero shadow). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:59-68 (a phone value with horizontal, vertical or blur is merged with the preset and printed)."
+  },
+  {
+    "id": "ty-ts-body-preset1",
+    "block": "text",
+    "expect": "PASS",
+    "set": {
+      "content.decoration.bodyFont.body.textShadow.desktop.value.style": "preset1"
+    },
+    "note": "Body text shadow preset1 in a text module. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextShadow/TextShadow.php:70-93."
+  },
+  {
+    "id": "ty-te-stroke",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.textEffects.desktop.value.strokeWidth": "2px",
+      "title.decoration.font.textEffects.desktop.value.strokeColor": "#dc2626"
+    },
+    "note": "Heading text outline: strokeWidth and strokeColor set together (a declared pair). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:270-277 (-webkit-text-stroke)."
+  },
+  {
+    "id": "ty-te-stroke-position",
+    "block": "heading",
+    "expect": "PASS",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "textEffects": {
+              "desktop": {
+                "value": {
+                  "strokeWidth": "2px",
+                  "strokeColor": "#dc2626"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.textEffects.desktop.value.strokePosition": "fill-stroke"
+    },
+    "note": "Stroke position fill-stroke with a 2px stroke in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:278-279 (paint-order: fill-stroke prints fill first, anything else prints the stroke first)."
+  },
+  {
+    "id": "ty-te-stroke-position-default",
+    "block": "heading",
+    "expect": "DEAD",
+    "base": {
+      "title": {
+        "decoration": {
+          "font": {
+            "textEffects": {
+              "desktop": {
+                "value": {
+                  "strokeWidth": "2px",
+                  "strokeColor": "#dc2626"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.textEffects.desktop.value.strokePosition": "stroke-fill"
+    },
+    "note": "Stroke position stroke-fill with a 2px stroke in the base: the same as the default for a wide stroke. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:278-286 (a stroke wider than 1px already prints the stroke first). Expected DEAD."
+  },
+  {
+    "id": "ty-te-fill-transparent",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.textEffects.desktop.value.fillType": "transparent"
+    },
+    "note": "fillType transparent ALONE: the text fill colour becomes transparent (the text disappears unless a stroke is set). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:289-292 (background-image none, text fill colour transparent)."
+  },
+  {
+    "id": "ty-te-outline",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.textEffects.desktop.value.fillType": "transparent",
+      "title.decoration.font.textEffects.desktop.value.strokeWidth": "2px",
+      "title.decoration.font.textEffects.desktop.value.strokeColor": "#1e3a8a"
+    },
+    "note": "Outline text: fillType transparent with strokeWidth and strokeColor (a declared set of three). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:270-292."
+  },
+  {
+    "id": "ty-te-gradient",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.textEffects.desktop.value.fillType": "gradient",
+      "title.decoration.font.textEffects.desktop.value.gradient.type": "linear",
+      "title.decoration.font.textEffects.desktop.value.gradient.direction": "90deg",
+      "title.decoration.font.textEffects.desktop.value.gradient.stops": [
+        {
+          "position": "0",
+          "color": "#1e3a8a"
+        },
+        {
+          "position": "100",
+          "color": "#dc2626"
+        }
+      ]
+    },
+    "note": "Gradient text: fillType gradient with type, direction and two stops (a declared set). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:292-345 (gradient fill clipped to the text)."
+  },
+  {
+    "id": "ty-te-gradient-needs-fill",
+    "block": "heading",
+    "expect": "DEAD",
+    "set": {
+      "title.decoration.font.textEffects.desktop.value.gradient.type": "linear",
+      "title.decoration.font.textEffects.desktop.value.gradient.direction": "90deg",
+      "title.decoration.font.textEffects.desktop.value.gradient.stops": [
+        {
+          "position": "0",
+          "color": "#1e3a8a"
+        },
+        {
+          "position": "100",
+          "color": "#dc2626"
+        }
+      ]
+    },
+    "note": "PRECONDITION: the same gradient WITHOUT fillType. Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:292 (the gradient is read only when fillType is gradient)."
+  },
+  {
+    "id": "ty-te-image-fill",
+    "block": "heading",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.textEffects.desktop.value.fillType": "image",
+      "title.decoration.font.textEffects.desktop.value.imageFill.url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg"
+    },
+    "note": "Image text: fillType image with imageFill.url (a declared pair; the url is a local pack image). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/TextEffects/TextEffects.php:346-376 (image clipped to the text)."
+  },
+  {
+    "id": "ty-th-h1-weight",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h1>probe h1</h1><h2>probe h2</h2><h3>probe h3</h3><h4>probe h4</h4><h5>probe h5</h5><h6>probe h6</h6><p>probe paragraph</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h1.font.desktop.value.weight": "300"
+    },
+    "note": "Text module: weight 300 on the h1 level only (the content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432; the heading level map is Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Font/FontPresetAttrsMap.php and the text module.json (headingFont)."
+  },
+  {
+    "id": "ty-th-h2-weight",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h1>probe h1</h1><h2>probe h2</h2><h3>probe h3</h3><h4>probe h4</h4><h5>probe h5</h5><h6>probe h6</h6><p>probe paragraph</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h2.font.desktop.value.weight": "300"
+    },
+    "note": "Text module: weight 300 on the h2 level only (the content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432; the heading level map is Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Font/FontPresetAttrsMap.php and the text module.json (headingFont)."
+  },
+  {
+    "id": "ty-th-h3-weight",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h1>probe h1</h1><h2>probe h2</h2><h3>probe h3</h3><h4>probe h4</h4><h5>probe h5</h5><h6>probe h6</h6><p>probe paragraph</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h3.font.desktop.value.weight": "300"
+    },
+    "note": "Text module: weight 300 on the h3 level only (the content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432; the heading level map is Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Font/FontPresetAttrsMap.php and the text module.json (headingFont)."
+  },
+  {
+    "id": "ty-th-h4-weight",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h1>probe h1</h1><h2>probe h2</h2><h3>probe h3</h3><h4>probe h4</h4><h5>probe h5</h5><h6>probe h6</h6><p>probe paragraph</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h4.font.desktop.value.weight": "300"
+    },
+    "note": "Text module: weight 300 on the h4 level only (the content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432; the heading level map is Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Font/FontPresetAttrsMap.php and the text module.json (headingFont)."
+  },
+  {
+    "id": "ty-th-h5-weight",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h1>probe h1</h1><h2>probe h2</h2><h3>probe h3</h3><h4>probe h4</h4><h5>probe h5</h5><h6>probe h6</h6><p>probe paragraph</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h5.font.desktop.value.weight": "300"
+    },
+    "note": "Text module: weight 300 on the h5 level only (the content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432; the heading level map is Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Font/FontPresetAttrsMap.php and the text module.json (headingFont)."
+  },
+  {
+    "id": "ty-th-h6-weight",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h1>probe h1</h1><h2>probe h2</h2><h3>probe h3</h3><h4>probe h4</h4><h5>probe h5</h5><h6>probe h6</h6><p>probe paragraph</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h6.font.desktop.value.weight": "300"
+    },
+    "note": "Text module: weight 300 on the h6 level only (the content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432; the heading level map is Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Font/FontPresetAttrsMap.php and the text module.json (headingFont)."
+  },
+  {
+    "id": "ty-th-h2-letterspacing",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h1>probe h1</h1><h2>probe h2</h2><h3>probe h3</h3><h4>probe h4</h4><h5>probe h5</h5><h6>probe h6</h6><p>probe paragraph</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h2.font.desktop.value.letterSpacing": "2px"
+    },
+    "note": "Text module: letterSpacing on the h2 level (content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691."
+  },
+  {
+    "id": "ty-th-h2-style",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h1>probe h1</h1><h2>probe h2</h2><h3>probe h3</h3><h4>probe h4</h4><h5>probe h5</h5><h6>probe h6</h6><p>probe paragraph</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h2.font.desktop.value.style": [
+        "italic"
+      ]
+    },
+    "note": "Text module: style on the h2 level (content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:511-512."
+  },
+  {
+    "id": "ty-th-h2-capitalization",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h1>probe h1</h1><h2>probe h2</h2><h3>probe h3</h3><h4>probe h4</h4><h5>probe h5</h5><h6>probe h6</h6><p>probe paragraph</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h2.font.desktop.value.capitalization": "uppercase"
+    },
+    "note": "Text module: capitalization on the h2 level (content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-545."
+  },
+  {
+    "id": "ty-th-h2-family",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h1>probe h1</h1><h2>probe h2</h2><h3>probe h3</h3><h4>probe h4</h4><h5>probe h5</h5><h6>probe h6</h6><p>probe paragraph</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h2.font.desktop.value.family": "Playfair Display"
+    },
+    "note": "Text module: family on the h2 level (content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333."
+  },
+  {
+    "id": "ty-th-h2-lineheight",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h1>probe h1</h1><h2>probe h2</h2><h3>probe h3</h3><h4>probe h4</h4><h5>probe h5</h5><h6>probe h6</h6><p>probe paragraph</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h2.font.desktop.value.lineHeight": "1.1em"
+    },
+    "note": "Text module: lineHeight on the h2 level (content holds h1 to h6 and a paragraph). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:693-695."
+  },
+  {
+    "id": "ty-th-h3-capitalization",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h1>probe h1</h1><h2>probe h2</h2><h3>probe h3</h3><h4>probe h4</h4><h5>probe h5</h5><h6>probe h6</h6><p>probe paragraph</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h3.font.desktop.value.capitalization": "uppercase"
+    },
+    "note": "Text module: capitalization uppercase on the h3 level. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-545."
+  },
+  {
+    "id": "ty-tb-weight-300",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>probe paragraph 1 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 2 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 3 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 4 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 5 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 6 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.weight": "300"
+    },
+    "note": "Text module body: weight \"300\". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432."
+  },
+  {
+    "id": "ty-tb-weight-600",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>probe paragraph 1 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 2 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 3 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 4 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 5 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 6 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.weight": "600"
+    },
+    "note": "Text module body: weight \"600\". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432."
+  },
+  {
+    "id": "ty-tb-lineheight",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>probe paragraph 1 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 2 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 3 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 4 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 5 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 6 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.lineHeight": "1.8em"
+    },
+    "note": "Text module body: lineHeight \"1.8em\". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:693-695."
+  },
+  {
+    "id": "ty-tb-spacing",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>probe paragraph 1 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 2 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 3 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 4 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 5 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 6 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.letterSpacing": "0.5px"
+    },
+    "note": "Text module body: letterSpacing \"0.5px\". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691."
+  },
+  {
+    "id": "ty-tb-italic",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>probe paragraph 1 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 2 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 3 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 4 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 5 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 6 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.style": [
+        "italic"
+      ]
+    },
+    "note": "Text module body: style [\"italic\"]. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:511-512."
+  },
+  {
+    "id": "ty-tb-uppercase",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>probe paragraph 1 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 2 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 3 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 4 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 5 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 6 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.capitalization": "uppercase"
+    },
+    "note": "Text module body: capitalization \"uppercase\". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-545."
+  },
+  {
+    "id": "ty-tb-family",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>probe paragraph 1 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 2 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 3 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 4 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 5 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 6 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.family": "Inter"
+    },
+    "note": "Text module body: family \"Inter\". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333."
+  },
+  {
+    "id": "ty-tb-textwrap",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>probe paragraph 1 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 2 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 3 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 4 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 5 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 6 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.textWrap": "pretty"
+    },
+    "note": "Text module body: textWrap \"pretty\". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:606-608."
+  },
+  {
+    "id": "ty-tb-hyphens",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>probe paragraph 1 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 2 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 3 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 4 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 5 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 6 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.hyphens": "on"
+    },
+    "note": "Text module body: hyphens \"on\". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:610-613."
+  },
+  {
+    "id": "ty-tb-columns",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>probe paragraph 1 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 2 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 3 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 4 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 5 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 6 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.columnCount": "2",
+      "content.decoration.bodyFont.body.font.desktop.value.columnGap": "48px"
+    },
+    "note": "Text module body in two columns with a 48px gap (a declared pair). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:621-641 (column-count above 1 and column-gap)."
+  },
+  {
+    "id": "ty-tb-columns-phone-one",
+    "block": "text",
+    "expect": "PASS",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>probe paragraph 1 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 2 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 3 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 4 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 5 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p><p>probe paragraph 6 with enough words to wrap across a couple of lines when the text sits in columns of a narrow width.</p>"
+          }
+        },
+        "decoration": {
+          "bodyFont": {
+            "body": {
+              "font": {
+                "desktop": {
+                  "value": {
+                    "columnCount": "2",
+                    "columnGap": "48px"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.phone.value.columnCount": "1"
+    },
+    "note": "Two columns on desktop (base), one column on the phone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:628-668 (a column count of 1 is printed when an inherited count is above 1)."
+  },
+  {
+    "id": "ty-i-filter-brightness",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "module.decoration.filters.desktop.value.brightness": "130%"
+    },
+    "note": "Image module filter brightness 130%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode)."
+  },
+  {
+    "id": "ty-i-filter-contrast",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "module.decoration.filters.desktop.value.contrast": "130%"
+    },
+    "note": "Image module filter contrast 130%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode)."
+  },
+  {
+    "id": "ty-i-filter-saturate-0",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "module.decoration.filters.desktop.value.saturate": "0%"
+    },
+    "note": "Image module filter saturate 0%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode)."
+  },
+  {
+    "id": "ty-i-filter-saturate-180",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "module.decoration.filters.desktop.value.saturate": "180%"
+    },
+    "note": "Image module filter saturate 180%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode)."
+  },
+  {
+    "id": "ty-i-filter-sepia",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "module.decoration.filters.desktop.value.sepia": "100%"
+    },
+    "note": "Image module filter sepia 100%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode)."
+  },
+  {
+    "id": "ty-i-filter-invert",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "module.decoration.filters.desktop.value.invert": "100%"
+    },
+    "note": "Image module filter invert 100%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode)."
+  },
+  {
+    "id": "ty-i-filter-hue",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "module.decoration.filters.desktop.value.hueRotate": "90deg"
+    },
+    "note": "Image module filter hueRotate 90deg. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode)."
+  },
+  {
+    "id": "ty-i-filter-blur",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "module.decoration.filters.desktop.value.blur": "4px"
+    },
+    "note": "Image module filter blur 4px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode)."
+  },
+  {
+    "id": "ty-i-filter-opacity",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "module.decoration.filters.desktop.value.opacity": "60%"
+    },
+    "note": "Image module filter opacity 60%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:117-135 (the eight filter functions), :150 (blendMode)."
+  },
+  {
+    "id": "ty-i-blend-multiply",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "module.decoration.filters.desktop.value.blendMode": "multiply"
+    },
+    "note": "Image module blend mode multiply. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Filters/Filters.php:149-151 (mix-blend-mode)."
+  },
+  {
+    "id": "ty-i-fit-cover",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "module": {
+        "advanced": {
+          "sizing": {
+            "desktop": {
+              "value": {
+                "aspectRatio": {
+                  "width": "1",
+                  "height": "1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.fit.desktop.value.objectFit": "cover"
+    },
+    "note": "Image object-fit cover in a 1:1 box (the aspect ratio is in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:44-45."
+  },
+  {
+    "id": "ty-i-fit-contain",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "module": {
+        "advanced": {
+          "sizing": {
+            "desktop": {
+              "value": {
+                "aspectRatio": {
+                  "width": "1",
+                  "height": "1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.fit.desktop.value.objectFit": "contain"
+    },
+    "note": "Image object-fit contain in a 1:1 box (the aspect ratio is in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:44-45."
+  },
+  {
+    "id": "ty-i-fit-none",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "module": {
+        "advanced": {
+          "sizing": {
+            "desktop": {
+              "value": {
+                "aspectRatio": {
+                  "width": "1",
+                  "height": "1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.fit.desktop.value.objectFit": "none"
+    },
+    "note": "Image object-fit none in a 1:1 box (the aspect ratio is in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:44-45."
+  },
+  {
+    "id": "ty-i-fit-scale-down",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "module": {
+        "advanced": {
+          "sizing": {
+            "desktop": {
+              "value": {
+                "aspectRatio": {
+                  "width": "1",
+                  "height": "1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.fit.desktop.value.objectFit": "scale-down"
+    },
+    "note": "Image object-fit scale-down in a 1:1 box (the aspect ratio is in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:44-45."
+  },
+  {
+    "id": "ty-i-fit-fill",
+    "block": "image",
+    "expect": "PASS(css-only)",
+    "base": {
+      "module": {
+        "advanced": {
+          "sizing": {
+            "desktop": {
+              "value": {
+                "aspectRatio": {
+                  "width": "1",
+                  "height": "1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.fit.desktop.value.objectFit": "fill"
+    },
+    "note": "Image object-fit fill (the browser default) in a 1:1 box. Expected: only the stylesheet changes (css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:44-45."
+  },
+  {
+    "id": "ty-i-position-left-top",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "module": {
+        "advanced": {
+          "sizing": {
+            "desktop": {
+              "value": {
+                "aspectRatio": {
+                  "width": "1",
+                  "height": "1"
+                }
+              }
+            }
+          }
+        }
+      },
+      "image": {
+        "decoration": {
+          "fit": {
+            "desktop": {
+              "value": {
+                "objectFit": "cover"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.fit.desktop.value.objectPosition": "left top"
+    },
+    "note": "Image object-position left top with cover in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:46-51, :60-73 (a string, or {x, y})."
+  },
+  {
+    "id": "ty-i-position-right-bottom",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "module": {
+        "advanced": {
+          "sizing": {
+            "desktop": {
+              "value": {
+                "aspectRatio": {
+                  "width": "1",
+                  "height": "1"
+                }
+              }
+            }
+          }
+        }
+      },
+      "image": {
+        "decoration": {
+          "fit": {
+            "desktop": {
+              "value": {
+                "objectFit": "cover"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.fit.desktop.value.objectPosition": "right bottom"
+    },
+    "note": "Image object-position right bottom with cover in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ObjectFit/ObjectFit.php:46-51, :60-73 (a string, or {x, y})."
+  },
+  {
+    "id": "ty-i-radius-16",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.border.desktop.value.radius.topLeft": "16px",
+      "image.decoration.border.desktop.value.radius.topRight": "16px",
+      "image.decoration.border.desktop.value.radius.bottomRight": "16px",
+      "image.decoration.border.desktop.value.radius.bottomLeft": "16px"
+    },
+    "note": "Image border radius 16px on all four corners. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:92-102 (each corner of radius becomes border-<corner>-radius)."
+  },
+  {
+    "id": "ty-i-radius-pill",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "module": {
+        "advanced": {
+          "sizing": {
+            "desktop": {
+              "value": {
+                "aspectRatio": {
+                  "width": "1",
+                  "height": "1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.border.desktop.value.radius.topLeft": "50%",
+      "image.decoration.border.desktop.value.radius.topRight": "50%",
+      "image.decoration.border.desktop.value.radius.bottomRight": "50%",
+      "image.decoration.border.desktop.value.radius.bottomLeft": "50%"
+    },
+    "note": "Image border radius 50% on all four corners (a circle on a square image). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:92-102."
+  },
+  {
+    "id": "ty-i-radius-one-corner",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.border.desktop.value.radius.topLeft": "32px"
+    },
+    "note": "Image border radius on the top left corner only. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:92-102 (only the corners that are set are printed)."
+  },
+  {
+    "id": "ty-i-radius-sync-only",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.border.desktop.value.radius.sync": "on",
+      "image.decoration.border.desktop.value.radius.topLeft": "24px"
+    },
+    "note": "sync on with a single corner set: only that corner is printed (the other three stay square). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:92-102 (`sync` is not read by the style code)."
+  },
+  {
+    "id": "ty-i-border-solid",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.border.desktop.value.styles.all.width": "4px",
+      "image.decoration.border.desktop.value.styles.all.color": "#1e3a8a",
+      "image.decoration.border.desktop.value.styles.all.style": "solid"
+    },
+    "note": "Image border on all sides: width, colour and style (a declared set of three). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:110-165 (all side: border-width, -color, -style)."
+  },
+  {
+    "id": "ty-i-border-width-only",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.border.desktop.value.styles.all.width": "4px"
+    },
+    "note": "Image border width alone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:140-165 (a width with no colour or style falls back to #333 and solid)."
+  },
+  {
+    "id": "ty-i-border-dashed",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "image": {
+        "decoration": {
+          "border": {
+            "desktop": {
+              "value": {
+                "styles": {
+                  "all": {
+                    "width": "4px",
+                    "color": "#1e3a8a"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.border.desktop.value.styles.all.style": "dashed"
+    },
+    "note": "Image border style dashed with width and colour in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:150-165."
+  },
+  {
+    "id": "ty-i-border-dotted",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "image": {
+        "decoration": {
+          "border": {
+            "desktop": {
+              "value": {
+                "styles": {
+                  "all": {
+                    "width": "4px",
+                    "color": "#1e3a8a"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.border.desktop.value.styles.all.style": "dotted"
+    },
+    "note": "Image border style dotted with width and colour in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:150-165."
+  },
+  {
+    "id": "ty-i-border-double",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "image": {
+        "decoration": {
+          "border": {
+            "desktop": {
+              "value": {
+                "styles": {
+                  "all": {
+                    "width": "4px",
+                    "color": "#1e3a8a"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.border.desktop.value.styles.all.style": "double"
+    },
+    "note": "Image border style double with width and colour in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:150-165."
+  },
+  {
+    "id": "ty-i-border-bottom",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.border.desktop.value.styles.bottom.width": "4px",
+      "image.decoration.border.desktop.value.styles.bottom.color": "#1e3a8a",
+      "image.decoration.border.desktop.value.styles.bottom.style": "solid"
+    },
+    "note": "Image border on the bottom side only: width, colour and style (a declared set of three). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:110-165 (one side: border-bottom-*)."
+  },
+  {
+    "id": "ty-i-shadow-preset1",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.boxShadow.desktop.value.style": "preset1"
+    },
+    "note": "Image box shadow preset1. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value)."
+  },
+  {
+    "id": "ty-i-shadow-preset2",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.boxShadow.desktop.value.style": "preset2"
+    },
+    "note": "Image box shadow preset2. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value)."
+  },
+  {
+    "id": "ty-i-shadow-preset3",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.boxShadow.desktop.value.style": "preset3"
+    },
+    "note": "Image box shadow preset3. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value)."
+  },
+  {
+    "id": "ty-i-shadow-preset4",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.boxShadow.desktop.value.style": "preset4"
+    },
+    "note": "Image box shadow preset4. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value)."
+  },
+  {
+    "id": "ty-i-shadow-preset5",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.boxShadow.desktop.value.style": "preset5"
+    },
+    "note": "Image box shadow preset5. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value)."
+  },
+  {
+    "id": "ty-i-shadow-preset6",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.boxShadow.desktop.value.style": "preset6"
+    },
+    "note": "Image box shadow preset6. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value)."
+  },
+  {
+    "id": "ty-i-shadow-preset7",
+    "block": "image",
+    "expect": "PASS",
+    "set": {
+      "image.decoration.boxShadow.desktop.value.style": "preset7"
+    },
+    "note": "Image box shadow preset7. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-98 (presets), :131-146 (value)."
+  },
+  {
+    "id": "ty-i-shadow-color",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "image": {
+        "decoration": {
+          "boxShadow": {
+            "desktop": {
+              "value": {
+                "style": "preset1"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.boxShadow.desktop.value.color": "rgba(30,58,138,0.35)"
+    },
+    "note": "Image box shadow preset1 in the base, color rgba(30,58,138,0.35) set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:131-146 (preset values overridden by the given keys)."
+  },
+  {
+    "id": "ty-i-shadow-blur",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "image": {
+        "decoration": {
+          "boxShadow": {
+            "desktop": {
+              "value": {
+                "style": "preset1"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.boxShadow.desktop.value.blur": "40px"
+    },
+    "note": "Image box shadow preset1 in the base, blur 40px set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:131-146 (preset values overridden by the given keys)."
+  },
+  {
+    "id": "ty-i-shadow-vertical",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "image": {
+        "decoration": {
+          "boxShadow": {
+            "desktop": {
+              "value": {
+                "style": "preset1"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.boxShadow.desktop.value.vertical": "24px"
+    },
+    "note": "Image box shadow preset1 in the base, vertical 24px set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:131-146 (preset values overridden by the given keys)."
+  },
+  {
+    "id": "ty-i-shadow-spread",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "image": {
+        "decoration": {
+          "boxShadow": {
+            "desktop": {
+              "value": {
+                "style": "preset1"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "image.decoration.boxShadow.desktop.value.spread": "8px"
+    },
+    "note": "Image box shadow preset1 in the base, spread 8px set. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:131-146 (preset values overridden by the given keys)."
+  },
+  {
+    "id": "ty-i-shadow-needs-style",
+    "block": "image",
+    "expect": "DEAD",
+    "set": {
+      "image.decoration.boxShadow.desktop.value.horizontal": "10px",
+      "image.decoration.boxShadow.desktop.value.vertical": "10px",
+      "image.decoration.boxShadow.desktop.value.blur": "20px",
+      "image.decoration.boxShadow.desktop.value.color": "rgba(0,0,0,0.4)"
+    },
+    "note": "PRECONDITION: horizontal, vertical, blur and colour set with NO `style`. Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:113-121 (no `style` key: no shadow)."
+  },
+  {
+    "id": "ty-i-overlay-on",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "image": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+              "alt": "probe",
+              "linkUrl": "#"
+            }
+          }
+        }
+      }
+    },
+    "state": "hover",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "image.advanced.overlay.desktop.value.use": "on"
+    },
+    "note": "Image hover overlay on, with a link (linkUrl #) in the base; measured with the pointer on the image. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Image/ImageModule.php:97-106 (the overlay needs a link or the lightbox)."
+  },
+  {
+    "id": "ty-i-overlay-needs-link",
+    "block": "image",
+    "expect": "DEAD",
+    "state": "hover",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "image.advanced.overlay.desktop.value.use": "on"
+    },
+    "note": "PRECONDITION: overlay on with NO link. Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Image/ImageModule.php:99 (is_overlay is false without a link or the lightbox)."
+  },
+  {
+    "id": "ty-i-overlay-color",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "image": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+              "alt": "probe",
+              "linkUrl": "#"
+            }
+          }
+        },
+        "advanced": {
+          "overlay": {
+            "desktop": {
+              "value": {
+                "use": "on"
+              }
+            }
+          }
+        }
+      }
+    },
+    "state": "hover",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "image.advanced.overlay.desktop.value.backgroundColor": "rgba(30,58,138,0.6)"
+    },
+    "note": "Image overlay background colour, overlay on and a link in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Image/ImageModule.php:399-412 (overlay_background_style_declaration)."
+  },
+  {
+    "id": "ty-i-overlay-icon-color",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "image": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+              "alt": "probe",
+              "linkUrl": "#"
+            }
+          }
+        },
+        "advanced": {
+          "overlay": {
+            "desktop": {
+              "value": {
+                "use": "on"
+              }
+            }
+          }
+        }
+      }
+    },
+    "state": "hover",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "image.advanced.overlayIcon.desktop.value.iconColor": "#ffffff"
+    },
+    "note": "Image overlay icon colour, overlay on and a link in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Image/ImageModule.php:447-461 (overlay_icon_style_declaration)."
+  },
+  {
+    "id": "ty-i-overlay-hover-icon",
+    "block": "image",
+    "expect": "PASS",
+    "base": {
+      "image": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+              "alt": "probe",
+              "linkUrl": "#"
+            }
+          }
+        },
+        "advanced": {
+          "overlay": {
+            "desktop": {
+              "value": {
+                "use": "on"
+              }
+            }
+          }
+        }
+      }
+    },
+    "state": "hover",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "image.advanced.overlayIcon.desktop.value.hoverIcon.unicode": "&#xf002;",
+      "image.advanced.overlayIcon.desktop.value.hoverIcon.type": "fa",
+      "image.advanced.overlayIcon.desktop.value.hoverIcon.weight": "900"
+    },
+    "note": "Image overlay icon glyph (a Font Awesome code), overlay on and a link in the base: unicode, type and weight set together. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Image/ImageModule.php:447-475 (the hover icon becomes the overlay :before content)."
+  },
+  {
+    "id": "ty-b-icon-on",
+    "block": "button",
+    "expect": "PASS",
+    "pseudo": [
+      "::before",
+      "::after"
+    ],
+    "set": {
+      "button.decoration.button.desktop.value.icon.settings.unicode": "&#xf054;",
+      "button.decoration.button.desktop.value.icon.settings.type": "fa",
+      "button.decoration.button.desktop.value.icon.settings.weight": "900"
+    },
+    "note": "Button icon glyph: a Font Awesome code with its type and weight (a declared set of three; the icon itself is on by default). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:167-192 (font family, weight and content of the icon)."
+  },
+  {
+    "id": "ty-b-icon-placement-left",
+    "block": "button",
+    "expect": "PASS",
+    "base": {
+      "button": {
+        "decoration": {
+          "button": {
+            "desktop": {
+              "value": {
+                "enable": "on",
+                "icon": {
+                  "settings": {
+                    "unicode": "&#xf054;",
+                    "type": "fa",
+                    "weight": "900"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "pseudo": [
+      "::before",
+      "::after"
+    ],
+    "set": {
+      "button.decoration.button.desktop.value.icon.placement": "left"
+    },
+    "note": "Button icon placement left, glyph in the base (the icon is on by default). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:200-203 (left moves the icon before the label), :260-262, :310-312."
+  },
+  {
+    "id": "ty-b-icon-always",
+    "block": "button",
+    "expect": "PASS",
+    "base": {
+      "button": {
+        "decoration": {
+          "button": {
+            "desktop": {
+              "value": {
+                "enable": "on",
+                "icon": {
+                  "settings": {
+                    "unicode": "&#xf054;",
+                    "type": "fa",
+                    "weight": "900"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "pseudo": [
+      "::before",
+      "::after"
+    ],
+    "set": {
+      "button.decoration.button.desktop.value.icon.onHover": "off"
+    },
+    "note": "Button icon always visible (onHover off), glyph in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:210-212 (opacity 1 when onHover is off)."
+  },
+  {
+    "id": "ty-b-icon-color",
+    "block": "button",
+    "expect": "PASS",
+    "base": {
+      "button": {
+        "decoration": {
+          "button": {
+            "desktop": {
+              "value": {
+                "enable": "on",
+                "icon": {
+                  "settings": {
+                    "unicode": "&#xf054;",
+                    "type": "fa",
+                    "weight": "900"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "pseudo": [
+      "::before",
+      "::after"
+    ],
+    "set": {
+      "button.decoration.button.desktop.value.icon.color": "#f59e0b"
+    },
+    "note": "Button icon colour, glyph in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:205-208 (colour of the icon)."
+  },
+  {
+    "id": "ty-b-icon-default-on",
+    "block": "button",
+    "expect": "PASS",
+    "pseudo": [
+      "::before",
+      "::after"
+    ],
+    "set": {
+      "button.decoration.button.desktop.value.icon.placement": "left",
+      "button.decoration.button.desktop.value.icon.color": "#f59e0b"
+    },
+    "note": "Icon placement and colour with NO enable switch set: they still apply, so the icon is on by default. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:108 (the enable switch). Measured: the default button already shows an icon."
+  },
+  {
+    "id": "ty-b-icon-enable-on",
+    "block": "button",
+    "expect": "DEAD",
+    "pseudo": [
+      "::before",
+      "::after"
+    ],
+    "set": {
+      "button.decoration.button.desktop.value.enable": "on"
+    },
+    "note": "Button icon enable on (beside icon, the shape the real exports use): the default, so nothing changes. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:108. Expected DEAD (the default)."
+  },
+  {
+    "id": "ty-b-icon-enable-nested",
+    "block": "button",
+    "expect": "DEAD",
+    "base": {
+      "button": {
+        "decoration": {
+          "button": {
+            "desktop": {
+              "value": {
+                "icon": {
+                  "settings": {
+                    "unicode": "&#xf054;",
+                    "type": "fa",
+                    "weight": "900"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "pseudo": [
+      "::before",
+      "::after"
+    ],
+    "set": {
+      "button.decoration.button.desktop.value.icon.enable": "on"
+    },
+    "note": "Button icon enable on written INSIDE the icon object: the default, so nothing changes. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:71-74 (the style code reads icon.enable). Expected DEAD (the default)."
+  },
+  {
+    "id": "ty-b-icon-off",
+    "block": "button",
+    "expect": "DEAD",
+    "pseudo": [
+      "::before",
+      "::after"
+    ],
+    "set": {
+      "button.decoration.button.desktop.value.enable": "off"
+    },
+    "note": "Button icon switched off with enable off beside icon (the shape the real exports use). Expected DEAD. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:349-358 (disable_style_declaration: display none when enable is off)."
+  },
+  {
+    "id": "ty-b-icon-off-nested",
+    "block": "button",
+    "expect": "PASS",
+    "pseudo": [
+      "::before",
+      "::after"
+    ],
+    "set": {
+      "button.decoration.button.desktop.value.icon.enable": "off"
+    },
+    "note": "Button icon switched off with enable written inside the icon object (the shape the style code reads). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ButtonIcon/ButtonIcon.php:349-358 reads icon.enable."
+  },
+  {
+    "id": "ty-b-font-weight",
+    "block": "button",
+    "expect": "PASS",
+    "set": {
+      "button.decoration.font.font.desktop.value.weight": "800"
+    },
+    "note": "Button label weight \"800\". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432."
+  },
+  {
+    "id": "ty-b-font-spacing",
+    "block": "button",
+    "expect": "PASS",
+    "set": {
+      "button.decoration.font.font.desktop.value.letterSpacing": "2px"
+    },
+    "note": "Button label letterSpacing \"2px\". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691."
+  },
+  {
+    "id": "ty-b-font-cap-uppercase",
+    "block": "button",
+    "expect": "PASS",
+    "set": {
+      "button.decoration.font.font.desktop.value.capitalization": "uppercase"
+    },
+    "note": "Button label capitalization \"uppercase\". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-545."
+  },
+  {
+    "id": "ty-b-font-style-uppercase",
+    "block": "button",
+    "expect": "DEAD",
+    "set": {
+      "button.decoration.font.font.desktop.value.style": [
+        "uppercase"
+      ]
+    },
+    "note": "Button label style [\"uppercase\"]. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:489-545."
+  },
+  {
+    "id": "ty-b-font-family",
+    "block": "button",
+    "expect": "PASS",
+    "set": {
+      "button.decoration.font.font.desktop.value.family": "Inter"
+    },
+    "note": "Button label family \"Inter\". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333."
+  },
+  {
+    "id": "ty-b-padding",
+    "block": "button",
+    "expect": "PASS",
+    "set": {
+      "module.decoration.spacing.desktop.value.padding.top": "16px",
+      "module.decoration.spacing.desktop.value.padding.bottom": "16px",
+      "module.decoration.spacing.desktop.value.padding.left": "40px",
+      "module.decoration.spacing.desktop.value.padding.right": "40px"
+    },
+    "note": "Button padding 16px 40px set on the module spacing: all four sides. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:762-800 (the module spacing padding is printed on the button element itself)."
+  },
+  {
+    "id": "ty-b-padding-element",
+    "block": "button",
+    "expect": "DEAD",
+    "set": {
+      "button.decoration.spacing.desktop.value.padding.top": "16px",
+      "button.decoration.spacing.desktop.value.padding.bottom": "16px",
+      "button.decoration.spacing.desktop.value.padding.left": "40px",
+      "button.decoration.spacing.desktop.value.padding.right": "40px"
+    },
+    "note": "Button padding written on the button element (button.decoration.spacing) instead of the module. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:762-800 (padding comes from module.decoration.spacing). Expected DEAD."
+  },
+  {
+    "id": "ty-b-radius",
+    "block": "button",
+    "expect": "PASS",
+    "set": {
+      "button.decoration.border.desktop.value.radius.topLeft": "999px",
+      "button.decoration.border.desktop.value.radius.topRight": "999px",
+      "button.decoration.border.desktop.value.radius.bottomRight": "999px",
+      "button.decoration.border.desktop.value.radius.bottomLeft": "999px"
+    },
+    "note": "Button pill radius 999px on all four corners. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:92-102."
+  },
+  {
+    "id": "ty-b-border",
+    "block": "button",
+    "expect": "PASS",
+    "set": {
+      "button.decoration.border.desktop.value.styles.all.width": "2px",
+      "button.decoration.border.desktop.value.styles.all.color": "#1e3a8a",
+      "button.decoration.border.desktop.value.styles.all.style": "solid"
+    },
+    "note": "Button border: width, colour and style set together. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:110-165."
+  },
+  {
+    "id": "ty-b-shadow",
+    "block": "button",
+    "expect": "DEAD",
+    "set": {
+      "button.decoration.boxShadow.desktop.value.style": "preset1"
+    },
+    "note": "Button box shadow written on the button element (button.decoration.boxShadow). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:131-146. Expected DEAD (the button module prints its shadow from the module)."
+  },
+  {
+    "id": "ty-b-shadow-module",
+    "block": "button",
+    "expect": "PASS",
+    "set": {
+      "module.decoration.boxShadow.desktop.value.style": "preset1"
+    },
+    "note": "Button box shadow preset1 written on the module. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:131-146; the box shadow of the button is a module option (button module.json lists boxShadow on module and button)."
+  },
+  {
+    "id": "ty-b-align-center",
+    "block": "button",
+    "expect": "PASS",
+    "set": {
+      "module.advanced.alignment.desktop.value": "center"
+    },
+    "note": "Button alignment centre (module.advanced.alignment). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:432-480 (button_alignment_*_declaration) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Button/Button.php:56-65."
+  },
+  {
+    "id": "ty-b-align-right",
+    "block": "button",
+    "expect": "PASS",
+    "set": {
+      "module.advanced.alignment.desktop.value": "right"
+    },
+    "note": "Button alignment right. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:432-480 and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Button/Button.php:56-65."
+  },
+  {
+    "id": "ty-bl-icon-on",
+    "block": "blurb",
+    "expect": "PASS",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "imageIcon.innerContent.desktop.value.useIcon": "on",
+      "imageIcon.innerContent.desktop.value.icon.unicode": "&#xf054;",
+      "imageIcon.innerContent.desktop.value.icon.type": "fa",
+      "imageIcon.innerContent.desktop.value.icon.weight": "900"
+    },
+    "note": "Blurb shows an icon instead of an image: useIcon on with a Font Awesome glyph (a declared set of four). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:171 (useIcon on), :1519-1530 (the icon value)."
+  },
+  {
+    "id": "ty-bl-icon-color",
+    "block": "blurb",
+    "expect": "PASS",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "useIcon": "on",
+              "icon": {
+                "unicode": "&#xf054;",
+                "type": "fa",
+                "weight": "900"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.advanced.color.desktop.value": "#dc2626"
+    },
+    "note": "Blurb icon colour, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:1350-1362 (icon colour)."
+  },
+  {
+    "id": "ty-bl-icon-size",
+    "block": "blurb",
+    "expect": "PASS",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "useIcon": "on",
+              "icon": {
+                "unicode": "&#xf054;",
+                "type": "fa",
+                "weight": "900"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.decoration.sizing.desktop.value.iconFontSize": "64px"
+    },
+    "note": "Blurb icon size through imageIcon sizing iconFontSize, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:746-760 (icon_width_style_declaration reads iconFontSize), :1094-1105."
+  },
+  {
+    "id": "ty-bl-placement-left",
+    "block": "blurb",
+    "expect": "PASS",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "useIcon": "on",
+              "icon": {
+                "unicode": "&#xf054;",
+                "type": "fa",
+                "weight": "900"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.advanced.placement.desktop.value": "left"
+    },
+    "note": "Blurb icon placement left, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:98, :1007 (placement class et_pb_blurb_position_<value>; top is the default)."
+  },
+  {
+    "id": "ty-bl-placement-right",
+    "block": "blurb",
+    "expect": "PASS",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "useIcon": "on",
+              "icon": {
+                "unicode": "&#xf054;",
+                "type": "fa",
+                "weight": "900"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.advanced.placement.desktop.value": "right"
+    },
+    "note": "Blurb icon placement right, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:98, :1007 (placement class et_pb_blurb_position_<value>; top is the default)."
+  },
+  {
+    "id": "ty-bl-placement-top",
+    "block": "blurb",
+    "expect": "DEAD",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "useIcon": "on",
+              "icon": {
+                "unicode": "&#xf054;",
+                "type": "fa",
+                "weight": "900"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.advanced.placement.desktop.value": "top"
+    },
+    "note": "Blurb icon placement top, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:98, :1007 (placement class et_pb_blurb_position_<value>; top is the default)."
+  },
+  {
+    "id": "ty-bl-icon-background",
+    "block": "blurb",
+    "expect": "PASS",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "useIcon": "on",
+              "icon": {
+                "unicode": "&#xf054;",
+                "type": "fa",
+                "weight": "900"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.decoration.background.desktop.value.color": "#e0e7ff"
+    },
+    "note": "Blurb icon background colour, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php (imageIcon.decoration.background, listed in the blurb module.json)."
+  },
+  {
+    "id": "ty-bl-icon-padding",
+    "block": "blurb",
+    "expect": "PASS",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "useIcon": "on",
+              "icon": {
+                "unicode": "&#xf054;",
+                "type": "fa",
+                "weight": "900"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.decoration.spacing.desktop.value.padding.top": "16px",
+      "imageIcon.decoration.spacing.desktop.value.padding.right": "16px",
+      "imageIcon.decoration.spacing.desktop.value.padding.bottom": "16px",
+      "imageIcon.decoration.spacing.desktop.value.padding.left": "16px"
+    },
+    "note": "Blurb icon padding 16px on all four sides, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php (imageIcon.decoration.spacing, listed in the blurb module.json)."
+  },
+  {
+    "id": "ty-bl-icon-size-width",
+    "block": "blurb",
+    "expect": "DEAD",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "useIcon": "on",
+              "icon": {
+                "unicode": "&#xf054;",
+                "type": "fa",
+                "weight": "900"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.decoration.sizing.desktop.value.width": "96px"
+    },
+    "note": "Blurb icon size written as the sizing width, icon on in the base. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blurb/BlurbModule.php:746-760 (the icon size is read from iconFontSize, not width). Expected DEAD."
+  },
+  {
+    "id": "ty-bl-title-weight",
+    "block": "blurb",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.weight": "800"
+    },
+    "note": "Blurb title font weight 800. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432."
+  },
+  {
+    "id": "ty-bl-body-lineheight",
+    "block": "blurb",
+    "expect": "PASS",
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.lineHeight": "1.8em"
+    },
+    "note": "Blurb body line height 1.8em. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:693-695."
+  },
+  {
+    "id": "ty-ic-color",
+    "block": "icon",
+    "expect": "PASS",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "icon.advanced.color.desktop.value": "#dc2626"
+    },
+    "note": "Icon module colour. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Icon/IconModule.php (icon.advanced.color) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Icon/Icon.php:66-68."
+  },
+  {
+    "id": "ty-ic-size",
+    "block": "icon",
+    "expect": "PASS",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "icon.advanced.size.desktop.value": "64px"
+    },
+    "note": "Icon module size 64px. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Icon/IconModule.php (icon.advanced.size) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Icon/Icon.php:69-72."
+  },
+  {
+    "id": "ty-ic-align-left",
+    "block": "icon",
+    "expect": "PASS",
+    "set": {
+      "icon.advanced.align.desktop.value": "left"
+    },
+    "note": "Icon module alignment left. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Icon/IconModule.php:457-467 (icon_alignment_declaration)."
+  },
+  {
+    "id": "ty-ic-align-center",
+    "block": "icon",
+    "expect": "DEAD",
+    "set": {
+      "icon.advanced.align.desktop.value": "center"
+    },
+    "note": "Icon module alignment centre (the default). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Icon/IconModule.php:468-480 (centre prints only text-align; the module is centred by default). Expected DEAD or near-DEAD."
+  },
+  {
+    "id": "ty-ic-align-right",
+    "block": "icon",
+    "expect": "PASS",
+    "set": {
+      "icon.advanced.align.desktop.value": "right"
+    },
+    "note": "Icon module alignment right. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Icon/IconModule.php:481-488."
+  },
+  {
+    "id": "ty-nc-number-size",
+    "block": "number-counter",
+    "expect": "PASS",
+    "set": {
+      "number.decoration.font.font.desktop.value.size": "48px"
+    },
+    "note": "Number counter: number size 48px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:674-687 (the number element, number.decoration.font in the module.json)."
+  },
+  {
+    "id": "ty-nc-number-weight",
+    "block": "number-counter",
+    "expect": "PASS",
+    "set": {
+      "number.decoration.font.font.desktop.value.weight": "800"
+    },
+    "note": "Number counter: number weight 800. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432 (the number element, number.decoration.font in the module.json)."
+  },
+  {
+    "id": "ty-nc-number-color",
+    "block": "number-counter",
+    "expect": "PASS",
+    "set": {
+      "number.decoration.font.font.desktop.value.color": "#dc2626"
+    },
+    "note": "Number counter: number color #dc2626. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:670-672 (the number element, number.decoration.font in the module.json)."
+  },
+  {
+    "id": "ty-nc-number-family",
+    "block": "number-counter",
+    "expect": "PASS",
+    "set": {
+      "number.decoration.font.font.desktop.value.family": "Playfair Display"
+    },
+    "note": "Number counter: number family Playfair Display. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333 (the number element, number.decoration.font in the module.json)."
+  },
+  {
+    "id": "ty-nc-title-upper",
+    "block": "number-counter",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.capitalization": "uppercase"
+    },
+    "note": "Number counter: title capitalization uppercase. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-545 (the title element)."
+  },
+  {
+    "id": "ty-nc-title-spacing",
+    "block": "number-counter",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.letterSpacing": "2px"
+    },
+    "note": "Number counter: title letterSpacing 2px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691 (the title element)."
+  },
+  {
+    "id": "ty-nc-title-color",
+    "block": "number-counter",
+    "expect": "PASS",
+    "set": {
+      "title.decoration.font.font.desktop.value.color": "#64748b"
+    },
+    "note": "Number counter: title color #64748b. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:670-672 (the title element)."
+  },
+  {
+    "id": "ty-nc-percent-off",
+    "block": "number-counter",
+    "expect": "PASS",
+    "text": true,
+    "set": {
+      "number.advanced.enablePercentSign.desktop.value": "off"
+    },
+    "note": "Number counter percent sign off (the rendered text loses the % character). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/NumberCounter/NumberCounterModule.php:377 (the percent sign defaults to on), :367-385 (the sign is a printed character)."
+  },
+  {
+    "id": "ty-nc-percent-on",
+    "block": "number-counter",
+    "expect": "DEAD",
+    "text": true,
+    "set": {
+      "number.advanced.enablePercentSign.desktop.value": "on"
+    },
+    "note": "Number counter percent sign on (the default). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/NumberCounter/NumberCounterModule.php:377 (default on). Expected DEAD."
+  },
+  {
+    "id": "ty-nc-align-left",
+    "block": "number-counter",
+    "expect": "PASS",
+    "set": {
+      "module.advanced.text.text.desktop.value.orientation": "left"
+    },
+    "note": "Number counter text alignment left. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/NumberCounter/NumberCounterModule.php:71, :559 (module.advanced.text) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Text/Text.php:65-70."
+  },
+  {
+    "id": "ty-nc-align-center",
+    "block": "number-counter",
+    "expect": "DEAD",
+    "set": {
+      "module.advanced.text.text.desktop.value.orientation": "center"
+    },
+    "note": "Number counter text alignment centre. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/NumberCounter/NumberCounterModule.php:71, :559 and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Text/Text.php:65-70. Expected DEAD (centre is the default)."
+  },
+  {
+    "id": "ty-dv-color",
+    "block": "divider",
+    "expect": "PASS",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "divider.advanced.line.desktop.value.color": "#dc2626"
+    },
+    "note": "Divider line color #dc2626. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line)."
+  },
+  {
+    "id": "ty-dv-weight",
+    "block": "divider",
+    "expect": "PASS",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "divider.advanced.line.desktop.value.weight": "6px"
+    },
+    "note": "Divider line weight 6px. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line)."
+  },
+  {
+    "id": "ty-dv-style-dashed",
+    "block": "divider",
+    "expect": "PASS",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "divider.advanced.line.desktop.value.style": "dashed"
+    },
+    "note": "Divider line style dashed. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line)."
+  },
+  {
+    "id": "ty-dv-style-dotted",
+    "block": "divider",
+    "expect": "PASS",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "divider.advanced.line.desktop.value.style": "dotted"
+    },
+    "note": "Divider line style dotted. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line)."
+  },
+  {
+    "id": "ty-dv-style-double",
+    "block": "divider",
+    "expect": "PASS",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "divider.advanced.line.desktop.value.style": "double"
+    },
+    "note": "Divider line style double. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line)."
+  },
+  {
+    "id": "ty-dv-position-top",
+    "block": "divider",
+    "expect": "DEAD",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "divider.advanced.line.desktop.value.position": "top"
+    },
+    "note": "Divider line position top. Expected DEAD (the default). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line)."
+  },
+  {
+    "id": "ty-dv-position-center",
+    "block": "divider",
+    "expect": "PASS",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "divider.advanced.line.desktop.value.position": "center"
+    },
+    "note": "Divider line position center. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line)."
+  },
+  {
+    "id": "ty-dv-position-bottom",
+    "block": "divider",
+    "expect": "PASS",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "divider.advanced.line.desktop.value.position": "bottom"
+    },
+    "note": "Divider line position bottom. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83-96, :186-194, :299, :314 (divider.advanced.line)."
+  },
+  {
+    "id": "ty-dv-show-on",
+    "block": "divider",
+    "expect": "DEAD",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "divider.advanced.line.desktop.value.show": "on"
+    },
+    "note": "Divider line show on (the default). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Divider/DividerModule.php:83 (show defaults to on). Expected DEAD."
+  }
+]
