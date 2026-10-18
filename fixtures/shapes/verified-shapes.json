@@ -302,6 +302,11 @@
             "evidence": "docs/shape-evidence-5.15.1.md#rs-circle-bar-color"
         },
         {
+            "path": "closedTitle.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rt-toggle-closed-title-color"
+        },
+        {
             "path": "closedToggle.decoration.background.{bp}.value.color",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#rf-acc-closed-bg"
@@ -2425,6 +2430,16 @@
             "path": "openToggle.decoration.background.{bp}.value.color",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#rf-acc-open-bg"
+        },
+        {
+            "path": "openToggle.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rt-toggle-open-title-color"
+        },
+        {
+            "path": "openToggleIcon.decoration.icon.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rt-toggle-open-icon"
         },
         {
             "path": "pagination.advanced.enable.{bp}.value",

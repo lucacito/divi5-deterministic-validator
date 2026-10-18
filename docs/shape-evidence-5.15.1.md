@@ -16536,3 +16536,207 @@ Phone overflow at 400 px: no.
 Note: Title text colour on the circle counter (registered path, proven here on this module): Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/circle-counter/module.json attributes.title decoration.font, selector {{selector}}.et_pb_circle_counter h3 ... .et_pb_module_header (module.json line 228). Measured by computed colour.
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rt-toggle-open-bg
+
+Block: `toggle`. Set on top of the base block:
+
+- `openToggle.decoration.background.desktop.value.color` = `"#151c33"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 900 px | yes | 1 | yes | `0:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 400 px | yes | 1 | yes | `0:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Background of an open stand-alone toggle (module.json attributes.openToggle, selector '{{selector}}.et_pb_toggle.et_pb_toggle_open', settings.decoration.background subName color: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json:390; styled by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:427-445). Same path as the accordion item's (rf-acc-open-bg); measured here on divi/toggle. The base opens the toggle (module.advanced.open on, the content setting of Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json module.settings.advanced.open).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rt-toggle-closed-bg
+
+Block: `toggle`. Set on top of the base block:
+
+- `closedToggle.decoration.background.desktop.value.color` = `"#151c33"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)` |
+| 900 px | yes | 1 | yes | `0:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)` |
+| 400 px | yes | 1 | yes | `0:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Background of a closed stand-alone toggle (module.json attributes.closedToggle, selector '{{selector}}.et_pb_toggle.et_pb_toggle_close', subName color: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json:447; styled by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:447-452). Divi's default closed toggle is light grey; a toggle is closed unless module.advanced.open is on.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rt-toggle-title-color-open
+
+Block: `toggle`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 900 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 400 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Title colour of an OPEN toggle through the generic title font (module.json attributes.title, selector '{{selector}}.et_pb_toggle > h5, ...'; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:453-458 'Toggle Open Title'). The title font group hides its colour field in the builder (fields.color.render false), so this measures whether the attribute still prints.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rt-toggle-title-color-closed
+
+Block: `toggle`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 900 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 400 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Title colour of a CLOSED toggle through the generic title font (same selector as rt-toggle-title-color-open, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:453-458). Expect PASS if the generic title colour also reaches a closed toggle's title; a DEAD result means a closed title needs closedTitle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rt-toggle-open-title-color
+
+Block: `toggle`. Set on top of the base block:
+
+- `openToggle.decoration.font.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 900 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 400 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Open Title Text Color (module.json attributes.openToggle settings.decoration.font attrName openToggle.decoration.font.font subName color, styleProps.font selector '{{selector}}.et_pb_toggle.et_pb_toggle_open > h5.et_pb_toggle_title, ...': Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json:390-446; printed with !important by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:427-445).
+
+Registered paths added:
+
+- `openToggle.decoration.font.font.{bp}.value.color`
+
+## rt-toggle-closed-title-color
+
+Block: `toggle`. Set on top of the base block:
+
+- `closedTitle.decoration.font.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 900 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 400 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Closed Title Text colour (module.json attributes.closedTitle, selector '{{selector}}.et_pb_toggle.et_pb_toggle_close > h5, ...', settings.decoration.font group-item subName font: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json:307; printed with !important by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:459-479).
+
+Registered paths added:
+
+- `closedTitle.decoration.font.font.{bp}.value.color`
+
+## rt-toggle-closed-icon
+
+Block: `toggle`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `closedToggleIcon.decoration.icon.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 18 | yes | `1:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+| 900 px | yes | 18 | yes | `1:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+| 400 px | yes | 18 | yes | `1:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `::before:-webkit-text-fill-color`, `::before:-webkit-text-stroke-color`, `::before:border-block-end-color`, `::before:border-block-start-color`, `::before:border-bottom-color`, `::before:border-inline-end-color`, `::before:border-inline-start-color`, `::before:border-left-color`, `::before:border-right-color`, `::before:border-top-color`, `::before:caret-color`, `::before:color`, `::before:column-rule-color`, `::before:outline-color`, `::before:row-rule-color`, `::before:text-decoration-color`, `::before:text-emphasis-color`, `::before:text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Colour of the closed toggle's icon (module.json attributes.closedToggleIcon, selector '{{selector}}.et_pb_toggle_close > .et_pb_toggle_title:before': Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json:192; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:403-425 icon_style_declaration). Drawn on the title's ::before.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rt-toggle-open-icon
+
+Block: `toggle`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `openToggleIcon.decoration.icon.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 18 | yes | `1:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+| 900 px | yes | 18 | yes | `1:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+| 400 px | yes | 18 | yes | `1:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `::before:-webkit-text-fill-color`, `::before:-webkit-text-stroke-color`, `::before:border-block-end-color`, `::before:border-block-start-color`, `::before:border-bottom-color`, `::before:border-inline-end-color`, `::before:border-inline-start-color`, `::before:border-left-color`, `::before:border-right-color`, `::before:border-top-color`, `::before:caret-color`, `::before:color`, `::before:column-rule-color`, `::before:outline-color`, `::before:row-rule-color`, `::before:text-decoration-color`, `::before:text-emphasis-color`, `::before:text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Colour of the open toggle's icon (module.json attributes.openToggleIcon, selector '{{selector}}.et_pb_toggle_open > .et_pb_toggle_title:before': Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json:124; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:379-401 icon_style_declaration). Drawn on the title's ::before.
+
+Registered paths added:
+
+- `openToggleIcon.decoration.icon.{bp}.value.color`
+
+## rt-toggle-content-color
+
+Block: `toggle`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 34 | yes | `2:div:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 900 px | yes | 34 | yes | `2:div:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 400 px | yes | 34 | yes | `2:div:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Body text colour inside an open toggle (module.json attributes.content, selector '{{selector}} .et_pb_toggle_content', decoration.bodyFont; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:480-490). Path registered from other modules; measured here on divi/toggle.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).

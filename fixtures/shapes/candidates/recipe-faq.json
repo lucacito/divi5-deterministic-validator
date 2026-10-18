@@ -1,0 +1,144 @@
+[
+  {
+    "id": "rt-toggle-open-bg",
+    "block": "toggle",
+    "base": {
+      "module": {
+        "advanced": {
+          "open": {
+            "desktop": {
+              "value": "on"
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "openToggle.decoration.background.desktop.value.color": "#151c33"
+    },
+    "expect": "PASS",
+    "note": "Background of an open stand-alone toggle (module.json attributes.openToggle, selector '{{selector}}.et_pb_toggle.et_pb_toggle_open', settings.decoration.background subName color: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json:390; styled by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:427-445). Same path as the accordion item's (rf-acc-open-bg); measured here on divi/toggle. The base opens the toggle (module.advanced.open on, the content setting of Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json module.settings.advanced.open)."
+  },
+  {
+    "id": "rt-toggle-closed-bg",
+    "block": "toggle",
+    "set": {
+      "closedToggle.decoration.background.desktop.value.color": "#151c33"
+    },
+    "expect": "PASS",
+    "note": "Background of a closed stand-alone toggle (module.json attributes.closedToggle, selector '{{selector}}.et_pb_toggle.et_pb_toggle_close', subName color: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json:447; styled by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:447-452). Divi's default closed toggle is light grey; a toggle is closed unless module.advanced.open is on."
+  },
+  {
+    "id": "rt-toggle-title-color-open",
+    "block": "toggle",
+    "base": {
+      "module": {
+        "advanced": {
+          "open": {
+            "desktop": {
+              "value": "on"
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.desktop.value.color": "#c0392b"
+    },
+    "expect": "PASS",
+    "note": "Title colour of an OPEN toggle through the generic title font (module.json attributes.title, selector '{{selector}}.et_pb_toggle > h5, ...'; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:453-458 'Toggle Open Title'). The title font group hides its colour field in the builder (fields.color.render false), so this measures whether the attribute still prints."
+  },
+  {
+    "id": "rt-toggle-title-color-closed",
+    "block": "toggle",
+    "set": {
+      "title.decoration.font.font.desktop.value.color": "#c0392b"
+    },
+    "expect": "PASS",
+    "note": "Title colour of a CLOSED toggle through the generic title font (same selector as rt-toggle-title-color-open, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:453-458). Expect PASS if the generic title colour also reaches a closed toggle's title; a DEAD result means a closed title needs closedTitle."
+  },
+  {
+    "id": "rt-toggle-open-title-color",
+    "block": "toggle",
+    "base": {
+      "module": {
+        "advanced": {
+          "open": {
+            "desktop": {
+              "value": "on"
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "openToggle.decoration.font.font.desktop.value.color": "#c0392b"
+    },
+    "expect": "PASS",
+    "note": "Open Title Text Color (module.json attributes.openToggle settings.decoration.font attrName openToggle.decoration.font.font subName color, styleProps.font selector '{{selector}}.et_pb_toggle.et_pb_toggle_open > h5.et_pb_toggle_title, ...': Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json:390-446; printed with !important by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:427-445)."
+  },
+  {
+    "id": "rt-toggle-closed-title-color",
+    "block": "toggle",
+    "set": {
+      "closedTitle.decoration.font.font.desktop.value.color": "#c0392b"
+    },
+    "expect": "PASS",
+    "note": "Closed Title Text colour (module.json attributes.closedTitle, selector '{{selector}}.et_pb_toggle.et_pb_toggle_close > h5, ...', settings.decoration.font group-item subName font: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json:307; printed with !important by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:459-479)."
+  },
+  {
+    "id": "rt-toggle-closed-icon",
+    "block": "toggle",
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "closedToggleIcon.decoration.icon.desktop.value.color": "#c0392b"
+    },
+    "expect": "PASS",
+    "note": "Colour of the closed toggle's icon (module.json attributes.closedToggleIcon, selector '{{selector}}.et_pb_toggle_close > .et_pb_toggle_title:before': Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json:192; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:403-425 icon_style_declaration). Drawn on the title's ::before."
+  },
+  {
+    "id": "rt-toggle-open-icon",
+    "block": "toggle",
+    "base": {
+      "module": {
+        "advanced": {
+          "open": {
+            "desktop": {
+              "value": "on"
+            }
+          }
+        }
+      }
+    },
+    "pseudo": [
+      "::before"
+    ],
+    "set": {
+      "openToggleIcon.decoration.icon.desktop.value.color": "#c0392b"
+    },
+    "expect": "PASS",
+    "note": "Colour of the open toggle's icon (module.json attributes.openToggleIcon, selector '{{selector}}.et_pb_toggle_open > .et_pb_toggle_title:before': Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json:124; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:379-401 icon_style_declaration). Drawn on the title's ::before."
+  },
+  {
+    "id": "rt-toggle-content-color",
+    "block": "toggle",
+    "base": {
+      "module": {
+        "advanced": {
+          "open": {
+            "desktop": {
+              "value": "on"
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.color": "#c0392b"
+    },
+    "expect": "PASS",
+    "note": "Body text colour inside an open toggle (module.json attributes.content, selector '{{selector}} .et_pb_toggle_content', decoration.bodyFont; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:480-490). Path registered from other modules; measured here on divi/toggle."
+  }
+]
