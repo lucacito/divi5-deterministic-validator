@@ -38,8 +38,17 @@ final class RecipeTokens
     /** Every colour or font token, whatever its role. */
     private const ANY = '/\{\{aied:(?:color|font):[^{}]*\}\}/';
 
-    /** Every {{aied:...}} token of any kind (color, font, image or something else). */
-    private const ANY_AIED = '/\{\{aied:[^{}]*\}\}/';
+    /** Anything that looks like a token, however malformed (closed braces, no nested braces). Only used to DETECT, never echoed. */
+    private const LOOSE_AIED = '/\{\{aied:[^{}]*\}\}/';
+
+    /** A well-formed token of any kind: lower-case kind, then lower-case role or name (color, font, image, or one this code does not know). */
+    private const STRICT_AIED = '/\{\{aied:[a-z]+:[a-z0-9-]+\}\}/';
+
+    /** A listed token longer than this many characters is not echoed (it counts as malformed). */
+    public const MAX_TOKEN_LENGTH = 64;
+
+    /** Listed instead of any malformed token: a fixed text, never the content's own. */
+    public const MALFORMED_ENTRY = '{{aied:...}}';
 
     /** At most this many distinct tokens are listed in advise(). */
     public const MAX_LISTED = 20;
@@ -117,36 +126,67 @@ final class RecipeTokens
      */
     public static function found( string $text ): array
     {
-        preg_match_all( self::ANY, $text, $m );
-
-        return array_values( $m[0] );
+        return self::matches( self::ANY, $text );
     }
 
     /**
-     * Every {{aied:...}} token of any kind in $text (color, font, image, unknown), in order, repeats included.
+     * Every well-formed {{aied:kind:name}} token of any kind in $text (lower-case kind and name: color, font, image, unknown),
+     * in order, repeats included. Malformed ones are not returned (see advise()).
      *
      * @return list<string>
      */
     public static function foundAll( string $text ): array
     {
-        preg_match_all( self::ANY_AIED, $text, $m );
-
-        return array_values( $m[0] );
+        return self::matches( self::STRICT_AIED, $text );
     }
 
     /**
-     * The advisory for content that still carries a token: each distinct token once, in order of first use (at most
-     * MAX_LISTED), plus what to do. Null when there is none. Advisory only; it never changes a verdict or the content.
+     * The advisory for content that still carries a token: each distinct well-formed token once, in order of first use, at most
+     * MAX_LISTED, each at most MAX_TOKEN_LENGTH characters, plus what to do. Anything that merely LOOKS like a token but is not
+     * well-formed (spaces, newlines, upper case, over-long, unknown shape) still triggers the advisory, but only as the fixed
+     * entry MALFORMED_ENTRY, listed once after the valid ones: nothing the content wrote is echoed unless it matches the strict
+     * pattern, so the list is bounded (at most MAX_LISTED + 1 entries of MAX_TOKEN_LENGTH characters). Null when there is no
+     * token at all. An unterminated "{{aied:" is not a token. Advisory only; it never changes a verdict or the content.
      *
      * @return ?array{tokens: list<string>, message: string}
      */
     public static function advise( string $text ): ?array
     {
-        $tokens = array_values( array_unique( self::foundAll( $text ) ) );
-        if ( [] === $tokens ) {
+        $loose = self::matches( self::LOOSE_AIED, $text );
+        if ( [] === $loose ) {
             return null;
         }
+        $tokens    = [];
+        $malformed = false;
+        foreach ( $loose as $candidate ) {
+            $strict = preg_match( self::STRICT_AIED, $candidate );
+            if ( false === $strict ) {
+                return null; // the regex engine failed: say nothing rather than guess
+            }
+            if ( 1 === $strict && strlen( $candidate ) <= self::MAX_TOKEN_LENGTH ) {
+                $tokens[ $candidate ] = true;
+            } else {
+                $malformed = true;
+            }
+        }
+        $list = array_slice( array_keys( $tokens ), 0, self::MAX_LISTED );
+        if ( $malformed ) {
+            $list[] = self::MALFORMED_ENTRY;
+        }
 
-        return [ 'tokens' => array_slice( $tokens, 0, self::MAX_LISTED ), 'message' => self::UNRESOLVED_MESSAGE ];
+        return [ 'tokens' => $list, 'message' => self::UNRESOLVED_MESSAGE ];
+    }
+
+    /**
+     * @return list<string> every match of $pattern; empty when the regex engine fails (never a TypeError in a save)
+     */
+    private static function matches( string $pattern, string $text ): array
+    {
+        $m = [];
+        if ( false === preg_match_all( $pattern, $text, $m ) ) {
+            return [];
+        }
+
+        return array_values( $m[0] ?? [] );
     }
 }
