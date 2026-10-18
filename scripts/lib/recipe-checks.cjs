@@ -4,6 +4,20 @@
  *  - the render-failure baseline (parse + exact-cell matcher),
  *  - the in-page measurement (runs in the browser; it must stay self-contained: Playwright serialises it),
  *  - the PHP error patterns.
+ *
+ * THE COMPUTED CONTRAST CHECK (measureInPage): two tiers, FAIL under 3.0:1 and an advisory WARN from 3.0 up to 4.5:1 (small text only). It
+ * measures the text against a background it can KNOW: a solid colour (translucent layers stacked over it), or a scrim (a translucent colour or a
+ * same-colour gradient, the shape `overlaysImage` produces) over an unknown photo, evaluated as the worst of white and black beneath the scrim.
+ * What it can NOT see, and therefore does not protect (these holes stay):
+ *  - a bare photo band: text over an image with no scrim above it, or over a multi-colour gradient, is `unknown` (counted, never judged);
+ *  - pseudo-elements (::before/::after backgrounds, overlays drawn as pseudo-elements) and absolutely positioned overlay SIBLINGS that are not
+ *    ancestors of the text (a scrim drawn as a separate element on top of the photo is invisible to the walk);
+ *  - mix-blend-mode and background-blend-mode, text-shadow, -webkit-text-fill-color and background-clip:text (gradient or image text);
+ *  - form-field text and placeholders (only text NODES are read, not input values), hover and focus states;
+ *  - an ancestor's opacity is applied to the text but not to that ancestor's own background;
+ *  - text covered by another element that is not an ancestor (the text-overlap check only compares text with pictures).
+ * A rendered cell with text but nothing measurable and nothing accounted for as unknown (an unparsable colour format, a wrong root) FAILS (code low-contrast).
+ *
  * Tests: scripts/test-recipe-baseline-matcher.cjs (pure; run by tests/RecipeLibraryTest.php) and
  * scripts/test-recipe-measure.cjs (needs Playwright, not the site; run by `make verify-recipes`).
  */
@@ -74,7 +88,7 @@ function isKnownFail(known, recipe, language, width, code) {
  */
 function measureInPage(opts) {
   const root = document.querySelector('.et-l--post');
-  const out = { hasRoot: !!root, lowContrast: [], contrastChecked: 0, contrastSkipped: 0, contrastAll: [], overflow: document.documentElement.scrollWidth > window.innerWidth, scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth, visible: false, rows: 0, sideBySide: [], overlaps: [] };
+  const out = { hasRoot: !!root, lowContrast: [], warn: [], contrastChecked: 0, contrastSkipped: 0, skippedUnknown: 0, skippedHidden: 0, skippedOffPage: 0, skippedUnparsed: 0, contrastAll: [], overflow: document.documentElement.scrollWidth > window.innerWidth, scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth, visible: false, rows: 0, sideBySide: [], overlaps: [] };
   if (!root) return out;
   const sections = [...root.querySelectorAll('.et_pb_section')];
   const hasMedia = (el) => [...el.querySelectorAll('img, svg, video, canvas, iframe')].some((m) => { const r = m.getBoundingClientRect(); return r.width > 0 && r.height > 0; })
@@ -115,15 +129,26 @@ function measureInPage(opts) {
       }
     }
   }
-  // Computed text contrast. For every visible text node: the element's computed colour (blended with the opacity of it and its ancestors)
-  // against the effective background, found by walking the ancestors up the tree: translucent colours are stacked until a SOLID colour
-  // (alpha 1) closes the stack. When an element on the way up (up to the root) carries a background image or gradient BEFORE the solid
-  // colour is found, the background is unknown and the text is skipped (counted in contrastSkipped). Text that cannot be seen (no box,
-  // visibility hidden, display none, opacity 0, font-size 0, a box under 2 px, text pushed off the page by a negative text-indent, or text clipped away
-  // by an overflow hidden ancestor) is skipped as well. A ratio under CONTRAST_MIN (3.0, deliberately
-  // forgiving: it catches the near-invisible default grey on a dark surface, not fine AA differences) lands in lowContrast. `opts.all` also
-  // lists every measured element in contrastAll (the audit uses it). Nested widgets with their own scroll containers are not special-cased.
+  // Computed text contrast (two tiers; see the header of this file for what it cannot see). For every visible text node: the element's computed
+  // colour (blended with the opacity of it and its ancestors) against the effective background, found by walking the element and its ancestors up
+  // to the root. Each element's background is read top-down: its background-image layers first, then its background-colour. Translucent layers
+  // (a colour, or a gradient whose colour stops are ALL the same colour: the scrim `overlaysImage` produces) are stacked until a SOLID layer (alpha 1)
+  // closes the stack: that is a KNOWN background, one ratio. When the walk meets an IMAGE (url(), or a gradient with different colours) first:
+  //   - with a scrim stack above it, the photo is unknown, so the text is measured against the scrim composited over white AND over black and the
+  //     WORST of the two ratios counts (`scrim: true` on the item);
+  //   - with nothing recognisable above it (a bare photo, or a multi-colour gradient) the text is skipped as unknown and counted in skippedUnknown.
+  // A ratio under CONTRAST_MIN (3.0, the FAIL tier, deliberately forgiving) lands in lowContrast; a ratio from 3.0 up to 4.5 for text that is not
+  // large (under 24px, or under 18.66px bold) lands in `warn` (the ADVISORY tier: visible, never a failure). Text nobody can see is not measured and is
+  // counted instead: skippedHidden (no box, visibility hidden, display none, opacity 0, font-size 0, under 2 px) and skippedOffPage (pushed off the page
+  // by a negative text-indent, or clipped away by an overflow ancestor). A colour that cannot be parsed is counted in skippedUnparsed. `opts.all`
+  // also lists every measured element in contrastAll (the audit uses it). Nested widgets with their own scroll containers are not special-cased.
   const CONTRAST_MIN = 3.0;
+  const CONTRAST_ADVISORY = 4.5;
+  out.skippedUnknown = 0;
+  out.skippedHidden = 0;
+  out.skippedOffPage = 0;
+  out.skippedUnparsed = 0;
+  out.warn = [];
   const parseColor = (str) => {
     const m = /^rgba?\(([^)]+)\)$/.exec(String(str).trim());
     if (!m) return null;
@@ -134,6 +159,28 @@ function measureInPage(opts) {
   const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
   const lum = (c) => 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
   const over = (top, base) => ({ r: top.r * top.a + base.r * (1 - top.a), g: top.g * top.a + base.g * (1 - top.a), b: top.b * top.a + base.b * (1 - top.a), a: 1 });
+  const ratioOf = (a, b) => { const l1 = lum(a); const l2 = lum(b); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); };
+  // Splits a computed background-image value into its layers (top first): commas inside parentheses do not split.
+  const splitLayers = (s) => {
+    const parts = [];
+    let depth = 0;
+    let cur = '';
+    for (const ch of String(s)) {
+      if (ch === '(') depth++;
+      if (ch === ')') depth--;
+      if (ch === ',' && depth === 0) { parts.push(cur.trim()); cur = ''; } else cur += ch;
+    }
+    if (cur.trim()) parts.push(cur.trim());
+    return parts.filter((p) => p && p !== 'none');
+  };
+  // A layer is { scrim: colour } (a gradient whose colour stops are all one colour) or { image: true } (a photo or a multi-colour gradient).
+  const classifyLayer = (layer) => {
+    if (/^(repeating-)?(linear|radial|conic)-gradient\(/.test(layer) && !/transparent|#|var\(/.test(layer)) {
+      const cols = (layer.match(/rgba?\([^)]*\)/g) || []).map(parseColor);
+      if (cols.length >= 2 && cols.every((c) => c && c.r === cols[0].r && c.g === cols[0].g && c.b === cols[0].b && c.a === cols[0].a)) return { scrim: cols[0] };
+    }
+    return { image: true };
+  };
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const seenEl = new Set();
   while (walker.nextNode()) {
@@ -148,7 +195,7 @@ function measureInPage(opts) {
     const range = document.createRange();
     range.selectNodeContents(node);
     const rects = [...range.getClientRects()].filter((r) => r.width >= 2 && r.height >= 2);
-    if (!rects.length || cs.visibility === 'hidden' || cs.display === 'none' || parseFloat(cs.fontSize) === 0) { continue; }
+    if (!rects.length || cs.visibility === 'hidden' || cs.display === 'none' || parseFloat(cs.fontSize) === 0) { out.skippedHidden++; continue; }
     // Text pushed out of sight is not text a visitor reads: every line box either lies entirely off the page (a negative text-indent such as
     // the slider's dot numbers) or is clipped away completely by an ancestor with overflow hidden/clip/auto/scroll.
     const docW = document.documentElement.scrollWidth;
@@ -162,38 +209,56 @@ function measureInPage(opts) {
       }
       return false;
     };
-    if (rects.every(clipped)) continue;
+    if (rects.every(clipped)) { out.skippedOffPage++; continue; }
     const fg = parseColor(cs.color);
-    if (!fg) { out.contrastSkipped++; continue; }
+    if (!fg) { out.skippedUnparsed++; continue; }
     let opacity = 1;
-    let unknown = false;
-    const stack = [];
+    let closed = null; // the solid layer that closes the stack
+    let image = false; // an image (or multi-colour gradient) met before a solid layer
+    const stack = []; // translucent layers, top first
     for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
       const s = getComputedStyle(n);
       opacity *= parseFloat(s.opacity);
-      if (!unknown && (stack.length === 0 || stack[stack.length - 1].a < 0.999)) {
-        if (s.backgroundImage && s.backgroundImage !== 'none') { unknown = true; }
-        else {
-          const c = parseColor(s.backgroundColor);
-          if (c && c.a > 0) stack.push(c);
-        }
+      if (closed || image) continue;
+      for (const layer of splitLayers(s.backgroundImage)) {
+        const k = classifyLayer(layer);
+        if (k.image) { image = true; break; }
+        if (k.scrim.a >= 0.999) { closed = k.scrim; break; }
+        if (k.scrim.a > 0) stack.push(k.scrim);
       }
+      if (closed || image) continue;
+      const c = parseColor(s.backgroundColor);
+      if (c && c.a >= 0.999) closed = c;
+      else if (c && c.a > 0) stack.push(c);
     }
-    if (opacity < 0.05) continue;
-    if (unknown) { out.contrastSkipped++; continue; }
-    let base = { r: 255, g: 255, b: 255, a: 1 };
-    if (stack.length && stack[stack.length - 1].a >= 0.999) base = stack.pop();
-    while (stack.length) base = over(stack.pop(), base);
-    const text = over({ r: fg.r, g: fg.g, b: fg.b, a: fg.a * opacity }, base);
-    const l1 = lum(text);
-    const l2 = lum(base);
-    const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
-    out.contrastChecked++;
+    if (opacity < 0.05) { out.skippedHidden++; continue; }
+    if (image && !stack.length) { out.skippedUnknown++; continue; }
+    const textOn = (b) => over({ r: fg.r, g: fg.g, b: fg.b, a: fg.a * opacity }, b);
+    const stacked = (b) => { let acc = b; for (let i = stack.length - 1; i >= 0; i--) acc = over(stack[i], acc); return acc; };
     const rgb = (c) => 'rgb(' + Math.round(c.r) + ',' + Math.round(c.g) + ',' + Math.round(c.b) + ')';
-    const item = { text: txt.slice(0, 30), color: rgb(text), bg: rgb(base), ratio: Math.round(ratio * 100) / 100, size: parseFloat(cs.fontSize), tag: el.tagName.toLowerCase(), cls: (el.className && el.className.toString ? el.className.toString() : '').split(' ').slice(0, 2).join(' ') };
+    let ratio;
+    let base;
+    if (image) {
+      // Scrim over an unknown photo: the worst case of white and black beneath it.
+      const white = stacked({ r: 255, g: 255, b: 255, a: 1 });
+      const black = stacked({ r: 0, g: 0, b: 0, a: 1 });
+      const rw = ratioOf(textOn(white), white);
+      const rb = ratioOf(textOn(black), black);
+      ratio = Math.min(rw, rb);
+      base = rw <= rb ? white : black;
+    } else {
+      base = stacked(closed || { r: 255, g: 255, b: 255, a: 1 });
+      ratio = ratioOf(textOn(base), base);
+    }
+    out.contrastChecked++;
+    const size = parseFloat(cs.fontSize);
+    const large = size >= 24 || (size >= 18.66 && parseInt(cs.fontWeight, 10) >= 700);
+    const item = { text: txt.slice(0, 30), color: rgb(textOn(base)), bg: rgb(base), ratio: Math.round(ratio * 100) / 100, size, large, scrim: image, tag: el.tagName.toLowerCase(), cls: (el.className && el.className.toString ? el.className.toString() : '').split(' ').slice(0, 2).join(' ') };
     if (opts && opts.all) out.contrastAll.push(item);
     if (ratio < CONTRAST_MIN) out.lowContrast.push(item);
+    else if (!large && ratio < CONTRAST_ADVISORY) out.warn.push(item);
   }
+  out.contrastSkipped = out.skippedUnknown + out.skippedHidden + out.skippedOffPage + out.skippedUnparsed;
   return out;
 }
 

@@ -95,6 +95,38 @@ const page = (inner) => `<div class="et-l--post"><div class="et_pb_section" styl
     assert.strictEqual((await run(cs('background:#0b1020', '<a style="display:block;width:10px;height:10px;overflow:hidden;text-indent:-9999px;color:#333333">1</a>'))).lowContrast.length, 0, 'a number pushed off the page by a negative text-indent (the slider dot) is skipped');
     assert.strictEqual((await run(cs('background:#0b1020', '<div style="width:50px;height:10px;overflow:hidden"><p style="color:#333333;margin:0;padding-top:40px">Clipped away</p></div>'))).lowContrast.length, 0, 'text clipped away completely by an overflow hidden box is skipped');
     assert.strictEqual((await run(cs('background:#0b1020', '<div style="width:300px;height:60px;overflow:hidden"><p style="color:#333333;margin:0">Visible inside the box</p></div>'))).lowContrast.length, 1, 'text that shows inside an overflow hidden box is still measured');
+    // scrim over a photo: the worst of white and black beneath the scrim decides; a bare photo or a multi-colour gradient stays unknown (counted)
+    const PHOTO = 'url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==)';
+    const scrim = (a) => `background-image:linear-gradient(rgba(7,11,26,${a}),rgba(7,11,26,${a})),${PHOTO};background-color:#000`;
+    const onScrim = await run(cs(scrim(0.7), '<p style="color:#f2f4fa;margin:0">Light on the scrim</p>'));
+    assert.strictEqual(onScrim.lowContrast.length + onScrim.warn.length, 0, 'light text on a 70% dark scrim passes in both worst cases');
+    assert.strictEqual(onScrim.contrastChecked, 1, 'and is measured, not skipped');
+    assert.strictEqual(onScrim.skippedUnknown, 0);
+    const captcha = await run(cs(scrim(0.7), '<p style="color:#666666;margin:0">12 + 9 =</p>'));
+    assert.strictEqual(captcha.lowContrast.length, 1, 'Divi default grey on a 70% dark scrim over a photo is a FAIL (worst case over white)');
+    assert.strictEqual(captcha.lowContrast[0].scrim, true, 'the item says it was a scrim worst case');
+    assert.ok(captcha.lowContrast[0].ratio < 3, 'and the ratio is under 3.0');
+    assert.strictEqual((await run(cs(scrim(0.7), '<p style="color:#bbbbbb;margin:0">Mid grey on the scrim</p>'))).warn.length, 1, 'a mid grey over the worst case lands in the advisory tier');
+    const nested = await run(cs(`background-image:${PHOTO};background-color:#000`, `<div style="background:rgba(7,11,26,0.7)"><p style="color:#666666;margin:0">On a translucent card over a photo</p></div>`));
+    assert.strictEqual(nested.lowContrast.length, 1, 'a translucent colour over a photo is a scrim too');
+    const bare = await run(cs(`background-image:${PHOTO};background-color:#000`, '<p style="color:#222222;margin:0">On a bare photo</p>'));
+    assert.strictEqual(bare.lowContrast.length + bare.warn.length, 0, 'a bare photo is never judged');
+    assert.strictEqual(bare.skippedUnknown, 1, 'it is counted as unknown');
+    assert.strictEqual(bare.contrastChecked, 0);
+    const multi = await run(cs(`background-image:linear-gradient(#000,#fff)`, '<p style="color:#222222;margin:0">On a two-colour gradient</p>'));
+    assert.strictEqual(multi.skippedUnknown, 1, 'a multi-colour gradient is unknown');
+    assert.strictEqual((await run(cs(`background-image:linear-gradient(rgba(7,11,26,1),rgba(7,11,26,1))`, '<p style="color:#666666;margin:0">On an opaque one-colour gradient</p>'))).warn.length, 1, 'an opaque one-colour gradient is a solid background');
+    // advisory tier: 3.0 up to 4.5 warns for small text only, never fails
+    const grey = await run(cs('background:#0b1020', '<p style="color:#666666;margin:0">Default grey, small</p>'));
+    assert.strictEqual(grey.lowContrast.length, 0, 'default grey on glass-dark is not a failure');
+    assert.strictEqual(grey.warn.length, 1, 'but it is an advisory warning');
+    assert.strictEqual(grey.warn[0].text, 'Default grey, small');
+    assert.strictEqual((await run(cs('background:#0b1020', '<p style="color:#666666;margin:0;font-size:24px">Default grey, large</p>'))).warn.length, 0, 'large text has no advisory band (its floor is 3.0)');
+    assert.strictEqual((await run(cs('background:#0b1020', '<p style="color:#666666;margin:0;font-size:19px;font-weight:700">Default grey, bold</p>'))).warn.length, 0, 'bold text from 18.66px is large');
+    assert.strictEqual((await run(cs('background:#0b1020', '<p style="color:#f2f4fa;margin:0">Fine</p>'))).warn.length, 0, 'a passing text warns nothing');
+    // the counts the report prints
+    const counts = await run(cs('background:#0b1020', '<p style="color:#f2f4fa;margin:0">Seen</p><p style="color:#f2f4fa;opacity:0;margin:0">Faded</p><a style="display:block;width:10px;height:10px;overflow:hidden;text-indent:-9999px">1</a>'));
+    assert.deepStrictEqual([counts.contrastChecked, counts.skippedHidden, counts.skippedOffPage, counts.skippedUnknown], [1, 1, 1, 0], 'checked, hidden and off-page are counted separately');
     const all = await run(cs('background:#0b1020', '<p style="color:#f2f4fa;margin:0">Listed</p>'), 400);
     assert.strictEqual(all.contrastChecked, 1, 'a measured element is counted');
     console.log('OK recipe measurement: top-level, nested divi/row and nested divi/row-inner stacking, Theme Builder ignored, empty, overflow, no root, text over a picture, computed text contrast');

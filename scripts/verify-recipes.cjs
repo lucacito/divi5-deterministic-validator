@@ -20,8 +20,10 @@
  * fixtures/shapes/recipe-render-allowances.json with a reason; the Theme Builder header/footer is never measured: everything is
  * measured inside `.et-l--post`), any visible text whose computed colour is below 3.0:1 against its effective SOLID background (code
  * `low-contrast`, baselinable only as an exact cell; the check walks the ancestors to the first solid colour, stacking translucent ones, and
- * SKIPS text above a background image or gradient because that background is unknown; an exemption is `{"contrast": "reason"}` in the
- * allowances file), a text element's lines overlap an image box (an `.et_pb_image` module or an <img>) by more than 4 px in both
+ * judges text over a scrim (translucent colour or same-colour gradient over a photo) by its worst case over white and black, and only
+ * COUNTS text over a bare photo or multi-colour gradient as unknown; 3.0 to 4.5:1 for small text is an advisory `WARN low-contrast` line, never a
+ * failure; a cell with visible text where nothing at all could be measured also fails; per recipe/language a `CONTRAST` line prints the counts;
+ * the holes that stay are listed in scripts/lib/recipe-checks.cjs; an exemption is `{"contrast": "reason"}` in the allowances file), a text element's lines overlap an image box (an `.et_pb_image` module or an <img>) by more than 4 px in both
  * directions at ANY width (code `text-overlap`, never baselined; an intentional overlap recipe gets `{"overlap": "reason"}` in the allowances file; a
  * plain string value keeps its original meaning, the columns exemption), or the page itself logs a console error / uncaught exception. The page is
  * scrolled once before it is measured and screenshotted so that entrance animations have finished. A recipe the validator gate
@@ -263,6 +265,7 @@ ${rows}
   let failures = 0;
   let knownFails = 0;
   let passes = 0;
+  let contrastWarns = 0;
   const status = new Map(); // "recipe/language" => worst of PASS|KNOWN-FAIL|FAIL over its widths
   const rank = { PASS: 0, 'KNOWN-FAIL': 1, FAIL: 2 };
   const known = readKnownFailures();
@@ -298,6 +301,7 @@ ${rows}
     for (const [name, lang] of cells) {
       if (cleaning) break;
       let page = null;
+      const cellCounts = { checked: 0, unknown: 0, offPage: 0, hidden: 0, unparsed: 0, warn: 0 };
       try {
         page = makePage(name, lang);
         if (!page.valid) { report(name, lang, 'gate', 'FAIL', 'gate', 'not saved: ' + page.verdict); continue; }
@@ -336,8 +340,18 @@ ${rows}
               problems.push(['text-overlap', 'text overlaps an image: ' + m.overlaps.slice(0, 3).map((o) => `"${o.text}" over ${o.image} (${o.w}x${o.h}px)`).join('; ')]);
             }
             if (m.lowContrast.length && !allowed(name, 'contrast')) {
-              problems.push(['low-contrast', 'text under 3.0:1 against its solid background: ' + m.lowContrast.slice(0, 4).map((o) => `"${o.text}" ${o.color} on ${o.bg} ${o.ratio}:1`).join('; ')]);
+              problems.push(['low-contrast', 'text under 3.0:1 against its background: ' + m.lowContrast.slice(0, 4).map((o) => `"${o.text}" ${o.color} on ${o.bg} ${o.ratio}:1${o.scrim ? ' (scrim worst case)' : ''}`).join('; ')]);
             }
+            // Text was drawn but NOTHING could be measured and nothing was accounted for as an unknown (photo / gradient) background: a wrong root
+            // or a colour format the check cannot read must not pass silently.
+            if (m.visible && m.contrastChecked === 0 && m.skippedUnknown === 0 && !allowed(name, 'contrast')) {
+              problems.push(['low-contrast', `no text could be measured (checked 0, hidden ${m.skippedHidden}, off-page ${m.skippedOffPage}, unparsed colours ${m.skippedUnparsed}, unknown background 0)`]);
+            }
+            // Advisory tier (3.0 up to 4.5:1, small text): printed and counted, never a failure.
+            const warnSeen = new Map();
+            for (const o of m.warn) { const k = o.text + '|' + o.ratio; const e = warnSeen.get(k) || { n: 0, o }; e.n++; warnSeen.set(k, e); }
+            for (const { n: cnt, o } of warnSeen.values()) { contrastWarns++; console.log(`WARN low-contrast ${name}/${lang}/${width} "${o.text}"${cnt > 1 ? ' (x' + cnt + ')' : ''} ${o.ratio}:1${o.scrim ? ' (scrim worst case)' : ''}`); }
+            cellCounts.checked += m.contrastChecked; cellCounts.unknown += m.skippedUnknown; cellCounts.offPage += m.skippedOffPage; cellCounts.hidden += m.skippedHidden; cellCounts.unparsed += m.skippedUnparsed; cellCounts.warn += m.warn.length;
             if (width === 400 && m.sideBySide.length && !allowed(name, 'columns')) {
               problems.push(['columns-side-by-side', 'row(s) keep their columns side by side on a phone: ' + m.sideBySide.map((s) => `row ${s.row} (${s.columns} cols, lefts ${s.lefts.join('/')})`).join('; ')]);
             }
@@ -351,6 +365,7 @@ ${rows}
             await ctx.close();
           }
         }
+        if (!cleaning) console.log(`CONTRAST ${name}/${lang} checked=${cellCounts.checked} skipped(unknown=${cellCounts.unknown} off-page=${cellCounts.offPage} hidden=${cellCounts.hidden} unparsed=${cellCounts.unparsed}) warn=${cellCounts.warn} (summed over the three widths)`);
       } catch (e) {
         report(name, lang, 'prepare', 'FAIL', 'render-error', 'render-error: could not prepare the page: ' + (e && e.message ? e.message : e));
       } finally {
@@ -370,7 +385,7 @@ ${rows}
     }
   }
   if (cleaning) return;
-  console.log(`\n${passes} PASS, ${knownFails} KNOWN-FAIL, ${failures} FAIL`);
+  console.log(`\n${passes} PASS, ${knownFails} KNOWN-FAIL, ${failures} FAIL; ${contrastWarns} advisory low-contrast warning line(s) (3.0 to 4.5:1, never a failure)`);
   console.log(failures ? 'FAILED' : 'Every selected recipe renders cleanly (known failures aside).');
   process.exit(failures ? 1 : 0);
 })();
