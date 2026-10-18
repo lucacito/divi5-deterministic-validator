@@ -6,6 +6,8 @@ namespace AiEditorDivi5\WP;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+require_once __DIR__ . '/DesignLanguages.php';
+
 /**
  * Library of real, validated Divi 5 section recipes — whole proven sections the
  * AI copies and fills with the user's content, instead of composing from
@@ -33,7 +35,7 @@ final class SectionRecipes
      */
     public static function moods(): array
     {
-        return [ 'any' ];
+        return [ 'any', ...DesignLanguages::ids() ];
     }
 
     /** @return list<array{name:string,title:string,description:string,when:string,stage:string,tags?:array<string,mixed>,markup:string}> */
