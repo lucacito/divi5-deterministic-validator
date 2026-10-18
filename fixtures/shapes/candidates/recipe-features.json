@@ -148,5 +148,130 @@
     },
     "expect": "PASS",
     "note": "Colour of the toggle icon of the accordion items (module.json attributes.closedToggleIcon, selector '{{selector}} > .et_pb_toggle_close:not(.et_pb_toggle_empty) > .et_pb_toggle_title:before', settings.decoration.icon with a colour field; conversion-outline.json maps icon_color to closedToggleIcon.decoration.icon.*.color; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/accordion/; read by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Accordion/AccordionModule.php:347-354). Drawn on the title's ::before, so the probe compares pseudo-element styles."
+  },
+  {
+    "id": "rf-size-grow-shrink",
+    "block": "group",
+    "expect": "PASS",
+    "base": {
+      "module": {
+        "decoration": {
+          "sizing": {
+            "desktop": {
+              "value": {
+                "size": [
+                  "flexGrow"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "parent": "group",
+    "children": [
+      {
+        "block": "text",
+        "base": {
+          "content": {
+            "innerContent": {
+              "desktop": {
+                "value": "<p>One line that says what this feature does for the visitor, long enough to be wider than a phone screen when it cannot wrap.</p>"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "siblings": {
+      "before": [
+        {
+          "block": "icon"
+        }
+      ]
+    },
+    "wrapperBase": {
+      "group": {
+        "module": {
+          "decoration": {
+            "layout": {
+              "desktop": {
+                "value": {
+                  "flexDirection": "row",
+                  "flexWrap": "nowrap",
+                  "alignItems": "flex-start",
+                  "columnGap": "24px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "geometry": true,
+    "set": {
+      "module.decoration.sizing.desktop.value.size": [
+        "flexGrow",
+        "flexShrink"
+      ]
+    },
+    "note": "The value used by list-icon-dividers and timeline-vertical: sizing.size [\"flexGrow\",\"flexShrink\"] on a text group that sits in a nowrap flex row group after an icon, as in those recipes. The base is [\"flexGrow\"] alone (the trap): the group keeps flex-shrink 0 and its long line spills past a 400px screen; the candidate lets it shrink (computed flex-shrink 1) and wrap inside the viewport. Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:140-175 (the size list: flexGrow in it writes flex-grow 1, otherwise 0; flexShrink absent writes flex-shrink 0, so the item keeps its max-content width)."
+  },
+  {
+    "id": "rf-size-grow-only-trap",
+    "block": "group",
+    "expect": "OVERFLOW",
+    "base": {
+      "module": {
+        "decoration": {}
+      }
+    },
+    "parent": "group",
+    "children": [
+      {
+        "block": "text",
+        "base": {
+          "content": {
+            "innerContent": {
+              "desktop": {
+                "value": "<p>One line that says what this feature does for the visitor, long enough to be wider than a phone screen when it cannot wrap.</p>"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "siblings": {
+      "before": [
+        {
+          "block": "icon"
+        }
+      ]
+    },
+    "wrapperBase": {
+      "group": {
+        "module": {
+          "decoration": {
+            "layout": {
+              "desktop": {
+                "value": {
+                  "flexDirection": "row",
+                  "flexWrap": "nowrap",
+                  "alignItems": "flex-start",
+                  "columnGap": "24px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "geometry": true,
+    "set": {
+      "module.decoration.sizing.desktop.value.size": [
+        "flexGrow"
+      ]
+    },
+    "note": "Control that documents the trap: sizing.size [\"flexGrow\"] alone on the same text group (base: no size setting, so the browser default flex-shrink 1 wraps the line). Divi writes flex-shrink 0 with it, the group takes its max-content width and the page becomes wider than a 400px phone. Never use [\"flexGrow\"] alone on a flex child that holds text. Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:140-175 (the size list: flexGrow in it writes flex-grow 1, otherwise 0; flexShrink absent writes flex-shrink 0, so the item keeps its max-content width)."
   }
 ]

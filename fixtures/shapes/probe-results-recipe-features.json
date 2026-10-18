@@ -745,5 +745,502 @@
         "overflowPx": 0
       }
     }
+  },
+  {
+    "id": "rf-size-grow-shrink",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 27,
+        "sample": [
+          "0:div:block-size: 23.7969px -> 142.781px",
+          "0:div:flex-shrink: 0 -> 1",
+          "0:div:height: 23.7969px -> 142.781px",
+          "0:div:inline-size: 816.234px -> 176px",
+          "0:div:perspective-origin: 408.109px 11.8906px -> 88px 71.3906px",
+          "0:div:transform-origin: 408.117px 11.8984px -> 88px 71.3906px"
+        ],
+        "changedProps": [
+          "block-size",
+          "flex-shrink",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "rect:height",
+          "rect:width",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0,
+        "geometry": {
+          "control": {
+            "rect": {
+              "top": 547,
+              "left": 184,
+              "width": 816,
+              "height": 24
+            },
+            "parent": {
+              "top": 547,
+              "left": 40,
+              "width": 320,
+              "height": 96
+            },
+            "prev": {
+              "top": 547,
+              "left": 40,
+              "width": 120,
+              "height": 96
+            },
+            "next": null,
+            "overlap": {
+              "area": 0,
+              "with": null,
+              "top": null
+            },
+            "hitCentre": "none"
+          },
+          "candidate": {
+            "rect": {
+              "top": 547,
+              "left": 184,
+              "width": 176,
+              "height": 143
+            },
+            "parent": {
+              "top": 547,
+              "left": 40,
+              "width": 320,
+              "height": 143
+            },
+            "prev": {
+              "top": 570,
+              "left": 40,
+              "width": 120,
+              "height": 96
+            },
+            "next": null,
+            "overlap": {
+              "area": 0,
+              "with": null,
+              "top": null
+            },
+            "hitCentre": "measured"
+          }
+        }
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 27,
+        "sample": [
+          "0:div:block-size: 23.7969px -> 47.5938px",
+          "0:div:flex-shrink: 0 -> 1",
+          "0:div:height: 23.7969px -> 47.5938px",
+          "0:div:inline-size: 816.234px -> 576px",
+          "0:div:perspective-origin: 408.109px 11.8906px -> 288px 23.7969px",
+          "0:div:transform-origin: 408.117px 11.8984px -> 288px 23.7969px"
+        ],
+        "changedProps": [
+          "block-size",
+          "flex-shrink",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "rect:height",
+          "rect:width",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0,
+        "geometry": {
+          "control": {
+            "rect": {
+              "top": 515,
+              "left": 234,
+              "width": 816,
+              "height": 24
+            },
+            "parent": {
+              "top": 515,
+              "left": 90,
+              "width": 720,
+              "height": 96
+            },
+            "prev": {
+              "top": 515,
+              "left": 90,
+              "width": 120,
+              "height": 96
+            },
+            "next": null,
+            "overlap": {
+              "area": 0,
+              "with": null,
+              "top": null
+            },
+            "hitCentre": "measured"
+          },
+          "candidate": {
+            "rect": {
+              "top": 515,
+              "left": 234,
+              "width": 576,
+              "height": 48
+            },
+            "parent": {
+              "top": 515,
+              "left": 90,
+              "width": 720,
+              "height": 96
+            },
+            "prev": {
+              "top": 515,
+              "left": 90,
+              "width": 120,
+              "height": 96
+            },
+            "next": null,
+            "overlap": {
+              "area": 0,
+              "with": null,
+              "top": null
+            },
+            "hitCentre": "measured"
+          }
+        }
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:div:flex-shrink: 0 -> 1"
+        ],
+        "changedProps": [
+          "flex-shrink"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0,
+        "geometry": {
+          "control": {
+            "rect": {
+              "top": 461,
+              "left": 272,
+              "width": 880,
+              "height": 24
+            },
+            "parent": {
+              "top": 461,
+              "left": 128,
+              "width": 1024,
+              "height": 96
+            },
+            "prev": {
+              "top": 461,
+              "left": 128,
+              "width": 120,
+              "height": 96
+            },
+            "next": null,
+            "overlap": {
+              "area": 0,
+              "with": null,
+              "top": null
+            },
+            "hitCentre": "measured"
+          },
+          "candidate": {
+            "rect": {
+              "top": 461,
+              "left": 272,
+              "width": 880,
+              "height": 24
+            },
+            "parent": {
+              "top": 461,
+              "left": 128,
+              "width": 1024,
+              "height": 96
+            },
+            "prev": {
+              "top": 461,
+              "left": 128,
+              "width": 120,
+              "height": 96
+            },
+            "next": null,
+            "overlap": {
+              "area": 0,
+              "with": null,
+              "top": null
+            },
+            "hitCentre": "measured"
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "rf-size-grow-only-trap",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": true,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 28,
+        "sample": [
+          "0:div:block-size: 142.781px -> 23.7969px",
+          "0:div:flex-grow: 0 -> 1",
+          "0:div:flex-shrink: 1 -> 0",
+          "0:div:height: 142.781px -> 23.7969px",
+          "0:div:inline-size: 176px -> 816.234px",
+          "0:div:perspective-origin: 88px 71.3906px -> 408.109px 11.8906px"
+        ],
+        "changedProps": [
+          "block-size",
+          "flex-grow",
+          "flex-shrink",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "rect:height",
+          "rect:width",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 600,
+        "geometry": {
+          "control": {
+            "rect": {
+              "top": 547,
+              "left": 184,
+              "width": 176,
+              "height": 143
+            },
+            "parent": {
+              "top": 547,
+              "left": 40,
+              "width": 320,
+              "height": 143
+            },
+            "prev": {
+              "top": 570,
+              "left": 40,
+              "width": 120,
+              "height": 96
+            },
+            "next": null,
+            "overlap": {
+              "area": 0,
+              "with": null,
+              "top": null
+            },
+            "hitCentre": "measured"
+          },
+          "candidate": {
+            "rect": {
+              "top": 547,
+              "left": 184,
+              "width": 816,
+              "height": 24
+            },
+            "parent": {
+              "top": 547,
+              "left": 40,
+              "width": 320,
+              "height": 96
+            },
+            "prev": {
+              "top": 547,
+              "left": 40,
+              "width": 120,
+              "height": 96
+            },
+            "next": null,
+            "overlap": {
+              "area": 0,
+              "with": null,
+              "top": null
+            },
+            "hitCentre": "none"
+          }
+        }
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 28,
+        "sample": [
+          "0:div:block-size: 47.5938px -> 23.7969px",
+          "0:div:flex-grow: 0 -> 1",
+          "0:div:flex-shrink: 1 -> 0",
+          "0:div:height: 47.5938px -> 23.7969px",
+          "0:div:inline-size: 576px -> 816.234px",
+          "0:div:perspective-origin: 288px 23.7969px -> 408.109px 11.8906px"
+        ],
+        "changedProps": [
+          "block-size",
+          "flex-grow",
+          "flex-shrink",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "rect:height",
+          "rect:width",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 150,
+        "geometry": {
+          "control": {
+            "rect": {
+              "top": 515,
+              "left": 234,
+              "width": 576,
+              "height": 48
+            },
+            "parent": {
+              "top": 515,
+              "left": 90,
+              "width": 720,
+              "height": 96
+            },
+            "prev": {
+              "top": 515,
+              "left": 90,
+              "width": 120,
+              "height": 96
+            },
+            "next": null,
+            "overlap": {
+              "area": 0,
+              "with": null,
+              "top": null
+            },
+            "hitCentre": "measured"
+          },
+          "candidate": {
+            "rect": {
+              "top": 515,
+              "left": 234,
+              "width": 816,
+              "height": 24
+            },
+            "parent": {
+              "top": 515,
+              "left": 90,
+              "width": 720,
+              "height": 96
+            },
+            "prev": {
+              "top": 515,
+              "left": 90,
+              "width": 120,
+              "height": 96
+            },
+            "next": null,
+            "overlap": {
+              "area": 0,
+              "with": null,
+              "top": null
+            },
+            "hitCentre": "measured"
+          }
+        }
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 19,
+        "sample": [
+          "0:div:flex-grow: 0 -> 1",
+          "0:div:flex-shrink: 1 -> 0",
+          "0:div:inline-size: 816.234px -> 880px",
+          "0:div:perspective-origin: 408.109px 11.8906px -> 440px 11.8906px",
+          "0:div:transform-origin: 408.117px 11.8984px -> 440px 11.8984px",
+          "0:div:width: 816.234px -> 880px"
+        ],
+        "changedProps": [
+          "flex-grow",
+          "flex-shrink",
+          "inline-size",
+          "perspective-origin",
+          "rect:width",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0,
+        "geometry": {
+          "control": {
+            "rect": {
+              "top": 461,
+              "left": 272,
+              "width": 816,
+              "height": 24
+            },
+            "parent": {
+              "top": 461,
+              "left": 128,
+              "width": 1024,
+              "height": 96
+            },
+            "prev": {
+              "top": 461,
+              "left": 128,
+              "width": 120,
+              "height": 96
+            },
+            "next": null,
+            "overlap": {
+              "area": 0,
+              "with": null,
+              "top": null
+            },
+            "hitCentre": "measured"
+          },
+          "candidate": {
+            "rect": {
+              "top": 461,
+              "left": 272,
+              "width": 880,
+              "height": 24
+            },
+            "parent": {
+              "top": 461,
+              "left": 128,
+              "width": 1024,
+              "height": 96
+            },
+            "prev": {
+              "top": 461,
+              "left": 128,
+              "width": 120,
+              "height": 96
+            },
+            "next": null,
+            "overlap": {
+              "area": 0,
+              "with": null,
+              "top": null
+            },
+            "hitCentre": "measured"
+          }
+        }
+      }
+    }
   }
 ]

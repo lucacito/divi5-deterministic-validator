@@ -16348,3 +16348,39 @@ Note: Colour of the toggle icon of the accordion items (module.json attributes.c
 Registered paths added:
 
 - `closedToggleIcon.decoration.icon.{bp}.value.color`
+
+## rf-size-grow-shrink
+
+Block: `group`, placed inside a `group`, holding `text`, with `icon` before it in the same container, with base settings on its wrapper(s) `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.size` = `["flexGrow","flexShrink"]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:flex-shrink: 0 -> 1` |
+| 900 px | yes | 27 | yes | `0:div:block-size: 23.7969px -> 47.5938px` |
+| 400 px | yes | 27 | yes | `0:div:block-size: 23.7969px -> 142.781px` |
+
+Properties that changed (any width): `block-size`, `flex-shrink`, `height`, `inline-size`, `perspective-origin`, `rect:height`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 272, 461, 880 x 24 | 272, 461, 880 x 24 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 234, 515, 816 x 24 | 234, 515, 576 x 48 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 184, 547, 816 x 24 | 184, 547, 176 x 143 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: The value used by list-icon-dividers and timeline-vertical: sizing.size ["flexGrow","flexShrink"] on a text group that sits in a nowrap flex row group after an icon, as in those recipes. The base is ["flexGrow"] alone (the trap): the group keeps flex-shrink 0 and its long line spills past a 400px screen; the candidate lets it shrink (computed flex-shrink 1) and wrap inside the viewport. Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:140-175 (the size list: flexGrow in it writes flex-grow 1, otherwise 0; flexShrink absent writes flex-shrink 0, so the item keeps its max-content width).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (recipe-features)
+
+Candidates from `recipe-features.json` that were measured and are not taught, with the reason:
+
+- `rf-size-grow-only-trap`: overflows a phone at 400 px (the page is 600 px wider than the screen). Control that documents the trap: sizing.size ["flexGrow"] alone on the same text group (base: no size setting, so the browser default flex-shrink 1 wraps the line). Divi writes flex-shrink 0 with it, the group takes its max-content width and the page becomes wider than a 400px phone. Never use ["flexGrow"] alone on a flex child that holds text. Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:140-175 (the size list: flexGrow in it writes flex-grow 1, otherwise 0; flexShrink absent writes flex-shrink 0, so the item keeps its max-content width).
