@@ -1,4 +1,3 @@
-email.advanced.receiver.{bp}.value
 module.decoration.transform.{bp}.hover.translate.linked
 post.advanced.categories.{bp}.value.{n}
 post.decoration.border.{bp}.value.radius.sync
