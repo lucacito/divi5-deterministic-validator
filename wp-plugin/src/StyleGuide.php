@@ -200,15 +200,15 @@ Set the two edges independently. Never write CSS for a divider.
   section's, or set `color` yourself (do this when the neighbour has only a gradient or image: its colour is not used, source).
   When both sections share one colour and `color` is unset, Divi paints the divider black (source).
 - `height`: "100px" (default). "200px", "50px", "30px" and "50%" were rendered.
-- `repeat`: "1x" (default) or "3x" tiles the shape horizontally; "3x" was rendered. `repeat` has no effect on 3 styles: clouds, clouds2, triangle (rendered: dead; they always stretch to one piece).
-- `flip`: a list, ["horizontal"], ["vertical"] or ["horizontal","vertical"] (all three rendered). Use it to point an
+- `repeat`: "1x" (default) or "3x" tiles the shape horizontally; "3x" was rendered. `repeat` has no effect on 3 styles: clouds, clouds2, triangle (rendered: dead; Divi draws them as one stretched piece, source).
+- `flip`: a list, ["horizontal"], ["vertical"] or ["horizontal","vertical"] (all three rendered on a bottom divider; on a top divider only ["vertical"] was rendered). Use it to point an
   asymmetric shape the other way; a vertical flip turns the shape upside down.
 - `arrangement`: "below" (default) or "above". Rendered: "above" raises the divider's z-index from 1 to 10; Divi describes
   that as drawing it over rows and modules that overlap it (source). Leave the default unless content must tuck behind the shape.
 
 ## Using them well
-- A divider is painted inside the section, so on a short section it crosses the content (rendered: a default-padding section
-  had its heading crossed by a 100px divider). Give that edge padding of at least the divider height, as in the examples.
+- A divider is painted inside the section, so on a short section it crosses the content (observed on a screenshot, not in the
+  evidence file: a default-padding section had its heading crossed by a 100px divider). Give that edge padding of at least the divider height, as in the examples.
 - Dark section into a light neighbour (or the reverse) shows the shape best. Use one shape family on a page; pick the same
   `height` for every divider so the rhythm holds.
 - No style overflowed a phone: all 26, top and bottom, rendered at 400 px with no horizontal scroll.
@@ -225,7 +225,7 @@ row whose layout `module.decoration.layout.desktop.value.display` is "block": "1
 default flex row it does nothing (rendered: dead); use the layout's `columnGap` there.
 
 ## Inner shadow
-Do not use `module.advanced.innerShadow`: Divi 5.15.1 saves it and draws nothing (rendered: dead).
+Do not use `module.advanced.innerShadow`: on Divi 5.15.1 the front end draws no inner shadow for it (rendered: dead); the Visual Builder preview was not checked.
 
 ## Worked examples (each validates)
 A wave from a dark hero into a light section (the next section's colour fills the wave):

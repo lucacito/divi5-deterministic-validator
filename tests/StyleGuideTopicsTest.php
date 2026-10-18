@@ -498,6 +498,12 @@ class StyleGuideTopicsTest extends TestCase
         $this->assertTrue( self::dividerPassed( $results['dv-row-gutter-block-width-1'] ) );
         $text = StyleGuide::markdown( 'dividers' );
         $this->assertStringContainsString( 'Do not use `module.advanced.innerShadow`', $text );
+        $flat = preg_replace( '/\s+/', ' ', $text ) ?? '';
+        $this->assertStringContainsString( 'the front end draws no inner shadow for it (rendered: dead); the Visual Builder preview was not checked', $flat, 'the inner shadow claim is limited to the front end' );
+        $this->assertStringNotContainsString( 'draws nothing', $flat );
+        $this->assertStringContainsString( 'all three rendered on a bottom divider; on a top divider only ["vertical"] was rendered', $flat );
+        $this->assertStringNotContainsString( 'they always stretch', $flat );
+        $this->assertStringNotContainsString( '(rendered: a default-padding', $flat );
         $this->assertStringContainsString( '("1" or "4", both rendered)', $text );
         $this->assertStringContainsString( '"3x" was rendered', $text );
         // The values the topic names (height, colour, flip, arrangement) are the values that passed.
