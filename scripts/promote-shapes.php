@@ -11,7 +11,7 @@
  * Candidates that rendered nothing (DEAD), overflow a phone, or ended in an ERROR are never added. A result the probe labelled
  * `cssOnly` (the emitted stylesheet changed but no computed style did) is promoted only when the candidate sets
  * `"allowCssOnly": true` AND has a non-empty `note` saying why a stylesheet-only effect is proof enough. A candidate's optional `parent`,
- * `neighbours`, `children`, `state` (hover / scroll, with `scrollAt`), `settleMs`, `ignore` and `attrs` (see scripts/verify-shapes.cjs) are described in its evidence section,
+ * `neighbours`, `siblings`, `wrapperBase`, `geometry`, `children`, `state` (hover / scroll, with `scrollAt`), `settleMs`, `ignore` and `attrs` (see scripts/verify-shapes.cjs) are described in its evidence section,
  * which also lists the property names that changed (`changedProps` of the probe result, when present). Every candidate that is NOT promoted (dead, overflowing a
  * phone, an error, a stylesheet-only result without `allowCssOnly`, an unreliable measurement) is listed with its reason in a
  * `## Not taught (<candidates file name>)` section of the evidence file (followed by the items of the optional hand-written
@@ -108,7 +108,7 @@ foreach ( $candidates as $c ) {
         continue;
     }
     if ( empty( $r['effect'] ) || ! empty( $r['phoneOverflow'] ) || $noisy || isset( $r['detail']['validator'] ) ) {
-        $why              = empty( $r['effect'] ) ? 'no effect (dead)' : ( ! empty( $r['phoneOverflow'] ) ? 'overflows a phone at 400 px' : 'unreliable measurement' );
+        $why              = empty( $r['effect'] ) ? 'no effect (dead)' : ( ! empty( $r['phoneOverflow'] ) ? 'overflows a phone at 400 px' . ( isset( $r['detail']['400']['overflowPx'] ) ? ' (the page is ' . (int) $r['detail']['400']['overflowPx'] . ' px wider than the screen)' : '' ) : 'unreliable measurement' );
         $notes[]          = "not promoted $id: $why";
         $notTaught[ $id ] = $why;
         continue;
@@ -144,6 +144,20 @@ foreach ( $candidates as $c ) {
             if ( $count > 0 ) {
                 $where .= ', with ' . $count . ' plain neighbour section(s) ' . $side . ' it';
             }
+        }
+        foreach ( [ 'before', 'after' ] as $side ) {
+            $kidsSib = [];
+            foreach ( (array) ( $c['siblings'][ $side ] ?? [] ) as $sib ) {
+                if ( is_array( $sib ) && isset( $sib['block'] ) ) {
+                    $kidsSib[] = '`' . $sib['block'] . '`';
+                }
+            }
+            if ( $kidsSib !== [] ) {
+                $where .= ', with ' . implode( ', ', $kidsSib ) . ' ' . $side . ' it in the same container';
+            }
+        }
+        if ( is_array( $c['wrapperBase'] ?? null ) && $c['wrapperBase'] !== [] ) {
+            $where .= ', with base settings on its wrapper(s) ' . implode( ', ', array_map( static fn ( $n ): string => '`' . $n . '`', array_keys( $c['wrapperBase'] ) ) );
         }
         if ( isset( $c['state'] ) && is_string( $c['state'] ) ) {
             $where .= ', measured in the `' . $c['state'] . '` state' . ( 'scroll' === $c['state'] ? ' (element centre at ' . ( is_numeric( $c['scrollAt'] ?? null ) ? (string) $c['scrollAt'] : '0.25' ) . ' x the viewport height)' : '' );
@@ -181,7 +195,29 @@ foreach ( $candidates as $c ) {
             sort( $names, SORT_STRING );
             $section .= "\nProperties that changed (any width): " . implode( ', ', array_map( static fn ( string $n ): string => '`' . $n . '`', $names ) ) . ".\n";
         }
-        $section .= "\nPhone overflow at 400 px: " . ( ! empty( $r['phoneOverflow'] ) ? 'yes' : 'no' ) . ".\n";
+        if ( ! empty( $c['geometry'] ) ) {
+            $section .= "\nGeometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):\n\n| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |\n|---|---|---|---|---|---|\n";
+            foreach ( [ '1280', '900', '400' ] as $w ) {
+                $g   = $r['detail'][ $w ]['geometry'] ?? [];
+                $fmt = static fn ( $x ): string => is_array( $x['rect'] ?? null ) ? sprintf( '%d, %d, %d x %d', $x['rect']['left'], $x['rect']['top'], $x['rect']['width'], $x['rect']['height'] ) : 'none';
+                $ov  = static fn ( $x ): string => is_array( $x['overlap'] ?? null ) && ( $x['overlap']['area'] ?? 0 ) > 0 ? (string) $x['overlap']['area'] . ' (' . (string) $x['overlap']['with'] . ')' : '0';
+                $top = static fn ( $x ): string => is_array( $x['overlap'] ?? null ) && ( $x['overlap']['area'] ?? 0 ) > 0 ? (string) $x['overlap']['top'] : '-';
+                $pw  = static fn ( $x ): string => is_array( $x['parent'] ?? null ) ? (string) $x['parent']['width'] : '-';
+                $section .= sprintf(
+                    "| %s px | %s | %s | %s -> %s | %s -> %s | %s -> %s |\n",
+                    $w,
+                    $fmt( $g['control'] ?? [] ),
+                    $fmt( $g['candidate'] ?? [] ),
+                    $pw( $g['control'] ?? [] ),
+                    $pw( $g['candidate'] ?? [] ),
+                    $ov( $g['control'] ?? [] ),
+                    $ov( $g['candidate'] ?? [] ),
+                    $top( $g['control'] ?? [] ),
+                    $top( $g['candidate'] ?? [] )
+                );
+            }
+        }
+        $section .= "\nPhone overflow at 400 px: " . ( ! empty( $r['phoneOverflow'] ) ? 'yes' : 'no' ) . ( isset( $r['detail']['400']['overflowPx'] ) && ! empty( $r['phoneOverflow'] ) ? ' (' . (int) $r['detail']['400']['overflowPx'] . " px wider than the screen)" : '' ) . ".\n";
         if ( isset( $c['note'] ) && trim( (string) $c['note'] ) !== '' ) {
             $section .= "\nNote: " . trim( (string) $c['note'] ) . "\n";
         }

@@ -31,6 +31,21 @@
  *                        `neighbours` (tall plain sections) so that there is something to scroll. Scroll effects and sticky elements are driven
  *                        by Divi's script on scroll events, so this is the only way to see them.
  *            Absent = the page is measured as loaded.
+ *   siblings (optional, not on a section candidate) { "before": [<block spec>], "after": [<block spec>] }: plain blocks placed before / after the
+ *            candidate INSIDE ITS IMMEDIATE CONTAINER (the `parent` when given, otherwise the automatic wrapper: a column for a module, a row for a
+ *            column ...), identical in the A and B pages. Needed for settings that act against a neighbour (a column `order`, an overlap, a
+ *            z-index). The measured element is still the candidate: the probe picks the Nth element of its module class, where N is the number
+ *            of `before` siblings of the SAME block name, plus one when the `parent` is of the same block name as the candidate (a group in a
+ *            group: the parent comes first); nested descendants of that class are not counted, so do not use them.
+ *   wrapperBase (optional) { "<block>": {block attrs} }: attrs merged into the automatic wrapper (or the `parent`) of that block kind, identical in
+ *            A and B. e.g. { "row": { two-column structure }, "section": { overflow hidden } }. Applies to the wrappers the probe adds above the
+ *            candidate (column, row, section) and to `parent`.
+ *   geometry (optional, true) measure where the element sits: the viewport-independent rectangle (document coordinates) of the measured element,
+ *            of its parent and of its previous and next element siblings, the area where the measured element overlaps a sibling and WHICH element
+ *            is on top at the centre of that overlap (document.elementFromPoint: "measured" | "sibling" | "other"). The rectangle (top, left,
+ *            width, height, rounded) is also added to the compared properties as `rect:*`, so a moved element counts as a computed difference.
+ *            Result: detail[width].geometry = { control, candidate } (each: rect, parent, prev, next, overlap {area, with, top}). Added in the
+ *            layout task; absent = nothing changes for older candidate files.
  *   settleMs (optional) milliseconds to wait before measuring (default 600; 1200 with a `state`; 3000 for a number counter).
  *   ignore   (optional) computed property names (e.g. ["opacity","transform"]) left out of the comparison on BOTH pages. Needed when the
  *            effect under test is running while the page is measured (an entrance animation changes opacity from frame to frame, so two
@@ -41,7 +56,8 @@
  * "@SITE@" inside a string is replaced by the dev site URL.
  * Results (default fixtures/shapes/probe-results-<candidates file name>.json, never the committed probe-results-5.15.1.json
  * unless asked with --out): [{ id, effect, widths: {"1280","900","400"}, phoneOverflow, detail, error? }]; detail[width] holds the number
- * of computed differences, a sample of six, and `changedProps` (the distinct property names that differ, e.g. transform, opacity, attr:class,
+ * of computed differences, a sample of six, `overflowPx` (how far the candidate page is wider than the viewport: scrollWidth - innerWidth, 0 when
+ * it fits; added in the layout task), and `changedProps` (the distinct property names that differ, e.g. transform, opacity, attr:class,
  * rect:top; added in the motion task, absent from older result files).
  * One line per candidate: PASS | PASS(css-only) | DEAD | OVERFLOW (it changed the page but overflows a phone) | ERROR <id>: reason.
  * PASS needs a measured computed-style difference of the module's element (or its descendants) at some width; when only the emitted
@@ -151,19 +167,47 @@ function render(n) {
   return CONTAINERS.includes(n.block) ? block(n.block, n.attrs, kids.map(render).join('')) : block(n.block, n.attrs);
 }
 
+/** The wrapper block of kind `name` (a plain one, with the candidate's `wrapperBase[name]` merged in when given). */
+function wrapperNode(name, c) {
+  const n = plain(name);
+  const extra = c.wrapperBase && c.wrapperBase[name];
+  if (extra) n.attrs = deepMerge(n.attrs, withSite(JSON.parse(JSON.stringify(extra))));
+  return n;
+}
+
+/** The plain blocks next to a non-section candidate: { before: [node], after: [node] } (empty lists when the candidate has none). */
+function siblingNodes(c) {
+  const out = { before: [], after: [] };
+  if (c.siblings === undefined || c.siblings === null) return out;
+  if (c.block === 'section') throw new Error('`siblings` is not supported on a section candidate (use `neighbours`)');
+  if (typeof c.siblings !== 'object' || Array.isArray(c.siblings)) throw new Error('`siblings` must be an object { before: [...], after: [...] }');
+  for (const side of ['before', 'after']) {
+    const list = c.siblings[side] || [];
+    if (!Array.isArray(list)) throw new Error('`siblings.' + side + '` must be a list of block specs');
+    for (const spec of list) out[side].push(nodeFromSpec(spec, false, false));
+  }
+  return out;
+}
+
 /** The page for a candidate: its block (with the set values applied when `apply`), inside `parent` when given, in the smallest valid wrapper. */
 function pageFor(c, apply) {
   let node = nodeFromSpec(c, true, apply);
+  const sib = siblingNodes(c);
+  const withSiblings = (n) => [...sib.before, n, ...sib.after];
+  let siblingsPlaced = false;
   if (c.parent !== undefined && c.parent !== null) {
     if (!CONTAINERS.includes(c.parent) || c.parent === 'section') throw new Error('parent "' + c.parent + '" is not supported (use row, column or group)');
-    node = { ...plain(c.parent), children: [node] };
+    node = { ...wrapperNode(c.parent, c), children: withSiblings(node) };
+    siblingsPlaced = true;
   }
   // Wrap from the node's level up to a section: group/module > column > row > section.
   const level = { section: 0, row: 1, column: 2 }[node.block] ?? 3;
   for (let l = level; l > 0; l--) {
     const w = l === 3 ? 'column' : l === 2 ? 'row' : 'section';
-    node = { ...plain(w), children: [node] };
+    node = { ...wrapperNode(w, c), children: siblingsPlaced ? [node] : withSiblings(node) };
+    siblingsPlaced = true;
   }
+  if (!siblingsPlaced && (sib.before.length || sib.after.length)) throw new Error('`siblings` needs a container: the candidate has none');
   const nb = neighbourNodes(c);
   return '<!-- wp:divi/placeholder -->' + nb.before.map(render).join('') + render(node) + nb.after.map(render).join('') + '<!-- /wp:divi/placeholder -->';
 }
@@ -243,15 +287,49 @@ function removeOrphans() {
 const classOf = (blockName) => 'et_pb_' + blockName.replace(/-/g, '_');
 
 /** Runs in the page: stylesheet text plus the computed styles of the module element and its descendants. */
-function snapshotInPage({ cls, index, withRect, attrs, ignore }) {
+function snapshotInPage({ cls, index, withRect, attrs, ignore, geometry }) {
   // Divi and WordPress attach their <style> blocks in a load-dependent order, so the blocks are sorted before comparing.
   const styleText = [...document.querySelectorAll('style')].map((s) => s.textContent.trim()).filter(Boolean).sort().join('\n/*--*/\n');
   // The page content, never the Theme Builder header/footer (their first column/row/section would be measured otherwise).
   const inTb = (e) => /_tb_(header|footer|body)(\s|$)/.test(String(e.className)) || !!e.closest('.et-l--header, .et-l--footer');
   const inPost = [...document.querySelectorAll('.et-l--post .' + cls)];
   const el = inPost[index] || (index === 0 ? [...document.querySelectorAll('.' + cls)].find((e) => !inTb(e)) : null) || null;
+  // Document-coordinate rectangle (rounded), so scrolling cannot change it.
+  const docRect = (e) => {
+    const r = e.getBoundingClientRect();
+    return { top: Math.round(r.top + window.scrollY), left: Math.round(r.left + window.scrollX), width: Math.round(r.width), height: Math.round(r.height) };
+  };
+  const geometryOf = (m) => {
+    const sibOf = (e) => (e && e.nodeType === 1 ? e : null);
+    const prev = sibOf(m.previousElementSibling);
+    const next = sibOf(m.nextElementSibling);
+    const rm = docRect(m);
+    const out = { rect: rm, parent: m.parentElement ? docRect(m.parentElement) : null, prev: prev ? docRect(prev) : null, next: next ? docRect(next) : null, overlap: { area: 0, with: null, top: null } };
+    let best = null;
+    for (const [name, e] of [['prev', prev], ['next', next]]) {
+      if (!e) continue;
+      const r = docRect(e);
+      const w = Math.min(rm.left + rm.width, r.left + r.width) - Math.max(rm.left, r.left);
+      const h = Math.min(rm.top + rm.height, r.top + r.height) - Math.max(rm.top, r.top);
+      if (w > 0 && h > 0 && (!best || w * h > best.area)) best = { area: w * h, with: name, el: e, cx: Math.max(rm.left, r.left) + w / 2, cy: Math.max(rm.top, r.top) + h / 2 };
+    }
+    if (best) {
+      out.overlap.area = best.area;
+      out.overlap.with = best.with;
+      // Bring the centre of the overlap into the viewport, ask which element is there, and scroll back.
+      const x = best.cx - window.scrollX;
+      let y = best.cy - window.scrollY;
+      const back = window.scrollY;
+      if (y < 0 || y >= window.innerHeight) { window.scrollTo(0, Math.max(0, best.cy - window.innerHeight / 2)); y = best.cy - window.scrollY; }
+      const hit = x >= 0 && x < window.innerWidth && y >= 0 && y < window.innerHeight ? document.elementFromPoint(x, y) : null;
+      out.overlap.top = !hit ? 'none' : m.contains(hit) ? 'measured' : best.el.contains(hit) ? 'sibling' : 'other';
+      window.scrollTo(0, back);
+    }
+    return out;
+  };
   const props = {};
   let found = false;
+  let geo = null;
   if (el) {
     found = true;
     const all = [el, ...el.querySelectorAll('*')];
@@ -267,8 +345,9 @@ function snapshotInPage({ cls, index, withRect, attrs, ignore }) {
       const r = el.getBoundingClientRect();
       for (const key of ['top', 'left', 'width', 'height']) props['rect:' + key] = String(Math.round(r[key]));
     }
+    if (geometry) geo = geometryOf(el);
   }
-  return { styleText, props, found, overflow: document.documentElement.scrollWidth > window.innerWidth };
+  return { styleText, props, found, geo, overflow: document.documentElement.scrollWidth > window.innerWidth, overflowPx: Math.max(0, document.documentElement.scrollWidth - window.innerWidth) };
 }
 
 function diffProps(a, b) {
@@ -335,7 +414,7 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
           }, { cls, index, at: typeof c.scrollAt === 'number' ? c.scrollAt : 0.25 });
           await p.waitForTimeout(settle);
         }
-        const r = await p.evaluate(snapshotInPage, { cls, index, withRect: c.state === 'scroll', attrs: c.attrs || [], ignore: c.ignore || [] });
+        const r = await p.evaluate(snapshotInPage, { cls, index, withRect: c.state === 'scroll' || c.geometry === true, attrs: c.attrs || [], ignore: c.ignore || [], geometry: c.geometry === true });
         // WordPress writes a random per-request placeholder comment into the block-library style.
         r.styleText = r.styleText.replace(/wp_block_styles_on_demand_placeholder:[0-9a-f]+/g, 'wp_block_styles_on_demand_placeholder:X');
         r.styleText = r.styleText.split(new RegExp('\\b' + id + '\\b', 'g')).join('PID');
@@ -357,7 +436,9 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
         if (c.ignore !== undefined && !(Array.isArray(c.ignore) && c.ignore.every((x) => typeof x === 'string'))) throw new Error('`ignore` must be a list of computed property names');
         if (c.attrs !== undefined && !(Array.isArray(c.attrs) && c.attrs.every((x) => typeof x === 'string'))) throw new Error('`attrs` must be a list of attribute names');
         const cls = classOf(c.block);
-        const index = neighbourNodes(c).before.length; // the candidate comes after its `before` neighbours
+        // The candidate comes after its `before` neighbours (sections) and after its `before` siblings of the same block name.
+        const index = neighbourNodes(c).before.length + siblingNodes(c).before.filter((n) => n.block === c.block).length + (c.parent === c.block ? 1 : 0);
+        if (c.geometry !== undefined && c.geometry !== true) throw new Error('`geometry` must be true');
         // The number counter counts up after load: let it finish, or two loads of the same page never agree.
         const settle = typeof c.settleMs === 'number' ? c.settleMs : c.block === 'number-counter' ? 3000 : c.state ? 1200 : 600;
         const a = makePage(c.id + ' A', pageFor(c, false));
@@ -375,7 +456,8 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
           const styleDiff = sa.styleText !== sb.styleText;
           const computed = diffProps(sa.props, sb.props);
           entry.widths[w] = styleDiff || computed.length > 0;
-          entry.detail[w] = { stylesheetDiffers: styleDiff, computedDiffs: computed.length, sample: computed.slice(0, 6), changedProps: changedNames(sa.props, sb.props), controlNoise: noise };
+          entry.detail[w] = { stylesheetDiffers: styleDiff, computedDiffs: computed.length, sample: computed.slice(0, 6), changedProps: changedNames(sa.props, sb.props), controlNoise: noise, overflowPx: sb.overflowPx };
+          if (c.geometry === true) entry.detail[w].geometry = { control: sa.geo, candidate: sb.geo };
           if (noise) { entry.detail[w].warning = 'two loads of the same page differ: the result at this width is not reliable'; throw new Error('page A differs from itself at ' + w + 'px'); }
           if (w === 400) entry.phoneOverflow = sb.overflow;
         }

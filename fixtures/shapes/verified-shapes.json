@@ -1407,6 +1407,11 @@
             "evidence": "fixtures/valid/page-44-layout-2.json"
         },
         {
+            "path": "module.decoration.disabledOn.{bp}.value",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-dis-desktop"
+        },
+        {
             "path": "module.decoration.filters.{bp}.hover.brightness",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-filter-brightness"
@@ -1420,6 +1425,11 @@
             "path": "module.decoration.interactionTarget",
             "how": "export",
             "evidence": "fixtures/valid/themebuilder-footer-224970.json"
+        },
+        {
+            "path": "module.decoration.layout.{bp}.value.alignContent",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-flx-align-content"
         },
         {
             "path": "module.decoration.layout.{bp}.value.alignItems",
@@ -1447,9 +1457,34 @@
             "evidence": "fixtures/valid/page-17-newpage.json"
         },
         {
+            "path": "module.decoration.layout.{bp}.value.gridColumnCount",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-grd-count-3"
+        },
+        {
+            "path": "module.decoration.layout.{bp}.value.gridColumnMinWidth",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-grd-min-width"
+        },
+        {
+            "path": "module.decoration.layout.{bp}.value.gridColumnWidths",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-grd-min-width"
+        },
+        {
+            "path": "module.decoration.layout.{bp}.value.justifyContent",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-flx-justify-flex-start"
+        },
+        {
             "path": "module.decoration.layout.{bp}.value.rowGap",
             "how": "export",
             "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.order.{bp}.value.order",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-order-col-first-to-last"
         },
         {
             "path": "module.decoration.overflow.{bp}.value.x",
@@ -1467,9 +1502,29 @@
             "evidence": "fixtures/valid/page-45-layout-3.json"
         },
         {
+            "path": "module.decoration.position.{bp}.value.offset.horizontal",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-pos-abs-offset-horizontal"
+        },
+        {
+            "path": "module.decoration.position.{bp}.value.offset.vertical",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-pos-offset-without-mode"
+        },
+        {
             "path": "module.decoration.position.{bp}.value.origin.absolute",
             "how": "export",
             "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.position.{bp}.value.origin.fixed",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-pos-fixed-bottom-right"
+        },
+        {
+            "path": "module.decoration.position.{bp}.value.origin.relative",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-pos-rel-origin-bottom-left"
         },
         {
             "path": "module.decoration.scroll.{bp}.value.blur.enable",
@@ -1647,9 +1702,24 @@
             "evidence": "fixtures/valid/page-23-style-reference.json"
         },
         {
+            "path": "module.decoration.sizing.{bp}.value.alignSelf",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-flx-item-align-self"
+        },
+        {
             "path": "module.decoration.sizing.{bp}.value.alignment",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.sizing.{bp}.value.aspectRatio.height",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-siz-aspect-16-9"
+        },
+        {
+            "path": "module.decoration.sizing.{bp}.value.aspectRatio.width",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-siz-aspect-16-9"
         },
         {
             "path": "module.decoration.sizing.{bp}.value.flexType",
@@ -1657,14 +1727,34 @@
             "evidence": "fixtures/valid/component-instance-slot-filled-5.15.json"
         },
         {
+            "path": "module.decoration.sizing.{bp}.value.gridColumnSpan",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-grd-item-span"
+        },
+        {
             "path": "module.decoration.sizing.{bp}.value.height",
             "how": "export",
             "evidence": "fixtures/valid/page-85-layout-4.json"
         },
         {
+            "path": "module.decoration.sizing.{bp}.value.maxHeight",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-siz-maxheight"
+        },
+        {
             "path": "module.decoration.sizing.{bp}.value.maxWidth",
             "how": "export",
             "evidence": "fixtures/valid/page-17-variable-heading.json"
+        },
+        {
+            "path": "module.decoration.sizing.{bp}.value.minHeight",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-siz-minheight"
+        },
+        {
+            "path": "module.decoration.sizing.{bp}.value.size.{n}",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-flx-item-grow"
         },
         {
             "path": "module.decoration.sizing.{bp}.value.width",
@@ -1797,6 +1887,16 @@
             "evidence": "docs/shape-evidence-5.15.1.md#mo-hv-group-translate-y"
         },
         {
+            "path": "module.decoration.transform.{bp}.value.origin.x",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-tf-origin-top-left"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.value.origin.y",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-tf-origin-top-left"
+        },
+        {
             "path": "module.decoration.transform.{bp}.value.rotate.x",
             "how": "export",
             "evidence": "fixtures/valid/page-85-layout-4.json"
@@ -1825,6 +1925,11 @@
             "path": "module.decoration.transform.{bp}.value.skew.x",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#mo-tf-skew"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.value.skew.y",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#lay-tf-skew-y"
         },
         {
             "path": "module.decoration.transform.{bp}.value.translate.linked",

@@ -6606,3 +6606,4448 @@ Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-m
 - Sticky or scroll effects inside a Theme Builder header or footer: not measured: the probe renders ordinary sections in the page content
 - Respecting a visitor's reduced-motion setting: no claim: the 5.15.1 theme files (CSS, JavaScript and PHP, including the animation, scroll-effect and sticky code) were searched for `prefers-reduced-motion` and the only hits are the builder's AI app, onboarding and a WordPress library, not Divi's animation, scroll or sticky code. The plugin cannot add CSS, so the topic only advises keeping motion gentle
 - Motion from add-on plugins and the `divi_module_options_animation_data` filter: excluded: only what Divi ships was probed
+
+## lay-pos-mode-absolute
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.mode` = `"absolute"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `0:div:bottom: 0px -> 120px` |
+| 900 px | yes | 7 | yes | `0:div:bottom: 0px -> 120px` |
+| 400 px | yes | 7 | yes | `0:div:bottom: 0px -> 120px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-inline-end`, `min-inline-size`, `min-width`, `position`, `right`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 461, 160 x 80 | 1024 -> 1024 | 0 -> 12800 (next) | - -> sibling |
+| 900 px | 90, 515, 160 x 80 | 90, 515, 160 x 80 | 720 -> 720 | 0 -> 12800 (next) | - -> sibling |
+| 400 px | 40, 547, 160 x 80 | 40, 547, 160 x 80 | 320 -> 320 | 0 -> 12800 (next) | - -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.mode "absolute" alone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:114 (valid modes relative, absolute, fixed), Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:136-164 (relative) and :167-194 (absolute and fixed: top/left 0px unless an origin and offsets say otherwise). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-mode-fixed
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.mode` = `"fixed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 9 | yes | `0:div:bottom: 0px -> 820px` |
+| 900 px | yes | 9 | yes | `0:div:bottom: 0px -> 820px` |
+| 400 px | yes | 9 | yes | `0:div:bottom: 0px -> 820px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-inline-end`, `min-inline-size`, `min-width`, `position`, `rect:left`, `rect:top`, `right`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 0, 0, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 0, 0, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 0, 0, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: position.mode "fixed" alone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:114 (valid modes relative, absolute, fixed), Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:136-164 (relative) and :167-194 (absolute and fixed: top/left 0px unless an origin and offsets say otherwise). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-offset-without-mode
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.offset.vertical` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:bottom: 0px -> -24px` |
+| 900 px | yes | 5 | yes | `0:div:bottom: 0px -> -24px` |
+| 400 px | yes | 5 | yes | `0:div:bottom: 0px -> -24px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `rect:top`, `top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 485, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 90, 539, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 40, 571, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: An offset WITHOUT a mode. Source Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:108 falls back to the relative branch when no mode is given (the module already sits in a relative position context in the page), so the offset may still move the module; this measures it. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added:
+
+- `module.decoration.position.{bp}.value.offset.vertical`
+
+## lay-pos-origin-top-center
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.origin.absolute` = `"top center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:inset-inline-end: 864px -> 352px` |
+| 900 px | yes | 6 | yes | `0:div:inset-inline-end: 560px -> 200px` |
+| 400 px | yes | 6 | yes | `0:div:inset-inline-end: 160px -> 0px` |
+
+Properties that changed (any width): `inset-inline-end`, `inset-inline-start`, `left`, `rect:left`, `right`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 560, 461, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 900 px | 90, 515, 160 x 80 | 370, 515, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 400 px | 40, 547, 160 x 80 | 120, 547, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.origin.absolute "top center" on an absolute decor (mode set in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 (the first word is the vertical side, the second the horizontal side; the default is "top left"), :167-194 (the named sides get the offsets, a "center" side gets 50% and the transform translate of Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:120-128). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-origin-top-right
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.origin.absolute` = `"top right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:inset-inline-end: 864px -> 0px` |
+| 900 px | yes | 5 | yes | `0:div:inset-inline-end: 560px -> 0px` |
+| 400 px | yes | 5 | yes | `0:div:inset-inline-end: 160px -> 0px` |
+
+Properties that changed (any width): `inset-inline-end`, `inset-inline-start`, `left`, `rect:left`, `right`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 992, 461, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 900 px | 90, 515, 160 x 80 | 650, 515, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 400 px | 40, 547, 160 x 80 | 200, 547, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.origin.absolute "top right" on an absolute decor (mode set in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 (the first word is the vertical side, the second the horizontal side; the default is "top left"), :167-194 (the named sides get the offsets, a "center" side gets 50% and the transform translate of Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:120-128). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-origin-center-left
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.origin.absolute` = `"center left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:bottom: 120px -> 20px` |
+| 900 px | yes | 6 | yes | `0:div:bottom: 120px -> 20px` |
+| 400 px | yes | 6 | yes | `0:div:bottom: 120px -> 20px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `rect:top`, `top`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 521, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 900 px | 90, 515, 160 x 80 | 90, 575, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 400 px | 40, 547, 160 x 80 | 40, 607, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.origin.absolute "center left" on an absolute decor (mode set in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 (the first word is the vertical side, the second the horizontal side; the default is "top left"), :167-194 (the named sides get the offsets, a "center" side gets 50% and the transform translate of Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:120-128). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-origin-center-center
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.origin.absolute` = `"center center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 11 | yes | `0:div:bottom: 120px -> 20px` |
+| 900 px | yes | 11 | yes | `0:div:bottom: 120px -> 20px` |
+| 400 px | yes | 11 | yes | `0:div:bottom: 120px -> 20px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `rect:left`, `rect:top`, `right`, `top`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 560, 521, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 900 px | 90, 515, 160 x 80 | 370, 575, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 400 px | 40, 547, 160 x 80 | 120, 607, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.origin.absolute "center center" on an absolute decor (mode set in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 (the first word is the vertical side, the second the horizontal side; the default is "top left"), :167-194 (the named sides get the offsets, a "center" side gets 50% and the transform translate of Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:120-128). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-origin-center-right
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.origin.absolute` = `"center right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 11 | yes | `0:div:bottom: 120px -> 20px` |
+| 900 px | yes | 11 | yes | `0:div:bottom: 120px -> 20px` |
+| 400 px | yes | 11 | yes | `0:div:bottom: 120px -> 20px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `rect:left`, `rect:top`, `right`, `top`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 992, 521, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 900 px | 90, 515, 160 x 80 | 650, 575, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 400 px | 40, 547, 160 x 80 | 200, 607, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.origin.absolute "center right" on an absolute decor (mode set in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 (the first word is the vertical side, the second the horizontal side; the default is "top left"), :167-194 (the named sides get the offsets, a "center" side gets 50% and the transform translate of Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:120-128). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-origin-bottom-left
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.origin.absolute` = `"bottom left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:bottom: 120px -> 0px` |
+| 900 px | yes | 5 | yes | `0:div:bottom: 120px -> 0px` |
+| 400 px | yes | 5 | yes | `0:div:bottom: 120px -> 0px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `rect:top`, `top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 581, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 900 px | 90, 515, 160 x 80 | 90, 635, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 400 px | 40, 547, 160 x 80 | 40, 667, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.origin.absolute "bottom left" on an absolute decor (mode set in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 (the first word is the vertical side, the second the horizontal side; the default is "top left"), :167-194 (the named sides get the offsets, a "center" side gets 50% and the transform translate of Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:120-128). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-origin-bottom-center
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.origin.absolute` = `"bottom center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 11 | yes | `0:div:bottom: 120px -> 0px` |
+| 900 px | yes | 11 | yes | `0:div:bottom: 120px -> 0px` |
+| 400 px | yes | 11 | yes | `0:div:bottom: 120px -> 0px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `rect:left`, `rect:top`, `right`, `top`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 560, 581, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 900 px | 90, 515, 160 x 80 | 370, 635, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 400 px | 40, 547, 160 x 80 | 120, 667, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.origin.absolute "bottom center" on an absolute decor (mode set in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 (the first word is the vertical side, the second the horizontal side; the default is "top left"), :167-194 (the named sides get the offsets, a "center" side gets 50% and the transform translate of Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:120-128). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-origin-bottom-right
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.origin.absolute` = `"bottom right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 10 | yes | `0:div:bottom: 120px -> 0px` |
+| 900 px | yes | 10 | yes | `0:div:bottom: 120px -> 0px` |
+| 400 px | yes | 10 | yes | `0:div:bottom: 120px -> 0px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `rect:left`, `rect:top`, `right`, `top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 992, 581, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 900 px | 90, 515, 160 x 80 | 650, 635, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 400 px | 40, 547, 160 x 80 | 200, 667, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.origin.absolute "bottom right" on an absolute decor (mode set in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 (the first word is the vertical side, the second the horizontal side; the default is "top left"), :167-194 (the named sides get the offsets, a "center" side gets 50% and the transform translate of Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:120-128). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-abs-offset-vertical
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.offset.vertical` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:bottom: 120px -> 96px` |
+| 900 px | yes | 5 | yes | `0:div:bottom: 120px -> 96px` |
+| 400 px | yes | 5 | yes | `0:div:bottom: 120px -> 96px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `rect:top`, `top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 485, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 900 px | 90, 515, 160 x 80 | 90, 539, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 400 px | 40, 547, 160 x 80 | 40, 571, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.offset.vertical "24px" on an absolute decor (mode in the base, origin default top left). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:172 and :182 (the offset goes on the named vertical side). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-abs-offset-horizontal
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.offset.horizontal` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:inset-inline-end: 864px -> 840px` |
+| 900 px | yes | 5 | yes | `0:div:inset-inline-end: 560px -> 536px` |
+| 400 px | yes | 5 | yes | `0:div:inset-inline-end: 160px -> 136px` |
+
+Properties that changed (any width): `inset-inline-end`, `inset-inline-start`, `left`, `rect:left`, `right`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 152, 461, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 900 px | 90, 515, 160 x 80 | 114, 515, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 400 px | 40, 547, 160 x 80 | 64, 547, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.offset.horizontal "24px" on an absolute decor (mode in the base, origin default top left). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:173 and :183. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added:
+
+- `module.decoration.position.{bp}.value.offset.horizontal`
+
+## lay-pos-abs-offset-negative-top
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.origin.absolute` = `"top right"`
+- `module.decoration.position.desktop.value.offset.vertical` = `"-24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 10 | yes | `0:div:bottom: 120px -> 144px` |
+| 900 px | yes | 10 | yes | `0:div:bottom: 120px -> 144px` |
+| 400 px | yes | 10 | yes | `0:div:bottom: 120px -> 144px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `rect:left`, `rect:top`, `right`, `top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 992, 437, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 8960 (next) | sibling -> sibling |
+| 900 px | 90, 515, 160 x 80 | 650, 491, 160 x 80 | 720 -> 720 | 12800 (next) -> 8960 (next) | sibling -> sibling |
+| 400 px | 40, 547, 160 x 80 | 200, 523, 160 x 80 | 320 -> 320 | 12800 (next) -> 8960 (next) | sibling -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: A negative vertical offset "-24px" with origin.absolute "top right" (a declared pair; mode in the base): the decor hangs 24px above the column top. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:167-194. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-rel-offset-vertical
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.offset.vertical` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:bottom: 0px -> -24px` |
+| 900 px | yes | 5 | yes | `0:div:bottom: 0px -> -24px` |
+| 400 px | yes | 5 | yes | `0:div:bottom: 0px -> -24px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `rect:top`, `top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 485, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 90, 539, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 40, 571, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: position.offset.vertical "24px" on a relative decor (mode in the base, origin default top left): it nudges the decor down 24px without leaving the flow. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:136-153 (relative: the offset goes on the named side). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-rel-offset-horizontal
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.offset.horizontal` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:inset-inline-end: 0px -> -24px` |
+| 900 px | yes | 5 | yes | `0:div:inset-inline-end: 0px -> -24px` |
+| 400 px | yes | 5 | yes | `0:div:inset-inline-end: 0px -> -24px` |
+
+Properties that changed (any width): `inset-inline-end`, `inset-inline-start`, `left`, `rect:left`, `right`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 152, 461, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 114, 515, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 64, 547, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: position.offset.horizontal "24px" on a relative decor (mode in the base): nudges it right 24px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:144-153. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-rel-origin-bottom-left
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.origin.relative` = `"bottom left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:bottom: -24px -> 24px` |
+| 900 px | yes | 5 | yes | `0:div:bottom: -24px -> 24px` |
+| 400 px | yes | 5 | yes | `0:div:bottom: -24px -> 24px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `rect:top`, `top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 485, 160 x 80 | 128, 437, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 539, 160 x 80 | 90, 491, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 571, 160 x 80 | 40, 523, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: position.origin.relative "bottom left" on a relative decor that already has offset.vertical "24px": the offset now counts from the bottom, so the decor moves UP 24px instead of down. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126, :147-163 (the named sides get the offset, the opposite sides auto). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added:
+
+- `module.decoration.position.{bp}.value.origin.relative`
+
+## lay-pos-fixed-bottom-right
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.origin.fixed` = `"bottom right"`
+- `module.decoration.position.desktop.value.offset.vertical` = `"24px"`
+- `module.decoration.position.desktop.value.offset.horizontal` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 10 | yes | `0:div:bottom: 820px -> 24px` |
+| 900 px | yes | 10 | yes | `0:div:bottom: 820px -> 24px` |
+| 400 px | yes | 10 | yes | `0:div:bottom: 820px -> 24px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `rect:left`, `rect:top`, `right`, `top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 0, 0, 160 x 80 | 1096, 796, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 0, 0, 160 x 80 | 716, 796, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 0, 0, 160 x 80 | 216, 796, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: A fixed decor pinned to the bottom right corner of the screen: origin.fixed "bottom right" with both offsets "24px" (a declared triple; mode fixed in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 and :167-194. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added:
+
+- `module.decoration.position.{bp}.value.origin.fixed`
+
+## lay-pos-abs-phone-relative
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.phone.value.mode` = `"relative"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 10 | yes | `0:div:bottom: 96px -> -24px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-inline-end`, `inset-inline-start`, `left`, `min-inline-size`, `min-width`, `position`, `rect:left`, `right`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 968, 485, 160 x 80 | 968, 485, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 900 px | 626, 539, 160 x 80 | 626, 539, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 400 px | 176, 571, 160 x 80 | 64, 571, 160 x 80 | 320 -> 320 | 12800 (next) -> 0 | sibling -> - |
+
+Phone overflow at 400 px: no.
+
+Note: An absolute decor (origin top right, offsets 24px, all in the base for desktop) switched to relative on the PHONE only, so it falls back into the flow on phones. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:136-164 (the relative branch). Measured at 1280 / 900 / 400: a phone-only value should change only 400. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-abs-tablet-offset
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.tablet.value.offset.vertical` = `"60px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 6 | yes | `0:div:bottom: 96px -> 60px` |
+| 400 px | yes | 6 | yes | `0:div:bottom: 96px -> 60px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-block-start`, `rect:top`, `top`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 968, 485, 160 x 80 | 968, 485, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 900 px | 626, 539, 160 x 80 | 626, 575, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+| 400 px | 176, 571, 160 x 80 | 176, 607, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: A tablet vertical offset "60px" on an absolute decor whose desktop offset is 24px (base). Measured at 1280 / 900 / 400 to see which widths the tablet value reaches. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:167-194 (the offset is written per breakpoint; a smaller breakpoint inherits the larger one unless it sets its own).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-abs-outside-right-clipped
+
+Block: `group`, with `group` after it in the same container, with base settings on its wrapper(s) `section`. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.mode` = `"absolute"`
+- `module.decoration.position.desktop.value.origin.absolute` = `"top right"`
+- `module.decoration.position.desktop.value.offset.horizontal` = `"-60px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 10 | yes | `0:div:bottom: 0px -> 120px` |
+| 900 px | yes | 10 | yes | `0:div:bottom: 0px -> 120px` |
+| 400 px | yes | 10 | yes | `0:div:bottom: 0px -> 120px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-inline-end`, `inset-inline-start`, `left`, `min-inline-size`, `min-width`, `position`, `rect:left`, `right`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 1052, 461, 160 x 80 | 1024 -> 1024 | 0 -> 8000 (next) | - -> sibling |
+| 900 px | 90, 515, 160 x 80 | 710, 515, 160 x 80 | 720 -> 720 | 0 -> 8000 (next) | - -> sibling |
+| 400 px | 40, 547, 160 x 80 | 260, 547, 160 x 80 | 320 -> 320 | 0 -> 8000 (next) | - -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: The same decor hanging 60px outside the right edge, inside a section whose overflow.x is "hidden" (set on the section in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:94-96. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-abs-outside-right-phone-relative
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.phone.value.mode` = `"relative"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 10 | yes | `0:div:bottom: 120px -> 0px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `inset-inline-end`, `inset-inline-start`, `left`, `min-inline-size`, `min-width`, `position`, `rect:left`, `right`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 1052, 461, 160 x 80 | 1052, 461, 160 x 80 | 1024 -> 1024 | 8000 (next) -> 8000 (next) | sibling -> sibling |
+| 900 px | 710, 515, 160 x 80 | 710, 515, 160 x 80 | 720 -> 720 | 8000 (next) -> 8000 (next) | sibling -> sibling |
+| 400 px | 260, 547, 160 x 80 | -20, 547, 160 x 80 | 320 -> 320 | 8000 (next) -> 0 | sibling -> - |
+
+Phone overflow at 400 px: no.
+
+Note: The decor hanging 60px outside the right edge on desktop (base) and brought back into the flow with mode "relative" on the phone only: does it still overflow at 400px? Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:136-164 (the relative branch keeps the offsets).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-host-image
+
+Block: `image`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.mode` = `"absolute"`
+- `module.decoration.position.desktop.value.origin.absolute` = `"top right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `0:div:bottom: 0px -> 184px` |
+| 900 px | yes | 7 | yes | `0:div:bottom: 0px -> 184px` |
+| 400 px | yes | 7 | yes | `0:div:bottom: 0px -> 184px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `position`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 16 | 128, 461, 1024 x 16 | 1024 -> 1024 | 0 -> 16384 (next) | - -> sibling |
+| 900 px | 90, 515, 720 x 16 | 90, 515, 720 x 16 | 720 -> 720 | 0 -> 11520 (next) | - -> sibling |
+| 400 px | 40, 547, 320 x 16 | 40, 547, 320 x 16 | 320 -> 320 | 0 -> 5120 (next) | - -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.mode "absolute" with origin.absolute "top right" on a image module (a declared pair). Module-level position exists for this module in its module.json (settings.decoration.position). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:167-194. Placed in a column, followed by a light grey 200px-tall group ("card"); the probe records where the module sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-host-heading
+
+Block: `heading`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.mode` = `"absolute"`
+- `module.decoration.position.desktop.value.origin.absolute` = `"top right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 23 | yes | `0:div:bottom: 0px -> 160px` |
+| 900 px | yes | 23 | yes | `0:div:bottom: 0px -> 160px` |
+| 400 px | yes | 23 | yes | `0:div:bottom: 0px -> 160px` |
+
+Properties that changed (any width): `bottom`, `inline-size`, `inset-block-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `position`, `rect:left`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 958, 461, 194 x 40 | 1024 -> 1024 | 0 -> 7760 (next) | - -> sibling |
+| 900 px | 90, 515, 720 x 40 | 616, 515, 194 x 40 | 720 -> 720 | 0 -> 7760 (next) | - -> sibling |
+| 400 px | 40, 547, 320 x 40 | 166, 547, 194 x 40 | 320 -> 320 | 0 -> 7760 (next) | - -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.mode "absolute" with origin.absolute "top right" on a heading module (a declared pair). Module-level position exists for this module in its module.json (settings.decoration.position). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:167-194. Placed in a column, followed by a light grey 200px-tall group ("card"); the probe records where the module sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-host-text
+
+Block: `text`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.mode` = `"absolute"`
+- `module.decoration.position.desktop.value.origin.absolute` = `"top right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 23 | yes | `0:div:bottom: 0px -> 176.203px` |
+| 900 px | yes | 23 | yes | `0:div:bottom: 0px -> 176.203px` |
+| 400 px | yes | 23 | yes | `0:div:bottom: 0px -> 176.203px` |
+
+Properties that changed (any width): `bottom`, `inline-size`, `inset-block-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `position`, `rect:left`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 24 | 1083, 461, 69 x 24 | 1024 -> 1024 | 0 -> 1656 (next) | - -> sibling |
+| 900 px | 90, 515, 720 x 24 | 741, 515, 69 x 24 | 720 -> 720 | 0 -> 1656 (next) | - -> sibling |
+| 400 px | 40, 547, 320 x 24 | 291, 547, 69 x 24 | 320 -> 320 | 0 -> 1656 (next) | - -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.mode "absolute" with origin.absolute "top right" on a text module (a declared pair). Module-level position exists for this module in its module.json (settings.decoration.position). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:167-194. Placed in a column, followed by a light grey 200px-tall group ("card"); the probe records where the module sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-host-button
+
+Block: `button`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.mode` = `"absolute"`
+- `module.decoration.position.desktop.value.origin.absolute` = `"top right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `rect:left: 128 -> 1033` |
+| 900 px | yes | 1 | yes | `rect:left: 90 -> 691` |
+| 400 px | yes | 1 | yes | `rect:left: 40 -> 241` |
+
+Properties that changed (any width): `rect:left`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 119 x 60 | 1033, 461, 119 x 60 | 1024 -> 119 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 119 x 60 | 691, 515, 119 x 60 | 720 -> 119 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 119 x 60 | 241, 547, 119 x 60 | 320 -> 119 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: position.mode "absolute" with origin.absolute "top right" on a button module (a declared pair). Module-level position exists for this module in its module.json (settings.decoration.position). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:167-194. Placed in a column, followed by a light grey 200px-tall group ("card"); the probe records where the module sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-pos-host-blurb
+
+Block: `blurb`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.position.desktop.value.mode` = `"absolute"`
+- `module.decoration.position.desktop.value.origin.absolute` = `"top right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 39 | yes | `0:div:bottom: 0px -> 148.203px` |
+| 900 px | yes | 39 | yes | `0:div:bottom: 0px -> 148.203px` |
+| 400 px | yes | 35 | yes | `0:div:bottom: 0px -> 148.203px` |
+
+Properties that changed (any width): `bottom`, `inline-size`, `inset-block-end`, `inset-inline-start`, `left`, `margin-inline-end`, `margin-inline-start`, `margin-left`, `margin-right`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `position`, `rect:left`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 52 | 1077, 461, 75 x 52 | 1024 -> 1024 | 0 -> 3900 (next) | - -> sibling |
+| 900 px | 90, 515, 720 x 52 | 735, 515, 75 x 52 | 720 -> 720 | 0 -> 3900 (next) | - -> sibling |
+| 400 px | 40, 547, 320 x 52 | 285, 547, 75 x 52 | 320 -> 320 | 0 -> 3900 (next) | - -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: position.mode "absolute" with origin.absolute "top right" on a blurb module (a declared pair). Module-level position exists for this module in its module.json (settings.decoration.position). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:167-194. Placed in a column, followed by a light grey 200px-tall group ("card"); the probe records where the module sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-z-over-card
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.zIndex.desktop.value` = `5`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:z-index: auto -> 5` |
+| 900 px | yes | 1 | yes | `0:div:z-index: auto -> 5` |
+| 400 px | yes | 1 | yes | `0:div:z-index: auto -> 5` |
+
+Properties that changed (any width): `z-index`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 461, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> measured |
+| 900 px | 90, 515, 160 x 80 | 90, 515, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> measured |
+| 400 px | 40, 547, 160 x 80 | 40, 547, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> measured |
+
+Phone overflow at 400 px: no.
+
+Note: zIndex 5 on an absolute decor (mode in the base) that overlaps a later card. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ZIndex/ZIndex.php:71 (z-index is written as given). Compared: which element is on top at the centre of the overlap (document.elementFromPoint). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-z-behind-card
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.zIndex.desktop.value` = `-1`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:z-index: 5 -> -1` |
+| 900 px | yes | 1 | yes | `0:div:z-index: 5 -> -1` |
+| 400 px | yes | 1 | yes | `0:div:z-index: 5 -> -1` |
+
+Properties that changed (any width): `z-index`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 461, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | measured -> sibling |
+| 900 px | 90, 515, 160 x 80 | 90, 515, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | measured -> sibling |
+| 400 px | 40, 547, 160 x 80 | 40, 547, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | measured -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: zIndex -1 on an absolute decor that has zIndex 5 in the base: does a negative z-index put it behind the card? Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ZIndex/ZIndex.php:71. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-z-static-module
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.zIndex.desktop.value` = `5`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:z-index: auto -> 5` |
+| 900 px | yes | 1 | yes | `0:div:z-index: auto -> 5` |
+| 400 px | yes | 1 | yes | `0:div:z-index: auto -> 5` |
+
+Properties that changed (any width): `z-index`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 461, 160 x 80 | 1024 -> 1024 | 1600 (next) -> 1600 (next) | sibling -> measured |
+| 900 px | 90, 515, 160 x 80 | 90, 515, 160 x 80 | 720 -> 720 | 1600 (next) -> 1600 (next) | sibling -> measured |
+| 400 px | 40, 547, 160 x 80 | 40, 547, 160 x 80 | 320 -> 320 | 1600 (next) -> 1600 (next) | sibling -> measured |
+
+Phone overflow at 400 px: no.
+
+Note: zIndex 5 on a decor with NO position mode, pulled under a later card whose margin-top is -40px (card margin in the base): does z-index act on a static module inside a column? Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ZIndex/ZIndex.php:71 writes it either way; this measures the stacking. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-z-string
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.zIndex.desktop.value` = `"5"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:z-index: auto -> 5` |
+| 900 px | yes | 1 | yes | `0:div:z-index: auto -> 5` |
+| 400 px | yes | 1 | yes | `0:div:z-index: auto -> 5` |
+
+Properties that changed (any width): `z-index`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 461, 160 x 80 | 1024 -> 1024 | 12800 (next) -> 12800 (next) | sibling -> measured |
+| 900 px | 90, 515, 160 x 80 | 90, 515, 160 x 80 | 720 -> 720 | 12800 (next) -> 12800 (next) | sibling -> measured |
+| 400 px | 40, 547, 160 x 80 | 40, 547, 160 x 80 | 320 -> 320 | 12800 (next) -> 12800 (next) | sibling -> measured |
+
+Phone overflow at 400 px: no.
+
+Note: zIndex given as the string "5" instead of the number 5. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ZIndex/ZIndex.php:71 passes either through. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-neg-module-top
+
+Block: `group`, with `group` before it in the same container. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.margin.top` = `"-40px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:margin-block-start: 0px -> -40px` |
+| 900 px | yes | 3 | yes | `0:div:margin-block-start: 0px -> -40px` |
+| 400 px | yes | 3 | yes | `0:div:margin-block-start: 0px -> -40px` |
+
+Properties that changed (any width): `margin-block-start`, `margin-top`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 691, 160 x 80 | 128, 651, 160 x 80 | 1024 -> 1024 | 0 -> 1600 (prev) | - -> measured |
+| 900 px | 90, 745, 160 x 80 | 90, 705, 160 x 80 | 720 -> 720 | 0 -> 1600 (prev) | - -> measured |
+| 400 px | 40, 777, 160 x 80 | 40, 737, 160 x 80 | 320 -> 320 | 0 -> 1600 (prev) | - -> measured |
+
+Phone overflow at 400 px: no.
+
+Note: margin.top "-40px" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110 (any non-empty margin side is written as given, only values containing a backslash, semicolon or brace are refused). Placed in a column on a purple 160px x 80px group ("decor"), preceded by a light grey 200px-tall group ("card") in the same column; the probe records how much the decor overlaps the card above it.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-neg-module-left
+
+Block: `group`, with `group` before it in the same container. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.margin.left` = `"-40px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:margin-inline-start: 0px -> -40px` |
+| 900 px | yes | 3 | yes | `0:div:margin-inline-start: 0px -> -40px` |
+| 400 px | yes | 3 | yes | `0:div:margin-inline-start: 0px -> -40px` |
+
+Properties that changed (any width): `margin-inline-start`, `margin-left`, `rect:left`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 691, 160 x 80 | 88, 691, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 745, 160 x 80 | 50, 745, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 777, 160 x 80 | 0, 777, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: margin.left "-40px" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110 (any non-empty margin side is written as given, only values containing a backslash, semicolon or brace are refused). Placed in a column on a purple 160px x 80px group ("decor"), preceded by a light grey 200px-tall group ("card") in the same column; the probe records how much the decor overlaps the card above it.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-neg-module-right
+
+Block: `group`, with `group` before it in the same container. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.margin.right` = `"-40px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:margin-inline-end: 0px -> -40px` |
+| 900 px | yes | 2 | yes | `0:div:margin-inline-end: 0px -> -40px` |
+| 400 px | yes | 2 | yes | `0:div:margin-inline-end: 0px -> -40px` |
+
+Properties that changed (any width): `margin-inline-end`, `margin-right`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 691, 160 x 80 | 128, 691, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 745, 160 x 80 | 90, 745, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 777, 160 x 80 | 40, 777, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: margin.right "-40px" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110 (any non-empty margin side is written as given, only values containing a backslash, semicolon or brace are refused). Placed in a column on a purple 160px x 80px group ("decor"), preceded by a light grey 200px-tall group ("card") in the same column; the probe records how much the decor overlaps the card above it.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-neg-module-bottom
+
+Block: `group`, with `group` before it in the same container. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.margin.bottom` = `"-40px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:margin-block-end: 0px -> -40px` |
+| 900 px | yes | 2 | yes | `0:div:margin-block-end: 0px -> -40px` |
+| 400 px | yes | 2 | yes | `0:div:margin-block-end: 0px -> -40px` |
+
+Properties that changed (any width): `margin-block-end`, `margin-bottom`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 691, 160 x 80 | 128, 691, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 745, 160 x 80 | 90, 745, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 777, 160 x 80 | 40, 777, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: margin.bottom "-40px" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110 (any non-empty margin side is written as given, only values containing a backslash, semicolon or brace are refused). Placed in a column on a purple 160px x 80px group ("decor"), preceded by a light grey 200px-tall group ("card") in the same column; the probe records how much the decor overlaps the card above it.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-neg-module-top-phone-reset
+
+Block: `group`, with `group` before it in the same container. Set on top of the base block:
+
+- `module.decoration.spacing.phone.value.margin.top` = `"0px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 3 | yes | `0:div:margin-block-start: -40px -> 0px` |
+
+Properties that changed (any width): `margin-block-start`, `margin-top`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 651, 160 x 80 | 128, 651, 160 x 80 | 1024 -> 1024 | 1600 (prev) -> 1600 (prev) | measured -> measured |
+| 900 px | 90, 705, 160 x 80 | 90, 705, 160 x 80 | 720 -> 720 | 1600 (prev) -> 1600 (prev) | measured -> measured |
+| 400 px | 40, 737, 160 x 80 | 40, 777, 160 x 80 | 320 -> 320 | 1600 (prev) -> 0 | measured -> - |
+
+Phone overflow at 400 px: no.
+
+Note: A decor pulled up with margin.top "-40px" on desktop (base) and reset to "0px" on the phone only. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110. Placed in a column on a purple 160px x 80px group ("decor"), preceded by a light grey 200px-tall group ("card") in the same column; the probe records how much the decor overlaps the card above it.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-neg-module-top-tablet-only
+
+Block: `group`, with `group` before it in the same container. Set on top of the base block:
+
+- `module.decoration.spacing.tablet.value.margin.top` = `"-80px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 3 | yes | `0:div:margin-block-start: -40px -> -80px` |
+| 400 px | yes | 3 | yes | `0:div:margin-block-start: -40px -> -80px` |
+
+Properties that changed (any width): `margin-block-start`, `margin-top`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 651, 160 x 80 | 128, 651, 160 x 80 | 1024 -> 1024 | 1600 (prev) -> 1600 (prev) | measured -> measured |
+| 900 px | 90, 705, 160 x 80 | 90, 665, 160 x 80 | 720 -> 720 | 1600 (prev) -> 8000 (prev) | measured -> measured |
+| 400 px | 40, 737, 160 x 80 | 40, 697, 160 x 80 | 320 -> 320 | 1600 (prev) -> 8000 (prev) | measured -> measured |
+
+Phone overflow at 400 px: no.
+
+Note: A tablet margin.top "-80px" over a desktop "-40px" (base): which widths does the tablet value reach? Placed in a column on a purple 160px x 80px group ("decor"), preceded by a light grey 200px-tall group ("card") in the same column; the probe records how much the decor overlaps the card above it. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-neg-module-top-percent
+
+Block: `group`, with `group` before it in the same container. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.margin.top` = `"-25%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:margin-block-start: 0px -> -256px` |
+| 900 px | yes | 3 | yes | `0:div:margin-block-start: 0px -> -180px` |
+| 400 px | yes | 3 | yes | `0:div:margin-block-start: 0px -> -80px` |
+
+Properties that changed (any width): `margin-block-start`, `margin-top`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 691, 160 x 80 | 128, 435, 160 x 80 | 1024 -> 1024 | 0 -> 8640 (prev) | - -> measured |
+| 900 px | 90, 745, 160 x 80 | 90, 565, 160 x 80 | 720 -> 720 | 0 -> 12800 (prev) | - -> measured |
+| 400 px | 40, 777, 160 x 80 | 40, 697, 160 x 80 | 320 -> 320 | 0 -> 8000 (prev) | - -> measured |
+
+Phone overflow at 400 px: no.
+
+Note: margin.top "-25%" (a percentage of the container width). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110. Placed in a column on a purple 160px x 80px group ("decor"), preceded by a light grey 200px-tall group ("card") in the same column; the probe records how much the decor overlaps the card above it.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-neg-row-top
+
+Block: `row`, with `row` before it in the same container. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.margin.top` = `"-80px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:margin-block-start: 0px -> -80px` |
+| 900 px | yes | 3 | yes | `0:div:margin-block-start: 0px -> -80px` |
+| 400 px | yes | 3 | yes | `0:div:margin-block-start: 0px -> -80px` |
+
+Properties that changed (any width): `margin-block-start`, `margin-top`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 641, 1024 x 120 | 128, 561, 1024 x 120 | 1280 -> 1280 | 0 -> 20480 (prev) | - -> measured |
+| 900 px | 90, 695, 720 x 120 | 90, 615, 720 x 120 | 900 -> 900 | 0 -> 14400 (prev) | - -> measured |
+| 400 px | 40, 727, 320 x 120 | 40, 647, 320 x 120 | 400 -> 400 | 0 -> 6400 (prev) | - -> measured |
+
+Phone overflow at 400 px: no.
+
+Note: margin.top "-80px" on a row that follows another row in the same section (both rows have a dark background and 40px vertical padding). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110. The probe records how much the row overlaps the row above it.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-neg-section-top
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.margin.top` = `"-80px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:margin-block-start: 0px -> -80px` |
+| 900 px | yes | 3 | yes | `0:div:margin-block-start: 0px -> -80px` |
+| 400 px | yes | 3 | yes | `0:div:margin-block-start: 0px -> -80px` |
+
+Properties that changed (any width): `margin-block-start`, `margin-top`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 0, 605, 1280 x 200 | 0, 525, 1280 x 200 | 1280 -> 1280 | 0 -> 102400 (prev) | - -> measured |
+| 900 px | 0, 659, 900 x 200 | 0, 579, 900 x 200 | 900 -> 900 | 0 -> 72000 (prev) | - -> measured |
+| 400 px | 0, 691, 400 x 200 | 0, 611, 400 x 200 | 400 -> 400 | 0 -> 32000 (prev) | - -> measured |
+
+Phone overflow at 400 px: no.
+
+Note: margin.top "-80px" on a light section that follows a dark section (both with 80px vertical padding). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110. The probe records how much the light section overlaps the dark one and which is on top.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-neg-section-top-zindex
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.decoration.zIndex.desktop.value` = `2`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:z-index: auto -> 2` |
+| 900 px | yes | 1 | yes | `0:div:z-index: auto -> 2` |
+| 400 px | yes | 1 | yes | `0:div:z-index: auto -> 2` |
+
+Properties that changed (any width): `z-index`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 0, 525, 1280 x 200 | 0, 525, 1280 x 200 | 1280 -> 1280 | 102400 (prev) -> 102400 (prev) | measured -> measured |
+| 900 px | 0, 579, 900 x 200 | 0, 579, 900 x 200 | 900 -> 900 | 72000 (prev) -> 72000 (prev) | measured -> measured |
+| 400 px | 0, 611, 400 x 200 | 0, 611, 400 x 200 | 400 -> 400 | 32000 (prev) -> 32000 (prev) | measured -> measured |
+
+Phone overflow at 400 px: no.
+
+Note: zIndex 2 on the light section that already has margin.top "-80px" (base) and follows a dark section. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/ZIndex/ZIndex.php:71. Which section is on top at the centre of the overlap?
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-neg-section-top-phone-reset
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.decoration.spacing.phone.value.margin.top` = `"0px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 3 | yes | `0:div:margin-block-start: -80px -> 0px` |
+
+Properties that changed (any width): `margin-block-start`, `margin-top`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 0, 525, 1280 x 200 | 0, 525, 1280 x 200 | 1280 -> 1280 | 102400 (prev) -> 102400 (prev) | measured -> measured |
+| 900 px | 0, 579, 900 x 200 | 0, 579, 900 x 200 | 900 -> 900 | 72000 (prev) -> 72000 (prev) | measured -> measured |
+| 400 px | 0, 611, 400 x 200 | 0, 691, 400 x 200 | 400 -> 400 | 32000 (prev) -> 0 | measured -> - |
+
+Phone overflow at 400 px: no.
+
+Note: A light section pulled up with margin.top "-80px" on desktop (base), reset to "0px" on the phone only. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110. After a dark section.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-order-col-first-to-last
+
+Block: `column`, with `column` after it in the same container, with base settings on its wrapper(s) `row`. Set on top of the base block:
+
+- `module.decoration.order.desktop.value.order` = `"1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:order: 0 -> 1` |
+| 900 px | yes | 2 | yes | `0:div:order: 0 -> 1` |
+| 400 px | yes | 2 | yes | `0:div:order: 0 -> 1` |
+
+Properties that changed (any width): `order`, `rect:left`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 484 x 40 | 668, 461, 484 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 340 x 40 | 470, 515, 340 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 627, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: order "1" on the FIRST column: it moves after its sibling. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Order/Order.php:55-59 (the value is read from the key `order`). Placed in a row of two half-width columns (the row and columns use the shapes Divi writes for two equal columns that stack on a phone); the probe records where the candidate column sits.
+
+Registered paths added:
+
+- `module.decoration.order.{bp}.value.order`
+
+## lay-order-negative
+
+Block: `column`, with `column` before it in the same container, with base settings on its wrapper(s) `row`. Set on top of the base block:
+
+- `module.decoration.order.desktop.value.order` = `"-1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:order: 0 -> -1` |
+| 900 px | yes | 2 | yes | `0:div:order: 0 -> -1` |
+| 400 px | yes | 2 | yes | `0:div:order: 0 -> -1` |
+
+Properties that changed (any width): `order`, `rect:left`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 668, 461, 484 x 40 | 128, 461, 484 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 470, 515, 340 x 40 | 90, 515, 340 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 627, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: order "-1" on the SECOND column: it moves before its sibling. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Order/Order.php:55-59. Placed in a row of two half-width columns (the row and columns use the shapes Divi writes for two equal columns that stack on a phone); the probe records where the candidate column sits.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-order-number
+
+Block: `column`, with `column` after it in the same container, with base settings on its wrapper(s) `row`. Set on top of the base block:
+
+- `module.decoration.order.desktop.value.order` = `1`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:order: 0 -> 1` |
+| 900 px | yes | 2 | yes | `0:div:order: 0 -> 1` |
+| 400 px | yes | 2 | yes | `0:div:order: 0 -> 1` |
+
+Properties that changed (any width): `order`, `rect:left`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 484 x 40 | 668, 461, 484 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 340 x 40 | 470, 515, 340 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 627, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: order given as the number 1 instead of the string "1". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Order/Order.php:55-59. Placed in a row of two half-width columns (the row and columns use the shapes Divi writes for two equal columns that stack on a phone); the probe records where the candidate column sits.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-order-phone-only
+
+Block: `column`, with `column` before it in the same container, with base settings on its wrapper(s) `row`. Set on top of the base block:
+
+- `module.decoration.order.phone.value.order` = `"-1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 2 | yes | `0:div:order: 0 -> -1` |
+
+Properties that changed (any width): `order`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 668, 461, 484 x 40 | 668, 461, 484 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 470, 515, 340 x 40 | 470, 515, 340 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 627, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: order "-1" on the SECOND column for the phone only (the row wraps to a stack on phones): on a phone it should move above the first column. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Order/Order.php:55-59. Measured at 1280 / 900 / 400. Placed in a row of two half-width columns (the row and columns use the shapes Divi writes for two equal columns that stack on a phone); the probe records where the candidate column sits.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-order-tablet
+
+Block: `column`, with `column` before it in the same container, with base settings on its wrapper(s) `row`. Set on top of the base block:
+
+- `module.decoration.order.tablet.value.order` = `"-1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 2 | yes | `0:div:order: 0 -> -1` |
+| 400 px | yes | 2 | yes | `0:div:order: 0 -> -1` |
+
+Properties that changed (any width): `order`, `rect:left`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 668, 461, 484 x 40 | 668, 461, 484 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 470, 515, 340 x 40 | 90, 515, 340 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 627, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: order "-1" on the SECOND column for the tablet only: does the phone inherit it? Measured at 1280 / 900 / 400. Placed in a row of two half-width columns (the row and columns use the shapes Divi writes for two equal columns that stack on a phone); the probe records where the candidate column sits. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Order/Order.php:55-59.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-order-phone-reset
+
+Block: `column`, with `column` before it in the same container, with base settings on its wrapper(s) `row`. Set on top of the base block:
+
+- `module.decoration.order.phone.value.order` = `"0"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 2 | yes | `0:div:order: -1 -> 0` |
+
+Properties that changed (any width): `order`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 668, 461, 484 x 40 | 668, 461, 484 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 340 x 40 | 90, 515, 340 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 627, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: The second column has order "-1" on the tablet (base); order "0" on the phone resets it. Measured at 1280 / 900 / 400. Placed in a row of two half-width columns (the row and columns use the shapes Divi writes for two equal columns that stack on a phone); the probe records where the candidate column sits. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Order/Order.php:55-59.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-order-module
+
+Block: `heading`, with `heading` after it in the same container. Set on top of the base block:
+
+- `module.decoration.order.desktop.value.order` = `"1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:order: 0 -> 1` |
+| 900 px | yes | 2 | yes | `0:div:order: 0 -> 1` |
+| 400 px | yes | 2 | yes | `0:div:order: 0 -> 1` |
+
+Properties that changed (any width): `order`, `rect:top`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 531, 1024 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 585, 720 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 617, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: order "1" on a heading that is followed by another heading in the same column: does order reorder modules inside a column? Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Order/Order.php:55-59. Placed in a column.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-dis-desktop
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.disabledOn.desktop.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 65 | yes | `0:div:block-size: 40px -> auto` |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 0 | yes |  |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `rect:left`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 0, 0, 0 x 0 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "on" for desktop only. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added:
+
+- `module.decoration.disabledOn.{bp}.value`
+
+## lay-dis-tablet
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.disabledOn.tablet.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 65 | yes | `0:div:block-size: 40px -> auto` |
+| 400 px | yes | 0 | yes |  |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `rect:left`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 0, 0, 0 x 0 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "on" for tablet only. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-dis-phone
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.disabledOn.phone.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 65 | yes | `0:div:block-size: 40px -> auto` |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `rect:left`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 0, 0, 0 x 0 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "on" for phone only. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-dis-tablet-phone
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.disabledOn.tablet.value` = `"on"`
+- `module.decoration.disabledOn.phone.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 65 | yes | `0:div:block-size: 40px -> auto` |
+| 400 px | yes | 65 | yes | `0:div:block-size: 40px -> auto` |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `rect:left`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 0, 0, 0 x 0 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 0, 0, 0 x 0 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "on" for tablet AND phone (a declared pair). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-dis-off-value
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.disabledOn.desktop.value` = `"off"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 65 | yes | `0:div:block-size: auto -> 40px` |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 0 | yes |  |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `rect:left`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 0, 0, 0 x 0 | 128, 461, 1024 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "off" on desktop for a group that is "on" on desktop (base): does "off" show it again at 1280? Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-dis-host-section
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.disabledOn.phone.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 94 | yes | `0:div:block-size: 152px -> auto` |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 0, 405, 1280 x 152 | 0, 405, 1280 x 152 | 1280 -> 1280 | 0 -> 0 | - -> - |
+| 900 px | 0, 459, 900 x 152 | 0, 459, 900 x 152 | 900 -> 900 | 0 -> 0 | - -> - |
+| 400 px | 0, 491, 400 x 152 | 0, 0, 0 x 0 | 400 -> 400 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "on" on the phone on a section. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-dis-host-row
+
+Block: `row`. Set on top of the base block:
+
+- `module.decoration.disabledOn.phone.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 81 | yes | `0:div:block-size: 40px -> auto` |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `rect:left`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 40 | 1280 -> 1280 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 40 | 900 -> 900 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 0, 0, 0 x 0 | 400 -> 400 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "on" on the phone on a row. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-dis-host-column
+
+Block: `column`. Set on top of the base block:
+
+- `module.decoration.disabledOn.phone.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 63 | yes | `0:div:block-size: 40px -> auto` |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `rect:left`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 0, 0, 0 x 0 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "on" on the phone on a column. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-dis-host-heading
+
+Block: `heading`. Set on top of the base block:
+
+- `module.decoration.disabledOn.phone.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 47 | yes | `0:div:block-size: 40px -> auto` |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `rect:left`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 0, 0, 0 x 0 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "on" on the phone on a heading. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-dis-host-text
+
+Block: `text`. Set on top of the base block:
+
+- `module.decoration.disabledOn.phone.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 47 | yes | `0:div:block-size: 23.7969px -> auto` |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `rect:left`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 24 | 128, 461, 1024 x 24 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 24 | 90, 515, 720 x 24 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 24 | 0, 0, 0 x 0 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "on" on the phone on a text. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-dis-host-image
+
+Block: `image`. Set on top of the base block:
+
+- `module.decoration.disabledOn.phone.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 59 | yes | `0:div:block-size: 16px -> auto` |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `rect:left`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 16 | 128, 461, 1024 x 16 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 16 | 90, 515, 720 x 16 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 16 | 0, 0, 0 x 0 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "on" on the phone on a image. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-dis-host-button
+
+Block: `button`. Set on top of the base block:
+
+- `module.decoration.disabledOn.phone.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 19 | yes | `0:a:block-size: 59.7969px -> auto` |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `perspective-origin`, `rect:height`, `rect:left`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 119 x 60 | 128, 461, 119 x 60 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 119 x 60 | 90, 515, 119 x 60 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 119 x 60 | 0, 0, 0 x 0 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "on" on the phone on a button. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-dis-host-blurb
+
+Block: `blurb`. Set on top of the base block:
+
+- `module.decoration.disabledOn.phone.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 81 | yes | `0:div:block-size: 51.7969px -> auto` |
+
+Properties that changed (any width): `block-size`, `bottom`, `display`, `height`, `inline-size`, `inset-block-end`, `inset-block-start`, `inset-inline-end`, `inset-inline-start`, `left`, `margin-inline-end`, `margin-inline-start`, `margin-left`, `margin-right`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `rect:left`, `rect:top`, `rect:width`, `right`, `top`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 52 | 128, 461, 1024 x 52 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 52 | 90, 515, 720 x 52 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 52 | 0, 0, 0 x 0 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: disabledOn "on" on the phone on a blurb. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-ovf-x-hidden
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.overflow.desktop.value.x` = `"hidden"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `0:div:overflow-block: visible -> auto` |
+| 900 px | yes | 4 | yes | `0:div:overflow-block: visible -> auto` |
+| 400 px | yes | 4 | yes | `0:div:overflow-block: visible -> auto` |
+
+Properties that changed (any width): `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 60 | 128, 461, 1024 x 60 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 60 | 90, 515, 720 x 60 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 60 | 40, 547, 320 x 60 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: overflow.x "hidden" on a 60px-tall group with a heading inside. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83-99 (the allowed values are visible, scroll, hidden, auto).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-ovf-x-auto
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.overflow.desktop.value.x` = `"auto"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `0:div:overflow-block: visible -> auto` |
+| 900 px | yes | 4 | yes | `0:div:overflow-block: visible -> auto` |
+| 400 px | yes | 4 | yes | `0:div:overflow-block: visible -> auto` |
+
+Properties that changed (any width): `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 60 | 128, 461, 1024 x 60 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 60 | 90, 515, 720 x 60 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 60 | 40, 547, 320 x 60 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: overflow.x "auto" on a 60px-tall group with a heading inside. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83-99 (the allowed values are visible, scroll, hidden, auto).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-ovf-x-scroll
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.overflow.desktop.value.x` = `"scroll"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `0:div:overflow-block: visible -> auto` |
+| 900 px | yes | 4 | yes | `0:div:overflow-block: visible -> auto` |
+| 400 px | yes | 4 | yes | `0:div:overflow-block: visible -> auto` |
+
+Properties that changed (any width): `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 60 | 128, 461, 1024 x 60 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 60 | 90, 515, 720 x 60 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 60 | 40, 547, 320 x 60 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: overflow.x "scroll" on a 60px-tall group with a heading inside. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83-99 (the allowed values are visible, scroll, hidden, auto).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-ovf-y-hidden
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.overflow.desktop.value.y` = `"hidden"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `0:div:overflow-block: visible -> hidden` |
+| 900 px | yes | 4 | yes | `0:div:overflow-block: visible -> hidden` |
+| 400 px | yes | 4 | yes | `0:div:overflow-block: visible -> hidden` |
+
+Properties that changed (any width): `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 60 | 128, 461, 1024 x 60 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 60 | 90, 515, 720 x 60 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 60 | 40, 547, 320 x 60 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: overflow.y "hidden" on a 60px-tall group with a heading inside. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83-99 (the allowed values are visible, scroll, hidden, auto).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-ovf-y-auto
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.overflow.desktop.value.y` = `"auto"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `0:div:overflow-block: visible -> auto` |
+| 900 px | yes | 4 | yes | `0:div:overflow-block: visible -> auto` |
+| 400 px | yes | 4 | yes | `0:div:overflow-block: visible -> auto` |
+
+Properties that changed (any width): `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 60 | 128, 461, 1024 x 60 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 60 | 90, 515, 720 x 60 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 60 | 40, 547, 320 x 60 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: overflow.y "auto" on a 60px-tall group with a heading inside. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83-99 (the allowed values are visible, scroll, hidden, auto).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-ovf-y-scroll
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.overflow.desktop.value.y` = `"scroll"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `0:div:overflow-block: visible -> scroll` |
+| 900 px | yes | 4 | yes | `0:div:overflow-block: visible -> scroll` |
+| 400 px | yes | 4 | yes | `0:div:overflow-block: visible -> scroll` |
+
+Properties that changed (any width): `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 60 | 128, 461, 1024 x 60 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 60 | 90, 515, 720 x 60 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 60 | 40, 547, 320 x 60 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: overflow.y "scroll" on a 60px-tall group with a heading inside. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83-99 (the allowed values are visible, scroll, hidden, auto).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-ovf-radius-clips
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"16px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"16px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+| 900 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+| 400 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 60 | 128, 461, 1024 x 60 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 60 | 90, 515, 720 x 60 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 60 | 40, 547, 320 x 60 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: A border radius of 16px on all four corners: Divi adds overflow: hidden so the content follows the rounded corners. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/OverflowForBorderRadius/OverflowForBorderRadius.php:84-162 (overflow hidden when any corner is non-zero and no overflow is set explicitly).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-ovf-radius-then-visible
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.overflow.desktop.value.x` = `"visible"`
+- `module.decoration.overflow.desktop.value.y` = `"visible"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 4 | yes | `0:div:overflow-block: hidden -> visible` |
+| 900 px | yes | 4 | yes | `0:div:overflow-block: hidden -> visible` |
+| 400 px | yes | 4 | yes | `0:div:overflow-block: hidden -> visible` |
+
+Properties that changed (any width): `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 60 | 128, 461, 1024 x 60 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 60 | 90, 515, 720 x 60 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 60 | 40, 547, 320 x 60 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: overflow x and y "visible" on a group that has a 16px radius (base): the explicit values stop Divi from clipping to the radius. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/OverflowForBorderRadius/OverflowForBorderRadius.php:145-151 (both axes set and not hidden: no overflow hidden).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-ovf-radius-x-auto
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.overflow.desktop.value.x` = `"auto"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:overflow-inline: hidden -> auto` |
+| 900 px | yes | 2 | yes | `0:div:overflow-inline: hidden -> auto` |
+| 400 px | yes | 2 | yes | `0:div:overflow-inline: hidden -> auto` |
+
+Properties that changed (any width): `overflow-inline`, `overflow-x`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 60 | 128, 461, 1024 x 60 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 60 | 90, 515, 720 x 60 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 60 | 40, 547, 320 x 60 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: overflow.x "auto" on a group that has a 16px radius (base): Divi then adds overflow-y hidden only. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/OverflowForBorderRadius/OverflowForBorderRadius.php:154-156.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-minheight
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.minHeight` = `"240px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `0:div:block-size: 40px -> 240px` |
+| 900 px | yes | 7 | yes | `0:div:block-size: 40px -> 240px` |
+| 400 px | yes | 7 | yes | `0:div:block-size: 40px -> 240px` |
+
+Properties that changed (any width): `block-size`, `height`, `min-block-size`, `min-height`, `perspective-origin`, `rect:height`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 240 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 240 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 240 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.minHeight "240px". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:230-231.
+
+Registered paths added:
+
+- `module.decoration.sizing.{bp}.value.minHeight`
+
+## lay-siz-height
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.height` = `"240px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:block-size: 40px -> 240px` |
+| 900 px | yes | 5 | yes | `0:div:block-size: 40px -> 240px` |
+| 400 px | yes | 5 | yes | `0:div:block-size: 40px -> 240px` |
+
+Properties that changed (any width): `block-size`, `height`, `perspective-origin`, `rect:height`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 240 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 240 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 240 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.height "240px". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:235-236.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-height-vh
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.minHeight` = `"60vh"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `0:div:block-size: 40px -> 540px` |
+| 900 px | yes | 7 | yes | `0:div:block-size: 40px -> 540px` |
+| 400 px | yes | 7 | yes | `0:div:block-size: 40px -> 540px` |
+
+Properties that changed (any width): `block-size`, `height`, `min-block-size`, `min-height`, `perspective-origin`, `rect:height`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 540 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 540 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 540 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.minHeight "60vh" (a share of the screen height). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:230-231.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-maxheight
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.maxHeight` = `"120px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `0:div:block-size: 300px -> 120px` |
+| 900 px | yes | 7 | yes | `0:div:block-size: 300px -> 120px` |
+| 400 px | yes | 7 | yes | `0:div:block-size: 300px -> 120px` |
+
+Properties that changed (any width): `block-size`, `height`, `max-block-size`, `max-height`, `perspective-origin`, `rect:height`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 300 | 128, 461, 1024 x 120 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 300 | 90, 515, 720 x 120 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 300 | 40, 547, 320 x 120 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.maxHeight "120px" on a group that has height 300px (base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:240-241.
+
+Registered paths added:
+
+- `module.decoration.sizing.{bp}.value.maxHeight`
+
+## lay-siz-maxwidth
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.maxWidth` = `"480px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 19 | yes | `0:div:inline-size: 1024px -> 480px` |
+| 900 px | yes | 19 | yes | `0:div:inline-size: 720px -> 480px` |
+| 400 px | yes | 2 | yes | `0:div:max-inline-size: none -> 480px` |
+
+Properties that changed (any width): `inline-size`, `max-inline-size`, `max-width`, `perspective-origin`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 480 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 480 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.maxWidth "480px". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:195-197.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-width
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.width` = `"50%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `0:div:inline-size: 1024px -> 512px` |
+| 900 px | yes | 17 | yes | `0:div:inline-size: 720px -> 360px` |
+| 400 px | yes | 17 | yes | `0:div:inline-size: 320px -> 160px` |
+
+Properties that changed (any width): `inline-size`, `perspective-origin`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 512 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 360 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 160 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.width "50%". Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:190-192.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-width-phone
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.sizing.phone.value.width` = `"100%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 17 | yes | `0:div:inline-size: 160px -> 320px` |
+
+Properties that changed (any width): `inline-size`, `perspective-origin`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 512 x 40 | 128, 461, 512 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 360 x 40 | 90, 515, 360 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.width "100%" on the phone for a group that is 50% wide on desktop (base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:190-192.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-align-left
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.alignment` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:margin-inline-end: 0px -> 544px` |
+| 900 px | yes | 2 | yes | `0:div:margin-inline-end: 0px -> 240px` |
+| 400 px | yes | 0 | yes |  |
+
+Properties that changed (any width): `margin-inline-end`, `margin-right`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 480 x 40 | 128, 461, 480 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 480 x 40 | 90, 515, 480 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.alignment "left" on a group with width 100% and maxWidth 480px (base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:206-224 ("left" and "right" set the side margins; "center" only when a width, maxWidth or minWidth is set).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-align-center
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.alignment` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:margin-inline-end: 0px -> 272px` |
+| 900 px | yes | 5 | yes | `0:div:margin-inline-end: 0px -> 120px` |
+| 400 px | yes | 0 | yes |  |
+
+Properties that changed (any width): `margin-inline-end`, `margin-inline-start`, `margin-left`, `margin-right`, `rect:left`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 480 x 40 | 400, 461, 480 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 480 x 40 | 210, 515, 480 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.alignment "center" on a group with width 100% and maxWidth 480px (base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:206-224 ("left" and "right" set the side margins; "center" only when a width, maxWidth or minWidth is set).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-align-right
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.alignment` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:margin-inline-start: 0px -> 544px` |
+| 900 px | yes | 3 | yes | `0:div:margin-inline-start: 0px -> 240px` |
+| 400 px | yes | 0 | yes |  |
+
+Properties that changed (any width): `margin-inline-start`, `margin-left`, `rect:left`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 480 x 40 | 672, 461, 480 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 480 x 40 | 330, 515, 480 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.alignment "right" on a group with width 100% and maxWidth 480px (base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:206-224 ("left" and "right" set the side margins; "center" only when a width, maxWidth or minWidth is set).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-center-auto-margins
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.margin.left` = `"auto"`
+- `module.decoration.spacing.desktop.value.margin.right` = `"auto"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:margin-inline-end: 0px -> 272px` |
+| 900 px | yes | 5 | yes | `0:div:margin-inline-end: 0px -> 120px` |
+| 400 px | yes | 0 | yes |  |
+
+Properties that changed (any width): `margin-inline-end`, `margin-inline-start`, `margin-left`, `margin-right`, `rect:left`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 480 x 40 | 400, 461, 480 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 480 x 40 | 210, 515, 480 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: margin.left and margin.right "auto" on a group with width 100% and maxWidth 480px (base): the guide's centring recipe, a declared pair. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:100-110.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-aspect-16-9
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.aspectRatio.width` = `"16"`
+- `module.decoration.sizing.desktop.value.aspectRatio.height` = `"9"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:aspect-ratio: auto -> 16 / 9` |
+| 900 px | yes | 6 | yes | `0:div:aspect-ratio: auto -> 16 / 9` |
+| 400 px | yes | 6 | yes | `0:div:aspect-ratio: auto -> 16 / 9` |
+
+Properties that changed (any width): `aspect-ratio`, `block-size`, `height`, `perspective-origin`, `rect:height`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 576 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 405 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 180 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.aspectRatio {width "16", height "9"} on a group (a declared pair). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:244-252 (written as aspect-ratio: 16 / 9 unless a side is empty or "auto").
+
+Registered paths added:
+
+- `module.decoration.sizing.{bp}.value.aspectRatio.height`
+- `module.decoration.sizing.{bp}.value.aspectRatio.width`
+
+## lay-siz-aspect-square
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.aspectRatio.width` = `"1"`
+- `module.decoration.sizing.desktop.value.aspectRatio.height` = `"1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:aspect-ratio: auto -> 1 / 1` |
+| 900 px | yes | 6 | yes | `0:div:aspect-ratio: auto -> 1 / 1` |
+| 400 px | yes | 6 | yes | `0:div:aspect-ratio: auto -> 1 / 1` |
+
+Properties that changed (any width): `aspect-ratio`, `block-size`, `height`, `perspective-origin`, `rect:height`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 320 x 40 | 128, 461, 320 x 320 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 320 x 40 | 90, 515, 320 x 320 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 320 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.aspectRatio {width "1", height "1"} on a group with maxWidth 320px (a declared pair). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:244-252.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-image-aspect-square
+
+Block: `image`. Set on top of the base block:
+
+- `module.advanced.sizing.desktop.value.aspectRatio.width` = `"1"`
+- `module.advanced.sizing.desktop.value.aspectRatio.height` = `"1"`
+- `image.decoration.fit.desktop.value.objectFit` = `"cover"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 15 | yes | `0:div:block-size: 576px -> 1024px` |
+| 900 px | yes | 15 | yes | `0:div:block-size: 405px -> 720px` |
+| 400 px | yes | 15 | yes | `0:div:block-size: 180px -> 320px` |
+
+Properties that changed (any width): `aspect-ratio`, `block-size`, `height`, `object-fit`, `perspective-origin`, `rect:height`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 576 | 128, 461, 1024 x 1024 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 405 | 90, 515, 720 x 720 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 180 | 40, 547, 320 x 320 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: An image module with aspectRatio 1:1 and objectFit "cover" (a declared triple; the image module keeps its sizing under module.advanced.sizing, see its module.json settings.advanced.sizing). Source: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/image/module.json (settings.advanced.sizing and settings.decoration.transform); Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:244-252.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-siz-image-maxwidth
+
+Block: `image`. Set on top of the base block:
+
+- `module.advanced.sizing.desktop.value.maxWidth` = `"320px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 22 | yes | `0:div:block-size: 576px -> 180px` |
+| 900 px | yes | 22 | yes | `0:div:block-size: 405px -> 180px` |
+| 400 px | yes | 2 | yes | `0:div:max-inline-size: none -> 320px` |
+
+Properties that changed (any width): `block-size`, `height`, `inline-size`, `max-inline-size`, `max-width`, `perspective-origin`, `rect:height`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 576 | 128, 461, 320 x 180 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 405 | 90, 515, 320 x 180 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 180 | 40, 547, 320 x 180 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: maxWidth "320px" on an image module (module.advanced.sizing). Source: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/image/module.json (settings.advanced.sizing and settings.decoration.transform); Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:195-197.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-type-4
+
+Block: `column`, with `column` after it in the same container, with base settings on its wrapper(s) `row`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.flexType` = `"4_24"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | no | `0:div:inline-size: 352.625px -> 123.719px` |
+| 900 px | yes | 17 | no | `0:div:inline-size: 247.938px -> 87px` |
+| 400 px | no | 0 | no |  |
+
+Properties that changed (any width): `inline-size`, `perspective-origin`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 353 x 40 | 128, 461, 124 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 248 x 40 | 90, 515, 87 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: flexType "4_24" on the first column of a two-column row; the sibling column has "20_24" (base), the candidate column has "12_24" in the base. flexType is a share of a 24-unit grid; the default guide teaches 24_24, 12_24, 8_24 and 6_24. The row and columns use the shapes Divi writes for equal columns that stack on a phone. Measured: the width of the column against its row. Source: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sizing/SizingPresetAttrsMap.php:129-134 (flexType is a sizing sub-attribute; its CSS is made by Divi's builder script, not by the PHP style classes, so the widths are what was measured). The 24-unit grid values are the ones Divi's own migration writes (Divi 5.15.1 includes/builder-5/server/Migration/FlexboxMigration.php:596-598, :685-730).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-type-10
+
+Block: `column`, with `column` after it in the same container, with base settings on its wrapper(s) `row`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.flexType` = `"10_24"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | no | `0:div:inline-size: 442.656px -> 393.812px` |
+| 900 px | yes | 17 | no | `0:div:inline-size: 311.25px -> 276.891px` |
+| 400 px | no | 0 | no |  |
+
+Properties that changed (any width): `inline-size`, `perspective-origin`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 443 x 40 | 128, 461, 394 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 311 x 40 | 90, 515, 277 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: flexType "10_24" on the first column of a two-column row; the sibling column has "14_24" (base), the candidate column has "12_24" in the base. flexType is a share of a 24-unit grid; the default guide teaches 24_24, 12_24, 8_24 and 6_24. The row and columns use the shapes Divi writes for equal columns that stack on a phone. Measured: the width of the column against its row. Source: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sizing/SizingPresetAttrsMap.php:129-134 (flexType is a sizing sub-attribute; its CSS is made by Divi's builder script, not by the PHP style classes, so the widths are what was measured). The 24-unit grid values are the ones Divi's own migration writes (Divi 5.15.1 includes/builder-5/server/Migration/FlexboxMigration.php:596-598, :685-730).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-type-16
+
+Block: `column`, with `column` after it in the same container, with base settings on its wrapper(s) `row`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.flexType` = `"16_24"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | no | `0:div:inline-size: 483.828px -> 663.891px` |
+| 900 px | yes | 17 | no | `0:div:inline-size: 340.188px -> 466.797px` |
+| 400 px | no | 0 | no |  |
+
+Properties that changed (any width): `inline-size`, `perspective-origin`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 484 x 40 | 128, 461, 664 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 340 x 40 | 90, 515, 467 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: flexType "16_24" on the first column of a two-column row; the sibling column has "8_24" (base), the candidate column has "12_24" in the base. flexType is a share of a 24-unit grid; the default guide teaches 24_24, 12_24, 8_24 and 6_24. The row and columns use the shapes Divi writes for equal columns that stack on a phone. Measured: the width of the column against its row. Source: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sizing/SizingPresetAttrsMap.php:129-134 (flexType is a sizing sub-attribute; its CSS is made by Divi's builder script, not by the PHP style classes, so the widths are what was measured). The 24-unit grid values are the ones Divi's own migration writes (Divi 5.15.1 includes/builder-5/server/Migration/FlexboxMigration.php:596-598, :685-730).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-type-18
+
+Block: `column`, with `column` after it in the same container, with base settings on its wrapper(s) `row`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.flexType` = `"18_24"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | no | `0:div:inline-size: 483.828px -> 753.906px` |
+| 900 px | yes | 17 | no | `0:div:inline-size: 340.188px -> 530.094px` |
+| 400 px | no | 0 | no |  |
+
+Properties that changed (any width): `inline-size`, `perspective-origin`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 484 x 40 | 128, 461, 754 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 340 x 40 | 90, 515, 530 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: flexType "18_24" on the first column of a two-column row; the sibling column has "6_24" (base), the candidate column has "12_24" in the base. flexType is a share of a 24-unit grid; the default guide teaches 24_24, 12_24, 8_24 and 6_24. The row and columns use the shapes Divi writes for equal columns that stack on a phone. Measured: the width of the column against its row. Source: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sizing/SizingPresetAttrsMap.php:129-134 (flexType is a sizing sub-attribute; its CSS is made by Divi's builder script, not by the PHP style classes, so the widths are what was measured). The 24-unit grid values are the ones Divi's own migration writes (Divi 5.15.1 includes/builder-5/server/Migration/FlexboxMigration.php:596-598, :685-730).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-type-20
+
+Block: `column`, with `column` after it in the same container, with base settings on its wrapper(s) `row`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.flexType` = `"20_24"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | no | `0:div:inline-size: 483.828px -> 843.938px` |
+| 900 px | yes | 17 | no | `0:div:inline-size: 340.188px -> 593.391px` |
+| 400 px | no | 0 | no |  |
+
+Properties that changed (any width): `inline-size`, `perspective-origin`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 484 x 40 | 128, 461, 844 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 340 x 40 | 90, 515, 593 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: flexType "20_24" on the first column of a two-column row; the sibling column has "4_24" (base), the candidate column has "12_24" in the base. flexType is a share of a 24-unit grid; the default guide teaches 24_24, 12_24, 8_24 and 6_24. The row and columns use the shapes Divi writes for equal columns that stack on a phone. Measured: the width of the column against its row. Source: Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/Sizing/SizingPresetAttrsMap.php:129-134 (flexType is a sizing sub-attribute; its CSS is made by Divi's builder script, not by the PHP style classes, so the widths are what was measured). The 24-unit grid values are the ones Divi's own migration writes (Divi 5.15.1 includes/builder-5/server/Migration/FlexboxMigration.php:596-598, :685-730).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-translate-x
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.translate.x` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 24, 0)` |
+| 900 px | yes | 2 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 24, 0)` |
+| 400 px | yes | 2 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 24, 0)` |
+
+Properties that changed (any width): `rect:left`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 152, 461, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 114, 515, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 64, 547, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: transform.translate.x "24px" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:155 (translateX). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-translate-y-down
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.translate.y` = `"48px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, 48)` |
+| 900 px | yes | 2 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, 48)` |
+| 400 px | yes | 2 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, 48)` |
+
+Properties that changed (any width): `rect:top`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 509, 160 x 80 | 1024 -> 1024 | 0 -> 2880 (next) | - -> sibling |
+| 900 px | 90, 515, 160 x 80 | 90, 563, 160 x 80 | 720 -> 720 | 0 -> 2880 (next) | - -> sibling |
+| 400 px | 40, 547, 160 x 80 | 40, 595, 160 x 80 | 320 -> 320 | 0 -> 2880 (next) | - -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: transform.translate.y "48px" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:159 (translateY). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-translate-y-up
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.translate.y` = `"-24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -24)` |
+| 900 px | yes | 2 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -24)` |
+| 400 px | yes | 2 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -24)` |
+
+Properties that changed (any width): `rect:top`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 437, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 90, 491, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 40, 523, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: transform.translate.y "-24px" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:159 (translateY). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-translate-y-percent
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.translate.y` = `"-25%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -20)` |
+| 900 px | yes | 2 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -20)` |
+| 400 px | yes | 2 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -20)` |
+
+Properties that changed (any width): `rect:top`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 441, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 90, 495, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 40, 527, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: transform.translate.y "-25%" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:159; a percentage is relative to the element's own height. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-rotate-z-3
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.rotate.z` = `"3deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:transform: none -> matrix(0.99863, 0.052336, -0.052336, 0.99863, 0, 0)` |
+| 900 px | yes | 5 | yes | `0:div:transform: none -> matrix(0.99863, 0.052336, -0.052336, 0.99863, 0, 0)` |
+| 400 px | yes | 5 | yes | `0:div:transform: none -> matrix(0.99863, 0.052336, -0.052336, 0.99863, 0, 0)` |
+
+Properties that changed (any width): `rect:height`, `rect:left`, `rect:top`, `rect:width`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 126, 457, 164 x 88 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 88, 511, 164 x 88 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 38, 543, 164 x 88 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: transform.rotate.z "3deg" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:171 (rotateZ). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-rotate-z-minus-6
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.rotate.z` = `"-6deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:transform: none -> matrix(0.994522, -0.104528, 0.104528, 0.994522, 0, 0)` |
+| 900 px | yes | 5 | yes | `0:div:transform: none -> matrix(0.994522, -0.104528, 0.104528, 0.994522, 0, 0)` |
+| 400 px | yes | 5 | yes | `0:div:transform: none -> matrix(0.994522, -0.104528, 0.104528, 0.994522, 0, 0)` |
+
+Properties that changed (any width): `rect:height`, `rect:left`, `rect:top`, `rect:width`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 124, 453, 167 x 96 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 86, 507, 167 x 96 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 36, 539, 167 x 96 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: transform.rotate.z "-6deg" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:171. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-rotate-x
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.rotate.x` = `"20deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform: none -> matrix3d(1, 0, 0, 0, 0, 0.939693, 0.34202, 0, 0, -0.34202, 0.939693, 0, 0, 0, 0, 1)` |
+| 900 px | yes | 3 | yes | `0:div:transform: none -> matrix3d(1, 0, 0, 0, 0, 0.939693, 0.34202, 0, 0, -0.34202, 0.939693, 0, 0, 0, 0, 1)` |
+| 400 px | yes | 3 | yes | `0:div:transform: none -> matrix3d(1, 0, 0, 0, 0, 0.939693, 0.34202, 0, 0, -0.34202, 0.939693, 0, 0, 0, 0, 1)` |
+
+Properties that changed (any width): `rect:height`, `rect:top`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 463, 160 x 75 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 90, 517, 160 x 75 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 40, 549, 160 x 75 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: transform.rotate.x "20deg" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:163 (rotateX); without a perspective it flattens the element. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-rotate-y
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.rotate.y` = `"20deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform: none -> matrix3d(0.939693, 0, -0.34202, 0, 0, 1, 0, 0, 0.34202, 0, 0.939693, 0, 0, 0, 0, 1)` |
+| 900 px | yes | 3 | yes | `0:div:transform: none -> matrix3d(0.939693, 0, -0.34202, 0, 0, 1, 0, 0, 0.34202, 0, 0.939693, 0, 0, 0, 0, 1)` |
+| 400 px | yes | 3 | yes | `0:div:transform: none -> matrix3d(0.939693, 0, -0.34202, 0, 0, 1, 0, 0, 0.34202, 0, 0.939693, 0, 0, 0, 0, 1)` |
+
+Properties that changed (any width): `rect:left`, `rect:width`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 133, 461, 150 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 95, 515, 150 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 45, 547, 150 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: transform.rotate.y "20deg" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:167 (rotateY). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-skew-y
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.skew.y` = `"6deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0.105104, 0, 1, 0, 0)` |
+| 900 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0.105104, 0, 1, 0, 0)` |
+| 400 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0.105104, 0, 1, 0, 0)` |
+
+Properties that changed (any width): `rect:height`, `rect:top`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 453, 160 x 97 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 90, 507, 160 x 97 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 40, 539, 160 x 97 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: transform.skew.y "6deg" on the decor. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:179 (skewY). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added:
+
+- `module.decoration.transform.{bp}.value.skew.y`
+
+## lay-tf-scale-105
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.scale.x` = `"105%"`
+- `module.decoration.transform.desktop.value.scale.y` = `"105%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:transform: none -> matrix(1.05, 0, 0, 1.05, 0, 0)` |
+| 900 px | yes | 5 | yes | `0:div:transform: none -> matrix(1.05, 0, 0, 1.05, 0, 0)` |
+| 400 px | yes | 5 | yes | `0:div:transform: none -> matrix(1.05, 0, 0, 1.05, 0, 0)` |
+
+Properties that changed (any width): `rect:height`, `rect:left`, `rect:top`, `rect:width`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 124, 459, 168 x 84 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 86, 513, 168 x 84 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 36, 545, 168 x 84 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: transform.scale x and y "105%" (a declared pair). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:147-152 (scaleX / scaleY; render_percentage turns "105%" into 1.05). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-scale-x-only
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.scale.x` = `"120%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform: none -> matrix(1.2, 0, 0, 1, 0, 0)` |
+| 900 px | yes | 3 | yes | `0:div:transform: none -> matrix(1.2, 0, 0, 1, 0, 0)` |
+| 400 px | yes | 3 | yes | `0:div:transform: none -> matrix(1.2, 0, 0, 1, 0, 0)` |
+
+Properties that changed (any width): `rect:left`, `rect:width`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 112, 461, 192 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 74, 515, 192 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 24, 547, 192 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: transform.scale.x "120%" alone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:147. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-origin-top-left
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.origin.x` = `"0%"`
+- `module.decoration.transform.desktop.value.origin.y` = `"0%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform-origin: 80px 40px -> 0px 0px` |
+| 900 px | yes | 3 | yes | `0:div:transform-origin: 80px 40px -> 0px 0px` |
+| 400 px | yes | 3 | yes | `0:div:transform-origin: 80px 40px -> 0px 0px` |
+
+Properties that changed (any width): `rect:left`, `rect:top`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 121, 445, 173 x 112 | 111, 461, 173 x 112 | 1024 -> 1024 | 0 -> 312 (next) | - -> sibling |
+| 900 px | 83, 499, 173 x 112 | 73, 515, 173 x 112 | 720 -> 720 | 0 -> 312 (next) | - -> sibling |
+| 400 px | 33, 531, 173 x 112 | 23, 547, 173 x 112 | 320 -> 320 | 0 -> 312 (next) | - -> sibling |
+
+Phone overflow at 400 px: no.
+
+Note: transform.origin x and y "0%" on a decor that is rotated 12deg (base): the rotation turns around the top left corner instead of the centre (a declared pair). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:318-326 (transform-origin: x y, the unset axis defaults to 50%). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added:
+
+- `module.decoration.transform.{bp}.value.origin.x`
+- `module.decoration.transform.{bp}.value.origin.y`
+
+## lay-tf-origin-x-only
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.origin.x` = `"100%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform-origin: 80px 40px -> 160px 40px` |
+| 900 px | yes | 3 | yes | `0:div:transform-origin: 80px 40px -> 160px 40px` |
+| 400 px | yes | 3 | yes | `0:div:transform-origin: 80px 40px -> 160px 40px` |
+
+Properties that changed (any width): `rect:left`, `rect:top`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 121, 445, 173 x 112 | 123, 429, 173 x 112 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 83, 499, 173 x 112 | 85, 483, 173 x 112 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 33, 531, 173 x 112 | 35, 515, 173 x 112 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: transform.origin.x "100%" alone on a decor rotated 12deg (base): the y axis defaults to 50%. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:318-326. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-origin-without-transform
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.origin.x` = `"0%"`
+- `module.decoration.transform.desktop.value.origin.y` = `"0%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:transform-origin: 80px 40px -> 0px 0px` |
+| 900 px | yes | 1 | yes | `0:div:transform-origin: 80px 40px -> 0px 0px` |
+| 400 px | yes | 1 | yes | `0:div:transform-origin: 80px 40px -> 0px 0px` |
+
+Properties that changed (any width): `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 160 x 80 | 128, 461, 160 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 160 x 80 | 90, 515, 160 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 160 x 80 | 40, 547, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: transform.origin with NO transform on the decor: nothing is transformed, so the origin should change no layout (computed transform-origin may still change). Precondition probe. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:318-326 (the origin is written whether or not a transform exists).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-phone-reset
+
+Block: `group`, with `group` after it in the same container. Set on top of the base block:
+
+- `module.decoration.transform.phone.value.translate.y` = `"0px"`
+- `module.decoration.transform.phone.value.rotate.z` = `"0deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 5 | yes | `0:div:transform: matrix(0.99863, 0.052336, -0.052336, 0.99863, 0, -24) -> matrix(1, 0, 0, 1, 0, 0)` |
+
+Properties that changed (any width): `rect:height`, `rect:left`, `rect:top`, `rect:width`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 126, 433, 164 x 88 | 126, 433, 164 x 88 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 88, 487, 164 x 88 | 88, 487, 164 x 88 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 38, 519, 164 x 88 | 40, 547, 160 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: translate.y "0px" and rotate.z "0deg" on the PHONE only (a declared pair) for a decor that is lifted 24px and rotated 3deg on desktop (base): the usual reset of a decorative transform on phones. Measured at 1280 / 900 / 400. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:155-171.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-tf-image-rotate
+
+Block: `image`. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.rotate.z` = `"3deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:div:transform: none -> matrix(0.99863, 0.052336, -0.052336, 0.99863, 0, 0)` |
+| 900 px | yes | 5 | yes | `0:div:transform: none -> matrix(0.99863, 0.052336, -0.052336, 0.99863, 0, 0)` |
+| 400 px | yes | 5 | yes | `0:div:transform: none -> matrix(0.99863, 0.052336, -0.052336, 0.99863, 0, 0)` |
+
+Properties that changed (any width): `rect:height`, `rect:left`, `rect:top`, `rect:width`, `transform`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 576 | 114, 435, 1053 x 629 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 405 | 80, 496, 740 x 442 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 180 | 36, 539, 329 x 197 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: rotate.z "3deg" on an image module (module-level transform). Placed in a column. Source: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/image/module.json (settings.advanced.sizing and settings.decoration.transform); Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:171.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-dir-row-from-default
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.flexDirection` = `"row"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 49 | yes | `0:div:block-size: 180px -> 160px` |
+| 900 px | yes | 49 | yes | `0:div:block-size: 180px -> 160px` |
+| 400 px | yes | 49 | yes | `0:div:block-size: 180px -> 160px` |
+
+Properties that changed (any width): `--flex-direction`, `block-size`, `flex-direction`, `height`, `inline-size`, `perspective-origin`, `rect:height`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 180 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 180 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 180 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.flexDirection "row" on a plain group (no layout in the base): is the group's default direction a column? A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:257-260.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-dir-column
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.flexDirection` = `"column"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 49 | yes | `0:div:block-size: 160px -> 180px` |
+| 900 px | yes | 49 | yes | `0:div:block-size: 160px -> 180px` |
+| 400 px | yes | 49 | yes | `0:div:block-size: 160px -> 180px` |
+
+Properties that changed (any width): `--flex-direction`, `block-size`, `flex-direction`, `height`, `inline-size`, `perspective-origin`, `rect:height`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 180 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 180 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 180 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.flexDirection "column" on a group that has flexDirection "row" (base). A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:257-260.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-dir-row-reverse
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.flexDirection` = `"row-reverse"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:flex-direction: row -> row-reverse` |
+| 900 px | yes | 2 | yes | `0:div:flex-direction: row -> row-reverse` |
+| 400 px | yes | 2 | yes | `0:div:flex-direction: row -> row-reverse` |
+
+Properties that changed (any width): `--flex-direction`, `flex-direction`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.flexDirection "row-reverse" on a group that has flexDirection "row" (base). A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:257-260.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-dir-column-reverse
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.flexDirection` = `"column-reverse"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 49 | yes | `0:div:block-size: 160px -> 180px` |
+| 900 px | yes | 49 | yes | `0:div:block-size: 160px -> 180px` |
+| 400 px | yes | 49 | yes | `0:div:block-size: 160px -> 180px` |
+
+Properties that changed (any width): `--flex-direction`, `block-size`, `flex-direction`, `height`, `inline-size`, `perspective-origin`, `rect:height`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 180 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 180 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 180 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.flexDirection "column-reverse" on a group that has flexDirection "row" (base). A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:257-260.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-dir-phone-column
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.phone.value.flexDirection` = `"column"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 49 | yes | `0:div:block-size: 160px -> 180px` |
+
+Properties that changed (any width): `--flex-direction`, `block-size`, `flex-direction`, `height`, `inline-size`, `perspective-origin`, `rect:height`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 180 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.flexDirection "column" on the phone only, for a group that is a flex row on desktop (base). Measured at 1280 / 900 / 400. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:257-260.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-justify-flex-start
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.justifyContent` = `"flex-start"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:justify-content: normal -> flex-start` |
+| 900 px | yes | 1 | yes | `0:div:justify-content: normal -> flex-start` |
+| 400 px | yes | 1 | yes | `0:div:justify-content: normal -> flex-start` |
+
+Properties that changed (any width): `justify-content`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.justifyContent "flex-start" on a flex row group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:262-264.
+
+Registered paths added:
+
+- `module.decoration.layout.{bp}.value.justifyContent`
+
+## lay-flx-justify-center
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.justifyContent` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:justify-content: normal -> center` |
+| 900 px | yes | 1 | yes | `0:div:justify-content: normal -> center` |
+| 400 px | yes | 1 | yes | `0:div:justify-content: normal -> center` |
+
+Properties that changed (any width): `justify-content`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.justifyContent "center" on a flex row group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:262-264.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-justify-flex-end
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.justifyContent` = `"flex-end"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:justify-content: normal -> flex-end` |
+| 900 px | yes | 1 | yes | `0:div:justify-content: normal -> flex-end` |
+| 400 px | yes | 1 | yes | `0:div:justify-content: normal -> flex-end` |
+
+Properties that changed (any width): `justify-content`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.justifyContent "flex-end" on a flex row group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:262-264.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-justify-space-between
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.justifyContent` = `"space-between"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:justify-content: normal -> space-between` |
+| 900 px | yes | 1 | yes | `0:div:justify-content: normal -> space-between` |
+| 400 px | yes | 1 | yes | `0:div:justify-content: normal -> space-between` |
+
+Properties that changed (any width): `justify-content`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.justifyContent "space-between" on a flex row group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:262-264.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-justify-space-around
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.justifyContent` = `"space-around"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:justify-content: normal -> space-around` |
+| 900 px | yes | 1 | yes | `0:div:justify-content: normal -> space-around` |
+| 400 px | yes | 1 | yes | `0:div:justify-content: normal -> space-around` |
+
+Properties that changed (any width): `justify-content`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.justifyContent "space-around" on a flex row group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:262-264.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-justify-space-evenly
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.justifyContent` = `"space-evenly"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:justify-content: normal -> space-evenly` |
+| 900 px | yes | 1 | yes | `0:div:justify-content: normal -> space-evenly` |
+| 400 px | yes | 1 | yes | `0:div:justify-content: normal -> space-evenly` |
+
+Properties that changed (any width): `justify-content`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.justifyContent "space-evenly" on a flex row group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:262-264.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-align-flex-start
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.alignItems` = `"flex-start"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 23 | yes | `0:div:align-items: normal -> flex-start` |
+| 900 px | yes | 23 | yes | `0:div:align-items: normal -> flex-start` |
+| 400 px | yes | 23 | yes | `0:div:align-items: normal -> flex-start` |
+
+Properties that changed (any width): `--align-items`, `align-items`, `block-size`, `height`, `perspective-origin`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.alignItems "flex-start" on a flex row group that is 160px tall. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:266-268.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-align-center
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.alignItems` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 23 | yes | `0:div:align-items: normal -> center` |
+| 900 px | yes | 23 | yes | `0:div:align-items: normal -> center` |
+| 400 px | yes | 23 | yes | `0:div:align-items: normal -> center` |
+
+Properties that changed (any width): `--align-items`, `align-items`, `block-size`, `height`, `perspective-origin`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.alignItems "center" on a flex row group that is 160px tall. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:266-268.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-align-flex-end
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.alignItems` = `"flex-end"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 23 | yes | `0:div:align-items: normal -> flex-end` |
+| 900 px | yes | 23 | yes | `0:div:align-items: normal -> flex-end` |
+| 400 px | yes | 23 | yes | `0:div:align-items: normal -> flex-end` |
+
+Properties that changed (any width): `--align-items`, `align-items`, `block-size`, `height`, `perspective-origin`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.alignItems "flex-end" on a flex row group that is 160px tall. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:266-268.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-align-stretch
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.alignItems` = `"stretch"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:align-items: normal -> stretch` |
+| 900 px | yes | 1 | yes | `0:div:align-items: normal -> stretch` |
+| 400 px | yes | 1 | yes | `0:div:align-items: normal -> stretch` |
+
+Properties that changed (any width): `align-items`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.alignItems "stretch" on a flex row group that is 160px tall. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:266-268.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-align-baseline
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.alignItems` = `"baseline"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 23 | yes | `0:div:align-items: normal -> baseline` |
+| 900 px | yes | 23 | yes | `0:div:align-items: normal -> baseline` |
+| 400 px | yes | 23 | yes | `0:div:align-items: normal -> baseline` |
+
+Properties that changed (any width): `--align-items`, `align-items`, `block-size`, `height`, `perspective-origin`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.alignItems "baseline" on a flex row group that is 160px tall. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:266-268.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-wrap-wrap
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.flexWrap` = `"wrap"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:flex-wrap: nowrap -> wrap` |
+| 900 px | yes | 1 | yes | `0:div:flex-wrap: nowrap -> wrap` |
+| 400 px | yes | 1 | yes | `0:div:flex-wrap: nowrap -> wrap` |
+
+Properties that changed (any width): `flex-wrap`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.flexWrap "wrap" on a flex row group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:283-290.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-wrap-wrap-reverse
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.flexWrap` = `"wrap-reverse"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:flex-wrap: nowrap -> wrap-reverse` |
+| 900 px | yes | 1 | yes | `0:div:flex-wrap: nowrap -> wrap-reverse` |
+| 400 px | yes | 1 | yes | `0:div:flex-wrap: nowrap -> wrap-reverse` |
+
+Properties that changed (any width): `flex-wrap`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.flexWrap "wrap-reverse" on a flex row group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:283-290.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-gap-column
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.columnGap` = `"40px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:column-gap: 30px -> 40px` |
+| 900 px | yes | 2 | yes | `0:div:column-gap: 30px -> 40px` |
+| 400 px | yes | 2 | yes | `0:div:column-gap: 30px -> 40px` |
+
+Properties that changed (any width): `--horizontal-gap`, `column-gap`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.columnGap "40px" on a flex row group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:102-104 (written as --horizontal-gap).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-gap-row
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.rowGap` = `"40px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `0:div:block-size: 180px -> 200px` |
+| 900 px | yes | 7 | yes | `0:div:block-size: 180px -> 200px` |
+| 400 px | yes | 7 | yes | `0:div:block-size: 180px -> 200px` |
+
+Properties that changed (any width): `--vertical-gap`, `block-size`, `height`, `perspective-origin`, `rect:height`, `row-gap`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 180 | 128, 461, 1024 x 200 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 180 | 90, 515, 720 x 200 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 180 | 40, 547, 320 x 200 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.rowGap "40px" on a flex group that is a column (base). A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:106-108 (written as --vertical-gap).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-flx-align-content
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.alignContent` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 13 | yes | `0:div:align-content: normal -> center` |
+| 900 px | yes | 13 | yes | `0:div:align-content: normal -> center` |
+| 400 px | yes | 13 | yes | `0:div:align-content: normal -> center` |
+
+Properties that changed (any width): `align-content`, `block-size`, `height`, `perspective-origin`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 160 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 160 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.alignContent "center" on a wrapping flex row group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:283-290 (only with flexWrap other than nowrap).
+
+Registered paths added:
+
+- `module.decoration.layout.{bp}.value.alignContent`
+
+## lay-flx-display-block
+
+Block: `group`, holding `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.display` = `"block"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 58 | yes | `0:div:column-gap: 30px -> normal` |
+| 900 px | yes | 67 | yes | `0:div:block-size: 160px -> 180px` |
+| 400 px | yes | 67 | yes | `0:div:block-size: 160px -> 180px` |
+
+Properties that changed (any width): `--flex-direction`, `block-size`, `column-gap`, `display`, `height`, `inline-size`, `margin-block-end`, `margin-bottom`, `min-block-size`, `min-height`, `min-inline-size`, `min-width`, `perspective-origin`, `rect:height`, `row-gap`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 160 | 128, 461, 1024 x 160 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 160 | 90, 515, 720 x 180 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 160 | 40, 547, 320 x 180 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.display "block" on a group that is a flex row in the base. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:66-69, :100.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-grd-display
+
+Block: `group`, holding `heading`, `heading`, `heading`, `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.display` = `"grid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 42 | yes | `0:div:display: flex -> grid` |
+| 900 px | yes | 42 | yes | `0:div:display: flex -> grid` |
+| 400 px | yes | 42 | yes | `0:div:display: flex -> grid` |
+
+Properties that changed (any width): `--column-count`, `--row-count`, `display`, `flex-direction`, `grid-template-columns`, `grid-template-rows`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 390 | 128, 461, 1024 x 390 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 390 | 90, 515, 720 x 390 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 390 | 40, 547, 320 x 390 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.display "grid" on a group. A group holding six short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:66-69, :110-114.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-grd-count-3
+
+Block: `group`, holding `heading`, `heading`, `heading`, `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.gridColumnCount` = `"3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 98 | yes | `0:div:block-size: 390px -> 110px` |
+| 900 px | yes | 98 | yes | `0:div:block-size: 390px -> 110px` |
+| 400 px | yes | 98 | yes | `0:div:block-size: 390px -> 110px` |
+
+Properties that changed (any width): `--column-count`, `block-size`, `grid-template-columns`, `grid-template-rows`, `height`, `inline-size`, `perspective-origin`, `rect:height`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 390 | 128, 461, 1024 x 110 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 390 | 90, 515, 720 x 110 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 390 | 40, 547, 320 x 110 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: layout.gridColumnCount "3" on a grid group (the default width mode is equal columns). A group holding six short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:112-130.
+
+Registered paths added:
+
+- `module.decoration.layout.{bp}.value.gridColumnCount`
+
+## lay-grd-count-phone-1
+
+Block: `group`, holding `heading`, `heading`, `heading`, `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.phone.value.gridColumnCount` = `"1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 98 | yes | `0:div:block-size: 110px -> 390px` |
+
+Properties that changed (any width): `--column-count`, `block-size`, `grid-template-columns`, `grid-template-rows`, `height`, `inline-size`, `perspective-origin`, `rect:height`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 110 | 128, 461, 1024 x 110 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 110 | 90, 515, 720 x 110 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 110 | 40, 547, 320 x 390 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: gridColumnCount "1" on the phone for a grid that has 3 columns on desktop (base). Measured at 1280 / 900 / 400. A group holding six short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:112-130.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-grd-count-tablet-2
+
+Block: `group`, holding `heading`, `heading`, `heading`, `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.tablet.value.gridColumnCount` = `"2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 98 | yes | `0:div:block-size: 110px -> 180px` |
+| 400 px | yes | 98 | yes | `0:div:block-size: 110px -> 180px` |
+
+Properties that changed (any width): `--column-count`, `block-size`, `grid-template-columns`, `grid-template-rows`, `height`, `inline-size`, `perspective-origin`, `rect:height`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 110 | 128, 461, 1024 x 110 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 110 | 90, 515, 720 x 180 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 110 | 40, 547, 320 x 180 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: gridColumnCount "2" on the tablet for a grid that has 3 columns on desktop (base). Measured at 1280 / 900 / 400. A group holding six short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:112-130.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-grd-gap
+
+Block: `group`, holding `heading`, `heading`, `heading`, `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.columnGap` = `"32px"`
+- `module.decoration.layout.desktop.value.rowGap` = `"32px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 82 | yes | `0:div:block-size: 110px -> 112px` |
+| 900 px | yes | 82 | yes | `0:div:block-size: 110px -> 112px` |
+| 400 px | yes | 82 | yes | `0:div:block-size: 110px -> 112px` |
+
+Properties that changed (any width): `--horizontal-gap`, `--vertical-gap`, `block-size`, `column-gap`, `grid-template-columns`, `height`, `inline-size`, `perspective-origin`, `rect:height`, `row-gap`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 110 | 128, 461, 1024 x 112 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 110 | 90, 515, 720 x 112 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 110 | 40, 547, 320 x 112 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: columnGap and rowGap "32px" on a 3-column grid (a declared pair). A group holding six short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:102-108.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-grd-min-width
+
+Block: `group`, holding `heading`, `heading`, `heading`, `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.gridColumnWidths` = `"equalMinimum"`
+- `module.decoration.layout.desktop.value.gridColumnMinWidth` = `"200px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 98 | yes | `0:div:block-size: 390px -> 110px` |
+| 900 px | yes | 98 | yes | `0:div:block-size: 390px -> 110px` |
+| 400 px | yes | 19 | yes | `0:div:--min-column-width: undefined -> 200px` |
+
+Properties that changed (any width): `--min-column-width`, `block-size`, `grid-template-columns`, `grid-template-rows`, `height`, `inline-size`, `perspective-origin`, `rect:height`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 390 | 128, 461, 1024 x 110 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 390 | 90, 515, 720 x 110 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 390 | 40, 547, 320 x 390 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: gridColumnWidths "equalMinimum" with gridColumnMinWidth "200px" (a declared pair): as many equal columns as fit, none narrower than 200px. A group holding six short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:132-137.
+
+Registered paths added:
+
+- `module.decoration.layout.{bp}.value.gridColumnMinWidth`
+- `module.decoration.layout.{bp}.value.gridColumnWidths`
+
+## lay-grd-align-items
+
+Block: `group`, holding `heading`, `heading`, `heading`, `heading`, `heading`, `heading`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.alignItems` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 25 | yes | `0:div:align-items: normal -> center` |
+| 900 px | yes | 25 | yes | `0:div:align-items: normal -> center` |
+| 400 px | yes | 25 | yes | `0:div:align-items: normal -> center` |
+
+Properties that changed (any width): `align-items`, `block-size`, `height`, `perspective-origin`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 200 | 128, 461, 1024 x 200 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 200 | 90, 515, 720 x 200 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 200 | 40, 547, 320 x 200 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: alignItems "center" on a 3-column grid. A group holding six short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:230-239.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-grd-item-span
+
+Block: `group`, placed inside a `group`, with `group`, `group` after it in the same container, with base settings on its wrapper(s) `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.gridColumnSpan` = `"2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 18 | yes | `0:div:grid-column-start: auto -> span 2` |
+| 900 px | yes | 18 | yes | `0:div:grid-column-start: auto -> span 2` |
+| 400 px | yes | 18 | yes | `0:div:grid-column-start: auto -> span 2` |
+
+Properties that changed (any width): `grid-column-start`, `inline-size`, `perspective-origin`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 321 x 40 | 128, 461, 673 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 220 x 40 | 90, 515, 470 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 87 x 40 | 40, 547, 203 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.gridColumnSpan "2" on a group that sits inside a 3-column grid group (grid parent in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:256-275 (only when the parent is a grid layout).
+
+Registered paths added:
+
+- `module.decoration.sizing.{bp}.value.gridColumnSpan`
+
+## lay-flx-item-grow
+
+Block: `group`, placed inside a `group`, with `group` after it in the same container, with base settings on its wrapper(s) `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.size` = `["flexGrow"]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 19 | yes | `0:div:flex-grow: 0 -> 1` |
+| 900 px | yes | 19 | yes | `0:div:flex-grow: 0 -> 1` |
+| 400 px | yes | 19 | yes | `0:div:flex-grow: 0 -> 1` |
+
+Properties that changed (any width): `flex-grow`, `flex-shrink`, `inline-size`, `perspective-origin`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 120 x 40 | 128, 461, 874 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 120 x 40 | 90, 515, 570 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 120 x 40 | 40, 547, 170 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.size ["flexGrow"] on a group that sits in a flex row group next to another group. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:151-176 (flex-grow 1 for the flexGrow toggle, 0 otherwise; only when the parent is a flex layout).
+
+Registered paths added:
+
+- `module.decoration.sizing.{bp}.value.size.{n}`
+
+## lay-flx-item-align-self
+
+Block: `group`, placed inside a `group`, with `group` after it in the same container, with base settings on its wrapper(s) `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.alignSelf` = `"flex-end"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `0:div:align-self: auto -> flex-end` |
+| 900 px | yes | 7 | yes | `0:div:align-self: auto -> flex-end` |
+| 400 px | yes | 7 | yes | `0:div:align-self: auto -> flex-end` |
+
+Properties that changed (any width): `align-self`, `block-size`, `height`, `perspective-origin`, `rect:height`, `rect:top`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 120 x 200 | 128, 621, 120 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 120 x 200 | 90, 675, 120 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 120 x 200 | 40, 707, 120 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: sizing.alignSelf "flex-end" on a group in a flex row group that is 200px tall. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:180-188 (only when the parent is a flex layout).
+
+Registered paths added:
+
+- `module.decoration.sizing.{bp}.value.alignSelf`
+
+## lay-spc-section-padding-scale
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"120px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"120px"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"80px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"80px"`
+- `module.decoration.spacing.phone.value.padding.top` = `"48px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"48px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 9 | yes | `0:div:block-size: 152px -> 280px` |
+| 900 px | yes | 9 | yes | `0:div:block-size: 152px -> 200px` |
+| 400 px | yes | 9 | yes | `0:div:block-size: 152px -> 136px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `rect:height`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 0, 405, 1280 x 152 | 0, 405, 1280 x 280 | 1280 -> 1280 | 0 -> 0 | - -> - |
+| 900 px | 0, 459, 900 x 152 | 0, 459, 900 x 200 | 900 -> 900 | 0 -> 0 | - -> - |
+| 400 px | 0, 491, 400 x 152 | 0, 491, 400 x 136 | 400 -> 400 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: A section padding scale per device: 120px on desktop, 80px on the tablet, 48px on the phone, top and bottom (a declared set of six). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123. Measured at 1280 / 900 / 400: the section height grows by the padding.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-spc-clamp
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"clamp(48px, 8vw, 120px)"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"clamp(48px, 8vw, 120px)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 9 | yes | `0:div:block-size: 152px -> 244.781px` |
+| 900 px | yes | 9 | yes | `0:div:block-size: 152px -> 184px` |
+| 400 px | yes | 9 | yes | `0:div:block-size: 152px -> 136px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `rect:height`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 0, 405, 1280 x 152 | 0, 405, 1280 x 245 | 1280 -> 1280 | 0 -> 0 | - -> - |
+| 900 px | 0, 459, 900 x 152 | 0, 459, 900 x 184 | 900 -> 900 | 0 -> 0 | - -> - |
+| 400 px | 0, 491, 400 x 152 | 0, 491, 400 x 136 | 400 -> 400 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: padding top and bottom "clamp(48px, 8vw, 120px)" on desktop only (a declared pair): one fluid value instead of three. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123 (any value without backslash, semicolon or brace is written as given); the closed parentheses keep the style value valid. Measured at 1280 / 900 / 400.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-spc-sync-top-only
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"40px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `0:div:block-size: 40px -> 80px` |
+| 900 px | yes | 7 | yes | `0:div:block-size: 40px -> 80px` |
+| 400 px | yes | 7 | yes | `0:div:block-size: 40px -> 80px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-start`, `padding-top`, `perspective-origin`, `rect:height`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 80 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 80 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 80 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: padding.top "40px" with syncVertical "on" and no bottom value (a declared pair): does the bottom follow? Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123 writes only the sides that have a value. The group height shows whether 40px or 80px were added.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-spc-padding-four-sides
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"40px"`
+- `module.decoration.spacing.desktop.value.padding.right` = `"24px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"40px"`
+- `module.decoration.spacing.desktop.value.padding.left` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 25 | yes | `0:div:block-size: 40px -> 120px` |
+| 900 px | yes | 25 | yes | `0:div:block-size: 40px -> 120px` |
+| 400 px | yes | 25 | yes | `0:div:block-size: 40px -> 120px` |
+
+Properties that changed (any width): `block-size`, `height`, `inline-size`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-inline-end`, `padding-inline-start`, `padding-left`, `padding-right`, `padding-top`, `perspective-origin`, `rect:height`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 120 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 120 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 120 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: padding on all four sides (a declared set of four). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123. The group height grows by 80px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lay-spc-padding-percent
+
+Block: `group`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.left` = `"5%"`
+- `module.decoration.spacing.desktop.value.padding.right` = `"5%"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 16 | yes | `0:div:padding-inline-end: 0px -> 51.1875px` |
+| 900 px | yes | 16 | yes | `0:div:padding-inline-end: 0px -> 36px` |
+| 400 px | yes | 16 | yes | `0:div:padding-inline-end: 0px -> 16px` |
+
+Properties that changed (any width): `inline-size`, `padding-inline-end`, `padding-inline-start`, `padding-left`, `padding-right`, `perspective-origin`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 461, 1024 x 40 | 128, 461, 1024 x 40 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 515, 720 x 40 | 90, 515, 720 x 40 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 547, 320 x 40 | 40, 547, 320 x 40 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: padding left and right "5%" (a declared pair; a share of the container width). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (layout)
+
+Candidates from `layout.json` that were measured and are not taught, with the reason:
+
+- `lay-pos-mode-relative`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). position.mode "relative" alone. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:114 (valid modes relative, absolute, fixed), Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:136-164 (relative) and :167-194 (absolute and fixed: top/left 0px unless an origin and offsets say otherwise). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+- `lay-pos-mode-default`: no effect (dead). position.mode "default" is not one of the valid modes (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:114, :122): precondition probe, expected to do nothing. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+- `lay-pos-origin-needs-mode`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). An origin without a mode: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:107-123 reads origin[mode], so an origin for absolute does nothing for a module that is not absolute. Precondition probe. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+- `lay-pos-origin-top-left`: no effect (dead). position.origin.absolute "top left" on an absolute decor (mode set in the base). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 (the first word is the vertical side, the second the horizontal side; the default is "top left"), :167-194 (the named sides get the offsets, a "center" side gets 50% and the transform translate of Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php:120-128). Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card. "top left" is the default, so this is expected to do nothing.
+- `lay-pos-rel-origin-needs-relative-mode`: no effect (dead). origin.absolute on a decor whose mode is relative: Source Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123 reads origin[mode], so origin.absolute is ignored when the mode is relative. Precondition probe. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card.
+- `lay-pos-abs-outside-right`: overflows a phone at 400 px (the page is 20 px wider than the screen). An absolute decor hanging 60px outside the right edge of its column (mode absolute, origin.absolute "top right", offset.horizontal "-60px": a declared triple). The phone overflow check decides whether this is safe. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card") in the same column; the probe records where the decor sits and how much it overlaps the card. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:167-194.
+- `lay-order-direct-value`: no effect (dead). order written directly as the value (value: 1) instead of value.order: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Order/Order.php:55 reads $attr_value["order"], so a bare number should do nothing. Shape probe. Placed in a row of two half-width columns (the row and columns use the shapes Divi writes for two equal columns that stack on a phone); the probe records where the candidate column sits.
+- `lay-dis-wrong-value`: no effect (dead). disabledOn given a value other than "on" ("true"). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56 compares with "on" exactly. Shape probe. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/DisabledOn/DisabledOn.php:56-62 (the value "on" writes display: none !important), Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/DisabledOn/DisabledOnStyle.php (one rule per breakpoint, each limited to that breakpoint's own width range: phone up to 767px, tablet up to 980px, see Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php). Measured at 1280 / 900 / 400; a hidden element has display none.
+- `lay-ovf-x-visible`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). overflow.x "visible" is the CSS default: expected to change nothing computed. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83-99 (the allowed values are visible, scroll, hidden, auto).
+- `lay-ovf-wrong-value`: no effect (dead). overflow.x "clip" is not in the allowed list: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Overflow/Overflow.php:83 and :94 skip it. Shape probe.
+- `lay-siz-minwidth-overflow`: overflows a phone at 400 px (the page is 240 px wider than the screen). sizing.minWidth "600px": wider than a phone column, so the phone overflow check decides. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:200-202.
+- `lay-siz-align-center-needs-width`: no effect (dead). sizing.alignment "center" with NO width, maxWidth or minWidth: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:212-216 only centres in a custom width context. Precondition probe.
+- `lay-siz-aspect-auto`: no effect (dead). sizing.aspectRatio with "auto" on both sides: Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:244-252 skips it. Shape probe.
+- `lay-tf-translate-x-wide`: overflows a phone at 400 px (the page is 24 px wider than the screen). translate.x "20%" on a decor that is as wide as its column (no 160px width): the shifted module pokes out of the column; the phone overflow check decides. Placed in a column on a purple 160px x 80px group ("decor"), followed by a light grey 200px-tall group ("card"); the probe records the rectangle of the decor and how much it overlaps the card. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:155.
+- `lay-flx-display-flex-default`: no effect (dead). layout.display "flex" on a plain group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:66-69 (display is read from the desktop value), :255-291 (the flex branch). A group may already be a flex container, which this checks.
+- `lay-flx-wrap-nowrap`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). layout.flexWrap "nowrap" on a flex row group. A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:283-290.
+- `lay-flx-align-content-nowrap`: no effect (dead). layout.alignContent "center" on a NON-wrapping flex group: A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:283-290 only writes it with a wrap. Precondition probe.
+- `lay-flx-justify-needs-flex`: no effect (dead). layout.justifyContent "center" on a group whose display is "block" (base): A group holding three short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:100 skips every flex and grid property for a block display. Precondition probe.
+- `lay-grd-min-width-needs-mode`: no effect (dead). gridColumnMinWidth "200px" WITHOUT gridColumnWidths "equalMinimum": A group holding six short headings. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:151-160 reads it only in that mode. Precondition probe.
+- `lay-grd-item-span-no-grid`: no effect (dead). sizing.gridColumnSpan "2" on a group whose parent is a plain flex group, not a grid: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:256 requires a grid parent. Precondition probe.
+- `lay-flx-item-align-self-no-flex`: no effect (dead). sizing.alignSelf "flex-end" on a group whose parent group has NO flex layout: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:180 requires a flex parent. Precondition probe.
+- `lay-spc-sync-only`: no effect (dead). padding.syncVertical "on" with no side value: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123 has no sync logic, only the four side values are written. Precondition probe.
+
+Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-layout.json`):
+
+- Position on a row, column or section, and absolute or fixed positioning of anything but the group, image, heading, text, button and blurb measured here: not rendered: every position candidate was a module placed in a column. Row, column and section also list `position` in their module.json but were not probed, and an absolute section or row would leave the page flow
+- Position values other than the ones measured: `origin.relative` other than "bottom left", `origin.fixed` other than "bottom right", tablet and phone overrides other than the phone mode and the tablet vertical offset, position in a hover or sticky state: not rendered: one value each. The rule for the origin words is read from Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 (the first word is the vertical side, the second the horizontal side)
+- The size and overlap of an absolute image module (candidate lay-pos-host-image): not relied on: the image module's rectangle was 1024 x 16 px in this candidate's pages and 1024 x 576 px in the sizing candidates (the image had not been laid out when it was measured), so only its computed position change is claimed, not an overlap area
+- Stacking against a sticky or fixed header, a Theme Builder header or footer, a section with `sticky`, and a z-index above 5 or below -1: not measured: the probe renders ordinary page content with the admin bar of the preview on top. Only 5, "5", -1 and 2 were set
+- Overlap amounts for other sizes and for the gap Divi leaves between modules: not generalised: the overlap areas were measured for the 160px x 80px decor and the 200px card of the candidates; a different size overlaps by a different amount
+- Whether an overlap is readable: text over a picture or a coloured block: never claimed. The probe measures rectangles and which element is on top at the centre of the overlap; it does not check contrast or legibility
+- `disabledOn` on tabletWide, phoneWide and the widescreen breakpoints, and any width other than 1280, 900 and 400 px: not measured: Divi lists phone up to 767px, phoneWide up to 860px, tablet up to 980px and tabletWide up to 1024px (Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php:76-110, source); the topic states only the three widths that were rendered
+- `disabledOn` visibility mode "transparent" (half-transparent instead of hidden): not offered as an attribute: DisabledOn.php:57-58 reads it from a parameter the module passes, not from the saved layout, so no layout path was built and nothing was probed
+- Hidden content, accessibility and search: never claimed: a module hidden with display none is still in the page's HTML; how a search engine or a screen reader treats it was not measured
+- `order` on rows, sections and other hosts, `order` inside grid containers, and order values other than -1, 1 and 0: not rendered: order was measured on two half-width columns of one row and on a heading inside a column
+- Sizing on rows and sections (`innerSizing`, row `sizing.items`), `module.advanced.sizing` on modules other than the image, and `size` with the value `custom` (flexGrow and flexShrink numbers): not rendered: group, column and image were measured. The custom flex numbers are read in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:151-161 (source) and were not probed
+- Flex item `alignSelf` values other than flex-end, and grid item settings other than `gridColumnSpan` (gridRowSpan, gridColumnStart, gridColumnEnd, gridRowStart, gridRowEnd, gridAlignSelf, gridJustifySelf): not rendered: one value each. They are read in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:180-188 and :256-298 (source)
+- `flexType` values other than 4_24, 10_24, 16_24, 18_24 and 20_24 (and the default guide's 24_24, 12_24, 8_24, 6_24), and rows with three or more columns: not rendered: only two-column rows were measured, the candidate column against its complement (24 minus N)
+- Flex and grid layout on a row, column, section or module: not rendered: every layout candidate was a group holding three or six headings. Row, column, section and the text-like modules list `layout` in their module.json
+- Grid options: gridColumnWidths "equalFixed", "auto" and "manual" (gridColumnWidth, gridTemplateColumns), gridRowHeights and its row settings, gridAutoFlow, gridDensity, gridAutoColumns and gridAutoRows, collapseEmptyColumns, gridJustifyItems and gridOffsetRules: not rendered: read in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:110-254 (source). Measured: display grid, gridColumnCount (desktop, tablet, phone), gap, gridColumnWidths "equalMinimum" with gridColumnMinWidth, alignItems
+- Overflow clipping as a picture: whether content is visibly cut, a scroll bar appears, or a sticky child stops working inside an overflow container: never claimed: the probe compares computed `overflow` values (and the page width). Setting one axis changed the other computed axis too (a CSS rule), which the topic records
+- Spacing units other than px, a percentage padding and clamp(); calc() and vw in spacing; margin sync flags and `padding.syncHorizontal`: not rendered: clamp(48px, 8vw, 120px) and a 5% padding were measured. A spacing value with a semicolon, backslash or brace is refused by the plugin's own gate (CUSTOM_CSS_NOT_ALLOWED) before it could be probed, and Divi drops it as well (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:143-154, source)
+- Transform on hosts other than the group and the image; `translate.linked`; 3D rotation with a perspective; transform in a hover or sticky state; transform on the tablet: not rendered or covered elsewhere: hover transforms and a resting scale/skew.x are in the topic `hover-states`. Measured here: translate x/y, rotate x/y/z, skew.y, scale x and y together, origin x/y and a phone reset
+- The Visual Builder: not checked: every result is a front-end render of a draft page preview on the Docker dev site (Divi 5.15.1, Chromium at 1280, 900 and 400 px)

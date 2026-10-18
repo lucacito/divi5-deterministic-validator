@@ -26,9 +26,6 @@ module.advanced.htmlAttributes.{bp}.value.class
 module.advanced.htmlAttributes.{bp}.value.id
 module.advanced.slidesToScroll.{bp}.value
 module.advanced.slidesToShow.{bp}.value
-module.decoration.layout.{bp}.value.justifyContent
-module.decoration.sizing.{bp}.value.alignSelf
-module.decoration.sizing.{bp}.value.size.{n}
 module.decoration.transform.{bp}.hover.translate.linked
 module.decoration.transform.{bp}.hover.translate.x
 number.advanced.enablePercentSign.{bp}.value

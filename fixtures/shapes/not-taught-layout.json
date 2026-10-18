@@ -1,0 +1,78 @@
+[
+  {
+    "item": "Position on a row, column or section, and absolute or fixed positioning of anything but the group, image, heading, text, button and blurb measured here",
+    "reason": "not rendered: every position candidate was a module placed in a column. Row, column and section also list `position` in their module.json but were not probed, and an absolute section or row would leave the page flow"
+  },
+  {
+    "item": "Position values other than the ones measured: `origin.relative` other than \"bottom left\", `origin.fixed` other than \"bottom right\", tablet and phone overrides other than the phone mode and the tablet vertical offset, position in a hover or sticky state",
+    "reason": "not rendered: one value each. The rule for the origin words is read from Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Position/Position.php:123-126 (the first word is the vertical side, the second the horizontal side)"
+  },
+  {
+    "item": "The size and overlap of an absolute image module (candidate lay-pos-host-image)",
+    "reason": "not relied on: the image module's rectangle was 1024 x 16 px in this candidate's pages and 1024 x 576 px in the sizing candidates (the image had not been laid out when it was measured), so only its computed position change is claimed, not an overlap area"
+  },
+  {
+    "item": "Stacking against a sticky or fixed header, a Theme Builder header or footer, a section with `sticky`, and a z-index above 5 or below -1",
+    "reason": "not measured: the probe renders ordinary page content with the admin bar of the preview on top. Only 5, \"5\", -1 and 2 were set"
+  },
+  {
+    "item": "Overlap amounts for other sizes and for the gap Divi leaves between modules",
+    "reason": "not generalised: the overlap areas were measured for the 160px x 80px decor and the 200px card of the candidates; a different size overlaps by a different amount"
+  },
+  {
+    "item": "Whether an overlap is readable: text over a picture or a coloured block",
+    "reason": "never claimed. The probe measures rectangles and which element is on top at the centre of the overlap; it does not check contrast or legibility"
+  },
+  {
+    "item": "`disabledOn` on tabletWide, phoneWide and the widescreen breakpoints, and any width other than 1280, 900 and 400 px",
+    "reason": "not measured: Divi lists phone up to 767px, phoneWide up to 860px, tablet up to 980px and tabletWide up to 1024px (Divi 5.15.1 includes/builder-5/server/Framework/Breakpoint/Breakpoint.php:76-110, source); the topic states only the three widths that were rendered"
+  },
+  {
+    "item": "`disabledOn` visibility mode \"transparent\" (half-transparent instead of hidden)",
+    "reason": "not offered as an attribute: DisabledOn.php:57-58 reads it from a parameter the module passes, not from the saved layout, so no layout path was built and nothing was probed"
+  },
+  {
+    "item": "Hidden content, accessibility and search",
+    "reason": "never claimed: a module hidden with display none is still in the page's HTML; how a search engine or a screen reader treats it was not measured"
+  },
+  {
+    "item": "`order` on rows, sections and other hosts, `order` inside grid containers, and order values other than -1, 1 and 0",
+    "reason": "not rendered: order was measured on two half-width columns of one row and on a heading inside a column"
+  },
+  {
+    "item": "Sizing on rows and sections (`innerSizing`, row `sizing.items`), `module.advanced.sizing` on modules other than the image, and `size` with the value `custom` (flexGrow and flexShrink numbers)",
+    "reason": "not rendered: group, column and image were measured. The custom flex numbers are read in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:151-161 (source) and were not probed"
+  },
+  {
+    "item": "Flex item `alignSelf` values other than flex-end, and grid item settings other than `gridColumnSpan` (gridRowSpan, gridColumnStart, gridColumnEnd, gridRowStart, gridRowEnd, gridAlignSelf, gridJustifySelf)",
+    "reason": "not rendered: one value each. They are read in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Sizing/Sizing.php:180-188 and :256-298 (source)"
+  },
+  {
+    "item": "`flexType` values other than 4_24, 10_24, 16_24, 18_24 and 20_24 (and the default guide's 24_24, 12_24, 8_24, 6_24), and rows with three or more columns",
+    "reason": "not rendered: only two-column rows were measured, the candidate column against its complement (24 minus N)"
+  },
+  {
+    "item": "Flex and grid layout on a row, column, section or module",
+    "reason": "not rendered: every layout candidate was a group holding three or six headings. Row, column, section and the text-like modules list `layout` in their module.json"
+  },
+  {
+    "item": "Grid options: gridColumnWidths \"equalFixed\", \"auto\" and \"manual\" (gridColumnWidth, gridTemplateColumns), gridRowHeights and its row settings, gridAutoFlow, gridDensity, gridAutoColumns and gridAutoRows, collapseEmptyColumns, gridJustifyItems and gridOffsetRules",
+    "reason": "not rendered: read in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Layout/Layout.php:110-254 (source). Measured: display grid, gridColumnCount (desktop, tablet, phone), gap, gridColumnWidths \"equalMinimum\" with gridColumnMinWidth, alignItems"
+  },
+  {
+    "item": "Overflow clipping as a picture: whether content is visibly cut, a scroll bar appears, or a sticky child stops working inside an overflow container",
+    "reason": "never claimed: the probe compares computed `overflow` values (and the page width). Setting one axis changed the other computed axis too (a CSS rule), which the topic records"
+  },
+  {
+    "item": "Spacing units other than px, a percentage padding and clamp(); calc() and vw in spacing; margin sync flags and `padding.syncHorizontal`",
+    "reason": "not rendered: clamp(48px, 8vw, 120px) and a 5% padding were measured. A spacing value with a semicolon, backslash or brace is refused by the plugin's own gate (CUSTOM_CSS_NOT_ALLOWED) before it could be probed, and Divi drops it as well (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:143-154, source)"
+  },
+  {
+    "item": "Transform on hosts other than the group and the image; `translate.linked`; 3D rotation with a perspective; transform in a hover or sticky state; transform on the tablet",
+    "reason": "not rendered or covered elsewhere: hover transforms and a resting scale/skew.x are in the topic `hover-states`. Measured here: translate x/y, rotate x/y/z, skew.y, scale x and y together, origin x/y and a phone reset"
+  },
+  {
+    "item": "The Visual Builder",
+    "reason": "not checked: every result is a front-end render of a draft page preview on the Docker dev site (Divi 5.15.1, Chromium at 1280, 900 and 400 px)"
+  }
+]
