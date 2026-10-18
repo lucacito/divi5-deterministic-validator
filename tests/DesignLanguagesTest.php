@@ -306,6 +306,62 @@ class DesignLanguagesTest extends TestCase
         $this->assertStringContainsString('never invent', $text);
     }
 
+    /**
+     * An instruction that invites a reassurance, a guarantee or a term the assistant cannot know ("no credit card",
+     * "cancel anytime") must hand the fact to the owner: say it is a placeholder or supplied by the owner, and never invent.
+     */
+    public function testNoLanguageInvitesInventedGuaranteesOrTerms(): void
+    {
+        $risky = '/reassur|guarantee|credit card|cancel|free trial|trial length|no commitment|refund|money-back|sign(?:ing)? ?up|what happens (?:after|next)/i';
+        foreach (DesignLanguages::ids() as $id) {
+            $lang = DesignLanguages::get($id);
+            foreach (['rhythm', 'hero', 'cta'] as $field) {
+                if (1 === preg_match($risky, $lang[$field])) {
+                    $this->assertMatchesRegularExpression('/placeholder|owner supplied|owner has not said/i', $lang[$field], "$id.$field invites a fact the assistant cannot know without saying the owner supplies it");
+                    $this->assertStringContainsStringIgnoringCase('never invent', $lang[$field], "$id.$field");
+                }
+            }
+        }
+        $cta = DesignLanguages::get('soft-saas')['cta'];
+        $this->assertStringContainsString('only if the owner supplied it', $cta);
+        $this->assertStringNotContainsString('confirms is true', $cta);
+    }
+
+    /** Small gold or accent text over a photo and its scrim is not guaranteed readable; only the inverse colour is. */
+    public function testNoAccentColouredTextIsPlacedOverAPhoto(): void
+    {
+        foreach (DesignLanguages::ids() as $id) {
+            $lang = DesignLanguages::get($id);
+            foreach (['hero', 'cta'] as $field) {
+                if (1 === preg_match('/photo|scrim|overlay/i', $lang[$field])) {
+                    $this->assertDoesNotMatchRegularExpression('/\b(?:gold|accent)(?:-| )?(?:coloured )?(?:eyebrow|label|headline|line)\b|\bgold text\b|\baccent-coloured text\b/i', $lang[$field], "$id.$field puts accent text over a photo");
+                }
+            }
+        }
+        $luxe = DesignLanguages::get('luxe');
+        $this->assertMatchesRegularExpression('/eyebrow[^,.;:]*inverse text colour/', $luxe['hero']);
+        $this->assertStringContainsString('never for text over a photo', $luxe['shadow']);
+    }
+
+    public function testBoldVibrantHasNeitherADividerAndAPullUpOnTheHeroNorAnUnscaledWideHeadline(): void
+    {
+        $bold = DesignLanguages::get('bold-vibrant');
+        $this->assertStringContainsString('negative top margin', $bold['hero']);
+        $this->assertStringContainsString('The hero has no divider', $bold['rhythm']);
+        $this->assertDoesNotMatchRegularExpression('/(?:close|end|finish)s? the hero with a [a-z ]*divider/i', $bold['rhythm']);
+        $this->assertMatchesRegularExpression('/slant divider 60px high[^.]*cobalt|cobalt[^.]*slant divider 60px high/', $bold['rhythm']);
+        $this->assertMatchesRegularExpression('/size per device[^)]*smaller on phones/', $bold['hero']);
+    }
+
+    public function testLuxeNamesTheDividerModuleAndDoesNotCombineParallaxWithTheScrim(): void
+    {
+        $luxe = DesignLanguages::get('luxe');
+        $this->assertStringContainsString('divider module', $luxe['cta']);
+        $this->assertStringNotContainsStringIgnoringCase('rule above', $luxe['cta']);
+        $this->assertStringNotContainsStringIgnoringCase('parallax', $luxe['rhythm'] . $luxe['hero'] . $luxe['cta'] . $luxe['shadow']);
+        $this->assertStringContainsString('gradient scrim', $luxe['rhythm']);
+    }
+
     /** Low-contrast accents (the bright ones) are never text colour; the brief says so where the accent is not readable on the page background. */
     public function testNewLanguagesWithUnreadableAccentTextSayNeverUseItAsTextColour(): void
     {
