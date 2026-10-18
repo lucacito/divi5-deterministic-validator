@@ -1,0 +1,294 @@
+[
+  {
+    "id": "rc-cf-placeholder-color",
+    "block": "contact-form",
+    "children": [
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Name"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Name"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Email"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "email"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Email"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Message"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "text"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Message"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "base": {
+      "module": {
+        "advanced": {
+          "spamProtection": {
+            "desktop": {
+              "value": {
+                "useBasicCaptcha": "off"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "field.decoration.placeholderFont.font.desktop.value.color": "#c2410c"
+    },
+    "pseudo": [
+      "::placeholder"
+    ],
+    "expect": "PASS",
+    "note": "Colour of the input placeholders, which are the only field labels while Divi keeps its default showLabels off (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:808-818 (ElementStyle on \".et_pb_contact_field .input:not([type=checkbox]):not([type=radio])::placeholder\" with font = field.decoration.placeholderFont)). Measured as getComputedStyle(input, \"::placeholder\").color. Without it Chrome draws its default #757575 (sampled by the Task 16 review; the field font colour does not reach the placeholder). Form of three fields with the basic captcha switched off in the base so that the page is stable."
+  },
+  {
+    "id": "rc-cf-captcha-box-border",
+    "block": "contact-form",
+    "children": [
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Name"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Name"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Email"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "email"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Email"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Message"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "text"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Message"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "ignore": [
+      "width",
+      "inline-size",
+      "block-size",
+      "height",
+      "min-width",
+      "min-inline-size",
+      "perspective-origin",
+      "transform-origin",
+      "max-width",
+      "max-inline-size",
+      "margin-left",
+      "margin-inline-start",
+      "margin-right",
+      "margin-inline-end",
+      "left",
+      "right",
+      "inset-inline-start",
+      "inset-inline-end"
+    ],
+    "set": {
+      "captcha.decoration.border.desktop.value.styles.all.width": "1px",
+      "captcha.decoration.border.desktop.value.styles.all.color": "#c2410c",
+      "captcha.decoration.border.desktop.value.styles.all.style": "solid"
+    },
+    "expect": "PASS",
+    "note": "A frame for the captcha answer box through the captcha attribute. Divi 5.15.1 ContactFormModule.php:1209-1216 renders the captcha answer box as \"input et_pb_contact_captcha\" OUTSIDE any .et_pb_contact_field, so the field styles (selector \".et_pb_contact_field .input\", :287) never reach it; the \"captcha\" attribute (contact-form/module.json:241, selector \".et_pb_contact_right p\") offers only a font group in its settings, and the box itself is reachable only through the custom-CSS field \"captchaField\" (module.json:539), which is never taught. Captcha on (the default); the size properties that a random question changes are ignored on both pages (same list as rm-cf-captcha-family). First run measured PASS against an expected DEAD: the setting reaches the captcha wrapper paragraph (p.clearfix, which holds the question and the box), not the answer box itself, so it frames or fills the whole captcha row. The answer box sits inside a div with class et_pb_contact_field (:1252-1258), so the field styles (fill, frame, corners) already reach it, as the recipe screenshots show."
+  },
+  {
+    "id": "rc-cf-captcha-box-background",
+    "block": "contact-form",
+    "children": [
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Name"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Name"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Email"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "email"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Email"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Message"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "text"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Message"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "ignore": [
+      "width",
+      "inline-size",
+      "block-size",
+      "height",
+      "min-width",
+      "min-inline-size",
+      "perspective-origin",
+      "transform-origin",
+      "max-width",
+      "max-inline-size",
+      "margin-left",
+      "margin-inline-start",
+      "margin-right",
+      "margin-inline-end",
+      "left",
+      "right",
+      "inset-inline-start",
+      "inset-inline-end"
+    ],
+    "set": {
+      "captcha.decoration.background.desktop.value.color": "#c2410c"
+    },
+    "expect": "PASS",
+    "note": "A fill for the captcha answer box through the captcha attribute. Divi 5.15.1 ContactFormModule.php:1209-1216 renders the captcha answer box as \"input et_pb_contact_captcha\" OUTSIDE any .et_pb_contact_field, so the field styles (selector \".et_pb_contact_field .input\", :287) never reach it; the \"captcha\" attribute (contact-form/module.json:241, selector \".et_pb_contact_right p\") offers only a font group in its settings, and the box itself is reachable only through the custom-CSS field \"captchaField\" (module.json:539), which is never taught. Captcha on; same ignore list as rm-cf-captcha-family. First run measured PASS against an expected DEAD: the setting reaches the captcha wrapper paragraph (p.clearfix, which holds the question and the box), not the answer box itself, so it frames or fills the whole captcha row. The answer box sits inside a div with class et_pb_contact_field (:1252-1258), so the field styles (fill, frame, corners) already reach it, as the recipe screenshots show."
+  }
+]

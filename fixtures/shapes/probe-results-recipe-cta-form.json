@@ -1,0 +1,293 @@
+[
+  {
+    "id": "rc-cf-placeholder-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 51,
+        "sample": [
+          "3:input:::placeholder:border-block-end-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-block-start-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-bottom-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-inline-end-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-inline-start-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-left-color: rgb(117, 117, 117) -> rgb(194, 65, 12)"
+        ],
+        "changedProps": [
+          "::placeholder:-webkit-text-fill-color",
+          "::placeholder:-webkit-text-stroke-color",
+          "::placeholder:border-block-end-color",
+          "::placeholder:border-block-start-color",
+          "::placeholder:border-bottom-color",
+          "::placeholder:border-inline-end-color",
+          "::placeholder:border-inline-start-color",
+          "::placeholder:border-left-color",
+          "::placeholder:border-right-color",
+          "::placeholder:border-top-color",
+          "::placeholder:caret-color",
+          "::placeholder:color",
+          "::placeholder:column-rule-color",
+          "::placeholder:outline-color",
+          "::placeholder:row-rule-color",
+          "::placeholder:text-decoration-color",
+          "::placeholder:text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 51,
+        "sample": [
+          "3:input:::placeholder:border-block-end-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-block-start-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-bottom-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-inline-end-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-inline-start-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-left-color: rgb(117, 117, 117) -> rgb(194, 65, 12)"
+        ],
+        "changedProps": [
+          "::placeholder:-webkit-text-fill-color",
+          "::placeholder:-webkit-text-stroke-color",
+          "::placeholder:border-block-end-color",
+          "::placeholder:border-block-start-color",
+          "::placeholder:border-bottom-color",
+          "::placeholder:border-inline-end-color",
+          "::placeholder:border-inline-start-color",
+          "::placeholder:border-left-color",
+          "::placeholder:border-right-color",
+          "::placeholder:border-top-color",
+          "::placeholder:caret-color",
+          "::placeholder:color",
+          "::placeholder:column-rule-color",
+          "::placeholder:outline-color",
+          "::placeholder:row-rule-color",
+          "::placeholder:text-decoration-color",
+          "::placeholder:text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 51,
+        "sample": [
+          "3:input:::placeholder:border-block-end-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-block-start-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-bottom-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-inline-end-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-inline-start-color: rgb(117, 117, 117) -> rgb(194, 65, 12)",
+          "3:input:::placeholder:border-left-color: rgb(117, 117, 117) -> rgb(194, 65, 12)"
+        ],
+        "changedProps": [
+          "::placeholder:-webkit-text-fill-color",
+          "::placeholder:-webkit-text-stroke-color",
+          "::placeholder:border-block-end-color",
+          "::placeholder:border-block-start-color",
+          "::placeholder:border-bottom-color",
+          "::placeholder:border-inline-end-color",
+          "::placeholder:border-inline-start-color",
+          "::placeholder:border-left-color",
+          "::placeholder:border-right-color",
+          "::placeholder:border-top-color",
+          "::placeholder:caret-color",
+          "::placeholder:color",
+          "::placeholder:column-rule-color",
+          "::placeholder:outline-color",
+          "::placeholder:row-rule-color",
+          "::placeholder:text-decoration-color",
+          "::placeholder:text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rc-cf-captcha-box-border",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 24,
+        "sample": [
+          "13:p:border-block-end-color: rgb(102, 102, 102) -> rgb(194, 65, 12)",
+          "13:p:border-block-end-style: none -> solid",
+          "13:p:border-block-end-width: 0px -> 1px",
+          "13:p:border-block-start-color: rgb(102, 102, 102) -> rgb(194, 65, 12)",
+          "13:p:border-block-start-style: none -> solid",
+          "13:p:border-block-start-width: 0px -> 1px"
+        ],
+        "changedProps": [
+          "border-block-end-color",
+          "border-block-end-style",
+          "border-block-end-width",
+          "border-block-start-color",
+          "border-block-start-style",
+          "border-block-start-width",
+          "border-bottom-color",
+          "border-bottom-style",
+          "border-bottom-width",
+          "border-inline-end-color",
+          "border-inline-end-style",
+          "border-inline-end-width",
+          "border-inline-start-color",
+          "border-inline-start-style",
+          "border-inline-start-width",
+          "border-left-color",
+          "border-left-style",
+          "border-left-width",
+          "border-right-color",
+          "border-right-style",
+          "border-right-width",
+          "border-top-color",
+          "border-top-style",
+          "border-top-width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 24,
+        "sample": [
+          "13:p:border-block-end-color: rgb(102, 102, 102) -> rgb(194, 65, 12)",
+          "13:p:border-block-end-style: none -> solid",
+          "13:p:border-block-end-width: 0px -> 1px",
+          "13:p:border-block-start-color: rgb(102, 102, 102) -> rgb(194, 65, 12)",
+          "13:p:border-block-start-style: none -> solid",
+          "13:p:border-block-start-width: 0px -> 1px"
+        ],
+        "changedProps": [
+          "border-block-end-color",
+          "border-block-end-style",
+          "border-block-end-width",
+          "border-block-start-color",
+          "border-block-start-style",
+          "border-block-start-width",
+          "border-bottom-color",
+          "border-bottom-style",
+          "border-bottom-width",
+          "border-inline-end-color",
+          "border-inline-end-style",
+          "border-inline-end-width",
+          "border-inline-start-color",
+          "border-inline-start-style",
+          "border-inline-start-width",
+          "border-left-color",
+          "border-left-style",
+          "border-left-width",
+          "border-right-color",
+          "border-right-style",
+          "border-right-width",
+          "border-top-color",
+          "border-top-style",
+          "border-top-width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 24,
+        "sample": [
+          "13:p:border-block-end-color: rgb(102, 102, 102) -> rgb(194, 65, 12)",
+          "13:p:border-block-end-style: none -> solid",
+          "13:p:border-block-end-width: 0px -> 1px",
+          "13:p:border-block-start-color: rgb(102, 102, 102) -> rgb(194, 65, 12)",
+          "13:p:border-block-start-style: none -> solid",
+          "13:p:border-block-start-width: 0px -> 1px"
+        ],
+        "changedProps": [
+          "border-block-end-color",
+          "border-block-end-style",
+          "border-block-end-width",
+          "border-block-start-color",
+          "border-block-start-style",
+          "border-block-start-width",
+          "border-bottom-color",
+          "border-bottom-style",
+          "border-bottom-width",
+          "border-inline-end-color",
+          "border-inline-end-style",
+          "border-inline-end-width",
+          "border-inline-start-color",
+          "border-inline-start-style",
+          "border-inline-start-width",
+          "border-left-color",
+          "border-left-style",
+          "border-left-width",
+          "border-right-color",
+          "border-right-style",
+          "border-right-width",
+          "border-top-color",
+          "border-top-style",
+          "border-top-width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rc-cf-captcha-box-background",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "13:p:background-color: rgba(0, 0, 0, 0) -> rgb(194, 65, 12)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "13:p:background-color: rgba(0, 0, 0, 0) -> rgb(194, 65, 12)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "13:p:background-color: rgba(0, 0, 0, 0) -> rgb(194, 65, 12)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  }
+]

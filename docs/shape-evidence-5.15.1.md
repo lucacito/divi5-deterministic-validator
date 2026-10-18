@@ -17078,3 +17078,79 @@ Note: Font size of the countdown unit labels (Divi 5.15.1 visual-builder module-
 Registered paths added:
 
 - `label.decoration.font.font.{bp}.value.size`
+
+## rc-cf-placeholder-color
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, `contact-field`, also comparing the computed styles of the pseudo-elements `::placeholder`. Set on top of the base block:
+
+- `field.decoration.placeholderFont.font.desktop.value.color` = `"#c2410c"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 51 | yes | `3:input:::placeholder:border-block-end-color: rgb(117, 117, 117) -> rgb(194, 65, 12)` |
+| 900 px | yes | 51 | yes | `3:input:::placeholder:border-block-end-color: rgb(117, 117, 117) -> rgb(194, 65, 12)` |
+| 400 px | yes | 51 | yes | `3:input:::placeholder:border-block-end-color: rgb(117, 117, 117) -> rgb(194, 65, 12)` |
+
+Properties that changed (any width): `::placeholder:-webkit-text-fill-color`, `::placeholder:-webkit-text-stroke-color`, `::placeholder:border-block-end-color`, `::placeholder:border-block-start-color`, `::placeholder:border-bottom-color`, `::placeholder:border-inline-end-color`, `::placeholder:border-inline-start-color`, `::placeholder:border-left-color`, `::placeholder:border-right-color`, `::placeholder:border-top-color`, `::placeholder:caret-color`, `::placeholder:color`, `::placeholder:column-rule-color`, `::placeholder:outline-color`, `::placeholder:row-rule-color`, `::placeholder:text-decoration-color`, `::placeholder:text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Colour of the input placeholders, which are the only field labels while Divi keeps its default showLabels off (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:808-818 (ElementStyle on ".et_pb_contact_field .input:not([type=checkbox]):not([type=radio])::placeholder" with font = field.decoration.placeholderFont)). Measured as getComputedStyle(input, "::placeholder").color. Without it Chrome draws its default #757575 (sampled by the Task 16 review; the field font colour does not reach the placeholder). Form of three fields with the basic captcha switched off in the base so that the page is stable.
+
+Registered paths added:
+
+- `field.decoration.placeholderFont.font.{bp}.value.color`
+
+## rc-cf-captcha-box-border
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, `contact-field`, ignoring the computed properties `width`, `inline-size`, `block-size`, `height`, `min-width`, `min-inline-size`, `perspective-origin`, `transform-origin`, `max-width`, `max-inline-size`, `margin-left`, `margin-inline-start`, `margin-right`, `margin-inline-end`, `left`, `right`, `inset-inline-start`, `inset-inline-end`. Set on top of the base block:
+
+- `captcha.decoration.border.desktop.value.styles.all.width` = `"1px"`
+- `captcha.decoration.border.desktop.value.styles.all.color` = `"#c2410c"`
+- `captcha.decoration.border.desktop.value.styles.all.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `13:p:border-block-end-color: rgb(102, 102, 102) -> rgb(194, 65, 12)` |
+| 900 px | yes | 24 | yes | `13:p:border-block-end-color: rgb(102, 102, 102) -> rgb(194, 65, 12)` |
+| 400 px | yes | 24 | yes | `13:p:border-block-end-color: rgb(102, 102, 102) -> rgb(194, 65, 12)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-block-start-color`, `border-block-start-style`, `border-block-start-width`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-style`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-style`, `border-inline-start-width`, `border-left-color`, `border-left-style`, `border-left-width`, `border-right-color`, `border-right-style`, `border-right-width`, `border-top-color`, `border-top-style`, `border-top-width`.
+
+Phone overflow at 400 px: no.
+
+Note: A frame for the captcha answer box through the captcha attribute. Divi 5.15.1 ContactFormModule.php:1209-1216 renders the captcha answer box as "input et_pb_contact_captcha" OUTSIDE any .et_pb_contact_field, so the field styles (selector ".et_pb_contact_field .input", :287) never reach it; the "captcha" attribute (contact-form/module.json:241, selector ".et_pb_contact_right p") offers only a font group in its settings, and the box itself is reachable only through the custom-CSS field "captchaField" (module.json:539), which is never taught. Captcha on (the default); the size properties that a random question changes are ignored on both pages (same list as rm-cf-captcha-family). First run measured PASS against an expected DEAD: the setting reaches the captcha wrapper paragraph (p.clearfix, which holds the question and the box), not the answer box itself, so it frames or fills the whole captcha row. The answer box sits inside a div with class et_pb_contact_field (:1252-1258), so the field styles (fill, frame, corners) already reach it, as the recipe screenshots show.
+
+Registered paths added:
+
+- `captcha.decoration.border.{bp}.value.styles.all.color`
+- `captcha.decoration.border.{bp}.value.styles.all.style`
+- `captcha.decoration.border.{bp}.value.styles.all.width`
+
+## rc-cf-captcha-box-background
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, `contact-field`, ignoring the computed properties `width`, `inline-size`, `block-size`, `height`, `min-width`, `min-inline-size`, `perspective-origin`, `transform-origin`, `max-width`, `max-inline-size`, `margin-left`, `margin-inline-start`, `margin-right`, `margin-inline-end`, `left`, `right`, `inset-inline-start`, `inset-inline-end`. Set on top of the base block:
+
+- `captcha.decoration.background.desktop.value.color` = `"#c2410c"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `13:p:background-color: rgba(0, 0, 0, 0) -> rgb(194, 65, 12)` |
+| 900 px | yes | 1 | yes | `13:p:background-color: rgba(0, 0, 0, 0) -> rgb(194, 65, 12)` |
+| 400 px | yes | 1 | yes | `13:p:background-color: rgba(0, 0, 0, 0) -> rgb(194, 65, 12)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: A fill for the captcha answer box through the captcha attribute. Divi 5.15.1 ContactFormModule.php:1209-1216 renders the captcha answer box as "input et_pb_contact_captcha" OUTSIDE any .et_pb_contact_field, so the field styles (selector ".et_pb_contact_field .input", :287) never reach it; the "captcha" attribute (contact-form/module.json:241, selector ".et_pb_contact_right p") offers only a font group in its settings, and the box itself is reachable only through the custom-CSS field "captchaField" (module.json:539), which is never taught. Captcha on; same ignore list as rm-cf-captcha-family. First run measured PASS against an expected DEAD: the setting reaches the captcha wrapper paragraph (p.clearfix, which holds the question and the box), not the answer box itself, so it frames or fills the whole captcha row. The answer box sits inside a div with class et_pb_contact_field (:1252-1258), so the field styles (fill, frame, corners) already reach it, as the recipe screenshots show.
+
+Registered paths added:
+
+- `captcha.decoration.background.{bp}.value.color`
