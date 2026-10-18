@@ -159,6 +159,38 @@ class SectionRecipesTest extends TestCase
         }
     }
 
+    /** Plan 2 Task 13: the features and process batch, each with its role/layout, found by the filter, no h1, at most two card grids. */
+    public function testFeaturesAndProcessBatchIsTaggedFilterableAndHasNoH1(): void
+    {
+        $batch = [
+            'features-bento'           => ['features', 'bento'],
+            'features-zigzag'          => ['features', 'zigzag'],
+            'steps-numbered'           => ['process', 'list'],
+            'steps-horizontal'         => ['process', 'band'],
+            'timeline-vertical'        => ['process', 'list'],
+            'list-icon-dividers'       => ['features', 'list'],
+            'features-accordion-image' => ['features', 'split'],
+            'checklist-two-column'     => ['features', 'split'],
+            'compare-two-panels'       => ['features', 'split'],
+            'features-carousel-strip'  => ['features', 'carousel'],
+            'stats-big-numbers'        => ['stats', 'band'],
+        ];
+        $cards = 0;
+        foreach ($batch as $name => [$role, $layout]) {
+            $tags = (array) SectionRecipes::tags($name);
+            $this->assertSame($role, $tags['role'] ?? null, "$name role");
+            $this->assertSame($layout, $tags['layout'] ?? null, "$name layout");
+            $this->assertStringContainsString($name, SectionRecipes::catalog($role, $layout), "$name is listed by the role + layout filter");
+            $markup = (string) SectionRecipes::rawMarkup($name);
+            $this->assertSame(0, preg_match_all('/"headingLevel":"h1"/', $markup), "$name is not a hero: no h1");
+            // Every heading module states its level (a Divi heading without one is an h1).
+            $this->assertSame(substr_count($markup, '<!-- wp:divi/heading '), preg_match_all('/<!-- wp:divi\/heading [^\n]*"headingLevel":"h[2-4]"/', $markup), "$name: every heading names its level, h2 to h4");
+            $fp = DesignVariety::fingerprints('<!-- wp:divi/placeholder -->' . (string) SectionRecipes::recipe($name) . '<!-- /wp:divi/placeholder -->');
+            $cards += $fp[0]['cards'] ? 1 : 0;
+        }
+        $this->assertLessThanOrEqual(2, $cards, 'not more than two of the batch measure as card grids');
+    }
+
     public function testRetaggedRecipesDescribeTheirRealStructure(): void
     {
         $this->assertSame('split', ((array) SectionRecipes::tags('card-grid-3'))['layout']);
