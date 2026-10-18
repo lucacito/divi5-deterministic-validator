@@ -9,7 +9,7 @@
  */
 
 /** Failure reasons a baseline entry may name. */
-const BASELINABLE = ['php-error', 'empty', 'overflow', 'columns-side-by-side', 'console-error', 'gate'];
+const BASELINABLE = ['php-error', 'empty', 'overflow', 'columns-side-by-side', 'console-error', 'gate', 'low-contrast'];
 /** Raised by the script's own page handling (a timeout, a navigation crash, an exception): ALWAYS a FAIL, never baselined. */
 const NEVER_BASELINED = ['render-error'];
 const WIDTHS = ['1280', '900', '400'];
@@ -72,9 +72,9 @@ function isKnownFail(known, recipe, language, width, code) {
  * `.et_pb_row_inner` (`divi/row-inner`, which has NO `et_pb_row` class); their columns: `.et_pb_column` and
  * `.et_pb_column_inner`. Evidence: Divi 5.15.1, see the task 2 report.
  */
-function measureInPage() {
+function measureInPage(opts) {
   const root = document.querySelector('.et-l--post');
-  const out = { hasRoot: !!root, overflow: document.documentElement.scrollWidth > window.innerWidth, scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth, visible: false, rows: 0, sideBySide: [], overlaps: [] };
+  const out = { hasRoot: !!root, lowContrast: [], contrastChecked: 0, contrastSkipped: 0, contrastAll: [], overflow: document.documentElement.scrollWidth > window.innerWidth, scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth, visible: false, rows: 0, sideBySide: [], overlaps: [] };
   if (!root) return out;
   const sections = [...root.querySelectorAll('.et_pb_section')];
   const hasMedia = (el) => [...el.querySelectorAll('img, svg, video, canvas, iframe')].some((m) => { const r = m.getBoundingClientRect(); return r.width > 0 && r.height > 0; })
@@ -114,6 +114,85 @@ function measureInPage() {
         if (w > 4 && h > 4) { out.overlaps.push({ text: (t.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 30), image: (m.className && m.className.toString ? m.className.toString() : '').split(' ')[0] || m.tagName.toLowerCase(), w: Math.round(w), h: Math.round(h) }); break; }
       }
     }
+  }
+  // Computed text contrast. For every visible text node: the element's computed colour (blended with the opacity of it and its ancestors)
+  // against the effective background, found by walking the ancestors up the tree: translucent colours are stacked until a SOLID colour
+  // (alpha 1) closes the stack. When an element on the way up (up to the root) carries a background image or gradient BEFORE the solid
+  // colour is found, the background is unknown and the text is skipped (counted in contrastSkipped). Text that cannot be seen (no box,
+  // visibility hidden, display none, opacity 0, font-size 0, a box under 2 px, text pushed off the page by a negative text-indent, or text clipped away
+  // by an overflow hidden ancestor) is skipped as well. A ratio under CONTRAST_MIN (3.0, deliberately
+  // forgiving: it catches the near-invisible default grey on a dark surface, not fine AA differences) lands in lowContrast. `opts.all` also
+  // lists every measured element in contrastAll (the audit uses it). Nested widgets with their own scroll containers are not special-cased.
+  const CONTRAST_MIN = 3.0;
+  const parseColor = (str) => {
+    const m = /^rgba?\(([^)]+)\)$/.exec(String(str).trim());
+    if (!m) return null;
+    const parts = m[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+    if (parts.length < 3 || parts.some((n) => Number.isNaN(n))) return null;
+    return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
+  };
+  const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const lum = (c) => 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+  const over = (top, base) => ({ r: top.r * top.a + base.r * (1 - top.a), g: top.g * top.a + base.g * (1 - top.a), b: top.b * top.a + base.b * (1 - top.a), a: 1 });
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const seenEl = new Set();
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    const txt = (node.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!txt) continue;
+    const el = node.parentElement;
+    if (!el || seenEl.has(el)) continue;
+    if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'OPTION', 'TEXTAREA'].includes(el.tagName)) continue;
+    seenEl.add(el);
+    const cs = getComputedStyle(el);
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    const rects = [...range.getClientRects()].filter((r) => r.width >= 2 && r.height >= 2);
+    if (!rects.length || cs.visibility === 'hidden' || cs.display === 'none' || parseFloat(cs.fontSize) === 0) { continue; }
+    // Text pushed out of sight is not text a visitor reads: every line box either lies entirely off the page (a negative text-indent such as
+    // the slider's dot numbers) or is clipped away completely by an ancestor with overflow hidden/clip/auto/scroll.
+    const docW = document.documentElement.scrollWidth;
+    const clipped = (r) => {
+      if (r.right <= 0 || r.bottom <= -5000 || r.left >= docW + 1) return true;
+      for (let a = el; a && a.nodeType === 1 && a !== root.parentElement; a = a.parentElement) {
+        const as = getComputedStyle(a);
+        if (as.overflowX === 'visible' && as.overflowY === 'visible') continue;
+        const b = a.getBoundingClientRect();
+        if (Math.min(r.right, b.right) - Math.max(r.left, b.left) < 1 || Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top) < 1) return true;
+      }
+      return false;
+    };
+    if (rects.every(clipped)) continue;
+    const fg = parseColor(cs.color);
+    if (!fg) { out.contrastSkipped++; continue; }
+    let opacity = 1;
+    let unknown = false;
+    const stack = [];
+    for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
+      const s = getComputedStyle(n);
+      opacity *= parseFloat(s.opacity);
+      if (!unknown && (stack.length === 0 || stack[stack.length - 1].a < 0.999)) {
+        if (s.backgroundImage && s.backgroundImage !== 'none') { unknown = true; }
+        else {
+          const c = parseColor(s.backgroundColor);
+          if (c && c.a > 0) stack.push(c);
+        }
+      }
+    }
+    if (opacity < 0.05) continue;
+    if (unknown) { out.contrastSkipped++; continue; }
+    let base = { r: 255, g: 255, b: 255, a: 1 };
+    if (stack.length && stack[stack.length - 1].a >= 0.999) base = stack.pop();
+    while (stack.length) base = over(stack.pop(), base);
+    const text = over({ r: fg.r, g: fg.g, b: fg.b, a: fg.a * opacity }, base);
+    const l1 = lum(text);
+    const l2 = lum(base);
+    const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    out.contrastChecked++;
+    const rgb = (c) => 'rgb(' + Math.round(c.r) + ',' + Math.round(c.g) + ',' + Math.round(c.b) + ')';
+    const item = { text: txt.slice(0, 30), color: rgb(text), bg: rgb(base), ratio: Math.round(ratio * 100) / 100, size: parseFloat(cs.fontSize), tag: el.tagName.toLowerCase(), cls: (el.className && el.className.toString ? el.className.toString() : '').split(' ').slice(0, 2).join(' ') };
+    if (opts && opts.all) out.contrastAll.push(item);
+    if (ratio < CONTRAST_MIN) out.lowContrast.push(item);
   }
   return out;
 }

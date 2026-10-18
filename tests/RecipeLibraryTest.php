@@ -44,7 +44,7 @@ class RecipeLibraryTest extends TestCase
     ];
 
     /** Failure reasons verify-recipes.cjs reports that a render-failures baseline entry may name. `render-error` never may. */
-    private const RENDER_CODES = [ 'php-error', 'empty', 'overflow', 'columns-side-by-side', 'console-error', 'gate' ];
+    private const RENDER_CODES = [ 'php-error', 'empty', 'overflow', 'columns-side-by-side', 'console-error', 'gate', 'low-contrast' ];
 
     /**
      * The most `# render-failures` entries the baseline may hold. It may only be LOWERED (to the new count, in the commit that
@@ -509,11 +509,11 @@ class RecipeLibraryTest extends TestCase
         foreach ( $data as $name => $reason ) {
             $this->assertContains( $name, SectionRecipes::names(), "allowance for \"$name\", which is not a recipe" );
             // A string exempts the columns-side-by-side check (the original meaning); an object names each exempted check
-            // ("columns", "overlap") with its own written reason.
+            // ("columns", "overlap", "contrast") with its own written reason.
             $reasons = is_array( $reason ) ? $reason : [ 'columns' => $reason ];
             $this->assertNotSame( [], $reasons, "allowance for $name is empty" );
             foreach ( $reasons as $check => $why ) {
-                $this->assertContains( $check, [ 'columns', 'overlap' ], "allowance for $name names an unknown check \"$check\"" );
+                $this->assertContains( $check, [ 'columns', 'overlap', 'contrast' ], "allowance for $name names an unknown check \"$check\"" );
                 $this->assertIsString( $why );
                 $this->assertNotSame( '', trim( $why ), "allowance for $name ($check) needs a reason" );
             }

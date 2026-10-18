@@ -9,7 +9,7 @@
 # render-failures: known `make verify-recipes` failures, one line per EXACT cell:
 #   recipe|language|width|code|explanation
 #   language: `default` (no language) or a design language id; width: exactly 1280, 900 or 400 (no wildcard), or `gate`
-#   for code gate. Codes: php-error, empty, overflow, columns-side-by-side, console-error, gate. `render-error` (a timeout,
+#   for code gate. Codes: php-error, empty, overflow, columns-side-by-side, console-error, gate, low-contrast. `render-error` (a timeout,
 #   crash or exception in the script itself) can never be listed. Only that exact recipe/language/width/code is printed as
 #   KNOWN-FAIL and does not fail the run; any other failure does. The explanation is documentation only. The section is capped
 #   by RENDER_FAILURE_CAP in tests/RecipeLibraryTest.php (currently 0), which may only be lowered.

@@ -68,7 +68,36 @@ const page = (inner) => `<div class="et-l--post"><div class="et_pb_section" styl
     assert.strictEqual((await run(sec(img('width:200px;height:120px') + '<h2 style="margin:-40px 0 0 0;opacity:0">Hidden headline</h2>'))).overlaps.length, 0, 'invisible text is skipped');
     assert.strictEqual((await run(sec('<div class="et_pb_image" style="width:200px;height:120px"><p>Caption inside the image module</p></div>'))).overlaps.length, 0, 'text inside the image module is not an overlap');
     assert.strictEqual((await run(`<div class="et-l--header">${img('width:200px;height:120px')}<h2 style="margin:-40px 0 0 0;position:relative">Header headline</h2></div><div class="et-l--post"><div class="et_pb_section">hi</div></div>`)).overlaps.length, 0, 'the Theme Builder header is not measured');
-    console.log('OK recipe measurement: top-level, nested divi/row and nested divi/row-inner stacking, Theme Builder ignored, empty, overflow, no root, text over a picture');
+    // computed text contrast (threshold 3.0:1 against the effective SOLID background; an unknown background is skipped)
+    const cs = (style, inner) => `<div class="et-l--post"><div class="et_pb_section" style="${style}">${inner}</div></div>`;
+    const bad = await run(cs('background:#0b1020', '<p style="color:#333333;margin:0">Dark grey on near-black</p>'));
+    assert.strictEqual(bad.lowContrast.length, 1, 'dark grey text on a near-black section is reported');
+    assert.strictEqual(bad.lowContrast[0].text, 'Dark grey on near-black');
+    assert.ok(bad.lowContrast[0].ratio < 3, 'the reported ratio is under 3.0');
+    assert.strictEqual((await run(cs('background:#0b1020', '<p style="color:#f2f4fa;margin:0">Light on near-black</p>'))).lowContrast.length, 0, 'light text on a dark section passes');
+    assert.strictEqual((await run(cs('background:#0b1020', '<p style="color:#666666;margin:0">Default grey</p>'))).lowContrast.length, 0, 'Divi default grey on glass-dark is 3.3:1: above the forgiving 3.0 threshold (documented limit of the check)');
+    assert.strictEqual((await run(cs('background:#ffffff', '<p style="color:#cccccc;margin:0">Pale grey on white</p>'))).lowContrast.length, 1, 'pale grey on white is reported');
+    // the nearest solid background wins: a dark card inside a light section
+    assert.strictEqual((await run(cs('background:#ffffff', '<div style="background:#111111"><p style="color:#eeeeee;margin:0">On the card</p></div>'))).lowContrast.length, 0, 'the card background, not the section, is the background');
+    assert.strictEqual((await run(cs('background:#ffffff', '<div style="background:#111111"><p style="color:#222222;margin:0">Dark on the card</p></div>'))).lowContrast.length, 1, 'dark text on a dark card inside a light section is reported');
+    // a translucent layer is stacked over the solid colour below it, not mistaken for the background
+    const glass = 'background:rgba(255,255,255,0.06)';
+    assert.strictEqual((await run(cs('background:#0b1020', `<div style="${glass}"><p style="color:#333333;margin:0">Dark on glass</p></div>`))).lowContrast.length, 1, 'dark text on glass over a dark section is reported');
+    assert.strictEqual((await run(cs('background:#0b1020', `<div style="${glass}"><p style="color:#f2f4fa;margin:0">Light on glass</p></div>`))).lowContrast.length, 0, 'light text on glass over a dark section passes');
+    // an unknown background (image or gradient above the text before a solid colour) is skipped, never guessed
+    const skipped = await run(cs('background-image:linear-gradient(#000,#111)', '<p style="color:#222222;margin:0">Over a gradient</p>'));
+    assert.strictEqual(skipped.lowContrast.length, 0, 'text over a gradient is skipped');
+    assert.strictEqual(skipped.contrastSkipped, 1, 'and counted as skipped');
+    assert.strictEqual((await run(cs('background:#000000', '<div style="background-image:url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==)"><p style="color:#222222;margin:0">Over a photo</p></div>'))).lowContrast.length, 0, 'an image between the text and the solid colour makes the background unknown');
+    // text nobody can see is not measured
+    assert.strictEqual((await run(cs('background:#0b1020', '<p style="color:#333333;opacity:0;margin:0">Transparent</p><p style="color:#333333;visibility:hidden;margin:0">Hidden</p><p style="color:#333333;font-size:0;margin:0">Zero size</p>'))).lowContrast.length, 0, 'invisible text is skipped');
+    assert.strictEqual((await run(`<div class="et-l--header" style="background:#0b1020"><p style="color:#333333">Header text</p></div><div class="et-l--post"><div class="et_pb_section">hi</div></div>`)).lowContrast.length, 0, 'the Theme Builder header is not measured');
+    assert.strictEqual((await run(cs('background:#0b1020', '<a style="display:block;width:10px;height:10px;overflow:hidden;text-indent:-9999px;color:#333333">1</a>'))).lowContrast.length, 0, 'a number pushed off the page by a negative text-indent (the slider dot) is skipped');
+    assert.strictEqual((await run(cs('background:#0b1020', '<div style="width:50px;height:10px;overflow:hidden"><p style="color:#333333;margin:0;padding-top:40px">Clipped away</p></div>'))).lowContrast.length, 0, 'text clipped away completely by an overflow hidden box is skipped');
+    assert.strictEqual((await run(cs('background:#0b1020', '<div style="width:300px;height:60px;overflow:hidden"><p style="color:#333333;margin:0">Visible inside the box</p></div>'))).lowContrast.length, 1, 'text that shows inside an overflow hidden box is still measured');
+    const all = await run(cs('background:#0b1020', '<p style="color:#f2f4fa;margin:0">Listed</p>'), 400);
+    assert.strictEqual(all.contrastChecked, 1, 'a measured element is counted');
+    console.log('OK recipe measurement: top-level, nested divi/row and nested divi/row-inner stacking, Theme Builder ignored, empty, overflow, no root, text over a picture, computed text contrast');
   } finally {
     await browser.close();
   }

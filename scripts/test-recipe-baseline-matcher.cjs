@@ -11,11 +11,12 @@ const text = [
   'hero-cta|default|400|overflow|a real, documented reason',
   'card-grid-3|glass-dark|1280|columns-side-by-side|why',
   'blog-feed|default|gate|gate|the gate said no',
+  'slider|tech-mono|400|low-contrast|a documented exception',
 ].join('\n');
 const b = parseBaseline(text);
 assert.deepStrictEqual(b.noPairs, ['hero-cta']);
 assert.deepStrictEqual(b.duplicates, ['a|b']);
-assert.strictEqual(b.renderFailures.length, 3);
+assert.strictEqual(b.renderFailures.length, 4);
 const known = knownFailures(b.renderFailures);
 
 // The listed cell, and only it.
@@ -33,6 +34,9 @@ assert.strictEqual(isKnownFail(known, 'card-grid-3', 'glass-dark', '400', 'colum
 assert.strictEqual(isKnownFail(known, 'blog-feed', 'default', 'gate', 'gate'), true);
 assert.strictEqual(isKnownFail(known, 'blog-feed', 'glass-dark', 'gate', 'gate'), false);
 assert.strictEqual(isKnownFail(known, 'blog-feed', 'default', 'prepare', 'render-error'), false);
+assert.strictEqual(isKnownFail(known, 'slider', 'tech-mono', '400', 'low-contrast'), true, 'low-contrast is baselinable as an exact cell');
+assert.strictEqual(isKnownFail(known, 'slider', 'tech-mono', '1280', 'low-contrast'), false, 'another width');
+assert.strictEqual(isKnownFail(known, 'slider', 'glass-dark', '400', 'low-contrast'), false, 'another language');
 
 // The explanation is documentation only: a "|" inside it is kept, and it never matches.
 assert.strictEqual(parseEntry('x|default|400|overflow|a|b|c').explanation, 'a|b|c');

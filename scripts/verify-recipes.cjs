@@ -9,7 +9,8 @@
  *   node scripts/verify-recipes.cjs [--names a,b] [--languages x,y] [--clean-orphans]    (needs `make up`; Playwright from ../layoutlab)
  *
  * Selection. No flags: every recipe under the default look (no language) and under `glass-dark`, plus every design language
- * once on three representative recipes (hero-cta, card-grid-3, testimonial). `--names` narrows the recipes (the default two
+ * once on three representative recipes (hero-cta, card-grid-3, testimonial), plus EVERY recipe under tech-mono and playful-pastel (a dark and a light-pastel
+ * look, for the computed contrast check). `--names` narrows the recipes (the default two
  * looks), `--languages` narrows the looks (`default` = no language; every recipe), both together = their product.
  *
  * A cell FAILs when: the HTML contains PHP error text (Fatal error, Parse error, Warning:, Notice:, Deprecated:, Uncaught),
@@ -17,12 +18,15 @@
  * `divi/row` which is also `.et_pb_row`, or nested `divi/row-inner` = `.et_pb_row_inner`) with more
  * than one column (`.et_pb_column` / `.et_pb_column_inner`) shows those columns side by side at 400 px (unless the recipe is listed in
  * fixtures/shapes/recipe-render-allowances.json with a reason; the Theme Builder header/footer is never measured: everything is
- * measured inside `.et-l--post`), a text element's lines overlap an image box (an `.et_pb_image` module or an <img>) by more than 4 px in both
+ * measured inside `.et-l--post`), any visible text whose computed colour is below 3.0:1 against its effective SOLID background (code
+ * `low-contrast`, baselinable only as an exact cell; the check walks the ancestors to the first solid colour, stacking translucent ones, and
+ * SKIPS text above a background image or gradient because that background is unknown; an exemption is `{"contrast": "reason"}` in the
+ * allowances file), a text element's lines overlap an image box (an `.et_pb_image` module or an <img>) by more than 4 px in both
  * directions at ANY width (code `text-overlap`, never baselined; an intentional overlap recipe gets `{"overlap": "reason"}` in the allowances file; a
  * plain string value keeps its original meaning, the columns exemption), or the page itself logs a console error / uncaught exception. The page is
  * scrolled once before it is measured and screenshotted so that entrance animations have finished. A recipe the validator gate
  * rejects FAILs once as `<recipe>/<language>/gate` with the violation codes.
- * Reason codes (the baseline may name the first six): php-error, empty, overflow, columns-side-by-side, console-error, gate; text-overlap is never baselined.
+ * Reason codes (the baseline may name the first six and low-contrast): php-error, empty, overflow, columns-side-by-side, console-error, gate, low-contrast; text-overlap is never baselined.
  * `render-error` (a timeout, navigation crash or any exception in the script's own page handling) is ALWAYS a FAIL and can never be baselined.
  *
  * KNOWN-FAIL. fixtures/shapes/recipe-baseline.txt may list `recipe|language|width|code|explanation` under `# render-failures`
@@ -67,6 +71,7 @@ const OUT_DIR = path.join(ROOT, 'dist', 'contact-sheet');
 const WIDTHS = [1280, 900, 400];
 const REPRESENTATIVE = ['hero-cta', 'card-grid-3', 'testimonial'];
 const SHEET_LOOKS = ['default', 'glass-dark'];
+const CONTRAST_LOOKS = ['tech-mono', 'playful-pastel']; // a dark and a light-pastel look every recipe is also rendered under
 const BS = String.fromCharCode(92);
 
 let optNames = null;
@@ -164,7 +169,7 @@ function readKnownFailures() {
   return knownFailures(parseBaseline(fs.readFileSync(BASELINE_FILE, 'utf8')).renderFailures);
 }
 const allowances = fs.existsSync(ALLOWANCES_FILE) ? JSON.parse(fs.readFileSync(ALLOWANCES_FILE, 'utf8')) : {};
-/** True when fixtures/shapes/recipe-render-allowances.json exempts `name` from a check: a string value exempts `columns` (the original meaning), an object {columns, overlap} exempts each named check, each with its reason. */
+/** True when fixtures/shapes/recipe-render-allowances.json exempts `name` from a check: a string value exempts `columns` (the original meaning), an object {columns, overlap, contrast} exempts each named check, each with its reason. */
 function allowed(name, kind) {
   if (!Object.prototype.hasOwnProperty.call(allowances, name)) return false;
   const v = allowances[name];
@@ -181,7 +186,7 @@ function selection() {
   if (optNames || optLanguages) {
     for (const n of optNames || recipeNames) for (const l of optLanguages || ['default', 'glass-dark']) cells.push([n, l]);
   } else {
-    for (const n of recipeNames) for (const l of ['default', 'glass-dark']) cells.push([n, l]);
+    for (const n of recipeNames) for (const l of ['default', 'glass-dark', ...CONTRAST_LOOKS]) cells.push([n, l]);
     for (const l of languageIds) for (const n of REPRESENTATIVE) if (recipeNames.includes(n)) cells.push([n, l]);
   }
   const seen = new Set();
@@ -329,6 +334,9 @@ ${rows}
             if (m.overflow) problems.push(['overflow', `scrollWidth ${m.scrollWidth} > innerWidth ${m.innerWidth}`]);
             if (m.overlaps.length && !allowed(name, 'overlap')) {
               problems.push(['text-overlap', 'text overlaps an image: ' + m.overlaps.slice(0, 3).map((o) => `"${o.text}" over ${o.image} (${o.w}x${o.h}px)`).join('; ')]);
+            }
+            if (m.lowContrast.length && !allowed(name, 'contrast')) {
+              problems.push(['low-contrast', 'text under 3.0:1 against its solid background: ' + m.lowContrast.slice(0, 4).map((o) => `"${o.text}" ${o.color} on ${o.bg} ${o.ratio}:1`).join('; ')]);
             }
             if (width === 400 && m.sideBySide.length && !allowed(name, 'columns')) {
               problems.push(['columns-side-by-side', 'row(s) keep their columns side by side on a phone: ' + m.sideBySide.map((s) => `row ${s.row} (${s.columns} cols, lefts ${s.lefts.join('/')})`).join('; ')]);
