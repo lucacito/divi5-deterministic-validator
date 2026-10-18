@@ -431,6 +431,16 @@ class WpOrgComplianceTest extends TestCase
         }
     }
 
+    /** The readme's section-pattern count is the real size of the recipe library (SectionRecipes::count()), stated twice. */
+    public function testReadmeRecipeCountIsTheRealNumber(): void
+    {
+        $r = (string) file_get_contents(self::ROOT . '/readme.txt');
+        $this->assertSame(2, preg_match_all('/\b(\d+) ready-made section patterns/', $r, $m), 'the readme states the pattern count in the features list and the tool list');
+        foreach ($m[1] as $n) {
+            $this->assertSame(\AiEditorDivi5\WP\SectionRecipes::count(), (int) $n, 'the readme says ' . $n . ' section patterns');
+        }
+    }
+
     public function testReadmeExplainsHowItWorksInPlainWords(): void
     {
         $r = (string) file_get_contents(self::ROOT . '/readme.txt');

@@ -32,6 +32,14 @@ class SectionRecipesTest extends TestCase
         }
     }
 
+    public function testCountIsTheNumberOfRecipesInTheDataFile(): void
+    {
+        $data = json_decode((string) file_get_contents(__DIR__ . '/../wp-plugin/data/section-recipes.json'), true);
+        $this->assertIsArray($data);
+        $this->assertSame(count($data), SectionRecipes::count());
+        $this->assertSame(count(SectionRecipes::names()), SectionRecipes::count());
+    }
+
     public function testEveryRecipeValidates(): void
     {
         $names = SectionRecipes::names();

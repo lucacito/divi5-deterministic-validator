@@ -337,6 +337,12 @@ final class SectionRecipes
         return defined( 'AI_EDITOR_DIVI5_FILE' ) ? plugins_url( 'assets/images/', AI_EDITOR_DIVI5_FILE ) : '';
     }
 
+    /** Number of recipes in the library (the readme states it; tests check it). */
+    public static function count(): int
+    {
+        return count( self::all() );
+    }
+
     /** @return list<string> recipe names (used by tests) */
     public static function names(): array
     {

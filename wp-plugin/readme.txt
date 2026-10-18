@@ -31,7 +31,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * **Small changes stay small.** Changing one phone number replaces just that text. The rest of the page is not rebuilt or touched.
 * **Preview before saving.** Your AI can ask what a change would do before it saves anything. It gets a list of the blocks and settings that would change, and the checker's verdict. Nothing is saved until it repeats the request for real.
 * **Matches your site.** Your AI can look up your site's own Divi colors and presets and reuse them, and it is told when a page uses one your site does not have. It cannot create or change presets or colors: that stays in Divi's Visual Builder.
-* **Proven building blocks.** 17 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
+* **Proven building blocks.** 71 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
 * **Sensible images.** The AI looks in your Media Library first. When nothing there fits, it uses a built-in pack of 44 original images that ships with the plugin.
 * **One-click undo.** The previous version of each page or Divi Project the AI changes is kept (up to the last 10). Restore it from the plugin's Dashboard with one click, or just ask your AI to undo.
 * **Works with the AI assistant you already use.** Claude, ChatGPT, Gemini, Cursor, VS Code Copilot, or any assistant that supports MCP.
@@ -74,7 +74,7 @@ Guides that help the AI build good pages:
 * `get_style_guide`: how to build styled Divi 5 layouts, using real Divi 5 settings.
 * `get_landing_guide`: how to build a landing page that turns visitors into customers.
 * `get_site_guide`: how to plan a site with several pages that link to each other.
-* `get_section_recipes`: the 17 ready-made section patterns.
+* `get_section_recipes`: the 71 ready-made section patterns.
 * `get_image_guide`: how to pick the right image for each section, including the built-in image pack.
 
 Images:
