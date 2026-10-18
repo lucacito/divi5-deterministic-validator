@@ -412,12 +412,28 @@ class SectionRecipesTest extends TestCase
 
     public function testNoRecipeEmbedsABlobAndSizesStayReasonable(): void
     {
-        foreach ($this->rawRecipes() as $name => $markup) {
-            $this->assertStringNotContainsString('data:image', $markup, "$name: no inline image blobs (use an image token)");
-            $this->assertStringNotContainsString('base64,', $markup, "$name: no base64 payloads");
-            $this->assertLessThan(60 * 1024, strlen($markup), "$name: recipe markup stays under 60 KB");
+        // The purpose of this test is the blob guard: no embedded file (a data: URI, a base64 image) may sneak into the
+        // recipe library. The size bounds below are only a backstop for that.
+        $data = json_decode((string) file_get_contents(__DIR__ . '/../wp-plugin/data/section-recipes.json'), true);
+        foreach ($data as $r) {
+            $name = (string) $r['name'];
+            foreach (['markup', 'description'] as $field) {
+                $value = (string) ($r[$field] ?? '');
+                $this->assertDoesNotMatchRegularExpression('/data:[a-z]+\/[a-z0-9.+-]+/i', $value, "$name $field: no data: URI (use an image token)");
+                $this->assertStringNotContainsString('base64,', $value, "$name $field: no base64 payloads");
+                $this->assertDoesNotMatchRegularExpression('/[A-Za-z0-9+\/=]{200,}/', $value, "$name $field: no base64-looking run of 200+ characters");
+            }
+            // Per recipe: the largest recipe is about 11 KB; one above 24 KB is a smell and should be split.
+            $this->assertLessThanOrEqual(24000, strlen((string) $r['markup']), "$name: recipe markup stays at most 24,000 bytes");
         }
-        $this->assertLessThan(200 * 1024, filesize(__DIR__ . '/../wp-plugin/data/section-recipes.json'), 'the whole recipe file stays small');
+        // The checker itself.
+        $this->assertMatchesRegularExpression('/[A-Za-z0-9+\/=]{200,}/', str_repeat('QUJD', 60));
+        $this->assertMatchesRegularExpression('/data:[a-z]+\/[a-z0-9.+-]+/i', '"src":"data:image/svg+xml,..."');
+        // Whole file: 700 KB (Ruling 22, plan 2 Task 12). The old 200 KB bound was set for 17 recipes; 60+ recipes at about
+        // 6-8 KB each with JSON escaping (every quote in a block comment is written \") need several hundred KB. The file is
+        // read once per process and memoised (SectionRecipes::all(), on tool calls only), and the plugin zip stays far below
+        // WordPress.org's limits.
+        $this->assertLessThan(700 * 1024, filesize(__DIR__ . '/../wp-plugin/data/section-recipes.json'), 'the whole recipe file stays reasonable');
     }
 
     public function testTestimonialPortraitUsesTheBundledAvatarWithAlt(): void
