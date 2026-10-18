@@ -140,5 +140,167 @@
     },
     "expect": "PASS",
     "note": "Body text colour inside an open toggle (module.json attributes.content, selector '{{selector}} .et_pb_toggle_content', decoration.bodyFont; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:480-490). Path registered from other modules; measured here on divi/toggle."
+  },
+  {
+    "id": "rt-toggle-title-color-open-h3",
+    "block": "toggle",
+    "base": {
+      "module": {
+        "advanced": {
+          "open": {
+            "desktop": {
+              "value": "on"
+            }
+          }
+        }
+      },
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "headingLevel": "h3"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.desktop.value.color": "#c0392b"
+    },
+    "expect": "PASS",
+    "note": "Precondition probe for rt-toggle-title-color-open: the same generic title colour on an OPEN toggle whose title is an h3 (title.decoration.font.font headingLevel h3 in the base). In the faq-toggle-list recipe render the open h3 title stayed #333 with only the generic colour set; this candidate measures whether the attribute changes the open h3 title at all (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:453-458; selector list in Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json attributes.title)."
+  },
+  {
+    "id": "rt-toggle-open-title-color-h3",
+    "block": "toggle",
+    "base": {
+      "module": {
+        "advanced": {
+          "open": {
+            "desktop": {
+              "value": "on"
+            }
+          }
+        }
+      },
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "headingLevel": "h3"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "openToggle.decoration.font.font.desktop.value.color": "#c0392b"
+    },
+    "expect": "PASS",
+    "note": "Open Title Text Color on an OPEN toggle whose title is an h3 (openToggle.styleProps.font selector includes h3.et_pb_toggle_title: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json attributes.openToggle; printed with !important by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:427-445). The shape the faq-toggle-list recipe uses."
+  },
+  {
+    "id": "rt-toggle-title-color-open-h3-styled",
+    "block": "toggle",
+    "base": {
+      "module": {
+        "advanced": {
+          "open": {
+            "desktop": {
+              "value": "on"
+            }
+          }
+        },
+        "decoration": {
+          "border": {
+            "desktop": {
+              "value": {
+                "styles": {
+                  "all": {
+                    "width": "0px",
+                    "color": "#cccccc",
+                    "style": "solid"
+                  },
+                  "bottom": {
+                    "width": "1px",
+                    "color": "#cccccc",
+                    "style": "solid"
+                  }
+                },
+                "radius": {
+                  "topLeft": "0px",
+                  "topRight": "0px",
+                  "bottomRight": "0px",
+                  "bottomLeft": "0px"
+                }
+              }
+            }
+          },
+          "spacing": {
+            "desktop": {
+              "value": {
+                "padding": {
+                  "top": "28px",
+                  "bottom": "28px",
+                  "left": "0px",
+                  "right": "0px"
+                }
+              }
+            }
+          }
+        }
+      },
+      "openToggle": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#0b1020"
+              }
+            }
+          }
+        }
+      },
+      "closedToggle": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#0b1020"
+              }
+            }
+          }
+        }
+      },
+      "title": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "headingLevel": "h3",
+                  "size": "28px",
+                  "lineHeight": "1.3em",
+                  "weight": "600"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "title.decoration.font.font.desktop.value.color": "#c0392b"
+    },
+    "expect": "PASS",
+    "note": "The generic title colour on an open h3 toggle styled as in the faq-toggle-list recipe (open and closed backgrounds, a bottom border, vertical padding, title size/line height/weight in the same font value as the colour). Checks whether those settings change the outcome of rt-toggle-title-color-open-h3 (in the recipe render the open title stayed #333 with only the generic colour set)."
   }
 ]

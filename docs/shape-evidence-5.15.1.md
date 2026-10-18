@@ -16740,3 +16740,69 @@ Phone overflow at 400 px: no.
 Note: Body text colour inside an open toggle (module.json attributes.content, selector '{{selector}} .et_pb_toggle_content', decoration.bodyFont; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:480-490). Path registered from other modules; measured here on divi/toggle.
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rt-toggle-title-color-open-h3
+
+Block: `toggle`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `1:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 900 px | yes | 17 | yes | `1:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 400 px | yes | 17 | yes | `1:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Precondition probe for rt-toggle-title-color-open: the same generic title colour on an OPEN toggle whose title is an h3 (title.decoration.font.font headingLevel h3 in the base). In the faq-toggle-list recipe render the open h3 title stayed #333 with only the generic colour set; this candidate measures whether the attribute changes the open h3 title at all (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:453-458; selector list in Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json attributes.title).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rt-toggle-open-title-color-h3
+
+Block: `toggle`. Set on top of the base block:
+
+- `openToggle.decoration.font.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `1:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 900 px | yes | 17 | yes | `1:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 400 px | yes | 17 | yes | `1:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Open Title Text Color on an OPEN toggle whose title is an h3 (openToggle.styleProps.font selector includes h3.et_pb_toggle_title: Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/toggle/module.json attributes.openToggle; printed with !important by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Toggle/ToggleModule.php:427-445). The shape the faq-toggle-list recipe uses.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rt-toggle-title-color-open-h3-styled
+
+Block: `toggle`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `1:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 900 px | yes | 17 | yes | `1:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 400 px | yes | 17 | yes | `1:h3:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: The generic title colour on an open h3 toggle styled as in the faq-toggle-list recipe (open and closed backgrounds, a bottom border, vertical padding, title size/line height/weight in the same font value as the colour). Checks whether those settings change the outcome of rt-toggle-title-color-open-h3 (in the recipe render the open title stayed #333 with only the generic colour set).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
