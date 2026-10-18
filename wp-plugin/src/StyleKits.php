@@ -1,0 +1,372 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AiEditorDivi5\WP;
+
+if ( ! defined( 'ABSPATH' ) ) exit;
+
+/**
+ * Style kits: small decision tables (fill, border, radius, shadow, hover, text, space) that say
+ * how a family of controls and cards looks. A kit is DECISIONS ONLY: no markup, no colour value
+ * (colours are roles), nothing that could be pasted into a page. Adapters elsewhere turn a kit
+ * into real module attributes; this class only validates, loads and describes kits.
+ *
+ * Pure data + readers. The data file ships with the plugin; nothing is fetched and nothing
+ * here writes to a site.
+ */
+final class StyleKits
+{
+    private const DATA = __DIR__ . '/../data/style-kits.json';
+
+    /** Border styles proven on the real Divi (extended only with probe-proven values). */
+    public const BORDER_STYLES = [ 'solid' ];
+
+    /** Hover behaviours a kit may choose (extended only with probe-proven values). */
+    public const HOVERS = [ 'fill-swap', 'invert', 'none' ];
+
+    /** Shadow values a kit may choose for rest and hover (extended only with probe-proven values). */
+    public const SHADOWS = [ 'none' ];
+
+    public const FILLS         = [ 'solid', 'outline', 'ghost' ];
+    public const COLOR_ROLES   = [ 'accent', 'text', 'inverse' ];
+    public const BORDER_COLORS = [ 'accent', 'text', 'border', 'inverse', 'same' ];
+    public const CAPITALIZE    = [ 'none', 'uppercase' ];
+
+    /** The value tokens valueToken() answers. */
+    public const VALUE_TOKENS = [ 'radius-control', 'radius-card', 'radius-media', 'space-control', 'space-card' ];
+
+    private const MAX_STRING = 160;
+    private const MAX_SPACE  = 120;
+
+    private const TOP_KEYS = [ 'id', 'title', 'summary', 'avoids', 'fill', 'color', 'border', 'radius', 'shadow', 'hover', 'text', 'space' ];
+
+    /** @var ?list<array<string,mixed>> the decoded kits, read once per request */
+    private static ?array $cache = null;
+
+    /** Forgets the memoised kits (for tests that change the data in-process). */
+    public static function clearCache(): void
+    {
+        self::$cache = null;
+    }
+
+    /** @return list<array<string,mixed>> */
+    private static function all(): array
+    {
+        if ( null !== self::$cache ) {
+            return self::$cache;
+        }
+        $raw = is_readable( self::DATA ) ? file_get_contents( self::DATA ) : false;
+        return self::$cache = self::parse( false === $raw ? '' : $raw );
+    }
+
+    /**
+     * The kits in a data file's text: every entry that is an array with a string `id`, in order.
+     * Corrupt or empty text means no kits (never an error).
+     *
+     * @internal Reads the data file's text; the supported readers are ids(), get() and markdown().
+     *
+     * @return list<array<string,mixed>>
+     */
+    public static function parse( string $raw ): array
+    {
+        $data = json_decode( $raw, true );
+        if ( ! is_array( $data ) ) {
+            return [];
+        }
+        $out = [];
+        foreach ( $data as $kit ) {
+            if ( is_array( $kit ) && isset( $kit['id'] ) && is_string( $kit['id'] ) ) {
+                $out[] = $kit;
+            }
+        }
+        return $out;
+    }
+
+    /** @return list<string> */
+    public static function ids(): array
+    {
+        return array_map( static fn( array $k ): string => $k['id'], self::all() );
+    }
+
+    /** @return array<string,mixed>|null */
+    public static function get( string $id ): ?array
+    {
+        foreach ( self::all() as $kit ) {
+            if ( $kit['id'] === $id ) {
+                return $kit;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * What is wrong with a kit (empty list = valid). Strict: every key required except `avoids`,
+     * no unknown keys, every value from its closed vocabulary or pattern, and no string value that
+     * looks like markup or a colour (a hex colour, `<`, `>`, `&`, `--`, a quote) or is longer than 160
+     * characters.
+     *
+     * @param array<string,mixed> $kit
+     * @return list<string>
+     */
+    public static function problems( array $kit ): array
+    {
+        $p = [];
+
+        foreach ( array_keys( $kit ) as $key ) {
+            if ( ! in_array( $key, self::TOP_KEYS, true ) ) {
+                $p[] = 'unknown key ' . self::label( $key );
+            }
+        }
+
+        $id = $kit['id'] ?? null;
+        if ( ! is_string( $id ) || 1 !== preg_match( '/^[a-z0-9]+(?:-[a-z0-9]+)*\z/', $id ) ) {
+            $p[] = 'id must be kebab-case (lower-case letters, digits, single hyphens)';
+        }
+        foreach ( [ 'title', 'summary' ] as $key ) {
+            $v = $kit[ $key ] ?? null;
+            if ( ! is_string( $v ) || '' === trim( $v ) ) {
+                $p[] = $key . ' must be a non-empty string';
+            }
+        }
+
+        if ( array_key_exists( 'avoids', $kit ) ) {
+            $avoids = $kit['avoids'];
+            if ( ! is_array( $avoids ) || ! array_is_list( $avoids ) ) {
+                $p[] = 'avoids must be a list of recipe layouts';
+            } else {
+                foreach ( $avoids as $layout ) {
+                    if ( ! is_string( $layout ) || ! in_array( $layout, SectionRecipes::LAYOUTS, true ) ) {
+                        $p[] = 'avoids has a value that is not a recipe layout';
+                        break;
+                    }
+                }
+            }
+        }
+
+        self::oneOf( $p, 'fill', $kit['fill'] ?? null, self::FILLS );
+        self::oneOf( $p, 'color', $kit['color'] ?? null, self::COLOR_ROLES );
+        self::oneOf( $p, 'hover', $kit['hover'] ?? null, self::HOVERS );
+
+        $border = self::group( $p, 'border', $kit['border'] ?? null, [ 'width', 'style', 'color' ] );
+        if ( null !== $border ) {
+            if ( ! is_string( $border['width'] ?? null ) || 1 !== preg_match( '/^[0-4]px\z/', $border['width'] ) ) {
+                $p[] = 'border.width must be 0px to 4px';
+            }
+            self::oneOf( $p, 'border.style', $border['style'] ?? null, self::BORDER_STYLES );
+            self::oneOf( $p, 'border.color', $border['color'] ?? null, self::BORDER_COLORS );
+        }
+
+        $radius = self::group( $p, 'radius', $kit['radius'] ?? null, [ 'control', 'card', 'media' ] );
+        if ( null !== $radius ) {
+            foreach ( [ 'control', 'card', 'media' ] as $key ) {
+                if ( ! self::isRadius( $radius[ $key ] ?? null ) ) {
+                    $p[] = 'radius.' . $key . ' must be 0px to 48px or 999px';
+                }
+            }
+        }
+
+        $shadow = self::group( $p, 'shadow', $kit['shadow'] ?? null, [ 'rest', 'hover' ] );
+        if ( null !== $shadow ) {
+            self::oneOf( $p, 'shadow.rest', $shadow['rest'] ?? null, self::SHADOWS );
+            self::oneOf( $p, 'shadow.hover', $shadow['hover'] ?? null, self::SHADOWS );
+        }
+
+        $text = self::group( $p, 'text', $kit['text'] ?? null, [ 'capitalization', 'letterSpacing', 'weight' ] );
+        if ( null !== $text ) {
+            self::oneOf( $p, 'text.capitalization', $text['capitalization'] ?? null, self::CAPITALIZE );
+            if ( ! is_string( $text['letterSpacing'] ?? null ) || 1 !== preg_match( '/^[0-4]px\z/', $text['letterSpacing'] ) ) {
+                $p[] = 'text.letterSpacing must be 0px to 4px';
+            }
+            self::oneOf( $p, 'text.weight', $text['weight'] ?? null, [ '400', '500', '600', '700', '800' ] );
+        }
+
+        $space = self::group( $p, 'space', $kit['space'] ?? null, [ 'control', 'card' ] );
+        if ( null !== $space ) {
+            $control = self::group( $p, 'space.control', $space['control'] ?? null, [ 'vertical', 'horizontal' ] );
+            if ( null !== $control ) {
+                foreach ( [ 'vertical', 'horizontal' ] as $key ) {
+                    if ( ! self::isSpace( $control[ $key ] ?? null ) ) {
+                        $p[] = 'space.control.' . $key . ' must be 0px to ' . self::MAX_SPACE . 'px';
+                    }
+                }
+            }
+            if ( ! self::isSpace( $space['card'] ?? null ) ) {
+                $p[] = 'space.card must be 0px to ' . self::MAX_SPACE . 'px';
+            }
+        }
+
+        foreach ( self::unsafeStringPaths( $kit, '' ) as $path ) {
+            $p[] = $path . ' must be plain text of at most ' . self::MAX_STRING . ' characters (no markup, colour, quote, & or --)';
+        }
+
+        return $p;
+    }
+
+    /**
+     * A value a recipe can drop in for a `radius-*` or `space-*` token, in the shape Divi stores it, or
+     * null for any other name. Radius: the four corners. `space-control`: four sides (top and bottom are
+     * the vertical value, left and right the horizontal one) plus both sync flags on. `space-card`: four sides.
+     *
+     * @param array<string,mixed> $kit
+     * @return array<string,string>|null
+     */
+    public static function valueToken( array $kit, string $name ): ?array
+    {
+        switch ( $name ) {
+            case 'radius-control':
+            case 'radius-card':
+            case 'radius-media':
+                $radius = (array) ( $kit['radius'] ?? [] );
+                $v      = (string) ( $radius[ substr( $name, 7 ) ] ?? '' );
+                return [ 'topLeft' => $v, 'topRight' => $v, 'bottomRight' => $v, 'bottomLeft' => $v ];
+            case 'space-control':
+                $space      = (array) ( $kit['space'] ?? [] );
+                $control    = (array) ( $space['control'] ?? [] );
+                $vertical   = (string) ( $control['vertical'] ?? '' );
+                $horizontal = (string) ( $control['horizontal'] ?? '' );
+                return [
+                    'top'            => $vertical,
+                    'right'          => $horizontal,
+                    'bottom'         => $vertical,
+                    'left'           => $horizontal,
+                    'syncVertical'   => 'on',
+                    'syncHorizontal' => 'on',
+                ];
+            case 'space-card':
+                $space = (array) ( $kit['space'] ?? [] );
+                $v     = (string) ( $space['card'] ?? '' );
+                return [ 'top' => $v, 'right' => $v, 'bottom' => $v, 'left' => $v ];
+        }
+        return null;
+    }
+
+    /**
+     * Markdown for the AI: one line per kit when $id is null, otherwise that kit's decisions
+     * (or a message listing the valid ids).
+     */
+    public static function markdown( ?string $id = null ): string
+    {
+        if ( null === $id ) {
+            $lines = [ '# Style kits', '' ];
+            foreach ( self::all() as $kit ) {
+                $lines[] = sprintf( '- **%s** (`%s`): %s', (string) ( $kit['title'] ?? '' ), (string) $kit['id'], (string) ( $kit['summary'] ?? '' ) );
+            }
+            $lines[] = '';
+            $lines[] = 'Ask for one kit in full with its id.';
+            return implode( "\n", $lines ) . "\n";
+        }
+
+        $kit = self::get( $id );
+        if ( null === $kit ) {
+            return sprintf( "Unknown style kit \"%s\". Valid ids: %s.\n", SectionRecipes::plain( $id ), implode( ', ', self::ids() ) );
+        }
+
+        $b = (array) ( $kit['border'] ?? [] );
+        $r = (array) ( $kit['radius'] ?? [] );
+        $s = (array) ( $kit['shadow'] ?? [] );
+        $t = (array) ( $kit['text'] ?? [] );
+        $sp = (array) ( $kit['space'] ?? [] );
+        $c = (array) ( $sp['control'] ?? [] );
+        $lines = [
+            sprintf( '# Style kit: %s (`%s`)', (string) ( $kit['title'] ?? '' ), (string) $kit['id'] ),
+            '',
+            (string) ( $kit['summary'] ?? '' ),
+            '',
+            sprintf( '- Fill: %s, carried by the %s colour role', (string) ( $kit['fill'] ?? '' ), (string) ( $kit['color'] ?? '' ) ),
+            sprintf( '- Border: %s %s, colour %s', (string) ( $b['width'] ?? '' ), (string) ( $b['style'] ?? '' ), (string) ( $b['color'] ?? '' ) ),
+            sprintf( '- Radius: controls %s, cards %s, media %s', (string) ( $r['control'] ?? '' ), (string) ( $r['card'] ?? '' ), (string) ( $r['media'] ?? '' ) ),
+            sprintf( '- Shadow: rest %s, hover %s', (string) ( $s['rest'] ?? '' ), (string) ( $s['hover'] ?? '' ) ),
+            '- Hover: ' . (string) ( $kit['hover'] ?? '' ),
+            sprintf( '- Text: capitalization %s, letter spacing %s, weight %s', (string) ( $t['capitalization'] ?? '' ), (string) ( $t['letterSpacing'] ?? '' ), (string) ( $t['weight'] ?? '' ) ),
+            sprintf( '- Space: controls %s vertical and %s horizontal, cards %s', (string) ( $c['vertical'] ?? '' ), (string) ( $c['horizontal'] ?? '' ), (string) ( $sp['card'] ?? '' ) ),
+        ];
+        $avoids = $kit['avoids'] ?? [];
+        if ( is_array( $avoids ) && [] !== $avoids ) {
+            $lines[] = '- Avoid with recipe layouts: ' . implode( ', ', array_map( 'strval', $avoids ) );
+        }
+        return implode( "\n", $lines ) . "\n";
+    }
+
+    /**
+     * @param list<string> $problems
+     * @param mixed        $value
+     * @param list<string> $allowed
+     */
+    private static function oneOf( array &$problems, string $name, $value, array $allowed ): void
+    {
+        if ( ! is_string( $value ) || ! in_array( $value, $allowed, true ) ) {
+            $problems[] = $name . ' must be one of: ' . implode( ', ', $allowed );
+        }
+    }
+
+    /**
+     * An object with exactly the given keys (extra keys are reported, missing ones are caught by the
+     * caller's value checks). Returns null (and a problem) when it is not an object.
+     *
+     * @param list<string> $problems
+     * @param mixed        $value
+     * @param list<string> $keys
+     * @return array<string,mixed>|null
+     */
+    private static function group( array &$problems, string $name, $value, array $keys ): ?array
+    {
+        if ( ! is_array( $value ) ) {
+            $problems[] = $name . ' must be an object';
+            return null;
+        }
+        foreach ( array_keys( $value ) as $key ) {
+            if ( ! in_array( $key, $keys, true ) ) {
+                $problems[] = 'unknown key ' . $name . '.' . self::label( $key );
+            }
+        }
+        return $value;
+    }
+
+    /** @param mixed $key */
+    private static function label( $key ): string
+    {
+        return substr( preg_replace( '/[^A-Za-z0-9_.-]/', '?', (string) $key ) ?? '', 0, 40 );
+    }
+
+    /** @param mixed $value */
+    private static function isRadius( $value ): bool
+    {
+        if ( ! is_string( $value ) || 1 !== preg_match( '/^(0|[1-9][0-9]{0,2})px\z/', $value, $m ) ) {
+            return false;
+        }
+        return (int) $m[1] <= 48 || 999 === (int) $m[1];
+    }
+
+    /** @param mixed $value */
+    private static function isSpace( $value ): bool
+    {
+        return is_string( $value ) && 1 === preg_match( '/^(0|[1-9][0-9]{0,2})px\z/', $value, $m ) && (int) $m[1] <= self::MAX_SPACE;
+    }
+
+    /**
+     * Dotted paths of every string under $node that is too long or contains a hex colour, `<`, `>`, `&`,
+     * `--` or a quote.
+     *
+     * @param mixed $node
+     * @return list<string>
+     */
+    private static function unsafeStringPaths( $node, string $path ): array
+    {
+        if ( is_string( $node ) ) {
+            $bad = strlen( $node ) > self::MAX_STRING
+                || false !== strpbrk( $node, "<>&\"'`" )
+                || str_contains( $node, '--' )
+                || 1 === preg_match( '/#[0-9a-fA-F]{3,8}(?![0-9a-zA-Z])/', $node );
+            return $bad ? [ '' === $path ? 'value' : $path ] : [];
+        }
+        if ( ! is_array( $node ) ) {
+            return [];
+        }
+        $out = [];
+        foreach ( $node as $key => $child ) {
+            $out = array_merge( $out, self::unsafeStringPaths( $child, '' === $path ? self::label( $key ) : $path . '.' . self::label( $key ) ) );
+        }
+        return $out;
+    }
+}

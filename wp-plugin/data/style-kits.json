@@ -1,0 +1,30 @@
+[
+  {
+    "id": "soft-solid",
+    "title": "Soft solid",
+    "summary": "Filled accent buttons with gently rounded corners and no border: friendly and quiet.",
+    "avoids": [],
+    "fill": "solid",
+    "color": "accent",
+    "border": { "width": "0px", "style": "solid", "color": "same" },
+    "radius": { "control": "8px", "card": "8px", "media": "8px" },
+    "shadow": { "rest": "none", "hover": "none" },
+    "hover": "none",
+    "text": { "capitalization": "none", "letterSpacing": "0px", "weight": "600" },
+    "space": { "control": { "vertical": "14px", "horizontal": "28px" }, "card": "24px" }
+  },
+  {
+    "id": "outline-2",
+    "title": "Outline two",
+    "summary": "Transparent buttons with a 2px text-colour outline and tight corners; the fill swaps in on hover.",
+    "avoids": [],
+    "fill": "outline",
+    "color": "text",
+    "border": { "width": "2px", "style": "solid", "color": "text" },
+    "radius": { "control": "4px", "card": "4px", "media": "4px" },
+    "shadow": { "rest": "none", "hover": "none" },
+    "hover": "fill-swap",
+    "text": { "capitalization": "none", "letterSpacing": "0px", "weight": "600" },
+    "space": { "control": { "vertical": "12px", "horizontal": "26px" }, "card": "24px" }
+  }
+]
