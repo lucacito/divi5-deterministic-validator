@@ -65,10 +65,12 @@ function pageFor(c, apply) {
   return '<!-- wp:divi/placeholder -->' + body + '<!-- /wp:divi/placeholder -->';
 }
 
+// Every throwaway page's title starts with this; the leak sweep deletes only pages whose title starts with it.
+const TITLE_PREFIX = 'aied shape probe ';
 const created = [];
 function makePage(label, content) {
   const b64 = Buffer.from(content).toString('base64');
-  const out = wp('eval', `$c=base64_decode('${b64}');$g=AiEditorDivi5${BS}WP${BS}LayoutGate::check($c);$id=wp_insert_post(wp_slash(['post_type'=>'page','post_title'=>'aied shape probe ${label}','post_content'=>$c,'post_status'=>'draft','meta_input'=>['_et_pb_use_divi_5'=>'on','_et_pb_use_builder'=>'on']]));echo $id.'|'.($g->isValid()?'valid':'INVALID '.json_encode(array_map(fn($v)=>$v->toArray(),$g->violations())));`);
+  const out = wp('eval', `$c=base64_decode('${b64}');$g=AiEditorDivi5${BS}WP${BS}LayoutGate::check($c);$id=wp_insert_post(wp_slash(['post_type'=>'page','post_title'=>'${TITLE_PREFIX}${label}','post_content'=>$c,'post_status'=>'draft','meta_input'=>['_et_pb_use_divi_5'=>'on','_et_pb_use_builder'=>'on']]));echo $id.'|'.($g->isValid()?'valid':'INVALID '.json_encode(array_map(fn($v)=>$v->toArray(),$g->violations())));`);
   const [id, verdict] = out.split('|');
   created.push(id);
   return { id, valid: verdict === 'valid', verdict };
@@ -164,10 +166,14 @@ function diffProps(a, b) {
     failed = true;
   } finally {
     // makePage records an id only after its whole call returned, so a failure after wp_insert_post would leak a page:
-    // also sweep by the throwaway title. Only numeric ids ever reach `wp post delete`.
+    // also sweep by title. `wp post list --s` is a content search (it would match unrelated pages), so list ALL pages
+    // with their titles and keep only rows whose post_title starts with the exact prefix used by makePage.
     let swept = [];
-    try { swept = wp('post', 'list', '--post_type=page', '--post_status=any', '--s=aied shape probe', '--format=ids').split(/\s+/); } catch (e) { console.log('WARNING could not list leftover probe pages'); failed = true; }
-    for (const id of [...new Set([...created, ...swept])].filter((x) => x !== '')) {
+    try {
+      const rows = JSON.parse(wp('post', 'list', '--post_type=page', '--post_status=any', '--fields=ID,post_title', '--format=json') || '[]');
+      swept = rows.filter((r) => typeof r.post_title === 'string' && r.post_title.startsWith(TITLE_PREFIX)).map((r) => String(r.ID));
+    } catch (e) { console.log('WARNING could not list leftover probe pages'); failed = true; }
+    for (const id of [...new Set([...created, ...swept])]) {
       if (!/^\d+$/.test(String(id))) { console.log('WARNING ignoring non-numeric page id ' + id); failed = true; continue; }
       try { wp('post', 'delete', String(id), '--force'); } catch (e) { console.log('WARNING could not delete page ' + id); failed = true; }
     }
