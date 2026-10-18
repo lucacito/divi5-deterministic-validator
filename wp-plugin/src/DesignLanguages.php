@@ -19,6 +19,19 @@ final class DesignLanguages
 {
     private const DATA = __DIR__ . '/../data/design-languages.json';
 
+    /**
+     * Font families that need no Google font: allowed in a language's font value besides the Google
+     * font names (a value may be a comma separated stack, and each family in it must be one or the other).
+     */
+    public const WEB_SAFE_FONTS = [
+        'Georgia', 'Arial', 'Helvetica', 'Times New Roman', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Courier New',
+        'system-ui', 'sans-serif', 'serif', 'monospace',
+    ];
+
+    private const COLOR_KEYS = [ 'bg', 'surface', 'text', 'muted', 'accent', 'accent_text', 'border' ];
+    private const FONT_KEYS  = [ 'display', 'body', 'eyebrow' ];
+    private const TEXT_KEYS  = [ 'title', 'summary', 'radius', 'section_padding', 'shadow', 'rhythm', 'hero', 'cta' ];
+
     /** @var ?list<array<string,mixed>> the decoded languages, read once per request */
     private static ?array $cache = null;
 
@@ -34,10 +47,21 @@ final class DesignLanguages
         if ( null !== self::$cache ) {
             return self::$cache;
         }
-        $raw  = is_readable( self::DATA ) ? (string) file_get_contents( self::DATA ) : '';
+        $raw = is_readable( self::DATA ) ? file_get_contents( self::DATA ) : false;
+        return self::$cache = self::parse( false === $raw ? '' : $raw );
+    }
+
+    /**
+     * The languages in a data file's text: every entry that is an array with a string `id`, in order.
+     * Corrupt or empty text means no languages (never an error).
+     *
+     * @return list<array<string,mixed>>
+     */
+    public static function parse( string $raw ): array
+    {
         $data = json_decode( $raw, true );
         if ( ! is_array( $data ) ) {
-            return self::$cache = [];
+            return [];
         }
         $out = [];
         foreach ( $data as $lang ) {
@@ -45,7 +69,7 @@ final class DesignLanguages
                 $out[] = $lang;
             }
         }
-        return self::$cache = $out;
+        return $out;
     }
 
     /** @return list<string> */
@@ -147,6 +171,138 @@ final class DesignLanguages
             (string) $lang['cta'],
         ];
         return implode( "\n", $lines ) . "\n";
+    }
+
+    /**
+     * What is wrong with a design language (empty list = valid). Used by the tests on every shipped
+     * language, and available to anything that accepts one. Checks: every field present and the right
+     * kind; colours are #rrggbb (`surface_glass`, optional, may instead be rgba(r,g,b,a) with channels
+     * 0 to 255 and 0 < a < 1); font values are comma separated stacks of plain family names (letters,
+     * digits and spaces) and, when $knownFonts is given, each family is in that list or in
+     * WEB_SAFE_FONTS; the id is kebab-case; `favors` and `avoids` are non-empty, only
+     * SectionRecipes::LAYOUTS values and do not overlap; no text contains `<`, `>`, a backtick or
+     * `{{`. Uniqueness of ids is a property of the whole set, so it is checked over ids(), not here.
+     * The class never reads a font list itself: the caller passes the names (null skips the check).
+     *
+     * @param array<string,mixed> $language
+     * @param ?list<string>       $knownFonts
+     * @return list<string>
+     */
+    public static function valid( array $language, ?array $knownFonts = null ): array
+    {
+        $problems = [];
+
+        $id = $language['id'] ?? null;
+        if ( ! is_string( $id ) || 1 !== preg_match( '/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $id ) ) {
+            $problems[] = 'id must be kebab-case (lower-case letters, digits, single hyphens)';
+        }
+
+        foreach ( self::TEXT_KEYS as $key ) {
+            $value = $language[ $key ] ?? null;
+            if ( ! is_string( $value ) || '' === trim( $value ) ) {
+                $problems[] = $key . ' must be a non-empty string';
+            }
+        }
+        if ( ! in_array( $language['motion'] ?? null, [ 'none', 'subtle', 'lively' ], true ) ) {
+            $problems[] = 'motion must be none, subtle or lively';
+        }
+
+        $colors = $language['colors'] ?? null;
+        if ( ! is_array( $colors ) ) {
+            $problems[] = 'colors must be an object';
+            $colors     = [];
+        }
+        foreach ( self::COLOR_KEYS as $key ) {
+            $value = $colors[ $key ] ?? null;
+            if ( ! is_string( $value ) || 1 !== preg_match( '/^#[0-9a-f]{6}$/i', $value ) ) {
+                $problems[] = 'colors.' . $key . ' must be a #rrggbb colour';
+            }
+        }
+        if ( array_key_exists( 'surface_glass', $colors ) && ! self::isGlassColor( $colors['surface_glass'] ) ) {
+            $problems[] = 'colors.surface_glass must be #rrggbb or rgba(r,g,b,a) with channels 0-255 and 0 < a < 1';
+        }
+
+        $fonts = $language['fonts'] ?? null;
+        if ( ! is_array( $fonts ) ) {
+            $problems[] = 'fonts must be an object';
+            $fonts      = [];
+        }
+        foreach ( self::FONT_KEYS as $key ) {
+            $value = $fonts[ $key ] ?? null;
+            if ( ! is_string( $value ) ) {
+                $problems[] = 'fonts.' . $key . ' must be a font name or a comma separated stack';
+                continue;
+            }
+            foreach ( explode( ',', $value ) as $family ) {
+                $family = trim( $family );
+                if ( 1 !== preg_match( '/^[A-Za-z0-9][A-Za-z0-9 -]*$/', $family ) ) {
+                    $problems[] = 'fonts.' . $key . ' has a family name with characters a font name does not have';
+                } elseif ( null !== $knownFonts && ! in_array( $family, $knownFonts, true ) && ! in_array( $family, self::WEB_SAFE_FONTS, true ) ) {
+                    $problems[] = 'fonts.' . $key . ' names "' . $family . '", which is not a known Google font or a web-safe family';
+                }
+            }
+        }
+
+        foreach ( [ 'favors', 'avoids' ] as $key ) {
+            $list = $language[ $key ] ?? null;
+            if ( ! is_array( $list ) || [] === $list ) {
+                $problems[] = $key . ' must be a non-empty list of recipe layouts';
+                continue;
+            }
+            foreach ( $list as $layout ) {
+                if ( ! is_string( $layout ) || ! in_array( $layout, SectionRecipes::LAYOUTS, true ) ) {
+                    $problems[] = $key . ' has a value that is not a recipe layout';
+                    break;
+                }
+            }
+        }
+        if ( is_array( $language['favors'] ?? null ) && is_array( $language['avoids'] ?? null )
+            && [] !== array_intersect( $language['favors'], $language['avoids'] ) ) {
+            $problems[] = 'favors and avoids overlap';
+        }
+
+        foreach ( self::unsafeTextPaths( $language, '' ) as $path ) {
+            $problems[] = $path . ' must not contain <, >, a backtick or {{';
+        }
+
+        return $problems;
+    }
+
+    /**
+     * Dotted paths of every string under $node that contains `<`, `>`, a backtick or `{{`.
+     *
+     * @param mixed $node
+     * @return list<string>
+     */
+    private static function unsafeTextPaths( $node, string $path ): array
+    {
+        if ( is_string( $node ) ) {
+            return ( false !== strpbrk( $node, '<>`' ) || str_contains( $node, '{{' ) ) ? [ $path ] : [];
+        }
+        if ( ! is_array( $node ) ) {
+            return [];
+        }
+        $out = [];
+        foreach ( $node as $key => $child ) {
+            $out = array_merge( $out, self::unsafeTextPaths( $child, '' === $path ? (string) $key : $path . '.' . $key ) );
+        }
+        return $out;
+    }
+
+    /** @param mixed $value */
+    private static function isGlassColor( $value ): bool
+    {
+        if ( ! is_string( $value ) ) {
+            return false;
+        }
+        if ( 1 === preg_match( '/^#[0-9a-f]{6}$/i', $value ) ) {
+            return true;
+        }
+        if ( 1 !== preg_match( '/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0?\.\d+)\s*\)$/', $value, $m ) ) {
+            return false;
+        }
+        $alpha = (float) $m[4];
+        return (int) $m[1] <= 255 && (int) $m[2] <= 255 && (int) $m[3] <= 255 && $alpha > 0.0 && $alpha < 1.0;
     }
 
     /**

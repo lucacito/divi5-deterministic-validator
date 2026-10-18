@@ -8,6 +8,7 @@ use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\SectionRecipes;
 use Divi5Validator\Validator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../wp-plugin/src/ImagePack.php';
@@ -234,5 +235,120 @@ class RecipeTokensTest extends TestCase
             ini_set( 'pcre.backtrack_limit', (string) $oldLimit );
             ini_set( 'pcre.jit', (string) $oldJit );
         }
+    }
+
+    // ---- JSON-safe insertion: a value is written as it would appear INSIDE a JSON string ----
+
+    /** @return list<array<mixed>> the decoded attribute JSON of every divi block comment in $markup; fails on one that does not decode */
+    private function blockAttributes( string $markup ): array
+    {
+        $this->assertGreaterThan( 0, preg_match_all( '/<!-- wp:divi\/[a-z0-9-]+ (\{.*?\}) \/?-->/s', $markup, $m ) );
+        $out = [];
+        foreach ( $m[1] as $i => $json ) {
+            $decoded = json_decode( $json, true );
+            $this->assertIsArray( $decoded, 'block comment ' . $i . ' must be valid JSON, got: ' . substr( $json, 0, 200 ) );
+            $out[] = $decoded;
+        }
+        return $out;
+    }
+
+    /** @param mixed $node */
+    private function containsString( $node, string $needle ): bool
+    {
+        if ( is_string( $node ) ) {
+            return $node === $needle;
+        }
+        if ( is_array( $node ) ) {
+            foreach ( $node as $child ) {
+                if ( $this->containsString( $child, $needle ) ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** @return array<string,array{0:string}> */
+    public static function hostileValues(): array
+    {
+        return [
+            'double quote'  => [ 'Evil" Font' ],
+            'backslash'     => [ 'Evil\\Font' ],
+            'quote+slash'   => [ 'a\\"b' ],
+            'newline'       => [ "Two\nLines" ],
+            'tab and ctrl'  => [ "T\tab\x01" ],
+            'closing brace' => [ 'x"}}' ],
+            'unicode'       => [ "Ünï Cödé \u{1F600}" ],
+            'slash'         => [ 'a/b' ],
+        ];
+    }
+
+    #[DataProvider('hostileValues')]
+    public function testAHostileFontOrColourValueCannotBreakABlockCommentsJson( string $value ): void
+    {
+        $lang          = DesignLanguages::get( 'editorial' );
+        $lang['fonts'] = [ 'display' => $value, 'body' => $value, 'eyebrow' => $value ];
+        $lang['colors']['accent'] = $value;
+        $lang['colors']['bg']     = $value;
+        $checked = 0;
+        foreach ( SectionRecipes::names() as $name ) {
+            $raw = (string) SectionRecipes::rawMarkup( $name );
+            if ( [] === RecipeTokens::found( $raw ) ) {
+                continue;
+            }
+            ++$checked;
+            $resolved = RecipeTokens::resolve( $raw, $lang );
+            $attrs    = $this->blockAttributes( $resolved );
+            $this->assertTrue( $this->containsString( $attrs, $value ), "$name: the decoded markup carries the original value" );
+        }
+        $this->assertGreaterThan( 0, $checked, 'at least one recipe uses tokens' );
+    }
+
+    public function testTheSameRecipeWithANormalLanguageIsUnchangedByTheEscaping(): void
+    {
+        // Plain values contain nothing to escape, so the served markup is byte-identical to a plain insertion.
+        $lang = DesignLanguages::get( 'glass-dark' );
+        $raw  = (string) SectionRecipes::rawMarkup( 'hero-cta' );
+        $plain = (string) preg_replace_callback(
+            '/\{\{aied:(color|font):([a-z-]+)\}\}/',
+            static function ( array $m ) use ( $lang ): string {
+                $key = str_replace( '-', '_', $m[2] );
+                return (string) ( 'color' === $m[1] ? ( $lang['colors'][ $key ] ?? $lang['colors']['surface'] ) : $lang['fonts'][ $key ] );
+            },
+            $raw
+        );
+        $this->assertSame( $plain, RecipeTokens::resolve( $raw, $lang ) );
+    }
+
+    public function testBlockCommentSensitiveCharactersAreWrittenTheWayWordPressWritesThem(): void
+    {
+        $lang          = DesignLanguages::get( 'editorial' );
+        $lang['fonts'] = [ 'display' => 'A<b>&C--D', 'body' => 'x', 'eyebrow' => 'x' ];
+        $out           = RecipeTokens::resolve( '<!-- wp:divi/text {"f":"{{aied:font:display}}"} /-->', $lang );
+        $this->assertStringNotContainsString( '<b>', $out );
+        $this->assertStringNotContainsString( '--D', $out );
+        $bs = chr( 92 );
+        $this->assertStringContainsString( 'A' . $bs . 'u003cb' . $bs . 'u003e' . $bs . 'u0026C' . $bs . 'u002d' . $bs . 'u002d' . 'D', $out );
+        $this->assertSame( [ 'f' => 'A<b>&C--D' ], $this->blockAttributes( $out )[0] );
+    }
+
+    public function testTokensOutsideAJsonStringAreStillReplacedWithTheEscapedValue(): void
+    {
+        $lang = DesignLanguages::get( 'editorial' );
+        $lang['colors']['accent'] = 'a"b';
+        $this->assertSame( 'x a\\"b y', RecipeTokens::resolve( 'x {{aied:color:accent}} y', $lang ) );
+    }
+
+    public function testDefaultIsNullWhenNoLanguageCanBeLoadedAndTheRecipeIsThenNullNeverRawTokens(): void
+    {
+        $cache = new \ReflectionProperty( DesignLanguages::class, 'cache' );
+        $cache->setValue( null, [] );
+        try {
+            $this->assertNull( RecipeTokens::default() );
+            $this->assertNull( SectionRecipes::recipe( 'hero-cta' ) );
+        } finally {
+            DesignLanguages::clearCache();
+        }
+        $this->assertNotNull( RecipeTokens::default() );
     }
 }

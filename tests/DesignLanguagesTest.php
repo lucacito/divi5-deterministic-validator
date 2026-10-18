@@ -6,6 +6,7 @@ namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\SectionRecipes;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../wp-plugin/src/ImagePack.php';
@@ -170,6 +171,140 @@ class DesignLanguagesTest extends TestCase
             DesignLanguages::clearCache();
             $this->assertNull( $cache->getValue() );
             $this->assertSame( $ids, DesignLanguages::ids(), 'clearCache() restores the file data' );
+        } finally {
+            DesignLanguages::clearCache();
+        }
+    }
+
+    // ---- valid(): the validity check every shipped (and every future) language must pass ----
+
+    /** @return list<string> the Divi 5.15.1 Google font family names (fixtures/shapes/google-fonts-names.txt) */
+    private function knownFonts(): array
+    {
+        $lines = file(__DIR__ . '/../fixtures/shapes/google-fonts-names.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $this->assertIsArray($lines);
+        $this->assertGreaterThan(1000, count($lines));
+        return $lines;
+    }
+
+    public function testTheTypographyFixtureFamiliesAreInTheExtractedList(): void
+    {
+        $fixture = json_decode((string) file_get_contents(__DIR__ . '/../fixtures/shapes/fonts-5.15.1.json'), true);
+        $this->assertIsArray($fixture);
+        $known = $this->knownFonts();
+        foreach (array_keys($fixture['families']) as $family) {
+            $this->assertContains($family, $known, $family);
+        }
+    }
+
+    /** @return array<string,mixed> */
+    private function okLanguage(): array
+    {
+        $lang = DesignLanguages::get('glass-dark');
+        $this->assertIsArray($lang);
+        return $lang;
+    }
+
+    public function testEveryShippedLanguageIsValidAndUsesRealFonts(): void
+    {
+        $known = $this->knownFonts();
+        $seen  = [];
+        foreach (DesignLanguages::ids() as $id) {
+            $lang = DesignLanguages::get($id);
+            $this->assertSame([], DesignLanguages::valid($lang, $known), $id . ' (with the font list)');
+            $this->assertSame([], DesignLanguages::valid($lang), $id . ' (without the font list)');
+            $this->assertArrayNotHasKey($id, $seen, 'ids are unique');
+            $seen[$id] = true;
+            foreach ($lang['fonts'] as $role => $font) {
+                foreach (explode(',', $font) as $family) {
+                    $family = trim($family);
+                    $this->assertTrue(in_array($family, $known, true) || in_array($family, DesignLanguages::WEB_SAFE_FONTS, true), "$id.fonts.$role family $family");
+                }
+            }
+        }
+    }
+
+    /** @return array<string,array{0:callable(array<string,mixed>):array<string,mixed>,1:string}> */
+    public static function brokenLanguages(): array
+    {
+        return [
+            'bad hex'            => [static function (array $l): array { $l['colors']['accent'] = '#12345'; return $l; }, 'colors.accent'],
+            'hex without hash'   => [static function (array $l): array { $l['colors']['bg'] = '0b1020'; return $l; }, 'colors.bg'],
+            'named colour'       => [static function (array $l): array { $l['colors']['text'] = 'red'; return $l; }, 'colors.text'],
+            'alpha one'          => [static function (array $l): array { $l['colors']['surface_glass'] = 'rgba(255,255,255,1)'; return $l; }, 'colors.surface_glass'],
+            'alpha zero'         => [static function (array $l): array { $l['colors']['surface_glass'] = 'rgba(255,255,255,0)'; return $l; }, 'colors.surface_glass'],
+            'alpha over one'     => [static function (array $l): array { $l['colors']['surface_glass'] = 'rgba(255,255,255,1.5)'; return $l; }, 'colors.surface_glass'],
+            'channel over 255'   => [static function (array $l): array { $l['colors']['surface_glass'] = 'rgba(256,255,255,0.5)'; return $l; }, 'colors.surface_glass'],
+            'rgba on bg'         => [static function (array $l): array { $l['colors']['bg'] = 'rgba(0,0,0,0.5)'; return $l; }, 'colors.bg'],
+            'missing colour'     => [static function (array $l): array { unset($l['colors']['border']); return $l; }, 'colors.border'],
+            'unknown font'       => [static function (array $l): array { $l['fonts']['display'] = 'Definitely Not A Font'; return $l; }, 'fonts.display'],
+            'unknown in a stack' => [static function (array $l): array { $l['fonts']['body'] = 'Inter, Nope Sans, sans-serif'; return $l; }, 'fonts.body'],
+            'quote in font'      => [static function (array $l): array { $l['fonts']['body'] = 'Evil" Font'; return $l; }, 'fonts.body'],
+            'backslash in font'  => [static function (array $l): array { $l['fonts']['eyebrow'] = 'Evil\\Font'; return $l; }, 'fonts.eyebrow'],
+            'empty stack member' => [static function (array $l): array { $l['fonts']['body'] = 'Inter,,serif'; return $l; }, 'fonts.body'],
+            'missing font'       => [static function (array $l): array { unset($l['fonts']['eyebrow']); return $l; }, 'fonts.eyebrow'],
+            'missing field'      => [static function (array $l): array { unset($l['hero']); return $l; }, 'hero'],
+            'blank field'        => [static function (array $l): array { $l['cta'] = '   '; return $l; }, 'cta'],
+            'non-string field'   => [static function (array $l): array { $l['summary'] = ['x']; return $l; }, 'summary'],
+            'no colors at all'   => [static function (array $l): array { unset($l['colors']); return $l; }, 'colors'],
+            'bad motion'         => [static function (array $l): array { $l['motion'] = 'wild'; return $l; }, 'motion'],
+            'id not kebab'       => [static function (array $l): array { $l['id'] = 'Glass_Dark'; return $l; }, 'id'],
+            'id missing'         => [static function (array $l): array { unset($l['id']); return $l; }, 'id'],
+            'unknown layout'     => [static function (array $l): array { $l['favors'][] = 'masonry'; return $l; }, 'favors'],
+            'avoids unknown'     => [static function (array $l): array { $l['avoids'] = ['masonry']; return $l; }, 'avoids'],
+            'empty favors'       => [static function (array $l): array { $l['favors'] = []; return $l; }, 'favors'],
+            'favors and avoids'  => [static function (array $l): array { $l['avoids'][] = $l['favors'][0]; return $l; }, 'favors'],
+            'template in prose'  => [static function (array $l): array { $l['summary'] .= ' {{aied:color:bg}}'; return $l; }, 'summary'],
+            'angle in prose'     => [static function (array $l): array { $l['hero'] .= ' <b>x</b>'; return $l; }, 'hero'],
+            'backtick in prose'  => [static function (array $l): array { $l['rhythm'] .= ' `code`'; return $l; }, 'rhythm'],
+            'angle in a colour'  => [static function (array $l): array { $l['colors']['muted'] = '#9aa4c0<'; return $l; }, 'colors.muted'],
+        ];
+    }
+
+    #[DataProvider('brokenLanguages')]
+    /**
+     * @param callable(array<string,mixed>):array<string,mixed> $break
+     */
+    public function testValidRejectsEachBrokenLanguageAndNamesTheField(callable $break, string $field): void
+    {
+        $this->assertSame([], DesignLanguages::valid($this->okLanguage(), $this->knownFonts()), 'the base fixture is valid');
+        $problems = DesignLanguages::valid($break($this->okLanguage()), $this->knownFonts());
+        $this->assertNotSame([], $problems);
+        $this->assertStringContainsString($field, implode("\n", $problems));
+    }
+
+    public function testFontStacksAreCheckedFamilyByFamilyAgainstTheListOrTheWebSafeSet(): void
+    {
+        $known = $this->knownFonts();
+        $lang  = $this->okLanguage();
+        foreach (['Georgia, serif', 'Inter, system-ui, sans-serif', 'Times New Roman', 'Playfair Display, Georgia, serif'] as $ok) {
+            $lang['fonts']['body'] = $ok;
+            $this->assertSame([], DesignLanguages::valid($lang, $known), $ok);
+        }
+        $lang['fonts']['body'] = 'Courier New, Mystery Mono';
+        $this->assertNotSame([], DesignLanguages::valid($lang, $known));
+        // Without a font list the existence check is skipped, but the character set still applies.
+        $lang['fonts']['body'] = 'Mystery Mono';
+        $this->assertSame([], DesignLanguages::valid($lang));
+        $lang['fonts']['body'] = 'Mystery" Mono';
+        $this->assertNotSame([], DesignLanguages::valid($lang));
+    }
+
+    public function testACorruptLanguagesFileYieldsAnEmptyListNeverAFatal(): void
+    {
+        foreach (['', 'not json {', '"a string"', '123', 'null', '{"id":"x"}x', "\xff\xfe"] as $garbage) {
+            $this->assertSame([], DesignLanguages::parse($garbage), 'garbage: ' . bin2hex($garbage));
+        }
+        $this->assertSame([], DesignLanguages::parse('[1,"a",null,{"title":"no id"},{"id":7}]'), 'entries without a string id are dropped');
+        $this->assertSame([['id' => 'ok']], DesignLanguages::parse('[1,{"id":"ok"},{"id":7}]'));
+
+        // End to end through the memo: an empty load means no languages, not an error.
+        $cache = new \ReflectionProperty(DesignLanguages::class, 'cache');
+        $cache->setValue(null, []);
+        try {
+            $this->assertSame([], DesignLanguages::ids());
+            $this->assertNull(DesignLanguages::get('editorial'));
+            $this->assertStringContainsString('Unknown', DesignLanguages::markdown('editorial'));
         } finally {
             DesignLanguages::clearCache();
         }

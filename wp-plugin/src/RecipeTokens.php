@@ -59,31 +59,38 @@ final class RecipeTokens
     private const TOKEN = '/\{\{aied:(color|font):([a-z-]+)\}\}/';
 
     /**
-     * The language used when none is requested: the fields of the `editorial` language, so a recipe
-     * served without a language never carries a raw token. Falls back to a fixed copy if the data
-     * file is unreadable.
+     * The language used when none is requested: the `editorial` language, so a recipe served without
+     * a language never carries a raw token. Null when the languages file cannot be read (then no
+     * recipe is served at all: a recipe is never handed out with its tokens unresolved).
      *
-     * @return array<string,mixed>
+     * @return array<string,mixed>|null
      */
-    public static function default(): array
+    public static function default(): ?array
     {
-        $editorial = DesignLanguages::get( 'editorial' );
-        if ( null !== $editorial ) {
-            return $editorial;
-        }
-
-        return [
-            'id'     => 'editorial',
-            'colors' => [
-                'bg' => '#faf7f2', 'surface' => '#ffffff', 'text' => '#1c1a17', 'muted' => '#6b645a',
-                'accent' => '#9a3b1f', 'accent_text' => '#ffffff', 'border' => '#e3dccf',
-            ],
-            'fonts'  => [ 'display' => 'Playfair Display', 'body' => 'Source Sans 3', 'eyebrow' => 'Source Sans 3' ],
-        ];
+        return DesignLanguages::get( 'editorial' );
     }
 
     /**
-     * Replace every colour and font token whose role is known with the language's value.
+     * $value written as it must appear INSIDE a JSON string in a block comment: `"`, `\` and control
+     * characters escaped as JSON does, and `<`, `>`, `&` and `--` written as WordPress writes them in
+     * block attributes (so a value can neither break the attribute JSON nor close the comment).
+     * Invalid UTF-8 becomes U+FFFD. Plain values (hex colours, font names) come out unchanged.
+     */
+    private static function jsonSafe( string $value ): string
+    {
+        $encoded = json_encode( $value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE );
+        $inner   = is_string( $encoded ) ? substr( $encoded, 1, -1 ) : '';
+
+        return str_replace(
+            [ '<', '>', '&', '--' ],
+            [ '\\u003c', '\\u003e', '\\u0026', '\\u002d\\u002d' ],
+            $inner
+        );
+    }
+
+    /**
+     * Replace every colour and font token whose role is known with the language's value, written
+     * JSON-safely (see jsonSafe()): tokens sit inside JSON attribute strings.
      * `surface-glass` uses the language's `surface_glass` and falls back to its `surface`.
      *
      * @param array<string,mixed> $language a design language as DesignLanguages::get() returns it
@@ -113,7 +120,7 @@ final class RecipeTokens
                     $value = $fonts[ $key ] ?? null;
                 }
 
-                return is_string( $value ) && '' !== $value ? $value : $m[0];
+                return is_string( $value ) && '' !== $value ? self::jsonSafe( $value ) : $m[0];
             },
             $markup
         );
