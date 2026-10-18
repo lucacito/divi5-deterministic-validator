@@ -148,7 +148,7 @@
     "favors": ["centered", "carousel", "overlap", "zigzag", "band"],
     "avoids": ["list", "form"],
     "hero": "Centered and chatty: a big rounded headline in the deep indigo text colour, a small pink pill-shaped tag above it, a short cheerful sentence, a big pink pill-shaped button and a small secondary link, with a tilted photo card beside the text.",
-    "cta": "A lilac or butter-yellow band with a big friendly headline, a one-line promise and a large pink button with a chunky outline; a tiny smiling note below it."
+    "cta": "A lilac or butter-yellow band with a big friendly headline, a one-line promise that is a placeholder the owner supplies (leave it out otherwise; never invent promises, guarantees or terms) and a large pink button with a chunky outline; a tiny friendly note below it, only if the owner supplied one."
   },
   {
     "id": "corporate-trust",
@@ -174,11 +174,11 @@
     "section_padding": "96px top and bottom on desktop, 68px on tablet, 44px on phone. Steady and predictable from section to section.",
     "shadow": "Very light: a 1px border in the border colour on cards, and at most 0 2px 8px at 8% navy on a hovered card. No glow, no heavy depth.",
     "motion": "subtle",
-    "rhythm": "White and pale blue-grey in alternation, with one deep navy band that carries the numbers (years, clients, results) in the inverse text colour. Open each section with a small blue eyebrow and a plain headline. Back every claim with a figure, a logo row, a certificate or a named testimonial, and use checklists and numbered steps for how it works.",
+    "rhythm": "White and pale blue-grey in alternation, with one deep navy band that carries the owner's real numbers (years, clients, results) in the inverse text colour; the numbers are placeholders the owner supplies, so use only the values the owner gave, otherwise mark them as placeholders or leave the band out. Open each section with a small blue eyebrow and a plain headline. Back a claim with a figure, a logo row, a certificate or a named testimonial only where the owner supplied it (otherwise a marked placeholder, or leave it out): never invent names, figures, certificates or quotes. Use checklists and numbered steps for how it works.",
     "favors": ["list", "grid", "split", "band", "form"],
     "avoids": ["bento", "carousel", "overlap"],
     "hero": "Clear and sober: a two-column hero with a plain navy headline that states the service and who it is for, one supporting sentence, a blue primary button and a text link for pricing or contact, next to a team or office photograph and a row of client logos underneath. The photograph and logos are placeholders the owner will replace: never invent client names, logos, quotes or statistics.",
-    "cta": "A deep navy band with a short headline in the inverse colour, one sentence about the next step (a call, a consultation, a quote) and a single button in the surface colour, with the phone number beside it."
+    "cta": "A deep navy band with a short headline in the inverse colour, one sentence about the next step (a call, a consultation, a quote) and a single button in the surface colour, with the phone number beside it only if the owner supplied one (otherwise leave it out; never invent contact details)."
   },
   {
     "id": "soft-saas",
@@ -234,7 +234,7 @@
     "section_padding": "80px top and bottom on desktop, 56px on tablet, 36px on phone. Tight: the headline should take most of the room.",
     "shadow": "No soft shadows. Weight comes from colour and borders: a 3px solid border in the text colour on cards and on the secondary button, on a card background in the surface colour. On hover a card rotates 3 degrees and a button scales to 108%. The cobalt is a background colour: put the inverse text colour on it.",
     "motion": "lively",
-    "rhythm": "Full-bleed colour blocks, one idea per block, a new colour every section: the yellow background colour for the hero, then white, then a cobalt block in the inverse text colour, then a pink block (#ff5fa8) with the text colour on it, then a block in the text colour with the inverse text colour on it, then yellow again. The hero has no divider, because the block pulled up over its bottom edge replaces it; close the cobalt block with a slant divider 60px high instead and give the section after it a plain background colour. Put a polka-dots pattern at rgba(12,12,20,0.12) on one block. Photos pop: contrast 130% and saturate 180% on the image module. Entrance motion: headlines slide in from the bottom (800ms) and cards fade in 150ms after each other.",
+    "rhythm": "Full-bleed colour blocks, one idea per block, a new colour every section: the yellow background colour for the hero, then white, then a cobalt block in the inverse text colour, then a pink block (#ff5fa8) with the text colour on it, then a block in the text colour with the inverse text colour on it, then yellow again. The hero has no divider, because the block pulled up over its bottom edge replaces it; close the cobalt block with a slant divider 60px high on desktop, 50px on tablet and 30px on phones (each no taller than that block's bottom padding of 80px, 56px and 36px) and give the section after it a plain background colour. Put a polka-dots pattern at rgba(12,12,20,0.12) on one block. Photos pop: contrast 130% and saturate 180% on the image module. Entrance motion: headlines slide in from the bottom (800ms) and cards fade in 150ms after each other.",
     "favors": ["stacked", "split", "band", "bento", "overlap"],
     "avoids": ["list", "carousel", "form"],
     "hero": "Stacked: a huge headline across the full width in the text colour on the yellow background (weight 800, line height 1em, set the size per device so it is smaller on phones, because Unbounded is very wide), one short sentence below it, then a row with a cobalt button (inverse text) and a bordered white button, and a photo or pink block pulled up over the bottom of the hero with a negative top margin. Everything is left-aligned.",

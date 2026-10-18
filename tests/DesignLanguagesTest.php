@@ -327,6 +327,50 @@ class DesignLanguagesTest extends TestCase
         $this->assertStringNotContainsString('confirms is true', $cta);
     }
 
+    /**
+     * Every language, every instruction field: a mention of a fact the assistant cannot know (a promise, a certificate, a logo,
+     * a figure, years/clients/results, a phone number, a price, a trial ...) must come with an owner-supplied / placeholder /
+     * never-invent qualifier in the same field. "never invent guarantees" is itself the qualifier, so it passes.
+     */
+    public function testEveryLanguageHandsInventableFactsToTheOwner(): void
+    {
+        $facts = '/promise|guarantee|certificate|testimonial|logo|figure|\byears\b|\bclients\b|\bresults\b|phone number|award|pric(?:e|ing)|trial|reassur|credit card|cancel|no commitment|refund|money-back|sign(?:ing)? ?up|what happens (?:after|next)|rating|statistic|customer name|\bquote/i';
+        $qualifier = '/placeholder|owner supplied|supplied by the owner|owner gave|never invent/i';
+        $this->assertSame(1, preg_match($qualifier, 'never invent guarantees'));
+        $this->assertSame(1, preg_match($facts, 'a one-line promise'));
+        $checked = 0;
+        foreach (DesignLanguages::ids() as $id) {
+            $lang = DesignLanguages::get($id);
+            foreach (['rhythm', 'hero', 'cta'] as $field) {
+                if (1 === preg_match($facts, $lang[$field])) {
+                    $checked++;
+                    $this->assertMatchesRegularExpression($qualifier, $lang[$field], "$id.$field mentions a fact the assistant cannot know without handing it to the owner");
+                }
+            }
+        }
+        $this->assertGreaterThanOrEqual(6, $checked, 'the check actually found fields to test');
+        // The generic check is per field, so one qualifier can mask another unqualified fact: pin the three that were fixed.
+        $this->assertStringContainsString('never invent promises, guarantees or terms', DesignLanguages::get('playful-pastel')['cta']);
+        $this->assertStringContainsString('only if the owner supplied one', DesignLanguages::get('playful-pastel')['cta']);
+        $corp = DesignLanguages::get('corporate-trust');
+        $this->assertStringContainsString('never invent names, figures, certificates or quotes', $corp['rhythm']);
+        $this->assertStringNotContainsString('Back every claim', $corp['rhythm']);
+        $this->assertStringContainsString("owner's real numbers", $corp['rhythm']);
+        $this->assertStringContainsString('never invent contact details', $corp['cta']);
+    }
+
+    /** A divider crosses its section's content unless that edge has padding of at least the divider height, on every device. */
+    public function testBoldVibrantDividerIsNoTallerThanItsPaddingOnEveryDevice(): void
+    {
+        $bold = DesignLanguages::get('bold-vibrant');
+        $this->assertSame(1, preg_match('/slant divider (\d+)px high on desktop, (\d+)px on tablet and (\d+)px on phones \(each no taller than that block\'s bottom padding of (\d+)px, (\d+)px and (\d+)px\)/', $bold['rhythm'], $d), 'divider sentence');
+        $this->assertSame(1, preg_match('/(\d+)px top and bottom on desktop, (\d+)px on tablet, (\d+)px on phone/', $bold['section_padding'], $p), 'padding sentence');
+        for ($i = 1; $i <= 3; $i++) {
+            $this->assertSame((int) $p[$i], (int) $d[$i + 3], "the stated bottom padding matches section_padding on device $i");
+            $this->assertLessThanOrEqual((int) $d[$i + 3], (int) $d[$i], "divider height on device $i fits the padding");
+        }
+    }
+
     /** Small gold or accent text over a photo and its scrim is not guaranteed readable; only the inverse colour is. */
     public function testNoAccentColouredTextIsPlacedOverAPhoto(): void
     {
