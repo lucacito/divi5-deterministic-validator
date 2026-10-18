@@ -72,6 +72,17 @@ final class SectionRecipes
         return null;
     }
 
+    /** The stored markup of one recipe with image tokens left unresolved (dev tooling and tests), or null. */
+    public static function rawMarkup(string $name): ?string
+    {
+        foreach ( self::all() as $r ) {
+            if ( $r['name'] === $name ) {
+                return (string) $r['markup'];
+            }
+        }
+        return null;
+    }
+
     /** Site-local URL of the bundled image pack directory ('' outside WordPress). */
     private static function imageBaseUrl(): string
     {

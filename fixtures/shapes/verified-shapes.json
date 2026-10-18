@@ -1,0 +1,1635 @@
+{
+    "divi": "5.15.1",
+    "shapes": [
+        {
+            "path": "afterImage.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "arrows.advanced.color.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "artistName.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "author.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "barProgress.advanced.usePercentages.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "barProgress.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "beforeImage.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "button.decoration.background.{bp}.hover.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-43-layout-1.json"
+        },
+        {
+            "path": "button.decoration.background.{bp}.hover.enableColor",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "button.decoration.background.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.background.{bp}.value.gradient.direction",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "button.decoration.background.{bp}.value.gradient.enabled",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "button.decoration.border.{bp}.hover.styles.all.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-43-layout-1.json"
+        },
+        {
+            "path": "button.decoration.border.{bp}.value.radius.bottomLeft",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.border.{bp}.value.radius.bottomRight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.border.{bp}.value.radius.sync",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.border.{bp}.value.radius.topLeft",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.border.{bp}.value.radius.topRight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.border.{bp}.value.styles.all.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.border.{bp}.value.styles.all.width",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.button.{bp}.value.enable",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.button.{bp}.value.icon.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "button.decoration.button.{bp}.value.icon.onHover",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "button.decoration.button.{bp}.value.icon.settings.type",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.button.{bp}.value.icon.settings.unicode",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.button.{bp}.value.icon.settings.weight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.font.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.font.font.{bp}.value.family",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.font.font.{bp}.value.letterSpacing",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.font.font.{bp}.value.size",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.font.font.{bp}.value.style.{n}",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "button.decoration.font.font.{bp}.value.weight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.spacing.{bp}.value.padding.bottom",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.spacing.{bp}.value.padding.left",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.spacing.{bp}.value.padding.right",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.spacing.{bp}.value.padding.syncHorizontal",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.spacing.{bp}.value.padding.syncVertical",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.spacing.{bp}.value.padding.top",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/component-instance-slot-filled-5.15.json"
+        },
+        {
+            "path": "buttonOne.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "cartIcon.decoration.font.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "checkbox.advanced.firstNameField.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "checkbox.advanced.lastNameField.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "children.module.decoration.background.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "column2.decoration.background.{bp}.value.image.url",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "content.advanced.dateTime.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.font.{bp}.hover.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.font.{bp}.value.family",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.font.{bp}.value.lineHeight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.font.{bp}.value.size",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.font.{bp}.value.weight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.textShadow.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.textShadow.{bp}.value.horizontal",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.textShadow.{bp}.value.style",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.body.textShadow.{bp}.value.vertical",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.link.font.{bp}.hover.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.link.font.{bp}.hover.style.{n}",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-footer-224970.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.link.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.link.font.{bp}.value.size",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-footer-224970.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.link.font.{bp}.value.style.{n}",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.quote.border.{bp}.value.styles.left.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.bodyFont.quote.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h1.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h1.font.{bp}.value.family",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h1.font.{bp}.value.lineHeight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h1.font.{bp}.value.size",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h1.font.{bp}.value.weight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h2.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h2.font.{bp}.value.family",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h2.font.{bp}.value.lineHeight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h2.font.{bp}.value.size",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h2.font.{bp}.value.weight",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-footer-224970.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h3.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h3.font.{bp}.value.family",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h3.font.{bp}.value.lineHeight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h3.font.{bp}.value.size",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h3.font.{bp}.value.weight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h4.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h4.font.{bp}.value.family",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h4.font.{bp}.value.letterSpacing",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h4.font.{bp}.value.lineHeight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h4.font.{bp}.value.size",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h4.font.{bp}.value.style.{n}",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.decoration.headingFont.h4.font.{bp}.value.weight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "content.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/component-instance-module-5.15.json"
+        },
+        {
+            "path": "contentContainer.decoration.sizing.{bp}.value.maxWidth",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "css.{bp}.value.freeForm",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-footer-224970.json"
+        },
+        {
+            "path": "currencyFrequency.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "date.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "divider.advanced.line.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "divider.advanced.line.{bp}.value.position",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "divider.advanced.line.{bp}.value.show",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "divider.advanced.line.{bp}.value.style",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "divider.advanced.line.{bp}.value.weight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "dotNav.decoration.background.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "feed.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "field.advanced.firstNameField.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "field.advanced.lastNameField.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "field.decoration.border.{bp}.value.radius.sync",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "fieldItem.advanced.fullwidth.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/component-instance-slot-filled-5.15.json"
+        },
+        {
+            "path": "fieldItem.advanced.id.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/component-instance-slot-filled-5.15.json"
+        },
+        {
+            "path": "fieldItem.advanced.type.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/component-instance-slot-filled-5.15.json"
+        },
+        {
+            "path": "fieldItem.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/component-instance-slot-filled-5.15.json"
+        },
+        {
+            "path": "followButton.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "galleryGrid.decoration.layout.{bp}.value.gridColumnCount",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "hamburgerMenuIcon.decoration.font.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "home.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "icon.advanced.color.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "icon.advanced.size.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "icon.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "image.advanced.lightbox.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "image.advanced.overlay.{bp}.value.use",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "image.advanced.overlayIcon.{bp}.value.iconColor",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "image.decoration.border.{bp}.value.radius.bottomLeft",
+            "how": "export",
+            "evidence": "fixtures/valid/page-43-layout-1.json"
+        },
+        {
+            "path": "image.decoration.border.{bp}.value.radius.bottomRight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-43-layout-1.json"
+        },
+        {
+            "path": "image.decoration.border.{bp}.value.radius.sync",
+            "how": "export",
+            "evidence": "fixtures/valid/page-43-layout-1.json"
+        },
+        {
+            "path": "image.decoration.border.{bp}.value.radius.topLeft",
+            "how": "export",
+            "evidence": "fixtures/valid/page-43-layout-1.json"
+        },
+        {
+            "path": "image.decoration.border.{bp}.value.radius.topRight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-43-layout-1.json"
+        },
+        {
+            "path": "image.decoration.border.{bp}.value.styles.all.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "image.decoration.border.{bp}.value.styles.all.style",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "image.decoration.border.{bp}.value.styles.all.width",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "image.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "imageIcon.advanced.color.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "imageIcon.advanced.placement.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "imageIcon.decoration.animation.{bp}.value.direction",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "imageIcon.decoration.animation.{bp}.value.duration",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "imageIcon.decoration.animation.{bp}.value.intensity.slide",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "imageIcon.decoration.animation.{bp}.value.style",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "imageIcon.decoration.filters.{bp}.hover.brightness",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "imageIcon.decoration.sizing.{bp}.value.alignment",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "imageIcon.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "locked.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "logo.decoration.sizing.{bp}.value.width",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "logo.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "menu.advanced.menuId.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "menu.decoration.font.font.{bp}.hover.color",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "menu.decoration.font.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "menu.decoration.font.font.{bp}.value.size",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "menu.decoration.font.font.{bp}.value.weight",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "module",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "module.advanced.align.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.alignment.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.columnStructure.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/component-instance-module-5.15.json"
+        },
+        {
+            "path": "module.advanced.emailService.{bp}.value.account",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.advanced.flexColumnStructure.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "module.advanced.gutter.{bp}.value.enable",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.gutter.{bp}.value.makeEqual",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.advanced.gutter.{bp}.value.width",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.open.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "module.advanced.savedSpecialtyColumnType.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.advanced.sizing.{bp}.value.forceFullwidth",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.advanced.sizing.{bp}.value.maxHeight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.advanced.sizing.{bp}.value.maxWidth",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.sizing.{bp}.value.width",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.advanced.spacing.{bp}.value.margin.bottom",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.spacing.{bp}.value.margin.left",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.spacing.{bp}.value.margin.right",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.spacing.{bp}.value.margin.syncHorizontal",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.spacing.{bp}.value.margin.syncVertical",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.spacing.{bp}.value.margin.top",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.specialtyColumns.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.advanced.text.text.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.text.text.{bp}.value.orientation",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.text.textShadow.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.text.textShadow.{bp}.value.style",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.advanced.type.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/component-instance-module-5.15.json"
+        },
+        {
+            "path": "module.advanced.uniqueId.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/component-instance-slot-filled-5.15.json"
+        },
+        {
+            "path": "module.decoration.attributes.attributes.{n}.adminLabel",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "module.decoration.attributes.attributes.{n}.id",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "module.decoration.attributes.attributes.{n}.name",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "module.decoration.attributes.attributes.{n}.targetElement",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "module.decoration.attributes.attributes.{n}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "module.decoration.attributes.{bp}.value.attributes.{n}.adminLabel",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.attributes.{bp}.value.attributes.{n}.id",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.attributes.{bp}.value.attributes.{n}.name",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.attributes.{bp}.value.attributes.{n}.targetElement",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.attributes.{bp}.value.attributes.{n}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.hover.color",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-footer-224970.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.hover.image.enabled",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.hover.image.url",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.enableColor",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.gradient.direction",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.gradient.enabled",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.gradient.length",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.gradient.overlaysImage",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.gradient.repeat",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.gradient.stops.{n}.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.gradient.stops.{n}.position",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.image.enabled",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.image.parallax.enabled",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.image.position",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.image.size",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.image.url",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.image.width",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.pattern.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.pattern.enabled",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.pattern.size",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.pattern.style",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.pattern.width",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.hover.styles.all.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.value.radius.bottomLeft",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.value.radius.bottomRight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.value.radius.sync",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.value.radius.topLeft",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.value.radius.topRight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.value.styles.all.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.value.styles.all.style",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.value.styles.all.width",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.value.styles.bottom.color",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-footer-224970.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.value.styles.bottom.style",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.value.styles.bottom.width",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.border.{bp}.value.styles.top.width",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.boxShadow.{bp}.value.blur",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.boxShadow.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.boxShadow.{bp}.value.horizontal",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.boxShadow.{bp}.value.position",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "module.decoration.boxShadow.{bp}.value.spread",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "module.decoration.boxShadow.{bp}.value.style",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.boxShadow.{bp}.value.vertical",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.interactionTarget",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-footer-224970.json"
+        },
+        {
+            "path": "module.decoration.layout.{bp}.value.alignItems",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-footer-224970.json"
+        },
+        {
+            "path": "module.decoration.layout.{bp}.value.columnGap",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.layout.{bp}.value.display",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.layout.{bp}.value.flexDirection",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "module.decoration.layout.{bp}.value.flexWrap",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "module.decoration.layout.{bp}.value.rowGap",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.overflow.{bp}.value.x",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.overflow.{bp}.value.y",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.position.{bp}.value.mode",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.position.{bp}.value.origin.absolute",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.blur.enable",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.blur.offset.end",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.blur.offset.mid",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.blur.offset.start",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.blur.viewport.bottom",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.blur.viewport.end",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.blur.viewport.start",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.blur.viewport.top",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.fade.enable",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.fade.offset.end",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.fade.offset.mid",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.fade.offset.start",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.fade.viewport.bottom",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.fade.viewport.end",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.fade.viewport.start",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.fade.viewport.top",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.motionTriggerStart",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.scaling.enable",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.scaling.offset.end",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.scaling.offset.mid",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.scaling.offset.start",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.scaling.viewport.bottom",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.scaling.viewport.end",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.scaling.viewport.start",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.scaling.viewport.top",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.verticalMotion.enable",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.verticalMotion.offset.end",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.verticalMotion.offset.mid",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.verticalMotion.offset.start",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.verticalMotion.viewport.bottom",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.verticalMotion.viewport.end",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.verticalMotion.viewport.start",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.scroll.{bp}.value.verticalMotion.viewport.top",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.sizing.{bp}.value.alignment",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.sizing.{bp}.value.flexType",
+            "how": "export",
+            "evidence": "fixtures/valid/component-instance-slot-filled-5.15.json"
+        },
+        {
+            "path": "module.decoration.sizing.{bp}.value.height",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.sizing.{bp}.value.maxWidth",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-variable-heading.json"
+        },
+        {
+            "path": "module.decoration.sizing.{bp}.value.width",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.hover.padding.bottom",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.hover.padding.left",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.hover.padding.right",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.hover.padding.syncHorizontal",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.hover.padding.syncVertical",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.hover.padding.top",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.value.margin.bottom",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.value.margin.left",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.value.margin.right",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.value.margin.syncHorizontal",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.value.margin.syncVertical",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.value.margin.top",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.value.padding.bottom",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.value.padding.left",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.value.padding.right",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.value.padding.syncHorizontal",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.value.padding.syncVertical",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.spacing.{bp}.value.padding.top",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.value.rotate.x",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.value.rotate.y",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.value.rotate.z",
+            "how": "export",
+            "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.value.translate.linked",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.value.translate.x",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.transform.{bp}.value.translate.y",
+            "how": "export",
+            "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.zIndex.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-43-layout-1.json"
+        },
+        {
+            "path": "module.meta.adminLabel.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "name.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "number.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "portrait.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "position.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "post.advanced.categories.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "price.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "radio.advanced.firstNameField.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "radio.advanced.lastNameField.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "searchIcon.decoration.font.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "separator.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "socialNetwork.advanced.followButton.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-footer-224970.json"
+        },
+        {
+            "path": "socialNetwork.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "subtitle.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "themeBuilderArea.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/themebuilder-header-224959.json"
+        },
+        {
+            "path": "thumbnail.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.hover.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-86-layout-5.json"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-variable-heading.json"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.family",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-variable-heading.json"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.headingLevel",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.lineHeight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-variable-heading.json"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.size",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-variable-heading.json"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.style.{n}",
+            "how": "export",
+            "evidence": "fixtures/valid/page-43-layout-1.json"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.textAlign",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "title.decoration.font.font.{bp}.value.weight",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-variable-heading.json"
+        },
+        {
+            "path": "title.decoration.font.textShadow.{bp}.value.color",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "title.decoration.font.textShadow.{bp}.value.style",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "title.decoration.font.textShadow.{bp}.value.vertical",
+            "how": "export",
+            "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "title.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/component-instance-plain-5.15.json"
+        },
+        {
+            "path": "trail.advanced.htmlTag.{bp}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "video.innerContent",
+            "how": "export",
+            "evidence": "fixtures/valid/page-17-newpage.json"
+        }
+    ]
+}
