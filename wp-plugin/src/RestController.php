@@ -149,14 +149,14 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
-        // GET /style-guide — Divi 5 authoring + styling vocabulary
+        // GET /style-guide — Divi 5 authoring + styling vocabulary (?topic=<name> serves one topic: design-languages, design-language:<id>)
         register_rest_route(self::NS, '/style-guide', [
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => [$this, 'style_guide'],
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
-        // GET /section-recipes — library of proven section patterns (?name=<recipe> for one)
+        // GET /section-recipes — library of proven section patterns (?name=<recipe> for one; ?role=, ?layout=, ?mood= filter the list; ?design_language= with ?name= serves a recipe in that language's colours and fonts)
         register_rest_route(self::NS, '/section-recipes', [
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => [$this, 'section_recipes'],
@@ -203,7 +203,11 @@ final class RestController
 
     public function style_guide(WP_REST_Request $request): WP_REST_Response
     {
-        return new WP_REST_Response(['guide' => StyleGuide::markdown()], 200);
+        $topic = PageAccess::stringArg(['topic' => $request->get_param('topic')], 'topic');
+        if ($topic === null) {
+            return new WP_REST_Response(['error' => 'Invalid parameter: "topic" must be a string'], 400);
+        }
+        return new WP_REST_Response(['guide' => StyleGuide::markdown($topic === '' ? null : $topic)], 200);
     }
 
     public function section_recipes(WP_REST_Request $request): WP_REST_Response
@@ -212,12 +216,33 @@ final class RestController
         if ($name === null) {
             return new WP_REST_Response(['error' => 'Invalid parameter: "name" must be a string'], 400);
         }
+        $filters = [];
+        foreach (['role', 'layout', 'mood'] as $key) {
+            $value = PageAccess::stringArg([$key => $request->get_param($key)], $key);
+            if ($value === null) {
+                return new WP_REST_Response(['error' => "Invalid parameter: \"{$key}\" must be a string"], 400);
+            }
+            $filters[$key] = $value === '' ? null : $value;
+        }
+        $language = PageAccess::stringArg(['design_language' => $request->get_param('design_language')], 'design_language');
+        if ($language === null) {
+            return new WP_REST_Response(['error' => 'Invalid parameter: "design_language" must be a string'], 400);
+        }
         if ($name !== '') {
-            $markup = SectionRecipes::recipe($name);
+            if ($language !== '' && DesignLanguages::get($language) === null) {
+                return new WP_REST_Response(['error' => "Unknown design language '" . SectionRecipes::plain($language) . "'", 'languages' => DesignLanguages::ids()], 404);
+            }
+            $markup = SectionRecipes::recipe($name, $language === '' ? null : $language);
             if ($markup === null) {
-                return new WP_REST_Response(['error' => "Unknown recipe '{$name}'", 'catalog' => SectionRecipes::catalog()], 404);
+                return new WP_REST_Response(['error' => "Unknown recipe '" . SectionRecipes::plain($name) . "'", 'catalog' => SectionRecipes::catalog()], 404);
             }
             return new WP_REST_Response(['name' => $name, 'markup' => $markup], 200);
+        }
+        if ($filters['role'] !== null || $filters['layout'] !== null || $filters['mood'] !== null) {
+            return new WP_REST_Response([
+                'catalog' => SectionRecipes::catalog($filters['role'], $filters['layout'], $filters['mood']),
+                'names'   => SectionRecipes::matchingNames($filters['role'], $filters['layout'], $filters['mood']),
+            ], 200);
         }
         return new WP_REST_Response(['catalog' => SectionRecipes::catalog(), 'names' => SectionRecipes::names()], 200);
     }

@@ -1,0 +1,42 @@
+[
+    {
+        "id": "heading-size-per-device",
+        "expect": "PASS",
+        "block": "heading",
+        "base": { "title": { "innerContent": { "desktop": { "value": "PROBEMARK headline" } } } },
+        "set": {
+            "title.decoration.font.font.desktop.value.size": "48px",
+            "title.decoration.font.font.tablet.value.size": "36px",
+            "title.decoration.font.font.phone.value.size": "24px"
+        }
+    },
+    {
+        "id": "image-aspect-ratio-4-3-cover",
+        "expect": "PASS",
+        "note": "objectFit was measured only together with aspectRatio (see docs/guide-shapes-evidence-5.14.md) and is registered as part of the pair, not proven alone.",
+        "block": "image",
+        "base": { "image": { "innerContent": { "desktop": { "value": { "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg", "alt": "probe" } } } } },
+        "set": {
+            "module.advanced.sizing.desktop.value.aspectRatio": { "width": "4", "height": "3" },
+            "image.decoration.fit.desktop.value.objectFit": "cover"
+        }
+    },
+    {
+        "id": "image-fit-type-cover",
+        "expect": "DEAD",
+        "block": "image",
+        "base": { "image": { "innerContent": { "desktop": { "value": { "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg", "alt": "probe" } } } } },
+        "set": {
+            "image.decoration.fit.desktop.value.type": "cover"
+        }
+    },
+    {
+        "id": "image-inner-content-force-fullwidth",
+        "expect": "DEAD",
+        "block": "image",
+        "base": { "image": { "innerContent": { "desktop": { "value": { "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg", "alt": "probe" } } } } },
+        "set": {
+            "image.innerContent.desktop.value.forceFullwidth": true
+        }
+    }
+]

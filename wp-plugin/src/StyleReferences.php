@@ -15,6 +15,8 @@ require_once __DIR__ . '/CodePolicy.php';
 require_once __DIR__ . '/ComponentReader.php';
 require_once __DIR__ . '/ComponentAdvisory.php';
 require_once __DIR__ . '/ContentLoss.php';
+require_once __DIR__ . '/DesignVariety.php';
+require_once __DIR__ . '/RecipeTokens.php';
 
 /**
  * Finds the preset ids, global color ids and global variable ids a layout cites that do not exist on this site. Divi
@@ -110,7 +112,7 @@ final class StyleReferences
     /**
      * Adds `advisories.style_references` to a response payload, only when the layout cites ids this
      * site does not have, `advisories.components` (ComponentAdvisory) when it does something with a Divi 5.15
-     * component that does nothing, and `advisories.content_loss` (ContentLoss) when a save removes most of the stored page. Otherwise the payload is returned unchanged, byte for byte.
+     * component that does nothing, `advisories.content_loss` (ContentLoss) when a save removes most of the stored page, `advisories.design_variety` (DesignVariety) when a page of three or more sections looks repetitive, and `advisories.unresolved_tokens` (RecipeTokens) when an {{aied:...}} token is still in the content. Otherwise the payload is returned unchanged, byte for byte.
      *
      * @param array<string,mixed> $payload
      * @param ?string             $previous the stored content a save replaces (null for create and validate)
@@ -135,6 +137,15 @@ final class StyleReferences
         $loss = null === $previous ? null : ContentLoss::assess( $previous, $content );
         if ( null !== $loss ) {
             $advisories['content_loss'] = $loss;
+        }
+
+        $variety = DesignVariety::advise( $content, $previous );
+        if ( null !== $variety ) {
+            $advisories['design_variety'] = $variety;
+        }
+        $tokens = RecipeTokens::advise( $content );
+        if ( null !== $tokens ) {
+            $advisories['unresolved_tokens'] = $tokens;
         }
 
         return [] === $advisories ? $payload : $payload + [ 'advisories' => $advisories ];

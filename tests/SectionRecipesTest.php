@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\DesignVariety;
 use AiEditorDivi5\WP\ImageTokens;
 use AiEditorDivi5\WP\SectionRecipes;
 use Divi5Validator\Validator;
@@ -12,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 require_once __DIR__ . '/../wp-plugin/src/ImagePack.php';
 require_once __DIR__ . '/../wp-plugin/src/ImageTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
+require_once __DIR__ . '/../wp-plugin/src/DesignVariety.php';
 
 /**
  * The recipe library is content the AI copies verbatim, so EVERY recipe must
@@ -53,6 +55,190 @@ class SectionRecipesTest extends TestCase
         $this->assertStringContainsString('_Stage:_', $catalog, 'catalog should surface the persuasion stage');
         $this->assertStringContainsString('Hero', $catalog);
         $this->assertStringContainsString('Social proof', $catalog);
+    }
+
+
+    /**
+     * Byte length of the default catalog before it became compact and filterable
+     * (measured on 2026-10-17 from the pre-change SectionRecipes::catalog()).
+     */
+    private const BASELINE = 3483;
+
+    public function testEveryRecipeHasValidTags(): void
+    {
+        $keys = ['role', 'layout', 'mood', 'density', 'background', 'needs_images'];
+        foreach (SectionRecipes::names() as $name) {
+            $tags = SectionRecipes::tags($name);
+            $this->assertIsArray($tags, "$name has tags");
+            foreach ($keys as $k) {
+                $this->assertArrayHasKey($k, $tags, "$name tag $k");
+            }
+            $this->assertContains($tags['role'], SectionRecipes::ROLES, "$name role");
+            $this->assertContains($tags['layout'], SectionRecipes::LAYOUTS, "$name layout");
+            $this->assertIsArray($tags['mood'], "$name mood is a list");
+            $this->assertNotEmpty($tags['mood'], "$name mood");
+            foreach ($tags['mood'] as $m) {
+                $this->assertContains($m, SectionRecipes::moods(), "$name mood $m");
+            }
+            $this->assertContains($tags['density'], ['airy', 'balanced', 'dense'], "$name density");
+            $this->assertContains($tags['background'], ['solid', 'gradient', 'image', 'none'], "$name background");
+            $this->assertIsBool($tags['needs_images'], "$name needs_images");
+        }
+        $this->assertNull(SectionRecipes::tags('does-not-exist'));
+    }
+
+    public function testTagsAreCoherentWithTheMarkup(): void
+    {
+        // Collection modules render their own grid of posts, products or items.
+        $collections = ['divi/blog', 'divi/shop', 'divi/gallery', 'divi/portfolio', 'divi/fullwidth-portfolio', 'divi/filterable-portfolio'];
+        foreach (SectionRecipes::names() as $name) {
+            $raw  = (string) SectionRecipes::rawMarkup($name);
+            $tags = (array) SectionRecipes::tags($name);
+            $hasImage = str_contains($raw, '{{aied:image:') || str_contains($raw, '<!-- wp:divi/image ');
+            $this->assertSame($hasImage, $tags['needs_images'], "$name needs_images must match its markup");
+
+            // The invariants below are measured on the parsed markup.
+            $parsed = (new \Divi5Validator\BlockParser())->parse('<!-- wp:divi/placeholder -->' . (string) SectionRecipes::recipe($name) . '<!-- /wp:divi/placeholder -->');
+            $this->assertTrue($parsed->isOk(), $name);
+            $rows = [];
+            $collection = false;
+            $parsed->root()->walk(static function (\Divi5Validator\Block $b) use (&$rows, &$collection, $collections): void {
+                if (in_array($b->name(), ['divi/row', 'divi/row-inner'], true)) {
+                    $rows[] = count(array_filter($b->children(), static fn ($c): bool => in_array($c->name(), ['divi/column', 'divi/column-inner'], true)));
+                }
+                $collection = $collection || in_array($b->name(), $collections, true);
+            });
+            $fp = DesignVariety::fingerprints('<!-- wp:divi/placeholder -->' . (string) SectionRecipes::recipe($name) . '<!-- /wp:divi/placeholder -->');
+            $this->assertCount(1, $fp, $name);
+
+            // grid: a row of 3 or more columns, or a matrix (at least two rows of 2 or more columns), or a collection module.
+            if ('grid' === $tags['layout']) {
+                $wide   = count(array_filter($rows, static fn (int $n): bool => $n >= 3)) > 0;
+                $matrix = count(array_filter($rows, static fn (int $n): bool => $n >= 2)) >= 2;
+                $this->assertTrue($wide || $matrix || $collection, "$name is tagged grid but its markup has no 3-column row, no matrix of rows and no collection module");
+            }
+            // split: some row has exactly two columns.
+            if ('split' === $tags['layout']) {
+                $this->assertContains(2, $rows, "$name is tagged split but has no two-column row");
+            }
+            // a recipe that fingerprints as a card grid must be tagged grid.
+            if ($fp[0]['cards']) {
+                $this->assertSame('grid', $tags['layout'], "$name measures as a card grid, so it must be tagged grid");
+            }
+            // the background tag is what the fingerprint measures.
+            $this->assertSame($fp[0]['background'], $tags['background'], "$name background tag must match what its markup measures");
+        }
+    }
+
+    public function testRetaggedRecipesDescribeTheirRealStructure(): void
+    {
+        $this->assertSame('split', ((array) SectionRecipes::tags('card-grid-3'))['layout']);
+        $this->assertSame('centered', ((array) SectionRecipes::tags('card-grid-4'))['layout']);
+        $this->assertSame('gradient', ((array) SectionRecipes::tags('card-grid-4'))['background']);
+        $catalog = SectionRecipes::catalog('features');
+        foreach (['card-grid-3', 'card-grid-4'] as $name) {
+            preg_match('/\*\*' . $name . '\*\* — ([^\n]*)/u', SectionRecipes::catalog(null, ((array) SectionRecipes::tags($name))['layout']), $m);
+            $this->assertNotEmpty($m, $name);
+            $this->assertStringNotContainsStringIgnoringCase('cards', $m[1], "$name prose must not promise cards");
+        }
+    }
+
+    public function testCatalogFiltersByRole(): void
+    {
+        $hero = SectionRecipes::catalog('hero');
+        $this->assertStringContainsString('hero-cta', $hero);
+        $this->assertStringNotContainsString('contact-form', $hero);
+        // Filtered form carries the full one-line description of a match.
+        $this->assertStringContainsString('Centered headline + button', $hero);
+    }
+
+    public function testCatalogFiltersByLayoutAndMood(): void
+    {
+        $this->assertStringContainsString('split-image-text', SectionRecipes::catalog(null, 'split'));
+        $this->assertStringNotContainsString('hero-cta', SectionRecipes::catalog(null, 'split'));
+        $both = SectionRecipes::catalog('features', 'grid');
+        $this->assertStringContainsString('blurb-grid', $both);
+        $this->assertStringNotContainsString('split-image-text', $both);
+        $this->assertStringNotContainsString('card-grid-3', $both, 'card-grid-3 is tagged split, not grid');
+        $this->assertStringContainsString('hero-cta', SectionRecipes::catalog(null, null, 'any'));
+    }
+
+    public function testUnknownFilterValueListsValidOnes(): void
+    {
+        $role = SectionRecipes::catalog('nonsense');
+        $this->assertStringContainsString('nonsense', $role);
+        foreach (SectionRecipes::ROLES as $r) {
+            $this->assertStringContainsString($r, $role);
+        }
+        $layout = SectionRecipes::catalog(null, 'nonsense');
+        foreach (SectionRecipes::LAYOUTS as $l) {
+            $this->assertStringContainsString($l, $layout);
+        }
+        $mood = SectionRecipes::catalog(null, null, 'nonsense');
+        foreach (SectionRecipes::moods() as $m) {
+            $this->assertStringContainsString($m, $mood);
+        }
+        // A valid value with no match also lists the valid values instead of an empty answer.
+        $none = SectionRecipes::catalog('team');
+        $this->assertStringContainsString('No recipe', $none);
+        $this->assertStringContainsString('hero', $none);
+    }
+
+    public function testDefaultCatalogIsCompact(): void
+    {
+        $catalog = SectionRecipes::catalog();
+        $this->assertLessThanOrEqual(2 * self::BASELINE, strlen($catalog));
+        $this->assertLessThan(self::BASELINE, strlen($catalog), 'the compact form is smaller than the old full form');
+        foreach (SectionRecipes::names() as $name) {
+            $this->assertStringContainsString($name, $catalog);
+        }
+        $this->assertStringContainsString('get_section_recipes', $catalog);
+    }
+
+    public function testFilteredCatalogMapsMatchesToAPersuasionStage(): void
+    {
+        $full = SectionRecipes::catalog('testimonials');
+        $this->assertStringContainsString('_Stage:_', $full);
+        $this->assertStringContainsString('Social proof', $full);
+    }
+
+    public function testSuggestSkipsAvoidedLayouts(): void
+    {
+        $out = SectionRecipes::suggest(['grid'], ['features']);
+        $this->assertNotEmpty($out);
+        $this->assertLessThanOrEqual(3, count($out));
+        foreach ($out as $name) {
+            $t = (array) SectionRecipes::tags($name);
+            $this->assertNotSame('grid', $t['layout']);
+            $this->assertNotSame('features', $t['role']);
+        }
+        $this->assertSame($out, SectionRecipes::suggest(['grid'], ['features']), 'deterministic');
+        $this->assertCount(1, SectionRecipes::suggest([], [], 1));
+        $this->assertSame([], SectionRecipes::suggest(SectionRecipes::LAYOUTS, []));
+    }
+
+    public function testSuggestCanBeRestrictedToRolesAndBackgrounds(): void
+    {
+        $hero = SectionRecipes::suggest([], [], 10, ['hero']);
+        $this->assertNotEmpty($hero);
+        foreach ($hero as $name) {
+            $this->assertSame('hero', ((array) SectionRecipes::tags($name))['role']);
+        }
+        $bg = SectionRecipes::suggest([], [], 50, [], ['gradient', 'image']);
+        $this->assertNotEmpty($bg);
+        foreach ($bg as $name) {
+            $this->assertContains(((array) SectionRecipes::tags($name))['background'], ['gradient', 'image']);
+        }
+        // Restrictions combine with the avoid lists and the limit; empty arrays restrict nothing.
+        $this->assertSame(SectionRecipes::suggest(['grid'], [], 3), SectionRecipes::suggest(['grid'], [], 3, [], []));
+        foreach (SectionRecipes::suggest(['grid'], [], 50, [], ['gradient']) as $name) {
+            $t = (array) SectionRecipes::tags($name);
+            $this->assertNotSame('grid', $t['layout']);
+            $this->assertSame('gradient', $t['background']);
+        }
+        $this->assertCount(1, SectionRecipes::suggest([], [], 1, [], ['gradient', 'image']));
+        $this->assertSame([], SectionRecipes::suggest([], [], 3, ['no-such-role']));
+        $this->assertSame($bg, SectionRecipes::suggest([], [], 50, [], ['gradient', 'image']), 'deterministic');
     }
 
     public function testUnknownRecipeReturnsNull(): void

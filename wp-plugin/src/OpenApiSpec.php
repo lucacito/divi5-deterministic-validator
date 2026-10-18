@@ -111,6 +111,8 @@ final class OpenApiSpec
                         'description' => 'Present only when there is something to report. Advisories never change valid or the save.',
                         'properties'  => [
                             'style_references' => ['$ref' => '#/components/schemas/StyleAdvisory'],
+                            'design_variety'    => ['type' => 'object', 'description' => 'A valid page of three or more sections that looks repetitive: findings (code, sections, message, try) and a message. A hint only; the page is saved as is.'],
+                            'unresolved_tokens' => ['type' => 'object', 'description' => 'tokens: the aied placeholder tokens (double curly braces) still in the layout, each once. A hint only: fetch the recipe again through get_section_recipes or use a real value.'],
                         ],
                     ],
                     'GlobalPreset' => [
@@ -438,6 +440,7 @@ final class OpenApiSpec
                         'operationId' => 'getStyleGuide',
                         'summary'     => 'Get the Divi 5 authoring + styling guide',
                         'description' => 'Returns real block structure rules, required content keys, and styling attribute shapes (backgrounds, gradients, spacing, typography, borders, shadows, transforms, hover, animation). Call before building or restyling a layout so the result is styled, not plain.',
+                        'parameters'  => [['name' => 'topic', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Optional. Serve one topic instead of the whole guide: ' . implode(', ', StyleGuide::topics()) . '. design-languages lists the design languages; design-language:<id> is one in full.']]],
                         'responses'   => [
                             '200' => ['description' => 'The guide (Markdown)', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['guide' => ['type' => 'string']]]]]],
                         ],
@@ -521,20 +524,26 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'getSectionRecipes',
                         'summary'     => 'Get proven section recipes',
-                        'description' => 'Library of complete, validated Divi 5 section patterns (hero, feature grids, split, slider, CTA, footer). With no query, returns the catalog of recipe names; pass ?name=<recipe> to get that section\'s full block markup to copy and fill.',
-                        'parameters'  => [['name' => 'name', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Recipe name (omit to list all)']]],
+                        'description' => 'Library of validated Divi 5 section patterns. No query: compact catalog of names. ?role=, ?layout=, ?mood= list only the matches. ?name=<recipe> returns that section\'s full block markup to copy and fill (with ?design_language= in that language\'s colours and fonts).',
+                        'parameters'  => [
+                            ['name' => 'name', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Recipe name (omit to list all). Wins over the filters.']],
+                            ['name' => 'role', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes for this role: ' . implode(', ', SectionRecipes::ROLES)]],
+                            ['name' => 'layout', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes with this layout: ' . implode(', ', SectionRecipes::LAYOUTS)]],
+                            ['name' => 'mood', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes that fit this mood: ' . implode(', ', SectionRecipes::moods())]],
+                            ['name' => 'design_language', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'With name: serve the recipe in this design language\'s colours and fonts. Ids: ' . implode(', ', DesignLanguages::ids())]],
+                        ],
                         'responses'   => [
                             '200' => ['description' => 'Catalog or a single recipe', 'content' => ['application/json' => ['schema' => [
                                 'type'       => 'object',
                                 'properties' => [
-                                    'catalog' => ['type' => 'object', 'additionalProperties' => true, 'description' => 'Recipe names to summaries (when listing)'],
-                                    'names'   => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'All recipe names (when listing)'],
+                                    'catalog' => ['type' => 'object', 'additionalProperties' => true, 'description' => 'Recipe names to short summaries: every recipe, or only the ones matching a role, layout or mood filter'],
+                                    'names'   => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Recipe names: all of them, or only the matching ones when a role, layout or mood filter is given'],
                                     'name'    => ['type' => 'string', 'description' => 'The requested recipe name (single lookup)'],
                                     'markup'  => ['type' => 'string', 'description' => 'Block markup for the requested recipe'],
                                 ],
                                 'additionalProperties' => true,
                             ]]]],
-                            '404' => ['description' => 'Unknown recipe name'],
+                            '404' => ['description' => 'Unknown recipe name or design language (languages lists the valid ids)'],
                         ],
                     ],
                 ],

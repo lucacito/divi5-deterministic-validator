@@ -87,7 +87,7 @@ final class McpHandler
             'tools/call'               => $this->onToolsCall($id, $params),
             default                    => str_starts_with($method, 'notifications/')
                 ? $this->accepted()
-                : $this->rpcError($id, -32601, "Method not found: {$method}"),
+                : $this->rpcError($id, -32601, "Method not found: " . SectionRecipes::plain( (string) $method, '/[^A-Za-z0-9 _.:\/-]/' )),
         };
     }
 
@@ -191,7 +191,13 @@ final class McpHandler
             [
                 'name'        => 'get_style_guide',
                 'description' => 'Get the Divi 5 authoring guide: real block structure/nesting rules, required content keys, and the exact styling attribute shapes (backgrounds, gradients, spacing, typography, borders, radius, box-shadow, transform, hover, filters, animation). Call this BEFORE building or restyling a layout so the result is styled and valid, not plain.',
-                'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'topic' => ['type' => 'string', 'description' => 'Optional. Serve one topic instead of the whole guide: ' . implode(', ', StyleGuide::topics()) . '. design-languages lists the design languages; design-language:<id> is one in full.'],
+                    ],
+                    'required'   => [],
+                ],
             ],
             [
                 'name'        => 'get_site_guide',
@@ -210,10 +216,16 @@ final class McpHandler
             ],
             [
                 'name'        => 'get_section_recipes',
-                'description' => 'Get a library of complete, validated Divi 5 section recipes (hero, feature grids, split, slider, CTA, footer). With no arguments, returns the catalog of recipe names. Pass {"name":"<recipe>"} to get that section\'s full block markup to copy and fill with the user\'s content. Use these to assemble well-composed pages instead of building sections from scratch.',
+                'description' => 'Get a library of complete, validated Divi 5 section recipes (hero, feature grids, split, slider, CTA, footer). With no arguments, returns a compact catalog of recipe names grouped by role. Pass {"role":"hero"}, {"layout":"split"} and/or {"mood":"any"} to list only the matching recipes with their full descriptions (an unknown value answers with the valid values). Pass {"name":"<recipe>"} to get that section\'s full block markup to copy and fill with the user\'s content; a name ignores the filters, and with a name, design_language serves it in that design language\'s colours and fonts. Use these to assemble well-composed pages instead of building sections from scratch.',
                 'inputSchema' => [
                     'type'       => 'object',
-                    'properties' => ['name' => ['type' => 'string', 'description' => 'Recipe name from the catalog (omit to list all)']],
+                    'properties' => [
+                        'name'   => ['type' => 'string', 'description' => 'Recipe name from the catalog (omit to list all). Wins over the filters.'],
+                        'role'   => ['type' => 'string', 'description' => 'Only recipes for this role: ' . implode(', ', SectionRecipes::ROLES)],
+                        'layout' => ['type' => 'string', 'description' => 'Only recipes with this layout: ' . implode(', ', SectionRecipes::LAYOUTS)],
+                        'mood'   => ['type' => 'string', 'description' => 'Only recipes that fit this mood: ' . implode(', ', SectionRecipes::moods())],
+                        'design_language' => ['type' => 'string', 'description' => 'With name: serve the recipe in this design language\'s colours and fonts (ids: ' . implode(', ', DesignLanguages::ids()) . '). Omit for the default look.'],
+                    ],
                     'required'   => [],
                 ],
             ],
@@ -350,7 +362,7 @@ final class McpHandler
 
         return match ($name) {
             'list_divi_pages'    => $this->toolListPages($id, $arguments),
-            'get_style_guide'    => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => StyleGuide::markdown()]]]),
+            'get_style_guide'    => $this->toolStyleGuide($id, $arguments),
             'get_site_guide'     => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => SiteGuide::markdown()]]]),
             'get_landing_guide'  => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => LandingGuide::markdown()]]]),
             'get_image_guide'    => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => ImageGuide::markdown()]]]),
@@ -386,12 +398,21 @@ final class McpHandler
             return $response;
         }
 
-        return $this->rpcError($id, -32602, "Unknown tool: {$name}");
+        return $this->rpcError($id, -32602, "Unknown tool: " . SectionRecipes::plain( (string) $name ));
     }
 
     // ---------------------------------------------------------------
     // Tool implementations
     // ---------------------------------------------------------------
+
+    private function toolStyleGuide(mixed $id, array $args): WP_REST_Response
+    {
+        $topic = PageAccess::stringArg($args, 'topic');
+        if ($topic === null) {
+            return $this->rpcError($id, -32602, 'Invalid params — guide "topic" must be a string');
+        }
+        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => StyleGuide::markdown($topic === '' ? null : $topic)]]]);
+    }
 
     private function toolSectionRecipes(mixed $id, array $args): WP_REST_Response
     {
@@ -399,11 +420,27 @@ final class McpHandler
         if ($name === null) {
             return $this->rpcError($id, -32602, 'Invalid params — recipe "name" must be a string');
         }
+        $filters = [];
+        foreach (['role', 'layout', 'mood'] as $key) {
+            $value = PageAccess::stringArg($args, $key);
+            if ($value === null) {
+                return $this->rpcError($id, -32602, "Invalid params — recipe \"{$key}\" must be a string");
+            }
+            $filters[$key] = $value === '' ? null : $value;
+        }
+        $language = PageAccess::stringArg($args, 'design_language');
+        if ($language === null) {
+            return $this->rpcError($id, -32602, 'Invalid params — recipe "design_language" must be a string');
+        }
         if ($name !== '') {
-            $markup = SectionRecipes::recipe($name);
-            $text = $markup ?? ("Unknown recipe '{$name}'.\n\n" . SectionRecipes::catalog());
+            if ($language !== '' && DesignLanguages::get($language) === null) {
+                $text = DesignLanguages::markdown($language);
+            } else {
+                $markup = SectionRecipes::recipe($name, $language === '' ? null : $language);
+                $text = $markup ?? ("Unknown recipe '" . SectionRecipes::plain($name) . "'.\n\n" . SectionRecipes::catalog());
+            }
         } else {
-            $text = SectionRecipes::catalog();
+            $text = SectionRecipes::catalog($filters['role'], $filters['layout'], $filters['mood']);
         }
         return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => $text]]]);
     }

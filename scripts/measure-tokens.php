@@ -76,6 +76,18 @@ $add( 'A refusal: 96 badly nested blocks (before the compact form)', "the same {
 $changed = (string) preg_replace( '/"value":"([^"]{3,})"/', '"value":"Changed text"', $sizes[ $median ], 1 );
 $add( 'A preview (dry run) of a one-line text change', 'verdict plus a capped diff, on the median page', (string) json_encode( DryRun::preview( $sizes[ $median ], $changed ) ) );
 
+// 5. What the AI reads to design: the style guide (default and each topic) and the section recipes.
+$add( 'The style guide (default)', 'get_style_guide with no topic, read once before building a layout', \AiEditorDivi5\WP\StyleGuide::markdown() );
+foreach ( \AiEditorDivi5\WP\StyleGuide::topics() as $topic ) {
+    $add( "The style guide, topic {$topic}", 'get_style_guide with topic "' . $topic . '", only when asked for', \AiEditorDivi5\WP\StyleGuide::markdown( $topic ) );
+}
+$add( 'The recipe catalog (default)', 'get_section_recipes with no filter: names under role headings, plus how to fetch one', \AiEditorDivi5\WP\SectionRecipes::catalog() );
+$add( 'The recipe catalog (filtered, role hero)', 'get_section_recipes with role "hero": the one-line description of each matching recipe', \AiEditorDivi5\WP\SectionRecipes::catalog( 'hero' ) );
+$heroDefault = (string) \AiEditorDivi5\WP\SectionRecipes::recipe( 'hero-cta' );
+$heroGlass   = (string) \AiEditorDivi5\WP\SectionRecipes::recipe( 'hero-cta', 'glass-dark' );
+$add( 'A served recipe (hero-cta, default look)', 'get_section_recipes with name "hero-cta" and no design_language', $heroDefault );
+$add( 'A served recipe (hero-cta, glass-dark)', 'the same recipe with design_language "glass-dark" (tokens filled in; the size is the markup alone)', $heroGlass );
+
 // ---- report ------------------------------------------------------------------------------------------------
 $md  = "# Token usage of the AI Editor for Divi 5 (free plugin)\n\n";
 $md .= 'Measured ' . date( 'Y-m-d' ) . " by `scripts/measure-tokens.php`. Tokens are ESTIMATED as bytes / 4; the real count depends on the model.\n\n";
@@ -87,6 +99,7 @@ foreach ( $rows as [ $what, $detail, $bytes, $tokens ] ) {
 $md .= "\nA refusal used to repeat the full list of allowed block types in every violation. Now the first violation about a parent keeps the list, the others point back to it, and at most 25 are listed (one entry counts the rest).\n";
 $md .= "\nTo read a page cheaply, ask get_page_layout for view \"outline\" (every block's path, name, size and the start of its text), then view \"block\" with a path for one block's exact markup.\n";
 $md .= "\nTokens the assistant WRITES also count: sending a whole layout to update_page_layout costs roughly the size of the page read. edit_page_content avoids that (and a dry_run of it sends only the find-and-replace pair).\n";
+$md .= "\nThe style guide topics, the recipe catalog and a filtered catalog are read only when asked for; the default catalog is names only, and one recipe is fetched by name (with an optional design_language that fills in its colors and fonts without changing its size much).\n";
 $md .= "\nThe Pro add-on adds its own tool definitions on top of the first row.\n";
 file_put_contents( __DIR__ . '/../docs/token-usage.md', $md );
 echo $md;

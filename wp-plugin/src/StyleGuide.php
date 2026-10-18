@@ -16,8 +16,47 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 final class StyleGuide
 {
-    /** The guide as Markdown. Pure — no WordPress calls — so it is trivially testable. */
-    public static function markdown(): string
+    /** The one line the default guide ends with: how to ask for a topic. */
+    private const TOPIC_LINE = 'Topics: call get_style_guide with topic=<name>: design-languages, design-language:<id>.';
+
+    /**
+     * The topics served on request: `design-languages` plus `design-language:<id>` for every design language.
+     *
+     * @return list<string>
+     */
+    public static function topics(): array
+    {
+        $topics = [ 'design-languages' ];
+        foreach ( DesignLanguages::ids() as $id ) {
+            $topics[] = 'design-language:' . $id;
+        }
+        return $topics;
+    }
+
+    /**
+     * The guide as Markdown. Pure — no WordPress calls — so it is trivially testable.
+     * With no topic (null or ''), the default guide; with a topic, only that topic's text.
+     * An unknown topic is a normal answer that lists the valid topics.
+     */
+    public static function markdown( ?string $topic = null ): string
+    {
+        if ( null === $topic || '' === $topic ) {
+            return self::guide() . "\n\n" . self::TOPIC_LINE;
+        }
+        if ( 'design-languages' === $topic ) {
+            return DesignLanguages::markdown();
+        }
+        if ( str_starts_with( $topic, 'design-language:' ) && in_array( $topic, self::topics(), true ) ) {
+            return DesignLanguages::markdown( substr( $topic, strlen( 'design-language:' ) ) );
+        }
+        $lines = [ '# Unknown topic', '', sprintf( 'There is no topic "%s". Valid topics:', SectionRecipes::plain( $topic ) ), '' ];
+        foreach ( self::topics() as $valid ) {
+            $lines[] = '- `' . $valid . '`';
+        }
+        return implode( "\n", $lines ) . "\n";
+    }
+
+    private static function guide(): string
     {
         return <<<'MD'
 # Divi 5 Layout Authoring Guide
@@ -273,14 +312,12 @@ module.decoration.position.{bp}.value.mode    = "relative"     # also "absolute"
 ```
 
 ## Design guidance
-Commit to ONE clear aesthetic direction per page (dark/moody, light/airy,
-editorial, glassmorphism, bold/vibrant) — don't default to the same dark theme
-every time. Pick a dominant + accent color (not evenly distributed) and reuse it
-(e.g. dark: bg #0a0a0a/#111114, card #17171c, accent #ff4d00, white headings,
-#c9c9c9 body). Give sections generous vertical padding (5–8vw), round cards
-(12–20px), keep one accent color. Use box-shadow + subtle transforms for depth;
-entrance animations sparingly. Always check text contrast against the lightest
-part of its background (on gradients, the lightest stop).
+Pick a design language first: call get_style_guide topic=design-languages, choose the one that fits the brief and state it before you build (don't default to the same dark theme). Then compose, don't repeat:
+- never the same layout in adjacent sections; alternate background treatment (light, tinted, dark, image or gradient)
+- at most one card grid per three sections
+- give the first section a focal element (image, gradient or large type)
+Use a dominant + accent color, generous vertical padding (5–8vw), round cards (12–20px), box-shadow and subtle transforms for depth, entrance animations sparingly. Check text contrast against the lightest part of its background (on gradients, the lightest stop).
+If a save or validate result carries `advisories.design_variety`, act on it: if a finding's `try` has names, swap that section for one of them (get_section_recipes); if `try` is empty, follow the finding's `message`. Then save again. It is a hint only: it never blocks a save, and the page is saved as it is.
 
 ## Worked example — one styled section
 ```

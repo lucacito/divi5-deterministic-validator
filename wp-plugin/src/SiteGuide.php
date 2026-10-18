@@ -31,7 +31,9 @@ Add others the brief implies (Pricing, Case Studies, Blog, Careers…). Keep it
 focused — 4–6 pages is a strong v1.
 
 ## 2. Lock ONE design system (reuse on EVERY page)
-Decide these once and never drift across pages:
+Pick a design language first: call get_style_guide topic=design-languages, choose ONE design language
+for the whole site and state it before building any page. It is a design-system decision, so it never
+changes between pages; vary the page layouts within it. Then decide these once and never drift:
 - Palette: background, alt background, dark-section, text, muted, ONE accent
 - Fonts: heading family + body family (and heading weight)
 - Card style (radius, shadow, padding) and button style
@@ -40,7 +42,15 @@ same tokens so the site reads as one brand.
 
 ## 3. Build each page (call create_page per page)
 - Pass a stable `slug` to create_page so URLs are predictable for linking.
-- Reuse section recipes (get_section_recipes) and the same hero/card/CTA styling.
+- Reuse section recipes (get_section_recipes: browse by `role`, then fetch with `name` plus the site's `design_language`, which works only together with `name`) and the same
+  hero/card/CTA styling, but vary the layouts per page:
+  - never the same layout in adjacent sections
+  - alternate background treatment
+  - at most one card grid per three sections
+  - give the first section a focal element (image, gradient or large type)
+- If a save or validate result carries `advisories.design_variety`, act on it: swap a section
+  for one of its `try` names if it has any; if `try` is empty, follow the finding's `message`. Then save
+  again. It is a hint only: it never blocks a save, and the page is saved as it is.
 - Each page: one h1 (its main headline), h2 section titles, number-counters for
   stats, all-four-corner radii, side-by-side button pairs, multi-column rows that
   stack on phone — exactly as in get_style_guide.

@@ -42,6 +42,7 @@ class WpOrgComplianceTest extends TestCase
 
     private const LOCAL_READS = [
         'src/SectionRecipes.php' => ['self::DATA' => "DATA = __DIR__ . '/../data/section-recipes.json' (bundled)"],
+        'src/DesignLanguages.php' => ['self::DATA' => "DATA = __DIR__ . '/../data/design-languages.json' (bundled)"],
         'src/ImagePack.php'      => ['$path ?? self::DEFAULT_PATH' => "DEFAULT_PATH = __DIR__ . '/../assets/images/manifest.json'; \$path is only passed by tests"],
     ];
 
