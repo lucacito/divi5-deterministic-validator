@@ -191,7 +191,13 @@ final class McpHandler
             [
                 'name'        => 'get_style_guide',
                 'description' => 'Get the Divi 5 authoring guide: real block structure/nesting rules, required content keys, and the exact styling attribute shapes (backgrounds, gradients, spacing, typography, borders, radius, box-shadow, transform, hover, filters, animation). Call this BEFORE building or restyling a layout so the result is styled and valid, not plain.',
-                'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
+                'inputSchema' => [
+                    'type'       => 'object',
+                    'properties' => [
+                        'topic' => ['type' => 'string', 'description' => 'Optional. Serve one topic instead of the whole guide: ' . implode(', ', StyleGuide::topics()) . '. design-languages lists the design languages; design-language:<id> is one in full.'],
+                    ],
+                    'required'   => [],
+                ],
             ],
             [
                 'name'        => 'get_site_guide',
@@ -356,7 +362,7 @@ final class McpHandler
 
         return match ($name) {
             'list_divi_pages'    => $this->toolListPages($id, $arguments),
-            'get_style_guide'    => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => StyleGuide::markdown()]]]),
+            'get_style_guide'    => $this->toolStyleGuide($id, $arguments),
             'get_site_guide'     => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => SiteGuide::markdown()]]]),
             'get_landing_guide'  => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => LandingGuide::markdown()]]]),
             'get_image_guide'    => $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => ImageGuide::markdown()]]]),
@@ -398,6 +404,15 @@ final class McpHandler
     // ---------------------------------------------------------------
     // Tool implementations
     // ---------------------------------------------------------------
+
+    private function toolStyleGuide(mixed $id, array $args): WP_REST_Response
+    {
+        $topic = PageAccess::stringArg($args, 'topic');
+        if ($topic === null) {
+            return $this->rpcError($id, -32602, 'Invalid params — guide "topic" must be a string');
+        }
+        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => StyleGuide::markdown($topic === '' ? null : $topic)]]]);
+    }
 
     private function toolSectionRecipes(mixed $id, array $args): WP_REST_Response
     {

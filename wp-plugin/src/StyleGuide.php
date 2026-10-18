@@ -16,8 +16,47 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 final class StyleGuide
 {
-    /** The guide as Markdown. Pure — no WordPress calls — so it is trivially testable. */
-    public static function markdown(): string
+    /** The one line the default guide ends with: how to ask for a topic. */
+    private const TOPIC_LINE = 'Topics: call get_style_guide with topic=<name>: design-languages, design-language:<id>.';
+
+    /**
+     * The topics served on request: `design-languages` plus `design-language:<id>` for every design language.
+     *
+     * @return list<string>
+     */
+    public static function topics(): array
+    {
+        $topics = [ 'design-languages' ];
+        foreach ( DesignLanguages::ids() as $id ) {
+            $topics[] = 'design-language:' . $id;
+        }
+        return $topics;
+    }
+
+    /**
+     * The guide as Markdown. Pure — no WordPress calls — so it is trivially testable.
+     * With no topic (null or ''), the default guide; with a topic, only that topic's text.
+     * An unknown topic is a normal answer that lists the valid topics.
+     */
+    public static function markdown( ?string $topic = null ): string
+    {
+        if ( null === $topic || '' === $topic ) {
+            return self::guide() . "\n\n" . self::TOPIC_LINE;
+        }
+        if ( 'design-languages' === $topic ) {
+            return DesignLanguages::markdown();
+        }
+        if ( str_starts_with( $topic, 'design-language:' ) && in_array( $topic, self::topics(), true ) ) {
+            return DesignLanguages::markdown( substr( $topic, strlen( 'design-language:' ) ) );
+        }
+        $lines = [ '# Unknown topic', '', sprintf( 'There is no topic "%s". Valid topics:', $topic ), '' ];
+        foreach ( self::topics() as $valid ) {
+            $lines[] = '- `' . $valid . '`';
+        }
+        return implode( "\n", $lines ) . "\n";
+    }
+
+    private static function guide(): string
     {
         return <<<'MD'
 # Divi 5 Layout Authoring Guide
