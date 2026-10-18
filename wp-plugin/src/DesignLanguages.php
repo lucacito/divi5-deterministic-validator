@@ -42,7 +42,18 @@ final class DesignLanguages
         return array_map( static fn( array $l ): string => $l['id'], self::all() );
     }
 
-    /** @return array<string,mixed>|null */
+    /**
+     * One language, or null for an unknown id.
+     *
+     * Shape: {id, title, summary, colors, fonts, radius, section_padding, shadow, motion,
+     * rhythm, favors, avoids, hero, cta}. `colors` always has bg, surface, text, muted,
+     * accent, accent_text, border (hex). It MAY also have `surface_glass`, an
+     * `rgba(r,g,b,a)` string (0 < a < 1): the translucent card colour of a glass language,
+     * in which case `surface` is only its opaque equivalent (fallback for plain panels).
+     * A consumer that wants "the card colour" uses `surface_glass` when set, else `surface`.
+     *
+     * @return array<string,mixed>|null
+     */
     public static function get( string $id ): ?array
     {
         foreach ( self::all() as $lang ) {
@@ -81,13 +92,23 @@ final class DesignLanguages
 
         $c = (array) $lang['colors'];
         $f = (array) $lang['fonts'];
+        $glass = isset( $c['surface_glass'] ) && is_string( $c['surface_glass'] ) && '' !== $c['surface_glass'];
+        $cardLines = $glass
+            ? [
+                sprintf( '- background `%s`, border `%s`', (string) $c['bg'], (string) $c['border'] ),
+                sprintf( '- card colour (use this for cards, translucent, set as the background of the card): `%s`', (string) $c['surface_glass'] ),
+                sprintf( '- surface `%s` is the opaque equivalent, a fallback for plain panels only (do not use it for cards)', (string) $c['surface'] ),
+            ]
+            : [
+                sprintf( '- background `%s`, surface (cards) `%s`, border `%s`', (string) $c['bg'], (string) $c['surface'], (string) $c['border'] ),
+            ];
         $lines = [
             sprintf( '# Design language: %s (`%s`)', (string) $lang['title'], (string) $lang['id'] ),
             '',
             (string) $lang['summary'],
             '',
             '## Colours (use these exact values)',
-            sprintf( '- background `%s`, surface (cards) `%s`, border `%s`', (string) $c['bg'], (string) $c['surface'], (string) $c['border'] ),
+            ...$cardLines,
             sprintf( '- text `%s`, muted text `%s`', (string) $c['text'], (string) $c['muted'] ),
             sprintf( '- accent `%s`, text on accent `%s`', (string) $c['accent'], (string) $c['accent_text'] ),
             '',

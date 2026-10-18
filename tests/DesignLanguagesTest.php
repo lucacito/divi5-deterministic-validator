@@ -62,7 +62,65 @@ class DesignLanguagesTest extends TestCase
             $this->assertGreaterThanOrEqual(4.5, DesignLanguages::contrast($c['text'], $c['surface']), "$id text/surface");
             $this->assertGreaterThanOrEqual(4.5, DesignLanguages::contrast($c['accent_text'], $c['accent']), "$id accent_text/accent");
             $this->assertGreaterThanOrEqual(3.0, DesignLanguages::contrast($c['muted'], $c['bg']), "$id muted/bg");
+            if (isset($c['surface_glass'])) {
+                $card = $this->composite($c['surface_glass'], $c['bg']);
+                $this->assertGreaterThanOrEqual(4.5, DesignLanguages::contrast($c['text'], $card), "$id text/surface_glass over bg ($card)");
+            }
         }
+    }
+
+    /** Alpha-blend an rgba() string over a #rrggbb background; returns #rrggbb. */
+    private function composite(string $rgba, string $bgHex): string
+    {
+        $this->assertSame(1, preg_match('/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/', $rgba, $m), $rgba);
+        $alpha = (float) $m[4];
+        $bg = [hexdec(substr($bgHex, 1, 2)), hexdec(substr($bgHex, 3, 2)), hexdec(substr($bgHex, 5, 2))];
+        $out = '#';
+        foreach ([1, 2, 3] as $i) {
+            $out .= sprintf('%02x', (int) round($alpha * (int) $m[$i] + (1 - $alpha) * $bg[$i - 1]));
+        }
+        return $out;
+    }
+
+    public function testSurfaceGlassIsOptionalAndWellFormed(): void
+    {
+        $this->assertArrayNotHasKey('surface_glass', DesignLanguages::get('editorial')['colors']);
+        $this->assertNotSame('', DesignLanguages::markdown('editorial'));
+        $glassCount = 0;
+        foreach (DesignLanguages::ids() as $id) {
+            $c = DesignLanguages::get($id)['colors'];
+            if (!isset($c['surface_glass'])) {
+                continue;
+            }
+            $glassCount++;
+            $this->assertSame(1, preg_match('/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0?\.\d+)\s*\)$/', $c['surface_glass'], $m), "$id surface_glass shape");
+            foreach ([1, 2, 3] as $i) {
+                $this->assertLessThanOrEqual(255, (int) $m[$i], "$id surface_glass channel");
+            }
+            $this->assertGreaterThan(0.0, (float) $m[4]);
+            $this->assertLessThan(1.0, (float) $m[4]);
+        }
+        $this->assertGreaterThanOrEqual(1, $glassCount);
+    }
+
+    public function testGlassLanguageMarkdownPresentsTranslucentCardColour(): void
+    {
+        $lang = DesignLanguages::get('glass-dark');
+        $glass = $lang['colors']['surface_glass'];
+        $md = DesignLanguages::markdown('glass-dark');
+        $this->assertStringContainsString($glass, $md);
+        $this->assertStringNotContainsString('surface (cards)', $md);
+        $this->assertStringContainsString('opaque equivalent', $md);
+        $this->assertStringContainsString('fallback', $md);
+        // The opaque surface is never the line that names the card colour.
+        foreach (explode("\n", $md) as $line) {
+            if (str_contains($line, 'card colour')) {
+                $this->assertStringContainsString($glass, $line);
+                $this->assertStringNotContainsString($lang['colors']['surface'], $line);
+            }
+        }
+        // A language without surface_glass is printed as before.
+        $this->assertStringContainsString('surface (cards) `#ffffff`', DesignLanguages::markdown('editorial'));
     }
 
     public function testContrastKnownValues(): void

@@ -34,6 +34,7 @@
     "colors": {
       "bg": "#0b1020",
       "surface": "#151c33",
+      "surface_glass": "rgba(255,255,255,0.06)",
       "text": "#f2f4fa",
       "muted": "#9aa4c0",
       "accent": "#7c9cff",
