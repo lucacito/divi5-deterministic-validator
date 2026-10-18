@@ -17,9 +17,12 @@
  * `divi/row` which is also `.et_pb_row`, or nested `divi/row-inner` = `.et_pb_row_inner`) with more
  * than one column (`.et_pb_column` / `.et_pb_column_inner`) shows those columns side by side at 400 px (unless the recipe is listed in
  * fixtures/shapes/recipe-render-allowances.json with a reason; the Theme Builder header/footer is never measured: everything is
- * measured inside `.et-l--post`), or the page itself logs a console error / uncaught exception. A recipe the validator gate
+ * measured inside `.et-l--post`), a text element's lines overlap an image box (an `.et_pb_image` module or an <img>) by more than 4 px in both
+ * directions at ANY width (code `text-overlap`, never baselined; an intentional overlap recipe gets `{"overlap": "reason"}` in the allowances file; a
+ * plain string value keeps its original meaning, the columns exemption), or the page itself logs a console error / uncaught exception. The page is
+ * scrolled once before it is measured and screenshotted so that entrance animations have finished. A recipe the validator gate
  * rejects FAILs once as `<recipe>/<language>/gate` with the violation codes.
- * Reason codes (the baseline may name the first six): php-error, empty, overflow, columns-side-by-side, console-error, gate.
+ * Reason codes (the baseline may name the first six): php-error, empty, overflow, columns-side-by-side, console-error, gate; text-overlap is never baselined.
  * `render-error` (a timeout, navigation crash or any exception in the script's own page handling) is ALWAYS a FAIL and can never be baselined.
  *
  * KNOWN-FAIL. fixtures/shapes/recipe-baseline.txt may list `recipe|language|width|code|explanation` under `# render-failures`
@@ -161,6 +164,12 @@ function readKnownFailures() {
   return knownFailures(parseBaseline(fs.readFileSync(BASELINE_FILE, 'utf8')).renderFailures);
 }
 const allowances = fs.existsSync(ALLOWANCES_FILE) ? JSON.parse(fs.readFileSync(ALLOWANCES_FILE, 'utf8')) : {};
+/** True when fixtures/shapes/recipe-render-allowances.json exempts `name` from a check: a string value exempts `columns` (the original meaning), an object {columns, overlap} exempts each named check, each with its reason. */
+function allowed(name, kind) {
+  if (!Object.prototype.hasOwnProperty.call(allowances, name)) return false;
+  const v = allowances[name];
+  return typeof v === 'string' ? kind === 'columns' : !!(v && typeof v === 'object' && typeof v[kind] === 'string' && v[kind].trim());
+}
 
 /** The (recipe, language) cells to render. */
 function selection() {
@@ -304,6 +313,10 @@ ${rows}
             });
             await p.goto(`${SITE}/?page_id=${page.id}&preview=true`, { waitUntil: 'load' });
             await p.waitForTimeout(800);
+            // Entrance animations start when an element scrolls into view and move or hide it until they end: scroll the whole page once,
+            // go back to the top and let them finish, so the screenshot and the measurements see the settled page.
+            await p.evaluate(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += 300) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 120)); } window.scrollTo(0, 0); });
+            await p.waitForTimeout(1500);
             const html = await p.content();
             const m = await p.evaluate(measureInPage);
             try { await p.screenshot({ path: path.join(OUT_DIR, `${name}-${lang}-${width}.png`), fullPage: true }); } catch (e) { console.log('WARNING screenshot failed for ' + name + '/' + lang + '/' + width); }
@@ -314,7 +327,10 @@ ${rows}
             if (!m.hasRoot) problems.push(['empty', 'no .et-l--post content on the page']);
             else if (!m.visible) problems.push(['empty', 'the page content shows nothing visible']);
             if (m.overflow) problems.push(['overflow', `scrollWidth ${m.scrollWidth} > innerWidth ${m.innerWidth}`]);
-            if (width === 400 && m.sideBySide.length && !Object.prototype.hasOwnProperty.call(allowances, name)) {
+            if (m.overlaps.length && !allowed(name, 'overlap')) {
+              problems.push(['text-overlap', 'text overlaps an image: ' + m.overlaps.slice(0, 3).map((o) => `"${o.text}" over ${o.image} (${o.w}x${o.h}px)`).join('; ')]);
+            }
+            if (width === 400 && m.sideBySide.length && !allowed(name, 'columns')) {
               problems.push(['columns-side-by-side', 'row(s) keep their columns side by side on a phone: ' + m.sideBySide.map((s) => `row ${s.row} (${s.columns} cols, lefts ${s.lefts.join('/')})`).join('; ')]);
             }
             if (consoleErrors.length) problems.push(['console-error', [...new Set(consoleErrors)].slice(0, 3).join(' | ')]);

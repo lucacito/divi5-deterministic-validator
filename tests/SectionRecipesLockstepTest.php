@@ -58,13 +58,15 @@ class SectionRecipesLockstepTest extends TestCase
 
         // A mood filter keeps the recipes tagged with that language plus the ones tagged "any"; filtering by "any" itself keeps
         // only the ones tagged "any" (since plan 2 task 11 a recipe may list only the languages it suits).
-        [ , $both ] = $this->mcp( [ 'role' => 'features', 'layout' => 'split', 'mood' => 'editorial' ] );
+        [ , $both ] = $this->mcp( [ 'role' => 'features', 'layout' => 'split', 'mood' => 'organic-warm' ] );
         $this->assertStringContainsString( 'split-image-text', $both );
-        $this->assertStringContainsString( 'card-grid-3', $both, 'card-grid-3 is a split (an intro row, then an image beside text) and lists editorial' );
+        $this->assertStringContainsString( 'card-grid-3', $both, 'card-grid-3 is a split (an intro row, then an image beside text) and lists organic-warm' );
         $this->assertStringNotContainsString( 'blurb-grid', $both );
         [ , $anyOnly ] = $this->mcp( [ 'role' => 'features', 'layout' => 'split', 'mood' => 'any' ] );
-        $this->assertStringContainsString( 'split-image-text', $anyOnly );
         $this->assertStringNotContainsString( 'blurb-grid', $anyOnly );
+        // Both split recipes list their languages (rounded corners, pill images) instead of "any".
+        $this->assertStringNotContainsString( 'split-image-text', $anyOnly );
+        $this->assertStringNotContainsString( 'card-grid-3', $anyOnly );
     }
 
     public function testMcpUnknownFilterValueIsANormalAnswerListingTheValidValues(): void
@@ -202,7 +204,7 @@ class SectionRecipesLockstepTest extends TestCase
         $this->assertSame( [], SectionRecipes::matchingNames( 'nonsense' ) );
         $this->assertSame( array_values( array_filter( SectionRecipes::names(), static fn ( string $n ): bool => in_array( 'any', (array) ( SectionRecipes::tags( $n )['mood'] ?? [] ), true ) ) ), SectionRecipes::matchingNames( null, null, 'any' ) );
         // A language mood selects the recipes tagged "any" plus the ones listing that language: never fewer than the "any" ones.
-        $this->assertSame( [], array_diff( SectionRecipes::matchingNames( null, null, 'any' ), SectionRecipes::matchingNames( null, null, 'editorial' ) ) );
+        $this->assertSame( [], array_diff( SectionRecipes::matchingNames( null, null, 'any' ), SectionRecipes::matchingNames( null, null, 'organic-warm' ) ) );
         foreach ( SectionRecipes::matchingNames( 'features', 'grid' ) as $n ) {
             $this->assertSame( 'features', SectionRecipes::tags( $n )['role'] );
             $this->assertSame( 'grid', SectionRecipes::tags( $n )['layout'] );

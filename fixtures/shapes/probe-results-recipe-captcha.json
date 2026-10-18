@@ -1,0 +1,113 @@
+[
+  {
+    "id": "rc-captcha-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 51,
+        "sample": [
+          "13:p:border-block-end-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-block-start-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-bottom-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-inline-end-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-inline-start-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-left-color: rgb(102, 102, 102) -> rgb(244, 246, 253)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 51,
+        "sample": [
+          "13:p:border-block-end-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-block-start-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-bottom-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-inline-end-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-inline-start-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-left-color: rgb(102, 102, 102) -> rgb(244, 246, 253)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 51,
+        "sample": [
+          "13:p:border-block-end-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-block-start-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-bottom-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-inline-end-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-inline-start-color: rgb(102, 102, 102) -> rgb(244, 246, 253)",
+          "13:p:border-left-color: rgb(102, 102, 102) -> rgb(244, 246, 253)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  }
+]

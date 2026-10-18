@@ -15802,3 +15802,27 @@ Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-r
 - htmlAttributes at tablet and phone, on columns and modules, and the browser behaviour of an anchor id: not measured: Divi reads only desktop.value.id and desktop.value.class (IdClassesClassnames.php:47-50), so a tablet or phone value would not be read; the id and class attributes were compared on a section and on a row, never the scroll-to-anchor behaviour. The legacy recipes write empty strings here
 - Hover translate on hosts other than a column, at tablet and phone, and the combined x and y: not measured: translate x on hover was compared on a column with the pointer on it (desktop hover value only); translate y on hover was already proven on a group
 - Contact form fields: field types, required marks, placeholder font and the captcha settings other than the font family: not measured: only the field background colour, text colour and font family and the captcha question's font family were probed. The captcha question is random on every load, so the captcha candidate ignores size and position properties on both pages
+
+## rc-captcha-color
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, `contact-field`, ignoring the computed properties `width`, `inline-size`, `block-size`, `height`, `min-width`, `min-inline-size`, `perspective-origin`, `transform-origin`, `max-width`, `max-inline-size`, `margin-left`, `margin-inline-start`, `margin-right`, `margin-inline-end`, `left`, `right`, `inset-inline-start`, `inset-inline-end`. Set on top of the base block:
+
+- `captcha.decoration.font.font.desktop.value.color` = `"#f4f6fd"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 51 | yes | `13:p:border-block-end-color: rgb(102, 102, 102) -> rgb(244, 246, 253)` |
+| 900 px | yes | 51 | yes | `13:p:border-block-end-color: rgb(102, 102, 102) -> rgb(244, 246, 253)` |
+| 400 px | yes | 51 | yes | `13:p:border-block-end-color: rgb(102, 102, 102) -> rgb(244, 246, 253)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Text colour of the basic captcha question (the 'captcha' element, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:478 and :1197-1258; visual-builder module-library contact-form/module.json attributes.captcha, selector '.et_pb_contact_right p', settings.decoration.font group 'Captcha Text'). The question is Divi's default #666 on every load; the base is the contact-form block of the contact-form recipe under glass-dark (captcha on, the default), so the colour is measured exactly where the recipe needs it. The question is random on every load ('5 + 7' or '15 + 7') and changes the width of everything sized from it: those size properties are ignored on both pages (same list as rm-cf-captcha-family), so only the colour can differ. Measured by the computed colour of the question (p, label, span).
+
+Registered paths added:
+
+- `captcha.decoration.font.font.{bp}.value.color`

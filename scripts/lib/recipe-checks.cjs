@@ -74,7 +74,7 @@ function isKnownFail(known, recipe, language, width, code) {
  */
 function measureInPage() {
   const root = document.querySelector('.et-l--post');
-  const out = { hasRoot: !!root, overflow: document.documentElement.scrollWidth > window.innerWidth, scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth, visible: false, rows: 0, sideBySide: [] };
+  const out = { hasRoot: !!root, overflow: document.documentElement.scrollWidth > window.innerWidth, scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth, visible: false, rows: 0, sideBySide: [], overlaps: [] };
   if (!root) return out;
   const sections = [...root.querySelectorAll('.et_pb_section')];
   const hasMedia = (el) => [...el.querySelectorAll('img, svg, video, canvas, iframe')].some((m) => { const r = m.getBoundingClientRect(); return r.width > 0 && r.height > 0; })
@@ -94,6 +94,27 @@ function measureInPage() {
     const stacked = rects.every((r, k) => k === 0 || r.top >= rects[k - 1].bottom - 2);
     if (!sameLeft && !stacked) out.sideBySide.push({ row: i, nested: row.classList.contains('et_pb_row_inner') || row.classList.contains('et_pb_row_nested'), columns: cols.length, lefts: rects.map((r) => Math.round(r.left)) });
   });
+  // Text that is covered by (or covers) a picture: a text element's own text lines against every image box (an `.et_pb_image` module,
+  // or an <img> outside one) that neither contains it nor sits inside it. More than 4 px in BOTH directions counts. Text with no
+  // visible box, opacity 0 or visibility hidden is skipped. An intentional overlap recipe is exempted by name in
+  // fixtures/shapes/recipe-render-allowances.json (verify-recipes.cjs), never here.
+  const shown = (el) => { const r = el.getBoundingClientRect(); const cs = getComputedStyle(el); return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none' && parseFloat(cs.opacity) > 0; };
+  const media = [...root.querySelectorAll('.et_pb_image, img')].filter((m) => (m.classList.contains('et_pb_image') || !m.closest('.et_pb_image')) && shown(m) && m.getBoundingClientRect().width >= 24 && m.getBoundingClientRect().height >= 24);
+  const texts = [...root.querySelectorAll('h1, h2, h3, h4, h5, h6, p, li, .et_pb_button, .et_pb_module_header')].filter((t) => (t.textContent || '').trim() && shown(t));
+  for (const t of texts) {
+    const range = document.createRange();
+    range.selectNodeContents(t);
+    const lines = [...range.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+    for (const m of media) {
+      if (m.contains(t) || t.contains(m)) continue;
+      const b = m.getBoundingClientRect();
+      for (const l of lines) {
+        const w = Math.min(l.right, b.right) - Math.max(l.left, b.left);
+        const h = Math.min(l.bottom, b.bottom) - Math.max(l.top, b.top);
+        if (w > 4 && h > 4) { out.overlaps.push({ text: (t.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 30), image: (m.className && m.className.toString ? m.className.toString() : '').split(' ')[0] || m.tagName.toLowerCase(), w: Math.round(w), h: Math.round(h) }); break; }
+      }
+    }
+  }
   return out;
 }
 

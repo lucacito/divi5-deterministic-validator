@@ -1,1 +1,5 @@
-{}
+{
+    "shop-grid": {
+        "overlap": "WooCommerce prints its own \"Sale!\" badge over the product thumbnail (the onsale span sits inside the image box); the recipe draws no text over a picture itself."
+    }
+}

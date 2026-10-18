@@ -248,6 +248,60 @@ class RecipeLibraryTest extends TestCase
         $this->assertNotSame( [], self::literalColours( '"c":"$variable({"type":1})$"' ) );
     }
 
+    /**
+     * Colour ROLES used as a TEXT colour token in a markup: a `color` value under a font settings object (a path with a `font` or
+     * `bodyFont`/`headingFont` segment ending in `color`: heading and title fonts, body text, links, button labels, hover labels),
+     * not shadows, borders or backgrounds.
+     *
+     * @return list<string>
+     */
+    private static function textColourRoles( string $markup ): array
+    {
+        $parsed = ( new \Divi5Validator\BlockParser() )->parse( '<!-- wp:divi/placeholder -->' . $markup . '<!-- /wp:divi/placeholder -->' );
+        $roles  = [];
+        $walk   = static function ( $node, string $path ) use ( &$walk, &$roles ): void {
+            if ( is_array( $node ) ) {
+                foreach ( $node as $k => $v ) {
+                    $walk( $v, '' === $path ? (string) $k : $path . '.' . $k );
+                }
+                return;
+            }
+            if ( is_string( $node ) && 1 === preg_match( '/^\{\{aied:color:([a-z-]+)\}\}$/', $node, $m )
+                && 1 === preg_match( '/(^|\.)[a-zA-Z]*[fF]ont(\.|$)/', $path ) && 1 === preg_match( '/\.color$/', $path )
+                && ! str_contains( $path, 'textShadow' ) && ! str_contains( $path, 'border' ) ) {
+                $roles[ $m[1] ] = true;
+            }
+        };
+        $parsed->root()->walk( static function ( \Divi5Validator\Block $b ) use ( $walk ): void {
+            $walk( $b->attrs(), '' );
+        } );
+        $out = array_keys( $roles );
+        sort( $out );
+        return $out;
+    }
+
+    public function testEveryTextColourRoleIsTheForegroundOfADeclaredPair(): void
+    {
+        $checked = 0;
+        foreach ( SectionRecipes::names() as $name ) {
+            $tags = (array) SectionRecipes::tags( $name );
+            if ( ! array_key_exists( 'pairs', $tags ) ) {
+                continue;
+            }
+            ++$checked;
+            $foregrounds = array_map( static fn ( $p ): string => (string) $p[0], (array) $tags['pairs'] );
+            $roles       = self::textColourRoles( (string) SectionRecipes::rawMarkup( $name ) );
+            $this->assertNotSame( [], $roles, "$name uses no text colour token?" );
+            $this->assertSame( [], array_values( array_diff( $roles, $foregrounds ) ), "$name colours text with a role no declared pair has as its foreground: declare the pair it sits on" );
+        }
+        $this->assertGreaterThan( 0, $checked );
+        // The guard itself: a heading colour, a body colour and a button label are text; a shadow, a background and a border are not.
+        $m = '<!-- wp:divi/heading {"title":{"decoration":{"font":{"font":{"desktop":{"value":{"color":"{{aied:color:text}}"}}},"textShadow":{"desktop":{"value":{"color":"{{aied:color:accent}}"}}}}}}} /-->'
+            . '<!-- wp:divi/text {"content":{"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"{{aied:color:muted}}"}}}}}}}} /-->'
+            . '<!-- wp:divi/button {"button":{"decoration":{"background":{"desktop":{"value":{"color":"{{aied:color:accent}}"}}},"font":{"font":{"desktop":{"value":{"color":"{{aied:color:accent-text}}"},"hover":{"color":"{{aied:color:bg}}"}}}}}}} /-->';
+        $this->assertSame( [ 'accent-text', 'bg', 'muted', 'text' ], self::textColourRoles( $m ) );
+    }
+
     public function testThePairCheckerCatchesWhatItShould(): void
     {
         $lang    = (array) DesignLanguages::get( 'editorial' );
@@ -454,8 +508,15 @@ class RecipeLibraryTest extends TestCase
         $this->assertIsArray( $data );
         foreach ( $data as $name => $reason ) {
             $this->assertContains( $name, SectionRecipes::names(), "allowance for \"$name\", which is not a recipe" );
-            $this->assertIsString( $reason );
-            $this->assertNotSame( '', trim( $reason ), "allowance for $name needs a reason" );
+            // A string exempts the columns-side-by-side check (the original meaning); an object names each exempted check
+            // ("columns", "overlap") with its own written reason.
+            $reasons = is_array( $reason ) ? $reason : [ 'columns' => $reason ];
+            $this->assertNotSame( [], $reasons, "allowance for $name is empty" );
+            foreach ( $reasons as $check => $why ) {
+                $this->assertContains( $check, [ 'columns', 'overlap' ], "allowance for $name names an unknown check \"$check\"" );
+                $this->assertIsString( $why );
+                $this->assertNotSame( '', trim( $why ), "allowance for $name ($check) needs a reason" );
+            }
         }
     }
 }

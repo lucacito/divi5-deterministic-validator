@@ -56,7 +56,19 @@ const page = (inner) => `<div class="et-l--post"><div class="et_pb_section" styl
     assert.strictEqual((await run('<div class="et-l--post"><div class="et_pb_section" style="height:100px"></div></div>')).visible, false);
     assert.strictEqual((await run('<div class="et-l--post"><div class="et_pb_section" style="width:900px;height:50px">hi</div></div>')).overflow, true);
     assert.strictEqual((await run('<div>hi</div>')).hasRoot, false);
-    console.log('OK recipe measurement: top-level, nested divi/row and nested divi/row-inner stacking, Theme Builder ignored, empty, overflow, no root');
+
+    // text over a picture: the heading's lines against an image module box
+    const img = (style) => `<div class="et_pb_image" style="position:relative;${style}"><img style="display:block;width:100%;height:100%" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="></div>`;
+    const sec = (inner) => `<div class="et-l--post"><div class="et_pb_section">${inner}</div></div>`;
+    const over = await run(sec(img('width:200px;height:120px') + '<h2 style="margin:-40px 0 0 0;position:relative">Overlapping headline</h2>'));
+    assert.strictEqual(over.overlaps.length, 1, 'a heading pulled up over an image is reported');
+    assert.strictEqual(over.overlaps[0].text, 'Overlapping headline');
+    assert.strictEqual((await run(sec(img('width:200px;height:120px') + '<h2 style="margin:20px 0 0 0">Clear headline</h2>'))).overlaps.length, 0, 'a heading below the image passes');
+    assert.strictEqual((await run(sec(img('width:200px;height:120px') + '<h2 style="margin:-3px 0 0 0">Touching headline</h2>'))).overlaps.length, 0, 'a 3 px touch is below the 4 px threshold');
+    assert.strictEqual((await run(sec(img('width:200px;height:120px') + '<h2 style="margin:-40px 0 0 0;opacity:0">Hidden headline</h2>'))).overlaps.length, 0, 'invisible text is skipped');
+    assert.strictEqual((await run(sec('<div class="et_pb_image" style="width:200px;height:120px"><p>Caption inside the image module</p></div>'))).overlaps.length, 0, 'text inside the image module is not an overlap');
+    assert.strictEqual((await run(`<div class="et-l--header">${img('width:200px;height:120px')}<h2 style="margin:-40px 0 0 0;position:relative">Header headline</h2></div><div class="et-l--post"><div class="et_pb_section">hi</div></div>`)).overlaps.length, 0, 'the Theme Builder header is not measured');
+    console.log('OK recipe measurement: top-level, nested divi/row and nested divi/row-inner stacking, Theme Builder ignored, empty, overflow, no root, text over a picture');
   } finally {
     await browser.close();
   }

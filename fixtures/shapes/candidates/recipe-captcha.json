@@ -1,0 +1,292 @@
+[
+  {
+    "id": "rc-captcha-color",
+    "block": "contact-form",
+    "ignore": [
+      "width",
+      "inline-size",
+      "block-size",
+      "height",
+      "min-width",
+      "min-inline-size",
+      "perspective-origin",
+      "transform-origin",
+      "max-width",
+      "max-inline-size",
+      "margin-left",
+      "margin-inline-start",
+      "margin-right",
+      "margin-inline-end",
+      "left",
+      "right",
+      "inset-inline-start",
+      "inset-inline-end"
+    ],
+    "base": {
+      "button": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "text": "Learn More"
+            }
+          }
+        },
+        "decoration": {
+          "button": {
+            "desktop": {
+              "value": {
+                "enable": "on",
+                "icon": {
+                  "enable": "off"
+                }
+              }
+            }
+          },
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#7c9cff"
+              },
+              "hover": {
+                "color": "#f2f4fa",
+                "enableColor": "on"
+              }
+            }
+          },
+          "border": {
+            "desktop": {
+              "value": {
+                "styles": {
+                  "all": {
+                    "color": "#7c9cff"
+                  }
+                },
+                "radius": {
+                  "sync": "on",
+                  "topLeft": "25px",
+                  "topRight": "25px",
+                  "bottomRight": "25px",
+                  "bottomLeft": "25px"
+                }
+              },
+              "hover": {
+                "styles": {
+                  "all": {
+                    "color": "#f2f4fa"
+                  }
+                }
+              }
+            }
+          },
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "family": "Inter",
+                  "color": "#0b1020"
+                },
+                "hover": {
+                  "color": "#0b1020"
+                }
+              },
+              "tablet": {
+                "value": {
+                  "size": ""
+                }
+              },
+              "phone": {
+                "value": {
+                  "size": "16px"
+                }
+              }
+            }
+          },
+          "spacing": {
+            "desktop": {
+              "value": {
+                "padding": {
+                  "top": "",
+                  "right": "40px",
+                  "bottom": "",
+                  "left": "40px",
+                  "syncVertical": "off",
+                  "syncHorizontal": "on"
+                }
+              }
+            },
+            "tablet": {
+              "value": {
+                "padding": {
+                  "top": "",
+                  "right": "40px",
+                  "bottom": "",
+                  "left": "40px",
+                  "syncVertical": "off",
+                  "syncHorizontal": "on"
+                }
+              }
+            },
+            "phone": {
+              "value": {
+                "padding": {
+                  "top": "",
+                  "right": "10px",
+                  "bottom": "",
+                  "left": "10px",
+                  "syncVertical": "off",
+                  "syncHorizontal": "on"
+                }
+              }
+            }
+          }
+        }
+      },
+      "module": {
+        "advanced": {
+          "uniqueId": {
+            "desktop": {
+              "value": "c6e1fbbe-6729-4c6e-be5e-b348274b5ff1"
+            }
+          }
+        },
+        "decoration": {
+          "sizing": {
+            "desktop": {
+              "value": {
+                "maxWidth": "950px",
+                "alignment": "center"
+              }
+            }
+          },
+          "border": {
+            "desktop": {
+              "value": {
+                "radius": {
+                  "sync": "on",
+                  "topLeft": "20px",
+                  "topRight": "20px",
+                  "bottomRight": "20px",
+                  "bottomLeft": "20px"
+                },
+                "styles": {
+                  "all": {
+                    "width": "1px",
+                    "color": "#2a3558"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "field": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#151c33"
+              }
+            }
+          },
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": "#f2f4fa",
+                  "family": "Inter"
+                }
+              }
+            }
+          }
+        }
+      },
+      "captcha": {
+        "decoration": {
+          "font": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "family": "Inter"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "children": [
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Name"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Name"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Email"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "email"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Email"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Message"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "text"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Message"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "set": {
+      "captcha.decoration.font.font.desktop.value.color": "#f4f6fd"
+    },
+    "expect": "PASS",
+    "note": "Text colour of the basic captcha question (the 'captcha' element, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:478 and :1197-1258; visual-builder module-library contact-form/module.json attributes.captcha, selector '.et_pb_contact_right p', settings.decoration.font group 'Captcha Text'). The question is Divi's default #666 on every load; the base is the contact-form block of the contact-form recipe under glass-dark (captcha on, the default), so the colour is measured exactly where the recipe needs it. The question is random on every load ('5 + 7' or '15 + 7') and changes the width of everything sized from it: those size properties are ignored on both pages (same list as rm-cf-captcha-family), so only the colour can differ. Measured by the computed colour of the question (p, label, span)."
+  }
+]
