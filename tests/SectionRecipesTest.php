@@ -290,6 +290,12 @@ class SectionRecipesTest extends TestCase
         }
     }
 
+    /**
+     * Generic words left beside a placeholder once it is stripped: units of a bracketed figure ("[0.0] out of 5", "[0]x") and the
+     * kind of image in an alt ("[Logo 1 name] logo", "[Client name] portrait"). Not claims.
+     */
+    private const PLACEHOLDER_UNITS = ['out of 5', 'x', 'logo', 'portrait'];
+
     /** Generic headings and eyebrows of the Task 14 and Task 15 batches: structure, not claims. */
     private const STRUCTURAL_COPY = [
         'In the press', 'What others have written', 'By the numbers', 'Figures that back up the promise', 'Results',
@@ -315,8 +321,18 @@ class SectionRecipesTest extends TestCase
         $bad = [];
         $ok = static function (string $v): bool {
             $v = trim(html_entity_decode(strip_tags($v), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-            return '' === $v || 1 === preg_match('/\[[^\]]+\]/', $v) || str_starts_with($v, 'Placeholder')
-                || 1 === preg_match('/^[\p{P}\s]+$/u', $v) || in_array($v, self::STRUCTURAL_COPY, true) || 1 === preg_match('/^0[1-9]$/', $v);
+            if ('' === $v || in_array($v, self::STRUCTURAL_COPY, true) || 1 === preg_match('/^0[1-9]$/', $v)) {
+                return true;
+            }
+            if (str_starts_with($v, 'Placeholder')) {
+                // An instruction to the owner: no figure and no currency in it, except the counter pattern "replace N".
+                $rest = (string) preg_replace('/\breplace \d+%?/', '', (string) preg_replace('/\[[^\]]*\]/', '', $v));
+                return 0 === preg_match('/[\p{N}\p{Sc}]/u', $rest);
+            }
+            // Strip every [placeholder] group: what is left must hold no letter or digit (separators, punctuation, a % sign), or be
+            // one of the few generic words a placeholder needs (PLACEHOLDER_UNITS).
+            $rest = trim((string) preg_replace('/\s+/', ' ', (string) preg_replace('/\[[^\]]*\]/', ' ', $v)));
+            return 0 === preg_match('/[\p{L}\p{N}\p{Sc}]/u', $rest) || in_array($rest, self::PLACEHOLDER_UNITS, true);
         };
         $parsed->root()->walk(static function (\Divi5Validator\Block $b) use (&$bad, $ok): void {
             $name = preg_replace('#^divi/#', '', $b->name());
@@ -359,6 +375,11 @@ class SectionRecipesTest extends TestCase
         $this->assertSame([], self::inventedTexts($t('01') . $t('[Price]') . $t('/ [period]') . $h('Our values') . $g('[Question 1]', '[The answer.]')));
         $this->assertSame(['text: <p>$29</p>', 'heading: Pro', 'text: <p>Jane Doe, founder</p>', 'text: <p>1998</p>', 'text: <p>100</p>'], self::inventedTexts($t('$29') . $h('Pro') . $t('Jane Doe, founder') . $t('1998') . $t('100')), 'invented prices, plan names, people and years are caught (only 01 to 09 pass as ordinals)');
         $this->assertSame(['toggle: Is there a refund?', 'toggle: <p>Yes, within 30 days.</p>'], self::inventedTexts($g('Is there a refund?', 'Yes, within 30 days.')), 'an invented question and answer are caught');
+        // A bracket elsewhere in the value no longer excuses invented text beside it.
+        $this->assertSame(['text: <p>Pro plan $29 [period]</p>', 'text: <p>Jane Doe [Role]</p>', 'text: <p>[Price] per month, billed 12 times</p>', 'text: <p>Placeholder: Pro plan at $29</p>'],
+            self::inventedTexts($t('Pro plan $29 [period]') . $t('Jane Doe [Role]') . $t('[Price] per month, billed 12 times') . $t('Placeholder: Pro plan at $29')),
+            'invented words, prices and figures beside a placeholder are caught');
+        $this->assertSame([], self::inventedTexts($t('[0.0] out of 5') . $t('[00]%') . $t('[Client name] / [Role, company]') . $t('&mdash; [Founder first name]') . $t('Placeholder: replace 80% with a figure you can prove')));
     }
 
     public function testRetaggedRecipesDescribeTheirRealStructure(): void
@@ -409,11 +430,25 @@ class SectionRecipesTest extends TestCase
         foreach (SectionRecipes::moods() as $m) {
             $this->assertStringContainsString($m, $mood);
         }
-        // A valid value with no match also lists the valid values instead of an empty answer ('transition' has no recipe yet;
-        // 'team' did until Plan 2 Task 15 added team recipes).
-        $none = SectionRecipes::catalog('transition');
+        // A valid value with no match also lists the valid values instead of an empty answer. The empty combination is found at
+        // test time (a valid role and a valid layout that no recipe has together), so adding recipes cannot break this test.
+        $none = null;
+        foreach (SectionRecipes::ROLES as $r) {
+            foreach (SectionRecipes::LAYOUTS as $l) {
+                $answer = SectionRecipes::catalog($r, $l);
+                if (null === $none && str_contains($answer, 'No recipe')) {
+                    $none = $answer;
+                }
+            }
+        }
+        $this->assertNotNull($none, 'some valid role + layout combination has no recipe');
         $this->assertStringContainsString('No recipe', $none);
-        $this->assertStringContainsString('hero', $none);
+        foreach (SectionRecipes::ROLES as $r) {
+            $this->assertStringContainsString($r, $none);
+        }
+        foreach (SectionRecipes::LAYOUTS as $l) {
+            $this->assertStringContainsString($l, $none);
+        }
     }
 
     public function testDefaultCatalogIsCompact(): void
