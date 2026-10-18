@@ -217,7 +217,12 @@ class SectionRecipesTest extends TestCase
     {
         $catalog = SectionRecipes::catalog();
         $this->assertLessThanOrEqual(2 * self::BASELINE, strlen($catalog));
-        $this->assertLessThan(self::BASELINE, strlen($catalog), 'the compact form is smaller than the old full form');
+        // Controller Ruling 23: the old "smaller than the 17-recipe full form" bound measured the wrong thing once the library grew;
+        // what matters is the AI's budget: a short line per recipe and a compact whole.
+        $count = count(SectionRecipes::names());
+        $this->assertGreaterThan(0, $count);
+        $this->assertLessThanOrEqual(130, strlen($catalog) / $count, 'the compact catalog averages at most 130 bytes per recipe');
+        $this->assertLessThanOrEqual(8000, strlen($catalog), 'the compact catalog stays at most 8,000 bytes in total');
         foreach (SectionRecipes::names() as $name) {
             $this->assertStringContainsString($name, $catalog);
         }
