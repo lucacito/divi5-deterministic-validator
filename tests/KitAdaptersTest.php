@@ -45,12 +45,6 @@ class KitAdaptersTest extends TestCase
      */
     private const PHOTO_GREY = '#808080';
 
-    /**
-     * Known failing kit x language x role x surface x state cells, one per line. Shrink-only: a new failure is fixed
-     * (kit data or adapter), never added; the cap below may only be LOWERED.
-     */
-    private const CONTRAST_BASELINE     = __DIR__ . '/../fixtures/shapes/kit-contrast-baseline.txt';
-    private const CONTRAST_BASELINE_CAP = 50;
 
     /** Token colour role => key in a language's `colors`. */
     private const ROLE_KEYS = [
@@ -257,13 +251,16 @@ class KitAdaptersTest extends TestCase
         $this->assertSame( KitAdapters::TRANSPARENT, $p['background']['desktop']['hover']['color'] );
         $this->assertSame( '0px', $p['border']['desktop']['value']['styles']['all']['width'] );
 
-        // The secondary of a solid kit is its outline treatment of the same colour.
+        // The secondary of a solid kit is its outline treatment; on a light surface in the neutral `text` colour,
+        // whatever the kit's colour (the primary keeps the kit's colour).
         $solid = StyleKits::get( 'soft-solid' );
         $this->assertIsArray( $solid );
+        $this->assertSame( 'accent', $solid['color'] );
         $p = $this->patch( $solid, 'control-secondary', 'light' )['button']['decoration'];
         $this->assertSame( KitAdapters::TRANSPARENT, $p['background']['desktop']['value']['color'] );
-        $this->assertSame( '{{aied:color:' . $solid['color'] . '}}', $p['font']['font']['desktop']['value']['color'] );
-        $this->assertSame( '{{aied:color:' . $solid['color'] . '}}', $p['border']['desktop']['value']['styles']['all']['color'] );
+        $this->assertSame( '{{aied:color:text}}', $p['font']['font']['desktop']['value']['color'] );
+        $this->assertSame( '{{aied:color:text}}', $p['border']['desktop']['value']['styles']['all']['color'] );
+        $this->assertSame( '{{aied:color:accent}}', $this->patch( $solid, 'control', 'light' )['button']['decoration']['background']['desktop']['value']['color'] );
     }
 
     public function testSolidFollowsTheRoleTableAndTheTextDecisions(): void
@@ -292,6 +289,50 @@ class KitAdaptersTest extends TestCase
         $this->assertSame( '{{aied:color:accent}}', $p['font']['font']['desktop']['hover']['color'] );
     }
 
+    public function testInkAndFilledHoverFollowTheSurface(): void
+    {
+        $outline = StyleKits::get( 'outline-2' );
+        $this->assertIsArray( $outline );
+        $this->assertSame( 'fill-swap', $outline['hover'] );
+
+        // Accent band: transparent ink is accent-text; the filled hover is surface with a text label.
+        $p = $this->patch( $outline, 'control', 'accent' )['button']['decoration'];
+        $this->assertSame( KitAdapters::TRANSPARENT, $p['background']['desktop']['value']['color'] );
+        $this->assertSame( '{{aied:color:accent-text}}', $p['font']['font']['desktop']['value']['color'] );
+        $this->assertSame( '{{aied:color:accent-text}}', $p['border']['desktop']['value']['styles']['all']['color'] );
+        $this->assertSame( '{{aied:color:surface}}', $p['background']['desktop']['hover']['color'] );
+        $this->assertSame( '{{aied:color:text}}', $p['font']['font']['desktop']['hover']['color'] );
+
+        // Photo: inverse ink at rest, never filled with inverse on hover.
+        $p = $this->patch( $outline, 'control', 'dark' )['button']['decoration'];
+        $this->assertSame( '{{aied:color:surface}}', $p['background']['desktop']['hover']['color'] );
+        $this->assertSame( '{{aied:color:text}}', $p['font']['font']['desktop']['hover']['color'] );
+
+        // A filled button on a photo swaps to transparent in the photo's ink (inverse), not its fill colour.
+        $p = $this->patch( $outline, 'control-secondary', 'dark' )['button']['decoration'];
+        $this->assertSame( '{{aied:color:text}}', $p['background']['desktop']['value']['color'] );
+        $this->assertSame( KitAdapters::TRANSPARENT, $p['background']['desktop']['hover']['color'] );
+        $this->assertSame( '{{aied:color:inverse}}', $p['font']['font']['desktop']['hover']['color'] );
+        $this->assertSame( '{{aied:color:inverse}}', $p['border']['desktop']['hover']['styles']['all']['color'] );
+
+        // On an accent band the same swap uses accent-text.
+        $p = $this->patch( $outline, 'control-secondary', 'accent' )['button']['decoration'];
+        $this->assertSame( '{{aied:color:surface}}', $p['background']['desktop']['value']['color'] );
+        $this->assertSame( '{{aied:color:accent-text}}', $p['font']['font']['desktop']['hover']['color'] );
+
+        // `inverse` is never a fill: a solid inverse kit is surface with a text label; on light its outline ink is text.
+        $inv          = $outline;
+        $inv['fill']  = 'solid';
+        $inv['color'] = 'inverse';
+        $p = $this->patch( $inv, 'control', 'dark' )['button']['decoration'];
+        $this->assertSame( '{{aied:color:surface}}', $p['background']['desktop']['value']['color'] );
+        $this->assertSame( '{{aied:color:text}}', $p['font']['font']['desktop']['value']['color'] );
+        $inv['fill'] = 'outline';
+        $p = $this->patch( $inv, 'control', 'light' )['button']['decoration'];
+        $this->assertSame( '{{aied:color:text}}', $p['font']['font']['desktop']['value']['color'] );
+        $this->assertStringNotContainsString( '"color":"{{aied:color:inverse}}"', (string) json_encode( [ $p['background'] ] ) );
+    }
+
     public function testThePatchIsDeterministic(): void
     {
         foreach ( $this->shippedKits() as $kit ) {
@@ -312,7 +353,7 @@ class KitAdaptersTest extends TestCase
      * Contrast problems of one state of one button on one opaque surface ([] = fine): the label against the fill as
      * painted (the fill composited on the surface) at least 4.5, and, where the border carries the shape (the fill is
      * transparent and the border is wider than 0), the border against the surface at least 3.0. Keyed
-     * "$where|label" / "$where|outline" (the baseline key), the value says the measured numbers.
+     * "$where|label" / "$where|outline", the value says the measured numbers.
      *
      * @return array<string,string>
      */
@@ -380,34 +421,7 @@ class KitAdaptersTest extends TestCase
             }
         }
         $this->assertGreaterThan( 0, $checked );
-        $known = $this->contrastBaseline();
-        $new   = array_diff_key( $problems, array_flip( $known ) );
-        $this->assertSame( [], array_values( $new ), "invisible or unreadable buttons (fix the kit data or the adapter, never the bound; never add to the baseline):\n" . implode( "\n", $new ) );
-        $fixed = array_values( array_diff( $known, array_keys( $problems ) ) );
-        $this->assertSame( [], $fixed, 'these baseline entries pass now: remove them from ' . basename( self::CONTRAST_BASELINE ) . ' and lower CONTRAST_BASELINE_CAP' );
-    }
-
-    /**
-     * The frozen, shrink-only list of known failing cells (fixtures/shapes/kit-contrast-baseline.txt), capped by
-     * CONTRAST_BASELINE_CAP, which may only be lowered.
-     *
-     * @return list<string>
-     */
-    private function contrastBaseline(): array
-    {
-        $this->assertFileExists( self::CONTRAST_BASELINE );
-        $out = [];
-        foreach ( (array) file( self::CONTRAST_BASELINE, FILE_IGNORE_NEW_LINES ) as $line ) {
-            $line = trim( (string) $line );
-            if ( '' === $line || '#' === $line[0] ) {
-                continue;
-            }
-            $this->assertMatchesRegularExpression( '/^[a-z0-9-]+\|[a-z0-9-]+\|control(?:-secondary)?\|(?:light|accent|dark)\|(?:bg|surface|accent|photo)\|(?:rest|hover)\|(?:label|outline)$/', $line );
-            $out[] = $line;
-        }
-        $this->assertSame( count( $out ), count( array_unique( $out ) ), 'the contrast baseline has duplicates' );
-        $this->assertLessThanOrEqual( self::CONTRAST_BASELINE_CAP, count( $out ), 'the contrast baseline may only shrink' );
-        return $out;
+        $this->assertSame( [], array_values( $problems ), "invisible or unreadable buttons (fix the kit data or the adapter, never the bound; no exceptions):\n" . implode( "\n", $problems ) );
     }
 
     public function testTheContrastCheckCatchesWhatItShould(): void

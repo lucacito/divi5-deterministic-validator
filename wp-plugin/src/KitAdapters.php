@@ -21,14 +21,30 @@ require_once __DIR__ . '/StyleKits.php';
  * `{{aied:color:<role>}}` tokens (the language supplies the value), the radius and padding whole-value kit tokens;
  * the only literal is TRANSPARENT.
  *
- * Role table (c = the kit's colour role; on(accent)=accent-text, on(text)=bg, on(inverse)=text):
- * - solid:   light and dark: fill c, label on(c), border the kit's; accent band: fill surface, label text.
- * - outline: light: transparent, label and border c at the kit width; accent and dark: label and border inverse.
- * - ghost:   as outline with a zero border.
- * The secondary role uses the kit's outline treatment for solid and ghost kits, and the solid one for outline kits.
- * Hover: `fill-swap` swaps the filled and transparent treatments of the same colours; `invert` swaps label and fill
- * (a transparent button has no fill colour to swap, so it fills with its label colour, as fill-swap does); `none`
- * repeats the rest values.
+ * Role table (final, controller Ruling 6; proven by KitAdaptersTest's contrast proof over every shipped kit x language
+ * x role x surface x state, with no exception):
+ * - Colour c: the kit's `color` role, except that `control-secondary` on a `light` surface always uses `text` (the
+ *   neutral secondary today's recipes ship: text ink and border on bg/surface), whatever the kit's colour.
+ * - Ink of a transparent button (its label and border): light -> c (`text` when c is `inverse`), accent band -> `accent-text` (the language's
+ *   guaranteed pair on accent), dark (photo or overlay) -> `inverse`.
+ * - Filled treatment: light and dark -> fill c, label on(c) (on(accent)=accent-text, on(text)=bg); accent band ->
+ *   fill `surface`, label `text`. `inverse` is an ink, never a fill: a filled `inverse` button (a kit whose colour is
+ *   inverse) is `surface` with a `text` label, because no role is readable on inverse in every language (text and
+ *   inverse are both light in the dark languages).
+ * - solid: the filled treatment, border the kit's (`same` = the fill colour) at the kit width.
+ * - outline: transparent, label and border in the ink at the kit width.
+ * - ghost: as outline with a zero border.
+ * - The secondary role uses the outline treatment for solid and ghost kits, and the solid one for outline kits.
+ * Hover:
+ * - `none` repeats the rest values.
+ * - `fill-swap` swaps the filled and transparent treatments: a transparent button fills (light: fill = its ink, label
+ *   on(ink); accent band and dark: fill `surface`, label `text`, the core pair readable in every language); a filled
+ *   button goes transparent in the surface's ink (light: c, as above; accent band: `accent-text`; dark: `inverse`).
+ * - `invert` swaps label and fill of a filled button (a `same` border follows the new fill). A transparent button has
+ *   no fill colour to swap, so `invert` fills it exactly as `fill-swap` does.
+ * Not written on purpose: `background.hover.enableColor` (every recipe button sets its hover colour without it and
+ * renders; the registry knows the path but nothing proves it is needed), `border.value.radius.sync` (the radius token
+ * is the four corners, as every recipe button writes it), shadows, gradients and transforms (not probe-proven yet).
  *
  * Pure and deterministic: no site access.
  */
@@ -43,8 +59,8 @@ final class KitAdapters
     private const ROLES    = [ 'control', 'control-secondary' ];
     private const SURFACES = [ 'light', 'accent', 'dark' ];
 
-    /** The label colour role on a fill of the given colour role. */
-    private const ON = [ 'accent' => 'accent-text', 'text' => 'bg', 'inverse' => 'text' ];
+    /** The label colour role on a fill of the given colour role (`inverse` is never a fill, see filled()). */
+    private const ON = [ 'accent' => 'accent-text', 'text' => 'bg' ];
 
     /** The secondary treatment of each primary fill. */
     private const SECONDARY = [ 'solid' => 'outline', 'outline' => 'solid', 'ghost' => 'outline' ];
@@ -75,8 +91,9 @@ final class KitAdapters
     {
         $fill   = (string) $kit['fill'];
         $fill   = 'control' === $role ? $fill : self::SECONDARY[ $fill ];
-        $rest   = self::treatment( $fill, (string) $kit['color'], $on, $kit );
-        $hover  = self::hover( (string) $kit['hover'], $rest, (string) $kit['border']['color'] );
+        $c      = 'control-secondary' === $role && 'light' === $on ? 'text' : (string) $kit['color'];
+        $rest   = self::treatment( $fill, $c, $on, $kit );
+        $hover  = self::hover( (string) $kit['hover'], $rest, (string) $kit['border']['color'], $c, $on );
         $text   = (array) $kit['text'];
 
         return [
@@ -136,12 +153,37 @@ final class KitAdapters
         $borderColor = (string) $kit['border']['color'];
 
         if ( 'solid' === $fill ) {
-            [ $bg, $label ] = 'accent' === $on ? [ 'surface', 'text' ] : [ $c, self::ON[ $c ] ];
+            [ $bg, $label ] = self::filled( $c, $on );
             return [ 'fill' => $bg, 'label' => $label, 'border' => 'same' === $borderColor ? $bg : $borderColor, 'width' => $width ];
         }
 
-        $ink = 'light' === $on ? $c : 'inverse';
+        $ink = self::ink( $c, $on );
         return [ 'fill' => null, 'label' => $ink, 'border' => $ink, 'width' => 'ghost' === $fill ? '0px' : $width ];
+    }
+
+    /** The ink (label and border) of a transparent button of colour $c on surface $on (`inverse` is for dark surfaces: on light it is `text`). */
+    private static function ink( string $c, string $on ): string
+    {
+        if ( 'accent' === $on ) {
+            return 'accent-text';
+        }
+        if ( 'dark' === $on ) {
+            return 'inverse';
+        }
+        return 'inverse' === $c ? 'text' : $c;
+    }
+
+    /**
+     * [fill, label] of a filled button of colour $c on surface $on.
+     *
+     * @return array{0:string,1:string}
+     */
+    private static function filled( string $c, string $on ): array
+    {
+        if ( 'accent' === $on || ! isset( self::ON[ $c ] ) ) {
+            return [ 'surface', 'text' ];
+        }
+        return [ $c, self::ON[ $c ] ];
     }
 
     /**
@@ -150,19 +192,20 @@ final class KitAdapters
      * @param array{fill:?string,label:string,border:string,width:string} $rest
      * @return array{fill:?string,label:string,border:string}
      */
-    private static function hover( string $hover, array $rest, string $kitBorderColor ): array
+    private static function hover( string $hover, array $rest, string $kitBorderColor, string $c, string $on ): array
     {
         if ( 'none' === $hover ) {
             return [ 'fill' => $rest['fill'], 'label' => $rest['label'], 'border' => $rest['border'] ];
         }
         if ( null === $rest['fill'] ) {
-            // Transparent at rest: both fill-swap and invert fill the button with its label colour.
-            $ink = $rest['label'];
-            return [ 'fill' => $ink, 'label' => self::ON[ $ink ], 'border' => $ink ];
+            // Transparent at rest: fill-swap and invert both fill it.
+            [ $bg, $label ] = 'light' === $on ? self::filled( $rest['label'], $on ) : [ 'surface', 'text' ];
+            return [ 'fill' => $bg, 'label' => $label, 'border' => $bg ];
         }
         if ( 'fill-swap' === $hover ) {
-            // Filled at rest: the transparent treatment of the same colour.
-            return [ 'fill' => null, 'label' => $rest['fill'], 'border' => $rest['fill'] ];
+            // Filled at rest: transparent in the surface's ink.
+            $ink = self::ink( $c, $on );
+            return [ 'fill' => null, 'label' => $ink, 'border' => $ink ];
         }
         // invert: label and fill swap; a `same` border follows the fill.
         return [ 'fill' => $rest['label'], 'label' => $rest['fill'], 'border' => 'same' === $kitBorderColor ? $rest['label'] : $rest['border'] ];
