@@ -312,14 +312,12 @@ module.decoration.position.{bp}.value.mode    = "relative"     # also "absolute"
 ```
 
 ## Design guidance
-Commit to ONE clear aesthetic direction per page (dark/moody, light/airy,
-editorial, glassmorphism, bold/vibrant) — don't default to the same dark theme
-every time. Pick a dominant + accent color (not evenly distributed) and reuse it
-(e.g. dark: bg #0a0a0a/#111114, card #17171c, accent #ff4d00, white headings,
-#c9c9c9 body). Give sections generous vertical padding (5–8vw), round cards
-(12–20px), keep one accent color. Use box-shadow + subtle transforms for depth;
-entrance animations sparingly. Always check text contrast against the lightest
-part of its background (on gradients, the lightest stop).
+Pick a design language first: call get_style_guide topic=design-languages, choose the one that fits the brief and state it before you build (don't default to the same dark theme). Then compose, don't repeat:
+- never the same layout in adjacent sections; alternate background treatment (light, tinted, dark, image or gradient)
+- at most one card grid per three sections
+- give the first section a focal element (image, gradient or large type)
+Use a dominant + accent color, generous vertical padding (5–8vw), round cards (12–20px), box-shadow and subtle transforms for depth, entrance animations sparingly. Check text contrast against the lightest part of its background (on gradients, the lightest stop).
+If a save or validate result carries `advisories.design_variety`, act on it: swap a section for a different recipe from its `try` names (get_section_recipes), then save again.
 
 ## Worked example — one styled section
 ```

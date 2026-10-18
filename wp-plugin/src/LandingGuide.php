@@ -130,8 +130,17 @@ Use get_style_guide for the exact attribute shapes; this is the strategy:
   background tones (e.g. light → tinted → dark CTA) so sections read as distinct
   beats. Vary layouts — don't repeat the same 3-card row four times in a row;
   alternate split/grid/stats/quote so the eye keeps moving.
-- **One aesthetic + one accent**, committed across the whole page (see
-  get_style_guide "Design guidance").
+- **Pick a design language first**: read the audience and brief, call get_style_guide
+  topic=design-languages, choose one and state it before building. Then pick one recipe per
+  persuasion stage by `role` (get_section_recipes, with `design_language` so colours and
+  fonts follow), varying `layout`. Keep one accent across the page.
+- **Composition rules:**
+  - never the same layout in adjacent sections
+  - alternate background treatment
+  - at most one card grid per three sections
+  - give the first section a focal element (image, gradient or large type)
+- **Act on the checker:** if a save or validate result carries `advisories.design_variety`,
+  swap a section for a different recipe from its `try` names, then save again.
 - **Mobile:** every multi-column row stacks to one column on phone, the hero CTA
   stays above the fold, type scales down. Follow the style guide's mobile rules.
 

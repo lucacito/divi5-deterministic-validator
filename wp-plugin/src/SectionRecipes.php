@@ -204,6 +204,8 @@ final class SectionRecipes
             'Place sections between the root <!-- wp:divi/placeholder --> ... <!-- /wp:divi/placeholder --> wrapper.',
             'Filter with get_section_recipes {"role":"hero"}, {"layout":"split"} or {"mood":"any"}: that lists',
             'only the matches, each with its full description, _Stage:_ and _When:_.',
+            'get_section_recipes accepts an optional design_language (ids from get_style_guide topic design-languages)',
+            'which fills the recipe\'s colours and fonts; without it a recipe is served in its default look.',
             '',
             'The preset and color ids inside the recipe markup come from a demo site and may not exist',
             'on this site. Call list_global_styles and swap them for this site\'s own ids, or remove the',
