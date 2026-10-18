@@ -341,8 +341,9 @@ class SectionRecipesTest extends TestCase
         foreach (SectionRecipes::moods() as $m) {
             $this->assertStringContainsString($m, $mood);
         }
-        // A valid value with no match also lists the valid values instead of an empty answer.
-        $none = SectionRecipes::catalog('team');
+        // A valid value with no match also lists the valid values instead of an empty answer ('transition' has no recipe yet;
+        // 'team' did until Plan 2 Task 15 added team recipes).
+        $none = SectionRecipes::catalog('transition');
         $this->assertStringContainsString('No recipe', $none);
         $this->assertStringContainsString('hero', $none);
     }
