@@ -110,6 +110,16 @@ class StyleGuideTopicsTest extends TestCase
         $this->assertContains( 'controls', $named );
     }
 
+    /** Measured on Divi 5.15.1 (docs/shape-evidence-5.15.1.md, ty-h-style-uppercase, ty-b-font-style-uppercase): a font `style` list with "uppercase" prints nothing; `capitalization` does the work. */
+    public function testTheDefaultGuideTeachesCapitalizationNotTheDeadStyleUppercase(): void
+    {
+        $text = StyleGuide::markdown();
+        $this->assertStringNotContainsString( '["uppercase"]', $text, 'the dead shape is not taught' );
+        $this->assertStringContainsString( 'title.decoration.font.font.{bp}.value.capitalization = "uppercase"', $text );
+        $this->assertStringContainsString( '…font.{bp}.value.style          = ["italic"]', $text );
+        $this->assertLessThanOrEqual( 29108, strlen( $text ), 'Ruling 5 ceiling' );
+    }
+
     public function testTopicsListIsTheIndexPlusEveryLanguageAndTheFamilyTopics(): void
     {
         $topics = StyleGuide::topics();

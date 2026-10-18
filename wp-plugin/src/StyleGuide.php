@@ -1241,7 +1241,8 @@ On any font element (`title.decoration.font.font`, `content.decoration.bodyFont.
 …font.{bp}.value.family        = "Playfair Display"   # any Google/Divi font; e.g. serif heading + sans body
 …font.{bp}.value.weight        = "700"
 …font.{bp}.value.letterSpacing = "2px"                # great for kickers
-…font.{bp}.value.style         = ["uppercase"]        # array: "uppercase","italic","underline"
+title.decoration.font.font.{bp}.value.capitalization = "uppercase"   # upper case; also lowercase, capitalize, smallCaps; same key on every font element
+…font.{bp}.value.style          = ["italic"]           # a list: "italic","underline","overline","strikethrough"
 ```
 Styled H1–H6 inside a Text module: `content.decoration.headingFont.h2.font.{bp}.value.{color,lineHeight,textAlign,style}`.
 
