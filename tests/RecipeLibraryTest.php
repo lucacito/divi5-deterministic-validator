@@ -8,6 +8,7 @@ use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\DesignVariety;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\SectionRecipes;
+use Divi5Validator\Tests\Support\Colour;
 use Divi5Validator\Validator;
 use PHPUnit\Framework\TestCase;
 
@@ -17,6 +18,7 @@ require_once __DIR__ . '/../wp-plugin/src/DesignLanguages.php';
 require_once __DIR__ . '/../wp-plugin/src/RecipeTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
 require_once __DIR__ . '/../wp-plugin/src/DesignVariety.php';
+require_once __DIR__ . '/Support/Colour.php';
 
 /**
  * Library-wide invariants of the recipe set that need no Docker (the live half is `make verify-recipes`): unique names,
@@ -76,35 +78,6 @@ class RecipeLibraryTest extends TestCase
         return $out;
     }
 
-    /** "r,g,b" or "r,g,b,a" of a hex or rgba() colour as [r,g,b,a], or null when unreadable. */
-    private static function rgba( string $c ): ?array
-    {
-        $c = trim( $c );
-        if ( 1 === preg_match( '/^#([0-9a-f]{3}|[0-9a-f]{6})$/i', $c, $m ) ) {
-            $h = $m[1];
-            if ( 3 === strlen( $h ) ) {
-                $h = $h[0] . $h[0] . $h[1] . $h[1] . $h[2] . $h[2];
-            }
-            return [ hexdec( substr( $h, 0, 2 ) ), hexdec( substr( $h, 2, 2 ) ), hexdec( substr( $h, 4, 2 ) ), 1.0 ];
-        }
-        if ( 1 === preg_match( '/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([0-9.]+)\s*)?\)$/i', $c, $m ) ) {
-            return [ (int) $m[1], (int) $m[2], (int) $m[3], isset( $m[4] ) ? (float) $m[4] : 1.0 ];
-        }
-        return null;
-    }
-
-    /** A language colour as an opaque hex: an rgba() colour is composited over the language's own `bg`. */
-    private static function opaque( string $colour, string $bg ): ?string
-    {
-        $c = self::rgba( $colour );
-        $b = self::rgba( $bg );
-        if ( null === $c || null === $b ) {
-            return null;
-        }
-        $mix = static fn ( int $f, int $g ): int => (int) round( $f * $c[3] + $g * ( 1 - $c[3] ) );
-        return sprintf( '#%02x%02x%02x', $mix( $c[0], $b[0] ), $mix( $c[1], $b[1] ), $mix( $c[2], $b[2] ) );
-    }
-
     /**
      * What is wrong with a recipe's `pairs` for ONE language ([] = fine). A pair is [foregroundRole, backgroundRole] with an
      * optional third element 'large' (large text: 3.0 instead of 4.5). A role the language does not define (surface-glass in a
@@ -141,14 +114,14 @@ class RecipeLibraryTest extends TestCase
                 $skipped[] = sprintf( '%s: pair %s/%s skipped (the language does not define %s)', (string) $lang['id'], $pair[0], $pair[1], is_string( $fg ) ? $pair[1] : $pair[0] );
                 continue;
             }
-            $f = self::opaque( $fg, $bg );
-            $k = self::opaque( $bk, $bg );
+            $f = Colour::opaque( $fg, $bg );
+            $k = Colour::opaque( $bk, $bg );
             if ( null === $f || null === $k ) {
                 $bad[] = "pair $i has an unreadable colour";
                 continue;
             }
             $need  = isset( $pair[2] ) ? 3.0 : 4.5;
-            $ratio = DesignLanguages::contrast( $f, $k );
+            $ratio = Colour::contrast( $f, $k );
             if ( $ratio < $need ) {
                 $bad[] = sprintf( '%s on %s is %.2f:1, needs %.1f', $pair[0], $pair[1], $ratio, $need );
             }
@@ -282,7 +255,7 @@ class RecipeLibraryTest extends TestCase
         }
         preg_match_all( '/#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)/', $markup, $m );
         foreach ( $m[0] as $c ) {
-            $rgba = self::rgba( strtolower( $c ) );
+            $rgba = Colour::rgba( strtolower( $c ) );
             $neutral = null !== $rgba && ( ( 255 === $rgba[0] && 255 === $rgba[1] && 255 === $rgba[2] ) || ( 0 === $rgba[0] && 0 === $rgba[1] && 0 === $rgba[2] ) );
             if ( ! $neutral ) {
                 $bad[] = $c;

@@ -1,0 +1,73 @@
+# Frozen, SHRINK-ONLY baseline of button cells that fail the contrast proof in tests/KitAdaptersTest.php
+# (label vs fill 4.5, an outline that carries the shape vs its surface 3.0, rest and hover). The bounds are NOT relaxed:
+# these are known defects waiting for a ruling (Task 4 report). Never add a line to make the test pass; remove lines as
+# they are fixed and lower CONTRAST_BASELINE_CAP in the test to the new count.
+#
+# Line: kit|language|role|on|surface|state|check   (surface: bg, surface, accent, or photo = overlay over #808080)
+
+# A. Accent band, transparent treatments: the pinned table inks outline/ghost with `inverse` on an accent band; inverse
+#    is not readable on a light accent (glass-dark, tech-mono, playful-pastel, luxe) or below 4.5 on brutalist-flat.
+#    The language's guaranteed pair on accent is accent-text.
+outline-2|brutalist-flat|control|accent|accent|rest|label
+outline-2|glass-dark|control|accent|accent|rest|label
+outline-2|glass-dark|control|accent|accent|rest|outline
+outline-2|luxe|control|accent|accent|rest|label
+outline-2|luxe|control|accent|accent|rest|outline
+outline-2|playful-pastel|control|accent|accent|rest|label
+outline-2|playful-pastel|control|accent|accent|rest|outline
+outline-2|tech-mono|control|accent|accent|rest|label
+outline-2|tech-mono|control|accent|accent|rest|outline
+soft-solid|brutalist-flat|control-secondary|accent|accent|hover|label
+soft-solid|brutalist-flat|control-secondary|accent|accent|rest|label
+soft-solid|glass-dark|control-secondary|accent|accent|hover|label
+soft-solid|glass-dark|control-secondary|accent|accent|rest|label
+soft-solid|luxe|control-secondary|accent|accent|hover|label
+soft-solid|luxe|control-secondary|accent|accent|rest|label
+soft-solid|playful-pastel|control-secondary|accent|accent|hover|label
+soft-solid|playful-pastel|control-secondary|accent|accent|rest|label
+soft-solid|tech-mono|control-secondary|accent|accent|hover|label
+soft-solid|tech-mono|control-secondary|accent|accent|rest|label
+
+# B. on(inverse) = text: in dark languages text and inverse are both light, so the fill-swap/invert hover of an
+#    inverse-outlined button (accent band or photo) fills inverse under a text label (about 1.0:1).
+outline-2|glass-dark|control|accent|accent|hover|label
+outline-2|glass-dark|control|dark|photo|hover|label
+outline-2|luxe|control|accent|accent|hover|label
+outline-2|luxe|control|dark|photo|hover|label
+outline-2|tech-mono|control|accent|accent|hover|label
+outline-2|tech-mono|control|dark|photo|hover|label
+
+# C. Fill-swap of a SOLID button on a photo: the hover goes transparent with the fill colour as ink; for outline-2's
+#    secondary that ink is `text`, dark in every light language, on a dark scrim.
+outline-2|bold-vibrant|control-secondary|dark|photo|hover|label
+outline-2|bold-vibrant|control-secondary|dark|photo|hover|outline
+outline-2|brutalist-flat|control-secondary|dark|photo|hover|label
+outline-2|brutalist-flat|control-secondary|dark|photo|hover|outline
+outline-2|corporate-trust|control-secondary|dark|photo|hover|label
+outline-2|corporate-trust|control-secondary|dark|photo|hover|outline
+outline-2|editorial|control-secondary|dark|photo|hover|label
+outline-2|editorial|control-secondary|dark|photo|hover|outline
+outline-2|organic-warm|control-secondary|dark|photo|hover|label
+outline-2|organic-warm|control-secondary|dark|photo|hover|outline
+outline-2|playful-pastel|control-secondary|dark|photo|hover|label
+outline-2|playful-pastel|control-secondary|dark|photo|hover|outline
+outline-2|soft-saas|control-secondary|dark|photo|hover|label
+outline-2|soft-saas|control-secondary|dark|photo|hover|outline
+
+# D. Fill-swap of the solid (surface) button on an accent band: the hover goes transparent with `surface` as ink,
+#    not readable on a light accent (playful-pastel) or below 4.5 on brutalist-flat.
+outline-2|brutalist-flat|control-secondary|accent|accent|hover|label
+outline-2|playful-pastel|control-secondary|accent|accent|hover|label
+outline-2|playful-pastel|control-secondary|accent|accent|hover|outline
+
+# E. soft-solid x playful-pastel / brutalist-flat: its secondary (outline of `accent`) puts accent text on the light
+#    section; those accents are not AA as text on their own bg/surface. A real kit x language incompatibility: no
+#    table change fixes it; the kit vocabulary has no language-level `avoids`.
+soft-solid|brutalist-flat|control-secondary|light|bg|hover|label
+soft-solid|brutalist-flat|control-secondary|light|bg|rest|label
+soft-solid|brutalist-flat|control-secondary|light|surface|hover|label
+soft-solid|brutalist-flat|control-secondary|light|surface|rest|label
+soft-solid|playful-pastel|control-secondary|light|bg|hover|label
+soft-solid|playful-pastel|control-secondary|light|bg|rest|label
+soft-solid|playful-pastel|control-secondary|light|surface|hover|label
+soft-solid|playful-pastel|control-secondary|light|surface|rest|label
