@@ -168,6 +168,30 @@ class SectionRecipesTest extends TestCase
         $this->assertSame([], SectionRecipes::suggest(SectionRecipes::LAYOUTS, []));
     }
 
+    public function testSuggestCanBeRestrictedToRolesAndBackgrounds(): void
+    {
+        $hero = SectionRecipes::suggest([], [], 10, ['hero']);
+        $this->assertNotEmpty($hero);
+        foreach ($hero as $name) {
+            $this->assertSame('hero', ((array) SectionRecipes::tags($name))['role']);
+        }
+        $bg = SectionRecipes::suggest([], [], 50, [], ['gradient', 'image']);
+        $this->assertNotEmpty($bg);
+        foreach ($bg as $name) {
+            $this->assertContains(((array) SectionRecipes::tags($name))['background'], ['gradient', 'image']);
+        }
+        // Restrictions combine with the avoid lists and the limit; empty arrays restrict nothing.
+        $this->assertSame(SectionRecipes::suggest(['grid'], [], 3), SectionRecipes::suggest(['grid'], [], 3, [], []));
+        foreach (SectionRecipes::suggest(['grid'], [], 50, [], ['gradient']) as $name) {
+            $t = (array) SectionRecipes::tags($name);
+            $this->assertNotSame('grid', $t['layout']);
+            $this->assertSame('gradient', $t['background']);
+        }
+        $this->assertCount(1, SectionRecipes::suggest([], [], 1, [], ['gradient', 'image']));
+        $this->assertSame([], SectionRecipes::suggest([], [], 3, ['no-such-role']));
+        $this->assertSame($bg, SectionRecipes::suggest([], [], 50, [], ['gradient', 'image']), 'deterministic');
+    }
+
     public function testUnknownRecipeReturnsNull(): void
     {
         $this->assertNull(SectionRecipes::recipe('does-not-exist'));

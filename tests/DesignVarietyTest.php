@@ -241,6 +241,9 @@ class DesignVarietyTest extends TestCase
         };
         $seen = 0;
         foreach ( $advice['findings'] as $f ) {
+            if ( ! in_array( $f['code'], [ 'REPEATED_LAYOUT', 'CARD_GRID_OVERUSE' ], true ) ) {
+                continue; // the other codes choose by what fixes them (testSuggestionsFixTheFinding)
+            }
             $this->assertLessThanOrEqual( 3, count( $f['try'] ) );
             foreach ( $f['try'] as $name ) {
                 ++$seen;
@@ -379,6 +382,113 @@ class DesignVarietyTest extends TestCase
         $this->assertNotEmpty( $f['try'] );
         foreach ( $f['try'] as $name ) {
             $this->assertNotSame( 'split', $byName[ $name ] );
+        }
+    }
+
+    /** a section holding a column that holds a row of $n columns, each with $mods */
+    private function nestedSection( int $n, array $mods, string $rowName = 'row', array $bg = [ 'color' => '#ffffff' ] ): string
+    {
+        $cols = '';
+        for ( $i = 0; $i < $n; ++$i ) {
+            $inner = '';
+            foreach ( $mods as $m ) {
+                $inner .= $this->block( $m, [ 'builderVersion' => '5.14.0' ] );
+            }
+            $cols .= $this->block( 'column' === $rowName ? 'column' : 'column-inner', [ 'module' => [ 'advanced' => [ 'type' => [ 'desktop' => [ 'value' => '1_3' ] ] ] ] ], $inner );
+        }
+        $nested = $this->block( $rowName, [], $cols );
+
+        return $this->block( 'section', [ 'module' => [ 'decoration' => [ 'background' => [ 'desktop' => [ 'value' => $bg ] ] ] ] ], $this->block( 'row', [], $this->block( 'column', [], $nested ) ) );
+    }
+
+    public function testNestedCardGridsAreDetectedAndFlagged(): void
+    {
+        foreach ( [ 'row', 'row-inner' ] as $rowName ) {
+            $s = fn () => $this->nestedSection( 3, [ 'blurb' ], $rowName );
+            $fp = DesignVariety::fingerprints( $this->page( $s() ) )[0];
+            $this->assertTrue( $fp['cards'], $rowName );
+            $this->assertSame( 'grid', DesignVariety::tagLayout( $fp ) );
+            $advice = DesignVariety::advise( $this->page( $s(), $s(), $s() ) );
+            $this->assertContains( 'CARD_GRID_OVERUSE', $this->codes( $advice ), $rowName );
+            $this->assertContains( 'REPEATED_LAYOUT', $this->codes( $advice ), $rowName );
+        }
+        $four = DesignVariety::fingerprints( $this->page( $this->nestedSection( 4, [ 'blurb' ], 'row-inner' ) ) )[0];
+        $this->assertTrue( $four['cards'] );
+    }
+
+    public function testNestedRowsThatAreNotCardGrids(): void
+    {
+        $this->assertFalse( DesignVariety::fingerprints( $this->page( $this->nestedSection( 2, [ 'blurb' ] ) ) )[0]['cards'], 'two columns' );
+        $this->assertFalse( DesignVariety::fingerprints( $this->page( $this->nestedSection( 2, [ 'blurb' ], 'row-inner' ) ) )[0]['cards'] );
+        // Three nested columns that differ.
+        $cols = $this->block( 'column-inner', [], $this->block( 'blurb', [] ) ) . $this->block( 'column-inner', [], $this->block( 'text', [] ) ) . $this->block( 'column-inner', [], $this->block( 'blurb', [] ) );
+        $differ = $this->block( 'section', [], $this->block( 'row', [], $this->block( 'column', [], $this->block( 'row-inner', [], $cols ) ) ) );
+        $this->assertFalse( DesignVariety::fingerprints( $this->page( $differ ) )[0]['cards'] );
+        // Empty nested columns are not cards either.
+        $empty = $this->block( 'section', [], $this->block( 'row', [], $this->block( 'column', [], $this->block( 'row-inner', [], str_repeat( $this->block( 'column-inner', [], '' ), 3 ) ) ) ) );
+        $this->assertFalse( DesignVariety::fingerprints( $this->page( $empty ) )[0]['cards'] );
+    }
+
+    public function testDirectBlurbGroupAndFlexWidthCardRowsAreDetected(): void
+    {
+        // blurb per column (direct row)
+        $this->assertTrue( DesignVariety::fingerprints( $this->page( $this->section( [ [ [ 'blurb' ], [ 'blurb' ], [ 'blurb' ] ] ] ) ) )[0]['cards'] );
+        // group per column: each column holds one group that holds the card modules
+        $col = fn () => $this->block( 'column', [], $this->block( 'group', [], $this->block( 'image', [] ) . $this->block( 'text', [] ) ) );
+        $grp = $this->block( 'section', [], $this->block( 'row', [], $col() . $col() . $col() ) );
+        $this->assertTrue( DesignVariety::fingerprints( $this->page( $grp ) )[0]['cards'] );
+        // flex-width row: columnStructure "8_24,8_24,8_24"
+        $fcol = fn () => $this->block( 'column', [ 'module' => [ 'advanced' => [ 'type' => [ 'desktop' => [ 'value' => '8_24' ] ] ] ] ], $this->block( 'blurb', [] ) );
+        $flex = $this->block( 'section', [], $this->block( 'row', [ 'module' => [ 'advanced' => [ 'columnStructure' => [ 'desktop' => [ 'value' => '8_24,8_24,8_24' ] ] ] ] ], $fcol() . $fcol() . $fcol() ) );
+        $fp   = DesignVariety::fingerprints( $this->page( $flex ) )[0];
+        $this->assertTrue( $fp['cards'] );
+        $this->assertSame( '8_24,8_24,8_24|blurb', $fp['layout'] );
+    }
+
+    public function testASectionNestedInsideDoesNotContributeItsRows(): void
+    {
+        $cols  = str_repeat( $this->block( 'column-inner', [], $this->block( 'blurb', [] ) ), 3 );
+        $inner = $this->block( 'section', [], $this->block( 'row', [], $this->block( 'column', [], $this->block( 'row-inner', [], $cols ) ) ) );
+        $outer = $this->block( 'section', [], $this->block( 'row', [], $this->block( 'column', [], $inner ) ) );
+        $fps   = DesignVariety::fingerprints( $this->page( $outer ) );
+        $this->assertFalse( $fps[0]['cards'], 'the outer section does not count rows of a nested section' );
+        $this->assertTrue( $fps[1]['cards'], 'the nested section is its own entry' );
+    }
+
+    public function testSuggestionsFixTheFinding(): void
+    {
+        $tags = static function ( string $name ): array {
+            return (array) SectionRecipes::tags( $name );
+        };
+        $names = SectionRecipes::names();
+
+        // FLAT_BACKGROUNDS: only recipes with a gradient or image background.
+        $flat = $this->finding( DesignVariety::advise( $this->page( $this->cardSection(), $this->cardSection(), $this->cardSection() ) ), 'FLAT_BACKGROUNDS' );
+        $this->assertNotEmpty( $flat['try'] );
+        foreach ( $flat['try'] as $name ) {
+            $this->assertContains( $name, $names );
+            $this->assertContains( $tags( $name )['background'], [ 'gradient', 'image' ], $name );
+        }
+
+        // NO_FOCAL_ELEMENT: only hero recipes (even when the plain first section is a grid).
+        $plain  = $this->section( [ [ [ 'text' ], [ 'text' ] ] ], [ 'color' => '#ffffff' ] );
+        $noFocal = $this->finding( DesignVariety::advise( $this->page( $plain, $this->section( [ [ [ 'text' ] ] ], self::GRADIENT ), $plain ) ), 'NO_FOCAL_ELEMENT' );
+        $this->assertNotNull( $noFocal );
+        $this->assertNotEmpty( $noFocal['try'] );
+        foreach ( $noFocal['try'] as $name ) {
+            $this->assertSame( 'hero', $tags( $name )['role'], $name );
+        }
+
+        // NO_MOTION_OR_DEPTH: nothing to suggest, and the message says how (shadow, overlap, animation).
+        $sections = [];
+        for ( $i = 0; $i < 5; ++$i ) {
+            $sections[] = $this->section( [ [ array_fill( 0, 1 + $i % 3, 'text' ) ] ], [ 'color' => '#eeeeee' ] );
+        }
+        $motion = $this->finding( DesignVariety::advise( $this->page( ...$sections ) ), 'NO_MOTION_OR_DEPTH' );
+        $this->assertNotNull( $motion );
+        $this->assertSame( [], $motion['try'] );
+        foreach ( [ 'box shadow', 'overlap', 'animation', 'get_style_guide' ] as $word ) {
+            $this->assertStringContainsString( $word, $motion['message'] );
         }
     }
 }

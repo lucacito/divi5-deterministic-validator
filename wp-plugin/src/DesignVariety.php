@@ -152,7 +152,9 @@ final class DesignVariety
                 range( 0, $n - 1 ),
                 'Every section has a plain or no background, so the page reads as one flat sheet. Give at least one section a gradient or an image, or alternate two clearly different colors.',
                 $now,
-                range( 0, $n - 1 )
+                [],
+                [],
+                [ 'gradient', 'image' ]
             );
         }
 
@@ -163,7 +165,8 @@ final class DesignVariety
                 [ 0 ],
                 'The first section (section 1) has no background image or gradient, no image and no large heading (48px, 3em or 4vw and up), so nothing on the first screen leads the eye. Open with a hero: a big headline over an image or a gradient.',
                 $now,
-                [ 0 ]
+                [],
+                [ 'hero' ]
             );
         }
 
@@ -177,9 +180,12 @@ final class DesignVariety
                 $findings[] = self::finding(
                     'NO_MOTION_OR_DEPTH',
                     range( 0, $n - 1 ),
-                    sprintf( 'Nothing on these %d sections has a shadow, a transform, a position, an animation or a scroll effect, so the page is completely flat. A soft shadow on cards or a gentle entrance animation adds depth.', $n ),
+                    sprintf( 'Nothing on these %d sections has a shadow, a transform, a position, an animation or a scroll effect, so the page is completely flat. Add depth to a few modules the way get_style_guide teaches: a soft box shadow on cards (module.decoration.boxShadow), a card or image that overlaps the section above it (a negative margin), or a gentle entrance animation (decoration.animation). No recipe is suggested because depth is a style on a module, not a layout.', $n ),
                     $now,
-                    range( 0, $n - 1 )
+                    [],
+                    [],
+                    [],
+                    false
                 );
             }
         }
@@ -243,9 +249,11 @@ final class DesignVariety
      * @param list<int>                                                                                    $sections 0-based
      * @param list<array{layout:string,cards:bool,background:string,focal:bool,depth:bool}>                $all
      * @param list<int>                                                                                    $avoid    indexes whose tag layouts the suggestions must not use
+     * @param list<string>                                                                                 $onlyRoles       suggest only recipes of these roles (empty: any)
+     * @param list<string>                                                                                 $onlyBackgrounds suggest only recipes with these background tags (empty: any)
      * @return array{code:string,sections:list<int>,message:string,try:list<string>}
      */
-    private static function finding( string $code, array $sections, string $message, array $all, array $avoid ): array
+    private static function finding( string $code, array $sections, string $message, array $all, array $avoid, array $onlyRoles = [], array $onlyBackgrounds = [], bool $suggest = true ): array
     {
         $layouts = [];
         foreach ( $avoid as $i ) {
@@ -256,7 +264,7 @@ final class DesignVariety
             'code'     => $code,
             'sections' => array_values( $sections ),
             'message'  => $message,
-            'try'      => SectionRecipes::suggest( array_keys( $layouts ), [], 3 ),
+            'try'      => $suggest ? SectionRecipes::suggest( array_keys( $layouts ), [], 3, $onlyRoles, $onlyBackgrounds ) : [],
         ];
     }
 
@@ -283,22 +291,14 @@ final class DesignVariety
         }
 
         $structures = [];
-        $cards      = false;
         foreach ( $rows as $row ) {
-            $columns = self::columnsOf( $row );
-            $s       = self::structure( $row, $columns );
+            $s = self::structure( $row, self::columnsOf( $row ) );
             if ( '' !== $s ) {
                 $structures[] = $s;
             }
-            if ( count( $columns ) >= 3 ) {
-                $first = self::modules( $columns[0] );
-                $same  = [] !== $first;
-                foreach ( $columns as $c ) {
-                    $same = $same && self::modules( $c ) === $first;
-                }
-                $cards = $cards || $same;
-            }
         }
+        // Direct rows and rows nested anywhere under the section's columns (column > row > column is how pages are built).
+        $cards = self::hasCards( $section );
 
         if ( $rows ) {
             $sequence = [];
@@ -316,6 +316,39 @@ final class DesignVariety
             'focal'      => self::isFocal( $section ),
             'depth'      => self::hasDepth( $section ),
         ];
+    }
+
+    /** True when a row under $block (any depth, never inside a nested section) is a card grid. */
+    private static function hasCards( Block $block ): bool
+    {
+        foreach ( $block->children() as $child ) {
+            if ( 'divi/section' === $child->name() ) {
+                continue;
+            }
+            if ( 'divi/row' === $child->name() || 'divi/row-inner' === $child->name() ) {
+                $columns = [];
+                foreach ( $child->children() as $c ) {
+                    if ( 'divi/column' === $c->name() || 'divi/column-inner' === $c->name() ) {
+                        $columns[] = $c;
+                    }
+                }
+                if ( count( $columns ) >= 3 ) {
+                    $first = self::modules( $columns[0] );
+                    $same  = [] !== $first;
+                    foreach ( $columns as $c ) {
+                        $same = $same && self::modules( $c ) === $first;
+                    }
+                    if ( $same ) {
+                        return true;
+                    }
+                }
+            }
+            if ( self::hasCards( $child ) ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** @return list<Block> */

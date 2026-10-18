@@ -247,13 +247,16 @@ final class SectionRecipes
 
     /**
      * Names of recipes whose layout and role are not in the avoid lists, in catalog order
-     * (deterministic), at most $limit.
+     * (deterministic), at most $limit. $onlyRoles and $onlyBackgrounds, when not empty, keep only recipes whose role /
+     * background tag is in the list (an empty list means no restriction).
      *
      * @param list<string> $avoidLayouts
      * @param list<string> $avoidRoles
+     * @param list<string> $onlyRoles
+     * @param list<string> $onlyBackgrounds
      * @return list<string>
      */
-    public static function suggest( array $avoidLayouts, array $avoidRoles, int $limit = 3 ): array
+    public static function suggest( array $avoidLayouts, array $avoidRoles, int $limit = 3, array $onlyRoles = [], array $onlyBackgrounds = [] ): array
     {
         $out = [];
         foreach ( self::all() as $r ) {
@@ -262,6 +265,10 @@ final class SectionRecipes
             }
             $tags = isset( $r['tags'] ) && is_array( $r['tags'] ) ? $r['tags'] : null;
             if ( null === $tags || in_array( $tags['layout'] ?? null, $avoidLayouts, true ) || in_array( $tags['role'] ?? null, $avoidRoles, true ) ) {
+                continue;
+            }
+            if ( ( [] !== $onlyRoles && ! in_array( $tags['role'] ?? null, $onlyRoles, true ) )
+                || ( [] !== $onlyBackgrounds && ! in_array( $tags['background'] ?? null, $onlyBackgrounds, true ) ) ) {
                 continue;
             }
             $out[] = $r['name'];
