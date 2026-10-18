@@ -84,7 +84,7 @@
     "section_padding": "96px top and bottom on desktop, 64px on tablet, 44px on phone. Let sections touch and overlap a little instead of leaving hard gaps.",
     "shadow": "Soft and warm: 0 18px 40px at 10% of the text colour, never grey. No borders on cards; separate blocks by changing the tint (sand to cream), not by drawing lines.",
     "motion": "subtle",
-    "rhythm": "Earthy tints in layers: sand background for the hero, cream surface for the next section, then a deep moss band with the inverse text colour, then back to sand. Let one image or card overlap the edge of the section above it. Use a small hand-feel divider or a curved edge between tints, and keep every section calm with one idea each.",
+    "rhythm": "Earthy tints in layers: sand background for the hero, cream surface for the next section, then a deep moss band with the inverse text colour, then back to sand. Let one image or card overlap the edge of the section above it. Use the section divider style wave or curve between tints, and keep every section calm with one idea each.",
     "favors": ["stacked", "overlap", "zigzag", "carousel"],
     "avoids": ["bento", "grid", "list"],
     "hero": "Warm and inviting: a large friendly serif headline over a sand background, two relaxed lines of copy and a pill-shaped moss button, beside a photograph with arch-shaped corners that overlaps the section below.",
@@ -112,9 +112,9 @@
     },
     "radius": "Almost none: 2px on buttons, inputs and cards, images square. Never rounder than 4px anywhere.",
     "section_padding": "88px top and bottom on desktop, 64px on tablet, 40px on phone. Tight, even, repeated: the same padding on every section.",
-    "shadow": "No shadows at all. Structure comes from 1px hairline borders in the border colour and from visible grid lines between cells. The accent colour is used only for the primary button, links and one small marker per section.",
+    "shadow": "No shadows at all. Structure comes from 1px hairline borders in the border colour and from visible grid lines between cells. The accent colour is reserved for the primary button and one small marker per section; links stay in the text colour with an underline.",
     "motion": "none",
-    "rhythm": "One near-black background for the whole page. Divide sections with a single hairline rule instead of a colour change, and lay features and proof out on a ruled grid of equal cells. Use small monospace labels for numbers, versions and steps. Reserve the neon accent for one thing per screen.",
+    "rhythm": "One near-black background for the whole page. Divide sections with a single hairline rule instead of a colour change, and lay features and proof out on a ruled grid of equal cells. Use small monospace labels for numbers, versions and steps. Reserve the neon accent for the primary button and one small marker per section, nothing else.",
     "favors": ["grid", "bento", "list", "form", "stacked"],
     "avoids": ["carousel", "overlap", "zigzag"],
     "hero": "Left-aligned and literal: a small monospace eyebrow that looks like a command or version label, a tight geometric headline, two lines of plain copy, a neon button and a quiet bordered button, and a ruled code-like card or screenshot on the right.",
@@ -142,12 +142,12 @@
     },
     "radius": "Big and round: 36px on cards and panels, 999px on buttons, tags and avatars, circles for icons and some images. Mix in one blob or tilted shape per page.",
     "section_padding": "88px top and bottom on desktop, 60px on tablet, 40px on phone. Generous but lively; cards sit close together.",
-    "shadow": "A chunky offset shadow in the text colour (6px right, 6px down, no blur) on buttons and a few cards, with a 2px border in the text colour. Never a soft grey shadow.",
+    "shadow": "A chunky offset look: a 2px border in the text colour on buttons and cards, with the closest shadow preset on the button module, or an offset shadow in the text colour where the box shadow settings allow it. Never a soft grey shadow. Never use the pink as a text or link colour (pink on cream or any pastel is far below readable contrast); pink is for button and tag backgrounds only, with the deep indigo text colour on top.",
     "motion": "lively",
-    "rhythm": "Give each section its own pastel in sequence: cream, then butter yellow (#ffe9a8), mint (#c9f0dd), sky (#cfe6ff), lilac (#e2d6ff) and back to cream. White cards sit on top of the tints. Keep text in the deep indigo text colour on every tint. Add one sticker-like shape, star or squiggle per section, and let buttons bounce on hover.",
+    "rhythm": "Give each section its own pastel in sequence: cream, then butter yellow (#ffe9a8), mint (#c9f0dd), sky (#cfe6ff), lilac (#e2d6ff) and back to cream. White cards sit on top of the tints. Keep text in the deep indigo text colour on every tint. Add one icon or one of the built-in pack shapes (get_image_guide) per section, and on hover scale buttons to 108%.",
     "favors": ["centered", "carousel", "overlap", "zigzag", "band"],
     "avoids": ["list", "form"],
-    "hero": "Centered and chatty: a big rounded headline with one word highlighted in a pink pill, a short cheerful sentence, a big pink button and a small secondary link, with a tilted photo card and a floating shape on each side.",
+    "hero": "Centered and chatty: a big rounded headline in the deep indigo text colour, a small pink pill-shaped tag above it, a short cheerful sentence, a big pink pill-shaped button and a small secondary link, with a tilted photo card beside the text.",
     "cta": "A lilac or butter-yellow band with a big friendly headline, a one-line promise and a large pink button with a chunky outline; a tiny smiling note below it."
   },
   {
@@ -177,7 +177,7 @@
     "rhythm": "White and pale blue-grey in alternation, with one deep navy band that carries the numbers (years, clients, results) in the inverse text colour. Open each section with a small blue eyebrow and a plain headline. Back every claim with a figure, a logo row, a certificate or a named testimonial, and use checklists and numbered steps for how it works.",
     "favors": ["list", "grid", "split", "band", "form"],
     "avoids": ["bento", "carousel", "overlap"],
-    "hero": "Clear and sober: a two-column hero with a plain navy headline that states the service and who it is for, one supporting sentence, a blue primary button and a text link for pricing or contact, next to a real-looking team or office photograph and a row of client logos underneath.",
+    "hero": "Clear and sober: a two-column hero with a plain navy headline that states the service and who it is for, one supporting sentence, a blue primary button and a text link for pricing or contact, next to a team or office photograph and a row of client logos underneath. The photograph and logos are placeholders the owner will replace: never invent client names, logos, quotes or statistics.",
     "cta": "A deep navy band with a short headline in the inverse colour, one sentence about the next step (a call, a consultation, a quote) and a single button in the surface colour, with the phone number beside it."
   }
 ]

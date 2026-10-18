@@ -195,6 +195,31 @@ class DesignLanguagesTest extends TestCase
         }
     }
 
+    public function testProseDoesNotPromiseWhatTheGuidesDoNotProve(): void
+    {
+        $playful = DesignLanguages::get('playful-pastel');
+        $this->assertStringNotContainsString('highlighted', $playful['hero']);
+        $this->assertStringNotContainsString('bounce', $playful['rhythm']);
+        $this->assertStringContainsString('placeholder', DesignLanguages::get('corporate-trust')['hero']);
+        $this->assertStringContainsString('never invent client names', DesignLanguages::get('corporate-trust')['hero']);
+        $this->assertStringContainsString('never use the pink as a text or link colour', strtolower($playful['shadow']));
+
+        $dead = ['highlighted', 'bounce', 'hand-feel', 'sticker', 'squiggle', 'floating shape', 'no blur', 'real-looking'];
+        foreach (DesignLanguages::ids() as $id) {
+            $lang = DesignLanguages::get($id);
+            foreach (['rhythm', 'hero', 'shadow'] as $field) {
+                foreach ($dead as $phrase) {
+                    $this->assertStringNotContainsStringIgnoringCase($phrase, $lang[$field], "$id.$field promises \"$phrase\"");
+                }
+            }
+        }
+        // tech-mono names ONE rule for the neon accent, in both places.
+        $tech = DesignLanguages::get('tech-mono');
+        $this->assertStringContainsString('primary button and one small marker per section', $tech['shadow']);
+        $this->assertStringContainsString('primary button and one small marker per section', $tech['rhythm']);
+        $this->assertStringNotContainsString('one thing per screen', $tech['rhythm']);
+    }
+
     public function testBodyFontsAreReadableFamilies(): void
     {
         $display = ['Pacifico', 'Lobster', 'Dancing Script', 'Great Vibes', 'Satisfy', 'Caveat', 'Permanent Marker', 'Kaushan Script', 'Sacramento', 'Allura'];
