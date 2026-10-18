@@ -327,6 +327,15 @@ class SectionRecipesTest extends TestCase
             $cards += $fp[0]['cards'] ? 1 : 0;
         }
         $this->assertLessThanOrEqual(2, $cards, 'not more than two of the batch measure as card grids');
+        // Every image in a recipe has its own alt (a screen reader must not hear the same text twice).
+        foreach (array_keys($batch) as $name) {
+            preg_match_all('/"alt":"((?:[^"\\\\]|\\\\.)*)"/', (string) SectionRecipes::rawMarkup($name), $m);
+            $this->assertSame(count($m[1]), count(array_unique($m[1])), "$name: every image alt is distinct");
+        }
+        // Placeholders are the only field labels (Divi keeps labels off): they get the muted colour, not Chrome's #757575.
+        foreach (['cta-split-form', 'contact-location-form', 'contact-details-form'] as $name) {
+            $this->assertStringContainsString('"placeholderFont":{"font":{"desktop":{"value":{"color":"{{aied:color:muted}}"}}}}', (string) SectionRecipes::rawMarkup($name), $name);
+        }
         // Every form keeps Divi's default receiver (the site admin email): no address is invented, none is written.
         foreach (['cta-split-form', 'contact-location-form', 'contact-details-form'] as $name) {
             $markup = (string) SectionRecipes::rawMarkup($name);
@@ -396,7 +405,7 @@ class SectionRecipesTest extends TestCase
         $parsed->root()->walk(static function (\Divi5Validator\Block $b) use (&$bad, $ok): void {
             $name = preg_replace('#^divi/#', '', $b->name());
             $values = [];
-            foreach (['title.innerContent.desktop.value', 'content.innerContent.desktop.value', 'button.innerContent.desktop.value.text', 'image.innerContent.desktop.value.alt'] as $path) {
+            foreach (['title.innerContent.desktop.value', 'content.innerContent.desktop.value', 'button.innerContent.desktop.value.text', 'image.innerContent.desktop.value.alt', 'beforeImage.innerContent.desktop.value.alt', 'afterImage.innerContent.desktop.value.alt'] as $path) {
                 $v = $b->attr($path);
                 if (is_string($v)) {
                     $values[] = $v;
@@ -442,6 +451,9 @@ class SectionRecipesTest extends TestCase
         $this->assertSame(['text: <p>hello@acme.com</p>', 'text: <p>+44 20 7946 0000</p>', 'text: <p>12 High Street, [Postcode and city]</p>', 'heading: Offer ends Friday'],
             self::inventedTexts($t('hello@acme.com') . $t('+44 20 7946 0000') . $t('12 High Street, [Postcode and city]') . $h('Offer ends Friday')),
             'invented contact details and deadlines are caught');
+        $ba = static fn (string $b, string $a): string => '<!-- wp:divi/before-after-image {"beforeImage":{"innerContent":{"desktop":{"value":{"src":"x","alt":' . json_encode($b) . '}}}},"afterImage":{"innerContent":{"desktop":{"value":{"src":"y","alt":' . json_encode($a) . '}}}}} /-->';
+        $this->assertSame(['before-after-image: Smith kitchen, 2019', 'before-after-image: Smith kitchen after our refit'], self::inventedTexts($ba('Smith kitchen, 2019', 'Smith kitchen after our refit')), 'invented before/after alts are caught');
+        $this->assertSame([], self::inventedTexts($ba('[Before: the view at the start]', '[After: the same view finished]')));
         $this->assertSame([], self::inventedTexts($t('Email') . $t('[Email address]') . $h('Opening hours') . $t('Before')));
         $this->assertSame([], self::inventedTexts($t('[0.0] out of 5') . $t('[00]%') . $t('[Client name] / [Role, company]') . $t('&mdash; [Founder first name]') . $t('Placeholder: replace 80% with a figure you can prove')));
     }
