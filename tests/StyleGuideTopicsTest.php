@@ -110,6 +110,16 @@ class StyleGuideTopicsTest extends TestCase
         $this->assertSame( StyleGuide::markdown(), $nulls );
     }
 
+    public function testAnEmptyStringTopicMeansNoTopicOnBothTransports(): void
+    {
+        [ $code, $text ] = $this->mcp( [ 'topic' => '' ] );
+        $this->assertNull( $code );
+        $this->assertSame( StyleGuide::markdown(), $text );
+        $r = $this->rest( [ 'topic' => '' ] );
+        $this->assertSame( 200, $r->get_status() );
+        $this->assertSame( [ 'guide' => StyleGuide::markdown() ], $r->get_data() );
+    }
+
     public function testMcpTopicIsServed(): void
     {
         $id = DesignLanguages::ids()[0];
@@ -126,6 +136,7 @@ class StyleGuideTopicsTest extends TestCase
         return [
             'array'  => [ [ 'topic' => [] ] ],
             'list'   => [ [ 'topic' => [ 'x' ] ] ],
+            'object' => [ [ 'topic' => [ 'a' => 'b' ] ] ],
             'number' => [ [ 'topic' => 5 ] ],
             'bool'   => [ [ 'topic' => true ] ],
         ];

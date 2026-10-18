@@ -437,4 +437,25 @@ class SectionRecipesTest extends TestCase
         $this->assertStringContainsString('come from a demo site and may not exist', $catalog);
         $this->assertStringContainsString('list_global_styles', $catalog);
     }
+
+    public function testTheRecipesAreReadOnceAndClearCacheReadsThemAgain(): void
+    {
+        SectionRecipes::clearCache();
+        $names = SectionRecipes::names();
+        $this->assertNotEmpty($names);
+
+        $cache = new \ReflectionProperty(SectionRecipes::class, 'cache');
+        $this->assertIsArray($cache->getValue(), 'the first call memoises');
+
+        // Plant a sentinel: a second call that re-read the file would not see it.
+        $cache->setValue(null, [['name' => 'memo-sentinel', 'title' => 't', 'description' => 'd', 'when' => 'w', 'stage' => 's', 'markup' => '']]);
+        try {
+            $this->assertSame(['memo-sentinel'], SectionRecipes::names(), 'the second call serves the memo without reading the file');
+            SectionRecipes::clearCache();
+            $this->assertNull($cache->getValue());
+            $this->assertSame($names, SectionRecipes::names(), 'clearCache() restores the file data');
+        } finally {
+            SectionRecipes::clearCache();
+        }
+    }
 }

@@ -39,12 +39,24 @@ final class SectionRecipes
         return [ 'any', ...DesignLanguages::ids() ];
     }
 
+    /** @var ?list<array{name:string,title:string,description:string,when:string,stage:string,tags?:array<string,mixed>,markup:string}> the decoded recipes, read once per request */
+    private static ?array $cache = null;
+
+    /** Forgets the memoised recipes (for tests that change the data in-process). */
+    public static function clearCache(): void
+    {
+        self::$cache = null;
+    }
+
     /** @return list<array{name:string,title:string,description:string,when:string,stage:string,tags?:array<string,mixed>,markup:string}> */
     private static function all(): array
     {
-        $raw = is_readable( self::DATA ) ? (string) file_get_contents( self::DATA ) : '';
-        $data = json_decode( $raw, true );
-        return is_array( $data ) ? $data : [];
+        if ( null === self::$cache ) {
+            $raw         = is_readable( self::DATA ) ? (string) file_get_contents( self::DATA ) : '';
+            $data        = json_decode( $raw, true );
+            self::$cache = is_array( $data ) ? $data : [];
+        }
+        return self::$cache;
     }
 
     /**

@@ -58,34 +58,124 @@ final class ShapeRegistryTest extends TestCase
     {
         $registry = ShapeRegistry::load();
         $this->assertNotEmpty( $registry->all(), 'the registry must be seeded (php scripts/seed-shape-registry.php)' );
-        $pending = $this->lines( 'ungrounded-recipe-paths.txt' );
-        $missing = [];
-        $seen    = [];
+        $markups = [];
         foreach ( SectionRecipes::names() as $name ) {
             $markup = SectionRecipes::rawMarkup( $name );
             $this->assertNotNull( $markup, "recipe $name should resolve" );
-            foreach ( ShapePaths::fromMarkup( (string) $markup ) as $path ) {
-                $seen[ $path ] = true;
-                if ( ! $registry->covers( $path ) && ! isset( $pending[ $path ] ) ) {
-                    $missing[ $path ][] = $name;
-                }
-            }
+            $markups[ $name ] = (string) $markup;
         }
+        $problems = $this->recipeProblems( $registry, $markups, $this->lines( 'ungrounded-recipe-paths.txt' ) );
         $lines = [];
-        foreach ( $missing as $path => $names ) {
+        foreach ( $problems['missing'] as $path => $names ) {
             $lines[] = $path . ' (' . implode( ', ', $names ) . ')';
         }
         $this->assertSame( [], $lines, "recipe paths with no export or render behind them:\n" . implode( "\n", $lines ) );
-
         // The frozen list of recipe paths still awaiting an export may only shrink: an entry that is now registered
         // (or no longer used by any recipe) must be deleted from it.
-        $stale = [];
-        foreach ( array_keys( $pending ) as $path ) {
-            if ( ! isset( $seen[ $path ] ) || $registry->covers( $path ) ) {
-                $stale[] = $path;
+        $this->assertSame( [], $problems['stale'], "remove from ungrounded-recipe-paths.txt:\n" . implode( "\n", $problems['stale'] ) );
+    }
+
+    /**
+     * A recipe uses leaves, so a recipe path counts only when it is a registered leaf (a registered prefix is not enough).
+     *
+     * @param array<string,string> $markups recipe name => markup
+     * @param array<string,int>    $pending the frozen list of recipe paths awaiting an export
+     * @return array{missing:array<string,list<string>>,stale:list<string>}
+     */
+    private function recipeProblems( ShapeRegistry $registry, array $markups, array $pending ): array
+    {
+        $missing = [];
+        $seen    = [];
+        foreach ( $markups as $name => $markup ) {
+            foreach ( ShapePaths::fromMarkup( $markup ) as $path ) {
+                $seen[ $path ] = true;
+                if ( ! $registry->coversLeaf( $path ) && ! isset( $pending[ $path ] ) ) {
+                    $missing[ $path ][] = (string) $name;
+                }
             }
         }
-        $this->assertSame( [], $stale, "remove from ungrounded-recipe-paths.txt:\n" . implode( "\n", $stale ) );
+        $stale = [];
+        foreach ( array_keys( $pending ) as $path ) {
+            if ( ! isset( $seen[ $path ] ) || $registry->coversLeaf( $path ) ) {
+                $stale[] = (string) $path;
+            }
+        }
+
+        return [ 'missing' => $missing, 'stale' => $stale ];
+    }
+
+    /**
+     * @param array<string,int> $frozen
+     * @return list<string> guide paths neither proven nor frozen
+     */
+    private function newGuidePaths( ShapeRegistry $registry, string $guideText, array $frozen ): array
+    {
+        $new = [];
+        foreach ( ShapePaths::fromGuideText( $guideText ) as $path ) {
+            if ( ! $registry->covers( $path ) && ! isset( $frozen[ $path ] ) ) {
+                $new[] = $path;
+            }
+        }
+
+        return $new;
+    }
+
+    /** @param list<string> $paths */
+    private function fakeRegistry( array $paths ): ShapeRegistry
+    {
+        $file = tempnam( sys_get_temp_dir(), 'aied-registry-' );
+        $this->assertNotFalse( $file );
+        $entries = array_map( static fn ( string $p ): array => [ 'path' => $p, 'how' => 'export', 'evidence' => 'fixtures/valid/page-17-newpage.json' ], $paths );
+        file_put_contents( $file, json_encode( [ 'divi' => 'x', 'shapes' => $entries ] ) );
+        $registry = ShapeRegistry::load( $file );
+        unlink( $file );
+
+        return $registry;
+    }
+
+    public function testCoversLeafRejectsAProperPrefixThatCoversAccepts(): void
+    {
+        $registry = $this->fakeRegistry( [ 'module.decoration.spacing.{bp}.value.padding.top' ] );
+        $this->assertTrue( $registry->coversLeaf( 'module.decoration.spacing.{bp}.value.padding.top' ) );
+        $this->assertFalse( $registry->coversLeaf( 'module.decoration.spacing.{bp}.value.padding' ), 'a container is not a leaf' );
+        $this->assertFalse( $registry->coversLeaf( 'module.decoration' ) );
+        $this->assertFalse( $registry->coversLeaf( 'module.decoration.spacing.{bp}.value.padding.top.extra' ) );
+        $this->assertTrue( $registry->covers( 'module.decoration.spacing.{bp}.value.padding' ), 'covers() still accepts a container, for guide text' );
+        // innerContent is not trimmed for leaves: only an exactly registered path counts.
+        $inner = $this->fakeRegistry( [ 'title.innerContent' ] );
+        $this->assertTrue( $inner->coversLeaf( 'title.innerContent' ) );
+        $this->assertFalse( $inner->coversLeaf( 'title.innerContent.desktop' ) );
+    }
+
+    public function testAnUnregisteredRecipePathFailsTheLint(): void
+    {
+        $registry = $this->fakeRegistry( [ 'module.decoration.spacing.{bp}.value.padding.top' ] );
+        $markup   = '<!-- wp:divi/heading {"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"1px"}}}}}},"title":{"decoration":{"font":{"font":{"desktop":{"value":{"zzinvented":"x"}}}}}}} /-->';
+        $found    = $this->recipeProblems( $registry, [ 'fake-recipe' => $markup ], [] );
+        $this->assertSame( [ 'title.decoration.font.font.{bp}.value.zzinvented' => [ 'fake-recipe' ] ], $found['missing'] );
+        // The same path frozen as ungrounded is tolerated, and then it is not stale while a recipe still uses it.
+        $frozen = $this->recipeProblems( $registry, [ 'fake-recipe' => $markup ], [ 'title.decoration.font.font.{bp}.value.zzinvented' => 0 ] );
+        $this->assertSame( [], $frozen['missing'] );
+        $this->assertSame( [], $frozen['stale'] );
+        // A frozen path that is now registered (or unused) is reported stale.
+        $stale = $this->recipeProblems( $this->fakeRegistry( [ 'title.decoration.font.font.{bp}.value.zzinvented' ] ), [ 'fake-recipe' => $markup ], [ 'title.decoration.font.font.{bp}.value.zzinvented' => 0, 'unused.path' => 1 ] );
+        $this->assertSame( [ 'title.decoration.font.font.{bp}.value.zzinvented', 'unused.path' ], $stale['stale'] );
+    }
+
+    public function testARecipePathThatIsOnlyAContainerOfARegisteredOneFails(): void
+    {
+        $registry = $this->fakeRegistry( [ 'module.decoration.spacing.{bp}.value.padding.top' ] );
+        $markup   = '<!-- wp:divi/heading {"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":"1px"}}}}}} /-->';
+        $found    = $this->recipeProblems( $registry, [ 'prefix-recipe' => $markup ], [] );
+        $this->assertSame( [ 'module.decoration.spacing.{bp}.value.padding' => [ 'prefix-recipe' ] ], $found['missing'] );
+    }
+
+    public function testANewUnregisteredGuidePathFailsTheRatchet(): void
+    {
+        $registry = $this->fakeRegistry( [ 'module.decoration.spacing.{bp}.value.padding.top' ] );
+        $text     = 'Set `module.decoration.spacing.desktop.value.padding.top` and `module.decoration.zzinvented.desktop.value.shape`.';
+        $this->assertSame( [ 'module.decoration.zzinvented.{bp}.value.shape' ], $this->newGuidePaths( $registry, $text, [] ) );
+        $this->assertSame( [], $this->newGuidePaths( $registry, $text, [ 'module.decoration.zzinvented.{bp}.value.shape' => 0 ] ), 'frozen legacy paths are tolerated' );
     }
 
     public function testRegistryEntriesAreWellFormed(): void
@@ -104,14 +194,7 @@ final class ShapeRegistryTest extends TestCase
 
     public function testNewGuidePathsMustBeRegisteredOrFrozen(): void
     {
-        $registry = ShapeRegistry::load();
-        $frozen = $this->lines( 'legacy-guide-paths.txt' );
-        $new = [];
-        foreach ( ShapePaths::fromGuideText( StyleGuide::markdown() ) as $path ) {
-            if ( ! $registry->covers( $path ) && ! isset( $frozen[ $path ] ) ) {
-                $new[] = $path;
-            }
-        }
+        $new = $this->newGuidePaths( ShapeRegistry::load(), StyleGuide::markdown(), $this->lines( 'legacy-guide-paths.txt' ) );
         $this->assertSame( [], $new, "guide paths neither proven nor frozen as legacy:\n" . implode( "\n", $new ) );
     }
 

@@ -70,13 +70,58 @@ class SectionRecipesLockstepTest extends TestCase
         $this->assertStringContainsString( 'hero', $text );
     }
 
+    public function testMcpUnknownLayoutAndMoodEachAnswerWithTheValidValues(): void
+    {
+        [ $code, $text ] = $this->mcp( [ 'layout' => 'nonsense' ] );
+        $this->assertNull( $code );
+        $this->assertStringContainsString( 'Unknown layout "nonsense"', $text );
+        $this->assertStringContainsString( 'centered', $text );
+
+        [ $code, $text ] = $this->mcp( [ 'mood' => 'nonsense' ] );
+        $this->assertNull( $code );
+        $this->assertStringContainsString( 'Unknown mood "nonsense"', $text );
+        $this->assertStringContainsString( 'any', $text );
+        $this->assertStringContainsString( 'glass-dark', $text );
+    }
+
+    public function testRestUnknownLayoutAndMoodEachAre200WithTheMessageAndNoNames(): void
+    {
+        $r = $this->rest( [ 'layout' => 'nonsense' ] );
+        $this->assertSame( 200, $r->get_status() );
+        $this->assertStringContainsString( 'Unknown layout "nonsense"', $r->get_data()['catalog'] );
+        $this->assertSame( [], $r->get_data()['names'] );
+
+        $r = $this->rest( [ 'mood' => 'nonsense' ] );
+        $this->assertSame( 200, $r->get_status() );
+        $this->assertStringContainsString( 'Unknown mood "nonsense"', $r->get_data()['catalog'] );
+        $this->assertSame( [], $r->get_data()['names'] );
+    }
+
+    public function testABadFilterIsRefusedEvenWhenANameIsGiven(): void
+    {
+        foreach ( [ [ 'role' => 5 ], [ 'layout' => [ 'x' ] ], [ 'mood' => true ] ] as $bad ) {
+            [ $code, $text ] = $this->mcp( [ 'name' => 'contact-form' ] + $bad );
+            $this->assertSame( -32602, $code, json_encode( $bad ) );
+            $this->assertStringContainsString( 'must be a string', $text );
+
+            $r = $this->rest( [ 'name' => 'contact-form' ] + $bad );
+            $this->assertSame( 400, $r->get_status(), json_encode( $bad ) );
+            $this->assertStringContainsString( 'must be a string', (string) $r->get_data()['error'] );
+            $this->assertArrayNotHasKey( 'markup', $r->get_data() );
+        }
+    }
+
     public function testMcpWithoutFiltersIsTheUnchangedCompactCatalog(): void
     {
         [ $code, $text ] = $this->mcp( [] );
         $this->assertNull( $code );
         $this->assertSame( SectionRecipes::catalog(), $text );
+        // Frozen: the unfiltered catalog is the compact one (a heading line, not the "(role=...)" filtered form).
+        $this->assertStringStartsWith( "# Divi 5 Section Recipes\n\nWhole proven, validated sections.", $text );
+        $this->assertStringNotContainsString( '(role=', $text );
+        $this->assertStringNotContainsString( '(layout=', $text );
         [ , $nulls ] = $this->mcp( [ 'role' => null, 'layout' => '', 'mood' => null ] );
-        $this->assertSame( SectionRecipes::catalog(), $nulls, 'null and empty string mean "no filter"' );
+        $this->assertSame( $text, $nulls, 'null and empty string mean "no filter"' );
     }
 
     public function testMcpNameWinsOverFilters(): void
@@ -117,6 +162,7 @@ class SectionRecipesLockstepTest extends TestCase
         $r = $this->rest( [] );
         $this->assertSame( 200, $r->get_status() );
         $this->assertSame( [ 'catalog' => SectionRecipes::catalog(), 'names' => SectionRecipes::names() ], $r->get_data() );
+        $this->assertStringStartsWith( "# Divi 5 Section Recipes\n\nWhole proven, validated sections.", $r->get_data()['catalog'] );
     }
 
     public function testRestRoleFilterReturnsTheFilteredCatalogAndTheMatchingNames(): void

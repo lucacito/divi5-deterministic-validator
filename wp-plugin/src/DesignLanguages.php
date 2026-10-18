@@ -19,13 +19,25 @@ final class DesignLanguages
 {
     private const DATA = __DIR__ . '/../data/design-languages.json';
 
+    /** @var ?list<array<string,mixed>> the decoded languages, read once per request */
+    private static ?array $cache = null;
+
+    /** Forgets the memoised languages (for tests that change the data in-process). */
+    public static function clearCache(): void
+    {
+        self::$cache = null;
+    }
+
     /** @return list<array<string,mixed>> */
     private static function all(): array
     {
+        if ( null !== self::$cache ) {
+            return self::$cache;
+        }
         $raw  = is_readable( self::DATA ) ? (string) file_get_contents( self::DATA ) : '';
         $data = json_decode( $raw, true );
         if ( ! is_array( $data ) ) {
-            return [];
+            return self::$cache = [];
         }
         $out = [];
         foreach ( $data as $lang ) {
@@ -33,7 +45,7 @@ final class DesignLanguages
                 $out[] = $lang;
             }
         }
-        return $out;
+        return self::$cache = $out;
     }
 
     /** @return list<string> */

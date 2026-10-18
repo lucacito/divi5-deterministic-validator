@@ -525,6 +525,23 @@ class DesignVarietyTest extends TestCase
         $this->assertNotEmpty( $f['try'] );
     }
 
+    public function testExclusionStopsTheFlaggedRecipeBeingSuggested(): void
+    {
+        // hero-cta, then card-grid-4 three times and blurb-grid three times: the hand-assigned layout tag of card-grid-4 is
+        // not the layout the fingerprint measures, so only the skeleton exclusion in DesignVariety::finding() keeps it out
+        // of its own fix list.
+        $advice = DesignVariety::advise( $this->recipePage( 'hero-cta', 'card-grid-4', 'card-grid-4', 'card-grid-4', 'blurb-grid', 'blurb-grid', 'blurb-grid' ) );
+        $this->assertNotNull( $advice );
+        $f = $this->finding( $advice, 'REPEATED_LAYOUT' );
+        $this->assertNotNull( $f, 'repeated card sections are flagged' );
+        $this->assertContains( 1, $f['sections'] );
+        $this->assertNotEmpty( $f['try'] );
+        $this->assertNotContains( 'card-grid-4', $f['try'] );
+        foreach ( $advice['findings'] as $any ) {
+            $this->assertNotContains( 'card-grid-4', $any['try'], $any['code'] );
+        }
+    }
+
     public function testASliderOrHeaderFirstSectionIsFocal(): void
     {
         $plain = $this->section( [ [ [ 'text' ] ] ], [ 'color' => '#ffffff' ] );

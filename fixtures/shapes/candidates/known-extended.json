@@ -1,0 +1,59 @@
+[
+    {
+        "id": "group-padding-with-heading",
+        "expect": "PASS",
+        "note": "A group holding a heading; the group's own padding is the module spacing family already registered by builder exports.",
+        "block": "group",
+        "children": [
+            { "block": "heading", "base": { "title": { "innerContent": { "desktop": { "value": "PROBEMARK group heading" } } } } }
+        ],
+        "set": {
+            "module.decoration.spacing.desktop.value.padding.top": "48px",
+            "module.decoration.spacing.desktop.value.padding.bottom": "48px"
+        }
+    },
+    {
+        "id": "heading-padding-inside-group",
+        "expect": "PASS",
+        "note": "The heading is the candidate and a group is its parent wrapper: the same module spacing family on a module that sits inside a group.",
+        "block": "heading",
+        "parent": "group",
+        "base": { "title": { "innerContent": { "desktop": { "value": "PROBEMARK heading in group" } } } },
+        "set": {
+            "module.decoration.spacing.desktop.value.padding.top": "32px",
+            "module.decoration.spacing.desktop.value.padding.left": "32px"
+        }
+    },
+    {
+        "id": "group-flex-direction-typo",
+        "expect": "DEAD",
+        "note": "Looks like the registered module.decoration.layout.desktop.value.flexDirection but the key is misspelled, so Divi ignores it.",
+        "block": "group",
+        "children": [
+            { "block": "heading", "base": { "title": { "innerContent": { "desktop": { "value": "PROBEMARK dead group" } } } } },
+            { "block": "heading", "base": { "title": { "innerContent": { "desktop": { "value": "PROBEMARK dead group two" } } } } }
+        ],
+        "set": {
+            "module.decoration.layout.desktop.value.flexDirectionn": "row"
+        }
+    },
+    {
+        "id": "image-in-column-column-padding",
+        "expect": "PASS",
+        "note": "An image inside a column; the column's own padding (module spacing family).",
+        "block": "column",
+        "children": [
+            { "block": "image" }
+        ],
+        "set": {
+            "module.decoration.spacing.desktop.value.padding.top": "40px",
+            "module.decoration.spacing.desktop.value.padding.bottom": "40px"
+        }
+    },
+    {
+        "id": "unsupported-block-video",
+        "note": "Deliberately unsupported: the probe must report ERROR for this one and still finish the others.",
+        "block": "video",
+        "set": { "module.decoration.spacing.desktop.value.padding.top": "10px" }
+    }
+]

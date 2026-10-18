@@ -153,4 +153,25 @@ class DesignLanguagesTest extends TestCase
     {
         $this->assertSame(['any', ...DesignLanguages::ids()], SectionRecipes::moods());
     }
+
+    public function testTheLanguagesAreReadOnceAndClearCacheReadsThemAgain(): void
+    {
+        DesignLanguages::clearCache();
+        $ids = DesignLanguages::ids();
+        $this->assertNotEmpty( $ids );
+
+        $cache = new \ReflectionProperty( DesignLanguages::class, 'cache' );
+        $this->assertIsArray( $cache->getValue(), 'the first call memoises' );
+
+        // Plant a sentinel: a second call that re-read the file would not see it.
+        $cache->setValue( null, [ [ 'id' => 'memo-sentinel' ] ] );
+        try {
+            $this->assertSame( [ 'memo-sentinel' ], DesignLanguages::ids(), 'the second call serves the memo without reading the file' );
+            DesignLanguages::clearCache();
+            $this->assertNull( $cache->getValue() );
+            $this->assertSame( $ids, DesignLanguages::ids(), 'clearCache() restores the file data' );
+        } finally {
+            DesignLanguages::clearCache();
+        }
+    }
 }

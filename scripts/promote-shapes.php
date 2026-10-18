@@ -8,7 +8,8 @@
  * stable), every attribute path of its `set` values is appended to fixtures/shapes/verified-shapes.json as
  * `how: probe` with `evidence: docs/shape-evidence-5.15.1.md#<id>`, unless that exact path is already registered (an
  * export stays the stronger evidence). A section per promoted candidate is appended to docs/shape-evidence-5.15.1.md.
- * Candidates that rendered nothing (DEAD) or overflow a phone are never added. Pure PHP, no WordPress, idempotent.
+ * Candidates that rendered nothing (DEAD), overflow a phone, or ended in an ERROR are never added. A candidate's optional `parent`
+ * and `children` (see scripts/verify-shapes.cjs) are described in its evidence section. Pure PHP, no WordPress, idempotent.
  */
 
 declare(strict_types=1);
@@ -87,6 +88,10 @@ foreach ( $candidates as $c ) {
             $noisy = true;
         }
     }
+    if ( isset( $r['error'] ) ) {
+        $notes[] = "not promoted $id: the probe reported an error";
+        continue;
+    }
     if ( empty( $r['effect'] ) || ! empty( $r['phoneOverflow'] ) || $noisy || isset( $r['detail']['validator'] ) ) {
         $notes[] = "not promoted $id: " . ( empty( $r['effect'] ) ? 'no effect (dead)' : ( ! empty( $r['phoneOverflow'] ) ? 'overflows a phone' : 'unreliable measurement' ) );
         continue;
@@ -104,7 +109,20 @@ foreach ( $candidates as $c ) {
     }
     if ( strpos( $evidence, "\n## $id\n" ) === false ) {
         $section  = "\n## $id\n\n";
-        $section .= 'Block: `' . $c['block'] . "`. Set on top of the base block:\n\n";
+        $where = '';
+        if ( isset( $c['parent'] ) && is_string( $c['parent'] ) && $c['parent'] !== '' ) {
+            $where .= ', placed inside a `' . $c['parent'] . '`';
+        }
+        $kids = [];
+        foreach ( (array) ( $c['children'] ?? [] ) as $child ) {
+            if ( is_array( $child ) && isset( $child['block'] ) ) {
+                $kids[] = '`' . $child['block'] . '`';
+            }
+        }
+        if ( $kids !== [] ) {
+            $where .= ', holding ' . implode( ', ', $kids );
+        }
+        $section .= 'Block: `' . $c['block'] . '`' . $where . ". Set on top of the base block:\n\n";
         foreach ( (array) $c['set'] as $p => $v ) {
             $section .= '- `' . $p . '` = `' . json_encode( $v, JSON_UNESCAPED_SLASHES ) . "`\n";
         }

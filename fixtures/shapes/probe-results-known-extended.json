@@ -1,0 +1,172 @@
+[
+  {
+    "id": "group-padding-with-heading",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 40px -> 136px",
+          "0:div:height: 40px -> 136px",
+          "0:div:padding-block-end: 0px -> 48px",
+          "0:div:padding-block-start: 0px -> 48px",
+          "0:div:padding-bottom: 0px -> 48px",
+          "0:div:padding-top: 0px -> 48px"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 40px -> 136px",
+          "0:div:height: 40px -> 136px",
+          "0:div:padding-block-end: 0px -> 48px",
+          "0:div:padding-block-start: 0px -> 48px",
+          "0:div:padding-bottom: 0px -> 48px",
+          "0:div:padding-top: 0px -> 48px"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 40px -> 136px",
+          "0:div:height: 40px -> 136px",
+          "0:div:padding-block-end: 0px -> 48px",
+          "0:div:padding-block-start: 0px -> 48px",
+          "0:div:padding-bottom: 0px -> 48px",
+          "0:div:padding-top: 0px -> 48px"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "heading-padding-inside-group",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 16,
+        "sample": [
+          "0:div:block-size: 70px -> 102px",
+          "0:div:height: 70px -> 102px",
+          "0:div:padding-block-start: 0px -> 32px",
+          "0:div:padding-inline-start: 0px -> 32px",
+          "0:div:padding-left: 0px -> 32px",
+          "0:div:padding-top: 0px -> 32px"
+        ],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 16,
+        "sample": [
+          "0:div:block-size: 40px -> 72px",
+          "0:div:height: 40px -> 72px",
+          "0:div:padding-block-start: 0px -> 32px",
+          "0:div:padding-inline-start: 0px -> 32px",
+          "0:div:padding-left: 0px -> 32px",
+          "0:div:padding-top: 0px -> 32px"
+        ],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 16,
+        "sample": [
+          "0:div:block-size: 40px -> 72px",
+          "0:div:height: 40px -> 72px",
+          "0:div:padding-block-start: 0px -> 32px",
+          "0:div:padding-inline-start: 0px -> 32px",
+          "0:div:padding-left: 0px -> 32px",
+          "0:div:padding-top: 0px -> 32px"
+        ],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "group-flex-direction-typo",
+    "effect": false,
+    "widths": {
+      "400": false,
+      "900": false,
+      "1280": false
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "image-in-column-column-padding",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "controlNoise": false
+      }
+    }
+  },
+  {
+    "id": "unsupported-block-video",
+    "effect": false,
+    "widths": {},
+    "phoneOverflow": false,
+    "detail": {},
+    "error": "block \"video\" is not supported by the probe (supported: section, row, column, group, heading, text, image, button, blurb, divider, number-counter, testimonial, icon)"
+  }
+]

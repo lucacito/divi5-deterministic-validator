@@ -15,10 +15,14 @@ final class ShapeRegistry
     /** @var array<string,true> every proven path and every proper prefix of one */
     private array $covered = [];
 
+    /** @var array<string,true> exactly the registered paths */
+    private array $leaves = [];
+
     /** @param list<array{path:string,how:string,evidence:string}> $entries */
     private function __construct( private readonly array $entries )
     {
         foreach ( $entries as $e ) {
+            $this->leaves[ $e['path'] ] = true;
             $segments = explode( '.', $e['path'] );
             while ( $segments !== [] ) {
                 $this->covered[ implode( '.', $segments ) ] = true;
@@ -55,6 +59,15 @@ final class ShapeRegistry
             $normalizedPath = substr( $normalizedPath, 0, $cut + strlen( '.innerContent' ) );
         }
         return isset( $this->covered[ $normalizedPath ] );
+    }
+
+    /**
+     * A path is a registered leaf only when it is exactly a registered path: no prefix (container) coverage, and no
+     * trimming below innerContent. The recipe lint uses this (a recipe uses leaves, and a leaf must have its own evidence).
+     */
+    public function coversLeaf( string $path ): bool
+    {
+        return isset( $this->leaves[ $path ] );
     }
 
     /** @return list<array{path:string,how:string,evidence:string}> */
