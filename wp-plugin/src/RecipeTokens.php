@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once __DIR__ . '/DesignLanguages.php';
+require_once __DIR__ . '/KitResolver.php';
 
 /**
  * Colour and font tokens in section recipes: {{aied:color:<role>}} and {{aied:font:<role>}}.
@@ -52,6 +53,9 @@ final class RecipeTokens
     /** Listed instead of any malformed token: a fixed text, never the content's own. */
     public const MALFORMED_ENTRY = '{{aied:...}}';
 
+    /** Listed once when the content still carries a style-kit marker (see KitResolver::leftovers()): a fixed text. */
+    public const MARKER_ENTRY = '{"aied":{"kit":...}}';
+
     /** At most this many distinct tokens are listed in advise(). */
     public const MAX_LISTED = 20;
 
@@ -80,13 +84,27 @@ final class RecipeTokens
      */
     private static function jsonSafe( string $value ): string
     {
+        $encoded = self::encodeJson( $value );
+
+        return '' === $encoded ? '' : substr( $encoded, 1, -1 );
+    }
+
+    /**
+     * $value as block-attribute JSON that cannot break a block comment: json_encode with unescaped slashes and
+     * Unicode and invalid UTF-8 as U+FFFD, then `<`, `>`, `&` and `--` written as \u escapes over the whole text
+     * (they can only occur inside strings, where the escape is valid). '' when json_encode cannot write $value.
+     */
+    public static function encodeJson( mixed $value ): string
+    {
         $encoded = json_encode( $value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE );
-        $inner   = is_string( $encoded ) ? substr( $encoded, 1, -1 ) : '';
+        if ( ! is_string( $encoded ) ) {
+            return '';
+        }
 
         return str_replace(
             [ '<', '>', '&', '--' ],
             [ '\\u003c', '\\u003e', '\\u0026', '\\u002d\\u002d' ],
-            $inner
+            $encoded
         );
     }
 
@@ -154,15 +172,17 @@ final class RecipeTokens
      * MAX_LISTED, each at most MAX_TOKEN_LENGTH characters, plus what to do. Anything that merely LOOKS like a token but is not
      * well-formed (spaces, newlines, upper case, over-long, unknown shape) still triggers the advisory, but only as the fixed
      * entry MALFORMED_ENTRY, listed once after the valid ones: nothing the content wrote is echoed unless it matches the strict
-     * pattern, so the list is bounded (at most MAX_LISTED + 1 entries of MAX_TOKEN_LENGTH characters). Null when there is no
-     * token at all. An unterminated "{{aied:" is not a token. Advisory only; it never changes a verdict or the content.
+     * pattern, so the list is bounded (at most MAX_LISTED + 2 entries of MAX_TOKEN_LENGTH characters). A style-kit marker
+     * left in block attributes (KitResolver::leftovers(): a marker, a nested or malformed "aied") adds the fixed entry
+     * MARKER_ENTRY once, last. Null when there is no token and no marker at all. An unterminated "{{aied:" is not a token. Advisory only; it never changes a verdict or the content.
      *
      * @return ?array{tokens: list<string>, message: string}
      */
     public static function advise( string $text ): ?array
     {
-        $loose = self::matches( self::LOOSE_AIED, $text );
-        if ( [] === $loose ) {
+        $loose  = self::matches( self::LOOSE_AIED, $text );
+        $marker = [] !== array_intersect( KitResolver::leftovers( $text ), [ KitResolver::LEFT_MARKER, KitResolver::LEFT_NESTED, KitResolver::LEFT_MALFORMED ] );
+        if ( [] === $loose && ! $marker ) {
             return null;
         }
         $tokens    = [];
@@ -181,6 +201,9 @@ final class RecipeTokens
         $list = array_slice( array_keys( $tokens ), 0, self::MAX_LISTED );
         if ( $malformed ) {
             $list[] = self::MALFORMED_ENTRY;
+        }
+        if ( $marker ) {
+            $list[] = self::MARKER_ENTRY;
         }
 
         return [ 'tokens' => $list, 'message' => self::UNRESOLVED_MESSAGE ];

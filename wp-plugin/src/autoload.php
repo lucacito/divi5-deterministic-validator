@@ -37,6 +37,7 @@ require_once __DIR__ . '/ImageTokens.php';
 require_once __DIR__ . '/DesignLanguages.php';
 require_once __DIR__ . '/StyleKits.php';
 require_once __DIR__ . '/RecipeTokens.php';
+require_once __DIR__ . '/KitResolver.php';
 require_once __DIR__ . '/SectionRecipes.php';
 require_once __DIR__ . '/SiteGuide.php';
 require_once __DIR__ . '/LandingGuide.php';

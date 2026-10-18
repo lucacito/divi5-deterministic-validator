@@ -366,4 +366,40 @@ class RecipeTokensTest extends TestCase
         }
         $this->assertNotNull( RecipeTokens::default() );
     }
+
+    // ---- the shared encoder and style-kit markers ----
+
+    #[DataProvider('hostileValues')]
+    public function testEncodeJsonIsWhatResolveInsertsInsideTheString( string $value ): void
+    {
+        $lang                     = DesignLanguages::get( 'editorial' );
+        $lang['colors']['accent'] = $value;
+        $this->assertSame( '{"c":' . RecipeTokens::encodeJson( $value ) . '}', RecipeTokens::resolve( '{"c":"{{aied:color:accent}}"}', $lang ) );
+        $this->assertSame( $value, json_decode( RecipeTokens::encodeJson( $value ), true ) );
+    }
+
+    public function testEncodeJsonWritesObjectsAndListsBlockCommentSafely(): void
+    {
+        $json = RecipeTokens::encodeJson( [ 'a' => '--> <!-- & x/y', 'l' => [ 1, true, null ], 'e' => new \stdClass() ] );
+        $this->assertSame( '{"a":"\\u002d\\u002d\\u003e \\u003c!\\u002d\\u002d \\u0026 x/y","l":[1,true,null],"e":{}}', $json );
+        $this->assertSame( '--> <!-- & x/y', json_decode( $json, true )['a'] );
+        $this->assertSame( '', RecipeTokens::encodeJson( NAN ) );
+    }
+
+    public function testAdviseAddsTheMarkerEntryOnceLastAndIsUnchangedWithoutAMarker(): void
+    {
+        $marker = '<!-- wp:divi/button {"aied":{"kit":"control"}} /-->';
+        $this->assertSame( [ RecipeTokens::MARKER_ENTRY ], RecipeTokens::advise( $marker . $marker )['tokens'] );
+        $this->assertSame(
+            [ '{{aied:color:accent}}', RecipeTokens::MALFORMED_ENTRY, RecipeTokens::MARKER_ENTRY ],
+            RecipeTokens::advise( '{{aied:color:accent}} {{aied:BAD}} ' . $marker )['tokens']
+        );
+        $this->assertSame( [ RecipeTokens::MARKER_ENTRY ], RecipeTokens::advise( '<!-- wp:divi/button {"button":{"aied":{"kit":"control"}}} /-->' )['tokens'], 'nested' );
+        $this->assertSame( [ RecipeTokens::MARKER_ENTRY ], RecipeTokens::advise( '<!-- wp:divi/button {"aied":{"kit":"control"},} /-->' )['tokens'], 'malformed' );
+        $this->assertNull( RecipeTokens::advise( '<!-- wp:divi/text {"t":"\\"aied\\":{\\"kit\\":\\"control\\"}"} --><p>"aied":{"kit":"control"}</p><!-- /wp:divi/text -->' ), 'text is not a marker' );
+        foreach ( SectionRecipes::names() as $name ) {
+            $raw = (string) SectionRecipes::rawMarkup( $name );
+            $this->assertNotContains( RecipeTokens::MARKER_ENTRY, (array) ( RecipeTokens::advise( $raw )['tokens'] ?? [] ), $name );
+        }
+    }
 }
