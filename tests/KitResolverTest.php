@@ -25,7 +25,7 @@ require_once __DIR__ . '/../wp-plugin/src/KitResolver.php';
  */
 class KitResolverTest extends TestCase
 {
-    private const BLOCK = '/<!--\s+wp:divi\/[a-z0-9-]+\s+(\{(?:(?!-->).)*?\})\s+\/?-->/s';
+    private const BLOCK = '/<!--\s+wp:divi\/[a-z0-9-]+\s+(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\})\s+\/?-->/s';
 
     /** @return array<string,mixed> */
     private function kit(): array
@@ -156,6 +156,16 @@ class KitResolverTest extends TestCase
         // The kit token in the text is not a whole value: it stays, and is reported (never echoed).
         $this->assertSame( [ KitResolver::LEFT_TOKEN ], KitResolver::leftovers( $out ) );
         $this->assertSame( [], KitResolver::leftovers( str_replace( '{{aied:kit:radius-card}}', '', $out ) ), 'marker spelling in text is not a marker' );
+
+        // Hostile raw text inside an attribute string: a raw `} -->`, and a raw nested block comment. Never rewritten;
+        // the cut-off attributes do not decode and are reported as malformed.
+        $rawClose  = '<!-- wp:divi/text {"aied":{"kit":"control"},"t":"a} --> b"} -->x<!-- /wp:divi/text -->';
+        $rawNested = '<!-- wp:divi/text {"t":"<!-- wp:divi/button {"aied":{"kit":"control"}} /-->"} -->x<!-- /wp:divi/text -->';
+        $escNested = '<!-- wp:divi/text {"t":"<!-- wp:divi/button {\\"aied\\":{\\"kit\\":\\"control\\"}} /-->"} -->x<!-- /wp:divi/text -->';
+        foreach ( [ 'raw -->' => $rawClose, 'raw nested comment' => $rawNested, 'escaped nested comment' => $escNested ] as $label => $hostile ) {
+            $this->assertSame( $hostile, $this->noWarnings( fn() => KitResolver::resolve( $hostile, $this->kit(), $this->adapter() ) ), $label );
+            $this->assertSame( [ KitResolver::LEFT_MALFORMED ], KitResolver::leftovers( $hostile ), $label );
+        }
     }
 
     public function testUnknownRoleOnOrBlockAreLeftAndReported(): void
@@ -164,6 +174,7 @@ class KitResolverTest extends TestCase
         $cases = [
             'unknown role'        => [ '<!-- wp:divi/button ' . $buttonJson( ',"aied":{"kit":"card"}' ) . ' /-->', KitResolver::LEFT_MARKER ],
             'unknown on'          => [ '<!-- wp:divi/button ' . $buttonJson( ',"aied":{"kit":"control","on":"sideways"}' ) . ' /-->', KitResolver::LEFT_MARKER ],
+            'on null'             => [ '<!-- wp:divi/button ' . $buttonJson( ',"aied":{"kit":"control","on":null}' ) . ' /-->', KitResolver::LEFT_MARKER ],
             'on not a string'     => [ '<!-- wp:divi/button ' . $buttonJson( ',"aied":{"kit":"control","on":1}' ) . ' /-->', KitResolver::LEFT_MARKER ],
             'role not a string'   => [ '<!-- wp:divi/button ' . $buttonJson( ',"aied":{"kit":["control"]}' ) . ' /-->', KitResolver::LEFT_MARKER ],
             'extra key'           => [ '<!-- wp:divi/button ' . $buttonJson( ',"aied":{"kit":"control","x":"y"}' ) . ' /-->', KitResolver::LEFT_MARKER ],
@@ -325,5 +336,73 @@ class KitResolverTest extends TestCase
         $this->assertNotContains( RecipeTokens::MARKER_ENTRY, RecipeTokens::advise( $this->button( '' ) )['tokens'] );
         $plain = '<!-- wp:divi/blurb {"c":"{{aied:color:accent}}"} /-->';
         $this->assertSame( [ '{{aied:color:accent}}' ], RecipeTokens::advise( $plain )['tokens'], 'unchanged without a marker' );
+    }
+
+    public function testAPatchCannotPutAMarkerBack(): void
+    {
+        $faulty = static fn( string $b, string $r, string $o, array $k ): ?array => [ 'aied' => [ 'kit' => 'control' ], 'x' => 'y' ];
+        $once   = KitResolver::resolve( $this->button(), $this->kit(), $faulty );
+        $this->assertStringNotContainsString( '"aied"', $once );
+        $this->assertSame( 'y', json_decode( $this->comments( $once )[0], true )['x'] );
+        $this->assertSame( [], KitResolver::leftovers( $once ) );
+        $this->assertSame( $once, KitResolver::resolve( $once, $this->kit(), $faulty ) );
+    }
+
+    public function testALargeBlockIsScannedAndItsMarkerResolved(): void
+    {
+        $long   = str_repeat( 'word - } { x -- y ', 4000 ); // about 72 KB of text with dashes and braces
+        $text   = '<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":' . RecipeTokens::encodeJson( $long ) . '}}}} -->x<!-- /wp:divi/text -->';
+        $button = '<!-- wp:divi/button {"t":' . RecipeTokens::encodeJson( $long ) . ',"aied":{"kit":"control"}} /-->';
+        $this->assertGreaterThan( 65536, strlen( $text ) );
+        $this->assertGreaterThan( 65536, strlen( $button ) );
+        $markup = $text . $button;
+
+        $this->assertSame( [ KitResolver::LEFT_MARKER ], KitResolver::leftovers( $markup ) );
+        $this->assertContains( RecipeTokens::MARKER_ENTRY, RecipeTokens::advise( $markup )['tokens'] );
+
+        $out = $this->noWarnings( fn() => KitResolver::resolve( $markup, $this->kit(), $this->adapter() ) );
+        $this->assertStringStartsWith( $text, $out, 'the large unmarked block is byte-identical' );
+        $attrs = json_decode( $this->comments( substr( $out, strlen( $text ) ) )[0], true );
+        $this->assertSame( $long, $attrs['t'] );
+        $this->assertArrayNotHasKey( 'aied', $attrs );
+        $this->assertSame( 'transparent', $attrs['button']['decoration']['background']['desktop']['value']['color'] );
+        $this->assertSame( [], KitResolver::leftovers( $out ) );
+        $this->assertNull( RecipeTokens::advise( $out ) );
+    }
+
+    public function testAnUnterminatedCommentIsLeftAndReported(): void
+    {
+        $open = '<!-- wp:divi/text {"t":"' . str_repeat( 'a - } b ', 150000 ); // 1.2 MB, never closed
+        $this->assertGreaterThan( 1000000, strlen( $open ) );
+
+        $withToken = $open . '{{aied:kit:radius-card}}';
+        $this->assertSame( $withToken, $this->noWarnings( fn() => KitResolver::resolve( $withToken, $this->kit(), $this->adapter() ) ) );
+        $this->assertSame( [ KitResolver::LEFT_TOKEN ], KitResolver::leftovers( $withToken ) );
+
+        // A real marked button after the unterminated comment is swallowed by it: left untouched and reported.
+        $withButton = $open . '"}' . $this->button();
+        $this->assertSame( $withButton, $this->noWarnings( fn() => KitResolver::resolve( $withButton, $this->kit(), $this->adapter() ) ) );
+        $this->assertSame( [ KitResolver::LEFT_MALFORMED ], KitResolver::leftovers( $withButton ) );
+        $this->assertContains( RecipeTokens::MARKER_ENTRY, RecipeTokens::advise( $withButton )['tokens'] );
+    }
+
+    public function testAScannerFailureIsReportedNotSilent(): void
+    {
+        $markup   = $this->button() . '<!-- wp:divi/blurb {"r":"{{aied:kit:radius-card}}"} /-->';
+        $kit      = $this->kit();
+        $oldLimit = ini_get( 'pcre.backtrack_limit' );
+        $oldJit   = ini_get( 'pcre.jit' );
+        ini_set( 'pcre.jit', '0' );
+        ini_set( 'pcre.backtrack_limit', '1' );
+        try {
+            $this->assertSame( $markup, $this->noWarnings( fn() => KitResolver::resolve( $markup, $kit, $this->adapter() ) ) );
+            $this->assertSame( [ KitResolver::LEFT_UNSCANNED, KitResolver::LEFT_TOKEN ], KitResolver::leftovers( $markup ) );
+            $this->assertContains( RecipeTokens::MARKER_ENTRY, (array) ( RecipeTokens::advise( $markup )['tokens'] ?? [] ) );
+            $this->assertSame( [], KitResolver::leftovers( '<!-- wp:divi/blurb {"t":"\\u003c no marker"} /-->' ), 'no "aied" spelled: nothing to report' );
+        } finally {
+            ini_set( 'pcre.backtrack_limit', (string) $oldLimit );
+            ini_set( 'pcre.jit', (string) $oldJit );
+        }
+        $this->assertSame( [ KitResolver::LEFT_MARKER, KitResolver::LEFT_TOKEN ], KitResolver::leftovers( $markup ) );
     }
 }

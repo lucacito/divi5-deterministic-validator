@@ -173,7 +173,7 @@ final class RecipeTokens
      * well-formed (spaces, newlines, upper case, over-long, unknown shape) still triggers the advisory, but only as the fixed
      * entry MALFORMED_ENTRY, listed once after the valid ones: nothing the content wrote is echoed unless it matches the strict
      * pattern, so the list is bounded (at most MAX_LISTED + 2 entries of MAX_TOKEN_LENGTH characters). A style-kit marker
-     * left in block attributes (KitResolver::leftovers(): a marker, a nested or malformed "aied") adds the fixed entry
+     * left in block attributes (KitResolver::leftovers(): a marker, a nested or malformed "aied", or one the scanner could not read) adds the fixed entry
      * MARKER_ENTRY once, last. Null when there is no token and no marker at all. An unterminated "{{aied:" is not a token. Advisory only; it never changes a verdict or the content.
      *
      * @return ?array{tokens: list<string>, message: string}
@@ -181,7 +181,7 @@ final class RecipeTokens
     public static function advise( string $text ): ?array
     {
         $loose  = self::matches( self::LOOSE_AIED, $text );
-        $marker = [] !== array_intersect( KitResolver::leftovers( $text ), [ KitResolver::LEFT_MARKER, KitResolver::LEFT_NESTED, KitResolver::LEFT_MALFORMED ] );
+        $marker = [] !== array_intersect( KitResolver::leftovers( $text ), [ KitResolver::LEFT_MARKER, KitResolver::LEFT_NESTED, KitResolver::LEFT_MALFORMED, KitResolver::LEFT_UNSCANNED ] );
         if ( [] === $loose && ! $marker ) {
             return null;
         }
@@ -190,7 +190,8 @@ final class RecipeTokens
         foreach ( $loose as $candidate ) {
             $strict = preg_match( self::STRICT_AIED, $candidate );
             if ( false === $strict ) {
-                return null; // the regex engine failed: say nothing rather than guess
+                // The regex engine failed: list no token rather than guess, but keep a marker the kit scan reported.
+                return $marker ? [ 'tokens' => [ self::MARKER_ENTRY ], 'message' => self::UNRESOLVED_MESSAGE ] : null;
             }
             if ( 1 === $strict && strlen( $candidate ) <= self::MAX_TOKEN_LENGTH ) {
                 $tokens[ $candidate ] = true;

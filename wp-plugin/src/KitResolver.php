@@ -39,8 +39,12 @@ final class KitResolver
     /** Surfaces a marker may name; `light` when it names none. */
     private const SURFACES = [ 'light', 'accent', 'dark' ];
 
-    /** An opening divi block comment with attributes: (prefix)(name)(json)(suffix). The JSON never spans a `-->`. */
-    private const BLOCK = '/(<!--\s+wp:(divi\/[a-z0-9-]+)\s+)(\{(?:(?!-->).)*?\})(\s+\/?-->)/s';
+    /**
+     * An opening divi block comment with attributes: (prefix)(name)(json)(suffix). The JSON never spans a `-->` and
+     * ends at the first `}` followed by the comment's end. Possessive throughout, so a block of any size is matched
+     * without backtracking (a lazy tempered dot ran out of PCRE JIT stack on a 40 KB block).
+     */
+    private const BLOCK = '/(<!--\s+wp:(divi\/[a-z0-9-]+)\s+)(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\})(\s+\/?-->)/s';
 
     /** A whole-value kit token. */
     private const WHOLE_TOKEN = '/^\{\{aied:kit:([a-z0-9-]+)\}\}\z/';
@@ -53,11 +57,15 @@ final class KitResolver
     public const LEFT_NESTED    = '"aied" below the top level of block attributes';
     public const LEFT_MALFORMED = '"aied" in block attributes that are not valid JSON';
     public const LEFT_TOKEN     = '{{aied:kit:...}}';
+    public const LEFT_UNSCANNED = '"aied" in markup the block scanner could not read';
 
     /**
      * $markup with every marker and whole-value kit token it can resolve resolved. An invalid kit (any
      * StyleKits::problems()) returns $markup unchanged. $adapter has the signature of KitAdapters::patch(); when
      * null, KitAdapters::patch is used if that class exists, otherwise every marker is left (no adapter).
+     * Adapter contract: it returns the attribute subtree to merge (or null). A PHP array is written as a JSON object
+     * when associative and as a JSON list otherwise, so an EMPTY PHP array becomes `[]`: an adapter must use
+     * `new \stdClass()` for an empty object. An `aied` key in a patch is dropped (a patch can never add a marker).
      *
      * @param array<string,mixed> $kit
      */
@@ -87,8 +95,8 @@ final class KitResolver
                     if ( ! is_array( $patch ) ) {
                         return $m[0];
                     }
-                    unset( $attrs->aied );
                     self::merge( $attrs, $patch );
+                    unset( $attrs->aied );
                     $changed = true;
                 }
                 $attrs = self::tokens( $attrs, $kit, $changed );
@@ -108,8 +116,9 @@ final class KitResolver
     /**
      * What is still unresolved in $markup, each fixed description once, in order of first appearance: markers
      * (LEFT_MARKER), "aied" keys below the top level (LEFT_NESTED), block attributes that mention "aied" but do not
-     * decode (LEFT_MALFORMED), and any `{{aied:kit:...}}` token (LEFT_TOKEN), anywhere. At most four entries; nothing
-     * the content wrote is echoed. Empty when the regex engine fails.
+     * decode (LEFT_MALFORMED), and any `{{aied:kit:...}}` token (LEFT_TOKEN), anywhere. When the block scanner fails,
+     * LEFT_UNSCANNED stands for the blocks (if the markup contains `"aied"`) and the token check still runs. At most
+     * five entries; nothing the content wrote is echoed.
      *
      * @return list<string>
      */
@@ -119,8 +128,14 @@ final class KitResolver
             return [];
         }
         $found = [];
+        $all   = [];
         if ( false === preg_match_all( self::BLOCK, $markup, $all, PREG_SET_ORDER ) ) {
-            return [];
+            // The scanner failed: say so with a fixed entry when the markup spells a marker key, then still do the
+            // substring check for kit tokens below.
+            $all = [];
+            if ( str_contains( $markup, '"aied"' ) ) {
+                $found[ self::LEFT_UNSCANNED ] = true;
+            }
         }
         foreach ( $all as $m ) {
             if ( ! str_contains( $m[3], 'aied' ) && ! str_contains( $m[3], '\\u' ) ) {
@@ -173,7 +188,7 @@ final class KitResolver
             return null;
         }
         $role = $vars['kit'];
-        $on   = $vars['on'] ?? 'light';
+        $on   = array_key_exists( 'on', $vars ) ? $vars['on'] : 'light';
         if ( ! is_string( $role ) || ! is_string( $on ) || ! in_array( $on, self::SURFACES, true ) ) {
             return null;
         }
