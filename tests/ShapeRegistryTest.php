@@ -198,6 +198,38 @@ final class ShapeRegistryTest extends TestCase
         $this->assertSame( [], $new, "guide paths neither proven nor frozen as legacy:\n" . implode( "\n", $new ) );
     }
 
+    public function testTopicPathsAreRegistered(): void
+    {
+        $registry = ShapeRegistry::load();
+        $problems = [];
+        foreach ( StyleGuide::topics() as $topic ) {
+            $problems = array_merge( $problems, $this->topicProblems( $registry, $topic, StyleGuide::markdown( $topic ) ) );
+        }
+        $this->assertSame( [], $problems, "topic paths (4 or more segments) that are not registered:\n" . implode( "\n", $problems ) );
+    }
+
+    public function testAnUnregisteredTopicPathFailsTheLint(): void
+    {
+        $registry = $this->fakeRegistry( [ 'module.decoration.background.{bp}.value.pattern.style' ] );
+        $text     = 'Use `module.decoration.background.desktop.value.pattern.style` and `module.decoration.background.desktop.value.pattern.zzinvented`.';
+        $this->assertSame(
+            [ 'fake-topic: module.decoration.background.{bp}.value.pattern.zzinvented' ],
+            $this->topicProblems( $registry, 'fake-topic', $text )
+        );
+    }
+
+    /** @return list<string> "<topic>: <path>" for every dotted path of 4 or more segments in a topic's text that the registry does not cover */
+    private function topicProblems( ShapeRegistry $registry, string $topic, string $text ): array
+    {
+        $out = [];
+        foreach ( ShapePaths::fromGuideText( $text ) as $path ) {
+            if ( ! $registry->covers( $path ) ) {
+                $out[] = $topic . ': ' . $path;
+            }
+        }
+        return $out;
+    }
+
     public function testProbeProvenShapesAreInAndDeadShapesAreOut(): void
     {
         $registry = ShapeRegistry::load();

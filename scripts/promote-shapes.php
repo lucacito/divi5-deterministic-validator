@@ -11,7 +11,9 @@
  * Candidates that rendered nothing (DEAD), overflow a phone, or ended in an ERROR are never added. A result the probe labelled
  * `cssOnly` (the emitted stylesheet changed but no computed style did) is promoted only when the candidate sets
  * `"allowCssOnly": true` AND has a non-empty `note` saying why a stylesheet-only effect is proof enough. A candidate's optional `parent`
- * and `children` (see scripts/verify-shapes.cjs) are described in its evidence section. Pure PHP, no WordPress, idempotent.
+ * and `children` (see scripts/verify-shapes.cjs) are described in its evidence section. Every candidate that is NOT promoted (dead, overflowing a
+ * phone, an error, a stylesheet-only result without `allowCssOnly`, an unreliable measurement) is listed with its reason in a
+ * `## Not taught (<candidates file name>)` section of the evidence file, which is rewritten on every run. Pure PHP, no WordPress, idempotent.
  */
 
 declare(strict_types=1);
@@ -75,13 +77,16 @@ if ( $evidence === '' ) {
         . "Each section below is one candidate shape that `node scripts/verify-shapes.cjs` rendered on the real Divi of the Docker dev site: two throwaway draft pages identical except for the candidate's values, opened in Chromium at 1280, 900 and 400 px. A shape counts as proven when the emitted page styles or the computed styles of the module changed at some width and the page did not overflow a phone. `php scripts/promote-shapes.php` adds the proven paths to `fixtures/shapes/verified-shapes.json` (`how: probe`).\n";
 }
 
-$added = 0;
-$notes = [];
+$added     = 0;
+$notes     = [];
+$notTaught = []; // id => reason, for the evidence file's "Not taught" section
+$family    = basename( (string) $argv[2], '.json' );
 foreach ( $candidates as $c ) {
     $id = (string) ( $c['id'] ?? '' );
     $r  = $results[ $id ] ?? null;
     if ( $r === null ) {
-        $notes[] = "skip $id: no probe result";
+        $notes[]          = "skip $id: no probe result";
+        $notTaught[ $id ] = 'no probe result';
         continue;
     }
     $noisy = false;
@@ -91,15 +96,19 @@ foreach ( $candidates as $c ) {
         }
     }
     if ( isset( $r['error'] ) ) {
-        $notes[] = "not promoted $id: the probe reported an error";
+        $notes[]          = "not promoted $id: the probe reported an error";
+        $notTaught[ $id ] = 'the probe reported an error: ' . (string) $r['error'];
         continue;
     }
     if ( ! empty( $r['cssOnly'] ) && ( ( $c['allowCssOnly'] ?? false ) !== true || trim( (string) ( $c['note'] ?? '' ) ) === '' ) ) {
-        $notes[] = "not promoted $id: only the stylesheet changed, no computed style (set allowCssOnly: true and a note to promote it)";
+        $notes[]          = "not promoted $id: only the stylesheet changed, no computed style (set allowCssOnly: true and a note to promote it)";
+        $notTaught[ $id ] = 'only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note)';
         continue;
     }
     if ( empty( $r['effect'] ) || ! empty( $r['phoneOverflow'] ) || $noisy || isset( $r['detail']['validator'] ) ) {
-        $notes[] = "not promoted $id: " . ( empty( $r['effect'] ) ? 'no effect (dead)' : ( ! empty( $r['phoneOverflow'] ) ? 'overflows a phone' : 'unreliable measurement' ) );
+        $why              = empty( $r['effect'] ) ? 'no effect (dead)' : ( ! empty( $r['phoneOverflow'] ) ? 'overflows a phone at 400 px' : 'unreliable measurement' );
+        $notes[]          = "not promoted $id: $why";
+        $notTaught[ $id ] = $why;
         continue;
     }
     $new = [];
@@ -160,6 +169,21 @@ foreach ( $candidates as $c ) {
             ? "\nRegistered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).\n"
             : "\nRegistered paths added:\n\n" . implode( "\n", array_map( static fn ( string $p ): string => '- `' . $p . '`', $mine ) ) . "\n";
         $evidence .= $section;
+    }
+}
+
+// The "Not taught" section of this candidates file: rewritten each run (replaced when it exists, appended otherwise).
+$heading = "## Not taught ($family)";
+$evidence = (string) preg_replace( '/\n' . preg_quote( $heading, '/' ) . '\n.*?(?=\n## |\z)/s', '', $evidence );
+if ( $notTaught !== [] ) {
+    $byId = [];
+    foreach ( $candidates as $c ) {
+        $byId[ (string) ( $c['id'] ?? '' ) ] = $c;
+    }
+    $evidence = rtrim( $evidence, "\n" ) . "\n\n" . $heading . "\n\nCandidates from `" . $family . ".json` that were measured and are not taught, with the reason:\n\n";
+    foreach ( $notTaught as $id => $why ) {
+        $note      = trim( (string) ( $byId[ $id ]['note'] ?? '' ) );
+        $evidence .= '- `' . $id . '`: ' . $why . ( $note !== '' ? '. ' . $note : '' ) . "\n";
     }
 }
 

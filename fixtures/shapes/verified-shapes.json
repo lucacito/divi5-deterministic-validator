@@ -937,6 +937,11 @@
             "evidence": "fixtures/valid/page-85-layout-4.json"
         },
         {
+            "path": "module.decoration.background.{bp}.value.gradient.directionRadial",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-gradient-radial-position"
+        },
+        {
             "path": "module.decoration.background.{bp}.value.gradient.enabled",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
@@ -967,9 +972,29 @@
             "evidence": "fixtures/valid/page-23-style-reference.json"
         },
         {
+            "path": "module.decoration.background.{bp}.value.gradient.type",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-gradient-type-circular"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.image.blend",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-image-blend-multiply"
+        },
+        {
             "path": "module.decoration.background.{bp}.value.image.enabled",
             "how": "export",
             "evidence": "fixtures/valid/page-44-layout-2.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.image.height",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-image-size-custom"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.image.horizontalOffset",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-image-position-offset"
         },
         {
             "path": "module.decoration.background.{bp}.value.image.parallax.enabled",
@@ -977,9 +1002,19 @@
             "evidence": "fixtures/valid/page-23-style-reference.json"
         },
         {
+            "path": "module.decoration.background.{bp}.value.image.parallax.method",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-image-parallax-method-fixed"
+        },
+        {
             "path": "module.decoration.background.{bp}.value.image.position",
             "how": "export",
             "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.image.repeat",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-image-repeat-repeat"
         },
         {
             "path": "module.decoration.background.{bp}.value.image.size",
@@ -992,9 +1027,79 @@
             "evidence": "fixtures/valid/page-23-style-reference.json"
         },
         {
+            "path": "module.decoration.background.{bp}.value.image.verticalOffset",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-image-position-offset"
+        },
+        {
             "path": "module.decoration.background.{bp}.value.image.width",
             "how": "export",
             "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.mask.aspectRatio",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-mask-aspect-square"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.mask.blend",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-mask-blend-multiply"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.mask.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-mask-layer-blob-on"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.mask.enabled",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-mask-layer-blob-on"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.mask.height",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-mask-size-custom"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.mask.horizontalOffset",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-mask-offset"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.mask.position",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-mask-position"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.mask.size",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-mask-size-cover"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.mask.style",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-mask-layer-blob-on"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.mask.transform.{n}",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-mask-transform-invert"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.mask.verticalOffset",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-mask-offset"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.mask.width",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-mask-size-custom"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.pattern.blend",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-pattern-blend-multiply"
         },
         {
             "path": "module.decoration.background.{bp}.value.pattern.color",
@@ -1007,6 +1112,26 @@
             "evidence": "fixtures/valid/page-45-layout-3.json"
         },
         {
+            "path": "module.decoration.background.{bp}.value.pattern.height",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-pattern-size-custom"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.pattern.horizontalOffset",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-pattern-offset"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.pattern.repeat",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-pattern-repeat-repeat-x"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.pattern.repeatOrigin",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-pattern-repeat-origin"
+        },
+        {
             "path": "module.decoration.background.{bp}.value.pattern.size",
             "how": "export",
             "evidence": "fixtures/valid/page-45-layout-3.json"
@@ -1015,6 +1140,16 @@
             "path": "module.decoration.background.{bp}.value.pattern.style",
             "how": "export",
             "evidence": "fixtures/valid/page-45-layout-3.json"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.pattern.transform.{n}",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-pattern-transform-invert"
+        },
+        {
+            "path": "module.decoration.background.{bp}.value.pattern.verticalOffset",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#bg-pattern-offset"
         },
         {
             "path": "module.decoration.background.{bp}.value.pattern.width",

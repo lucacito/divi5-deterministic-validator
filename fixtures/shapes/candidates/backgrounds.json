@@ -1,0 +1,3075 @@
+[
+  {
+    "id": "bg-gradient-three-stops",
+    "expect": "PASS",
+    "note": "A third stop on top of the two-stop base (the stop list is replaced as a whole; two or more stops are rendered). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "gradient": {
+                  "enabled": "on",
+                  "stops": [
+                    {
+                      "position": "0",
+                      "color": "#2B87DA"
+                    },
+                    {
+                      "position": "100",
+                      "color": "#29C4A9"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.gradient.stops": [
+        {
+          "position": "0",
+          "color": "#1e3a8a"
+        },
+        {
+          "position": "50",
+          "color": "#7c3aed"
+        },
+        {
+          "position": "100",
+          "color": "#db2777"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bg-gradient-type-circular",
+    "expect": "PASS",
+    "note": "Gradient type circular against the linear default (GradientUtils.php:806-823 lists linear, circular, elliptical, conic). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "gradient": {
+                  "enabled": "on",
+                  "stops": [
+                    {
+                      "position": "0",
+                      "color": "#2B87DA"
+                    },
+                    {
+                      "position": "100",
+                      "color": "#29C4A9"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.gradient.type": "circular"
+    }
+  },
+  {
+    "id": "bg-gradient-type-elliptical",
+    "expect": "PASS",
+    "note": "Gradient type elliptical against the linear default (GradientUtils.php:806-823 lists linear, circular, elliptical, conic). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "gradient": {
+                  "enabled": "on",
+                  "stops": [
+                    {
+                      "position": "0",
+                      "color": "#2B87DA"
+                    },
+                    {
+                      "position": "100",
+                      "color": "#29C4A9"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.gradient.type": "elliptical"
+    }
+  },
+  {
+    "id": "bg-gradient-type-conic",
+    "expect": "PASS",
+    "note": "Gradient type conic against the linear default (GradientUtils.php:806-823 lists linear, circular, elliptical, conic). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "gradient": {
+                  "enabled": "on",
+                  "stops": [
+                    {
+                      "position": "0",
+                      "color": "#2B87DA"
+                    },
+                    {
+                      "position": "100",
+                      "color": "#29C4A9"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.gradient.type": "conic"
+    }
+  },
+  {
+    "id": "bg-gradient-radial-position",
+    "expect": "PASS",
+    "note": "Where a circular/elliptical gradient is centred; accepted words are center, top, bottom, left, right and a vertical+horizontal pair (GradientUtils.php:681-690). Only meaningful with a radial or conic type, which the base sets. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "gradient": {
+                  "enabled": "on",
+                  "stops": [
+                    {
+                      "position": "0",
+                      "color": "#2B87DA"
+                    },
+                    {
+                      "position": "100",
+                      "color": "#29C4A9"
+                    }
+                  ],
+                  "type": "circular"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.gradient.directionRadial": "top right"
+    }
+  },
+  {
+    "id": "bg-gradient-conic-start-angle",
+    "expect": "PASS",
+    "note": "For a conic gradient `direction` is the start angle (GradientUtils.php:807-810: from <angle> at <position>). The base sets type conic. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "gradient": {
+                  "enabled": "on",
+                  "stops": [
+                    {
+                      "position": "0",
+                      "color": "#2B87DA"
+                    },
+                    {
+                      "position": "100",
+                      "color": "#29C4A9"
+                    }
+                  ],
+                  "type": "conic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.gradient.direction": "90deg"
+    }
+  },
+  {
+    "id": "bg-gradient-linear-keyword",
+    "expect": "PASS",
+    "note": "Linear gradient direction as one of the eight keywords (GradientUtils.php:701-722: to top, to top right, to right, to bottom right, to bottom, to bottom left, to left, to top left) against the 180deg default. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "gradient": {
+                  "enabled": "on",
+                  "stops": [
+                    {
+                      "position": "0",
+                      "color": "#2B87DA"
+                    },
+                    {
+                      "position": "100",
+                      "color": "#29C4A9"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.gradient.direction": "to right"
+    }
+  },
+  {
+    "id": "bg-gradient-linear-angle",
+    "expect": "PASS",
+    "note": "Linear gradient direction as an angle with a unit (deg, grad, rad, turn; GradientUtils.php:701-722). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "gradient": {
+                  "enabled": "on",
+                  "stops": [
+                    {
+                      "position": "0",
+                      "color": "#2B87DA"
+                    },
+                    {
+                      "position": "100",
+                      "color": "#29C4A9"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.gradient.direction": "135deg"
+    }
+  },
+  {
+    "id": "bg-gradient-repeating",
+    "expect": "PASS",
+    "note": "Repeating gradient: `repeat` on makes it repeating-*-gradient and `length` is the size of one repeat (GradientUtils.php:827-849). Pair: repeat has no visible effect unless the length is shorter than the box, so both are set together. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "gradient": {
+                  "enabled": "on",
+                  "stops": [
+                    {
+                      "position": "0",
+                      "color": "#2B87DA"
+                    },
+                    {
+                      "position": "100",
+                      "color": "#29C4A9"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.gradient.repeat": "on",
+      "module.decoration.background.desktop.value.gradient.length": "25%"
+    }
+  },
+  {
+    "id": "bg-gradient-over-image",
+    "expect": "PASS",
+    "note": "Puts the gradient above the image instead of beneath it (StyleDeclarationTrait.php:519-523 reverses the layer order). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg"
+                },
+                "gradient": {
+                  "enabled": "on",
+                  "stops": [
+                    {
+                      "position": "0",
+                      "color": "rgba(10,10,40,0.85)"
+                    },
+                    {
+                      "position": "100",
+                      "color": "rgba(10,10,40,0.2)"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.gradient.overlaysImage": "on"
+    }
+  },
+  {
+    "id": "bg-image-size-cover",
+    "expect": "PASS",
+    "note": "background-size cover (BackgroundStyleUtils.php:95-124: cover, contain, stretch, custom).  Measured css-only: Divi already draws a section image as cover, so the computed style does not move, but the emitted stylesheet gains the explicit rule; accepted as proof because the rule is the whole effect. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.size": "cover"
+    },
+    "allowCssOnly": true
+  },
+  {
+    "id": "bg-image-size-contain",
+    "expect": "PASS",
+    "note": "background-size contain (BackgroundStyleUtils.php:95-124: cover, contain, stretch, custom). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.size": "contain"
+    }
+  },
+  {
+    "id": "bg-image-size-custom",
+    "expect": "PASS",
+    "note": "Custom size: width and height are only used when size is custom (BackgroundStyleUtils.php:99-111); set together as a pair. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.size": "custom",
+      "module.decoration.background.desktop.value.image.width": "320px",
+      "module.decoration.background.desktop.value.image.height": "auto"
+    }
+  },
+  {
+    "id": "bg-image-position-left-top",
+    "expect": "PASS",
+    "note": "background-position: a horizontal word (left, center, right) and a vertical word (top, center, bottom), separated by a space (BackgroundStyleUtils.php:37-77). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+                  "size": "contain"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.position": "left top"
+    }
+  },
+  {
+    "id": "bg-image-position-center-bottom",
+    "expect": "PASS",
+    "note": "background-position: a horizontal word (left, center, right) and a vertical word (top, center, bottom), separated by a space (BackgroundStyleUtils.php:37-77). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+                  "size": "contain"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.position": "center bottom"
+    }
+  },
+  {
+    "id": "bg-image-position-offset",
+    "expect": "PASS",
+    "note": "Offsets move the image away from the edge named in `position`; they are only applied next to left/right and top/bottom words (BackgroundStyleUtils.php:48 and :62). Pair: horizontal and vertical offsets are set together. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+                  "size": "contain",
+                  "position": "left top"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.horizontalOffset": "40px",
+      "module.decoration.background.desktop.value.image.verticalOffset": "20px"
+    }
+  },
+  {
+    "id": "bg-image-repeat-repeat",
+    "expect": "PASS",
+    "note": "background-repeat repeat against the no-repeat default (StyleDeclarationTrait.php:383-387; the option list is Functions.php:207-218 in Divi 5.15.1 includes/builder/feature/background-masks/). The base uses a small custom size so the repeat is visible. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+                  "size": "custom",
+                  "width": "120px",
+                  "height": "auto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.repeat": "repeat"
+    }
+  },
+  {
+    "id": "bg-image-repeat-repeat-x",
+    "expect": "PASS",
+    "note": "background-repeat repeat-x against the no-repeat default (StyleDeclarationTrait.php:383-387; the option list is Functions.php:207-218 in Divi 5.15.1 includes/builder/feature/background-masks/). The base uses a small custom size so the repeat is visible. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+                  "size": "custom",
+                  "width": "120px",
+                  "height": "auto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.repeat": "repeat-x"
+    }
+  },
+  {
+    "id": "bg-image-repeat-repeat-y",
+    "expect": "PASS",
+    "note": "background-repeat repeat-y against the no-repeat default (StyleDeclarationTrait.php:383-387; the option list is Functions.php:207-218 in Divi 5.15.1 includes/builder/feature/background-masks/). The base uses a small custom size so the repeat is visible. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+                  "size": "custom",
+                  "width": "120px",
+                  "height": "auto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.repeat": "repeat-y"
+    }
+  },
+  {
+    "id": "bg-image-repeat-space",
+    "expect": "PASS",
+    "note": "background-repeat space against the no-repeat default (StyleDeclarationTrait.php:383-387; the option list is Functions.php:207-218 in Divi 5.15.1 includes/builder/feature/background-masks/). The base uses a small custom size so the repeat is visible. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+                  "size": "custom",
+                  "width": "120px",
+                  "height": "auto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.repeat": "space"
+    }
+  },
+  {
+    "id": "bg-image-repeat-round",
+    "expect": "PASS",
+    "note": "background-repeat round against the no-repeat default (StyleDeclarationTrait.php:383-387; the option list is Functions.php:207-218 in Divi 5.15.1 includes/builder/feature/background-masks/). The base uses a small custom size so the repeat is visible. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+                  "size": "custom",
+                  "width": "120px",
+                  "height": "auto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.repeat": "round"
+    }
+  },
+  {
+    "id": "bg-image-blend-multiply",
+    "expect": "PASS",
+    "note": "background-blend-mode multiply of the image with the colour behind it (StyleDeclarationTrait.php:391-393; mode list Functions.php:152-171 in Divi 5.15.1 includes/builder/feature/background-masks/). The base has a solid colour to blend with. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#2f5bd0",
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.blend": "multiply"
+    }
+  },
+  {
+    "id": "bg-image-blend-soft-light",
+    "expect": "PASS",
+    "note": "background-blend-mode soft-light of the image with the colour behind it (StyleDeclarationTrait.php:391-393; mode list Functions.php:152-171 in Divi 5.15.1 includes/builder/feature/background-masks/). The base has a solid colour to blend with. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#2f5bd0",
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.blend": "soft-light"
+    }
+  },
+  {
+    "id": "bg-image-parallax-on",
+    "expect": "PASS",
+    "note": "Parallax scrolling on a background image (default method on = true parallax). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.parallax.enabled": "on"
+    }
+  },
+  {
+    "id": "bg-image-parallax-method-fixed",
+    "expect": "PASS",
+    "note": "Parallax method off = the lighter CSS fixed-attachment variant (ConstantsTrait.php:50-53 defaults enabled off, method on). The base turns parallax on. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg",
+                  "parallax": {
+                    "enabled": "on"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.parallax.method": "off"
+    }
+  },
+  {
+    "id": "bg-pattern-polka-dots-on",
+    "expect": "PASS",
+    "note": "Turns a pattern on: enabled, style and colour are set together (a pattern is only drawn when enabled is on). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.enabled": "on",
+      "module.decoration.background.desktop.value.pattern.style": "polka-dots",
+      "module.decoration.background.desktop.value.pattern.color": "rgba(255,255,255,0.35)"
+    }
+  },
+  {
+    "id": "bg-pattern-style-3d-diamonds",
+    "expect": "PASS",
+    "note": "Pattern style 3d-diamonds (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "3d-diamonds"
+    }
+  },
+  {
+    "id": "bg-pattern-style-checkerboard",
+    "expect": "PASS",
+    "note": "Pattern style checkerboard (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "checkerboard"
+    }
+  },
+  {
+    "id": "bg-pattern-style-confetti",
+    "expect": "PASS",
+    "note": "Pattern style confetti (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "confetti"
+    }
+  },
+  {
+    "id": "bg-pattern-style-crosses",
+    "expect": "PASS",
+    "note": "Pattern style crosses (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "crosses"
+    }
+  },
+  {
+    "id": "bg-pattern-style-cubes",
+    "expect": "PASS",
+    "note": "Pattern style cubes (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "cubes"
+    }
+  },
+  {
+    "id": "bg-pattern-style-diagonal-stripes",
+    "expect": "PASS",
+    "note": "Pattern style diagonal-stripes (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "diagonal-stripes"
+    }
+  },
+  {
+    "id": "bg-pattern-style-diagonal-stripes-2",
+    "expect": "PASS",
+    "note": "Pattern style diagonal-stripes-2 (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "diagonal-stripes-2"
+    }
+  },
+  {
+    "id": "bg-pattern-style-diamonds",
+    "expect": "PASS",
+    "note": "Pattern style diamonds (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "diamonds"
+    }
+  },
+  {
+    "id": "bg-pattern-style-honeycomb",
+    "expect": "PASS",
+    "note": "Pattern style honeycomb (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "honeycomb"
+    }
+  },
+  {
+    "id": "bg-pattern-style-inverted-chevrons",
+    "expect": "PASS",
+    "note": "Pattern style inverted-chevrons (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "inverted-chevrons"
+    }
+  },
+  {
+    "id": "bg-pattern-style-inverted-chevrons-2",
+    "expect": "PASS",
+    "note": "Pattern style inverted-chevrons-2 (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "inverted-chevrons-2"
+    }
+  },
+  {
+    "id": "bg-pattern-style-ogees",
+    "expect": "PASS",
+    "note": "Pattern style ogees (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "ogees"
+    }
+  },
+  {
+    "id": "bg-pattern-style-pills",
+    "expect": "PASS",
+    "note": "Pattern style pills (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "pills"
+    }
+  },
+  {
+    "id": "bg-pattern-style-pinwheel",
+    "expect": "PASS",
+    "note": "Pattern style pinwheel (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "pinwheel"
+    }
+  },
+  {
+    "id": "bg-pattern-style-scallops",
+    "expect": "PASS",
+    "note": "Pattern style scallops (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "scallops"
+    }
+  },
+  {
+    "id": "bg-pattern-style-shippo",
+    "expect": "PASS",
+    "note": "Pattern style shippo (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "shippo"
+    }
+  },
+  {
+    "id": "bg-pattern-style-smiles",
+    "expect": "PASS",
+    "note": "Pattern style smiles (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "smiles"
+    }
+  },
+  {
+    "id": "bg-pattern-style-squares",
+    "expect": "PASS",
+    "note": "Pattern style squares (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "squares"
+    }
+  },
+  {
+    "id": "bg-pattern-style-triangles",
+    "expect": "PASS",
+    "note": "Pattern style triangles (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "triangles"
+    }
+  },
+  {
+    "id": "bg-pattern-style-tufted",
+    "expect": "PASS",
+    "note": "Pattern style tufted (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "tufted"
+    }
+  },
+  {
+    "id": "bg-pattern-style-waves",
+    "expect": "PASS",
+    "note": "Pattern style waves (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "waves"
+    }
+  },
+  {
+    "id": "bg-pattern-style-zig-zag",
+    "expect": "PASS",
+    "note": "Pattern style zig-zag (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "zig-zag"
+    }
+  },
+  {
+    "id": "bg-pattern-style-zig-zag-2",
+    "expect": "PASS",
+    "note": "Pattern style zig-zag-2 (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/PatternSvg/PatternSvg.php:48-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.style": "zig-zag-2"
+    }
+  },
+  {
+    "id": "bg-pattern-color",
+    "expect": "PASS",
+    "note": "Pattern colour. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.color": "rgba(255,120,0,0.6)"
+    }
+  },
+  {
+    "id": "bg-pattern-size-cover",
+    "expect": "PASS",
+    "note": "Pattern size cover against the actual-size default (BackgroundStyleUtils.php:95-124). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.size": "cover"
+    }
+  },
+  {
+    "id": "bg-pattern-size-contain",
+    "expect": "PASS",
+    "note": "Pattern size contain against the actual-size default (BackgroundStyleUtils.php:95-124). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.size": "contain"
+    }
+  },
+  {
+    "id": "bg-pattern-size-stretch",
+    "expect": "PASS",
+    "note": "Pattern size stretch against the actual-size default (BackgroundStyleUtils.php:95-124). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.size": "stretch"
+    }
+  },
+  {
+    "id": "bg-pattern-size-custom",
+    "expect": "PASS",
+    "note": "Custom pattern tile size; width and height are used only with size custom. Pair set together. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.size": "custom",
+      "module.decoration.background.desktop.value.pattern.width": "60px",
+      "module.decoration.background.desktop.value.pattern.height": "60px"
+    }
+  },
+  {
+    "id": "bg-pattern-repeat-repeat-x",
+    "expect": "PASS",
+    "note": "Pattern repeat repeat-x against the repeat default (Background.php:273-275; options Functions.php:207-218 in Divi 5.15.1 includes/builder/feature/background-masks/). The base uses a small custom tile so the repeat is visible. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)",
+                  "size": "custom",
+                  "width": "60px",
+                  "height": "60px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.repeat": "repeat-x"
+    }
+  },
+  {
+    "id": "bg-pattern-repeat-repeat-y",
+    "expect": "PASS",
+    "note": "Pattern repeat repeat-y against the repeat default (Background.php:273-275; options Functions.php:207-218 in Divi 5.15.1 includes/builder/feature/background-masks/). The base uses a small custom tile so the repeat is visible. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)",
+                  "size": "custom",
+                  "width": "60px",
+                  "height": "60px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.repeat": "repeat-y"
+    }
+  },
+  {
+    "id": "bg-pattern-repeat-space",
+    "expect": "PASS",
+    "note": "Pattern repeat space against the repeat default (Background.php:273-275; options Functions.php:207-218 in Divi 5.15.1 includes/builder/feature/background-masks/). The base uses a small custom tile so the repeat is visible. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)",
+                  "size": "custom",
+                  "width": "60px",
+                  "height": "60px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.repeat": "space"
+    }
+  },
+  {
+    "id": "bg-pattern-repeat-round",
+    "expect": "PASS",
+    "note": "Pattern repeat round against the repeat default (Background.php:273-275; options Functions.php:207-218 in Divi 5.15.1 includes/builder/feature/background-masks/). The base uses a small custom tile so the repeat is visible. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)",
+                  "size": "custom",
+                  "width": "60px",
+                  "height": "60px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.repeat": "round"
+    }
+  },
+  {
+    "id": "bg-pattern-repeat-origin",
+    "expect": "PASS",
+    "note": "Where the tiling starts: a horizontal word and a vertical word (Background.php:266-271). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.repeatOrigin": "right bottom"
+    }
+  },
+  {
+    "id": "bg-pattern-offset",
+    "expect": "PASS",
+    "note": "Moves the tiling start away from the edge named in repeatOrigin (BackgroundStyleUtils.php:48 and :62). Pair: both offsets set together. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)",
+                  "repeatOrigin": "left top"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.horizontalOffset": "20px",
+      "module.decoration.background.desktop.value.pattern.verticalOffset": "10px"
+    }
+  },
+  {
+    "id": "bg-pattern-blend-multiply",
+    "expect": "PASS",
+    "note": "mix-blend-mode of the pattern layer (Background.php:278-280). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.blend": "multiply"
+    }
+  },
+  {
+    "id": "bg-pattern-transform-invert",
+    "expect": "PASS",
+    "note": "Pattern transform: a list holding any of flipHorizontal, flipVertical, rotate, invert (BackgroundStyleUtils.php:165-189). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.transform": [
+        "invert"
+      ]
+    }
+  },
+  {
+    "id": "bg-pattern-transform-flipHorizontal",
+    "expect": "PASS",
+    "note": "Pattern transform: a list holding any of flipHorizontal, flipVertical, rotate, invert (BackgroundStyleUtils.php:165-189). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.transform": [
+        "flipHorizontal"
+      ]
+    }
+  },
+  {
+    "id": "bg-pattern-transform-flipVertical",
+    "expect": "PASS",
+    "note": "Pattern transform: a list holding any of flipHorizontal, flipVertical, rotate, invert (BackgroundStyleUtils.php:165-189). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.transform": [
+        "flipVertical"
+      ]
+    }
+  },
+  {
+    "id": "bg-pattern-transform-rotate",
+    "expect": "DEAD",
+    "note": "Pattern transform: a list holding any of flipHorizontal, flipVertical, rotate, invert (BackgroundStyleUtils.php:165-189). Measured DEAD on polka-dots: its rotated artwork is byte-identical to its default (visual-builder/packages/mask-and-pattern-library/src/components/pattern-svg/components/polka-dots.json, regular.default == regular.rotated), so rotate changes nothing for this style; the same holds for crosses, pinwheel, shippo and tufted. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "polka-dots",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.transform": [
+        "rotate"
+      ]
+    }
+  },
+  {
+    "id": "bg-pattern-transform-rotate-diagonal-stripes",
+    "expect": "PASS",
+    "note": "Rotate on a style whose rotated artwork differs from its default (diagonal-stripes; BackgroundStyleUtils.php:165-189 reads the flag and MaskAndPatternUtils selects the rotated svgContent). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "pattern": {
+                  "enabled": "on",
+                  "style": "diagonal-stripes",
+                  "color": "rgba(255,255,255,0.35)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.transform": [
+        "rotate"
+      ]
+    }
+  },
+  {
+    "id": "bg-mask-layer-blob-on",
+    "expect": "PASS",
+    "note": "Turns a mask on: enabled, style and colour set together (a mask is only drawn when enabled is on). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.enabled": "on",
+      "module.decoration.background.desktop.value.mask.style": "layer-blob",
+      "module.decoration.background.desktop.value.mask.color": "#ffffff"
+    }
+  },
+  {
+    "id": "bg-mask-style-arch",
+    "expect": "PASS",
+    "note": "Mask style arch (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "arch"
+    }
+  },
+  {
+    "id": "bg-mask-style-bean",
+    "expect": "PASS",
+    "note": "Mask style bean (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "bean"
+    }
+  },
+  {
+    "id": "bg-mask-style-blades",
+    "expect": "PASS",
+    "note": "Mask style blades (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "blades"
+    }
+  },
+  {
+    "id": "bg-mask-style-caret",
+    "expect": "PASS",
+    "note": "Mask style caret (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "caret"
+    }
+  },
+  {
+    "id": "bg-mask-style-chevrons",
+    "expect": "PASS",
+    "note": "Mask style chevrons (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "chevrons"
+    }
+  },
+  {
+    "id": "bg-mask-style-corner-blob",
+    "expect": "PASS",
+    "note": "Mask style corner-blob (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "corner-blob"
+    }
+  },
+  {
+    "id": "bg-mask-style-corner-lake",
+    "expect": "PASS",
+    "note": "Mask style corner-lake (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "corner-lake"
+    }
+  },
+  {
+    "id": "bg-mask-style-corner-paint",
+    "expect": "PASS",
+    "note": "Mask style corner-paint (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "corner-paint"
+    }
+  },
+  {
+    "id": "bg-mask-style-corner-pill",
+    "expect": "PASS",
+    "note": "Mask style corner-pill (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "corner-pill"
+    }
+  },
+  {
+    "id": "bg-mask-style-corner-square",
+    "expect": "PASS",
+    "note": "Mask style corner-square (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "corner-square"
+    }
+  },
+  {
+    "id": "bg-mask-style-diagonal",
+    "expect": "PASS",
+    "note": "Mask style diagonal (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "diagonal"
+    }
+  },
+  {
+    "id": "bg-mask-style-diagonal-bars",
+    "expect": "PASS",
+    "note": "Mask style diagonal-bars (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "diagonal-bars"
+    }
+  },
+  {
+    "id": "bg-mask-style-diagonal-bars-2",
+    "expect": "PASS",
+    "note": "Mask style diagonal-bars-2 (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "diagonal-bars-2"
+    }
+  },
+  {
+    "id": "bg-mask-style-diagonal-pills",
+    "expect": "PASS",
+    "note": "Mask style diagonal-pills (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "diagonal-pills"
+    }
+  },
+  {
+    "id": "bg-mask-style-ellipse",
+    "expect": "PASS",
+    "note": "Mask style ellipse (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "ellipse"
+    }
+  },
+  {
+    "id": "bg-mask-style-floating-squares",
+    "expect": "PASS",
+    "note": "Mask style floating-squares (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "floating-squares"
+    }
+  },
+  {
+    "id": "bg-mask-style-honeycomb",
+    "expect": "PASS",
+    "note": "Mask style honeycomb (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "honeycomb"
+    }
+  },
+  {
+    "id": "bg-mask-style-paint",
+    "expect": "PASS",
+    "note": "Mask style paint (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "paint"
+    }
+  },
+  {
+    "id": "bg-mask-style-rock-stack",
+    "expect": "PASS",
+    "note": "Mask style rock-stack (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "rock-stack"
+    }
+  },
+  {
+    "id": "bg-mask-style-square-stripes",
+    "expect": "PASS",
+    "note": "Mask style square-stripes (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "square-stripes"
+    }
+  },
+  {
+    "id": "bg-mask-style-triangles",
+    "expect": "PASS",
+    "note": "Mask style triangles (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "triangles"
+    }
+  },
+  {
+    "id": "bg-mask-style-wave",
+    "expect": "PASS",
+    "note": "Mask style wave (the name is in the list at Divi 5.15.1 includes/builder-5/server/Packages/MaskAndPatternLibrary/MaskSvg/MaskSvg.php:49-71). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.style": "wave"
+    }
+  },
+  {
+    "id": "bg-mask-color",
+    "expect": "PASS",
+    "note": "Mask colour. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.color": "#f5c518"
+    }
+  },
+  {
+    "id": "bg-mask-aspect-square",
+    "expect": "PASS",
+    "note": "Mask aspect ratio square against landscape (options MaskFields.php:41-48 in Divi 5.15.1 includes/builder/feature/background-masks/; the ratio picks the SVG variant, MaskAndPatternUtils.php:296-329). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.aspectRatio": "square"
+    }
+  },
+  {
+    "id": "bg-mask-aspect-portrait",
+    "expect": "PASS",
+    "note": "Mask aspect ratio portrait against landscape (options MaskFields.php:41-48 in Divi 5.15.1 includes/builder/feature/background-masks/; the ratio picks the SVG variant, MaskAndPatternUtils.php:296-329). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.aspectRatio": "portrait"
+    }
+  },
+  {
+    "id": "bg-mask-size-cover",
+    "expect": "PASS",
+    "note": "Mask size cover against the stretch default (options MaskFields.php:50-58). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.size": "cover"
+    }
+  },
+  {
+    "id": "bg-mask-size-contain",
+    "expect": "PASS",
+    "note": "Mask size contain against the stretch default (options MaskFields.php:50-58). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.size": "contain"
+    }
+  },
+  {
+    "id": "bg-mask-size-custom",
+    "expect": "PASS",
+    "note": "Custom mask size; width and height are used only with size custom. Pair set together. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.size": "custom",
+      "module.decoration.background.desktop.value.mask.width": "60%",
+      "module.decoration.background.desktop.value.mask.height": "auto"
+    }
+  },
+  {
+    "id": "bg-mask-position",
+    "expect": "PASS",
+    "note": "Mask position (horizontal word + vertical word); printed only when size is not stretch (Background.php:154-159), so the base sets size contain. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff",
+                  "size": "contain"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.position": "right top"
+    }
+  },
+  {
+    "id": "bg-mask-offset",
+    "expect": "PASS",
+    "note": "Offsets away from the edge named in position (BackgroundStyleUtils.php:48 and :62); printed only when size is not stretch. Pair: both offsets set together. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff",
+                  "size": "contain",
+                  "position": "left top"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.horizontalOffset": "40px",
+      "module.decoration.background.desktop.value.mask.verticalOffset": "20px"
+    }
+  },
+  {
+    "id": "bg-mask-blend-multiply",
+    "expect": "PASS",
+    "note": "mix-blend-mode of the mask layer (Background.php:162-164). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.blend": "multiply"
+    }
+  },
+  {
+    "id": "bg-mask-transform-invert",
+    "expect": "PASS",
+    "note": "Mask transform: a list holding any of flipHorizontal, flipVertical, rotate, invert (BackgroundStyleUtils.php:165-189). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.transform": [
+        "invert"
+      ]
+    }
+  },
+  {
+    "id": "bg-mask-transform-flipHorizontal",
+    "expect": "PASS",
+    "note": "Mask transform: a list holding any of flipHorizontal, flipVertical, rotate, invert (BackgroundStyleUtils.php:165-189). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.transform": [
+        "flipHorizontal"
+      ]
+    }
+  },
+  {
+    "id": "bg-mask-transform-flipVertical",
+    "expect": "PASS",
+    "note": "Mask transform: a list holding any of flipHorizontal, flipVertical, rotate, invert (BackgroundStyleUtils.php:165-189). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.transform": [
+        "flipVertical"
+      ]
+    }
+  },
+  {
+    "id": "bg-mask-transform-rotate",
+    "expect": "PASS",
+    "note": "Mask transform: a list holding any of flipHorizontal, flipVertical, rotate, invert (BackgroundStyleUtils.php:165-189). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "section",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a",
+                "mask": {
+                  "enabled": "on",
+                  "style": "layer-blob",
+                  "color": "#ffffff"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.transform": [
+        "rotate"
+      ]
+    }
+  },
+  {
+    "id": "bg-row-gradient-circular",
+    "expect": "PASS",
+    "note": "A row background gradient. Row and column take the same module.decoration.background family (row/column module.json, attributes.module.settings.decoration.background). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).",
+    "block": "row",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "gradient": {
+                  "enabled": "on",
+                  "stops": [
+                    {
+                      "position": "0",
+                      "color": "#2B87DA"
+                    },
+                    {
+                      "position": "100",
+                      "color": "#29C4A9"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.gradient.type": "circular"
+    }
+  },
+  {
+    "id": "bg-row-pattern-on",
+    "expect": "PASS",
+    "note": "A row background pattern. Row and column take the same module.decoration.background family (row/column module.json, attributes.module.settings.decoration.background). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "row",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.enabled": "on",
+      "module.decoration.background.desktop.value.pattern.style": "polka-dots",
+      "module.decoration.background.desktop.value.pattern.color": "rgba(255,255,255,0.35)"
+    }
+  },
+  {
+    "id": "bg-row-mask-on",
+    "expect": "PASS",
+    "note": "A row background mask. Row and column take the same module.decoration.background family (row/column module.json, attributes.module.settings.decoration.background). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "row",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.enabled": "on",
+      "module.decoration.background.desktop.value.mask.style": "layer-blob",
+      "module.decoration.background.desktop.value.mask.color": "#ffffff"
+    }
+  },
+  {
+    "id": "bg-row-image-size-cover",
+    "expect": "PASS",
+    "note": "A row background image size. Measured css-only: the computed style does not move, but the emitted stylesheet gains the explicit rule; accepted as proof because the rule is the whole effect. Row and column take the same module.decoration.background family (row/column module.json, attributes.module.settings.decoration.background). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "row",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.size": "cover"
+    },
+    "allowCssOnly": true
+  },
+  {
+    "id": "bg-column-gradient-angle",
+    "expect": "PASS",
+    "note": "A column background gradient. Row and column take the same module.decoration.background family (row/column module.json, attributes.module.settings.decoration.background). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47 (gradient defaults: type, direction, directionRadial, stops, length, overlaysImage) and Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852 (what is rendered).",
+    "block": "column",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "gradient": {
+                  "enabled": "on",
+                  "stops": [
+                    {
+                      "position": "0",
+                      "color": "#2B87DA"
+                    },
+                    {
+                      "position": "100",
+                      "color": "#29C4A9"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.gradient.direction": "135deg"
+    }
+  },
+  {
+    "id": "bg-column-pattern-on",
+    "expect": "PASS",
+    "note": "A column background pattern. Row and column take the same module.decoration.background family (row/column module.json, attributes.module.settings.decoration.background). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:71-84 (pattern defaults: enabled, style, color, transform, size, width, height, repeatOrigin, horizontalOffset, verticalOffset, repeat, blend) and Background.php:192-282 (what is rendered).",
+    "block": "column",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.pattern.enabled": "on",
+      "module.decoration.background.desktop.value.pattern.style": "polka-dots",
+      "module.decoration.background.desktop.value.pattern.color": "rgba(255,255,255,0.35)"
+    }
+  },
+  {
+    "id": "bg-column-mask-on",
+    "expect": "PASS",
+    "note": "A column background mask. Row and column take the same module.decoration.background family (row/column module.json, attributes.module.settings.decoration.background). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:85-98 (mask defaults: enabled, style, color, transform, aspectRatio, size, width, height, position, horizontalOffset, verticalOffset, blend) and Background.php:80-166 (what is rendered).",
+    "block": "column",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#1b2a4a"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.mask.enabled": "on",
+      "module.decoration.background.desktop.value.mask.style": "layer-blob",
+      "module.decoration.background.desktop.value.mask.color": "#ffffff"
+    }
+  },
+  {
+    "id": "bg-column-image-size-contain",
+    "expect": "PASS",
+    "note": "A column background image size. Row and column take the same module.decoration.background family (row/column module.json, attributes.module.settings.decoration.background). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:48-62 (image defaults: size, width, height, position, horizontalOffset, verticalOffset, repeat, blend, parallax) and Traits/StyleDeclarationTrait.php:355-394 (what is rendered).",
+    "block": "column",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "image": {
+                  "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.background.desktop.value.image.size": "contain"
+    }
+  }
+]

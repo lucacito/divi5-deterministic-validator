@@ -20,7 +20,8 @@ final class StyleGuide
     private const TOPIC_LINE = 'Topics: call get_style_guide with topic=<name>: design-languages, design-language:<id>.';
 
     /**
-     * The topics served on request: `design-languages` plus `design-language:<id>` for every design language.
+     * The topics served on request: `design-languages`, `design-language:<id>` for every design language, then the
+     * vocabulary-family topics (each teaches only shapes proven on the real Divi; see docs/shape-evidence-5.15.1.md).
      *
      * @return list<string>
      */
@@ -30,6 +31,7 @@ final class StyleGuide
         foreach ( DesignLanguages::ids() as $id ) {
             $topics[] = 'design-language:' . $id;
         }
+        $topics[] = 'backgrounds';
         return $topics;
     }
 
@@ -46,6 +48,9 @@ final class StyleGuide
         if ( 'design-languages' === $topic ) {
             return DesignLanguages::markdown();
         }
+        if ( 'backgrounds' === $topic ) {
+            return self::backgroundsTopic();
+        }
         if ( str_starts_with( $topic, 'design-language:' ) && in_array( $topic, self::topics(), true ) ) {
             return DesignLanguages::markdown( substr( $topic, strlen( 'design-language:' ) ) );
         }
@@ -54,6 +59,106 @@ final class StyleGuide
             $lines[] = '- `' . $valid . '`';
         }
         return implode( "\n", $lines ) . "\n";
+    }
+
+    /** Topic `backgrounds`: gradient, image, pattern and mask shapes, every one proven on the real Divi 5.15.1. At most 10,000 bytes. */
+    private static function backgroundsTopic(): string
+    {
+        return <<<'MD'
+# Backgrounds: gradients, images, patterns, masks
+
+Every shape here was rendered on the real Divi 5.15.1 and changed the page; nothing is guessed. They work on a
+`divi/section`, a `divi/row` and a `divi/column`. All paths below sit under
+`module.decoration.background.desktop.value.` (for example `module.decoration.background.desktop.value.gradient.type`);
+use `desktop`, Divi cascades it to tablet and phone. `color` is the plain fill under the rest.
+Never use video (it needs a media file) and never write CSS.
+
+## Gradient (`gradient.*`)
+- `enabled` = "on" and `stops`: a list of `{"position":"0","color":"#hex"}` (position is a string, 0 to 100, in the unit of
+  `length`). Two or more stops; three or more make a multi-stop blend.
+- `type`: "linear" (default), "circular", "elliptical", "conic".
+- `direction` (linear): an angle such as "135deg" or the keyword "to right". For "conic" it is the start angle ("90deg").
+- `directionRadial` (circular, elliptical, conic): where the centre sits, a pair of words such as "top right".
+- Repeating stripes: `repeat` = "on" together with a short `length` such as "25%".
+- `overlaysImage` = "on" draws the gradient above the section's image (use a translucent gradient for text over a photo).
+- A conic gradient has a hard seam at its start angle unless the first and last stop share a colour.
+
+## Image (`image.*`)
+- `url`: an image token from get_image_guide or a Media Library URL; never a remote or invented URL.
+- `size`: "cover", "contain", or "custom" with `width` and `height` ("320px", "auto"); width and height only apply with "custom".
+- `position`: a horizontal word (left, center, right) plus a vertical word (top, center, bottom), "left top".
+  `horizontalOffset` and `verticalOffset` ("40px") move it away from the named edge; set them together.
+- `repeat`: "repeat", "repeat-x", "repeat-y", "space", "round" (default no-repeat); useful with a small custom size.
+- `blend`: "multiply" or "soft-light" mix the image with the section's `color` (set a colour to blend with).
+- `parallax.enabled` = "on" scrolls the image slower than the page; `parallax.method` = "off" selects Divi's other parallax method.
+
+## Pattern (`pattern.*`)
+A repeating texture. Set `enabled` = "on", a `style` and a `color` (use a low alpha such as rgba(255,255,255,0.08) so
+text stays readable).
+- `style`, 24 proven: 3d-diamonds, checkerboard, confetti, crosses, cubes, diagonal-stripes, diagonal-stripes-2, diamonds, honeycomb, inverted-chevrons, inverted-chevrons-2, ogees, pills, pinwheel, polka-dots, scallops, shippo, smiles, squares, triangles, tufted, waves, zig-zag, zig-zag-2.
+- `size`: "cover", "contain", "stretch", or "custom" with `width` and `height` ("60px") as the tile size.
+- `repeat`: "repeat-x", "repeat-y", "space", "round". `repeatOrigin`: "right bottom" style words;
+  `horizontalOffset` and `verticalOffset` shift the start (set together). Repeat and origin need a `size` other than "stretch".
+- `blend` = "multiply". `transform`: a list of "flipHorizontal", "flipVertical", "invert", "rotate"
+  (rotate does nothing for crosses, pinwheel, polka-dots, shippo, tufted: their artwork is symmetric).
+
+## Mask (`mask.*`)
+A shape cut out of the section: the mask paints `color` over the section and leaves the section's own background visible
+only inside the shape. Set `color` to the colour behind the section (the page or the neighbouring section), usually "#ffffff".
+Set `enabled` = "on", a `style` and a `color`.
+- `style`, 23 proven: arch, bean, blades, caret, chevrons, corner-blob, corner-lake, corner-paint, corner-pill, corner-square, diagonal, diagonal-bars, diagonal-bars-2, diagonal-pills, ellipse, floating-squares, honeycomb, layer-blob, paint, rock-stack, square-stripes, triangles, wave.
+- `aspectRatio`: "landscape" (default), "square", "portrait".
+- `size`: "cover", "contain", or "custom" with `width` and `height` ("60%", "auto"); `position` ("right top") and the
+  offsets apply only when `size` is not the default stretch.
+- `blend` = "multiply". `transform`: the same four words as a pattern.
+
+## Worked examples (each validates)
+Gradient:
+```
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"gradient":{"enabled":"on","type":"linear","direction":"135deg","stops":[{"position":"0","color":"#1e3a8a"},{"position":"55","color":"#7c3aed"},{"position":"100","color":"#db2777"}]}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Plan, build, launch"}},"decoration":{"font":{"font":{"desktop":{"value":{"color":"#ffffff"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+Image under a translucent gradient (replace IMAGE_URL with the url you chose):
+```
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"image":{"url":"IMAGE_URL","size":"cover","position":"left top"},"gradient":{"enabled":"on","overlaysImage":"on","stops":[{"position":"0","color":"rgba(10,10,40,0.85)"},{"position":"100","color":"rgba(10,10,40,0.35)"}]}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Words over a photo"}},"decoration":{"font":{"font":{"desktop":{"value":{"color":"#ffffff"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+Pattern:
+```
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#1b2a4a","pattern":{"enabled":"on","style":"diagonal-stripes","color":"rgba(255,255,255,0.08)"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Calm texture behind text"}},"decoration":{"font":{"font":{"desktop":{"value":{"color":"#ffffff"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+Mask:
+```
+<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#1b2a4a","mask":{"enabled":"on","style":"wave","color":"#ffffff"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"A wave edge"}},"decoration":{"font":{"font":{"desktop":{"value":{"color":"#ffffff"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+
+## Limits
+Text over a pattern, photo or conic gradient needs a contrast check; patterns and masks are decoration, never carry
+meaning. Per-breakpoint overrides use `tablet` and `phone` the same way. Combinations (a pattern with a mask, a mask
+with a gradient on one element) and any value not listed here are not proven: do not use them.
+MD;
     }
 
     private static function guide(): string
