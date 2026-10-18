@@ -14897,3 +14897,908 @@ Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-t
 - Button icon on tablet and phone, and button hover states beyond those in `hover-states`: not rendered; the button alignment measured is `module.advanced.alignment`
 - Number counter behaviour (count speed, start value) and the circle counter and bar counter modules: not rendered: only the fonts, the percent sign and the alignment of the number counter module were measured
 - The Visual Builder: not checked: every result is a front-end render of a draft page preview
+
+## rm-car-slides-show
+
+Block: `group-carousel`, holding `group`, `group`, `group`, `group`. Set on top of the base block:
+
+- `module.advanced.slidesToShow.desktop.value` = `"3"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 22211 | no | `0:div:block-size: 240px -> 153.766px` |
+| 900 px | yes | 22211 | no | `0:div:block-size: 240px -> 119.984px` |
+| 400 px | yes | 22211 | no | `0:div:block-size: 146.656px -> 75.5469px` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Slides shown at once, 3 (default 1 per Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:192,635): the module gets the class et_pb_group_carousel_slides_3 (:192-195) and the slide width follows (data-carousel-slides-to-show, :741). Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running).
+
+Registered paths added:
+
+- `module.advanced.slidesToShow.{bp}.value`
+
+## rm-car-slides-show-phone
+
+Block: `group-carousel`, holding `group`, `group`, `group`, `group`. Set on top of the base block:
+
+- `module.advanced.slidesToShow.phone.value` = `"1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | no | 0 | no |  |
+| 900 px | no | 0 | no |  |
+| 400 px | yes | 22211 | no | `0:div:block-size: 75.5469px -> 146.656px` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Phone override of slides shown: desktop shows 3, the phone value 1 (the per-breakpoint values are read in Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:679-694 and _set_responsive_carousel_data from :721). Measured at 400 px (the 1280 and 900 pages may legitimately show no difference). Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rm-car-slides-scroll
+
+Block: `group-carousel`, holding `group`, `group`, `group`, `group`, measured in the `click` state (clicking `.et_pb_group_carousel_arrow_next` inside the element). Set on top of the base block:
+
+- `module.advanced.slidesToScroll.desktop.value` = `"2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 14696 | no | `2:div:transform: matrix(1, 0, 0, 1, -1536, 0) -> matrix(1, 0, 0, 1, -2560, 0)` |
+| 900 px | yes | 14696 | no | `2:div:transform: matrix(1, 0, 0, 1, -1080, 0) -> matrix(1, 0, 0, 1, -1800, 0)` |
+| 400 px | yes | 14696 | no | `2:div:transform: matrix(1, 0, 0, 1, -480, 0) -> matrix(1, 0, 0, 1, -800, 0)` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Slides moved per click, 2 (default 1; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:636,694, data-carousel-slides-to-scroll :742). It acts only when the visitor moves the carousel, so the NEXT arrow (.et_pb_group_carousel_arrow_next, rendered at :1131 and :1148) is clicked once on both pages and the track position is compared. Base shows 2 slides at once. Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running).
+
+Registered paths added:
+
+- `module.advanced.slidesToScroll.{bp}.value`
+
+## rm-car-center-mode
+
+Block: `group-carousel`, holding `group`, `group`, `group`, `group`. Set on top of the base block:
+
+- `module.advanced.centerMode.desktop.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | no | `2:div:align-items: normal -> center` |
+| 900 px | yes | 8 | no | `2:div:align-items: normal -> center` |
+| 400 px | yes | 8 | no | `2:div:align-items: normal -> center` |
+
+Properties that changed (any width): `align-items`, `clip-path`, `transform`, `z-index`.
+
+Phone overflow at 400 px: no.
+
+Note: Centre mode on (default off): the module gets the class et_pb_group_carousel_center_mode (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:135-138) and the active slide is centred (data-carousel-center-mode :740). Base shows 3 slides at once. Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running).
+
+Registered paths added:
+
+- `module.advanced.centerMode.{bp}.value`
+
+## rm-car-auto
+
+Block: `group-carousel`, holding `group`, `group`, `group`, `group`. Set on top of the base block:
+
+- `module.advanced.auto.desktop.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 11 | no | `2:div:transform: matrix(1, 0, 0, 1, -1024, 0) -> matrix(1, 0, 0, 1, -2048, 0)` |
+| 900 px | yes | 11 | no | `2:div:transform: matrix(1, 0, 0, 1, -720, 0) -> matrix(1, 0, 0, 1, -1440, 0)` |
+| 400 px | yes | 11 | no | `2:div:transform: matrix(1, 0, 0, 1, -320, 0) -> matrix(1, 0, 0, 1, -640, 0)` |
+
+Properties that changed (any width): `clip-path`, `opacity`, `transform`, `z-index`.
+
+Phone overflow at 400 px: no.
+
+Note: Autoplay on (default off; speed default 2000ms, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:630-631, data-carousel-auto :736). Measured after 5 s on both pages: the autoplay page has moved by then, the control has not. Base shows 2 slides at once. Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running).
+
+Registered paths added:
+
+- `module.advanced.auto.{bp}.value`
+
+## rm-car-arrows-off
+
+Block: `group-carousel`, holding `group`, `group`, `group`, `group`. Set on top of the base block:
+
+- `arrows.advanced.showArrows.desktop.value` = `"off"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8540 | no | `33:span:accent-color: auto -> undefined` |
+| 900 px | yes | 8540 | no | `33:span:accent-color: auto -> undefined` |
+| 400 px | yes | 8540 | no | `33:span:accent-color: auto -> undefined` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Arrows off (default on; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:141-150,1074-1083): the two arrow spans (:1131, :1148) are not rendered, so the measured element list is shorter by those elements (the result lists them as undefined on the page that has none). Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running).
+
+Registered paths added:
+
+- `arrows.advanced.showArrows.{bp}.value`
+
+## rm-car-dots-off
+
+Block: `group-carousel`, holding `group`, `group`, `group`, `group`. Set on top of the base block:
+
+- `dotNav.advanced.showDots.desktop.value` = `"off"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2463 | no | `0:div:block-size: 240px -> 200px` |
+| 900 px | yes | 2463 | no | `0:div:block-size: 240px -> 200px` |
+| 400 px | yes | 2463 | no | `0:div:block-size: 146.656px -> 106.656px` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Dots off (default on; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:162-165,1084-1085): the dot navigation is not rendered and the module gets et_pb_group_carousel_dots_disabled (:189). Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running).
+
+Registered paths added:
+
+- `dotNav.advanced.showDots.{bp}.value`
+
+## rm-blog-type-page
+
+Block: `blog`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `post.advanced.type.desktop.value` = `"page"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 109191 | no | `0:div:block-size: 969.641px -> 1372.33px` |
+| 900 px | yes | 109183 | no | `0:div:block-size: 1005.81px -> 1634.61px` |
+| 400 px | yes | 109185 | no | `0:div:block-size: 2098.52px -> 4861.72px` |
+
+Properties that changed (any width): `--align-items`, `--column-count`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`.
+
+Phone overflow at 400 px: no.
+
+Note: Post type 'page' (default: posts; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:778 is the post_type of the WP_Query). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+
+Registered paths added:
+
+- `post.advanced.type.{bp}.value`
+
+## rm-blog-type-unknown
+
+Block: `blog`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `post.advanced.type.desktop.value` = `"event"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 62423 | no | `0:div:block-size: 969.641px -> 63.7969px` |
+| 900 px | yes | 62423 | no | `0:div:block-size: 1005.81px -> 84.5938px` |
+| 400 px | yes | 62423 | no | `0:div:block-size: 2098.52px -> 105.391px` |
+
+Properties that changed (any width): `--align-items`, `--column-count`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`.
+
+Phone overflow at 400 px: no.
+
+Note: Post type 'event', the value the legacy blog-feed recipe carries: a post type that does not exist on this site gives an empty WP_Query (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:778-803), so the blog draws no articles. Shows that the recipe's value is a site-specific example, not a portable setting. Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rm-blog-meta-author-off
+
+Block: `blog`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `meta.advanced.showAuthor.desktop.value` = `"off"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 89726 | no | `12:a:accent-color: auto -> undefined` |
+| 900 px | yes | 89726 | no | `12:a:accent-color: auto -> undefined` |
+| 400 px | yes | 89745 | no | `0:div:block-size: 2098.52px -> 2048.11px` |
+
+Properties that changed (any width): `--align-items`, `--column-count`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`.
+
+Phone overflow at 400 px: no.
+
+Note: Author hidden in the post meta line (shown by default; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:644,652,1198). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+
+Registered paths added:
+
+- `meta.advanced.showAuthor.{bp}.value`
+
+## rm-blog-meta-date-off
+
+Block: `blog`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `meta.advanced.showDate.desktop.value` = `"off"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 93200 | no | `14:span:accent-color: auto -> undefined` |
+| 900 px | yes | 93221 | no | `0:div:block-size: 1005.81px -> 955.406px` |
+| 400 px | yes | 93221 | no | `0:div:block-size: 2098.52px -> 1972.5px` |
+
+Properties that changed (any width): `--align-items`, `--column-count`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`.
+
+Phone overflow at 400 px: no.
+
+Note: Date hidden in the post meta line (shown by default; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:645,653,1206). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+
+Registered paths added:
+
+- `meta.advanced.showDate.{bp}.value`
+
+## rm-blog-readmore-on
+
+Block: `blog`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `readMore.advanced.enable.desktop.value` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 90804 | no | `0:div:block-size: 969.641px -> 1017.23px` |
+| 900 px | yes | 90804 | no | `0:div:block-size: 1005.81px -> 1053.41px` |
+| 400 px | yes | 90804 | no | `0:div:block-size: 2098.52px -> 2193.7px` |
+
+Properties that changed (any width): `--align-items`, `--column-count`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`.
+
+Phone overflow at 400 px: no.
+
+Note: Read-more link on (off by default; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:720,1190). The multi-view script shows and hides the .more-link element for this setting (:719-725). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+
+Registered paths added:
+
+- `readMore.advanced.enable.{bp}.value`
+
+## rm-blog-pagination-off
+
+Block: `blog`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `pagination.advanced.enable.desktop.value` = `"off"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2449 | no | `0:div:block-size: 494.219px -> 440.422px` |
+| 900 px | yes | 2449 | no | `0:div:block-size: 526.703px -> 472.906px` |
+| 400 px | yes | 2449 | no | `0:div:block-size: 1047.84px -> 994.047px` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Pagination off (on by default; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:726,1526-1560). The base shows 2 posts per page (post.advanced.number) so that 3 pages exist and the pagination has something to draw. Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+
+Registered paths added:
+
+- `pagination.advanced.enable.{bp}.value`
+
+## rm-blog-pagination-off-one-page
+
+Block: `blog`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `pagination.advanced.enable.desktop.value` = `"off"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1838 | no | `0:div:block-size: 969.641px -> 939.641px` |
+| 900 px | yes | 1838 | no | `0:div:block-size: 1005.81px -> 975.812px` |
+| 400 px | yes | 1838 | no | `0:div:block-size: 2098.52px -> 2068.52px` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Precondition check for the pagination setting: the same 'off' WITHOUT the 2-posts-per-page base, so all 6 posts fit on one page. It still changes the module (about 30 px of height at every width): render_pagination (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:1524-1560) draws the navigation block and the multi-view script hides it, so the setting does not need a second page to act. Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rm-blog-grid-desktop
+
+Block: `blog`. Set on top of the base block:
+
+- `blogGrid.decoration.layout.desktop.value.gridColumnCount` = `"2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 459 | yes | `0:div:block-size: 969.641px -> 1561.27px` |
+| 900 px | yes | 469 | yes | `0:div:block-size: 1005.81px -> 1421.48px` |
+| 400 px | yes | 471 | yes | `0:div:block-size: 2098.52px -> 1704.88px` |
+
+Properties that changed (any width): `--column-count`, `block-size`, `grid-template-columns`, `grid-template-rows`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Grid column count 2 on desktop (the recipe sets it per device; the grid layout style is read from blogGrid.decoration.layout at Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:204,555,783). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+
+Registered paths added:
+
+- `blogGrid.decoration.layout.{bp}.value.gridColumnCount`
+
+## rm-blog-grid-tablet
+
+Block: `blog`. Set on top of the base block:
+
+- `blogGrid.decoration.layout.tablet.value.gridColumnCount` = `"1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 471 | yes | `0:div:block-size: 1005.81px -> 3865.22px` |
+| 400 px | yes | 471 | yes | `0:div:block-size: 2098.52px -> 2675.84px` |
+
+Properties that changed (any width): `--column-count`, `block-size`, `grid-template-columns`, `grid-template-rows`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Grid column count 1 on tablet only (the legacy recipe sets tablet 2 and phone 1). Measured at 900 px (tablet) with the desktop value left alone. Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rm-blog-grid-phone
+
+Block: `blog`. Set on top of the base block:
+
+- `blogGrid.decoration.layout.phone.value.gridColumnCount` = `"2"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 471 | yes | `0:div:block-size: 2098.52px -> 1704.88px` |
+
+Properties that changed (any width): `--column-count`, `block-size`, `grid-template-columns`, `grid-template-rows`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Grid column count 2 on the phone only. Measured at 400 px. Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rm-blog-post-radius
+
+Block: `blog`. Set on top of the base block:
+
+- `post.decoration.border.desktop.value.radius.topLeft` = `"15px"`
+- `post.decoration.border.desktop.value.radius.topRight` = `"15px"`
+- `post.decoration.border.desktop.value.radius.bottomLeft` = `"15px"`
+- `post.decoration.border.desktop.value.radius.bottomRight` = `"15px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 72 | yes | `3:article:border-bottom-left-radius: 0px -> 15px` |
+| 900 px | yes | 72 | yes | `3:article:border-bottom-left-radius: 0px -> 15px` |
+| 400 px | yes | 72 | yes | `3:article:border-bottom-left-radius: 0px -> 15px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Rounded corners on each article (the four corner values together, as the legacy recipe writes them; article.et_pb_post reads post.decoration.border, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:307,563; this applies in the grid layout, the default - in the other layout styles Divi reads fullwidth.decoration.border instead, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:555-564). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+
+Registered paths added:
+
+- `post.decoration.border.{bp}.value.radius.bottomLeft`
+- `post.decoration.border.{bp}.value.radius.bottomRight`
+- `post.decoration.border.{bp}.value.radius.topLeft`
+- `post.decoration.border.{bp}.value.radius.topRight`
+
+## rm-blog-post-border-width
+
+Block: `blog`. Set on top of the base block:
+
+- `post.decoration.border.desktop.value.styles.all.width` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 349 | yes | `0:div:block-size: 969.641px -> 972.641px` |
+| 900 px | yes | 351 | yes | `0:div:block-size: 1005.81px -> 1008.81px` |
+| 400 px | yes | 393 | yes | `0:div:block-size: 2098.52px -> 2251.58px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `grid-template-rows`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Border width 3px on each article (the legacy recipe writes '0px'; a width alone, without colour or style). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:307,555-564 (grid layout, the default). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+
+Registered paths added:
+
+- `post.decoration.border.{bp}.value.styles.all.width`
+
+## rm-cf-field-bg
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.background.desktop.value.color` = `"#fff3cd"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `3:input:background-color: rgb(238, 238, 238) -> rgb(255, 243, 205)` |
+| 900 px | yes | 3 | yes | `3:input:background-color: rgb(238, 238, 238) -> rgb(255, 243, 205)` |
+| 400 px | yes | 3 | yes | `3:input:background-color: rgb(238, 238, 238) -> rgb(255, 243, 205)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Background colour of the input fields (FormFieldStyle on the 'field' attribute, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:562). Form of three fields (name, email, message) with the basic captcha switched off in the base so that the page is stable (the captcha question is random on every load).
+
+Registered paths added:
+
+- `field.decoration.background.{bp}.value.color`
+
+## rm-cf-field-color
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.font.font.desktop.value.color` = `"#b91c1c"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 27 | yes | `3:input:caret-color: rgb(153, 153, 153) -> rgb(185, 28, 28)` |
+| 900 px | yes | 27 | yes | `3:input:caret-color: rgb(153, 153, 153) -> rgb(185, 28, 28)` |
+| 400 px | yes | 27 | yes | `3:input:caret-color: rgb(153, 153, 153) -> rgb(185, 28, 28)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Text colour of the input fields (field.decoration.font, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:562 and :812 for the placeholder font). Form of three fields (name, email, message) with the basic captcha switched off in the base so that the page is stable (the captcha question is random on every load).
+
+Registered paths added:
+
+- `field.decoration.font.font.{bp}.value.color`
+
+## rm-cf-field-family
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.font.font.desktop.value.family` = `"Playfair Display"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `3:input:font-family: "Open Sans" -> "Playfair Display", Georgia, "Times New Roman", serif` |
+| 900 px | yes | 3 | yes | `3:input:font-family: "Open Sans" -> "Playfair Display", Georgia, "Times New Roman", serif` |
+| 400 px | yes | 3 | yes | `3:input:font-family: "Open Sans" -> "Playfair Display", Georgia, "Times New Roman", serif` |
+
+Properties that changed (any width): `font-family`.
+
+Phone overflow at 400 px: no.
+
+Note: Font family of the input fields (Font.php:272-333 turns it into font-family with a fallback stack; family 'Playfair Display' is listed in Divi/core/json-data/google-fonts.json). Form of three fields (name, email, message) with the basic captcha switched off in the base so that the page is stable (the captcha question is random on every load).
+
+Registered paths added:
+
+- `field.decoration.font.font.{bp}.value.family`
+
+## rm-cf-captcha-family
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, `contact-field`, ignoring the computed properties `width`, `inline-size`, `block-size`, `height`, `min-width`, `min-inline-size`, `perspective-origin`, `transform-origin`, `max-width`, `max-inline-size`, `margin-left`, `margin-inline-start`, `margin-right`, `margin-inline-end`, `left`, `right`, `inset-inline-start`, `inset-inline-end`. Set on top of the base block:
+
+- `captcha.decoration.font.font.desktop.value.family` = `"Playfair Display"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `13:p:font-family: "Open Sans" -> "Playfair Display", Georgia, "Times New Roman", serif` |
+| 900 px | yes | 3 | yes | `13:p:font-family: "Open Sans" -> "Playfair Display", Georgia, "Times New Roman", serif` |
+| 400 px | yes | 3 | yes | `13:p:font-family: "Open Sans" -> "Playfair Display", Georgia, "Times New Roman", serif` |
+
+Properties that changed (any width): `font-family`.
+
+Phone overflow at 400 px: no.
+
+Note: Font family of the basic captcha question (the 'captcha' element, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:478 and :1197-1258). The captcha is ON here (the default) and its question is random on every load ('5 + 7' or '15 + 7'), which changes the width of the question and everything sized from it: those size properties are ignored on both pages so that only the font can differ. Three fields.
+
+Registered paths added:
+
+- `captcha.decoration.font.font.{bp}.value.family`
+
+## rm-ts-company
+
+Block: `testimonial`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `company.innerContent.desktop.value` = `{"text":"Probe Company"}`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 634 | no | `0:div:block-size: 132px -> 183px` |
+| 900 px | yes | 634 | no | `0:div:block-size: 132px -> 183px` |
+| 400 px | yes | 634 | no | `0:div:block-size: 134px -> 185px` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Company name; the value is an object with the text (the module.json lists company.innerContent with subName text and linkUrl, and Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Testimonial/TestimonialModule.php:177-217 renders it into the meta line). The rendered text of the module is compared.
+
+Registered paths added:
+
+- `company.innerContent`
+
+## rm-ts-jobtitle
+
+Block: `testimonial`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `jobTitle.innerContent.desktop.value` = `"Probe Role"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 634 | no | `0:div:block-size: 132px -> 183px` |
+| 900 px | yes | 634 | no | `0:div:block-size: 132px -> 183px` |
+| 400 px | yes | 634 | no | `0:div:block-size: 134px -> 185px` |
+
+Properties that changed (any width): `--align-items`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`, `--gcid-primary-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Job title text (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Testimonial/TestimonialModule.php:185-193 renders jobTitle.innerContent into the meta line). The rendered text of the module is compared.
+
+Registered paths added:
+
+- `jobTitle.innerContent`
+
+## rm-text-ul-color
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.ul.font.desktop.value.color` = `"#b91c1c"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 34 | yes | `4:li:border-block-end-color: rgb(102, 102, 102) -> rgb(185, 28, 28)` |
+| 900 px | yes | 34 | yes | `4:li:border-block-end-color: rgb(102, 102, 102) -> rgb(185, 28, 28)` |
+| 400 px | yes | 34 | yes | `4:li:border-block-end-color: rgb(102, 102, 102) -> rgb(185, 28, 28)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Colour of bulleted lists in a text module. The content holds a <ul>: the setting acts only on a list in the text (the legacy image-gallery recipe sets it on text that has no list). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Text/TextPresetAttrsMap.php:493 and Module/Options/FontBodyGroup/FontBodyStyle.php.
+
+Registered paths added:
+
+- `content.decoration.bodyFont.ul.font.{bp}.value.color`
+
+## rm-text-ul-size
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.ul.font.desktop.value.size` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `4:li:font-size: 14px -> 24px` |
+| 900 px | yes | 2 | yes | `4:li:font-size: 14px -> 24px` |
+| 400 px | yes | 2 | yes | `4:li:font-size: 14px -> 24px` |
+
+Properties that changed (any width): `font-size`.
+
+Phone overflow at 400 px: no.
+
+Note: Size of bulleted lists in a text module (acts only on a <ul> in the text; 24px is larger than the body size so the change is visible). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Text/TextPresetAttrsMap.php:498.
+
+Registered paths added:
+
+- `content.decoration.bodyFont.ul.font.{bp}.value.size`
+
+## rm-text-ul-weight
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.ul.font.desktop.value.weight` = `"700"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `4:li:font-weight: 500 -> 700` |
+| 900 px | yes | 2 | yes | `4:li:font-weight: 500 -> 700` |
+| 400 px | yes | 2 | yes | `4:li:font-weight: 500 -> 700` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight of bulleted lists in a text module (acts only on a <ul> in the text). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Text/TextPresetAttrsMap.php:468.
+
+Registered paths added:
+
+- `content.decoration.bodyFont.ul.font.{bp}.value.weight`
+
+## rm-text-h2-align
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h2.font.desktop.value.textAlign` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:text-align: start -> center` |
+| 900 px | yes | 1 | yes | `2:h2:text-align: start -> center` |
+| 400 px | yes | 1 | yes | `2:h2:text-align: start -> center` |
+
+Properties that changed (any width): `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: Alignment of the h2 inside a text module (left by default). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Text/TextPresetAttrsMap.php:838.
+
+Registered paths added:
+
+- `content.decoration.headingFont.h2.font.{bp}.value.textAlign`
+
+## rm-text-h3-align
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.headingFont.h3.font.desktop.value.textAlign` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `3:h3:text-align: start -> center` |
+| 900 px | yes | 1 | yes | `3:h3:text-align: start -> center` |
+| 400 px | yes | 1 | yes | `3:h3:text-align: start -> center` |
+
+Properties that changed (any width): `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: Alignment of the h3 inside a text module (left by default). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Text/TextPresetAttrsMap.php:913.
+
+Registered paths added:
+
+- `content.decoration.headingFont.h3.font.{bp}.value.textAlign`
+
+## rm-blurb-icon-control-fontsize
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.decoration.sizing.desktop.value.iconFontSize` = `"60px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 177.797px -> 141.797px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 177.797px -> 141.797px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 177.797px -> 141.797px` |
+
+Properties that changed (any width): `block-size`, `font-size`, `height`, `inline-size`, `line-height`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Control for the four dead imageIcon.advanced candidates: the SAME icon blurb with the icon size set where Divi 5.15.1 reads it (imageIcon.decoration.sizing.iconFontSize, BlurbModule.php:739-753) changes the page, so the base does draw an icon that a working setting can resize. The path is already registered.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rm-blurb-image-control-align
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.decoration.sizing.desktop.value.alignment` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `2:div:margin-inline-end: 215px -> 0px` |
+| 900 px | yes | 7 | yes | `2:div:margin-inline-end: 215px -> 0px` |
+| 400 px | yes | 7 | yes | `2:div:margin-inline-end: 100px -> 0px` |
+
+Properties that changed (any width): `margin-inline-end`, `margin-inline-start`, `margin-left`, `margin-right`, `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: Control for the dead imageIcon.advanced image-width candidate: the SAME image blurb with the alignment set where Divi 5.15.1 reads it (imageIcon.decoration.sizing.alignment, BlurbModule.php:454-470) changes the page, so the base does draw an image that a working setting can move. The path is already registered.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rm-hv-translate-x
+
+Block: `column`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.transform.desktop.hover.translate.x` = `"12px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 12, 0)` |
+| 900 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 12, 0)` |
+| 400 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 12, 0)` |
+
+Properties that changed (any width): `transform`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Horizontal move of 12px on hover on a column (the registered hover y is already proven on a group; the hover state sits next to the normal one under the key hover). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php (the hover state is handled in style_declaration, :226-313). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added:
+
+- `module.decoration.transform.{bp}.hover.translate.x`
+
+## rm-html-section-id
+
+Block: `section`, also comparing the element attributes `id`. Set on top of the base block:
+
+- `module.advanced.htmlAttributes.desktop.value.id` = `"aied-probe-anchor"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | no | `attr:id: null -> aied-probe-anchor` |
+| 900 px | yes | 1 | no | `attr:id: null -> aied-probe-anchor` |
+| 400 px | yes | 1 | no | `attr:id: null -> aied-probe-anchor` |
+
+Properties that changed (any width): `attr:id`.
+
+Phone overflow at 400 px: no.
+
+Note: CSS id through module.advanced.htmlAttributes on a section (read from desktop.value.id, Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/IdClasses/IdClassesClassnames.php:47-50). The effect is the id attribute of the module's element, compared as attr:id; it changes no style. The legacy recipes write empty strings here and set their real ids through decoration.attributes.
+
+Registered paths added:
+
+- `module.advanced.htmlAttributes.{bp}.value.id`
+
+## rm-html-section-class
+
+Block: `section`, also comparing the element attributes `class`. Set on top of the base block:
+
+- `module.advanced.htmlAttributes.desktop.value.class` = `"aied-probe-class"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | no | `attr:class: et_pb_section_0 et_pb_section et_section_regular et_flex_section -> et_pb_section_0 et_pb_section et_section_regular et_flex_section aied-probe-class` |
+| 900 px | yes | 1 | no | `attr:class: et_pb_section_0 et_pb_section et_section_regular et_flex_section -> et_pb_section_0 et_pb_section et_section_regular et_flex_section aied-probe-class` |
+| 400 px | yes | 1 | no | `attr:class: et_pb_section_0 et_pb_section et_section_regular et_flex_section -> et_pb_section_0 et_pb_section et_section_regular et_flex_section aied-probe-class` |
+
+Properties that changed (any width): `attr:class`.
+
+Phone overflow at 400 px: no.
+
+Note: CSS class through module.advanced.htmlAttributes on a section (read from desktop.value.class, Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/IdClasses/IdClassesClassnames.php:47-50). The effect is the class attribute of the module's element, compared as attr:class; it changes no style.
+
+Registered paths added:
+
+- `module.advanced.htmlAttributes.{bp}.value.class`
+
+## rm-html-row-id
+
+Block: `row`, also comparing the element attributes `id`. Set on top of the base block:
+
+- `module.advanced.htmlAttributes.desktop.value.id` = `"aied-probe-anchor"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | no | `attr:id: null -> aied-probe-anchor` |
+| 900 px | yes | 1 | no | `attr:id: null -> aied-probe-anchor` |
+| 400 px | yes | 1 | no | `attr:id: null -> aied-probe-anchor` |
+
+Properties that changed (any width): `attr:id`.
+
+Phone overflow at 400 px: no.
+
+Note: CSS id through module.advanced.htmlAttributes on a row (read from desktop.value.id, Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/IdClasses/IdClassesClassnames.php:47-50). The effect is the id attribute of the module's element, compared as attr:id; it changes no style. The legacy recipes write empty strings here and set their real ids through decoration.attributes.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rm-html-row-class
+
+Block: `row`, also comparing the element attributes `class`. Set on top of the base block:
+
+- `module.advanced.htmlAttributes.desktop.value.class` = `"aied-probe-class"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | no | `attr:class: et_pb_row_0 et_pb_row et_flex_row -> et_pb_row_0 et_pb_row et_flex_row aied-probe-class` |
+| 900 px | yes | 1 | no | `attr:class: et_pb_row_0 et_pb_row et_flex_row -> et_pb_row_0 et_pb_row et_flex_row aied-probe-class` |
+| 400 px | yes | 1 | no | `attr:class: et_pb_row_0 et_pb_row et_flex_row -> et_pb_row_0 et_pb_row et_flex_row aied-probe-class` |
+
+Properties that changed (any width): `attr:class`.
+
+Phone overflow at 400 px: no.
+
+Note: CSS class through module.advanced.htmlAttributes on a row (read from desktop.value.class, Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/IdClasses/IdClassesClassnames.php:47-50). The effect is the class attribute of the module's element, compared as attr:class; it changes no style.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (recipe-modules)
+
+Candidates from `recipe-modules.json` that were measured and are not taught, with the reason:
+
+- `rm-blog-categories-all`: no effect (dead). Categories ['all'], the value the legacy recipe carries: 'All Categories' is the same as no filter (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:799-800 and Divi 5.15.1 includes/builder-5/server/Packages/ModuleUtils/ModuleUtils.php:4181-4184 add_category_query_args applies a filter only when 'all' is absent), so it must change nothing. A real category id filter is not measurable here: the dev site has one category holding every post (see rm-blog-categories-id). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+- `rm-blog-categories-id`: no effect (dead). Categories ['1'] (the only category of the dev site, which holds all 6 posts) with the post type set to 'post' (Divi 5.15.1 includes/builder-5/server/Packages/ModuleUtils/ModuleUtils.php:4186 filters by 'cat' only for the type 'post'): the filter keeps every post, so nothing changes on this site. A category filter cannot be measured here without a second category; it is not registered. Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+- `rm-blog-post-radius-sync`: no effect (dead). The 'sync' flag next to the four corner values, alone (corners already 15px in the base). In Divi's server code the corner loop skips the key 'sync' (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/OverflowForBorderRadius/OverflowForBorderRadius.php:104), so it is a builder flag that should change nothing. Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn.
+- `rm-cf-receiver`: no effect (dead). Receiver address. It is read only when the form is submitted, to address the mail (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormHandler.php:399; an empty value falls back to the site admin email, :402-404), and is not part of the page that is drawn, so the front end cannot show it. Mail delivery is not tested here. Form of three fields (name, email, message) with the basic captcha switched off in the base so that the page is stable (the captcha question is random on every load).
+- `rm-text-ul-color-no-list`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Precondition check: the same ul colour on a text module that has NO list (the content is one paragraph, as in the legacy image-gallery recipe, whose text has a ul style but no <ul>). The style is written but there is no element for it to colour (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Text/TextPresetAttrsMap.php:493 is the ul colour). Divi writes the rule into the stylesheet and no element changes, which the probe reports as css-only (a stylesheet difference with no computed-style difference).
+- `rm-blurb-icon-align-right`: no effect (dead). Icon alignment 'right' under imageIcon.advanced.alignment (the legacy recipe writes 'left'). The module.json lists only color and placement under imageIcon.advanced (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/blurb/module.json, attributes.imageIcon.settings.advanced); the width and alignment the server draws are read from imageIcon.decoration.sizing (server/Packages/ModuleLibrary/Blurb/BlurbModule.php:454-470, :800-830), so this legacy path is expected to draw nothing.
+- `rm-blurb-icon-align-left`: no effect (dead). Icon alignment 'left' under imageIcon.advanced.alignment, the exact value the legacy recipe writes. The module.json lists only color and placement under imageIcon.advanced (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/blurb/module.json, attributes.imageIcon.settings.advanced); the width and alignment the server draws are read from imageIcon.decoration.sizing (server/Packages/ModuleLibrary/Blurb/BlurbModule.php:454-470, :800-830), so this legacy path is expected to draw nothing.
+- `rm-blurb-icon-width`: no effect (dead). Icon width 120px under imageIcon.advanced.width.icon (the recipe writes 44px for both icon and image). The module.json lists only color and placement under imageIcon.advanced (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/blurb/module.json, attributes.imageIcon.settings.advanced); the width and alignment the server draws are read from imageIcon.decoration.sizing (server/Packages/ModuleLibrary/Blurb/BlurbModule.php:454-470, :800-830), so this legacy path is expected to draw nothing.
+- `rm-blurb-image-width`: no effect (dead). Image width 200px under imageIcon.advanced.width.image on a blurb that shows an image. The module.json lists only color and placement under imageIcon.advanced (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/blurb/module.json, attributes.imageIcon.settings.advanced); the width and alignment the server draws are read from imageIcon.decoration.sizing (server/Packages/ModuleLibrary/Blurb/BlurbModule.php:454-470, :800-830), so this legacy path is expected to draw nothing.
+- `rm-hv-translate-linked`: no effect (dead). The 'linked' flag of the translate pair in the hover state, with y already -10px in the base (the legacy icon-values recipe writes x 0px, y -10px, linked off). No file under Divi 5.15.1 includes/builder-5/server reads a 'linked' key (grep for 'linked' in StyleLibrary and the whole server tree finds nothing), so it is a builder flag that should change nothing.
+
+Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-recipe-modules.json`):
+
+- Contact form submission: the receiver address, mail delivery, spam protection, success and error messages: not measurable in the drawn page. The receiver is read when the form is submitted (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormHandler.php:399) and the dev site sends no mail; nothing was submitted and mail delivery is not tested. `email.advanced.receiver` is listed in dead-recipe-paths.txt for that reason only (the front end draws nothing)
+- Blog: filtering by a real category id, other post types than page, other layout styles (fullwidth, flex) and their fullwidth.decoration.border: not measured: the dev site holds 6 posts in ONE category, so a category filter cannot change the page here (rm-blog-categories-id), and only the post type page was compared with the default. In the other layout styles Divi reads fullwidth.decoration.border instead of post.decoration.border (BlogModule.php:555-564); the post border and radius were measured in the default grid layout only
+- Blog: image, excerpt, content and meta settings other than showAuthor, showDate, readMore, pagination, post type, grid column count and the post border: not measured: only the settings the legacy blog-feed recipe writes were probed
+- Carousel: speed, transition speed, pause on hover, arrow position and icons, dot alignment and position, and slidesToShow / centerMode / slidesToScroll at tablet: not measured. Divi reads them in GroupCarouselModule.php (the data-carousel-* map at :736-747, _set_responsive_carousel_data from :721) but only slides shown (desktop and phone), centre mode, autoplay, arrows and dots were probed, and slides to scroll with one click on the next arrow. Autoplay was measured once, after 5 s with the default 2000ms speed; its timing, looping at the end and pause behaviour were not
+- Carousel: the Visual Builder preview and anything a visitor does other than one click on the next arrow: not rendered. The carousel is started by Divi's script after load; the effects were measured in Chromium with JavaScript running, on the front end
+- Testimonial company link (linkUrl, linkTarget) and the portrait: not measured: only the company text and the job title text were compared; the link needs a URL and the portrait an image
+- Text module: ordered lists, quotes, links and the heading levels h1, h4, h5, h6, and the other ul font settings (family, style, line height, letter spacing): not measured: only the ul colour, size and weight and the h2 and h3 alignment of the legacy recipes were probed. The ul settings act only on a <ul> in the text: without a list the rule is written to the stylesheet and no element changes (rm-text-ul-color-no-list, css-only)
+- Blurb: the replacement for the dead imageIcon.advanced width and alignment, imageIcon.decoration.sizing.width on an image blurb: not probed here. imageIcon.decoration.sizing.alignment and iconFontSize were already registered; the control candidates show an icon blurb resizing with iconFontSize and an image blurb moving with alignment. A width for an image blurb was not probed (no recipe edit is made in this task)
+- htmlAttributes at tablet and phone, on columns and modules, and the browser behaviour of an anchor id: not measured: Divi reads only desktop.value.id and desktop.value.class (IdClassesClassnames.php:47-50), so a tablet or phone value would not be read; the id and class attributes were compared on a section and on a row, never the scroll-to-anchor behaviour. The legacy recipes write empty strings here
+- Hover translate on hosts other than a column, at tablet and phone, and the combined x and y: not measured: translate x on hover was compared on a column with the pointer on it (desktop hover value only); translate y on hover was already proven on a group
+- Contact form fields: field types, required marks, placeholder font and the captcha settings other than the font family: not measured: only the field background colour, text colour and font family and the captcha question's font family were probed. The captcha question is random on every load, so the captcha candidate ignores size and position properties on both pages

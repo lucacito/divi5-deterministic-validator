@@ -15,7 +15,9 @@
  *   children a list of block specs ({ block, base, children }) placed INSIDE the candidate block, replacing the default filler
  *            (e.g. block group, children [heading]). Only container blocks (section, row, column, group) take children; a child
  *            has no `set`. Supported blocks: section, row, column, group, heading, text, image, button, blurb, divider,
- *            number-counter, testimonial, icon. Real-export content shapes are filled in for the content of each, `base` wins.
+ *            number-counter, testimonial, icon, group-carousel, blog, contact-form, contact-field (the last four were added for the legacy recipe
+ *            module settings task: a `group-carousel` holds `group` children and a `contact-form` holds `contact-field` children, which a
+ *            candidate lists in `children`; `blog` renders the site's own posts). Real-export content shapes are filled in for the content of each, `base` wins.
  *   neighbours  (section candidates only) { "before": [<section spec>], "after": [<section spec>] }: plain sections placed before/after the
  *            candidate section on the page, identical in the A and B pages (e.g. a differently coloured section so that a divider is
  *            visible). The measured element is then the candidate section, not a neighbour. Absent = the page is unchanged.
@@ -30,6 +32,9 @@
  *                        (viewport top/left/width/height, rounded) is added to the compared properties as `rect:*`. Give the page height with
  *                        `neighbours` (tall plain sections) so that there is something to scroll. Scroll effects and sticky elements are driven
  *                        by Divi's script on scroll events, so this is the only way to see them.
+ *              "click"   (added for the legacy recipe module settings task) the element matched by `clickSelector` (a CSS selector looked up INSIDE the
+ *                        measured element, e.g. a carousel's next arrow) is clicked once and the page waits `settleMs` (default 1200); the same click is
+ *                        done on the A page. For settings that only act when the visitor operates the module (how far a carousel moves per click).
  *            Absent = the page is measured as loaded.
  *   siblings (optional, not on a section candidate) { "before": [<block spec>], "after": [<block spec>] }: plain blocks placed before / after the
  *            candidate INSIDE ITS IMMEDIATE CONTAINER (the `parent` when given, otherwise the automatic wrapper: a column for a module, a row for a
@@ -64,6 +69,8 @@
  *            For settings that Divi's script writes into the element (an entrance animation adds the classes `et_animated fade` and an
  *            inline `animation-duration`). Absent = attributes are not compared (so results of older candidate files are unchanged).
  * "@SITE@" inside a string is replaced by the dev site URL.
+ * Diagnostics: with the environment variable AIED_DUMP_DIR=<dir> the rendered page content (.et-l--post) of every measured load is written to
+ * <dir>/<candidate id>-<width>-<page id>.html; nothing else changes (added for the legacy recipe module settings task).
  * Results (default fixtures/shapes/probe-results-<candidates file name>.json, never the committed probe-results-5.15.1.json
  * unless asked with --out): [{ id, effect, widths: {"1280","900","400"}, phoneOverflow, detail, error? }]; detail[width] holds the number
  * of computed differences, a sample of six, `overflowPx` (how far the candidate page is wider than the viewport: scrollWidth - innerWidth, 0 when
@@ -126,8 +133,8 @@ const esc = (j) => j.split('--').join(BS + 'u002d' + BS + 'u002d').split('<').jo
 const block = (name, attrs, inner) => { const j = esc(JSON.stringify(attrs)); return inner === undefined ? `<!-- wp:divi/${name} ${j} /-->` : `<!-- wp:divi/${name} ${j} -->${inner}<!-- /wp:divi/${name} -->`; };
 const setp = (o, p, v) => { const k = p.split('.'); let d = o; for (const x of k.slice(0, -1)) { d = d[x] = d[x] || {}; } d[k[k.length - 1]] = v; };
 const withSite = (v) => (typeof v === 'string' ? v.split('@SITE@').join(SITE) : Array.isArray(v) ? v.map(withSite) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, withSite(x)])) : v);
-const SUPPORTED = ['section', 'row', 'column', 'group', 'heading', 'text', 'image', 'button', 'blurb', 'divider', 'number-counter', 'testimonial', 'icon'];
-const CONTAINERS = ['section', 'row', 'column', 'group'];
+const SUPPORTED = ['section', 'row', 'column', 'group', 'heading', 'text', 'image', 'button', 'blurb', 'divider', 'number-counter', 'testimonial', 'icon', 'group-carousel', 'blog', 'contact-form', 'contact-field'];
+const CONTAINERS = ['section', 'row', 'column', 'group', 'group-carousel', 'contact-form'];
 // Content every block needs to render something; shapes are the ones real exports and recipes use. A candidate's `base` wins.
 const IMG = '@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg';
 const DEFAULT_BASE = {
@@ -144,6 +151,10 @@ const DEFAULT_BASE = {
   'number-counter': { title: { innerContent: { desktop: { value: 'PROBE' } } }, number: { innerContent: { desktop: { value: '42' } } } },
   testimonial: { author: { innerContent: { desktop: { value: 'Probe Person' } } }, content: { innerContent: { desktop: { value: '<p>probe</p>' } } } },
   icon: { icon: { innerContent: { desktop: { value: { unicode: '&#xf4c4;', type: 'fa', weight: '900' } } } } },
+  'group-carousel': {},
+  blog: {},
+  'contact-form': {},
+  'contact-field': { fieldItem: { advanced: { id: { desktop: { value: 'Name' } } }, innerContent: { desktop: { value: 'Name' } } } },
 };
 const deepMerge = (a, b) => {
   const out = JSON.parse(JSON.stringify(a));
@@ -441,6 +452,9 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
         if (c.state === 'hover') {
           await p.locator('.et-l--post .' + cls).nth(index).hover({ timeout: 10000 });
           await p.waitForTimeout(settle);
+        } else if (c.state === 'click') {
+          await p.locator('.et-l--post .' + cls).nth(index).locator(c.clickSelector).first().click({ timeout: 10000 });
+          await p.waitForTimeout(settle);
         } else if (c.state === 'scroll') {
           await p.evaluate(({ cls, index, at }) => {
             const el = [...document.querySelectorAll('.et-l--post .' + cls)][index];
@@ -449,6 +463,10 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
             window.scrollTo(0, Math.max(0, top + el.offsetHeight / 2 - at * window.innerHeight));
           }, { cls, index, at: typeof c.scrollAt === 'number' ? c.scrollAt : 0.25 });
           await p.waitForTimeout(settle);
+        }
+        if (process.env.AIED_DUMP_DIR) { // diagnostics only: the rendered page content, one file per page id and width
+          fs.mkdirSync(process.env.AIED_DUMP_DIR, { recursive: true });
+          fs.writeFileSync(path.join(process.env.AIED_DUMP_DIR, `${c.id}-${width}-${id}.html`), await p.evaluate(() => (document.querySelector('.et-l--post') || document.body).outerHTML));
         }
         const r = await p.evaluate(snapshotInPage, { cls, index, withRect: c.state === 'scroll' || c.geometry === true, attrs: c.attrs || [], ignore: c.ignore || [], geometry: c.geometry === true, pseudo: c.pseudo || [], text: c.text === true });
         // WordPress writes a random per-request placeholder comment into the block-library style.
@@ -468,7 +486,8 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
       try {
         if (!c || typeof c.id !== 'string' || !c.id) throw new Error('a candidate needs a string `id`');
         if (!c.set || typeof c.set !== 'object' || !Object.keys(c.set).length) throw new Error('a candidate needs a non-empty `set`');
-        if (c.state !== undefined && c.state !== 'hover' && c.state !== 'scroll') throw new Error('`state` must be "hover" or "scroll"');
+        if (c.state !== undefined && c.state !== 'hover' && c.state !== 'scroll' && c.state !== 'click') throw new Error('`state` must be "hover", "scroll" or "click"');
+        if (c.state === 'click' && !(typeof c.clickSelector === 'string' && c.clickSelector)) throw new Error('`state: "click"` needs a `clickSelector`');
         if (c.ignore !== undefined && !(Array.isArray(c.ignore) && c.ignore.every((x) => typeof x === 'string'))) throw new Error('`ignore` must be a list of computed property names');
         if (c.pseudo !== undefined && !(Array.isArray(c.pseudo) && c.pseudo.every((x) => typeof x === 'string' && /^::[a-z-]+$/.test(x)))) throw new Error('`pseudo` must be a list of pseudo-elements such as "::before"');
         if (c.text !== undefined && c.text !== true) throw new Error('`text` must be true');

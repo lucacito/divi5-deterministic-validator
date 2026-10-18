@@ -1,0 +1,46 @@
+[
+  {
+    "item": "Contact form submission: the receiver address, mail delivery, spam protection, success and error messages",
+    "reason": "not measurable in the drawn page. The receiver is read when the form is submitted (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormHandler.php:399) and the dev site sends no mail; nothing was submitted and mail delivery is not tested. `email.advanced.receiver` is listed in dead-recipe-paths.txt for that reason only (the front end draws nothing)"
+  },
+  {
+    "item": "Blog: filtering by a real category id, other post types than page, other layout styles (fullwidth, flex) and their fullwidth.decoration.border",
+    "reason": "not measured: the dev site holds 6 posts in ONE category, so a category filter cannot change the page here (rm-blog-categories-id), and only the post type page was compared with the default. In the other layout styles Divi reads fullwidth.decoration.border instead of post.decoration.border (BlogModule.php:555-564); the post border and radius were measured in the default grid layout only"
+  },
+  {
+    "item": "Blog: image, excerpt, content and meta settings other than showAuthor, showDate, readMore, pagination, post type, grid column count and the post border",
+    "reason": "not measured: only the settings the legacy blog-feed recipe writes were probed"
+  },
+  {
+    "item": "Carousel: speed, transition speed, pause on hover, arrow position and icons, dot alignment and position, and slidesToShow / centerMode / slidesToScroll at tablet",
+    "reason": "not measured. Divi reads them in GroupCarouselModule.php (the data-carousel-* map at :736-747, _set_responsive_carousel_data from :721) but only slides shown (desktop and phone), centre mode, autoplay, arrows and dots were probed, and slides to scroll with one click on the next arrow. Autoplay was measured once, after 5 s with the default 2000ms speed; its timing, looping at the end and pause behaviour were not"
+  },
+  {
+    "item": "Carousel: the Visual Builder preview and anything a visitor does other than one click on the next arrow",
+    "reason": "not rendered. The carousel is started by Divi's script after load; the effects were measured in Chromium with JavaScript running, on the front end"
+  },
+  {
+    "item": "Testimonial company link (linkUrl, linkTarget) and the portrait",
+    "reason": "not measured: only the company text and the job title text were compared; the link needs a URL and the portrait an image"
+  },
+  {
+    "item": "Text module: ordered lists, quotes, links and the heading levels h1, h4, h5, h6, and the other ul font settings (family, style, line height, letter spacing)",
+    "reason": "not measured: only the ul colour, size and weight and the h2 and h3 alignment of the legacy recipes were probed. The ul settings act only on a <ul> in the text: without a list the rule is written to the stylesheet and no element changes (rm-text-ul-color-no-list, css-only)"
+  },
+  {
+    "item": "Blurb: the replacement for the dead imageIcon.advanced width and alignment, imageIcon.decoration.sizing.width on an image blurb",
+    "reason": "not probed here. imageIcon.decoration.sizing.alignment and iconFontSize were already registered; the control candidates show an icon blurb resizing with iconFontSize and an image blurb moving with alignment. A width for an image blurb was not probed (no recipe edit is made in this task)"
+  },
+  {
+    "item": "htmlAttributes at tablet and phone, on columns and modules, and the browser behaviour of an anchor id",
+    "reason": "not measured: Divi reads only desktop.value.id and desktop.value.class (IdClassesClassnames.php:47-50), so a tablet or phone value would not be read; the id and class attributes were compared on a section and on a row, never the scroll-to-anchor behaviour. The legacy recipes write empty strings here"
+  },
+  {
+    "item": "Hover translate on hosts other than a column, at tablet and phone, and the combined x and y",
+    "reason": "not measured: translate x on hover was compared on a column with the pointer on it (desktop hover value only); translate y on hover was already proven on a group"
+  },
+  {
+    "item": "Contact form fields: field types, required marks, placeholder font and the captcha settings other than the font family",
+    "reason": "not measured: only the field background colour, text colour and font family and the captcha question's font family were probed. The captcha question is random on every load, so the captcha candidate ignores size and position properties on both pages"
+  }
+]

@@ -1,0 +1,18 @@
+# Recipe attribute paths that were measured on the real Divi 5.15.1 and rendered nothing (or whose effect cannot be seen in the
+# rendered page). They stay in ungrounded-recipe-paths.txt until the tokenising tasks remove the setting from the recipes; a path
+# listed here must never be registered by hand. Evidence: fixtures/shapes/candidates/recipe-modules.json (ids rm-*) and
+# fixtures/shapes/probe-results-recipe-modules.json. "The front end draws nothing" is a front-end result: the Visual Builder was not checked.
+# Why: read only when the form is submitted (ContactFormHandler.php:399, an empty value falls back to the site admin email); the page that is drawn does not contain it, so it cannot be measured. rm-cf-receiver. Mail delivery was not tested.
+email.advanced.receiver.{bp}.value
+# Why: a builder-only toggle; the legacy blurb recipe writes the icon alignment here but Divi 5.15.1 reads it from imageIcon.decoration.sizing (module.json lists only color and placement under imageIcon.advanced). rm-blurb-icon-align-left, rm-blurb-icon-align-right changed nothing at 1280, 900 or 400 px while the control rm-blurb-icon-control-fontsize on the same blurb did.
+imageIcon.advanced.alignment.{bp}.value
+# Why: same legacy location as the alignment; the icon size is read from imageIcon.decoration.sizing.iconFontSize. rm-blurb-icon-width changed nothing; the control rm-blurb-icon-control-fontsize did.
+imageIcon.advanced.width.{bp}.value.icon
+# Why: same legacy location; the image width is read from imageIcon.decoration.sizing. rm-blurb-image-width changed nothing on an image blurb; the control rm-blurb-image-control-align on the same blurb did.
+imageIcon.advanced.width.{bp}.value.image
+# Why: the translate "linked" flag is a builder toggle; no file under Divi 5.15.1 includes/builder-5/server reads it and rm-hv-translate-linked changed nothing in the hover state while rm-hv-translate-x on the same host did.
+module.decoration.transform.{bp}.hover.translate.linked
+# Why: a category filter ['all'] is the default (no filter) and measured no difference; a real category id could not be measured because the dev site has a single category that holds every post (rm-blog-categories-all, rm-blog-categories-id). Not portable either: category ids belong to one site.
+post.advanced.categories.{bp}.value.{n}
+# Why: the radius "sync" flag next to the four corner values is skipped by Divi's server code (OverflowForBorderRadius.php:104); rm-blog-post-radius-sync changed nothing while the corners themselves (rm-blog-post-radius) did.
+post.decoration.border.{bp}.value.radius.sync

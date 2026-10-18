@@ -1,0 +1,1700 @@
+[
+  {
+    "id": "rm-car-slides-show",
+    "block": "group-carousel",
+    "children": [
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-2.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-3.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "settleMs": 1500,
+    "set": {
+      "module.advanced.slidesToShow.desktop.value": "3"
+    },
+    "expect": "PASS",
+    "note": "Slides shown at once, 3 (default 1 per Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:192,635): the module gets the class et_pb_group_carousel_slides_3 (:192-195) and the slide width follows (data-carousel-slides-to-show, :741). Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running)."
+  },
+  {
+    "id": "rm-car-slides-show-phone",
+    "block": "group-carousel",
+    "base": {
+      "module": {
+        "advanced": {
+          "slidesToShow": {
+            "desktop": {
+              "value": "3"
+            }
+          }
+        }
+      }
+    },
+    "children": [
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-2.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-3.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "settleMs": 1500,
+    "set": {
+      "module.advanced.slidesToShow.phone.value": "1"
+    },
+    "expect": "PASS",
+    "note": "Phone override of slides shown: desktop shows 3, the phone value 1 (the per-breakpoint values are read in Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:679-694 and _set_responsive_carousel_data from :721). Measured at 400 px (the 1280 and 900 pages may legitimately show no difference). Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running)."
+  },
+  {
+    "id": "rm-car-slides-scroll",
+    "block": "group-carousel",
+    "base": {
+      "module": {
+        "advanced": {
+          "slidesToShow": {
+            "desktop": {
+              "value": "2"
+            }
+          }
+        }
+      }
+    },
+    "children": [
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-2.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-3.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "state": "click",
+    "clickSelector": ".et_pb_group_carousel_arrow_next",
+    "settleMs": 1500,
+    "set": {
+      "module.advanced.slidesToScroll.desktop.value": "2"
+    },
+    "expect": "PASS",
+    "note": "Slides moved per click, 2 (default 1; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:636,694, data-carousel-slides-to-scroll :742). It acts only when the visitor moves the carousel, so the NEXT arrow (.et_pb_group_carousel_arrow_next, rendered at :1131 and :1148) is clicked once on both pages and the track position is compared. Base shows 2 slides at once. Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running)."
+  },
+  {
+    "id": "rm-car-center-mode",
+    "block": "group-carousel",
+    "base": {
+      "module": {
+        "advanced": {
+          "slidesToShow": {
+            "desktop": {
+              "value": "3"
+            }
+          }
+        }
+      }
+    },
+    "children": [
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-2.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-3.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "settleMs": 1500,
+    "set": {
+      "module.advanced.centerMode.desktop.value": "on"
+    },
+    "expect": "PASS",
+    "note": "Centre mode on (default off): the module gets the class et_pb_group_carousel_center_mode (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:135-138) and the active slide is centred (data-carousel-center-mode :740). Base shows 3 slides at once. Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running)."
+  },
+  {
+    "id": "rm-car-auto",
+    "block": "group-carousel",
+    "base": {
+      "module": {
+        "advanced": {
+          "slidesToShow": {
+            "desktop": {
+              "value": "2"
+            }
+          }
+        }
+      }
+    },
+    "children": [
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-2.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-3.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "settleMs": 5000,
+    "set": {
+      "module.advanced.auto.desktop.value": "on"
+    },
+    "expect": "PASS",
+    "note": "Autoplay on (default off; speed default 2000ms, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:630-631, data-carousel-auto :736). Measured after 5 s on both pages: the autoplay page has moved by then, the control has not. Base shows 2 slides at once. Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running)."
+  },
+  {
+    "id": "rm-car-arrows-off",
+    "block": "group-carousel",
+    "children": [
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-2.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-3.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "settleMs": 1500,
+    "set": {
+      "arrows.advanced.showArrows.desktop.value": "off"
+    },
+    "expect": "PASS",
+    "note": "Arrows off (default on; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:141-150,1074-1083): the two arrow spans (:1131, :1148) are not rendered, so the measured element list is shorter by those elements (the result lists them as undefined on the page that has none). Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running)."
+  },
+  {
+    "id": "rm-car-dots-off",
+    "block": "group-carousel",
+    "children": [
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-2.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-3.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "block": "group",
+        "children": [
+          {
+            "block": "image",
+            "base": {
+              "image": {
+                "innerContent": {
+                  "desktop": {
+                    "value": {
+                      "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+                      "alt": "probe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "settleMs": 1500,
+    "set": {
+      "dotNav.advanced.showDots.desktop.value": "off"
+    },
+    "expect": "PASS",
+    "note": "Dots off (default on; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/GroupCarousel/GroupCarouselModule.php:162-165,1084-1085): the dot navigation is not rendered and the module gets et_pb_group_carousel_dots_disabled (:189). Carousel of 4 groups (a logo image each); the module is started by Divi's script after load, so the effect is measured after load in Chromium (JavaScript running)."
+  },
+  {
+    "id": "rm-blog-type-page",
+    "block": "blog",
+    "text": true,
+    "set": {
+      "post.advanced.type.desktop.value": "page"
+    },
+    "expect": "PASS",
+    "note": "Post type 'page' (default: posts; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:778 is the post_type of the WP_Query). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-type-unknown",
+    "block": "blog",
+    "text": true,
+    "set": {
+      "post.advanced.type.desktop.value": "event"
+    },
+    "expect": "PASS",
+    "note": "Post type 'event', the value the legacy blog-feed recipe carries: a post type that does not exist on this site gives an empty WP_Query (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:778-803), so the blog draws no articles. Shows that the recipe's value is a site-specific example, not a portable setting. Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-categories-all",
+    "block": "blog",
+    "text": true,
+    "set": {
+      "post.advanced.categories.desktop.value": [
+        "all"
+      ]
+    },
+    "expect": "DEAD",
+    "note": "Categories ['all'], the value the legacy recipe carries: 'All Categories' is the same as no filter (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:799-800 and Divi 5.15.1 includes/builder-5/server/Packages/ModuleUtils/ModuleUtils.php:4181-4184 add_category_query_args applies a filter only when 'all' is absent), so it must change nothing. A real category id filter is not measurable here: the dev site has one category holding every post (see rm-blog-categories-id). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-categories-id",
+    "block": "blog",
+    "base": {
+      "post": {
+        "advanced": {
+          "type": {
+            "desktop": {
+              "value": "post"
+            }
+          }
+        }
+      }
+    },
+    "text": true,
+    "set": {
+      "post.advanced.categories.desktop.value": [
+        "1"
+      ]
+    },
+    "expect": "DEAD",
+    "note": "Categories ['1'] (the only category of the dev site, which holds all 6 posts) with the post type set to 'post' (Divi 5.15.1 includes/builder-5/server/Packages/ModuleUtils/ModuleUtils.php:4186 filters by 'cat' only for the type 'post'): the filter keeps every post, so nothing changes on this site. A category filter cannot be measured here without a second category; it is not registered. Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-meta-author-off",
+    "block": "blog",
+    "text": true,
+    "set": {
+      "meta.advanced.showAuthor.desktop.value": "off"
+    },
+    "expect": "PASS",
+    "note": "Author hidden in the post meta line (shown by default; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:644,652,1198). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-meta-date-off",
+    "block": "blog",
+    "text": true,
+    "set": {
+      "meta.advanced.showDate.desktop.value": "off"
+    },
+    "expect": "PASS",
+    "note": "Date hidden in the post meta line (shown by default; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:645,653,1206). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-readmore-on",
+    "block": "blog",
+    "text": true,
+    "set": {
+      "readMore.advanced.enable.desktop.value": "on"
+    },
+    "expect": "PASS",
+    "note": "Read-more link on (off by default; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:720,1190). The multi-view script shows and hides the .more-link element for this setting (:719-725). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-pagination-off",
+    "block": "blog",
+    "base": {
+      "post": {
+        "advanced": {
+          "number": {
+            "desktop": {
+              "value": "2"
+            }
+          }
+        }
+      }
+    },
+    "text": true,
+    "set": {
+      "pagination.advanced.enable.desktop.value": "off"
+    },
+    "expect": "PASS",
+    "note": "Pagination off (on by default; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:726,1526-1560). The base shows 2 posts per page (post.advanced.number) so that 3 pages exist and the pagination has something to draw. Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-pagination-off-one-page",
+    "block": "blog",
+    "text": true,
+    "set": {
+      "pagination.advanced.enable.desktop.value": "off"
+    },
+    "expect": "PASS",
+    "note": "Precondition check for the pagination setting: the same 'off' WITHOUT the 2-posts-per-page base, so all 6 posts fit on one page. It still changes the module (about 30 px of height at every width): render_pagination (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:1524-1560) draws the navigation block and the multi-view script hides it, so the setting does not need a second page to act. Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-grid-desktop",
+    "block": "blog",
+    "set": {
+      "blogGrid.decoration.layout.desktop.value.gridColumnCount": "2"
+    },
+    "expect": "PASS",
+    "note": "Grid column count 2 on desktop (the recipe sets it per device; the grid layout style is read from blogGrid.decoration.layout at Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:204,555,783). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-grid-tablet",
+    "block": "blog",
+    "set": {
+      "blogGrid.decoration.layout.tablet.value.gridColumnCount": "1"
+    },
+    "expect": "PASS",
+    "note": "Grid column count 1 on tablet only (the legacy recipe sets tablet 2 and phone 1). Measured at 900 px (tablet) with the desktop value left alone. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:204,555 (the layout attribute is read per breakpoint). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-grid-phone",
+    "block": "blog",
+    "set": {
+      "blogGrid.decoration.layout.phone.value.gridColumnCount": "2"
+    },
+    "expect": "PASS",
+    "note": "Grid column count 2 on the phone only. Measured at 400 px. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:204,555 (the layout attribute is read per breakpoint). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-post-radius",
+    "block": "blog",
+    "set": {
+      "post.decoration.border.desktop.value.radius.topLeft": "15px",
+      "post.decoration.border.desktop.value.radius.topRight": "15px",
+      "post.decoration.border.desktop.value.radius.bottomLeft": "15px",
+      "post.decoration.border.desktop.value.radius.bottomRight": "15px"
+    },
+    "expect": "PASS",
+    "note": "Rounded corners on each article (the four corner values together, as the legacy recipe writes them; article.et_pb_post reads post.decoration.border, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:307,563; this applies in the grid layout, the default - in the other layout styles Divi reads fullwidth.decoration.border instead, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:555-564). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-post-radius-sync",
+    "block": "blog",
+    "base": {
+      "post": {
+        "decoration": {
+          "border": {
+            "desktop": {
+              "value": {
+                "radius": {
+                  "topLeft": "15px",
+                  "topRight": "15px",
+                  "bottomLeft": "15px",
+                  "bottomRight": "15px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "post.decoration.border.desktop.value.radius.sync": "off"
+    },
+    "expect": "DEAD",
+    "note": "The 'sync' flag next to the four corner values, alone (corners already 15px in the base). In Divi's server code the corner loop skips the key 'sync' (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/OverflowForBorderRadius/OverflowForBorderRadius.php:104), so it is a builder flag that should change nothing. Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-blog-post-border-width",
+    "block": "blog",
+    "set": {
+      "post.decoration.border.desktop.value.styles.all.width": "3px"
+    },
+    "expect": "PASS",
+    "note": "Border width 3px on each article (the legacy recipe writes '0px'; a width alone, without colour or style). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:307,555-564 (grid layout, the default). Measured on the dev site's own 6 published posts (all in the one category Uncategorized) and 4 published pages; the blog module draws the site's content, so the effect is the number and kind of articles drawn."
+  },
+  {
+    "id": "rm-cf-receiver",
+    "block": "contact-form",
+    "children": [
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Name"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Name"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Email"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "email"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Email"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Message"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "text"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Message"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "base": {
+      "module": {
+        "advanced": {
+          "spamProtection": {
+            "desktop": {
+              "value": {
+                "useBasicCaptcha": "off"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "email.advanced.receiver.desktop.value": "probe@example.com"
+    },
+    "expect": "DEAD",
+    "note": "Receiver address. It is read only when the form is submitted, to address the mail (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormHandler.php:399; an empty value falls back to the site admin email, :402-404), and is not part of the page that is drawn, so the front end cannot show it. Mail delivery is not tested here. Form of three fields (name, email, message) with the basic captcha switched off in the base so that the page is stable (the captcha question is random on every load)."
+  },
+  {
+    "id": "rm-cf-field-bg",
+    "block": "contact-form",
+    "children": [
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Name"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Name"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Email"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "email"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Email"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Message"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "text"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Message"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "base": {
+      "module": {
+        "advanced": {
+          "spamProtection": {
+            "desktop": {
+              "value": {
+                "useBasicCaptcha": "off"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "field.decoration.background.desktop.value.color": "#fff3cd"
+    },
+    "expect": "PASS",
+    "note": "Background colour of the input fields (FormFieldStyle on the 'field' attribute, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:562). Form of three fields (name, email, message) with the basic captcha switched off in the base so that the page is stable (the captcha question is random on every load)."
+  },
+  {
+    "id": "rm-cf-field-color",
+    "block": "contact-form",
+    "children": [
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Name"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Name"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Email"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "email"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Email"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Message"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "text"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Message"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "base": {
+      "module": {
+        "advanced": {
+          "spamProtection": {
+            "desktop": {
+              "value": {
+                "useBasicCaptcha": "off"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "field.decoration.font.font.desktop.value.color": "#b91c1c"
+    },
+    "expect": "PASS",
+    "note": "Text colour of the input fields (field.decoration.font, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:562 and :812 for the placeholder font). Form of three fields (name, email, message) with the basic captcha switched off in the base so that the page is stable (the captcha question is random on every load)."
+  },
+  {
+    "id": "rm-cf-field-family",
+    "block": "contact-form",
+    "children": [
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Name"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Name"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Email"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "email"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Email"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Message"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "text"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Message"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "base": {
+      "module": {
+        "advanced": {
+          "spamProtection": {
+            "desktop": {
+              "value": {
+                "useBasicCaptcha": "off"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "field.decoration.font.font.desktop.value.family": "Playfair Display"
+    },
+    "expect": "PASS",
+    "note": "Font family of the input fields (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:272-333 turns it into font-family with a fallback stack; family 'Playfair Display' is listed in Divi/core/json-data/google-fonts.json). Form of three fields (name, email, message) with the basic captcha switched off in the base so that the page is stable (the captcha question is random on every load)."
+  },
+  {
+    "id": "rm-cf-captcha-family",
+    "block": "contact-form",
+    "children": [
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Name"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Name"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Email"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "email"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Email"
+              }
+            }
+          }
+        }
+      },
+      {
+        "block": "contact-field",
+        "base": {
+          "fieldItem": {
+            "advanced": {
+              "id": {
+                "desktop": {
+                  "value": "Message"
+                }
+              },
+              "type": {
+                "desktop": {
+                  "value": "text"
+                }
+              }
+            },
+            "innerContent": {
+              "desktop": {
+                "value": "Message"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "ignore": [
+      "width",
+      "inline-size",
+      "block-size",
+      "height",
+      "min-width",
+      "min-inline-size",
+      "perspective-origin",
+      "transform-origin",
+      "max-width",
+      "max-inline-size",
+      "margin-left",
+      "margin-inline-start",
+      "margin-right",
+      "margin-inline-end",
+      "left",
+      "right",
+      "inset-inline-start",
+      "inset-inline-end"
+    ],
+    "set": {
+      "captcha.decoration.font.font.desktop.value.family": "Playfair Display"
+    },
+    "expect": "PASS",
+    "note": "Font family of the basic captcha question (the 'captcha' element, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/ContactForm/ContactFormModule.php:478 and :1197-1258). The captcha is ON here (the default) and its question is random on every load ('5 + 7' or '15 + 7'), which changes the width of the question and everything sized from it: those size properties are ignored on both pages so that only the font can differ. Three fields."
+  },
+  {
+    "id": "rm-ts-company",
+    "block": "testimonial",
+    "text": true,
+    "set": {
+      "company.innerContent.desktop.value": {
+        "text": "Probe Company"
+      }
+    },
+    "expect": "PASS",
+    "note": "Company name; the value is an object with the text (the module.json lists company.innerContent with subName text and linkUrl, and Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Testimonial/TestimonialModule.php:177-217 renders it into the meta line). The rendered text of the module is compared."
+  },
+  {
+    "id": "rm-ts-jobtitle",
+    "block": "testimonial",
+    "text": true,
+    "set": {
+      "jobTitle.innerContent.desktop.value": "Probe Role"
+    },
+    "expect": "PASS",
+    "note": "Job title text (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Testimonial/TestimonialModule.php:185-193 renders jobTitle.innerContent into the meta line). The rendered text of the module is compared."
+  },
+  {
+    "id": "rm-text-ul-color",
+    "block": "text",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>Intro</p><ul><li>First point</li><li>Second point</li></ul>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.ul.font.desktop.value.color": "#b91c1c"
+    },
+    "expect": "PASS",
+    "note": "Colour of bulleted lists in a text module. The content holds a <ul>: the setting acts only on a list in the text (the legacy image-gallery recipe sets it on text that has no list). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Text/TextPresetAttrsMap.php:493 and Module/Options/FontBodyGroup/FontBodyStyle.php."
+  },
+  {
+    "id": "rm-text-ul-color-no-list",
+    "block": "text",
+    "set": {
+      "content.decoration.bodyFont.ul.font.desktop.value.color": "#b91c1c"
+    },
+    "expect": "PASS(css-only)",
+    "note": "Precondition check: the same ul colour on a text module that has NO list (the content is one paragraph, as in the legacy image-gallery recipe, whose text has a ul style but no <ul>). The style is written but there is no element for it to colour (Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Text/TextPresetAttrsMap.php:493 is the ul colour). Divi writes the rule into the stylesheet and no element changes, which the probe reports as css-only (a stylesheet difference with no computed-style difference)."
+  },
+  {
+    "id": "rm-text-ul-size",
+    "block": "text",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>Intro</p><ul><li>First point</li><li>Second point</li></ul>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.ul.font.desktop.value.size": "24px"
+    },
+    "expect": "PASS",
+    "note": "Size of bulleted lists in a text module (acts only on a <ul> in the text; 24px is larger than the body size so the change is visible). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Text/TextPresetAttrsMap.php:498."
+  },
+  {
+    "id": "rm-text-ul-weight",
+    "block": "text",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>Intro</p><ul><li>First point</li><li>Second point</li></ul>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.ul.font.desktop.value.weight": "700"
+    },
+    "expect": "PASS",
+    "note": "Weight of bulleted lists in a text module (acts only on a <ul> in the text). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Text/TextPresetAttrsMap.php:468."
+  },
+  {
+    "id": "rm-text-h2-align",
+    "block": "text",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h2>Heading two</h2><h3>Heading three</h3><p>Body text</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h2.font.desktop.value.textAlign": "center"
+    },
+    "expect": "PASS",
+    "note": "Alignment of the h2 inside a text module (left by default). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Text/TextPresetAttrsMap.php:838."
+  },
+  {
+    "id": "rm-text-h3-align",
+    "block": "text",
+    "base": {
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<h2>Heading two</h2><h3>Heading three</h3><p>Body text</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.headingFont.h3.font.desktop.value.textAlign": "center"
+    },
+    "expect": "PASS",
+    "note": "Alignment of the h3 inside a text module (left by default). Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Text/TextPresetAttrsMap.php:913."
+  },
+  {
+    "id": "rm-blurb-icon-align-right",
+    "block": "blurb",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "useIcon": "on",
+              "icon": {
+                "unicode": "&#xf0ad;",
+                "type": "fa",
+                "weight": "900"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.advanced.alignment.desktop.value": "right"
+    },
+    "expect": "DEAD",
+    "note": "Icon alignment 'right' under imageIcon.advanced.alignment (the legacy recipe writes 'left'). The module.json lists only color and placement under imageIcon.advanced (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/blurb/module.json, attributes.imageIcon.settings.advanced); the width and alignment the server draws are read from imageIcon.decoration.sizing (server/Packages/ModuleLibrary/Blurb/BlurbModule.php:454-470, :800-830), so this legacy path is expected to draw nothing."
+  },
+  {
+    "id": "rm-blurb-icon-align-left",
+    "block": "blurb",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "useIcon": "on",
+              "icon": {
+                "unicode": "&#xf0ad;",
+                "type": "fa",
+                "weight": "900"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.advanced.alignment.desktop.value": "left"
+    },
+    "expect": "DEAD",
+    "note": "Icon alignment 'left' under imageIcon.advanced.alignment, the exact value the legacy recipe writes. The module.json lists only color and placement under imageIcon.advanced (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/blurb/module.json, attributes.imageIcon.settings.advanced); the width and alignment the server draws are read from imageIcon.decoration.sizing (server/Packages/ModuleLibrary/Blurb/BlurbModule.php:454-470, :800-830), so this legacy path is expected to draw nothing."
+  },
+  {
+    "id": "rm-blurb-icon-width",
+    "block": "blurb",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "useIcon": "on",
+              "icon": {
+                "unicode": "&#xf0ad;",
+                "type": "fa",
+                "weight": "900"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.advanced.width.desktop.value.icon": "120px"
+    },
+    "expect": "DEAD",
+    "note": "Icon width 120px under imageIcon.advanced.width.icon (the recipe writes 44px for both icon and image). The module.json lists only color and placement under imageIcon.advanced (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/blurb/module.json, attributes.imageIcon.settings.advanced); the width and alignment the server draws are read from imageIcon.decoration.sizing (server/Packages/ModuleLibrary/Blurb/BlurbModule.php:454-470, :800-830), so this legacy path is expected to draw nothing."
+  },
+  {
+    "id": "rm-blurb-image-width",
+    "block": "blurb",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+              "alt": "probe"
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.advanced.width.desktop.value.image": "200px"
+    },
+    "expect": "DEAD",
+    "note": "Image width 200px under imageIcon.advanced.width.image on a blurb that shows an image. The module.json lists only color and placement under imageIcon.advanced (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/blurb/module.json, attributes.imageIcon.settings.advanced); the width and alignment the server draws are read from imageIcon.decoration.sizing (server/Packages/ModuleLibrary/Blurb/BlurbModule.php:454-470, :800-830), so this legacy path is expected to draw nothing."
+  },
+  {
+    "id": "rm-blurb-icon-control-fontsize",
+    "block": "blurb",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "useIcon": "on",
+              "icon": {
+                "unicode": "&#xf0ad;",
+                "type": "fa",
+                "weight": "900"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.decoration.sizing.desktop.value.iconFontSize": "60px"
+    },
+    "expect": "PASS",
+    "note": "Control for the four dead imageIcon.advanced candidates: the SAME icon blurb with the icon size set where Divi 5.15.1 reads it (imageIcon.decoration.sizing.iconFontSize, BlurbModule.php:739-753) changes the page, so the base does draw an icon that a working setting can resize. The path is already registered."
+  },
+  {
+    "id": "rm-blurb-image-control-align",
+    "block": "blurb",
+    "base": {
+      "imageIcon": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "src": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/logo-1.svg",
+              "alt": "probe"
+            }
+          }
+        },
+        "decoration": {
+          "sizing": {
+            "desktop": {
+              "value": {
+                "width": "120px"
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "imageIcon.decoration.sizing.desktop.value.alignment": "right"
+    },
+    "expect": "PASS",
+    "note": "Control for the dead imageIcon.advanced image-width candidate: the SAME image blurb with the alignment set where Divi 5.15.1 reads it (imageIcon.decoration.sizing.alignment, BlurbModule.php:454-470) changes the page, so the base does draw an image that a working setting can move. The path is already registered."
+  },
+  {
+    "id": "rm-hv-translate-x",
+    "block": "column",
+    "state": "hover",
+    "set": {
+      "module.decoration.transform.desktop.hover.translate.x": "12px"
+    },
+    "expect": "PASS",
+    "note": "Horizontal move of 12px on hover on a column (the registered hover y is already proven on a group; the hover state sits next to the normal one under the key hover). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/StyleDeclarationTrait.php (the hover state is handled in style_declaration, :226-313). Measured with the pointer on the element, the control page hovered identically."
+  },
+  {
+    "id": "rm-hv-translate-linked",
+    "block": "column",
+    "base": {
+      "module": {
+        "decoration": {
+          "transform": {
+            "desktop": {
+              "hover": {
+                "translate": {
+                  "y": "-10px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "state": "hover",
+    "set": {
+      "module.decoration.transform.desktop.hover.translate.linked": "on"
+    },
+    "expect": "DEAD",
+    "note": "The 'linked' flag of the translate pair in the hover state, with y already -10px in the base (the legacy icon-values recipe writes x 0px, y -10px, linked off). No file under Divi 5.15.1 includes/builder-5/server reads a 'linked' key (grep for 'linked' in StyleLibrary and the whole server tree finds nothing), so it is a builder flag that should change nothing."
+  },
+  {
+    "id": "rm-html-section-id",
+    "block": "section",
+    "attrs": [
+      "id"
+    ],
+    "set": {
+      "module.advanced.htmlAttributes.desktop.value.id": "aied-probe-anchor"
+    },
+    "expect": "PASS",
+    "note": "CSS id through module.advanced.htmlAttributes on a section (read from desktop.value.id, Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/IdClasses/IdClassesClassnames.php:47-50). The effect is the id attribute of the module's element, compared as attr:id; it changes no style. The legacy recipes write empty strings here and set their real ids through decoration.attributes."
+  },
+  {
+    "id": "rm-html-section-class",
+    "block": "section",
+    "attrs": [
+      "class"
+    ],
+    "set": {
+      "module.advanced.htmlAttributes.desktop.value.class": "aied-probe-class"
+    },
+    "expect": "PASS",
+    "note": "CSS class through module.advanced.htmlAttributes on a section (read from desktop.value.class, Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/IdClasses/IdClassesClassnames.php:47-50). The effect is the class attribute of the module's element, compared as attr:class; it changes no style."
+  },
+  {
+    "id": "rm-html-row-id",
+    "block": "row",
+    "attrs": [
+      "id"
+    ],
+    "set": {
+      "module.advanced.htmlAttributes.desktop.value.id": "aied-probe-anchor"
+    },
+    "expect": "PASS",
+    "note": "CSS id through module.advanced.htmlAttributes on a row (read from desktop.value.id, Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/IdClasses/IdClassesClassnames.php:47-50). The effect is the id attribute of the module's element, compared as attr:id; it changes no style. The legacy recipes write empty strings here and set their real ids through decoration.attributes."
+  },
+  {
+    "id": "rm-html-row-class",
+    "block": "row",
+    "attrs": [
+      "class"
+    ],
+    "set": {
+      "module.advanced.htmlAttributes.desktop.value.class": "aied-probe-class"
+    },
+    "expect": "PASS",
+    "note": "CSS class through module.advanced.htmlAttributes on a row (read from desktop.value.class, Divi 5.15.1 includes/builder-5/server/Packages/Module/Options/IdClasses/IdClassesClassnames.php:47-50). The effect is the class attribute of the module's element, compared as attr:class; it changes no style."
+  }
+]
