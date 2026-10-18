@@ -521,12 +521,13 @@ final class OpenApiSpec
                     'get' => [
                         'operationId' => 'getSectionRecipes',
                         'summary'     => 'Get proven section recipes',
-                        'description' => 'Library of validated Divi 5 section patterns. No query: compact catalog of names. ?role=, ?layout=, ?mood= list only the matches. ?name=<recipe> returns that section\'s full block markup to copy and fill.',
+                        'description' => 'Library of validated Divi 5 section patterns. No query: compact catalog of names. ?role=, ?layout=, ?mood= list only the matches. ?name=<recipe> returns that section\'s full block markup to copy and fill (with ?design_language= in that language\'s colours and fonts).',
                         'parameters'  => [
                             ['name' => 'name', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Recipe name (omit to list all). Wins over the filters.']],
                             ['name' => 'role', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes for this role: ' . implode(', ', SectionRecipes::ROLES)]],
                             ['name' => 'layout', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes with this layout: ' . implode(', ', SectionRecipes::LAYOUTS)]],
                             ['name' => 'mood', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes that fit this mood: ' . implode(', ', SectionRecipes::moods())]],
+                            ['name' => 'design_language', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'With name: serve the recipe in this design language\'s colours and fonts. Ids: ' . implode(', ', DesignLanguages::ids())]],
                         ],
                         'responses'   => [
                             '200' => ['description' => 'Catalog or a single recipe', 'content' => ['application/json' => ['schema' => [
@@ -539,7 +540,7 @@ final class OpenApiSpec
                                 ],
                                 'additionalProperties' => true,
                             ]]]],
-                            '404' => ['description' => 'Unknown recipe name'],
+                            '404' => ['description' => 'Unknown recipe name or design language (languages lists the valid ids)'],
                         ],
                     ],
                 ],

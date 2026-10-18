@@ -7,6 +7,7 @@ namespace AiEditorDivi5\WP;
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 require_once __DIR__ . '/DesignLanguages.php';
+require_once __DIR__ . '/RecipeTokens.php';
 
 /**
  * Library of real, validated Divi 5 section recipes — whole proven sections the
@@ -259,17 +260,28 @@ final class SectionRecipes
         return $out;
     }
 
-    /** Full block markup for one recipe, or null if the name is unknown. */
-    public static function recipe(string $name): ?string
+    /**
+     * Full block markup for one recipe, or null if the name is unknown or the design language id is.
+     *
+     * Image tokens are resolved first, then colour and font tokens with the requested design
+     * language (the default, editorial, when none is requested), so the markup handed out never
+     * contains a token. An unknown language returns null rather than partially resolved markup.
+     */
+    public static function recipe(string $name, ?string $language = null): ?string
     {
+        $lang = null === $language ? RecipeTokens::default() : DesignLanguages::get($language);
+        if (null === $lang) {
+            return null;
+        }
         foreach ( self::all() as $r ) {
             if ( $r['name'] === $name ) {
-                return ImageTokens::resolve(
+                $markup = ImageTokens::resolve(
                     $r['markup'],
                     self::imageBaseUrl(),
                     null,
                     static fn ( ?string $u, string $t ): ?string => apply_filters( 'jhmg_aied_image_token', $u, $t )
                 );
+                return RecipeTokens::resolve( $markup, $lang );
             }
         }
         return null;

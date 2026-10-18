@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\McpHandler;
 use AiEditorDivi5\WP\OpenApiSpec;
 use AiEditorDivi5\WP\RestController;
@@ -162,19 +163,33 @@ class SectionRecipesLockstepTest extends TestCase
         foreach ( $get['parameters'] as $p ) {
             $params[ $p['name'] ] = $p;
         }
-        foreach ( [ 'name', 'role', 'layout', 'mood' ] as $k ) {
+        foreach ( [ 'name', 'role', 'layout', 'mood', 'design_language' ] as $k ) {
             $this->assertArrayHasKey( $k, $params );
             $this->assertSame( 'query', $params[ $k ]['in'] );
             $this->assertFalse( $params[ $k ]['required'] );
             $this->assertSame( 'string', $params[ $k ]['schema']['type'] );
         }
-        $this->assertCount( 4, $params );
+        $this->assertCount( 5, $params );
         foreach ( SectionRecipes::ROLES as $r ) {
             $this->assertStringContainsString( $r, $params['role']['schema']['description'] );
         }
         foreach ( SectionRecipes::LAYOUTS as $l ) {
             $this->assertStringContainsString( $l, $params['layout']['schema']['description'] );
         }
+    }
+
+    public function testOpenApiDesignLanguageParameterNamesTheValidIds(): void
+    {
+        $spec = OpenApiSpec::spec( 'https://acme.example/wp-json/ai-editor-divi5/v1', '9.9.9' );
+        foreach ( $spec['paths']['/section-recipes']['get']['parameters'] as $p ) {
+            if ( 'design_language' === $p['name'] ) {
+                foreach ( DesignLanguages::ids() as $id ) {
+                    $this->assertStringContainsString( $id, $p['schema']['description'] );
+                }
+                return;
+            }
+        }
+        $this->fail( 'design_language parameter missing' );
     }
 
     public function testMcpSchemaDeclaresTheThreeStringFilters(): void
@@ -188,7 +203,7 @@ class SectionRecipesLockstepTest extends TestCase
             }
         }
         $this->assertNotNull( $tool );
-        foreach ( [ 'name', 'role', 'layout', 'mood' ] as $k ) {
+        foreach ( [ 'name', 'role', 'layout', 'mood', 'design_language' ] as $k ) {
             $this->assertSame( 'string', $tool['inputSchema']['properties'][ $k ]['type'] );
         }
         $this->assertSame( [], $tool['inputSchema']['required'] );
@@ -198,5 +213,83 @@ class SectionRecipesLockstepTest extends TestCase
     {
         $spec = OpenApiSpec::spec( 'https://acme.example/wp-json/ai-editor-divi5/v1', '9.9.9' );
         $this->assertCount( 1, array_filter( array_keys( $spec['paths'] ), static fn ( string $p ): bool => '/section-recipes' === $p ) );
+    }
+
+    public function testMcpDesignLanguageResolvesTheRecipeAndLeavesNoToken(): void
+    {
+        $glass = DesignLanguages::get( 'glass-dark' );
+        $this->assertNotNull( $glass );
+        [ $code, $text ] = $this->mcp( [ 'name' => 'hero-cta', 'design_language' => 'glass-dark' ] );
+        $this->assertNull( $code );
+        $this->assertStringContainsString( $glass['colors']['accent'], $text );
+        $this->assertStringNotContainsString( '{{aied:', $text );
+        $this->assertSame( SectionRecipes::recipe( 'hero-cta', 'glass-dark' ), $text );
+
+        [ , $plain ] = $this->mcp( [ 'name' => 'hero-cta' ] );
+        $this->assertSame( SectionRecipes::recipe( 'hero-cta' ), $plain );
+        $this->assertStringNotContainsString( $glass['colors']['accent'], $plain );
+        [ , $empty ] = $this->mcp( [ 'name' => 'hero-cta', 'design_language' => '' ] );
+        $this->assertSame( $plain, $empty, 'an empty design_language means none' );
+    }
+
+    public function testMcpDesignLanguageWithoutANameChangesNothing(): void
+    {
+        [ $code, $text ] = $this->mcp( [ 'design_language' => 'glass-dark' ] );
+        $this->assertNull( $code );
+        $this->assertSame( SectionRecipes::catalog(), $text );
+    }
+
+    public function testMcpRejectsANonStringDesignLanguage(): void
+    {
+        foreach ( [ 7, [ 'glass-dark' ], true ] as $bad ) {
+            [ $code, $text ] = $this->mcp( [ 'name' => 'hero-cta', 'design_language' => $bad ] );
+            $this->assertSame( -32602, $code );
+            $this->assertStringContainsString( 'must be a string', $text );
+        }
+    }
+
+    public function testMcpUnknownDesignLanguageAnswersWithTheValidIds(): void
+    {
+        [ $code, $text ] = $this->mcp( [ 'name' => 'hero-cta', 'design_language' => 'nope' ] );
+        $this->assertNull( $code );
+        $this->assertStringContainsString( 'Unknown design language "nope"', $text );
+        foreach ( DesignLanguages::ids() as $id ) {
+            $this->assertStringContainsString( $id, $text );
+        }
+        $this->assertStringNotContainsString( 'wp:divi/section', $text, 'no partially resolved markup' );
+    }
+
+    public function testRestDesignLanguageResolvesTheRecipe(): void
+    {
+        $glass = DesignLanguages::get( 'glass-dark' );
+        $r = $this->rest( [ 'name' => 'hero-cta', 'design_language' => 'glass-dark' ] );
+        $this->assertSame( 200, $r->get_status() );
+        $this->assertSame( SectionRecipes::recipe( 'hero-cta', 'glass-dark' ), $r->get_data()['markup'] );
+        $this->assertStringContainsString( $glass['colors']['accent'], $r->get_data()['markup'] );
+        $this->assertStringNotContainsString( '{{aied:', $r->get_data()['markup'] );
+    }
+
+    public function testRestRejectsANonStringDesignLanguage(): void
+    {
+        foreach ( [ 7, [ 'x' ], true ] as $bad ) {
+            $r = $this->rest( [ 'name' => 'hero-cta', 'design_language' => $bad ] );
+            $this->assertSame( 400, $r->get_status() );
+            $this->assertStringContainsString( 'must be a string', (string) $r->get_data()['error'] );
+        }
+    }
+
+    public function testRestUnknownDesignLanguageIs404WithTheValidIds(): void
+    {
+        $r = $this->rest( [ 'name' => 'hero-cta', 'design_language' => 'nope' ] );
+        $this->assertSame( 404, $r->get_status() );
+        $this->assertSame( DesignLanguages::ids(), $r->get_data()['languages'] );
+        $this->assertArrayNotHasKey( 'markup', $r->get_data() );
+    }
+
+    public function testRestDesignLanguageWithoutANameChangesNothing(): void
+    {
+        $r = $this->rest( [ 'design_language' => 'glass-dark' ] );
+        $this->assertSame( 200, $r->get_status() );
+        $this->assertSame( [ 'catalog' => SectionRecipes::catalog(), 'names' => SectionRecipes::names() ], $r->get_data() );
     }
 }

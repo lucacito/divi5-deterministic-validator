@@ -156,7 +156,7 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
-        // GET /section-recipes — library of proven section patterns (?name=<recipe> for one; ?role=, ?layout=, ?mood= filter the list)
+        // GET /section-recipes — library of proven section patterns (?name=<recipe> for one; ?role=, ?layout=, ?mood= filter the list; ?design_language= with ?name= serves a recipe in that language's colours and fonts)
         register_rest_route(self::NS, '/section-recipes', [
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => [$this, 'section_recipes'],
@@ -220,8 +220,15 @@ final class RestController
             }
             $filters[$key] = $value === '' ? null : $value;
         }
+        $language = PageAccess::stringArg(['design_language' => $request->get_param('design_language')], 'design_language');
+        if ($language === null) {
+            return new WP_REST_Response(['error' => 'Invalid parameter: "design_language" must be a string'], 400);
+        }
         if ($name !== '') {
-            $markup = SectionRecipes::recipe($name);
+            if ($language !== '' && DesignLanguages::get($language) === null) {
+                return new WP_REST_Response(['error' => "Unknown design language '{$language}'", 'languages' => DesignLanguages::ids()], 404);
+            }
+            $markup = SectionRecipes::recipe($name, $language === '' ? null : $language);
             if ($markup === null) {
                 return new WP_REST_Response(['error' => "Unknown recipe '{$name}'", 'catalog' => SectionRecipes::catalog()], 404);
             }
