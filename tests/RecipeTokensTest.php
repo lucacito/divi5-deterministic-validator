@@ -42,6 +42,21 @@ class RecipeTokensTest extends TestCase
         $this->assertSame( 'plain text and {{aied:image:x}} stay', RecipeTokens::resolve( 'plain text and {{aied:image:x}} stay', $lang ) );
     }
 
+    public function testResolvesInverseAndOverlayTokens(): void
+    {
+        foreach ( DesignLanguages::ids() as $id ) {
+            $lang = DesignLanguages::get( $id );
+            $this->assertNotNull( $lang );
+            $out = RecipeTokens::resolve( '{{aied:color:inverse}}|{{aied:color:overlay}}', $lang );
+            $this->assertSame( $lang['colors']['inverse'] . '|' . $lang['colors']['overlay'], $out, $id );
+            $this->assertSame( [], RecipeTokens::found( $out ), $id );
+            $this->assertStringNotContainsString( '{{', $out );
+        }
+        $this->assertSame( [ '{{aied:color:inverse}}', '{{aied:color:overlay}}' ], RecipeTokens::foundAll( 'a {{aied:color:inverse}} b {{aied:color:overlay}}' ) );
+        $advice = RecipeTokens::advise( 'x {{aied:color:overlay}}' );
+        $this->assertSame( [ '{{aied:color:overlay}}' ], $advice['tokens'] );
+    }
+
     public function testSurfaceGlassFallsBackToSurfaceWhenALanguageHasNone(): void
     {
         $editorial = DesignLanguages::get( 'editorial' );

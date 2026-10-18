@@ -28,7 +28,14 @@ final class DesignLanguages
         'system-ui', 'sans-serif', 'serif', 'monospace',
     ];
 
-    private const COLOR_KEYS = [ 'bg', 'surface', 'text', 'muted', 'accent', 'accent_text', 'border' ];
+    private const COLOR_KEYS = [ 'bg', 'surface', 'text', 'muted', 'accent', 'accent_text', 'border', 'inverse' ];
+
+    /** The scrim over photos: an rgba() colour whose alpha is neither so low it fails to darken nor so high it hides the photo. */
+    private const OVERLAY_MIN_ALPHA = 0.35;
+    private const OVERLAY_MAX_ALPHA = 0.8;
+
+    /** The longest font family name valid() accepts. */
+    private const MAX_FAMILY_LENGTH = 100;
     private const FONT_KEYS  = [ 'display', 'body', 'eyebrow' ];
     private const TEXT_KEYS  = [ 'title', 'summary', 'radius', 'section_padding', 'shadow', 'rhythm', 'hero', 'cta' ];
 
@@ -54,6 +61,8 @@ final class DesignLanguages
     /**
      * The languages in a data file's text: every entry that is an array with a string `id`, in order.
      * Corrupt or empty text means no languages (never an error).
+     *
+     * @internal Reads the data file's text; the supported readers are all(), ids(), get() and markdown().
      *
      * @return list<array<string,mixed>>
      */
@@ -83,7 +92,9 @@ final class DesignLanguages
      *
      * Shape: {id, title, summary, colors, fonts, radius, section_padding, shadow, motion,
      * rhythm, favors, avoids, hero, cta}. `colors` always has bg, surface, text, muted,
-     * accent, accent_text, border (hex). It MAY also have `surface_glass`, an
+     * accent, accent_text, border, inverse (hex) and `overlay`, an `rgba(r,g,b,a)` scrim
+     * (0.35 <= a <= 0.8). `inverse` is the text colour for dark bands and photos; `overlay`
+     * is the scrim laid over a photo so `inverse` text stays readable. It MAY also have `surface_glass`, an
      * `rgba(r,g,b,a)` string (0 < a < 1): the translucent card colour of a glass language,
      * in which case `surface` is only its opaque equivalent (fallback for plain panels).
      * A consumer that wants "the card colour" uses `surface_glass` when set, else `surface`.
@@ -147,6 +158,8 @@ final class DesignLanguages
             ...$cardLines,
             sprintf( '- text `%s`, muted text `%s`', (string) $c['text'], (string) $c['muted'] ),
             sprintf( '- accent `%s`, text on accent `%s`', (string) $c['accent'], (string) $c['accent_text'] ),
+            sprintf( '- inverse `%s`, overlay `%s`', (string) $c['inverse'], (string) $c['overlay'] ),
+            '- inverse: text on photos and dark bands; overlay: the scrim over photos',
             '',
             '## Fonts',
             sprintf( '- headings: %s; body: %s; eyebrow labels: %s', (string) $f['display'], (string) $f['body'], (string) $f['eyebrow'] ),
@@ -177,8 +190,8 @@ final class DesignLanguages
      * What is wrong with a design language (empty list = valid). Used by the tests on every shipped
      * language, and available to anything that accepts one. Checks: every field present and the right
      * kind; colours are #rrggbb (`surface_glass`, optional, may instead be rgba(r,g,b,a) with channels
-     * 0 to 255 and 0 < a < 1); font values are comma separated stacks of plain family names (letters,
-     * digits and spaces) and, when $knownFonts is given, each family is in that list or in
+     * 0 to 255 and 0 < a < 1; `overlay` is required and must be rgba(r,g,b,a) with 0.35 <= a <= 0.8); font values are comma separated stacks of plain family names (letters,
+     * digits and spaces, at most 100 characters each) and, when $knownFonts is given, each family is in that list or in
      * WEB_SAFE_FONTS; the id is kebab-case; `favors` and `avoids` are non-empty, only
      * SectionRecipes::LAYOUTS values and do not overlap; no text contains `<`, `>`, a backtick or
      * `{{`. Uniqueness of ids is a property of the whole set, so it is checked over ids(), not here.
@@ -193,7 +206,7 @@ final class DesignLanguages
         $problems = [];
 
         $id = $language['id'] ?? null;
-        if ( ! is_string( $id ) || 1 !== preg_match( '/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $id ) ) {
+        if ( ! is_string( $id ) || 1 !== preg_match( '/^[a-z0-9]+(?:-[a-z0-9]+)*\z/', $id ) ) {
             $problems[] = 'id must be kebab-case (lower-case letters, digits, single hyphens)';
         }
 
@@ -214,9 +227,12 @@ final class DesignLanguages
         }
         foreach ( self::COLOR_KEYS as $key ) {
             $value = $colors[ $key ] ?? null;
-            if ( ! is_string( $value ) || 1 !== preg_match( '/^#[0-9a-f]{6}$/i', $value ) ) {
+            if ( ! is_string( $value ) || 1 !== preg_match( '/^#[0-9a-f]{6}\z/i', $value ) ) {
                 $problems[] = 'colors.' . $key . ' must be a #rrggbb colour';
             }
+        }
+        if ( ! self::isOverlayColor( $colors['overlay'] ?? null ) ) {
+            $problems[] = 'colors.overlay must be rgba(r,g,b,a) with channels 0-255 and 0.35 <= a <= 0.8';
         }
         if ( array_key_exists( 'surface_glass', $colors ) && ! self::isGlassColor( $colors['surface_glass'] ) ) {
             $problems[] = 'colors.surface_glass must be #rrggbb or rgba(r,g,b,a) with channels 0-255 and 0 < a < 1';
@@ -235,8 +251,10 @@ final class DesignLanguages
             }
             foreach ( explode( ',', $value ) as $family ) {
                 $family = trim( $family );
-                if ( 1 !== preg_match( '/^[A-Za-z0-9][A-Za-z0-9 -]*$/', $family ) ) {
+                if ( 1 !== preg_match( '/^[A-Za-z0-9][A-Za-z0-9 -]*\z/', $family ) ) {
                     $problems[] = 'fonts.' . $key . ' has a family name with characters a font name does not have';
+                } elseif ( strlen( $family ) > self::MAX_FAMILY_LENGTH ) {
+                    $problems[] = 'fonts.' . $key . ' has a family name longer than ' . self::MAX_FAMILY_LENGTH . ' characters';
                 } elseif ( null !== $knownFonts && ! in_array( $family, $knownFonts, true ) && ! in_array( $family, self::WEB_SAFE_FONTS, true ) ) {
                     $problems[] = 'fonts.' . $key . ' names "' . $family . '", which is not a known Google font or a web-safe family';
                 }
@@ -295,14 +313,33 @@ final class DesignLanguages
         if ( ! is_string( $value ) ) {
             return false;
         }
-        if ( 1 === preg_match( '/^#[0-9a-f]{6}$/i', $value ) ) {
+        if ( 1 === preg_match( '/^#[0-9a-f]{6}\z/i', $value ) ) {
             return true;
         }
-        if ( 1 !== preg_match( '/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0?\.\d+)\s*\)$/', $value, $m ) ) {
+        $alpha = self::rgbaAlpha( $value );
+        return null !== $alpha && $alpha > 0.0 && $alpha < 1.0;
+    }
+
+    /** @param mixed $value */
+    private static function isOverlayColor( $value ): bool
+    {
+        if ( ! is_string( $value ) ) {
             return false;
         }
-        $alpha = (float) $m[4];
-        return (int) $m[1] <= 255 && (int) $m[2] <= 255 && (int) $m[3] <= 255 && $alpha > 0.0 && $alpha < 1.0;
+        $alpha = self::rgbaAlpha( $value );
+        return null !== $alpha && $alpha >= self::OVERLAY_MIN_ALPHA && $alpha <= self::OVERLAY_MAX_ALPHA;
+    }
+
+    /** The alpha of an rgba(r,g,b,a) string whose channels are 0 to 255 and whose alpha is written 0.x or .x; null for anything else. */
+    private static function rgbaAlpha( string $value ): ?float
+    {
+        if ( 1 !== preg_match( '/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0?\.\d+)\s*\)\z/', $value, $m ) ) {
+            return null;
+        }
+        if ( (int) $m[1] > 255 || (int) $m[2] > 255 || (int) $m[3] > 255 ) {
+            return null;
+        }
+        return (float) $m[4];
     }
 
     /**

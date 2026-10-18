@@ -30,6 +30,8 @@ final class RecipeTokens
         'accent'        => 'accent',
         'accent-text'   => 'accent_text',
         'border'        => 'border',
+        'inverse'       => 'inverse',
+        'overlay'       => 'overlay',
     ];
 
     /** Token role => key in the design language's `fonts`. */

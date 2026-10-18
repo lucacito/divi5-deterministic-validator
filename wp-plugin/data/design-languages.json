@@ -10,7 +10,9 @@
       "muted": "#6b645a",
       "accent": "#9a3b1f",
       "accent_text": "#ffffff",
-      "border": "#e3dccf"
+      "border": "#e3dccf",
+      "inverse": "#fbf6ec",
+      "overlay": "rgba(28,22,16,0.72)"
     },
     "fonts": {
       "display": "Playfair Display",
@@ -39,7 +41,9 @@
       "muted": "#9aa4c0",
       "accent": "#7c9cff",
       "accent_text": "#0b1020",
-      "border": "#2a3558"
+      "border": "#2a3558",
+      "inverse": "#f4f6fd",
+      "overlay": "rgba(7,11,26,0.7)"
     },
     "fonts": {
       "display": "Inter",
@@ -55,5 +59,125 @@
     "avoids": ["zigzag", "list"],
     "hero": "Centered: a short eyebrow, a bold headline in the text colour, one muted sentence, two buttons (solid accent plus a bordered ghost button), and a product image or card below with a soft glow behind it.",
     "cta": "A centered translucent card on a gradient background with one headline, one sentence and one accent-coloured button."
+  },
+  {
+    "id": "organic-warm",
+    "title": "Organic warm",
+    "summary": "Soft, earthy and human, like a ceramics studio or a family bakery: sand and clay tints, a friendly serif for headings, large rounded shapes and sections that overlap like layers of paper.",
+    "colors": {
+      "bg": "#f3eadc",
+      "surface": "#fbf6ee",
+      "text": "#2e2a22",
+      "muted": "#675b49",
+      "accent": "#41603a",
+      "accent_text": "#ffffff",
+      "border": "#dccdb4",
+      "inverse": "#fbf5ea",
+      "overlay": "rgba(34,26,16,0.7)"
+    },
+    "fonts": {
+      "display": "Fraunces",
+      "body": "DM Sans",
+      "eyebrow": "DM Sans"
+    },
+    "radius": "Generous and organic: 28px on cards and panels, 999px on buttons and tags, images with 32px corners or an arch shape (large radius on the top two corners only). Nothing sharp.",
+    "section_padding": "96px top and bottom on desktop, 64px on tablet, 44px on phone. Let sections touch and overlap a little instead of leaving hard gaps.",
+    "shadow": "Soft and warm: 0 18px 40px at 10% of the text colour, never grey. No borders on cards; separate blocks by changing the tint (sand to cream), not by drawing lines.",
+    "motion": "subtle",
+    "rhythm": "Earthy tints in layers: sand background for the hero, cream surface for the next section, then a deep moss band with the inverse text colour, then back to sand. Let one image or card overlap the edge of the section above it. Use a small hand-feel divider or a curved edge between tints, and keep every section calm with one idea each.",
+    "favors": ["stacked", "overlap", "zigzag", "carousel"],
+    "avoids": ["bento", "grid", "list"],
+    "hero": "Warm and inviting: a large friendly serif headline over a sand background, two relaxed lines of copy and a pill-shaped moss button, beside a photograph with arch-shaped corners that overlaps the section below.",
+    "cta": "A cream rounded panel sitting on the moss band, with a short warm headline, one reassuring sentence about what happens next and a single pill button."
+  },
+  {
+    "id": "tech-mono",
+    "title": "Tech mono",
+    "summary": "Precise and engineered, like developer documentation or a terminal: near-black backgrounds, a monospace body face, one neon accent, hairline borders and strict grids with no softness.",
+    "colors": {
+      "bg": "#0b0d0c",
+      "surface": "#131715",
+      "text": "#e8ece9",
+      "muted": "#8d9892",
+      "accent": "#3dff9a",
+      "accent_text": "#04130b",
+      "border": "#2a312d",
+      "inverse": "#f2f5f3",
+      "overlay": "rgba(5,8,6,0.75)"
+    },
+    "fonts": {
+      "display": "Space Grotesk",
+      "body": "JetBrains Mono",
+      "eyebrow": "JetBrains Mono"
+    },
+    "radius": "Almost none: 2px on buttons, inputs and cards, images square. Never rounder than 4px anywhere.",
+    "section_padding": "88px top and bottom on desktop, 64px on tablet, 40px on phone. Tight, even, repeated: the same padding on every section.",
+    "shadow": "No shadows at all. Structure comes from 1px hairline borders in the border colour and from visible grid lines between cells. The accent colour is used only for the primary button, links and one small marker per section.",
+    "motion": "none",
+    "rhythm": "One near-black background for the whole page. Divide sections with a single hairline rule instead of a colour change, and lay features and proof out on a ruled grid of equal cells. Use small monospace labels for numbers, versions and steps. Reserve the neon accent for one thing per screen.",
+    "favors": ["grid", "bento", "list", "form", "stacked"],
+    "avoids": ["carousel", "overlap", "zigzag"],
+    "hero": "Left-aligned and literal: a small monospace eyebrow that looks like a command or version label, a tight geometric headline, two lines of plain copy, a neon button and a quiet bordered button, and a ruled code-like card or screenshot on the right.",
+    "cta": "A bordered full-width block with a monospace headline, one line of copy and a single neon button; below it a one-line install or contact snippet in muted text."
+  },
+  {
+    "id": "playful-pastel",
+    "title": "Playful pastel",
+    "summary": "Cheerful and bouncy, like a children's brand, a game or a creative studio: a different soft pastel behind each section, very round shapes, a rounded display face and friendly big buttons.",
+    "colors": {
+      "bg": "#fff7ec",
+      "surface": "#ffffff",
+      "text": "#2b2457",
+      "muted": "#625a8c",
+      "accent": "#ff7aa5",
+      "accent_text": "#2b2457",
+      "border": "#f1dfcc",
+      "inverse": "#ffffff",
+      "overlay": "rgba(43,36,87,0.68)"
+    },
+    "fonts": {
+      "display": "Fredoka",
+      "body": "Nunito",
+      "eyebrow": "Fredoka"
+    },
+    "radius": "Big and round: 36px on cards and panels, 999px on buttons, tags and avatars, circles for icons and some images. Mix in one blob or tilted shape per page.",
+    "section_padding": "88px top and bottom on desktop, 60px on tablet, 40px on phone. Generous but lively; cards sit close together.",
+    "shadow": "A chunky offset shadow in the text colour (6px right, 6px down, no blur) on buttons and a few cards, with a 2px border in the text colour. Never a soft grey shadow.",
+    "motion": "lively",
+    "rhythm": "Give each section its own pastel in sequence: cream, then butter yellow (#ffe9a8), mint (#c9f0dd), sky (#cfe6ff), lilac (#e2d6ff) and back to cream. White cards sit on top of the tints. Keep text in the deep indigo text colour on every tint. Add one sticker-like shape, star or squiggle per section, and let buttons bounce on hover.",
+    "favors": ["centered", "carousel", "overlap", "zigzag", "band"],
+    "avoids": ["list", "form"],
+    "hero": "Centered and chatty: a big rounded headline with one word highlighted in a pink pill, a short cheerful sentence, a big pink button and a small secondary link, with a tilted photo card and a floating shape on each side.",
+    "cta": "A lilac or butter-yellow band with a big friendly headline, a one-line promise and a large pink button with a chunky outline; a tiny smiling note below it."
+  },
+  {
+    "id": "corporate-trust",
+    "title": "Corporate trust",
+    "summary": "Restrained, credible and clear, like a bank, a law firm or a B2B service: white pages, deep navy text and bands, one calm blue accent, small corners and plenty of facts, lists and numbers.",
+    "colors": {
+      "bg": "#ffffff",
+      "surface": "#f2f5fa",
+      "text": "#13233f",
+      "muted": "#4f5d73",
+      "accent": "#1c4a94",
+      "accent_text": "#ffffff",
+      "border": "#d3dbe8",
+      "inverse": "#f6f8fc",
+      "overlay": "rgba(10,26,56,0.72)"
+    },
+    "fonts": {
+      "display": "IBM Plex Sans",
+      "body": "IBM Plex Sans",
+      "eyebrow": "IBM Plex Sans"
+    },
+    "radius": "Small and consistent: 6px on cards, buttons and inputs; images square or 6px. No pills, no circles except avatars.",
+    "section_padding": "96px top and bottom on desktop, 68px on tablet, 44px on phone. Steady and predictable from section to section.",
+    "shadow": "Very light: a 1px border in the border colour on cards, and at most 0 2px 8px at 8% navy on a hovered card. No glow, no heavy depth.",
+    "motion": "subtle",
+    "rhythm": "White and pale blue-grey in alternation, with one deep navy band that carries the numbers (years, clients, results) in the inverse text colour. Open each section with a small blue eyebrow and a plain headline. Back every claim with a figure, a logo row, a certificate or a named testimonial, and use checklists and numbered steps for how it works.",
+    "favors": ["list", "grid", "split", "band", "form"],
+    "avoids": ["bento", "carousel", "overlap"],
+    "hero": "Clear and sober: a two-column hero with a plain navy headline that states the service and who it is for, one supporting sentence, a blue primary button and a text link for pricing or contact, next to a real-looking team or office photograph and a row of client logos underneath.",
+    "cta": "A deep navy band with a short headline in the inverse colour, one sentence about the next step (a call, a consultation, a quote) and a single button in the surface colour, with the phone number beside it."
   }
 ]

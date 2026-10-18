@@ -124,6 +124,167 @@ class DesignLanguagesTest extends TestCase
         $this->assertStringContainsString('surface (cards) `#ffffff`', DesignLanguages::markdown('editorial'));
     }
 
+    public function testThereAreSixLanguagesAndTheMoodsFollow(): void
+    {
+        $this->assertSame(['editorial', 'glass-dark', 'organic-warm', 'tech-mono', 'playful-pastel', 'corporate-trust'], DesignLanguages::ids());
+        $this->assertSame(['any', ...DesignLanguages::ids()], SectionRecipes::moods());
+        foreach (['organic-warm', 'tech-mono', 'playful-pastel', 'corporate-trust'] as $id) {
+            $this->assertContains($id, SectionRecipes::moods());
+        }
+    }
+
+    public function testEveryLanguageHasInverseAndOverlayRoles(): void
+    {
+        foreach (DesignLanguages::ids() as $id) {
+            $c = DesignLanguages::get($id)['colors'];
+            $this->assertMatchesRegularExpression('/^#[0-9a-f]{6}$/i', (string) ($c['inverse'] ?? ''), "$id.colors.inverse");
+            $this->assertSame(1, preg_match('/^rgba\((\d{1,3}),(\d{1,3}),(\d{1,3}),(0?\.\d+)\)$/', (string) ($c['overlay'] ?? ''), $m), "$id.colors.overlay");
+            $this->assertGreaterThanOrEqual(0.35, (float) $m[4], "$id overlay alpha");
+            $this->assertLessThanOrEqual(0.8, (float) $m[4], "$id overlay alpha");
+        }
+    }
+
+    /** Light text on a photo: the scrim over the worst possible photo (pure white, pure black) must still read. */
+    public function testInverseTextReadsOverTheOverlayOverBothWhiteAndBlack(): void
+    {
+        foreach (DesignLanguages::ids() as $id) {
+            $c = DesignLanguages::get($id)['colors'];
+            foreach (['#ffffff', '#000000'] as $photo) {
+                $scrim = $this->composite($c['overlay'], $photo);
+                $this->assertGreaterThanOrEqual(4.5, DesignLanguages::contrast($c['inverse'], $scrim), "$id inverse over overlay over $photo ($scrim)");
+            }
+        }
+    }
+
+    public function testLanguagesAreVisiblyDifferentFromEachOther(): void
+    {
+        $favors = [];
+        $texts  = ['hero' => [], 'rhythm' => [], 'summary' => [], 'cta' => []];
+        $accents = [];
+        $bgs     = [];
+        foreach (DesignLanguages::ids() as $id) {
+            $lang = DesignLanguages::get($id);
+            $set = $lang['favors'];
+            sort($set);
+            $key = implode(',', $set);
+            $this->assertArrayNotHasKey($key, $favors, "$id favors the same layouts as " . ($favors[$key] ?? ''));
+            $favors[$key] = $id;
+            foreach ($texts as $field => $_) {
+                $this->assertNotContains($lang[$field], $texts[$field], "$id $field repeats another language's");
+                $texts[$field][] = $lang[$field];
+            }
+            $this->assertNotContains(strtolower($lang['colors']['accent']), $accents, "$id accent repeats");
+            $accents[] = strtolower($lang['colors']['accent']);
+            $this->assertNotContains(strtolower($lang['colors']['bg']), $bgs, "$id background repeats");
+            $bgs[] = strtolower($lang['colors']['bg']);
+        }
+    }
+
+    public function testMarkdownPrintsTheTwoNewRolesWithTheirPurpose(): void
+    {
+        foreach (DesignLanguages::ids() as $id) {
+            $lang = DesignLanguages::get($id);
+            $md   = DesignLanguages::markdown($id);
+            $this->assertStringContainsString($lang['colors']['inverse'], $md, $id);
+            $this->assertStringContainsString($lang['colors']['overlay'], $md, $id);
+            $this->assertStringContainsString('inverse: text on photos and dark bands', $md, $id);
+            $this->assertStringContainsString('overlay: the scrim over photos', $md, $id);
+            $this->assertStringNotContainsString('{{', $md, $id);
+            $this->assertStringNotContainsString('<', $md, $id);
+            $this->assertLessThan(5000, strlen($md), "$id brief is far below the 10,000-byte topic ceiling");
+        }
+    }
+
+    public function testBodyFontsAreReadableFamilies(): void
+    {
+        $display = ['Pacifico', 'Lobster', 'Dancing Script', 'Great Vibes', 'Satisfy', 'Caveat', 'Permanent Marker', 'Kaushan Script', 'Sacramento', 'Allura'];
+        foreach (DesignLanguages::ids() as $id) {
+            $body = DesignLanguages::get($id)['fonts']['body'];
+            $this->assertNotContains($body, $display, "$id body font is a script face");
+        }
+    }
+
+    // ---- valid(): strict anchors, overlay rule, font length cap ----
+
+    public function testValidRejectsATrailingNewlineEverywhereAnAnchorMatters(): void
+    {
+        $known = $this->knownFonts();
+        $lang  = $this->okLanguage();
+        $this->assertSame([], DesignLanguages::valid($lang, $known));
+
+        $l = $lang; $l['colors']['bg'] = $lang['colors']['bg'] . "\n";
+        $this->assertStringContainsString('colors.bg', implode("\n", DesignLanguages::valid($l, $known)));
+
+        $l = $lang; $l['id'] = "glass-dark\n";
+        $this->assertStringContainsString('id', implode("\n", DesignLanguages::valid($l, $known)));
+
+        $l = $lang; $l['colors']['surface_glass'] = "rgba(255,255,255,0.06)\n";
+        $this->assertStringContainsString('colors.surface_glass', implode("\n", DesignLanguages::valid($l, $known)));
+
+        $l = $lang; $l['colors']['overlay'] = "rgba(0,0,0,0.6)\n";
+        $this->assertStringContainsString('colors.overlay', implode("\n", DesignLanguages::valid($l, $known)));
+
+        $l = $lang; $l['colors']['inverse'] = "#ffffff\n";
+        $this->assertStringContainsString('colors.inverse', implode("\n", DesignLanguages::valid($l, $known)));
+
+        $l = $lang; $l['fonts']['body'] = "Inter\n";
+        $this->assertSame([], DesignLanguages::valid($l, $known), 'a stack member is trimmed, so a trailing newline around a family is harmless');
+    }
+
+    /** @return array<string,array{0:string,1:bool}> */
+    public static function overlayValues(): array
+    {
+        return [
+            'alpha at the low end'  => ['rgba(10,10,10,0.35)', true],
+            'alpha at the high end' => ['rgba(10,10,10,0.8)', true],
+            'alpha below range'     => ['rgba(10,10,10,0.34)', false],
+            'alpha above range'     => ['rgba(10,10,10,0.81)', false],
+            'alpha 0.5 no zero'     => ['rgba(10,10,10,.5)', true],
+            'hex is not a scrim'    => ['#000000', false],
+            'channel over 255'      => ['rgba(300,10,10,0.5)', false],
+            'alpha one'             => ['rgba(10,10,10,1)', false],
+            'not a string'          => ['', false],
+        ];
+    }
+
+    #[DataProvider('overlayValues')]
+    public function testValidEnforcesTheOverlayRange(string $value, bool $ok): void
+    {
+        $lang = $this->okLanguage();
+        $lang['colors']['overlay'] = $value;
+        $problems = implode("\n", DesignLanguages::valid($lang, $this->knownFonts()));
+        if ($ok) {
+            $this->assertSame('', $problems);
+        } else {
+            $this->assertStringContainsString('colors.overlay', $problems);
+        }
+    }
+
+    public function testValidRequiresInverseAndOverlay(): void
+    {
+        foreach (['inverse', 'overlay'] as $key) {
+            $lang = $this->okLanguage();
+            unset($lang['colors'][$key]);
+            $this->assertStringContainsString('colors.' . $key, implode("\n", DesignLanguages::valid($lang, $this->knownFonts())));
+        }
+    }
+
+    public function testValidCapsAFontFamilyAtOneHundredCharacters(): void
+    {
+        $lang = $this->okLanguage();
+        $lang['fonts']['body'] = str_repeat('a', 100);
+        $this->assertSame([], DesignLanguages::valid($lang));
+        $lang['fonts']['body'] = str_repeat('a', 101);
+        $this->assertStringContainsString('fonts.body', implode("\n", DesignLanguages::valid($lang)));
+    }
+
+    public function testParseIsMarkedInternal(): void
+    {
+        $doc = (new \ReflectionMethod(DesignLanguages::class, 'parse'))->getDocComment();
+        $this->assertIsString($doc);
+        $this->assertStringContainsString('@internal', $doc);
+    }
+
     public function testContrastKnownValues(): void
     {
         $this->assertEqualsWithDelta(21.0, DesignLanguages::contrast('#000000', '#ffffff'), 0.01);

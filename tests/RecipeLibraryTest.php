@@ -29,7 +29,7 @@ class RecipeLibraryTest extends TestCase
 {
     private const BASELINE = __DIR__ . '/../fixtures/shapes/recipe-baseline.txt';
 
-    /** Colour roles a `pairs` entry may name => key in a language's `colors`. inverse/overlay arrive with plan task 9. */
+    /** Colour roles a `pairs` entry may name => key in a language's `colors`. inverse/overlay exist in every language since plan task 9. */
     private const ROLE_KEYS = [
         'bg'            => 'bg',
         'surface'       => 'surface',
@@ -107,8 +107,8 @@ class RecipeLibraryTest extends TestCase
 
     /**
      * What is wrong with a recipe's `pairs` for ONE language ([] = fine). A pair is [foregroundRole, backgroundRole] with an
-     * optional third element 'large' (large text: 3.0 instead of 4.5). A role the language does not define yet (inverse and
-     * overlay until plan task 9) is reported in $skipped, never as a failure.
+     * optional third element 'large' (large text: 3.0 instead of 4.5). A role the language does not define (surface-glass in a
+     * language without a translucent card colour) is reported in $skipped, never as a failure.
      *
      * @param mixed        $pairs
      * @param array<string,mixed> $lang
@@ -138,7 +138,7 @@ class RecipeLibraryTest extends TestCase
             $fg = $colors[ self::ROLE_KEYS[ $pair[0] ] ] ?? null;
             $bk = $colors[ self::ROLE_KEYS[ $pair[1] ] ] ?? null;
             if ( ! is_string( $fg ) || ! is_string( $bk ) ) {
-                $skipped[] = sprintf( '%s: pair %s/%s skipped (the language does not define %s yet)', (string) $lang['id'], $pair[0], $pair[1], is_string( $fg ) ? $pair[1] : $pair[0] );
+                $skipped[] = sprintf( '%s: pair %s/%s skipped (the language does not define %s)', (string) $lang['id'], $pair[0], $pair[1], is_string( $fg ) ? $pair[1] : $pair[0] );
                 continue;
             }
             $f = self::opaque( $fg, $bg );
@@ -222,11 +222,15 @@ class RecipeLibraryTest extends TestCase
         $this->assertNotSame( [], self::pairProblems( [], $lang, $skipped ) );
         $this->assertNotSame( [], self::pairProblems( 'text/surface', $lang, $skipped ) );
         $this->assertNotSame( [], self::pairProblems( [ [ 'text' ] ], $lang, $skipped ) );
-        // A role the language does not define is skipped with a message, not failed.
+        // A role the language does not define (editorial has no surface_glass) is skipped with a message, not failed.
         $skipped = [];
-        $this->assertSame( [], self::pairProblems( [ [ 'inverse', 'overlay' ] ], $lang, $skipped ) );
+        $this->assertSame( [], self::pairProblems( [ [ 'text', 'surface-glass' ] ], $lang, $skipped ) );
         $this->assertCount( 1, $skipped );
         $this->assertStringContainsString( 'skipped', $skipped[0] );
+        // inverse and overlay exist in every language since plan task 9, so they are judged, never skipped.
+        $skipped = [];
+        $this->assertSame( [], self::pairProblems( [ [ 'inverse', 'overlay' ] ], $lang, $skipped ) );
+        $this->assertSame( [], $skipped );
         // A translucent card colour is judged over the language's own background.
         $glass = (array) DesignLanguages::get( 'glass-dark' );
         $skipped = [];
