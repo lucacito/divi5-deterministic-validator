@@ -216,14 +216,14 @@ final class McpHandler
             ],
             [
                 'name'        => 'get_section_recipes',
-                'description' => 'Get a library of complete, validated Divi 5 section recipes (hero, feature grids, split, slider, CTA, footer). With no arguments, returns a compact catalog of recipe names grouped by role. Pass {"role":"hero"}, {"layout":"split"} and/or {"mood":"any"} to list only the matching recipes with their full descriptions (an unknown value answers with the valid values). Pass {"name":"<recipe>"} to get that section\'s full block markup to copy and fill with the user\'s content; a name ignores the filters, and with a name, design_language serves it in that design language\'s colours and fonts. Use these to assemble well-composed pages instead of building sections from scratch.',
+                'description' => 'Get a library of complete, validated Divi 5 section recipes (hero, feature grids, split, slider, CTA, footer). With no arguments, returns a compact catalog of recipe names grouped by role. Pass {"role":"hero"}, {"layout":"split"} and/or {"mood":"editorial"} to list only the matching recipes with their full descriptions (an unknown value answers with the valid values). ' . SectionRecipes::MOOD_HELP . ' Pass {"name":"<recipe>"} to get that section\'s full block markup to copy and fill with the user\'s content; a name ignores the filters, and with a name, design_language serves it in that design language\'s colours and fonts. Use these to assemble well-composed pages instead of building sections from scratch.',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
                         'name'   => ['type' => 'string', 'description' => 'Recipe name from the catalog (omit to list all). Wins over the filters.'],
                         'role'   => ['type' => 'string', 'description' => 'Only recipes for this role: ' . implode(', ', SectionRecipes::ROLES)],
                         'layout' => ['type' => 'string', 'description' => 'Only recipes with this layout: ' . implode(', ', SectionRecipes::LAYOUTS)],
-                        'mood'   => ['type' => 'string', 'description' => 'Only recipes that fit this mood: ' . implode(', ', SectionRecipes::moods())],
+                        'mood'   => ['type' => 'string', 'description' => 'Only recipes that fit this mood. ' . SectionRecipes::MOOD_HELP . ' Valid: ' . implode(', ', SectionRecipes::moods())],
                         'design_language' => ['type' => 'string', 'description' => 'With name: serve the recipe in this design language\'s colours and fonts (ids: ' . implode(', ', DesignLanguages::ids()) . '). Omit for the default look.'],
                     ],
                     'required'   => [],

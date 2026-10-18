@@ -529,7 +529,7 @@ final class OpenApiSpec
                             ['name' => 'name', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Recipe name (omit to list all). Wins over the filters.']],
                             ['name' => 'role', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes for this role: ' . implode(', ', SectionRecipes::ROLES)]],
                             ['name' => 'layout', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes with this layout: ' . implode(', ', SectionRecipes::LAYOUTS)]],
-                            ['name' => 'mood', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes that fit this mood: ' . implode(', ', SectionRecipes::moods())]],
+                            ['name' => 'mood', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes that fit this mood. ' . SectionRecipes::MOOD_HELP . ' Valid: ' . implode(', ', SectionRecipes::moods())]],
                             ['name' => 'design_language', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'With name: serve the recipe in this design language\'s colours and fonts. Ids: ' . implode(', ', DesignLanguages::ids())]],
                         ],
                         'responses'   => [

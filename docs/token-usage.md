@@ -6,7 +6,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 
 | What | Detail | Bytes | Approx. tokens |
 | --- | --- | ---: | ---: |
-| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 21,034 | 5,259 |
+| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 21,289 | 5,323 |
 | Reading a page (smallest) | the page's layout content (get_page_layout adds a little wrapper), from page-17-variable-heading.json | 1,152 | 288 |
 | Reading a page's outline (smallest) | get_page_layout with view "outline" on the same page: 5 blocks, each with path, name, size and the start of its text | 358 | 90 |
 | Reading a page (median) | the page's layout content (get_page_layout adds a little wrapper), from page-45-layout-3.json | 49,842 | 12,461 |
@@ -31,7 +31,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic design-language:bold-vibrant | get_style_guide with topic "design-language:bold-vibrant", only when asked for | 2,994 | 749 |
 | The style guide, topic design-language:brutalist-flat | get_style_guide with topic "design-language:brutalist-flat", only when asked for | 2,527 | 632 |
 | The style guide, topic design-language:luxe | get_style_guide with topic "design-language:luxe", only when asked for | 2,731 | 683 |
-| The style guide, topic backgrounds | get_style_guide with topic "backgrounds", only when asked for | 8,881 | 2,221 |
+| The style guide, topic backgrounds | get_style_guide with topic "backgrounds", only when asked for | 8,894 | 2,224 |
 | The style guide, topic dividers | get_style_guide with topic "dividers", only when asked for | 8,869 | 2,218 |
 | The style guide, topic motion | get_style_guide with topic "motion", only when asked for | 8,690 | 2,173 |
 | The style guide, topic hover-states | get_style_guide with topic "hover-states", only when asked for | 5,637 | 1,410 |
@@ -43,7 +43,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic toggles | get_style_guide with topic "toggles", only when asked for | 5,602 | 1,401 |
 | The style guide, topic forms | get_style_guide with topic "forms", only when asked for | 6,315 | 1,579 |
 | The style guide, topic composition | get_style_guide with topic "composition", only when asked for | 8,589 | 2,148 |
-| The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 6,145 | 1,537 |
+| The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 6,270 | 1,568 |
 | The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 4,015 | 1,004 |
 | A served recipe (hero-cta, default look) | get_section_recipes with name "hero-cta" and no design_language | 3,044 | 761 |
 | A served recipe (hero-cta, glass-dark) | the same recipe with design_language "glass-dark" (tokens filled in; the size is the markup alone) | 3,017 | 755 |

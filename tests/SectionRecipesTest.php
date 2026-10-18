@@ -499,6 +499,46 @@ class SectionRecipesTest extends TestCase
         $this->assertStringContainsString('hero-cta', SectionRecipes::catalog(null, null, 'any'));
     }
 
+    /** A mood that leaves nothing, while the same role/layout has recipes under other moods, says so (it is not a wrong value). */
+    public function testAMoodThatEmptiesAFilterPointsAtTheOtherMoods(): void
+    {
+        $this->assertSame([], SectionRecipes::matchingNames('cta', null, 'bold-vibrant'), 'precondition: no cta recipe lists bold-vibrant');
+        $n = count(SectionRecipes::matchingNames('cta'));
+        $this->assertGreaterThan(0, $n);
+        $answer = SectionRecipes::catalog('cta', null, 'bold-vibrant');
+        $this->assertStringContainsString($n . ' recipes have role=cta under other moods', $answer);
+        $this->assertStringContainsString('call again without mood', $answer);
+        $this->assertStringContainsString('design_language=bold-vibrant', $answer);
+        $this->assertStringContainsString('AA in all ten', $answer);
+        $this->assertStringNotContainsString('Unknown', $answer);
+        // A genuinely unknown value still gets the invalid-value answer, not the hint.
+        $unknown = SectionRecipes::catalog('cta', null, 'neon');
+        $this->assertStringContainsString('Unknown mood "neon"', $unknown);
+        $this->assertStringNotContainsString('under other moods', $unknown);
+        // A role/layout pair that has no recipe under any mood keeps the plain "No recipe" answer.
+        foreach (SectionRecipes::ROLES as $r) {
+            foreach (SectionRecipes::LAYOUTS as $l) {
+                if ([] === SectionRecipes::matchingNames($r, $l)) {
+                    $plain = SectionRecipes::catalog($r, $l, 'editorial');
+                    $this->assertStringContainsString('No recipe matches', $plain);
+                    $this->assertStringNotContainsString('under other moods', $plain);
+                    break 2;
+                }
+            }
+        }
+        // A normal non-empty answer is the listing.
+        $this->assertStringStartsWith('# Divi 5 Section Recipes (role=cta, mood=glass-dark)', SectionRecipes::catalog('cta', null, 'glass-dark'));
+    }
+
+    /** The mood example names a design language id, and the catalog says what mood values are and what `any` means. */
+    public function testTheCatalogExplainsMoodValues(): void
+    {
+        $catalog = SectionRecipes::catalog();
+        $this->assertStringNotContainsString('{"mood":"any"}', $catalog);
+        $this->assertStringContainsString('{"mood":"editorial"}', $catalog);
+        $this->assertStringContainsString(SectionRecipes::MOOD_HELP, preg_replace('/\s+/', ' ', $catalog));
+    }
+
     public function testUnknownFilterValueListsValidOnes(): void
     {
         $role = SectionRecipes::catalog('nonsense');

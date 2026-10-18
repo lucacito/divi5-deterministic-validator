@@ -177,7 +177,7 @@ text stays readable).
   and `size` is not "stretch"; without those they change nothing (each missing case measured). Set both together.
   `repeat` and `repeatOrigin` also need a `size` other than "stretch" (source).
 - `blend` = "multiply". `transform`: a list of "flipHorizontal", "flipVertical", "invert", "rotate"
-  (rotate does nothing for crosses, pinwheel, polka-dots, shippo, tufted: their artwork is symmetric).
+  (rotate drew nothing for polka-dots (rendered); crosses, pinwheel, shippo and tufted are symmetric too (source)).
 
 ## Mask (`mask.*`)
 A shape cut out of the section: the mask paints `color` over the section and leaves the section's own background visible

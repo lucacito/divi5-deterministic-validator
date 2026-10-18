@@ -234,6 +234,33 @@ class SectionRecipesLockstepTest extends TestCase
         }
     }
 
+    /** MCP and OpenAPI describe the mood filter with the same words: mood values are design language ids, `any` suits every look. */
+    public function testMoodDescriptionIsTheSameEverywhereAndExplainsTheValues(): void
+    {
+        $spec = OpenApiSpec::spec( 'https://acme.example/wp-json/ai-editor-divi5/v1', '9.9.9' );
+        $open = null;
+        foreach ( $spec['paths']['/section-recipes']['get']['parameters'] as $p ) {
+            if ( 'mood' === $p['name'] ) {
+                $open = $p['schema']['description'];
+            }
+        }
+        $req   = new \WP_REST_Request( [ 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list', 'params' => new \stdClass() ] );
+        $mcp   = null;
+        foreach ( (array) ( new McpHandler() )->handle( $req )->get_data()['result']['tools'] as $t ) {
+            if ( 'get_section_recipes' === $t['name'] ) {
+                $mcp = $t;
+            }
+        }
+        $this->assertNotNull( $mcp );
+        $this->assertSame( $open, $mcp['inputSchema']['properties']['mood']['description'] );
+        $this->assertStringContainsString( SectionRecipes::MOOD_HELP, (string) $open );
+        foreach ( SectionRecipes::moods() as $m ) {
+            $this->assertStringContainsString( $m, (string) $open );
+        }
+        $this->assertStringNotContainsString( '{"mood":"any"}', $mcp['description'] );
+        $this->assertStringContainsString( SectionRecipes::MOOD_HELP, $mcp['description'] );
+    }
+
     public function testOpenApiDesignLanguageParameterNamesTheValidIds(): void
     {
         $spec = OpenApiSpec::spec( 'https://acme.example/wp-json/ai-editor-divi5/v1', '9.9.9' );

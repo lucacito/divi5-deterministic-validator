@@ -59,8 +59,9 @@ solution → proof → action.**
 
 ## The conversion flow (in order)
 Each item: its job and where to start. `role=<role>` means call get_section_recipes
-{"role":"<role>"} and pick by layout and mood; the named recipes are good first picks
-(fetch one with {"name":"…"}). Skip a section only when the brief makes it irrelevant.
+{"role":"<role>"} and pick by layout and mood (moods are design language ids; "any" lists only
+recipes that suit every look); the named recipes are good first picks (fetch one with
+{"name":"…"}). Skip a section only when the brief makes it irrelevant.
 
 1. **Hero — "Am I in the right place?"** `role=hero` (e.g. `hero-split-right`,
    `hero-image-scrim`); an inner page opens with `role=header`.
@@ -141,7 +142,7 @@ Use get_style_guide for the exact attribute shapes; this is the strategy:
   alternate split/grid/stats/quote so the eye keeps moving.
 - **Pick a design language first**: read the audience and brief, call get_style_guide
   topic=design-languages, choose one and state it before building. Then pick one recipe per
-  persuasion stage: browse get_section_recipes by `role` (and `layout`/`mood`), varying `layout`,
+  persuasion stage: browse get_section_recipes by `role` (and `layout`/`mood`, a design language id), varying `layout`,
   then fetch the chosen recipe with `name` plus `design_language` so its colours and fonts follow
   (`design_language` works only together with `name`). Keep one accent across the page.
 - **Composition rules:**

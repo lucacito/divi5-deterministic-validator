@@ -42,6 +42,9 @@ final class SectionRecipes
     /** @var ?list<array{name:string,title:string,description:string,when:string,stage:string,tags?:array<string,mixed>,markup:string}> the decoded recipes, read once per request */
     private static ?array $cache = null;
 
+    /** What a mood value is (one sentence, shared by the catalog, the MCP tool and the OpenAPI parameter). */
+    public const MOOD_HELP = 'Moods are design language ids (get_style_guide topic=design-languages); "any" lists only recipes that suit every look.';
+
     /** Forgets the memoised recipes (for tests that change the data in-process). */
     public static function clearCache(): void
     {
@@ -101,6 +104,27 @@ final class SectionRecipes
         foreach ( [ 'role' => $role, 'layout' => $layout, 'mood' => $mood ] as $k => $v ) {
             if ( null !== $v ) {
                 $applied[] = $k . '=' . $v;
+            }
+        }
+        if ( ! $lines && null !== $mood ) {
+            // The mood alone emptied a role/layout that has recipes: say so, it is not a wrong value.
+            $others = self::matchingNames( $role, $layout, null );
+            if ( [] !== $others && ( null !== $role || null !== $layout ) ) {
+                $without = [];
+                foreach ( [ 'role' => $role, 'layout' => $layout ] as $k => $v ) {
+                    if ( null !== $v ) {
+                        $without[] = $k . '=' . $v;
+                    }
+                }
+                return sprintf(
+                    'No recipe matches %s. %d recipe%s %s %s under other moods; call again without mood, then fetch the recipe with design_language=%s (the tokens re-skin any recipe in any language, every colour pair is AA in all ten).',
+                    implode( ', ', $applied ),
+                    count( $others ),
+                    1 === count( $others ) ? '' : 's',
+                    1 === count( $others ) ? 'has' : 'have',
+                    implode( ', ', $without ),
+                    'any' === $mood ? '<id>' : $mood
+                );
             }
         }
         if ( ! $lines ) {
@@ -214,8 +238,8 @@ final class SectionRecipes
             'get_section_recipes {"name":"<name>"}, replace the example text with the user\'s content and',
             'swap the example images for Media Library images (list_media_images) when suitable ones exist.',
             'Place sections between the root <!-- wp:divi/placeholder --> ... <!-- /wp:divi/placeholder --> wrapper.',
-            'Filter with get_section_recipes {"role":"hero"}, {"layout":"split"} or {"mood":"any"}: that lists',
-            'only the matches, each with its full description, _Stage:_ and _When:_.',
+            'Filter with get_section_recipes {"role":"hero"}, {"layout":"split"} or {"mood":"editorial"}: that lists',
+            'only the matches, each with its full description, _Stage:_ and _When:_. ' . self::MOOD_HELP,
             'get_section_recipes accepts an optional design_language (ids from get_style_guide topic design-languages),',
             'used together with name: it fills that recipe\'s colours and fonts; a listing or no design_language gives the default look.',
             '',
