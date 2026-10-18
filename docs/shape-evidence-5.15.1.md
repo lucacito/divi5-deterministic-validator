@@ -15826,3 +15826,285 @@ Note: Text colour of the basic captcha question (the 'captcha' element, Divi 5.1
 Registered paths added:
 
 - `captcha.decoration.font.font.{bp}.value.color`
+
+## rm-blog-type-post
+
+Block: `blog`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `post.advanced.type.desktop.value` = `"post"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 62423 | no | `0:div:block-size: 63.7969px -> 969.641px` |
+| 900 px | yes | 62423 | no | `0:div:block-size: 84.5938px -> 1005.81px` |
+| 400 px | yes | 62423 | no | `0:div:block-size: 105.391px -> 2098.52px` |
+
+Properties that changed (any width): `--align-items`, `--column-count`, `--content-max-width`, `--content-width`, `--et-pb-icon-self-align`, `--et_global_body_font`, `--et_global_body_font_height`, `--et_global_body_font_size`, `--et_global_body_font_weight`, `--et_global_heading_font`, `--et_global_heading_font_weight`, `--flex-direction`, `--gcid-096a3b95-3143-414b-96db-c5cca7103179`, `--gcid-0b3648c3-2401-4522-b561-c93abc2c011d`, `--gcid-0ec00ca9-ec06-4784-a057-5ece2d56f250`, `--gcid-143aa564-2dbe-4a69-aba4-6587f516793c`, `--gcid-270b494a-7797-4179-a3cb-58e2ea5a2b33`, `--gcid-2ecdf16a-9aa9-4a50-9606-6904c215eb5f`, `--gcid-3e93bdc5-146d-448e-a761-9f1b4dd51113`, `--gcid-49867634-93e9-4875-ba57-768929494fb1`, `--gcid-4b73e4d9-a130-475b-a212-4e71bec4d095`, `--gcid-4c119920-fe37-4b7d-b1e0-a1ec608cdcd7`, `--gcid-5a92b32a-7eb7-4cbf-bdc6-bfe5157d88a2`, `--gcid-5tbs27vy1j`, `--gcid-672c49ec-b8cc-4f22-a785-dec4ee1498c5`, `--gcid-695690f7-1400-435d-ab5d-81e5d8a43692`, `--gcid-99viu2b4dr`, `--gcid-a4405f6c-a1ea-4782-80a8-25c182da384f`, `--gcid-afa30cf2-6f5d-4b9c-aa39-7dbe1ac3b7a3`, `--gcid-b68ebd6f-34e1-4b59-8333-c911897a4e8d`, `--gcid-body-color`, `--gcid-c7d8f091-13fc-48ff-a161-01fd58ed72d5`, `--gcid-ed15a884-bfab-4a16-8ab4-a2e1fa392537`, `--gcid-el6sdpheod`, `--gcid-f173c7a3-9e00-4e82-b195-d41f2add7ec5`, `--gcid-heading-color`, `--gcid-kp4fwcc7jc`, `--gcid-kvhiibhwb3`, `--gcid-link-color`, `--gcid-m1i5l9dkfe`.
+
+Phone overflow at 400 px: no.
+
+Note: Post type 'post' (the post type every WordPress site has; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:778 is the post_type of the WP_Query, ModuleUtils.php:4186 adds the category filter for 'post'). The control page carries the legacy recipe's value 'event', a post type that does not exist on this site and so draws no articles (rm-blog-type-unknown); the candidate page sets 'post' and must draw the site's own posts. Measured on the dev site's own 6 published posts; the blog module draws the site's content, so the effect is the number of articles drawn.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rc-testimonial-author-color
+
+Block: `testimonial`. Set on top of the base block:
+
+- `author.decoration.font.font.desktop.value.color` = `"#f2f4fa"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `6:div:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 900 px | yes | 17 | yes | `6:div:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 400 px | yes | 17 | yes | `6:div:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Text colour of the testimonial author name (module.json attributes.author, selector '{{selector}}.et_pb_testimonial .et_pb_testimonial_author', settings.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/testimonial/module.json). Divi prints it in default #666 on every load (dark surface in the base = the testimonial recipe under glass-dark). Measured by the computed colour of the author element.
+
+Registered paths added:
+
+- `author.decoration.font.font.{bp}.value.color`
+
+## rc-testimonial-jobtitle-color
+
+Block: `testimonial`. Set on top of the base block:
+
+- `jobTitle.decoration.font.font.desktop.value.color` = `"#f2f4fa"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 34 | yes | `8:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 900 px | yes | 34 | yes | `8:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 400 px | yes | 34 | yes | `8:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Text colour of the testimonial job title (module.json attributes.jobTitle, selector '.et_pb_testimonial_position, .et_pb_testimonial_separator', settings.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/testimonial/module.json). Default #666. Measured by the computed colour of the position and separator.
+
+Registered paths added:
+
+- `jobTitle.decoration.font.font.{bp}.value.color`
+
+## rc-testimonial-company-color
+
+Block: `testimonial`. Set on top of the base block:
+
+- `company.decoration.font.font.desktop.value.color` = `"#f2f4fa"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `10:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 900 px | yes | 17 | yes | `10:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 400 px | yes | 17 | yes | `10:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Text colour of the testimonial company name and its link (module.json attributes.company, selector '.et_pb_testimonial_company, .et_pb_testimonial_company a', settings.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/testimonial/module.json). Default #666. Measured by the computed colour of the company element.
+
+Registered paths added:
+
+- `company.decoration.font.font.{bp}.value.color`
+
+## rc-testimonial-content-color
+
+Block: `testimonial`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.color` = `"#f2f4fa"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 34 | yes | `4:div:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 900 px | yes | 34 | yes | `4:div:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 400 px | yes | 34 | yes | `4:div:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Text colour of the testimonial quote (module.json attributes.content, selector '.et_pb_testimonial_content', settings.decoration.bodyFont; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/testimonial/module.json). The path is registered from the Text module; this proves that the testimonial module honours it (default #666 on every load). Measured by the computed colour of the quote paragraph.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rc-shop-title-color
+
+Block: `shop`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.color` = `"#f2f4fa"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 204 | yes | `8:h2:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)` |
+| 900 px | yes | 204 | yes | `8:h2:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)` |
+| 400 px | yes | 204 | yes | `8:h2:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Product title text colour (attributes.title, settings.decoration.font). The path is registered from other modules; this proves that the shop module honours it (Divi prints product titles in default #333). (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/woocommerce/products/module.json). Measured on the dev site's own WooCommerce products by the computed styles of the shop module and its descendants.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## rc-shop-price-color
+
+Block: `shop`. Set on top of the base block:
+
+- `price.decoration.font.font.desktop.value.color` = `"#f2f4fa"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 867 | yes | `10:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 900 px | yes | 867 | yes | `10:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 400 px | yes | 867 | yes | `10:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Product price text colour (attributes.price, settings.decoration.font; Divi prints it in a grey default). (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/woocommerce/products/module.json). Measured on the dev site's own WooCommerce products by the computed styles of the shop module and its descendants.
+
+Registered paths added:
+
+- `price.decoration.font.font.{bp}.value.color`
+
+## rc-shop-saleprice-color
+
+Block: `shop`. Set on top of the base block:
+
+- `salePrice.decoration.font.font.desktop.value.color` = `"#f2f4fa"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 255 | yes | `27:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 900 px | yes | 255 | yes | `27:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+| 400 px | yes | 255 | yes | `27:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Sale price text colour (attributes.salePrice, settings.decoration.font). (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/woocommerce/products/module.json). Measured on the dev site's own WooCommerce products by the computed styles of the shop module and its descendants.
+
+Registered paths added:
+
+- `salePrice.decoration.font.font.{bp}.value.color`
+
+## rc-shop-badge-bg
+
+Block: `shop`. Set on top of the base block:
+
+- `saleBadge.decoration.background.desktop.value.color` = `"#7c9cff"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `15:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)` |
+| 900 px | yes | 6 | yes | `15:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)` |
+| 400 px | yes | 6 | yes | `15:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Sale badge background colour (attributes.saleBadge, settings.decoration.background; WooCommerce's own Sale! badge, Divi default orange). (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/woocommerce/products/module.json). Measured on the dev site's own WooCommerce products by the computed styles of the shop module and its descendants.
+
+Registered paths added:
+
+- `saleBadge.decoration.background.{bp}.value.color`
+
+## rc-shop-badge-color
+
+Block: `shop`. Set on top of the base block:
+
+- `saleBadge.decoration.font.font.desktop.value.color` = `"#0b1020"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 102 | yes | `15:span:border-block-end-color: rgb(255, 255, 255) -> rgb(11, 16, 32)` |
+| 900 px | yes | 102 | yes | `15:span:border-block-end-color: rgb(255, 255, 255) -> rgb(11, 16, 32)` |
+| 400 px | yes | 102 | yes | `15:span:border-block-end-color: rgb(255, 255, 255) -> rgb(11, 16, 32)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Sale badge text colour (attributes.saleBadge, settings.decoration.font; default white). (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/woocommerce/products/module.json). Measured on the dev site's own WooCommerce products by the computed styles of the shop module and its descendants.
+
+Registered paths added:
+
+- `saleBadge.decoration.font.font.{bp}.value.color`
+
+## rc-blog-meta-color
+
+Block: `blog`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `meta.decoration.font.font.desktop.value.color` = `"rgba(0,0,0,0.8)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 612 | yes | `10:p:border-block-end-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)` |
+| 900 px | yes | 612 | yes | `10:p:border-block-end-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)` |
+| 400 px | yes | 612 | yes | `10:p:border-block-end-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Text colour of the blog post meta line, the category links included (attributes.meta, selector '.et_pb_post .post-meta, .et_pb_post .post-meta a', settings.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/blog/module.json). Divi prints the category link in orange (3.3:1 on its white card). Measured on the dev site's own 6 published posts by the computed styles of the module and its descendants.
+
+Registered paths added:
+
+- `meta.decoration.font.font.{bp}.value.color`
+
+## rc-blog-readmore-color
+
+Block: `blog`, also comparing the rendered text of the element. Set on top of the base block:
+
+- `readMore.decoration.font.font.desktop.value.color` = `"rgba(0,0,0,0.8)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 102 | yes | `19:a:border-block-end-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)` |
+| 900 px | yes | 102 | yes | `19:a:border-block-end-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)` |
+| 400 px | yes | 102 | yes | `19:a:border-block-end-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Text colour of the blog read-more link (attributes.readMore, selector '.et_pb_post div.post-content a.more-link', settings.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/blog/module.json). Divi prints it in light blue (2.8:1 on its white card). Measured on the dev site's own 6 published posts by the computed styles of the module and its descendants.
+
+Registered paths added:
+
+- `readMore.decoration.font.font.{bp}.value.color`

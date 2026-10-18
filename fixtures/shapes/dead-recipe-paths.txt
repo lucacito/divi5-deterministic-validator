@@ -1,6 +1,6 @@
 # Recipe attribute paths that were measured on the real Divi 5.15.1 and rendered nothing (or whose effect cannot be seen in the
-# rendered page). They stay in ungrounded-recipe-paths.txt until the tokenising tasks remove the setting from the recipes; a path
-# listed here must never be registered by hand. Evidence: fixtures/shapes/candidates/recipe-modules.json (ids rm-*) and
+# rendered page). The tokenising tasks (Plan 2 tasks 11b and 11c) removed every one of them from the recipes, so ungrounded-recipe-paths.txt
+# is empty and no recipe uses a path listed here; a path listed here must never be registered by hand. Evidence: fixtures/shapes/candidates/recipe-modules.json (ids rm-*) and
 # fixtures/shapes/probe-results-recipe-modules.json. "The front end draws nothing" is a front-end result: the Visual Builder was not checked.
 # Why: read only when the form is submitted (ContactFormHandler.php:399, an empty value falls back to the site admin email); the page that is drawn does not contain it, so it cannot be measured. rm-cf-receiver. Mail delivery was not tested.
 email.advanced.receiver.{bp}.value

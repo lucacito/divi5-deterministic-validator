@@ -1,0 +1,1175 @@
+[
+  {
+    "id": "rc-testimonial-author-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 17,
+        "sample": [
+          "6:div:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 17,
+        "sample": [
+          "6:div:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 17,
+        "sample": [
+          "6:div:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "6:div:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rc-testimonial-jobtitle-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 34,
+        "sample": [
+          "8:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 34,
+        "sample": [
+          "8:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 34,
+        "sample": [
+          "8:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "8:span:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rc-testimonial-company-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 17,
+        "sample": [
+          "10:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 17,
+        "sample": [
+          "10:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 17,
+        "sample": [
+          "10:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rc-testimonial-content-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 34,
+        "sample": [
+          "4:div:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 34,
+        "sample": [
+          "4:div:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 34,
+        "sample": [
+          "4:div:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "4:div:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rc-shop-title-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 204,
+        "sample": [
+          "8:h2:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-block-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-bottom-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-inline-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-inline-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-left-color: rgb(51, 51, 51) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 204,
+        "sample": [
+          "8:h2:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-block-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-bottom-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-inline-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-inline-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-left-color: rgb(51, 51, 51) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 204,
+        "sample": [
+          "8:h2:border-block-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-block-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-bottom-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-inline-end-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-inline-start-color: rgb(51, 51, 51) -> rgb(242, 244, 250)",
+          "8:h2:border-left-color: rgb(51, 51, 51) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rc-shop-price-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 867,
+        "sample": [
+          "10:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 867,
+        "sample": [
+          "10:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 867,
+        "sample": [
+          "10:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "10:span:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rc-shop-saleprice-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 255,
+        "sample": [
+          "27:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 255,
+        "sample": [
+          "27:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 255,
+        "sample": [
+          "27:span:border-block-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-block-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-bottom-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-inline-end-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-inline-start-color: rgb(102, 102, 102) -> rgb(242, 244, 250)",
+          "27:span:border-left-color: rgb(102, 102, 102) -> rgb(242, 244, 250)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rc-shop-badge-bg",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 6,
+        "sample": [
+          "15:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "33:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "51:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "69:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "87:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "149:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 6,
+        "sample": [
+          "15:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "33:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "51:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "69:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "87:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "149:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 6,
+        "sample": [
+          "15:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "33:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "51:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "69:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "87:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)",
+          "149:span:background-color: rgb(239, 143, 97) -> rgb(124, 156, 255)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rc-shop-badge-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 102,
+        "sample": [
+          "15:span:border-block-end-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-block-start-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-bottom-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-inline-end-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-inline-start-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-left-color: rgb(255, 255, 255) -> rgb(11, 16, 32)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 102,
+        "sample": [
+          "15:span:border-block-end-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-block-start-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-bottom-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-inline-end-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-inline-start-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-left-color: rgb(255, 255, 255) -> rgb(11, 16, 32)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 102,
+        "sample": [
+          "15:span:border-block-end-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-block-start-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-bottom-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-inline-end-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-inline-start-color: rgb(255, 255, 255) -> rgb(11, 16, 32)",
+          "15:span:border-left-color: rgb(255, 255, 255) -> rgb(11, 16, 32)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rc-blog-meta-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 612,
+        "sample": [
+          "10:p:border-block-end-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-block-start-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-bottom-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-inline-end-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-inline-start-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-left-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 612,
+        "sample": [
+          "10:p:border-block-end-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-block-start-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-bottom-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-inline-end-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-inline-start-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-left-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 612,
+        "sample": [
+          "10:p:border-block-end-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-block-start-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-bottom-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-inline-end-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-inline-start-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)",
+          "10:p:border-left-color: rgb(255, 77, 0) -> rgba(0, 0, 0, 0.8)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "rc-blog-readmore-color",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 102,
+        "sample": [
+          "19:a:border-block-end-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-block-start-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-bottom-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-inline-end-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-inline-start-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-left-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 102,
+        "sample": [
+          "19:a:border-block-end-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-block-start-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-bottom-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-inline-end-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-inline-start-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-left-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 102,
+        "sample": [
+          "19:a:border-block-end-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-block-start-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-bottom-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-inline-end-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-inline-start-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)",
+          "19:a:border-left-color: rgb(46, 163, 242) -> rgba(0, 0, 0, 0.8)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  }
+]

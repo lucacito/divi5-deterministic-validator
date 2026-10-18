@@ -241,11 +241,11 @@ final class ShapeRegistryTest extends TestCase
         $this->assertFalse( $registry->covers( 'image.decoration.fit.{bp}.value.type' ), 'a dead shape must never be registered' );
     }
 
-    /** @return array<string,int> the non-empty lines of a file in fixtures/shapes, as a set */
+    /** @return array<string,int> the non-empty lines of a file in fixtures/shapes that are not `#` comments, as a set */
     private function lines( string $file ): array
     {
         $lines = file( __DIR__ . '/../fixtures/shapes/' . $file, FILE_IGNORE_NEW_LINES );
         $this->assertIsArray( $lines, $file );
-        return array_flip( array_filter( array_map( 'trim', $lines ), static fn ( string $l ): bool => $l !== '' ) );
+        return array_flip( array_filter( array_map( 'trim', $lines ), static fn ( string $l ): bool => $l !== '' && '#' !== $l[0] ) );
     }
 }

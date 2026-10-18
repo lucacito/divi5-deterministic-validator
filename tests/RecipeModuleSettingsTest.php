@@ -175,12 +175,11 @@ final class RecipeModuleSettingsTest extends TestCase
         $this->assertSame( array_values( array_unique( $dead ) ), $dead, 'dead-recipe-paths.txt lists a path twice' );
         foreach ( $dead as $path ) {
             $this->assertFalse( $registry->coversLeaf( $path ), "$path is registered but listed as dead" );
-            // The tokenising tasks remove a dead setting from the recipes and then delete it from the frozen list; until
-            // then the path must still be frozen (a recipe still uses it), so the two files never disagree.
-            $this->assertTrue( in_array( $path, $frozen, true ) || ! isset( $used[ $path ] ), "$path is dead, a recipe still uses it and it is not in ungrounded-recipe-paths.txt" );
+            // Task 11c finished the tokenising: every dead setting was removed from the recipes, so no recipe uses one any more.
+            $this->assertFalse( isset( $used[ $path ] ), "$path is dead and a recipe still uses it" );
         }
-        // Nothing frozen is unexamined: every frozen path is dead (the proven ones left the frozen list when they were registered).
-        $this->assertSame( [], array_values( array_diff( $frozen, $dead ) ), 'ungrounded-recipe-paths.txt holds a path nobody examined' );
+        // The frozen list is empty: nothing in it can be unexamined, and nothing may be added.
+        $this->assertSame( [], $frozen, 'ungrounded-recipe-paths.txt must stay empty' );
     }
 
     public function testEveryDeadPathHasAMeasuredDeadCandidateAndNoPassingOne(): void

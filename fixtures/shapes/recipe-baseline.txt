@@ -15,10 +15,6 @@
 #   by RENDER_FAILURE_CAP in tests/RecipeLibraryTest.php (currently 0), which may only be lowered.
 
 # no-pairs
-stats-counter
-blog-feed
-icon-values
-shop-grid
 
 # duplicate-layouts
 

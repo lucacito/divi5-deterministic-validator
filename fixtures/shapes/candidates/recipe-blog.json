@@ -1,0 +1,23 @@
+[
+  {
+    "id": "rm-blog-type-post",
+    "block": "blog",
+    "text": true,
+    "base": {
+      "post": {
+        "advanced": {
+          "type": {
+            "desktop": {
+              "value": "event"
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "post.advanced.type.desktop.value": "post"
+    },
+    "expect": "PASS",
+    "note": "Post type 'post' (the post type every WordPress site has; Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Blog/BlogModule.php:778 is the post_type of the WP_Query, ModuleUtils.php:4186 adds the category filter for 'post'). The control page carries the legacy recipe's value 'event', a post type that does not exist on this site and so draws no articles (rm-blog-type-unknown); the candidate page sets 'post' and must draw the site's own posts. Measured on the dev site's own 6 published posts; the blog module draws the site's content, so the effect is the number of articles drawn."
+  }
+]

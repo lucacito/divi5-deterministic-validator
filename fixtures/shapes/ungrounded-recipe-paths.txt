@@ -1,3 +1,5 @@
-module.decoration.transform.{bp}.hover.translate.linked
-post.advanced.categories.{bp}.value.{n}
-post.decoration.border.{bp}.value.radius.sync
+# Recipe attribute paths that no committed export and no probe backs, frozen so the list can only shrink
+# (tests/ShapeRegistryTest.php). It is EMPTY since Plan 2 task 11c: every path a recipe uses is registered.
+# The three legacy paths that were measured dead (rm-hv-translate-linked, rm-blog-categories-all and
+# rm-blog-post-radius-sync) were removed from the recipes that used them; they are recorded in dead-recipe-paths.txt.
+# Never add a path here to make a test pass: prove it with the probe (scripts/verify-shapes.cjs) or leave it out of the recipe.

@@ -22,6 +22,11 @@
             "evidence": "fixtures/valid/page-17-newpage.json"
         },
         {
+            "path": "author.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-testimonial-author-color"
+        },
+        {
             "path": "author.innerContent",
             "how": "export",
             "evidence": "fixtures/valid/page-17-newpage.json"
@@ -275,6 +280,11 @@
             "path": "column2.decoration.background.{bp}.value.image.url",
             "how": "export",
             "evidence": "fixtures/valid/page-85-layout-4.json"
+        },
+        {
+            "path": "company.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-testimonial-company-color"
         },
         {
             "path": "company.innerContent",
@@ -932,6 +942,11 @@
             "evidence": "fixtures/valid/page-17-newpage.json"
         },
         {
+            "path": "jobTitle.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-testimonial-jobtitle-color"
+        },
+        {
             "path": "jobTitle.innerContent",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#rm-ts-jobtitle"
@@ -985,6 +1000,11 @@
             "path": "meta.advanced.showDate.{bp}.value",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#rm-blog-meta-date-off"
+        },
+        {
+            "path": "meta.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-blog-meta-color"
         },
         {
             "path": "module",
@@ -2407,6 +2427,11 @@
             "evidence": "docs/shape-evidence-5.15.1.md#rm-blog-post-border-width"
         },
         {
+            "path": "price.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-shop-price-color"
+        },
+        {
             "path": "price.innerContent",
             "how": "export",
             "evidence": "fixtures/valid/page-17-newpage.json"
@@ -2425,6 +2450,26 @@
             "path": "readMore.advanced.enable.{bp}.value",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#rm-blog-readmore-on"
+        },
+        {
+            "path": "readMore.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-blog-readmore-color"
+        },
+        {
+            "path": "saleBadge.decoration.background.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-shop-badge-bg"
+        },
+        {
+            "path": "saleBadge.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-shop-badge-color"
+        },
+        {
+            "path": "salePrice.decoration.font.font.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#rc-shop-saleprice-color"
         },
         {
             "path": "searchIcon.decoration.font.font.{bp}.value.color",

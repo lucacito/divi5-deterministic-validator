@@ -1,0 +1,315 @@
+[
+  {
+    "id": "rc-testimonial-author-color",
+    "block": "testimonial",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#151c33"
+              }
+            }
+          }
+        }
+      },
+      "author": {
+        "innerContent": {
+          "desktop": {
+            "value": "Jordan Taylor"
+          }
+        }
+      },
+      "jobTitle": {
+        "innerContent": {
+          "desktop": {
+            "value": "VP of marketing"
+          }
+        }
+      },
+      "company": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "text": "Learn More"
+            }
+          }
+        }
+      },
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>Clear, benefit-driven copy that tells visitors what they get and why it matters.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "author.decoration.font.font.desktop.value.color": "#f2f4fa"
+    },
+    "expect": "PASS",
+    "note": "Text colour of the testimonial author name (module.json attributes.author, selector '{{selector}}.et_pb_testimonial .et_pb_testimonial_author', settings.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/testimonial/module.json). Divi prints it in default #666 on every load (dark surface in the base = the testimonial recipe under glass-dark). Measured by the computed colour of the author element."
+  },
+  {
+    "id": "rc-testimonial-jobtitle-color",
+    "block": "testimonial",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#151c33"
+              }
+            }
+          }
+        }
+      },
+      "author": {
+        "innerContent": {
+          "desktop": {
+            "value": "Jordan Taylor"
+          }
+        }
+      },
+      "jobTitle": {
+        "innerContent": {
+          "desktop": {
+            "value": "VP of marketing"
+          }
+        }
+      },
+      "company": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "text": "Learn More"
+            }
+          }
+        }
+      },
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>Clear, benefit-driven copy that tells visitors what they get and why it matters.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "jobTitle.decoration.font.font.desktop.value.color": "#f2f4fa"
+    },
+    "expect": "PASS",
+    "note": "Text colour of the testimonial job title (module.json attributes.jobTitle, selector '.et_pb_testimonial_position, .et_pb_testimonial_separator', settings.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/testimonial/module.json). Default #666. Measured by the computed colour of the position and separator."
+  },
+  {
+    "id": "rc-testimonial-company-color",
+    "block": "testimonial",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#151c33"
+              }
+            }
+          }
+        }
+      },
+      "author": {
+        "innerContent": {
+          "desktop": {
+            "value": "Jordan Taylor"
+          }
+        }
+      },
+      "jobTitle": {
+        "innerContent": {
+          "desktop": {
+            "value": "VP of marketing"
+          }
+        }
+      },
+      "company": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "text": "Learn More"
+            }
+          }
+        }
+      },
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>Clear, benefit-driven copy that tells visitors what they get and why it matters.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "company.decoration.font.font.desktop.value.color": "#f2f4fa"
+    },
+    "expect": "PASS",
+    "note": "Text colour of the testimonial company name and its link (module.json attributes.company, selector '.et_pb_testimonial_company, .et_pb_testimonial_company a', settings.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/testimonial/module.json). Default #666. Measured by the computed colour of the company element."
+  },
+  {
+    "id": "rc-testimonial-content-color",
+    "block": "testimonial",
+    "base": {
+      "module": {
+        "decoration": {
+          "background": {
+            "desktop": {
+              "value": {
+                "color": "#151c33"
+              }
+            }
+          }
+        }
+      },
+      "author": {
+        "innerContent": {
+          "desktop": {
+            "value": "Jordan Taylor"
+          }
+        }
+      },
+      "jobTitle": {
+        "innerContent": {
+          "desktop": {
+            "value": "VP of marketing"
+          }
+        }
+      },
+      "company": {
+        "innerContent": {
+          "desktop": {
+            "value": {
+              "text": "Learn More"
+            }
+          }
+        }
+      },
+      "content": {
+        "innerContent": {
+          "desktop": {
+            "value": "<p>Clear, benefit-driven copy that tells visitors what they get and why it matters.</p>"
+          }
+        }
+      }
+    },
+    "set": {
+      "content.decoration.bodyFont.body.font.desktop.value.color": "#f2f4fa"
+    },
+    "expect": "PASS",
+    "note": "Text colour of the testimonial quote (module.json attributes.content, selector '.et_pb_testimonial_content', settings.decoration.bodyFont; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/testimonial/module.json). The path is registered from the Text module; this proves that the testimonial module honours it (default #666 on every load). Measured by the computed colour of the quote paragraph."
+  },
+  {
+    "id": "rc-shop-title-color",
+    "block": "shop",
+    "set": {
+      "title.decoration.font.font.desktop.value.color": "#f2f4fa"
+    },
+    "expect": "PASS",
+    "note": "Product title text colour (attributes.title, settings.decoration.font). The path is registered from other modules; this proves that the shop module honours it (Divi prints product titles in default #333). (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/woocommerce/products/module.json). Measured on the dev site's own WooCommerce products by the computed styles of the shop module and its descendants."
+  },
+  {
+    "id": "rc-shop-price-color",
+    "block": "shop",
+    "set": {
+      "price.decoration.font.font.desktop.value.color": "#f2f4fa"
+    },
+    "expect": "PASS",
+    "note": "Product price text colour (attributes.price, settings.decoration.font; Divi prints it in a grey default). (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/woocommerce/products/module.json). Measured on the dev site's own WooCommerce products by the computed styles of the shop module and its descendants."
+  },
+  {
+    "id": "rc-shop-saleprice-color",
+    "block": "shop",
+    "set": {
+      "salePrice.decoration.font.font.desktop.value.color": "#f2f4fa"
+    },
+    "expect": "PASS",
+    "note": "Sale price text colour (attributes.salePrice, settings.decoration.font). (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/woocommerce/products/module.json). Measured on the dev site's own WooCommerce products by the computed styles of the shop module and its descendants."
+  },
+  {
+    "id": "rc-shop-badge-bg",
+    "block": "shop",
+    "set": {
+      "saleBadge.decoration.background.desktop.value.color": "#7c9cff"
+    },
+    "expect": "PASS",
+    "note": "Sale badge background colour (attributes.saleBadge, settings.decoration.background; WooCommerce's own Sale! badge, Divi default orange). (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/woocommerce/products/module.json). Measured on the dev site's own WooCommerce products by the computed styles of the shop module and its descendants."
+  },
+  {
+    "id": "rc-shop-badge-color",
+    "block": "shop",
+    "set": {
+      "saleBadge.decoration.font.font.desktop.value.color": "#0b1020"
+    },
+    "expect": "PASS",
+    "note": "Sale badge text colour (attributes.saleBadge, settings.decoration.font; default white). (Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/woocommerce/products/module.json). Measured on the dev site's own WooCommerce products by the computed styles of the shop module and its descendants."
+  },
+  {
+    "id": "rc-blog-meta-color",
+    "block": "blog",
+    "text": true,
+    "base": {
+      "post": {
+        "advanced": {
+          "type": {
+            "desktop": {
+              "value": "post"
+            }
+          }
+        }
+      },
+      "readMore": {
+        "advanced": {
+          "enable": {
+            "desktop": {
+              "value": "on"
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "meta.decoration.font.font.desktop.value.color": "rgba(0,0,0,0.8)"
+    },
+    "expect": "PASS",
+    "note": "Text colour of the blog post meta line, the category links included (attributes.meta, selector '.et_pb_post .post-meta, .et_pb_post .post-meta a', settings.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/blog/module.json). Divi prints the category link in orange (3.3:1 on its white card). Measured on the dev site's own 6 published posts by the computed styles of the module and its descendants."
+  },
+  {
+    "id": "rc-blog-readmore-color",
+    "block": "blog",
+    "text": true,
+    "base": {
+      "post": {
+        "advanced": {
+          "type": {
+            "desktop": {
+              "value": "post"
+            }
+          }
+        }
+      },
+      "readMore": {
+        "advanced": {
+          "enable": {
+            "desktop": {
+              "value": "on"
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "readMore.decoration.font.font.desktop.value.color": "rgba(0,0,0,0.8)"
+    },
+    "expect": "PASS",
+    "note": "Text colour of the blog read-more link (attributes.readMore, selector '.et_pb_post div.post-content a.more-link', settings.decoration.font; Divi 5.15.1 includes/builder-5/visual-builder/packages/module-library/src/components/blog/module.json). Divi prints it in light blue (2.8:1 on its white card). Measured on the dev site's own 6 published posts by the computed styles of the module and its descendants."
+  }
+]
