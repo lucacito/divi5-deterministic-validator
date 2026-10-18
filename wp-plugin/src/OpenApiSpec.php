@@ -536,8 +536,8 @@ final class OpenApiSpec
                             '200' => ['description' => 'Catalog or a single recipe', 'content' => ['application/json' => ['schema' => [
                                 'type'       => 'object',
                                 'properties' => [
-                                    'catalog' => ['type' => 'object', 'additionalProperties' => true, 'description' => 'Recipe names to summaries (when listing)'],
-                                    'names'   => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'All recipe names (when listing)'],
+                                    'catalog' => ['type' => 'object', 'additionalProperties' => true, 'description' => 'Recipe names to short summaries: every recipe, or only the ones matching a role, layout or mood filter'],
+                                    'names'   => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Recipe names: all of them, or only the matching ones when a role, layout or mood filter is given'],
                                     'name'    => ['type' => 'string', 'description' => 'The requested recipe name (single lookup)'],
                                     'markup'  => ['type' => 'string', 'description' => 'Block markup for the requested recipe'],
                                 ],

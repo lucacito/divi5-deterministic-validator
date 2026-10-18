@@ -50,7 +50,7 @@ fi
 
 if [ "$GATES" = "1" ]; then
   PRO_ACTIVE="$(docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp plugin is-active jhmg-ai-editor-for-divi-5-pro >/dev/null 2>&1 && echo yes || echo no)"
-  GATE_LIST="test verify-html-to-divi verify-guide-shapes verify-components verify-style-values verify-global-styles verify-page-title verify-history"
+  GATE_LIST="test verify-html-to-divi verify-guide-shapes verify-shapes verify-components verify-style-values verify-global-styles verify-page-title verify-history"
   [ "$PRO_ACTIVE" = "yes" ] && GATE_LIST="$GATE_LIST verify-pro-global-variables verify-pro-global-presets verify-pro-global-colors verify-pro-theme-layouts"
   {
     echo "## Gates on Divi ${NEW_VERSION}"

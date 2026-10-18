@@ -58,7 +58,8 @@ class SectionRecipesLockstepTest extends TestCase
 
         [ , $both ] = $this->mcp( [ 'role' => 'features', 'layout' => 'split', 'mood' => 'any' ] );
         $this->assertStringContainsString( 'split-image-text', $both );
-        $this->assertStringNotContainsString( 'card-grid-3', $both );
+        $this->assertStringContainsString( 'card-grid-3', $both, 'card-grid-3 is a split (an intro row, then an image beside text)' );
+        $this->assertStringNotContainsString( 'blurb-grid', $both );
     }
 
     public function testMcpUnknownFilterValueIsANormalAnswerListingTheValidValues(): void

@@ -61,17 +61,41 @@ final class DesignVariety
 
     private const SCAN_DEPTH = 40;
 
-    public const MESSAGE = "This page may look repetitive. It is valid and saved as is; this is only a hint. See findings: each names the sections and lists a few recipes (get_section_recipes with the name) built on a different layout. Vary the skeletons, backgrounds and the first screen, then read the page again.";
+    /**
+     * Modules that are a focal point by themselves when they open the page: a slider, a full-width header, a video, an image or
+     * a gallery is what the eye lands on, so a first section holding one is not told to "add a hero". Every name is accepted by
+     * Divi5Validator\SchemaRules (STRUCTURAL_BLOCKS / LEAF_MODULES, the latter fed by the render-verified VerifiedModules).
+     */
+    public const FOCAL_MODULES = [
+        'divi/slider',
+        'divi/fullwidth-slider',
+        'divi/fullwidth-header',
+        'divi/fullwidth-image',
+        'divi/video',
+        'divi/fullwidth-post-slider',
+        'divi/post-slider',
+        'divi/image',
+        'divi/before-after-image',
+        'divi/gallery',
+        'divi/fullwidth-portfolio',
+    ];
+
+    /** @var ?array<string,string> recipe name => its fingerprint layout string (memoised for the request) */
+    private static ?array $recipeLayouts = null;
+
+    public const MESSAGE = "This page may look repetitive. It is valid and saved as is; this is only a hint. See findings: each names the sections and lists a few recipes (or none, when the fix is a style, not a layout) to fetch with get_section_recipes and the name. Vary the skeletons, backgrounds and the first screen, then read the page again.";
 
     /**
      * @return ?array{findings: list<array{code:string,sections:list<int>,message:string,try:list<string>}>, message: string}
      */
     public static function advise( string $content, ?string $previous = null ): ?array
     {
-        $now = self::fingerprints( $content );
-        if ( null === $now || count( $now ) < self::MIN_SECTIONS ) {
+        $scan = self::scan( $content );
+        if ( null === $scan || count( $scan ) < self::MIN_SECTIONS ) {
             return null;
         }
+        $now    = array_column( $scan, 'fp' );
+        $colors = array_column( $scan, 'color' );
         if ( null !== $previous ) {
             $before = self::fingerprints( $previous );
             if ( null !== $before && count( $before ) === count( $now ) ) {
@@ -138,7 +162,9 @@ final class DesignVariety
             );
         }
 
-        // FLAT_BACKGROUNDS: no gradient and no image in any section.
+        // FLAT_BACKGROUNDS: no gradient and no image in any section AND fewer than two distinct solid colors (alternating two
+        // colors is the other fix the message offers). The colors are kept beside the fingerprints, never in them, so the
+        // silence rule above stays blind to a color-only edit.
         $flat = true;
         foreach ( $now as $fp ) {
             if ( 'gradient' === $fp['background'] || 'image' === $fp['background'] ) {
@@ -146,11 +172,14 @@ final class DesignVariety
                 break;
             }
         }
+        if ( $flat && count( array_unique( array_filter( $colors, static fn ( ?string $c ): bool => null !== $c ) ) ) >= 2 ) {
+            $flat = false;
+        }
         if ( $flat ) {
             $findings[] = self::finding(
                 'FLAT_BACKGROUNDS',
                 range( 0, $n - 1 ),
-                'Every section has a plain or no background, so the page reads as one flat sheet. Give at least one section a gradient or an image, or alternate two clearly different colors.',
+                'Every section has a plain or no background in one color at most, so the page reads as one flat sheet. Give at least one section a gradient or an image, or alternate two clearly different colors.',
                 $now,
                 [],
                 [],
@@ -201,6 +230,20 @@ final class DesignVariety
      */
     public static function fingerprints( string $content ): ?array
     {
+        $scan = self::scan( $content );
+
+        return null === $scan ? null : array_column( $scan, 'fp' );
+    }
+
+    /**
+     * The fingerprints plus, beside them, each section's normalised solid background color (lower case, no whitespace; null
+     * when the section has none). The color is not part of a fingerprint on purpose: editing only a color value is not a
+     * structural change.
+     *
+     * @return ?list<array{fp: array{layout:string,cards:bool,background:string,focal:bool,depth:bool}, color: ?string}>
+     */
+    private static function scan( string $content ): ?array
+    {
         if ( CodePolicy::tooLarge( $content ) || CodePolicy::tooDeep( $content ) ) {
             return null;
         }
@@ -215,7 +258,18 @@ final class DesignVariety
             }
         } );
 
-        return array_map( [ self::class, 'fingerprint' ], $sections );
+        return array_map( static fn ( Block $b ): array => [ 'fp' => self::fingerprint( $b ), 'color' => self::solidColor( $b ) ], $sections );
+    }
+
+    private static function solidColor( Block $section ): ?string
+    {
+        $v = $section->attr( 'module.decoration.background.desktop.value' );
+        if ( ! is_array( $v ) || ! is_string( $v['color'] ?? null ) ) {
+            return null;
+        }
+        $c = strtolower( (string) preg_replace( '/\s+/', '', $v['color'] ) );
+
+        return '' === $c ? null : $c;
     }
 
     /**
@@ -256,16 +310,51 @@ final class DesignVariety
     private static function finding( string $code, array $sections, string $message, array $all, array $avoid, array $onlyRoles = [], array $onlyBackgrounds = [], bool $suggest = true ): array
     {
         $layouts = [];
+        $skeletons = [];
         foreach ( $avoid as $i ) {
             $layouts[ self::tagLayout( $all[ $i ] ) ] = true;
+            $skeletons[ $all[ $i ]['layout'] ]        = true;
+        }
+        $try = [];
+        if ( $suggest ) {
+            // A recipe's hand-assigned layout tag and the layout the fingerprint measures can disagree, so besides the tag
+            // layouts also leave out any recipe whose OWN fingerprint layout is one of the flagged skeletons (never tell the AI
+            // to swap a recipe for itself).
+            foreach ( SectionRecipes::suggest( array_keys( $layouts ), [], 1000, $onlyRoles, $onlyBackgrounds ) as $name ) {
+                if ( [] !== $skeletons && isset( $skeletons[ self::recipeLayouts()[ $name ] ?? '' ] ) ) {
+                    continue;
+                }
+                $try[] = $name;
+                if ( count( $try ) >= 3 ) {
+                    break;
+                }
+            }
         }
 
         return [
             'code'     => $code,
             'sections' => array_values( $sections ),
             'message'  => $message,
-            'try'      => $suggest ? SectionRecipes::suggest( array_keys( $layouts ), [], 3, $onlyRoles, $onlyBackgrounds ) : [],
+            'try'      => $try,
         ];
+    }
+
+    /** @return array<string,string> recipe name => fingerprint layout, computed once per request */
+    private static function recipeLayouts(): array
+    {
+        if ( null === self::$recipeLayouts ) {
+            $out = [];
+            foreach ( SectionRecipes::names() as $name ) {
+                $markup = SectionRecipes::recipe( $name );
+                $fps    = null === $markup ? null : self::fingerprints( '<!-- wp:divi/placeholder -->' . $markup . '<!-- /wp:divi/placeholder -->' );
+                if ( null !== $fps && isset( $fps[0] ) ) {
+                    $out[ $name ] = $fps[0]['layout'];
+                }
+            }
+            self::$recipeLayouts = $out;
+        }
+
+        return self::$recipeLayouts;
     }
 
     /** "section 2", "sections 1 and 3", "sections 1, 2 and 4" from 0-based indexes. */
@@ -451,7 +540,7 @@ final class DesignVariety
             if ( $focal ) {
                 return;
             }
-            if ( 'divi/image' === $b->name() ) {
+            if ( in_array( $b->name(), self::FOCAL_MODULES, true ) ) {
                 $focal = true;
 
                 return;

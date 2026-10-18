@@ -127,4 +127,30 @@ class EchoedInputIsPlainTest extends TestCase
         $this->assertStringContainsString( 'There is no topic "nope". Valid topics:', StyleGuide::markdown( 'nope' ) );
         $this->assertStringStartsWith( 'Unknown design language "nope". Valid ids: ', DesignLanguages::markdown( 'nope' ) );
     }
+
+    private function rpc( string $method, array $params = [] ): array
+    {
+        $req = new \WP_REST_Request( [ 'jsonrpc' => '2.0', 'id' => 1, 'method' => $method, 'params' => $params ] );
+
+        return (array) ( new McpHandler() )->handle( $req )->get_data();
+    }
+
+    public function testNormalUnknownToolAndMethodNamesAreEchoedUnchanged(): void
+    {
+        $this->assertSame( 'Unknown tool: list_theme_layouts', $this->rpc( 'tools/call', [ 'name' => 'list_theme_layouts', 'arguments' => [] ] )['error']['message'] );
+        $this->assertSame( 'Method not found: bogus/method', $this->rpc( 'bogus/method' )['error']['message'] );
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'hostile' )]
+    public function testUnknownToolAndMethodEchoArePlainAndBounded( string $hostile ): void
+    {
+        $tool = $this->rpc( 'tools/call', [ 'name' => $hostile, 'arguments' => [] ] )['error']['message'];
+        $this->assertPlainAndBounded( $tool, $hostile );
+        $this->assertStringStartsWith( 'Unknown tool: ', $tool );
+        $this->assertLessThan( 80, strlen( $tool ) );
+        $method = $this->rpc( $hostile )['error']['message'];
+        $this->assertPlainAndBounded( $method, $hostile );
+        $this->assertStringStartsWith( 'Method not found: ', $method );
+        $this->assertLessThan( 80, strlen( $method ) );
+    }
 }

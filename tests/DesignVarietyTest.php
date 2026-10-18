@@ -120,9 +120,9 @@ class DesignVarietyTest extends TestCase
     public function testVariedPageIsClean(): void
     {
         // Real recipes, default design language. Why this is clean: hero-cta opens with a background image (focal, so no
-        // NO_FOCAL_ELEMENT); the five recipes have five different skeletons (no adjacent repeat, none three times); only
-        // card-grid-3 is a card grid (1 of 5 = 0.2, under CARD_SHARE); backgrounds are image / solid / gradient, not flat; and
-        // card-grid-3 carries a scroll effect and section-intro a box shadow (depth).
+        // NO_FOCAL_ELEMENT); the five recipes have five different skeletons (no adjacent repeat, none three times); none of
+        // them is a card grid by fingerprint (0 of 5, under CARD_SHARE); backgrounds are image / solid, with the image
+        // enough to avoid FLAT_BACKGROUNDS; and split-image-text and card-grid-3 carry a shadow or scroll effect (depth).
         $markup = '';
         foreach ( [ 'hero-cta', 'split-image-text', 'card-grid-3', 'stats-counter', 'newsletter-social' ] as $name ) {
             $recipe = SectionRecipes::recipe( $name );
@@ -490,5 +490,84 @@ class DesignVarietyTest extends TestCase
         foreach ( [ 'box shadow', 'overlap', 'animation', 'get_style_guide' ] as $word ) {
             $this->assertStringContainsString( $word, $motion['message'] );
         }
+    }
+
+    private function recipePage( string ...$names ): string
+    {
+        $m = '';
+        foreach ( $names as $n ) {
+            $m .= SectionRecipes::recipe( $n );
+        }
+
+        return $this->page( $m );
+    }
+
+    public function testNoFindingEverSuggestsTheRecipeThatWasFlagged(): void
+    {
+        $varied = $this->section( [ [ [ 'text' ], [ 'image' ] ] ], self::GRADIENT, self::SHADOW );
+        foreach ( SectionRecipes::names() as $name ) {
+            $markup = (string) SectionRecipes::recipe( $name );
+            $page   = $this->page( $markup . $markup . $markup . $varied );
+            $advice = DesignVariety::advise( $page );
+            $this->assertNotNull( $advice, "$name three times is repetitive" );
+            foreach ( $advice['findings'] as $f ) {
+                $this->assertNotContains( $name, $f['try'], "$name was flagged by {$f['code']} and must not be offered as the fix" );
+                foreach ( $f['try'] as $t ) {
+                    $this->assertContains( $t, SectionRecipes::names() );
+                }
+            }
+        }
+        // The reviewer's scenario: hero, three card-grid-3, a closing section.
+        $advice = DesignVariety::advise( $this->recipePage( 'hero-cta', 'card-grid-3', 'card-grid-3', 'card-grid-3', 'newsletter-social' ) );
+        $f      = $this->finding( $advice, 'REPEATED_LAYOUT' );
+        $this->assertSame( [ 1, 2, 3 ], $f['sections'] );
+        $this->assertNotContains( 'card-grid-3', $f['try'] );
+        $this->assertNotEmpty( $f['try'] );
+    }
+
+    public function testASliderOrHeaderFirstSectionIsFocal(): void
+    {
+        $plain = $this->section( [ [ [ 'text' ] ] ], [ 'color' => '#ffffff' ] );
+        $other = $this->section( [ [ [ 'text' ], [ 'text' ] ] ], [ 'color' => '#eeeeee' ] );
+        $this->assertSame( [], array_values( array_diff( DesignVariety::FOCAL_MODULES, array_merge( \Divi5Validator\SchemaRules::STRUCTURAL_BLOCKS, \Divi5Validator\SchemaRules::LEAF_MODULES ) ) ), 'every focal module is one the validator accepts' );
+        foreach ( DesignVariety::FOCAL_MODULES as $module ) {
+            $first = $this->section( [ [ [ preg_replace( '#^divi/#', '', $module ) ] ] ], [ 'color' => '#ffffff' ] );
+            $page  = $this->page( $first, $plain, $other );
+            $this->assertTrue( DesignVariety::fingerprints( $page )[0]['focal'], $module );
+            $this->assertNotContains( 'NO_FOCAL_ELEMENT', $this->codes( DesignVariety::advise( $page ) ), $module );
+        }
+        // The plugin's own slider recipe and a text-only first section.
+        $this->assertTrue( DesignVariety::fingerprints( $this->recipePage( 'slider' ) )[0]['focal'] );
+        $this->assertContains( 'NO_FOCAL_ELEMENT', $this->codes( DesignVariety::advise( $this->page( $plain, $other, $plain ) ) ) );
+    }
+
+    public function testARealSliderFirstFixturePageIsNotToldToReplaceItsHero(): void
+    {
+        $fx   = json_decode( (string) file_get_contents( __DIR__ . '/../fixtures/valid/page-7-home.json' ), true );
+        $page = (string) $fx['post_content'];
+        $fps  = DesignVariety::fingerprints( $page );
+        $this->assertNotEmpty( $fps );
+        $this->assertStringContainsString( 'slider', $fps[0]['layout'], 'the real home page opens with a slider' );
+        $this->assertTrue( $fps[0]['focal'] );
+        $this->assertNotContains( 'NO_FOCAL_ELEMENT', $this->codes( DesignVariety::advise( $page ) ) );
+    }
+
+    public function testAlternatingTwoSolidColorsIsNotFlat(): void
+    {
+        $mk = fn ( string $color ) => $this->section( [ [ [ 'text' ], [ 'text' ] ] ], [ 'color' => $color ] );
+        $one = $this->page( $mk( '#ffffff' ), $this->section( [ [ [ 'text' ] ] ], [ 'color' => '#ffffff' ] ), $this->section( [ [ [ 'text' ], [ 'text' ], [ 'text' ] ] ], [ 'color' => '#ffffff' ] ) );
+        $two = $this->page( $mk( '#ffffff' ), $this->section( [ [ [ 'text' ] ] ], [ 'color' => '#101010' ] ), $this->section( [ [ [ 'text' ], [ 'text' ], [ 'text' ] ] ], [ 'color' => '#ffffff' ] ) );
+        $same = $this->page( $mk( '#FFFFFF' ), $this->section( [ [ [ 'text' ] ] ], [ 'color' => ' #ffffff ' ] ), $this->section( [ [ [ 'text' ], [ 'text' ], [ 'text' ] ] ], [ 'color' => 'RGBA(1, 2, 3, 0.5)' ] ) );
+        $caseOnly = $this->page( $mk( 'RGBA(1, 2, 3, 0.5)' ), $this->section( [ [ [ 'text' ] ] ], [ 'color' => 'rgba(1,2,3,0.5)' ] ), $this->section( [ [ [ 'text' ], [ 'text' ], [ 'text' ] ] ], [ 'color' => ' rgba(1, 2, 3, 0.5) ' ] ) );
+        $this->assertContains( 'FLAT_BACKGROUNDS', $this->codes( DesignVariety::advise( $one ) ), 'one color: flat' );
+        $this->assertNotContains( 'FLAT_BACKGROUNDS', $this->codes( DesignVariety::advise( $two ) ), 'two colors alternate: not flat' );
+        $this->assertNotContains( 'FLAT_BACKGROUNDS', $this->codes( DesignVariety::advise( $same ) ), 'white and an rgba are two colors' );
+        $this->assertContains( 'FLAT_BACKGROUNDS', $this->codes( DesignVariety::advise( $caseOnly ) ), 'case and whitespace differences are one color' );
+        // The colors never enter the fingerprints, so a color-only edit stays silent.
+        $this->assertSame( [ 'layout', 'cards', 'background', 'focal', 'depth' ], array_keys( DesignVariety::fingerprints( $two )[0] ) );
+        $before = $this->page( $this->cardSection( [ 'color' => '#ffffff' ] ), $this->cardSection( [ 'color' => '#ffffff' ] ), $this->cardSection( [ 'color' => '#ffffff' ] ) );
+        $after  = $this->page( $this->cardSection( [ 'color' => '#111111' ] ), $this->cardSection( [ 'color' => '#222222' ] ), $this->cardSection( [ 'color' => '#333333' ] ) );
+        $this->assertNotNull( DesignVariety::advise( $after ) );
+        $this->assertNull( DesignVariety::advise( $after, $before ), 'a color-only edit is silent' );
     }
 }

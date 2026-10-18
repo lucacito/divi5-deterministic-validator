@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\DesignVariety;
 use AiEditorDivi5\WP\ImageTokens;
 use AiEditorDivi5\WP\SectionRecipes;
 use Divi5Validator\Validator;
@@ -12,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 require_once __DIR__ . '/../wp-plugin/src/ImagePack.php';
 require_once __DIR__ . '/../wp-plugin/src/ImageTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
+require_once __DIR__ . '/../wp-plugin/src/DesignVariety.php';
 
 /**
  * The recipe library is content the AI copies verbatim, so EVERY recipe must
@@ -87,11 +89,57 @@ class SectionRecipesTest extends TestCase
 
     public function testTagsAreCoherentWithTheMarkup(): void
     {
+        // Collection modules render their own grid of posts, products or items.
+        $collections = ['divi/blog', 'divi/shop', 'divi/gallery', 'divi/portfolio', 'divi/fullwidth-portfolio', 'divi/filterable-portfolio'];
         foreach (SectionRecipes::names() as $name) {
             $raw  = (string) SectionRecipes::rawMarkup($name);
             $tags = (array) SectionRecipes::tags($name);
             $hasImage = str_contains($raw, '{{aied:image:') || str_contains($raw, '<!-- wp:divi/image ');
             $this->assertSame($hasImage, $tags['needs_images'], "$name needs_images must match its markup");
+
+            // The invariants below are measured on the parsed markup.
+            $parsed = (new \Divi5Validator\BlockParser())->parse('<!-- wp:divi/placeholder -->' . (string) SectionRecipes::recipe($name) . '<!-- /wp:divi/placeholder -->');
+            $this->assertTrue($parsed->isOk(), $name);
+            $rows = [];
+            $collection = false;
+            $parsed->root()->walk(static function (\Divi5Validator\Block $b) use (&$rows, &$collection, $collections): void {
+                if (in_array($b->name(), ['divi/row', 'divi/row-inner'], true)) {
+                    $rows[] = count(array_filter($b->children(), static fn ($c): bool => in_array($c->name(), ['divi/column', 'divi/column-inner'], true)));
+                }
+                $collection = $collection || in_array($b->name(), $collections, true);
+            });
+            $fp = DesignVariety::fingerprints('<!-- wp:divi/placeholder -->' . (string) SectionRecipes::recipe($name) . '<!-- /wp:divi/placeholder -->');
+            $this->assertCount(1, $fp, $name);
+
+            // grid: a row of 3 or more columns, or a matrix (at least two rows of 2 or more columns), or a collection module.
+            if ('grid' === $tags['layout']) {
+                $wide   = count(array_filter($rows, static fn (int $n): bool => $n >= 3)) > 0;
+                $matrix = count(array_filter($rows, static fn (int $n): bool => $n >= 2)) >= 2;
+                $this->assertTrue($wide || $matrix || $collection, "$name is tagged grid but its markup has no 3-column row, no matrix of rows and no collection module");
+            }
+            // split: some row has exactly two columns.
+            if ('split' === $tags['layout']) {
+                $this->assertContains(2, $rows, "$name is tagged split but has no two-column row");
+            }
+            // a recipe that fingerprints as a card grid must be tagged grid.
+            if ($fp[0]['cards']) {
+                $this->assertSame('grid', $tags['layout'], "$name measures as a card grid, so it must be tagged grid");
+            }
+            // the background tag is what the fingerprint measures.
+            $this->assertSame($fp[0]['background'], $tags['background'], "$name background tag must match what its markup measures");
+        }
+    }
+
+    public function testRetaggedRecipesDescribeTheirRealStructure(): void
+    {
+        $this->assertSame('split', ((array) SectionRecipes::tags('card-grid-3'))['layout']);
+        $this->assertSame('centered', ((array) SectionRecipes::tags('card-grid-4'))['layout']);
+        $this->assertSame('gradient', ((array) SectionRecipes::tags('card-grid-4'))['background']);
+        $catalog = SectionRecipes::catalog('features');
+        foreach (['card-grid-3', 'card-grid-4'] as $name) {
+            preg_match('/\*\*' . $name . '\*\* — ([^\n]*)/u', SectionRecipes::catalog(null, ((array) SectionRecipes::tags($name))['layout']), $m);
+            $this->assertNotEmpty($m, $name);
+            $this->assertStringNotContainsStringIgnoringCase('cards', $m[1], "$name prose must not promise cards");
         }
     }
 
@@ -109,8 +157,9 @@ class SectionRecipesTest extends TestCase
         $this->assertStringContainsString('split-image-text', SectionRecipes::catalog(null, 'split'));
         $this->assertStringNotContainsString('hero-cta', SectionRecipes::catalog(null, 'split'));
         $both = SectionRecipes::catalog('features', 'grid');
-        $this->assertStringContainsString('card-grid-3', $both);
+        $this->assertStringContainsString('blurb-grid', $both);
         $this->assertStringNotContainsString('split-image-text', $both);
+        $this->assertStringNotContainsString('card-grid-3', $both, 'card-grid-3 is tagged split, not grid');
         $this->assertStringContainsString('hero-cta', SectionRecipes::catalog(null, null, 'any'));
     }
 

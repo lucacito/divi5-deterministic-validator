@@ -87,7 +87,7 @@ final class McpHandler
             'tools/call'               => $this->onToolsCall($id, $params),
             default                    => str_starts_with($method, 'notifications/')
                 ? $this->accepted()
-                : $this->rpcError($id, -32601, "Method not found: {$method}"),
+                : $this->rpcError($id, -32601, "Method not found: " . SectionRecipes::plain( (string) $method, '/[^A-Za-z0-9 _.:\/-]/' )),
         };
     }
 
@@ -398,7 +398,7 @@ final class McpHandler
             return $response;
         }
 
-        return $this->rpcError($id, -32602, "Unknown tool: {$name}");
+        return $this->rpcError($id, -32602, "Unknown tool: " . SectionRecipes::plain( (string) $name ));
     }
 
     // ---------------------------------------------------------------
