@@ -22,7 +22,7 @@
  * `low-contrast`, baselinable only as an exact cell; the check walks the ancestors to the first solid colour, stacking translucent ones, and
  * judges text over a scrim (translucent colour or same-colour gradient over a photo) by its worst case over white and black, and only
  * COUNTS text over a bare photo or multi-colour gradient as unknown; 3.0 to 4.5:1 for small text is an advisory `WARN low-contrast` line, never a
- * failure; a cell with visible text where nothing at all could be measured also fails; per recipe/language a `CONTRAST` line prints the counts;
+ * failure; a cell with visible text where nothing at all could be measured also fails (a cell with media and no text at all does not); per recipe/language a `CONTRAST` line prints the counts;
  * the holes that stay are listed in scripts/lib/recipe-checks.cjs; an exemption is `{"contrast": "reason"}` in the allowances file), a text element's lines overlap an image box (an `.et_pb_image` module or an <img>) by more than 4 px in both
  * directions at ANY width (code `text-overlap`, never baselined; an intentional overlap recipe gets `{"overlap": "reason"}` in the allowances file; a
  * plain string value keeps its original meaning, the columns exemption), or the page itself logs a console error / uncaught exception. The page is
@@ -92,7 +92,7 @@ let cleanOrphans = false;
 }
 
 const { chromium } = require(PW);
-const { parseBaseline, knownFailures, isKnownFail, cellKey, measureInPage, PHP_ERROR } = require('./lib/recipe-checks.cjs');
+const { parseBaseline, knownFailures, isKnownFail, cellKey, measureInPage, nothingMeasured, PHP_ERROR } = require('./lib/recipe-checks.cjs');
 
 const wp = (...a) => execFileSync('docker', ['compose', 'exec', '-T', 'wpcli', 'php', '-d', 'memory_limit=1G', '/usr/local/bin/wp', ...a], { cwd: ROOT, encoding: 'utf8' }).trim();
 
@@ -343,8 +343,8 @@ ${rows}
               problems.push(['low-contrast', 'text under 3.0:1 against its background: ' + m.lowContrast.slice(0, 4).map((o) => `"${o.text}" ${o.color} on ${o.bg} ${o.ratio}:1${o.scrim ? ' (scrim worst case)' : ''}`).join('; ')]);
             }
             // Text was drawn but NOTHING could be measured and nothing was accounted for as an unknown (photo / gradient) background: a wrong root
-            // or a colour format the check cannot read must not pass silently.
-            if (m.visible && m.contrastChecked === 0 && m.skippedUnknown === 0 && !allowed(name, 'contrast')) {
+            // or a colour format the check cannot read must not pass silently. A cell with media and no text at all passes (nothingMeasured).
+            if (nothingMeasured(m) && !allowed(name, 'contrast')) {
               problems.push(['low-contrast', `no text could be measured (checked 0, hidden ${m.skippedHidden}, off-page ${m.skippedOffPage}, unparsed colours ${m.skippedUnparsed}, unknown background 0)`]);
             }
             // Advisory tier (3.0 up to 4.5:1, small text): printed and counted, never a failure.

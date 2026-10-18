@@ -16,7 +16,8 @@
  *  - form-field text and placeholders (only text NODES are read, not input values), hover and focus states;
  *  - an ancestor's opacity is applied to the text but not to that ancestor's own background;
  *  - text covered by another element that is not an ancestor (the text-overlap check only compares text with pictures).
- * A rendered cell with text but nothing measurable and nothing accounted for as unknown (an unparsable colour format, a wrong root) FAILS (code low-contrast).
+ * A rendered cell with text but nothing measurable and nothing accounted for as unknown (an unparsable colour format, a wrong root) FAILS (code low-contrast);
+ * a cell that shows media and NO text at all (a logo wall, a pure gallery) has nothing to measure and passes (nothingMeasured()).
  *
  * Tests: scripts/test-recipe-baseline-matcher.cjs (pure; run by tests/RecipeLibraryTest.php) and
  * scripts/test-recipe-measure.cjs (needs Playwright, not the site; run by `make verify-recipes`).
@@ -97,6 +98,8 @@ function measureInPage(opts) {
     const r = s.getBoundingClientRect();
     return r.height > 20 && r.width > 0 && ((s.innerText || '').trim().length > 0 || hasMedia(s));
   });
+  // Whether any section shows text at all (a logo wall or a pure gallery shows only media): see nothingMeasured().
+  out.hasText = sections.some((s) => (s.innerText || '').trim().length > 0);
   const isColumn = (c) => c.classList.contains('et_pb_column') || c.classList.contains('et_pb_column_inner');
   const rows = [...root.querySelectorAll('.et_pb_row, .et_pb_row_inner')];
   out.rows = rows.length;
@@ -262,10 +265,21 @@ function measureInPage(opts) {
   return out;
 }
 
+/**
+ * The "no text could be measured" failure of a rendered cell (m = measureInPage's result): text was seen, either as a counted text node
+ * (checked, hidden, off-page, unparsed or unknown) or as visible section text, but none of it could be judged and none of it sat on an unknown
+ * (photo / multi-colour gradient) background. A visible cell with NO text at all (only media: a logo wall, a pure gallery) has nothing to
+ * measure and is not a failure. Before this rule a text-free section failed with a misleading "no text could be measured".
+ */
+function nothingMeasured(m) {
+  const seen = m.contrastChecked + m.skippedHidden + m.skippedOffPage + m.skippedUnparsed + m.skippedUnknown;
+  return !!m.visible && (seen > 0 || !!m.hasText) && m.contrastChecked === 0 && m.skippedUnknown === 0;
+}
+
 const PHP_ERROR = [
   /(?:Fatal error|Parse error|Warning|Notice|Deprecated)(?:<\/b>)?:[^\n]{0,500}?\bon line\b/i,
   /(?:^|\n)\s*(?:<br \/>\s*)?(?:<b>)?(?:Fatal error|Parse error|Warning|Notice|Deprecated)(?:<\/b>)?: /,
   /\bUncaught (?:[\w\\]*)?(?:Error|Exception)\b/,
 ];
 
-module.exports = { BASELINABLE, NEVER_BASELINED, WIDTHS, parseEntry, parseBaseline, cellKey, knownFailures, isKnownFail, measureInPage, PHP_ERROR };
+module.exports = { BASELINABLE, NEVER_BASELINED, WIDTHS, parseEntry, parseBaseline, cellKey, knownFailures, isKnownFail, measureInPage, nothingMeasured, PHP_ERROR };

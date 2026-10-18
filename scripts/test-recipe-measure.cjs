@@ -6,7 +6,7 @@
  * `et_pb_row et_pb_row_nested` > `et_pb_column`; nested `divi/row-inner` `et_pb_row_inner` > `et_pb_column_inner`. */
 const assert = require('assert');
 const path = require('path');
-const { measureInPage } = require('./lib/recipe-checks.cjs');
+const { measureInPage, nothingMeasured } = require('./lib/recipe-checks.cjs');
 const PW = process.env.PLAYWRIGHT_PATH || path.resolve(__dirname, '..', '..', 'layoutlab', 'node_modules', 'playwright');
 const { chromium } = require(PW);
 
@@ -129,7 +129,22 @@ const page = (inner) => `<div class="et-l--post"><div class="et_pb_section" styl
     assert.deepStrictEqual([counts.contrastChecked, counts.skippedHidden, counts.skippedOffPage, counts.skippedUnknown], [1, 1, 1, 0], 'checked, hidden and off-page are counted separately');
     const all = await run(cs('background:#0b1020', '<p style="color:#f2f4fa;margin:0">Listed</p>'), 400);
     assert.strictEqual(all.contrastChecked, 1, 'a measured element is counted');
-    console.log('OK recipe measurement: top-level, nested divi/row and nested divi/row-inner stacking, Theme Builder ignored, empty, overflow, no root, text over a picture, computed text contrast');
+    // "no text could be measured" (nothingMeasured): a visible section with media and NO text passes; text that was seen but could not be judged fails
+    const GIF = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+    const logos = await run(cs('background:#0b1020', `<div><img style="display:block;width:160px;height:60px" alt="Placeholder logo" src="${GIF}"><img style="display:block;width:160px;height:60px" alt="Placeholder logo" src="${GIF}"></div>`));
+    assert.strictEqual(logos.visible, true, 'a text-free media section is visible');
+    assert.strictEqual(logos.hasText, false, 'and shows no text');
+    assert.strictEqual(logos.contrastChecked + logos.skippedHidden + logos.skippedOffPage + logos.skippedUnparsed + logos.skippedUnknown, 0, 'no text node was seen');
+    assert.strictEqual(nothingMeasured(logos), false, 'a text-free media section (a logo wall) is not a "no text could be measured" failure');
+    const unparsable = await run(cs('background:#0b1020;min-height:60px', '<p style="color:color(display-p3 0.2 0.2 0.2);margin:0">Unparsable colour</p>'));
+    assert.strictEqual(unparsable.skippedUnparsed, 1, 'a colour the check cannot read is counted as unparsed');
+    assert.strictEqual(unparsable.contrastChecked, 0);
+    assert.strictEqual(nothingMeasured(unparsable), true, 'a section with text whose colours cannot be read still fails');
+    assert.strictEqual(nothingMeasured(await run(cs('background:#0b1020;min-height:60px', '<p style="color:#f2f4fa;margin:0">Readable</p>'))), false, 'a measured text is not a failure');
+    assert.strictEqual(nothingMeasured(await run(cs('background:#0b1020;min-height:60px', '<p style="color:#f2f4fa;opacity:0;margin:0">Only faded text</p><p style="color:#f2f4fa;margin:0;height:0;overflow:hidden"></p>'))), true, 'text that was seen but only as hidden still fails');
+    assert.strictEqual(nothingMeasured({ visible: true, hasText: true, contrastChecked: 0, skippedHidden: 0, skippedOffPage: 0, skippedUnparsed: 0, skippedUnknown: 0 }), true, 'visible section text the walk did not see at all (a wrong root) still fails');
+    assert.strictEqual(nothingMeasured(bare), false, 'text on a bare photo is accounted for as unknown, not a failure');
+    console.log('OK recipe measurement: top-level, nested divi/row and nested divi/row-inner stacking, Theme Builder ignored, empty, overflow, no root, text over a picture, computed text contrast, text-free media sections');
   } finally {
     await browser.close();
   }
