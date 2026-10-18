@@ -156,7 +156,7 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
-        // GET /section-recipes — library of proven section patterns (?name=<recipe> for one; ?role=, ?layout=, ?mood= filter the list; ?design_language= with ?name= serves a recipe in that language's colours and fonts)
+        // GET /section-recipes — library of proven section patterns (?name=<recipe> for one; ?role=, ?layout=, ?mood= filter the list; ?design_language= with ?name= serves a recipe in that language's colours and fonts; ?style_kit= with ?name= overrides the language's style kit)
         register_rest_route(self::NS, '/section-recipes', [
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => [$this, 'section_recipes'],
@@ -228,11 +228,18 @@ final class RestController
         if ($language === null) {
             return new WP_REST_Response(['error' => 'Invalid parameter: "design_language" must be a string'], 400);
         }
+        $kit = PageAccess::stringArg(['style_kit' => $request->get_param('style_kit')], 'style_kit');
+        if ($kit === null) {
+            return new WP_REST_Response(['error' => 'Invalid parameter: "style_kit" must be a string'], 400);
+        }
         if ($name !== '') {
             if ($language !== '' && DesignLanguages::get($language) === null) {
                 return new WP_REST_Response(['error' => "Unknown design language '" . SectionRecipes::plain($language) . "'", 'languages' => DesignLanguages::ids()], 404);
             }
-            $markup = SectionRecipes::recipe($name, $language === '' ? null : $language);
+            if ($kit !== '' && StyleKits::get($kit) === null) {
+                return new WP_REST_Response(['error' => "Unknown style kit '" . SectionRecipes::plain($kit) . "'", 'kits' => StyleKits::ids()], 404);
+            }
+            $markup = SectionRecipes::recipe($name, $language === '' ? null : $language, $kit === '' ? null : $kit);
             if ($markup === null) {
                 return new WP_REST_Response(['error' => "Unknown recipe '" . SectionRecipes::plain($name) . "'", 'catalog' => SectionRecipes::catalog()], 404);
             }

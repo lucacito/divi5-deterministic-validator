@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\DesignVariety;
 use AiEditorDivi5\WP\ImageTokens;
+use AiEditorDivi5\WP\KitResolver;
 use AiEditorDivi5\WP\SectionRecipes;
+use AiEditorDivi5\WP\StyleKits;
 use Divi5Validator\Validator;
 use PHPUnit\Framework\TestCase;
 
@@ -868,6 +871,129 @@ class SectionRecipesTest extends TestCase
             $this->assertSame($names, SectionRecipes::names(), 'clearCache() restores the file data');
         } finally {
             SectionRecipes::clearCache();
+        }
+    }
+
+    // ---- style kits: the recipe a language (or an explicit kit) serves ----
+
+    /** A one-button recipe carrying a kit marker (no shipped recipe is migrated yet), planted through the memo. */
+    private function plantMarkedRecipe(string $marker = '"aied":{"kit":"control"}'): void
+    {
+        $markup = '<!-- wp:divi/section {"builderVersion":"5.15.1"} --><!-- wp:divi/row {"builderVersion":"5.15.1"} -->'
+            . '<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.15.1"} -->'
+            . '<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Start here"}}},'
+            . '"decoration":{"font":{"font":{"desktop":{"value":{"family":"{{aied:font:body}}"}}}}}},'
+            . '"builderVersion":"5.15.1",' . $marker . '} /-->'
+            . '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->';
+        $cache = new \ReflectionProperty(SectionRecipes::class, 'cache');
+        $cache->setValue(null, [['name' => 'kit-fixture', 'title' => 't', 'description' => 'd', 'when' => 'w', 'stage' => 's', 'markup' => $markup]]);
+    }
+
+    /** @return array<string,mixed> the button's attributes in served markup */
+    private function buttonAttrs(string $markup): array
+    {
+        $this->assertSame(1, preg_match('/<!-- wp:divi\/button (\{.*\}) \/-->/s', $markup, $m), 'one button');
+        $attrs = json_decode($m[1], true);
+        $this->assertIsArray($attrs);
+        return $attrs;
+    }
+
+    public function testEachLanguageServesItsOwnKitAndAnExplicitKitWins(): void
+    {
+        $this->plantMarkedRecipe();
+        try {
+            // Interim kits until Task 8: editorial is outline-2, glass-dark soft-solid.
+            $this->assertSame('outline-2', DesignLanguages::get('editorial')['kit']);
+            $this->assertSame('soft-solid', DesignLanguages::get('glass-dark')['kit']);
+
+            $editorial = SectionRecipes::recipe('kit-fixture', 'editorial');
+            $glass     = SectionRecipes::recipe('kit-fixture', 'glass-dark');
+            $this->assertNotNull($editorial);
+            $this->assertNotNull($glass);
+            $this->assertNotSame($editorial, $glass);
+            $e = $this->buttonAttrs($editorial)['button']['decoration']['border']['desktop']['value'];
+            $g = $this->buttonAttrs($glass)['button']['decoration']['border']['desktop']['value'];
+            $this->assertSame('2px', $e['styles']['all']['width']);
+            $this->assertSame('4px', $e['radius']['topLeft']);
+            $this->assertSame('8px', $g['radius']['topLeft']);
+            $this->assertNotSame($e['styles']['all']['width'], $g['styles']['all']['width']);
+
+            // No language = the default language (editorial) and its kit.
+            $this->assertSame($editorial, SectionRecipes::recipe('kit-fixture'));
+
+            // An explicit kit wins over the language's.
+            $override = SectionRecipes::recipe('kit-fixture', 'glass-dark', 'outline-2');
+            $this->assertNotNull($override);
+            $this->assertNotSame($glass, $override);
+            $this->assertSame('2px', $this->buttonAttrs($override)['button']['decoration']['border']['desktop']['value']['styles']['all']['width']);
+            $this->assertStringContainsString(DesignLanguages::get('glass-dark')['colors']['text'], $override, 'the language still sets the colours');
+            $this->assertStringNotContainsString(DesignLanguages::get('editorial')['colors']['text'], $override);
+            $this->assertSame($glass, SectionRecipes::recipe('kit-fixture', 'glass-dark', 'soft-solid'));
+            $this->assertSame(SectionRecipes::recipe('kit-fixture', 'editorial', 'soft-solid'), SectionRecipes::recipe('kit-fixture', null, 'soft-solid'));
+
+            foreach ([$editorial, $glass, $override] as $served) {
+                $this->assertStringNotContainsString('{{aied:', $served);
+                $this->assertStringNotContainsString('"aied"', $served);
+                $this->assertSame([], KitResolver::leftovers($served));
+            }
+        } finally {
+            SectionRecipes::clearCache();
+        }
+    }
+
+    public function testAnUnknownKitOrLanguageServesNothing(): void
+    {
+        $this->assertNull(SectionRecipes::recipe('hero-cta', null, 'nope'));
+        $this->assertNull(SectionRecipes::recipe('hero-cta', 'editorial', 'nope'));
+        $this->assertNull(SectionRecipes::recipe('hero-cta', 'nope', 'outline-2'));
+        $this->assertNotNull(SectionRecipes::recipe('hero-cta', null, 'outline-2'));
+    }
+
+    public function testAMarkerTheResolverCannotResolveServesNothing(): void
+    {
+        $this->plantMarkedRecipe('"aied":{"kit":"card"}');
+        try {
+            foreach ([null, 'editorial', 'glass-dark'] as $language) {
+                $this->assertNull(SectionRecipes::recipe('kit-fixture', $language), 'never a recipe with a marker left in it');
+            }
+        } finally {
+            SectionRecipes::clearCache();
+        }
+    }
+
+    public function testUnreadableKitDataServesNothing(): void
+    {
+        $this->assertNotNull(SectionRecipes::recipe('hero-cta'));
+        $cache = new \ReflectionProperty(StyleKits::class, 'cache');
+        foreach ([StyleKits::parse('garbage'), StyleKits::parse('[]'), [['id' => 'outline-2']]] as $broken) {
+            $cache->setValue(null, $broken);
+            try {
+                $this->assertNull(SectionRecipes::recipe('hero-cta'), 'no kit data: no recipe');
+                $this->assertNull(SectionRecipes::recipe('hero-cta', 'glass-dark'));
+                $this->assertNull(SectionRecipes::recipe('hero-cta', null, 'outline-2'));
+            } finally {
+                StyleKits::clearCache();
+            }
+        }
+        $this->assertNotNull(SectionRecipes::recipe('hero-cta'));
+    }
+
+    public function testNoServedRecipeContainsAMarkerOrKitToken(): void
+    {
+        $languages = [null, ...DesignLanguages::ids()];
+        $kits      = [null, ...StyleKits::ids()];
+        $this->assertContains('soft-solid', $kits);
+        $this->assertContains('outline-2', $kits);
+        foreach (SectionRecipes::names() as $name) {
+            foreach ($languages as $language) {
+                foreach ($kits as $kit) {
+                    $label  = $name . ' / ' . ($language ?? 'default') . ' / ' . ($kit ?? 'language kit');
+                    $served = SectionRecipes::recipe($name, $language, $kit);
+                    $this->assertNotNull($served, $label);
+                    $this->assertSame([], KitResolver::leftovers($served), $label);
+                    $this->assertStringNotContainsString('{{aied:', $served, $label);
+                }
+            }
         }
     }
 }

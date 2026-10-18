@@ -8,6 +8,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 require_once __DIR__ . '/DesignLanguages.php';
 require_once __DIR__ . '/RecipeTokens.php';
+require_once __DIR__ . '/StyleKits.php';
+require_once __DIR__ . '/KitResolver.php';
+require_once __DIR__ . '/KitAdapters.php';
 
 /**
  * Library of real, validated Divi 5 section recipes — whole proven sections the
@@ -44,6 +47,14 @@ final class SectionRecipes
 
     /** What a mood value is (one sentence, shared by the catalog, the MCP tool and the OpenAPI parameter). */
     public const MOOD_HELP = 'Moods are design language ids (get_style_guide topic=design-languages); "any" lists only recipes that suit every look.';
+
+    /**
+     * What the optional style_kit parameter is (one sentence, shared by the MCP tool and the OpenAPI parameter).
+     */
+    public static function styleKitHelp(): string
+    {
+        return 'With name: serve the recipe\'s buttons in this style kit instead of the design language\'s own kit (ids: ' . implode( ', ', StyleKits::ids() ) . '); an unknown id is refused with the valid list.';
+    }
 
     /** Forgets the memoised recipes (for tests that change the data in-process). */
     public static function clearCache(): void
@@ -318,16 +329,24 @@ final class SectionRecipes
     }
 
     /**
-     * Full block markup for one recipe, or null if the name is unknown or the design language id is.
+     * Full block markup for one recipe, or null if the name is unknown, the design language id is, or
+     * the style kit id is.
      *
-     * Image tokens are resolved first, then colour and font tokens with the requested design
-     * language (the default, editorial, when none is requested), so the markup handed out never
-     * contains a token. An unknown language returns null rather than partially resolved markup.
+     * The style kit is $kit when given, otherwise the language's own `kit` (the default language,
+     * editorial, when no language is requested). Image tokens are resolved first, then the kit's
+     * markers and whole-value kit tokens (KitResolver), then colour and font tokens with the language.
+     * The markup handed out never contains a token or a kit marker: an unknown or invalid kit, kit data
+     * that cannot be read, or a marker the kit cannot resolve returns null, never partially resolved markup.
      */
-    public static function recipe(string $name, ?string $language = null): ?string
+    public static function recipe(string $name, ?string $language = null, ?string $kit = null): ?string
     {
         $lang = null === $language ? RecipeTokens::default() : DesignLanguages::get($language);
         if (null === $lang) {
+            return null;
+        }
+        $kitId = $kit ?? (is_string($lang['kit'] ?? null) ? $lang['kit'] : null);
+        $styleKit = null === $kitId ? null : StyleKits::get($kitId);
+        if (null === $styleKit || [] !== StyleKits::problems($styleKit)) {
             return null;
         }
         foreach ( self::all() as $r ) {
@@ -338,7 +357,8 @@ final class SectionRecipes
                     null,
                     static fn ( ?string $u, string $t ): ?string => apply_filters( 'jhmg_aied_image_token', $u, $t )
                 );
-                return RecipeTokens::resolve( $markup, $lang );
+                $markup = RecipeTokens::resolve( KitResolver::resolve( $markup, $styleKit ), $lang );
+                return [] === KitResolver::leftovers( $markup ) ? $markup : null;
             }
         }
         return null;

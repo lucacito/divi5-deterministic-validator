@@ -6,6 +6,8 @@ namespace AiEditorDivi5\WP;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+require_once __DIR__ . '/StyleKits.php';
+
 /**
  * Design languages: complete, original art-direction systems (palette roles, type
  * pairing, radius, spacing, shadow, motion, section rhythm, favoured and avoided recipe
@@ -90,8 +92,9 @@ final class DesignLanguages
     /**
      * One language, or null for an unknown id.
      *
-     * Shape: {id, title, summary, colors, fonts, radius, section_padding, shadow, motion,
-     * rhythm, favors, avoids, hero, cta}. `colors` always has bg, surface, text, muted,
+     * Shape: {id, title, summary, colors, fonts, radius, section_padding, shadow, motion, kit,
+     * rhythm, favors, avoids, hero, cta}. `kit` is the id of the style kit (StyleKits) the language's
+     * recipes are served in unless a caller names another. `colors` always has bg, surface, text, muted,
      * accent, accent_text, border, inverse (hex) and `overlay`, an `rgba(r,g,b,a)` scrim
      * (0.35 <= a <= 0.8). `inverse` is the text colour for dark bands and photos; `overlay`
      * is the scrim laid over a photo so `inverse` text stays readable. It MAY also have `surface_glass`, an
@@ -169,6 +172,7 @@ final class DesignLanguages
             '- Section padding: ' . (string) $lang['section_padding'],
             '- Shadow and borders: ' . (string) $lang['shadow'],
             '- Motion: ' . (string) $lang['motion'],
+            '- Style kit: ' . (string) ( $lang['kit'] ?? '' ),
             '',
             '## Section rhythm',
             (string) $lang['rhythm'],
@@ -189,7 +193,7 @@ final class DesignLanguages
     /**
      * What is wrong with a design language (empty list = valid). Used by the tests on every shipped
      * language, and available to anything that accepts one. Checks: every field present and the right
-     * kind; colours are #rrggbb (`surface_glass`, optional, may instead be rgba(r,g,b,a) with channels
+     * kind; `kit` names a shipped style kit (StyleKits::get()); colours are #rrggbb (`surface_glass`, optional, may instead be rgba(r,g,b,a) with channels
      * 0 to 255 and 0 < a < 1; `overlay` is required and must be rgba(r,g,b,a) with 0.35 <= a <= 0.8); font values are comma separated stacks of plain family names (letters,
      * digits and spaces, at most 100 characters each) and, when $knownFonts is given, each family is in that list or in
      * WEB_SAFE_FONTS; the id is kebab-case; `favors` and `avoids` are non-empty, only
@@ -218,6 +222,10 @@ final class DesignLanguages
         }
         if ( ! in_array( $language['motion'] ?? null, [ 'none', 'subtle', 'lively' ], true ) ) {
             $problems[] = 'motion must be none, subtle or lively';
+        }
+        $kit = $language['kit'] ?? null;
+        if ( ! is_string( $kit ) || null === StyleKits::get( $kit ) ) {
+            $problems[] = 'kit must be the id of a shipped style kit (' . implode( ', ', StyleKits::ids() ) . ')';
         }
 
         $colors = $language['colors'] ?? null;

@@ -6,6 +6,7 @@ namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\SectionRecipes;
+use AiEditorDivi5\WP\StyleKits;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -671,6 +672,9 @@ class DesignLanguagesTest extends TestCase
             'blank field'        => [static function (array $l): array { $l['cta'] = '   '; return $l; }, 'cta'],
             'non-string field'   => [static function (array $l): array { $l['summary'] = ['x']; return $l; }, 'summary'],
             'no colors at all'   => [static function (array $l): array { unset($l['colors']); return $l; }, 'colors'],
+            'missing kit'        => [static function (array $l): array { unset($l['kit']); return $l; }, 'kit'],
+            'unknown kit'        => [static function (array $l): array { $l['kit'] = 'no-such-kit'; return $l; }, 'kit'],
+            'non-string kit'     => [static function (array $l): array { $l['kit'] = ['outline-2']; return $l; }, 'kit'],
             'bad motion'         => [static function (array $l): array { $l['motion'] = 'wild'; return $l; }, 'motion'],
             'id not kebab'       => [static function (array $l): array { $l['id'] = 'Glass_Dark'; return $l; }, 'id'],
             'id missing'         => [static function (array $l): array { unset($l['id']); return $l; }, 'id'],
@@ -731,6 +735,32 @@ class DesignLanguagesTest extends TestCase
             $this->assertStringContainsString('Unknown', DesignLanguages::markdown('editorial'));
         } finally {
             DesignLanguages::clearCache();
+        }
+    }
+
+    public function testEveryLanguageNamesAShippedStyleKit(): void
+    {
+        $this->assertNotEmpty(StyleKits::ids());
+        foreach (DesignLanguages::ids() as $id) {
+            $kit = DesignLanguages::get($id)['kit'] ?? null;
+            $this->assertIsString($kit, "$id.kit");
+            $this->assertNotNull(StyleKits::get($kit), "$id.kit names a shipped kit");
+            $this->assertSame([], StyleKits::problems(StyleKits::get($kit)), "$id.kit is a valid kit");
+        }
+        // Interim (until the per-language kits): square or hairline languages outline-2, soft or round ones soft-solid.
+        foreach (['editorial', 'tech-mono', 'corporate-trust', 'brutalist-flat', 'luxe'] as $id) {
+            $this->assertSame('outline-2', DesignLanguages::get($id)['kit'], $id);
+        }
+        foreach (['glass-dark', 'organic-warm', 'playful-pastel', 'soft-saas', 'bold-vibrant'] as $id) {
+            $this->assertSame('soft-solid', DesignLanguages::get($id)['kit'], $id);
+        }
+    }
+
+    public function testMarkdownNamesTheLanguagesStyleKit(): void
+    {
+        foreach (DesignLanguages::ids() as $id) {
+            $lines = explode("\n", DesignLanguages::markdown($id));
+            $this->assertContains('- Style kit: ' . DesignLanguages::get($id)['kit'], $lines, $id);
         }
     }
 }

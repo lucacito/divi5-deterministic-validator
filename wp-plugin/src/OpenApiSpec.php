@@ -531,6 +531,7 @@ final class OpenApiSpec
                             ['name' => 'layout', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes with this layout: ' . implode(', ', SectionRecipes::LAYOUTS)]],
                             ['name' => 'mood', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'Only recipes that fit this mood. ' . SectionRecipes::MOOD_HELP . ' Valid: ' . implode(', ', SectionRecipes::moods())]],
                             ['name' => 'design_language', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => 'With name: serve the recipe in this design language\'s colours and fonts. Ids: ' . implode(', ', DesignLanguages::ids())]],
+                            ['name' => 'style_kit', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'string', 'description' => SectionRecipes::styleKitHelp()]],
                         ],
                         'responses'   => [
                             '200' => ['description' => 'Catalog or a single recipe', 'content' => ['application/json' => ['schema' => [

@@ -9,6 +9,7 @@ use AiEditorDivi5\WP\McpHandler;
 use AiEditorDivi5\WP\OpenApiSpec;
 use AiEditorDivi5\WP\RestController;
 use AiEditorDivi5\WP\SectionRecipes;
+use AiEditorDivi5\WP\StyleKits;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/WpRestShims.php';
@@ -219,13 +220,13 @@ class SectionRecipesLockstepTest extends TestCase
         foreach ( $get['parameters'] as $p ) {
             $params[ $p['name'] ] = $p;
         }
-        foreach ( [ 'name', 'role', 'layout', 'mood', 'design_language' ] as $k ) {
+        foreach ( [ 'name', 'role', 'layout', 'mood', 'design_language', 'style_kit' ] as $k ) {
             $this->assertArrayHasKey( $k, $params );
             $this->assertSame( 'query', $params[ $k ]['in'] );
             $this->assertFalse( $params[ $k ]['required'] );
             $this->assertSame( 'string', $params[ $k ]['schema']['type'] );
         }
-        $this->assertCount( 5, $params );
+        $this->assertCount( 6, $params );
         foreach ( SectionRecipes::ROLES as $r ) {
             $this->assertStringContainsString( $r, $params['role']['schema']['description'] );
         }
@@ -286,7 +287,7 @@ class SectionRecipesLockstepTest extends TestCase
             }
         }
         $this->assertNotNull( $tool );
-        foreach ( [ 'name', 'role', 'layout', 'mood', 'design_language' ] as $k ) {
+        foreach ( [ 'name', 'role', 'layout', 'mood', 'design_language', 'style_kit' ] as $k ) {
             $this->assertSame( 'string', $tool['inputSchema']['properties'][ $k ]['type'] );
         }
         $this->assertSame( [], $tool['inputSchema']['required'] );
@@ -372,6 +373,133 @@ class SectionRecipesLockstepTest extends TestCase
     public function testRestDesignLanguageWithoutANameChangesNothing(): void
     {
         $r = $this->rest( [ 'design_language' => 'glass-dark' ] );
+        $this->assertSame( 200, $r->get_status() );
+        $this->assertSame( [ 'catalog' => SectionRecipes::catalog(), 'names' => SectionRecipes::names() ], $r->get_data() );
+    }
+
+    /** One recipe whose button carries a kit marker, planted through the recipe memo (no shipped recipe is migrated yet). */
+    private function plantMarkedRecipe(): void
+    {
+        $markup = '<!-- wp:divi/section {"builderVersion":"5.15.1"} --><!-- wp:divi/row {"builderVersion":"5.15.1"} -->'
+            . '<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.15.1"} -->'
+            . '<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Go"}}}},"builderVersion":"5.15.1","aied":{"kit":"control"}} /-->'
+            . '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->';
+        ( new \ReflectionProperty( SectionRecipes::class, 'cache' ) )->setValue( null, [ [ 'name' => 'kit-fixture', 'title' => 't', 'description' => 'd', 'when' => 'w', 'stage' => 's', 'markup' => $markup ] ] );
+    }
+
+    public function testOpenApiStyleKitParameterIsOneSentenceNamingTheIds(): void
+    {
+        $spec = OpenApiSpec::spec( 'https://acme.example/wp-json/ai-editor-divi5/v1', '9.9.9' );
+        foreach ( $spec['paths']['/section-recipes']['get']['parameters'] as $p ) {
+            if ( 'style_kit' === $p['name'] ) {
+                $d = $p['schema']['description'];
+                $this->assertStringContainsString( 'name', $d );
+                foreach ( StyleKits::ids() as $id ) {
+                    $this->assertStringContainsString( $id, $d );
+                }
+                $this->assertLessThanOrEqual( 300, mb_strlen( $d ) );
+                return;
+            }
+        }
+        $this->fail( 'style_kit parameter missing' );
+    }
+
+    public function testStyleKitDescriptionIsTheSameInMcpAndOpenApi(): void
+    {
+        $spec = OpenApiSpec::spec( 'https://acme.example/wp-json/ai-editor-divi5/v1', '9.9.9' );
+        $open = null;
+        foreach ( $spec['paths']['/section-recipes']['get']['parameters'] as $p ) {
+            if ( 'style_kit' === $p['name'] ) {
+                $open = $p['schema']['description'];
+            }
+        }
+        $req = new \WP_REST_Request( [ 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list', 'params' => new \stdClass() ] );
+        foreach ( (array) ( new McpHandler() )->handle( $req )->get_data()['result']['tools'] as $t ) {
+            if ( 'get_section_recipes' === $t['name'] ) {
+                $this->assertSame( $open, $t['inputSchema']['properties']['style_kit']['description'] );
+                $this->assertStringContainsString( 'style_kit', $t['description'] );
+                return;
+            }
+        }
+        $this->fail( 'get_section_recipes missing' );
+    }
+
+    public function testMcpAndRestStyleKitServeTheSameMarkupAsRecipe(): void
+    {
+        $this->plantMarkedRecipe();
+        try {
+            [ $code, $text ] = $this->mcp( [ 'name' => 'kit-fixture', 'style_kit' => 'soft-solid' ] );
+            $this->assertNull( $code );
+            $this->assertSame( SectionRecipes::recipe( 'kit-fixture', null, 'soft-solid' ), $text );
+            $this->assertNotSame( SectionRecipes::recipe( 'kit-fixture' ), $text, 'the kit changes the button' );
+            $this->assertStringNotContainsString( '"aied"', $text );
+
+            [ , $both ] = $this->mcp( [ 'name' => 'kit-fixture', 'design_language' => 'glass-dark', 'style_kit' => 'outline-2' ] );
+            $this->assertSame( SectionRecipes::recipe( 'kit-fixture', 'glass-dark', 'outline-2' ), $both );
+            [ , $empty ] = $this->mcp( [ 'name' => 'kit-fixture', 'style_kit' => '' ] );
+            $this->assertSame( SectionRecipes::recipe( 'kit-fixture' ), $empty, 'an empty style_kit means the language\'s kit' );
+
+            $r = $this->rest( [ 'name' => 'kit-fixture', 'style_kit' => 'soft-solid' ] );
+            $this->assertSame( 200, $r->get_status() );
+            $this->assertSame( $text, $r->get_data()['markup'] );
+            $r = $this->rest( [ 'name' => 'kit-fixture', 'design_language' => 'glass-dark', 'style_kit' => 'outline-2' ] );
+            $this->assertSame( $both, $r->get_data()['markup'] );
+        } finally {
+            SectionRecipes::clearCache();
+        }
+    }
+
+    public function testMcpRejectsANonStringStyleKit(): void
+    {
+        foreach ( [ 7, [ 'outline-2' ], true ] as $bad ) {
+            [ $code, $text ] = $this->mcp( [ 'name' => 'hero-cta', 'style_kit' => $bad ] );
+            $this->assertSame( -32602, $code );
+            $this->assertStringContainsString( '"style_kit" must be a string', $text );
+        }
+    }
+
+    public function testMcpUnknownStyleKitAnswersWithTheKits(): void
+    {
+        [ $code, $text ] = $this->mcp( [ 'name' => 'hero-cta', 'style_kit' => 'nope' ] );
+        $this->assertNull( $code );
+        $this->assertSame( StyleKits::markdown( 'nope' ), $text );
+        $this->assertStringContainsString( 'Unknown style kit "nope"', $text );
+        foreach ( StyleKits::ids() as $id ) {
+            $this->assertStringContainsString( $id, $text );
+        }
+        $this->assertStringNotContainsString( 'wp:divi/section', $text, 'no partially resolved markup' );
+    }
+
+    public function testMcpStyleKitWithoutANameChangesNothing(): void
+    {
+        [ $code, $text ] = $this->mcp( [ 'style_kit' => 'outline-2' ] );
+        $this->assertNull( $code );
+        $this->assertSame( SectionRecipes::catalog(), $text );
+        [ , $text ] = $this->mcp( [ 'style_kit' => 'nope' ] );
+        $this->assertSame( SectionRecipes::catalog(), $text, 'without a name the kit is not looked at' );
+    }
+
+    public function testRestRejectsANonStringStyleKit(): void
+    {
+        foreach ( [ 7, [ 'x' ], true ] as $bad ) {
+            $r = $this->rest( [ 'name' => 'hero-cta', 'style_kit' => $bad ] );
+            $this->assertSame( 400, $r->get_status() );
+            $this->assertStringContainsString( '"style_kit" must be a string', (string) $r->get_data()['error'] );
+        }
+    }
+
+    public function testRestUnknownStyleKitIs404WithTheKitIds(): void
+    {
+        $r = $this->rest( [ 'name' => 'hero-cta', 'style_kit' => 'no<pe>' ] );
+        $this->assertSame( 404, $r->get_status() );
+        $this->assertSame( "Unknown style kit 'nope'", $r->get_data()['error'] );
+        $this->assertSame( StyleKits::ids(), $r->get_data()['kits'] );
+        $this->assertArrayNotHasKey( 'markup', $r->get_data() );
+    }
+
+    public function testRestStyleKitWithoutANameChangesNothing(): void
+    {
+        $r = $this->rest( [ 'style_kit' => 'outline-2' ] );
         $this->assertSame( 200, $r->get_status() );
         $this->assertSame( [ 'catalog' => SectionRecipes::catalog(), 'names' => SectionRecipes::names() ], $r->get_data() );
     }
