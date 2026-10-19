@@ -94,7 +94,7 @@ async function checkCards(p, { width, expects, buttonExpects, hairline }) {
       await p.mouse.move(Math.max(0, width - 2), 450); // parked at the right edge: (0,0) would open the admin bar's menu
       await p.waitForTimeout(wait);
     }
-    const cmp = K.compareCard(exp, slot.role, { rest: { el: c.el }, hover: hov && hov.found ? { el: hov.el } : null });
+    const cmp = K.compareCard(exp, slot.role, { rest: { el: c.el }, hover: hov && hov.found ? { el: hov.el } : null }, slot.ground);
     const fill = fills[i];
     const contrast = K.cardContrastProblems(c, fill, hairline, slot.ground);
     // A ground is judged against the fill the RESOLVED markup says (ground-fill); a plain card against its own computed fill (card-fill).
