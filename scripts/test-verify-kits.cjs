@@ -5,7 +5,8 @@
  * shadows, lift, contrast on the painted surface, overflow and the PNG decoder, and for the CARDS (card/panel on a group and on a column) the
  * same set: the sheet, expectations read from the resolved block tree, the rest/hover comparison (a panel must not change), the clip, the
  * contrast on the measured card fill, overflow, the three-column row, the zero-card rule, the grounds (the painted fill against the resolved
- * one), the kit buttons on the inverted panel, the featured card's prominence and an OFFLINE run of the whole sheet through the
+ * one), the kit buttons on the inverted panel, the featured card's prominence, the ITEMS (accordion and toggle: the sheet, expectations per
+ * state read from the resolved markup, the comparison, the count, the click, the contrast on the painted fill) and an OFFLINE run of the whole sheet through the
  * real PHP pipeline (scripts/lib/kit-sheet-offline.php: every kit x every language, zero leftovers, LayoutGate valid). Run first by
  * `make verify-kits`. */
 const assert = require('assert');
@@ -72,7 +73,7 @@ t('the sheet carries 20 marked cards: a card and a panel on each band, an image-
   const markers = [];
   const walk = (nodes) => {
     for (const n of nodes) {
-      if (n.attrs.aied && n.name !== 'divi/button') {
+      if (n.attrs.aied && (n.name === 'divi/group' || n.name === 'divi/column')) {
         const heading = n.children.find((x) => x.name === 'divi/heading');
         markers.push([n.name, n.attrs.aied, K.CARD_SLOTS.find((c) => heading && c.heading === heading.attrs.title.innerContent.desktop.value)]);
       }
@@ -683,11 +684,13 @@ t('the card count: every sheet card must be rendered (code cards), and no card s
   assert.deepStrictEqual(K.cardCountProblems(found.slice(0, 19)).map((x) => x[0]), ['cards']);
   assert.throws(() => K.cardCountProblems([], []), /no card slots/, 'an empty slot list can never pass');
 });
-t('an empty card selection fails the run, whatever else passed', () => {
-  assert.deepStrictEqual(K.emptyRunProblems({ checked: 12, cardsChecked: 144 }), []);
-  assert.deepStrictEqual(K.emptyRunProblems({ checked: 12, cardsChecked: 0 }), ['no card was checked: the card selection was empty']);
-  assert.deepStrictEqual(K.emptyRunProblems({ checked: 0, cardsChecked: 0 }).length, 2);
-  assert.deepStrictEqual(K.emptyRunProblems({ checked: 0, cardsChecked: 5 }), ['no cell/width was checked: nothing was measured']);
+t('an empty card or item selection fails the run, whatever else passed', () => {
+  assert.deepStrictEqual(K.emptyRunProblems({ checked: 12, cardsChecked: 144, itemsChecked: 120 }), []);
+  assert.deepStrictEqual(K.emptyRunProblems({ checked: 12, cardsChecked: 0, itemsChecked: 120 }), ['no card was checked: the card selection was empty']);
+  assert.deepStrictEqual(K.emptyRunProblems({ checked: 12, cardsChecked: 144, itemsChecked: 0 }), ['no item was checked: the item selection was empty']);
+  assert.deepStrictEqual(K.emptyRunProblems({ checked: 12, cardsChecked: 144 }), ['no item was checked: the item selection was empty'], 'a caller that forgets the item count fails, never skips');
+  assert.deepStrictEqual(K.emptyRunProblems({ checked: 0, cardsChecked: 0, itemsChecked: 0 }).length, 3);
+  assert.deepStrictEqual(K.emptyRunProblems({ checked: 0, cardsChecked: 5, itemsChecked: 5 }), ['no cell/width was checked: nothing was measured']);
 });
 t('the fill sample is the card\'s inside: past the frame and the corner radii, never empty', () => {
   assert.deepStrictEqual(K.cardSampleClip(R(100, 200, 500, 500), cstyle({})), { x: 107, y: 207, width: 386, height: 286 });
@@ -697,8 +700,323 @@ t('the fill sample is the card\'s inside: past the frame and the corner radii, n
   assert.ok(tiny.width >= 1 && tiny.height >= 1);
 });
 
+// ---- items (accordion and toggle): the sheet, expectations per state, comparison, count, click, contrast ----
+const offlineRow = (kit, language) => {
+  const r = spawnSync('php', [path.join(__dirname, 'lib', 'kit-sheet-offline.php'), '--kit', kit, '--language', language], { input: K.sheetMarkup(), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  assert.strictEqual(r.status, 0, 'php failed: ' + (r.error ? r.error.message : r.stderr));
+  return JSON.parse(r.stdout)[0];
+};
+const ROWS = { quiet: offlineRow('quiet-solid', 'editorial'), brutal: offlineRow('neo-brutal', 'editorial'), under: offlineRow('underline-link', 'editorial') };
+const itemHit = (row, key) => K.itemAttrs(row.markup).find((x) => x.slot.key === key);
+const iexp = (row, key) => { const h = itemHit(row, key); return K.expectItemFromAttrs(h.attrs, h.slot.carrier); };
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const EDITORIAL = JSON.parse(fs.readFileSync(path.join(ROOT, 'wp-plugin', 'data', 'design-languages.json'), 'utf8')).find((l) => l.id === 'editorial').colors;
+
+t('the sheet carries 10 marked item blocks: an accordion on every band, a boxed and two rule toggles on the two light ones', () => {
+  const m = K.sheetMarkup();
+  assert.deepStrictEqual(K.ITEM_SLOTS.map((c) => c.key), ['accordion-bg', 'toggle-item-bg', 'toggle-open-bg', 'toggle-closed-bg', 'accordion-surface', 'toggle-item-surface', 'toggle-open-surface', 'toggle-closed-surface', 'accordion-accent', 'accordion-dark']);
+  assert.deepStrictEqual(K.ITEM_SLOTS.map((c) => c.role), ['item', 'item', 'item-rule', 'item-rule', 'item', 'item', 'item-rule', 'item-rule', 'item', 'item']);
+  assert.deepStrictEqual(K.ITEM_SLOTS.map((c) => c.on), ['light', 'light', 'light', 'light', 'surface', 'surface', 'surface', 'surface', 'accent', 'dark']);
+  assert.ok(K.ITEM_SLOTS.filter((c) => c.role === 'item-rule').every((c) => c.on === 'light' || c.on === 'surface'), 'a rule row only on the two light bands');
+  const titles = K.ITEM_SLOTS.flatMap((c) => c.items.map((i) => i.title));
+  assert.strictEqual(new Set(titles).size, titles.length, 'every item is found by a unique title');
+  assert.ok(titles.every((x) => !K.CARD_SLOTS.some((c) => c.heading === x)), 'no item title is a card heading');
+  assert.deepStrictEqual(K.ITEM_SLOTS.filter((c) => c.carrier === 'accordion').map((c) => c.items.map((i) => i.open)), [[true, false, false], [true, false, false], [true, false, false], [true, false, false]], 'one item open, two closed');
+  assert.deepStrictEqual(K.ITEM_SLOTS.filter((c) => c.carrier === 'toggle').map((c) => [c.key, c.items.length, c.items[0].open]), [['toggle-item-bg', 1, false], ['toggle-open-bg', 1, true], ['toggle-closed-bg', 1, false], ['toggle-item-surface', 1, false], ['toggle-open-surface', 1, true], ['toggle-closed-surface', 1, false]].sort((a, b) => K.ITEM_SLOTS.findIndex((x) => x.key === a[0]) - K.ITEM_SLOTS.findIndex((x) => x.key === b[0])));
+  // Every marker names its role and the band the resolver sees; one marker per block (never on an accordion item).
+  const marked = [];
+  const walk = (nodes) => { for (const n of nodes) { if (n.attrs.aied && (n.name === 'divi/accordion' || n.name === 'divi/toggle' || n.name === 'divi/accordion-item')) marked.push(n); walk(n.children); } };
+  walk(K.blockTree(m));
+  assert.strictEqual(marked.length, 10);
+  assert.ok(marked.every((n) => n.name !== 'divi/accordion-item'), 'an accordion item never carries a marker');
+  const found = K.itemAttrs(m);
+  assert.strictEqual(found.filter((f) => f.attrs).length, 10, 'every item block is found again by its first title');
+  for (const f of found) {
+    const want = { kit: f.slot.role }; if (f.slot.on !== 'light') want.on = f.slot.on;
+    assert.deepStrictEqual(f.attrs.aied, want, f.slot.key);
+    assert.strictEqual(f.slot.carrier === 'accordion' ? K.blockTree(m).length > 0 : true, true);
+    assert.deepStrictEqual(f.items, f.slot.items.map((i) => ({ title: i.title, open: i.open })), f.slot.key + ' items read back from the markup');
+  }
+  // The recipe's own keys only: no colour, frame, radius or shadow of its own on a marked block (the kit supplies them).
+  for (const f of found) assert.ok(!/color|"border"|boxShadow|background/.test(JSON.stringify(f.attrs).replace(/"aied":\{[^}]*\}/, '').replace(/\{\{aied:font:[a-z]+\}\}/g, '')), f.slot.key + ' carries no ink of its own');
+  assert.strictEqual(K.pageButtonAttrs(m).length, 8, 'the page-level buttons stay 8');
+  assert.strictEqual(K.cardAttrs(m).filter((c) => c.attrs).length, 20, 'the card slots stay 20');
+  assert.strictEqual((m.match(/wp:divi\/accordion-item /g) || []).length, 12);
+  assert.strictEqual((m.match(/wp:divi\/toggle /g) || []).length, 6);
+});
+
+t('item expectations: a boxed accordion item is a card inside (surface fill, text title, muted answer, one closed icon), no padding', () => {
+  const e = iexp(ROWS.quiet, 'accordion-bg');
+  assert.strictEqual(e.carrier, 'accordion');
+  assert.strictEqual(e.open.fill, EDITORIAL.surface); assert.strictEqual(e.closed.fill, EDITORIAL.surface);
+  assert.strictEqual(e.open.title, EDITORIAL.text); assert.strictEqual(e.closed.title, EDITORIAL.text);
+  assert.strictEqual(e.open.body, EDITORIAL.muted);
+  assert.strictEqual(e.closed.icon, EDITORIAL.text);
+  assert.strictEqual(e.open.icon, null, 'an accordion item has no open icon');
+  assert.strictEqual(e.rest.padding, null, 'an accordion never pads its items');
+  assert.deepStrictEqual(e.hoverKeys, []);
+  for (const side of ['top', 'right', 'bottom', 'left']) { assert.ok(e.rest[side].width >= 1 && e.rest[side].style && e.rest[side].color, side); assert.deepStrictEqual(e.rest[side], e.rest.top, 'a full frame is the same on every side'); }
+  assert.ok(e.rest.radius.length === 4 && e.rest.radius.every((v) => typeof v === 'number'));
+  assert.deepStrictEqual(K.missingItemExpectations(e, 'item'), []);
+  // A surface band turns the item fill into bg; the item inside the accent band is still a surface-filled item.
+  assert.strictEqual(iexp(ROWS.quiet, 'accordion-surface').open.fill, EDITORIAL.bg);
+  assert.strictEqual(iexp(ROWS.quiet, 'accordion-accent').open.fill, EDITORIAL.surface);
+  assert.strictEqual(iexp(ROWS.quiet, 'accordion-dark').closed.fill, EDITORIAL.surface);
+});
+t('item expectations: a boxed toggle takes the kit padding and both icons; its closed title is the closedTitle group', () => {
+  const e = iexp(ROWS.quiet, 'toggle-item-bg');
+  assert.strictEqual(e.carrier, 'toggle');
+  assert.ok(Array.isArray(e.rest.padding) && e.rest.padding.length === 4 && e.rest.padding.every((v) => v > 0), 'space-card');
+  assert.strictEqual(e.open.icon, EDITORIAL.text); assert.strictEqual(e.closed.icon, EDITORIAL.text);
+  assert.strictEqual(e.closed.title, EDITORIAL.text);
+  assert.deepStrictEqual(K.missingItemExpectations(e, 'item'), []);
+});
+t('item expectations: a rule row is square, drawn as an underline on the band colour, keeps the sheet\'s structural padding and carries no shadow', () => {
+  for (const [key, fill] of [['toggle-open-bg', EDITORIAL.bg], ['toggle-closed-bg', EDITORIAL.bg], ['toggle-open-surface', EDITORIAL.surface]]) {
+    for (const row of [ROWS.quiet, ROWS.brutal]) {
+      const e = iexp(row, key);
+      assert.deepStrictEqual(e.rest.radius, [0, 0, 0, 0], key);
+      assert.deepStrictEqual([e.rest.top.width, e.rest.right.width, e.rest.left.width], [0, 0, 0], key + ' only the bottom rule is drawn');
+      assert.ok(e.rest.bottom.width >= 1, key);
+      assert.deepStrictEqual(e.rest.padding, [28, 0, 28, 0], key + ' the rule row keeps the recipe\'s padding');
+      assert.strictEqual(e.shadow, null, key + ' a rule row has no shadow, whatever the kit');
+      assert.strictEqual(e.open.fill, fill, key); assert.strictEqual(e.closed.fill, fill, key);
+      assert.deepStrictEqual(K.missingItemExpectations(e, 'item-rule'), [], key);
+    }
+  }
+});
+t('item expectations: an underline kit draws only the bottom edge of a boxed item; a hard-shadow kit shadows a boxed item but not a rule row', () => {
+  const u = iexp(ROWS.under, 'accordion-bg');
+  assert.deepStrictEqual([u.rest.top.width, u.rest.right.width, u.rest.left.width], [0, 0, 0]);
+  assert.strictEqual(u.rest.bottom.width, 2);
+  const b = iexp(ROWS.brutal, 'accordion-bg');
+  assert.ok(b.shadow && b.shadow.blur === 0 && b.shadow.x > 0 && b.shadow.y > 0, 'a hard shadow: ' + JSON.stringify(b.shadow));
+  assert.strictEqual(b.rest.top.width, 3);
+  assert.strictEqual(iexp(ROWS.quiet, 'accordion-bg').shadow, null);
+});
+t('item path drift: every field the adapter always writes is required, so a null never silently skips a check', () => {
+  const acc = () => clone(iexp(ROWS.quiet, 'accordion-bg'));
+  const tog = () => clone(iexp(ROWS.quiet, 'toggle-item-bg'));
+  const cases = {
+    'rest.radius': (e) => { e.rest.radius[3] = null; }, 'rest.top.width': (e) => { e.rest.top.width = null; }, 'rest.right.style': (e) => { e.rest.right.style = null; },
+    'rest.bottom.color': (e) => { e.rest.bottom.color = null; }, 'rest.left.width': (e) => { e.rest.left.width = NaN; },
+    'open.fill': (e) => { e.open.fill = null; }, 'closed.fill': (e) => { e.closed.fill = null; }, 'open.title': (e) => { e.open.title = null; },
+    'closed.title': (e) => { e.closed.title = null; }, 'open.body': (e) => { e.open.body = null; }, 'closed.icon': (e) => { e.closed.icon = null; },
+  };
+  for (const [field, drop] of Object.entries(cases)) { const e = acc(); drop(e); assert.deepStrictEqual(K.missingItemExpectations(e, 'item'), [field], field + ' missing is reported'); }
+  const e1 = tog(); e1.open.icon = null; assert.deepStrictEqual(K.missingItemExpectations(e1, 'item'), ['open.icon'], 'a toggle needs its open icon');
+  const e2 = tog(); e2.rest.padding = null; assert.deepStrictEqual(K.missingItemExpectations(e2, 'item'), ['rest.padding'], 'a toggle needs its padding');
+  const e3 = acc(); e3.open.icon = '#000000'; assert.deepStrictEqual(K.missingItemExpectations(e3, 'item'), ['accordion carries an open icon (Divi hides it)']);
+  const e4 = acc(); e4.rest.padding = [24, 24, 24, 24]; assert.deepStrictEqual(K.missingItemExpectations(e4, 'item'), ['accordion item padding is written (it would pad the answer)']);
+  const e5 = acc(); e5.hoverKeys = ['transform', 'boxShadow.hover']; assert.deepStrictEqual(K.missingItemExpectations(e5, 'item'), ['item carries transform', 'item carries boxShadow.hover']);
+  const e6 = clone(iexp(ROWS.brutal, 'accordion-bg')); assert.deepStrictEqual(K.missingItemExpectations(e6, 'item-rule'), ['rule row carries a shadow'], 'a shadow on a rule row is an adapter fault');
+  // A drifted path in the markup itself.
+  const drifted = clone(itemHit(ROWS.quiet, 'accordion-bg').attrs);
+  delete drifted.openToggle.decoration.background; delete drifted.content;
+  assert.deepStrictEqual(K.missingItemExpectations(K.expectItemFromAttrs(drifted, 'accordion'), 'item'), ['open.fill', 'open.body']);
+  assert.ok(K.missingItemExpectations(K.expectItemFromAttrs({}, 'accordion'), 'item').length >= 12, 'an empty attribute object misses everything');
+});
+
+// ---- items: comparison with the computed style ----
+const shadowText = (s) => (s ? `${s.color.startsWith('#') ? rgbOf(s.color) : s.color.replace(/,(\S)/g, ', $1')} ${s.x || 0}px ${s.y || 0}px ${s.blur}px 0px` : 'none');
+/** A measured item (the fields measureItems collects) that agrees with the expectation in the given state. */
+function measured(exp, open, o = {}) {
+  const st = open ? exp.open : exp.closed;
+  const el = { backgroundColor: rgbOf(st.fill), boxShadow: shadowText(exp.shadow), transform: 'none', transitionDuration: '0s', transitionDelay: '0s' };
+  for (const [k, cap] of [['top', 'Top'], ['right', 'Right'], ['bottom', 'Bottom'], ['left', 'Left']]) Object.assign(el, { [`border${cap}Width`]: exp.rest[k].width + 'px', [`border${cap}Style`]: exp.rest[k].style, [`border${cap}Color`]: rgbOf(exp.rest[k].color) });
+  ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius'].forEach((k, i) => { el[k] = exp.rest.radius[i] + 'px'; });
+  const pad = exp.rest.padding || [20, 20, 20, 20];
+  ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'].forEach((k, i) => { el[k] = pad[i] + 'px'; });
+  return Object.assign({
+    open, text: 'Title', el, rect: { left: 40, right: 340, top: 100, bottom: 200, width: 300, height: 100 }, parentRect: { left: 20, right: 380 },
+    title: { color: rgbOf(st.title) },
+    icon: st.icon ? { color: rgbOf(st.icon), shown: true, content: '"\\e050"', display: 'block' } : { color: 'rgb(0, 0, 0)', shown: false, content: 'none', display: 'none' },
+    body: { color: rgbOf(exp.open.body), visible: open },
+  }, o);
+}
+const withEl = (m, el) => Object.assign({}, m, { el: Object.assign({}, m.el, el) });
+const accExp = iexp(ROWS.quiet, 'accordion-bg');
+const togExp = iexp(ROWS.quiet, 'toggle-item-bg');
+const ruleExp = iexp(ROWS.quiet, 'toggle-open-bg');
+const brutalExp = iexp(ROWS.brutal, 'accordion-bg');
+/** An expectation whose open state differs from its closed one in fill, title and icon, so a state that does not switch is caught. */
+const distinct = (e) => { const d = clone(e); d.open.fill = '#fff3d6'; d.open.title = '#3a1a00'; if (d.open.icon !== null) d.open.icon = '#7a3b00'; return d; };
+t('a matching item has no problem in either state (accordion, boxed toggle, rule toggle)', () => {
+  for (const [role, e] of [['item', accExp], ['item', togExp], ['item-rule', ruleExp], ['item', brutalExp], ['item', distinct(accExp)], ['item', distinct(togExp)]]) {
+    for (const open of [true, false]) assert.deepStrictEqual(K.compareItem(e, role, measured(e, open), 'rest').problems, [], `${e.carrier} ${open ? 'open' : 'closed'}`);
+  }
+});
+t('item border: width, style and colour of EACH side, a quarter-pixel tolerance, code item-border; an underline kit draws one side', () => {
+  const m = measured(accExp, true);
+  const bad = K.compareItem(accExp, 'item', withEl(m, { borderLeftWidth: '3px' }), 'rest').problems;
+  assert.deepStrictEqual(bad.map((x) => x[0]), ['item-border']);
+  assert.match(bad[0][1], /^rest: border-left-width 3px, expected 1px/);
+  assert.deepStrictEqual(K.compareItem(accExp, 'item', withEl(m, { borderTopStyle: 'dashed' }), 'rest').problems.map((x) => x[0]), ['item-border']);
+  assert.deepStrictEqual(K.compareItem(accExp, 'item', withEl(m, { borderBottomColor: 'rgb(255, 0, 0)' }), 'rest').problems.map((x) => x[0]), ['item-border']);
+  assert.deepStrictEqual(K.compareItem(accExp, 'item', withEl(m, { borderTopWidth: '1.2px' }), 'rest').problems, [], 'within a quarter pixel');
+  assert.deepStrictEqual(K.compareItem(accExp, 'item', withEl(m, { borderTopWidth: '1.5px' }), 'rest').problems.map((x) => x[0]), ['item-border'], 'half a pixel off fails');
+  const under = iexp(ROWS.under, 'accordion-bg');
+  assert.deepStrictEqual(K.compareItem(under, 'item', measured(under, true), 'rest').problems, []);
+  assert.deepStrictEqual(K.compareItem(under, 'item', withEl(measured(under, true), { borderTopWidth: '2px' }), 'rest').problems.map((x) => x[0]), ['item-border'], 'a frame where the underline kit draws none');
+  // a rule row's phase shows in the detail
+  assert.match(K.compareItem(ruleExp, 'item-rule', withEl(measured(ruleExp, true), { borderBottomWidth: '4px' }), 'after click').problems[0][1], /^after click: border-bottom-width 4px/);
+});
+t('item radius and padding: each corner and, where the markup writes it, each padding side (code item-radius, item-padding); an accordion\'s padding is not compared', () => {
+  const m = measured(accExp, true);
+  const r = K.compareItem(accExp, 'item', withEl(m, { borderBottomLeftRadius: '0px' }), 'rest').problems;
+  assert.deepStrictEqual(r.map((x) => x[0]), ['item-radius']);
+  assert.match(r[0][1], /borderBottomLeftRadius 0px, expected /);
+  const tm = measured(togExp, false);
+  const p = K.compareItem(togExp, 'item', withEl(tm, { paddingLeft: '10px' }), 'rest').problems;
+  assert.deepStrictEqual(p.map((x) => x[0]), ['item-padding']);
+  assert.deepStrictEqual(K.compareItem(togExp, 'item', withEl(tm, { paddingLeft: String(togExp.rest.padding[3] + 0.5) + 'px' }), 'rest').problems, [], 'within 0.6px');
+  assert.deepStrictEqual(K.compareItem(accExp, 'item', withEl(m, { paddingLeft: '33px' }), 'rest').problems, [], 'Divi keeps the accordion item\'s own padding: nothing was written, nothing is judged');
+  const rr = K.compareItem(ruleExp, 'item-rule', withEl(measured(ruleExp, true), { paddingTop: '10px' }), 'rest').problems;
+  assert.deepStrictEqual(rr.map((x) => x[0]), ['item-padding'], 'a rule row\'s structural padding is read from the markup');
+});
+t('item fill, title, body and icon are judged PER STATE: an open item must show the open values, a closed one the closed values', () => {
+  const e = distinct(accExp);
+  // The open item showing the closed look (the state did not switch):
+  const stuck = Object.assign({}, measured(e, false), { open: true, body: { color: rgbOf(e.open.body), visible: true } });
+  const codes = K.compareItem(e, 'item', stuck, 'after click').problems.map((x) => x[0]);
+  assert.deepStrictEqual(codes, ['item-fill', 'item-title'], codes.join());
+  assert.match(K.compareItem(e, 'item', stuck, 'after click').problems[0][1], /^after click: background-color rgb\(255, 255, 255\), expected #fff3d6/);
+  // The closed item showing the open look:
+  const wrong = Object.assign({}, measured(e, true), { open: false, icon: measured(e, false).icon, body: { color: rgbOf(e.open.body), visible: false } });
+  assert.deepStrictEqual(K.compareItem(e, 'item', wrong, 'rest').problems.map((x) => x[0]), ['item-fill', 'item-title']);
+  assert.deepStrictEqual(K.compareItem(e, 'item', Object.assign({}, wrong, { icon: measured(e, true).icon }), 'rest').problems.map((x) => x[0]), ['item-fill', 'item-title', 'item-icon'], 'a closed accordion item that draws no icon');
+  // body is judged on an open item only (a closed answer is hidden); icon on the state that draws one
+  assert.deepStrictEqual(K.compareItem(e, 'item', Object.assign(measured(e, true), { body: { color: 'rgb(1, 2, 3)', visible: true } }), 'rest').problems.map((x) => x[0]), ['item-body']);
+  assert.deepStrictEqual(K.compareItem(e, 'item', Object.assign(measured(e, false), { body: { color: 'rgb(1, 2, 3)', visible: false } }), 'rest').problems, []);
+  assert.deepStrictEqual(K.compareItem(e, 'item', Object.assign(measured(e, false), { icon: { color: 'rgb(1, 2, 3)', shown: true, content: '"x"', display: 'block' } }), 'rest').problems.map((x) => x[0]), ['item-icon']);
+  const noIcon = K.compareItem(e, 'item', Object.assign(measured(e, false), { icon: { color: 'rgb(0, 0, 0)', shown: false, content: 'none', display: 'none' } }), 'rest').problems;
+  assert.deepStrictEqual(noIcon.map((x) => x[0]), ['item-icon']);
+  assert.match(noIcon[0][1], /no icon is drawn/);
+  // an accordion's OPEN icon is hidden by Divi: nothing is judged there
+  assert.deepStrictEqual(K.compareItem(e, 'item', Object.assign(measured(e, true), { icon: { color: 'rgb(1, 2, 3)', shown: true, content: '"x"', display: 'block' } }), 'rest').problems, []);
+  // a toggle judges both icons
+  const t2 = distinct(togExp);
+  assert.deepStrictEqual(K.compareItem(t2, 'item', Object.assign(measured(t2, true), { icon: { color: 'rgb(1, 2, 3)', shown: true, content: '"x"', display: 'block' } }), 'rest').problems.map((x) => x[0]), ['item-icon']);
+  assert.deepStrictEqual(K.compareItem(t2, 'item', Object.assign(measured(t2, true), { icon: { color: 'rgb(0, 0, 0)', shown: false, content: 'none', display: 'none' } }), 'rest').problems.map((x) => x[0]), ['item-icon']);
+  // one channel off passes, three off fails
+  assert.deepStrictEqual(K.compareItem(accExp, 'item', Object.assign(measured(accExp, true), { title: { color: 'rgb(29, 26, 23)' } }), 'rest').problems, []);
+  assert.deepStrictEqual(K.compareItem(accExp, 'item', Object.assign(measured(accExp, true), { title: { color: 'rgb(31, 26, 23)' } }), 'rest').problems.map((x) => x[0]), ['item-title']);
+});
+t('item shadow: on the item element itself with the markup\'s offsets, blur and colour; a rule row must show none (code item-shadow)', () => {
+  const m = measured(brutalExp, true);
+  assert.deepStrictEqual(K.compareItem(brutalExp, 'item', m, 'rest').problems, []);
+  assert.deepStrictEqual(K.compareItem(brutalExp, 'item', withEl(m, { boxShadow: 'none' }), 'rest').problems.map((x) => x[0]), ['item-shadow']);
+  const soft = K.compareItem(brutalExp, 'item', withEl(m, { boxShadow: 'rgb(28, 26, 23) 6px 6px 12px 0px' }), 'rest').problems;
+  assert.deepStrictEqual(soft.map((x) => x[0]), ['item-shadow']);
+  assert.match(soft[0][1], /expected a hard shadow/);
+  assert.deepStrictEqual(K.compareItem(brutalExp, 'item', withEl(m, { boxShadow: 'rgb(28, 26, 23) 2px 6px 0px 0px' }), 'rest').problems.map((x) => x[0]), ['item-shadow']);
+  assert.deepStrictEqual(K.compareItem(accExp, 'item', withEl(measured(accExp, true), { boxShadow: 'rgba(0, 0, 0, 0.3) 0px 4px 8px 0px' }), 'rest').problems.map((x) => x[0]), ['item-shadow'], 'a shadow where the kit has none');
+  assert.deepStrictEqual(K.compareItem(ruleExp, 'item-rule', withEl(measured(ruleExp, true), { boxShadow: 'rgba(0, 0, 0, 0.3) 0px 4px 8px 0px' }), 'rest').problems.map((x) => x[0]), ['item-shadow']);
+});
+t('compareItem refuses an expectation with a hole (code item-expectation) instead of skipping the check', () => {
+  const hole = clone(accExp); hole.closed.title = null;
+  const r = K.compareItem(hole, 'item', measured(accExp, true), 'rest');
+  assert.deepStrictEqual(r.problems.map((x) => x[0]), ['item-expectation']);
+  assert.match(r.problems[0][1], /closed\.title/);
+});
+
+// ---- items: count, click, contrast, overflow ----
+const block = (accordion, flags, o = {}) => ({ key: 'k', found: true, accordion, count: flags.length, items: flags.map((open, j) => Object.assign({ open, text: 'T' + j, body: { visible: open } }, o)) });
+const ACC = K.ITEM_SLOTS.find((s) => s.key === 'accordion-bg');
+const TOG = K.ITEM_SLOTS.find((s) => s.key === 'toggle-open-bg');
+t('the item count (code items): every block rendered with the items and the opening state the sheet gives it', () => {
+  const lists = K.ITEM_SLOTS.map((s) => s.items);
+  const good = K.ITEM_SLOTS.map((s) => block(s.carrier === 'accordion', s.items.map((i) => i.open)));
+  assert.deepStrictEqual(K.itemCountProblems(good, lists), []);
+  const miss = good.slice(); miss[2] = { key: 'x', found: false };
+  const p = K.itemCountProblems(miss, lists);
+  assert.deepStrictEqual(p.map((x) => x[0]), ['items']);
+  assert.match(p[0][1], /^9 of 10 item blocks rendered as the sheet says: toggle-open-bg is not in the page/);
+  const two = good.slice(); two[0] = block(true, [true, false]);
+  assert.match(K.itemCountProblems(two, lists)[0][1], /accordion-bg renders 2 items, expected 3/);
+  const open = good.slice(); open[0] = block(true, [false, false, false]);
+  assert.match(K.itemCountProblems(open, lists)[0][1], /accordion-bg opens items \[\] at rest, expected \[1\]/);
+  const body = good.slice(); body[1] = block(false, [false], { body: { visible: true } });
+  assert.match(K.itemCountProblems(body, lists)[0][1], /toggle-item-bg item 1 is closed but its answer is shown/);
+  const wrongKind = good.slice(); wrongKind[0] = block(false, [true, false, false]);
+  assert.match(K.itemCountProblems(wrongKind, lists)[0][1], /accordion-bg is not inside an accordion/);
+  assert.deepStrictEqual(K.itemCountProblems(good.slice(0, 9), lists).map((x) => x[0]), ['items'], 'a missing measurement is a failure');
+  assert.throws(() => K.itemCountProblems([], [], []), /no item slots/, 'an empty slot list can never pass');
+});
+t('the real click (code item-click): a closed item opens, the open accordion item closes, a toggle flips, and every answer follows its item', () => {
+  const before = block(true, [true, false, false]);
+  assert.strictEqual(K.clickTarget(ACC, before), 1, 'the first closed item');
+  assert.strictEqual(K.clickTarget(TOG, block(false, [true])), 0);
+  assert.strictEqual(K.clickTarget(ACC, block(true, [true, true, true])), -1, 'nothing closed to click: the gate cannot click');
+  assert.deepStrictEqual(K.itemClickProblems(ACC, before, block(true, [false, true, false]), 1), []);
+  assert.deepStrictEqual(K.itemClickProblems(TOG, block(false, [true]), block(false, [false]), 0), []);
+  assert.deepStrictEqual(K.itemClickProblems(K.ITEM_SLOTS.find((s) => s.key === 'toggle-closed-bg'), block(false, [false]), block(false, [true]), 0), []);
+  const stay = K.itemClickProblems(ACC, before, block(true, [true, false, false]), 1);
+  assert.deepStrictEqual(stay.map((x) => x[0]), ['item-click', 'item-click']);
+  assert.match(stay[0][1], /^item 1 \(previously open\) did not close when item 2 opened/);
+  assert.match(stay[1][1], /^item 2 \(T1\) did not open after a click on its title/);
+  const both = K.itemClickProblems(ACC, before, block(true, [true, true, false]), 1);
+  assert.deepStrictEqual(both.map((x) => x[0]), ['item-click']);
+  assert.match(both[0][1], /previously open/);
+  const toggleStay = K.itemClickProblems(TOG, block(false, [true]), block(false, [true]), 0);
+  assert.match(toggleStay[0][1], /did not close after a click on its title/);
+  const hiddenBody = K.itemClickProblems(ACC, before, Object.assign(block(true, [false, true, false]), { items: [{ open: false, body: { visible: false } }, { open: true, body: { visible: false } }, { open: false, body: { visible: false } }] }), 1);
+  assert.deepStrictEqual(hiddenBody.map((x) => x[0]), ['item-click']);
+  assert.match(hiddenBody[0][1], /item 2 is open but its answer is not shown/);
+  assert.deepStrictEqual(K.itemClickProblems(ACC, before, { key: 'k', found: false }, 1).map((x) => x[0]), ['item-click']);
+});
+t('item contrast on the PAINTED fill (code item-contrast): title 4.5 in its state, the answer 4.5 on an open item, a drawn icon 3.0, a meaningful frame 3.0, the hairline excepted', () => {
+  const fill = { r: 255, g: 255, b: 255 };
+  const m = (o) => Object.assign(measured(togExp, true), o);
+  assert.deepStrictEqual(K.itemContrastProblems(m({}), fill, EDITORIAL.border).problems, []);
+  const pale = K.itemContrastProblems(m({ title: { color: 'rgb(200, 200, 200)' } }), fill, EDITORIAL.border).problems;
+  assert.deepStrictEqual(pale.map((x) => x[0]), ['item-contrast']);
+  assert.match(pale[0][1], /^title colour #c8c8c8 on the painted item fill #ffffff is 1\.67:1, needs 4\.5/);
+  assert.match(K.itemContrastProblems(m({ body: { color: 'rgb(200, 200, 200)', visible: true } }), fill, null).problems[0][1], /^answer colour/);
+  assert.deepStrictEqual(K.itemContrastProblems(Object.assign(m({ open: false }), { body: { color: 'rgb(200, 200, 200)', visible: false } }), fill, null).problems.filter((x) => /answer/.test(x[1])), [], 'a closed answer is hidden: not judged');
+  const icon = K.itemContrastProblems(m({ icon: { color: 'rgb(200, 200, 200)', shown: true, content: '"x"', display: 'block' } }), fill, null).problems;
+  assert.match(icon[0][1], /^icon colour #c8c8c8 on the painted item fill #ffffff is 1\.67:1, needs 3/);
+  assert.deepStrictEqual(K.itemContrastProblems(m({ icon: { color: 'rgb(1, 2, 3)', shown: false, content: 'none', display: 'none' } }), fill, null).problems.filter((x) => /icon/.test(x[1])), [], 'a hidden icon is not judged');
+  const frame = (c) => withEl(m({}), { borderTopColor: c, borderRightColor: c, borderBottomColor: c, borderLeftColor: c });
+  assert.strictEqual(K.itemContrastProblems(frame('rgb(200, 200, 200)'), fill, EDITORIAL.border).problems.length, 4, 'a meaningful frame that is too weak fails on every side');
+  assert.deepStrictEqual(K.itemContrastProblems(frame('rgb(200, 200, 200)'), fill, 'rgb(200, 200, 200)').problems, [], 'the language\'s border hairline is reported, not judged');
+  assert.deepStrictEqual(K.itemContrastProblems(withEl(m({}), { borderTopWidth: '0px', borderRightWidth: '0px', borderLeftWidth: '0px', borderBottomColor: 'rgb(28, 26, 23)' }), fill, null).problems, [], 'an underline: undrawn sides are not judged');
+  // fail closed
+  assert.deepStrictEqual(K.itemContrastProblems(m({ title: null }), fill, EDITORIAL.border).problems.map((x) => x[0]), ['item-contrast']);
+  assert.deepStrictEqual(K.itemContrastProblems(m({ title: { color: 'banana' } }), fill, EDITORIAL.border).problems.map((x) => x[0]), ['item-contrast']);
+  assert.deepStrictEqual(K.itemContrastProblems(m({}), null, null).problems.map((x) => x[0]), ['item-contrast'], 'no painted fill sample');
+  // a dark painted fill: dark text on it fails
+  assert.ok(K.itemContrastProblems(m({}), { r: 10, g: 10, b: 10 }, null).problems.some((x) => x[0] === 'item-contrast'));
+});
+t('the painted item fill must match the computed one (code item-fill); a translucent computed fill is not judged against the screenshot', () => {
+  const el = measured(accExp, true).el;
+  assert.deepStrictEqual(K.itemPaintedFillProblems(el, { r: 255, g: 255, b: 255 }), []);
+  assert.deepStrictEqual(K.itemPaintedFillProblems(el, { r: 252, g: 255, b: 253 }), [], 'within 4 per channel');
+  const bad = K.itemPaintedFillProblems(el, { r: 240, g: 240, b: 240 });
+  assert.deepStrictEqual(bad.map((x) => x[0]), ['item-fill']);
+  assert.match(bad[0][1], /something is drawn over the item/);
+  assert.deepStrictEqual(K.itemPaintedFillProblems(Object.assign({}, el, { backgroundColor: 'rgba(255, 255, 255, 0.5)' }), { r: 0, g: 0, b: 0 }), []);
+  assert.deepStrictEqual(K.itemPaintedFillProblems(el, null).map((x) => x[0]), ['item-fill'], 'a missing sample fails');
+});
+t('item overflow: beyond its column or the window, or a page wider than the window', () => {
+  const page = { innerWidth: 400, scrollWidth: 400 };
+  const it = (l, r) => ({ rect: { left: l, right: r }, parentRect: { left: 20, right: 380 } });
+  assert.deepStrictEqual(K.itemOverflowProblems(it(20, 300), 'rest', page), []);
+  const o = K.itemOverflowProblems(it(20, 390), 'after click', page);
+  assert.strictEqual(o[0][0], 'overflow');
+  assert.match(o[0][1], /^after click: item /);
+  assert.strictEqual(K.itemOverflowProblems(it(20, 300), 'rest', { innerWidth: 400, scrollWidth: 420 }).length, 1);
+});
+t('compareCard also holds a ground to its contract (the carry-in): a ground whose frame is not its fill is refused with card-expectation', () => {
+  const e = clone(exGround); e.rest.top.color = '#ff0000';
+  const r = K.compareCard(e, 'card', same(cstyle({})), 'inverted');
+  assert.deepStrictEqual(r.problems.map((x) => x[0]), ['card-expectation']);
+  assert.match(r.problems[0][1], /ground frame top is not the fill/);
+  assert.notStrictEqual(K.compareCard(e, 'card', same(cstyle({}))).problems[0][0], 'card-expectation', 'without the ground it is just an ordinary card');
+});
+
 // ---- the sheet through the REAL PHP pipeline, offline ----
-t('every kit x every language: the sheet resolves with zero leftovers, passes LayoutGate, and every card is in the resolved markup with a complete expectation and readable text', () => {
+t('every kit x every language: the sheet resolves with zero leftovers, passes LayoutGate, and every card and every item block is in the resolved markup with a complete expectation and readable text', () => {
   const php = spawnSync('php', [path.join(__dirname, 'lib', 'kit-sheet-offline.php')], { input: K.sheetMarkup(), encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
   assert.strictEqual(php.status, 0, 'php failed: ' + (php.error ? php.error.message : php.stderr));
   const rows = JSON.parse(php.stdout);
@@ -707,6 +1025,7 @@ t('every kit x every language: the sheet resolves with zero leftovers, passes La
   assert.strictEqual(rows.length, kitIds.length * languages.length, 'one row per kit and language');
   assert.ok(rows.length >= 400);
   let cards = 0;
+  let items_checked = 0;
   const featuredFillOnly = [];
   for (const row of rows) {
     const cell = row.kit + '/' + row.language;
@@ -757,12 +1076,49 @@ t('every kit x every language: the sheet resolves with zero leftovers, passes La
         for (const state of ['rest', 'hover']) assert.deepStrictEqual(K.contrastProblems(elOf(state), solid(fill), state).problems, [], `${where} button ${j} ${state}`);
       });
     }
+    // The items: every block of the sheet is in the resolved markup with a complete expectation, the same contrast the live gate applies holds on the
+    // resolved fill in BOTH states (title and answer 4.5, icon 3.0, a meaningful frame 3.0), and the fill is what the role table says.
+    const foundItems = K.itemAttrs(row.markup);
+    assert.strictEqual(foundItems.length, K.ITEM_SLOTS.length);
+    for (const { slot, attrs, items } of foundItems) {
+      const where = `${cell} ${slot.key}`;
+      assert.ok(attrs, where + ' not in the resolved markup');
+      assert.deepStrictEqual(items, slot.items.map((i) => ({ title: i.title, open: i.open })), where + ' items');
+      items_checked++;
+      const exp = K.expectItemFromAttrs(attrs, slot.carrier);
+      assert.deepStrictEqual(K.missingItemExpectations(exp, slot.role), [], where);
+      assert.deepStrictEqual(exp.hoverKeys, [], where + ' no hover on an item');
+      const wantFill = slot.role === 'item-rule' ? (slot.on === 'surface' ? pal.surface : pal.bg) : (slot.on === 'surface' ? pal.bg : pal.surface);
+      for (const state of ['open', 'closed']) {
+        const st = exp[state];
+        const fill = K.colour(st.fill);
+        assert.strictEqual(fill.a, 1, `${where} ${state} fill is opaque`);
+        assert.ok(K.sameColour(st.fill, wantFill), `${where} ${state} fill ${st.fill} is not ${wantFill}`);
+        assert.ok(ratio(st.title, fill) >= 4.5, `${where} ${state} title ${ratio(st.title, fill)}`);
+        if (state === 'open') assert.ok(ratio(st.body, fill) >= 4.5, `${where} answer ${ratio(st.body, fill)}`);
+        if (st.icon) assert.ok(ratio(st.icon, fill) >= 3, `${where} ${state} icon ${ratio(st.icon, fill)}`);
+      }
+      assert.strictEqual(slot.carrier === 'accordion' ? exp.open.icon : 'x', slot.carrier === 'accordion' ? null : 'x', where + ' an accordion has no open icon');
+      assert.ok(K.sameColour(exp.open.title, pal.text) && K.sameColour(exp.closed.title, pal.text) && K.sameColour(exp.open.body, pal.muted), where + ' inks');
+      const fillC = K.colour(exp.open.fill);
+      for (const side of ['top', 'right', 'bottom', 'left']) {
+        const e = exp.rest[side];
+        if (e.width > 0 && !K.sameColour(e.color, pal.border)) assert.ok(ratio(e.color, fillC) >= 3, `${where} ${side} frame ${ratio(e.color, fillC)}`);
+      }
+      if (slot.role === 'item-rule') {
+        assert.deepStrictEqual(exp.rest.radius, [0, 0, 0, 0], where);
+        assert.deepStrictEqual([exp.rest.top.width, exp.rest.right.width, exp.rest.left.width], [0, 0, 0], where + ' a rule row is an underline');
+        assert.strictEqual(exp.shadow, null, where);
+        assert.deepStrictEqual(exp.rest.padding, [28, 0, 28, 0], where);
+      }
+    }
     // The featured middle card against the plain ones on the bg band, by FILL alone (frames, which only make a plain card stronger, are the live check).
     const band = K.colour(pal.bg);
     const prom = (key) => K.boxProminence(flat({ r: fillOf[key].r, g: fillOf[key].g, b: fillOf[key].b }), solid(band));
     featuredFillOnly.push([cell, prom('column-2'), Math.max(prom('column-1'), prom('column-3'))]);
   }
   assert.strictEqual(cards, rows.length * K.CARD_SLOTS.length);
+  assert.strictEqual(items_checked, rows.length * K.ITEM_SLOTS.length, 'every item block of every cell was checked');
   // On fills alone the accent middle card is at least FEATURED_RATIO x the larger plain neighbour in every kit x language (kits do not change the fill).
   const weakest = featuredFillOnly.filter(([, f, n]) => K.featuredProblems({ featured: f, neighbours: [n, n] }).length);
   assert.deepStrictEqual(weakest.map(([c, f, n]) => `${c} featured ${f.toFixed(3)} vs ${n.toFixed(3)}`), [], 'by fill alone the featured card is not featured in these cells');
@@ -836,4 +1192,4 @@ t('the PNG decoder reads every filter type', () => {
   assert.deepStrictEqual(st.mean, { r: 10, g: 20, b: 30 });
 });
 
-console.log(`OK verify-kits pure parts: ${n} tests (run titles, selection, sheet, expectations from resolved markup, rest and hover comparison, shadows, lift, contrast, overflow, PNG; cards: sheet, expectations, comparison, panel static on hover, clip, contrast, overflow, column row, counts, empty run; grounds, panel buttons, the featured card; offline sheet through PHP for every kit x language)`);
+console.log(`OK verify-kits pure parts: ${n} tests (run titles, selection, sheet, expectations from resolved markup, rest and hover comparison, shadows, lift, contrast, overflow, PNG; cards: sheet, expectations, comparison, panel static on hover, clip, contrast, overflow, column row, counts, empty run; grounds, panel buttons, the featured card; items: sheet, expectations per state, comparison, count, click, contrast; offline sheet through PHP for every kit x language)`);
