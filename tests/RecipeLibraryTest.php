@@ -109,27 +109,15 @@ class RecipeLibraryTest extends TestCase
      * SHRINK-ONLY (testBespokeCardsAreListedAndShrinkOnly): it can never hold more than BESPOKE_CARDS_MAX entries, a listed
      * block that gets a marker fails until its entry is removed, and the migration tasks lower BESPOKE_CARDS_MAX as they
      * remove entries. The inverted surfaces stay (spec "Inverted surfaces": no adapter role for a text-coloured or accent
-     * ground in v1); the rest are the cards and panels the later tasks migrate (Task 8 groups, Task 9 columns).
+     * ground in v1); the rest are the column cards Task 9 migrates (Task 8 migrated every group card and panel). An inverted
+     * group that sits beside a kit card takes the kit's corner radius through the whole-value token `{{aied:kit:radius-card}}`
+     * (testBespokeGroupCornersFollowTheKit), so the pair never has mismatched corners; its fill, frame and padding stay.
      */
     private const BESPOKE_CARDS = [
-        'divi/group|compare-two-panels|2'          => 'panel, not migrated yet (plan Task 8)',
         'divi/group|compare-two-panels|7'          => 'inverted text-coloured "after" panel: no adapter role for an inverted ground',
-        'divi/group|contact-details-form|13'       => 'panel, not migrated yet (plan Task 8)',
-        'divi/group|contact-location-form|6'       => 'panel, not migrated yet (plan Task 8)',
-        'divi/group|cta-card-over-image|1'         => 'panel, not migrated yet (plan Task 8)',
-        'divi/group|features-bento|0'              => 'card, not migrated yet (plan Task 8)',
-        'divi/group|features-bento|1'              => 'inverted bento tile: no adapter role for an inverted ground',
-        'divi/group|features-bento|2'              => 'card, not migrated yet (plan Task 8)',
-        'divi/group|features-bento|3'              => 'accent bento tile: no adapter role for an inverted ground',
-        'divi/group|features-bento|4'              => 'card, not migrated yet (plan Task 8)',
-        'divi/group|hero-bordered-cells|0'         => 'panel, not migrated yet (plan Task 8)',
-        'divi/group|hero-bordered-cells|2'         => 'card, not migrated yet (plan Task 8)',
-        'divi/group|hero-bordered-cells|3'         => 'card, not migrated yet (plan Task 8)',
-        'divi/group|hero-bordered-cells|4'         => 'card, not migrated yet (plan Task 8)',
-        'divi/group|hero-split-left-overlap|0'     => 'panel, not migrated yet (plan Task 8)',
-        'divi/group|pricing-two-plan-highlight|1'  => 'panel, not migrated yet (plan Task 8)',
+        'divi/group|features-bento|1'              => 'accent bento tile: no adapter role for an inverted ground',
+        'divi/group|features-bento|3'              => 'inverted bento tile: no adapter role for an inverted ground',
         'divi/group|pricing-two-plan-highlight|8'  => 'inverted text-coloured highlighted plan: no adapter role for an inverted ground',
-        'divi/group|transition-overlap-panel|2'    => 'panel, not migrated yet (plan Task 8)',
         'divi/column|icon-values|1'                => 'column card, not migrated yet (plan Task 9)',
         'divi/column|icon-values|2'                => 'column card, not migrated yet (plan Task 9)',
         'divi/column|icon-values|3'                => 'column card, not migrated yet (plan Task 9)',
@@ -142,7 +130,7 @@ class RecipeLibraryTest extends TestCase
     ];
 
     /** The most entries BESPOKE_CARDS may hold. It may only be LOWERED (in the commit that removes entries), never raised. */
-    private const BESPOKE_CARDS_MAX = 27;
+    private const BESPOKE_CARDS_MAX = 13;
 
     /** Every card surface the report found when the card adapter started (Task 2): each one is either marked or listed. */
     private const CARD_SURFACES_KNOWN = 32;
@@ -164,6 +152,9 @@ class RecipeLibraryTest extends TestCase
         '/\b(rounded|hairline[- ]bordered|bordered|framed|outlined|shadowed|square[- ]cornered)\s+(\w+\s+)?(card|panel|box|tile)s?\b/i',
         '/\brounded (and|or) |, rounded\b/i',
         '/\b(soft|drop|deep|long) shadows?\b/i',
+        // Task 8: the corner, frame and elevation words the nine group recipes used for what a kit now decides.
+        '/\bsquare[- ]cornered\b|\bwith (square|small|rounded) corners\b|\bheavy[- ]border(s|ed)\b/i',
+        '/\b(rounded|square|sharp), |\brounded brands\b|\bframed\b|\braised\b/i',
     ];
 
     /** A `divi/button` block comment: (json). Same possessive scan as KitResolver::BLOCK. */
@@ -682,14 +673,61 @@ class RecipeLibraryTest extends TestCase
         $this->assertSame( 'light', self::buttonSurfaces( $sec( $bg( '{"color":"{{aied:color:accent}}"}' ), $panel ) )['#0'][1] );
     }
 
-    /** [role, on] of a card/panel marker in $attrs, or null (a button role is no card marker). @return array{0:string,1:string}|null */
+    /**
+     * [role, on] of a card/panel marker in $attrs, or null (a button role is no card marker). A card/panel marker without
+     * a string `on` throws: the resolver would default it to `light`, and a recipe card must say where it sits.
+     *
+     * @return array{0:string,1:string}|null
+     */
     private static function cardMarker( array $attrs ): ?array
     {
         $m = $attrs['aied'] ?? null;
         if ( ! is_array( $m ) || ! in_array( $m['kit'] ?? null, [ 'card', 'panel' ], true ) ) {
             return null;
         }
-        return [ (string) $m['kit'], (string) ( $m['on'] ?? 'light' ) ];
+        if ( ! is_string( $m['on'] ?? null ) || '' === $m['on'] ) {
+            throw new \UnexpectedValueException( 'a ' . $m['kit'] . ' marker without "on": a recipe card must name its band, never default to light' );
+        }
+        return [ (string) $m['kit'], $m['on'] ];
+    }
+
+    /** How many card/panel markers the block comments of $markup carry (parsed, so key order does not matter). */
+    private static function cardMarkerCount( string $markup ): int
+    {
+        return count( array_filter( self::blocks( $markup ), static fn ( array $b ): bool => null !== self::cardMarker( $b[1] ) ) );
+    }
+
+    /**
+     * The card/panel markers of the recipe FILE (decoded, not through SectionRecipes): [parsed from the block comments,
+     * spelled as `"kit":"card"` / `"kit":"panel"` anywhere in the markups]. Both ignore key order.
+     *
+     * @return array{0:int,1:int}
+     */
+    private static function cardMarkersInFile(): array
+    {
+        $parsed  = 0;
+        $spelled = 0;
+        foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $recipe ) {
+            $markup   = (string) $recipe['markup'];
+            $parsed  += self::cardMarkerCount( $markup );
+            $spelled += substr_count( $markup, '"kit":"card"' ) + substr_count( $markup, '"kit":"panel"' );
+        }
+        return [ $parsed, $spelled ];
+    }
+
+    public function testACardMarkerWithoutABandFailsAndKeyOrderDoesNotMatter(): void
+    {
+        $this->assertSame( [ 'panel', 'dark' ], self::cardMarker( [ 'aied' => [ 'on' => 'dark', 'kit' => 'panel' ] ] ), 'key order does not matter' );
+        $this->assertNull( self::cardMarker( [ 'aied' => [ 'kit' => 'control' ] ] ), 'a button role is no card marker' );
+        $this->assertSame( 1, self::cardMarkerCount( '<!-- wp:divi/group {"aied":{"on":"light","kit":"card"}} --><!-- /wp:divi/group --><!-- wp:divi/button {"aied":{"kit":"control"}} /-->' ) );
+        foreach ( [ [ 'kit' => 'card' ], [ 'kit' => 'panel', 'on' => '' ], [ 'kit' => 'card', 'on' => 1 ] ] as $marker ) {
+            try {
+                self::cardMarker( [ 'aied' => $marker ] );
+                $this->fail( 'a card marker without a band must fail: ' . json_encode( $marker ) );
+            } catch ( \UnexpectedValueException $e ) {
+                $this->assertStringContainsString( 'without "on"', $e->getMessage() );
+            }
+        }
     }
 
     /**
@@ -782,8 +820,9 @@ class RecipeLibraryTest extends TestCase
                 }
             }
         }
-        $inFile = preg_match_all( '/\\\\?"aied\\\\?":\{\\\\?"kit\\\\?":\\\\?"(?:card|panel)\\\\?"/', (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ) );
-        $this->assertSame( $inFile, $checked, 'every card marker in the file is checked' );
+        [ $parsed, $spelled ] = self::cardMarkersInFile();
+        $this->assertSame( $spelled, $parsed, 'every "kit":"card|panel" in the file is a top-level marker of a block comment' );
+        $this->assertSame( $parsed, $checked, 'every card marker in the file is checked' );
         $this->assertGreaterThan( 0, $checked, 'the recipes carry card markers' );
         $this->assertSame( [], $problems, 'a card\'s "on" must name the band it really sits on, or the kit picks the wrong fill and shadow' );
     }
@@ -848,6 +887,101 @@ class RecipeLibraryTest extends TestCase
         $this->assertSame( [ 'divi/group|r|1 carries a card marker', 'divi/group|r|9 is not a block of the recipes', 'divi/group|r|3 is a rule, not a card surface' ], $stale );
         $this->assertSame( [ 'divi/group|r|2 (panel)' ], $decorated );
         $this->assertSame( 2, $marked );
+    }
+
+    public function testBespokeGroupCornersFollowTheKit(): void
+    {
+        $markups = [];
+        foreach ( SectionRecipes::names() as $name ) {
+            $markups[ $name ] = (string) SectionRecipes::rawMarkup( $name );
+        }
+        $problems = [];
+        $tokened  = 0;
+        foreach ( StyleKits::ids() as $kitId ) {
+            [ $p, $t ] = self::bespokeCornerProblems( $markups, self::BESPOKE_CARDS, (array) StyleKits::get( $kitId ) );
+            $problems  = array_merge( $problems, array_map( static fn ( string $x ): string => "$kitId: $x", $p ) );
+            $tokened   = $t;
+        }
+        $this->assertSame( [], $problems, 'a bespoke group beside a kit card takes the kit\'s corners ({{aied:kit:radius-card}}), or the pair has mismatched corners' );
+        $this->assertSame( 4, $tokened, 'the four inverted/accent groups (compare-two-panels#7, features-bento#1 and #3, pricing-two-plan-highlight#8)' );
+    }
+
+    public function testTheBespokeCornerCheckCatchesWhatItShould(): void
+    {
+        $grp    = static fn ( $radius ): string => '<!-- wp:divi/group ' . json_encode( [ 'module' => [ 'decoration' => [ 'background' => [ 'desktop' => [ 'value' => [ 'color' => '{{aied:color:text}}' ] ] ] ] + ( null === $radius ? [] : [ 'border' => [ 'desktop' => [ 'value' => [ 'radius' => $radius ] ] ] ] ) ] ], JSON_UNESCAPED_SLASHES ) . ' --><!-- /wp:divi/group -->';
+        $corner = static fn ( string $v ): array => [ 'topLeft' => $v, 'topRight' => $v, 'bottomRight' => $v, 'bottomLeft' => $v ];
+        $kit    = (array) StyleKits::get( 'quiet-solid' );
+        $listed = [ 'divi/group|r|0' => 'x', 'divi/group|r|1' => 'x', 'divi/group|r|2' => 'x', 'divi/group|r|3' => 'x', 'divi/column|r|0' => 'x', 'divi/group|r|9' => 'x' ];
+        $markup = $grp( '{{aied:kit:radius-card}}' ) . $grp( $corner( '0px' ) ) . $grp( $corner( '999px' ) ) . $grp( null );
+        [ $p, $t ] = self::bespokeCornerProblems( [ 'r' => $markup ], $listed, $kit );
+        $this->assertSame( [ 'r divi/group#1: border.desktop.value.radius is a literal, not {{aied:kit:radius-card}}', 'r divi/group#9: no such block' ], $p );
+        $this->assertSame( 1, $t, 'the token, the pill (999px) and no radius pass; columns are not this check\'s' );
+        // A token that would not resolve to the kit's card radius (a control radius) fails.
+        [ $p ] = self::bespokeCornerProblems( [ 'r' => $grp( '{{aied:kit:radius-control}}' ) ], [ 'divi/group|r|0' => 'x' ], $kit );
+        $this->assertSame( [ 'r divi/group#0: border.desktop.value.radius is a literal, not {{aied:kit:radius-card}}' ], $p );
+    }
+
+    /**
+     * What is wrong with the corners of the listed bespoke GROUPS under $kit: a radius (at any breakpoint or state) must be
+     * the whole-value token `{{aied:kit:radius-card}}` (a pill, 999px on every corner, is exempt) and resolve to the kit's
+     * `radius.card` on all four corners. A group with no radius is fine. Returns [problems, how many groups carry the token].
+     *
+     * @param array<string,string> $markups recipe => raw markup
+     * @param array<string,string> $listed  the bespoke list
+     * @param array<string,mixed>  $kit
+     * @return array{0:list<string>,1:int}
+     */
+    private static function bespokeCornerProblems( array $markups, array $listed, array $kit ): array
+    {
+        $out     = [];
+        $tokened = 0;
+        $want    = array_fill_keys( [ 'topLeft', 'topRight', 'bottomRight', 'bottomLeft' ], (string) ( $kit['radius']['card'] ?? '' ) );
+        foreach ( array_keys( $listed ) as $key ) {
+            [ $block, $recipe, $index ] = explode( '|', $key );
+            if ( 'divi/group' !== $block ) {
+                continue;
+            }
+            $raw      = $markups[ $recipe ] ?? '';
+            $find     = static function ( string $markup ) use ( $block, $index ): ?array {
+                foreach ( self::blocks( $markup ) as [ $name, $attrs, $i ] ) {
+                    if ( $name === $block && (int) $index === $i ) {
+                        return $attrs;
+                    }
+                }
+                return null;
+            };
+            $attrs = $find( $raw );
+            if ( null === $attrs ) {
+                $out[] = "$recipe $block#$index: no such block";
+                continue;
+            }
+            $after = (array) $find( KitResolver::resolve( $raw, $kit ) );
+            $any   = false;
+            foreach ( (array) ( $attrs['module']['decoration']['border'] ?? [] ) as $bp => $states ) {
+                foreach ( (array) $states as $state => $value ) {
+                    if ( ! is_array( $value ) || ! array_key_exists( 'radius', $value ) ) {
+                        continue;
+                    }
+                    $any    = true;
+                    $radius = $value['radius'];
+                    $where  = "$recipe $block#$index: border.$bp.$state.radius";
+                    if ( is_array( $radius ) && [ '999px' ] === array_values( array_unique( $radius ) ) ) {
+                        continue;
+                    }
+                    if ( '{{aied:kit:radius-card}}' !== $radius ) {
+                        $out[] = "$where is a literal, not {{aied:kit:radius-card}}";
+                        continue;
+                    }
+                    if ( ( $after['module']['decoration']['border'][ $bp ][ $state ]['radius'] ?? null ) !== $want ) {
+                        $out[] = "$where does not resolve to the kit's radius.card";
+                    }
+                }
+            }
+            if ( $any && ! array_filter( $out, static fn ( string $x ): bool => str_starts_with( $x, "$recipe $block#$index:" ) ) ) {
+                $tokened += str_contains( (string) json_encode( $attrs['module']['decoration']['border'] ?? [] ), 'aied:kit:radius-card' ) ? 1 : 0;
+            }
+        }
+        return [ $out, $tokened ];
     }
 
     /**
@@ -939,7 +1073,7 @@ class RecipeLibraryTest extends TestCase
      * @param array<string,mixed> $kit
      * @return list<string>
      */
-    private static function markedCardProblems( string $label, string $raw, string $resolved, array $kit, bool $exact ): array
+    private static function markedCardProblems( string $label, string $raw, string $resolved, array $kit, bool $exact, int &$checked = 0 ): array
     {
         $out    = [];
         $after  = [];
@@ -952,6 +1086,7 @@ class RecipeLibraryTest extends TestCase
             if ( null === $marker ) {
                 continue;
             }
+            ++$checked;
             [ $role, $on ] = $marker;
             $where = "$label $name#$i ($role on $on)";
             $got   = $after[ "$name#$i" ] ?? null;
@@ -1042,21 +1177,30 @@ class RecipeLibraryTest extends TestCase
     {
         $problems = [];
         $recipes  = 0;
+        $blocks   = 0;
+        $walked   = 0;
         foreach ( SectionRecipes::names() as $name ) {
             $raw = (string) SectionRecipes::rawMarkup( $name );
-            if ( 1 !== preg_match( '/"aied":\{"kit":"(?:card|panel)"/', $raw ) ) {
+            $walked += count( self::cardBands( $raw ) );
+            if ( 0 === self::cardMarkerCount( $raw ) ) {
                 continue;
             }
             ++$recipes;
-            foreach ( StyleKits::ids() as $kitId ) {
+            foreach ( StyleKits::ids() as $n => $kitId ) {
                 $kit      = (array) StyleKits::get( $kitId );
-                $problems = array_merge( $problems, self::markedCardProblems( "$name/$kitId", $raw, KitResolver::resolve( $raw, $kit ), $kit, true ) );
+                $seen     = 0;
+                $problems = array_merge( $problems, self::markedCardProblems( "$name/$kitId", $raw, KitResolver::resolve( $raw, $kit ), $kit, true, $seen ) );
+                if ( 0 === $n ) {
+                    $blocks += $seen;
+                }
                 foreach ( DesignLanguages::ids() as $lang ) {
                     $problems = array_merge( $problems, self::markedCardProblems( "$name/$kitId/$lang", $raw, (string) SectionRecipes::recipe( $name, $lang, $kitId ), $kit, false ) );
                 }
             }
         }
         $this->assertGreaterThan( 0, $recipes, 'the recipes carry card markers' );
+        $this->assertSame( self::cardMarkersInFile()[0], $blocks, 'the merge trap checks every card marker in the file' );
+        $this->assertSame( $walked, $blocks, 'the merge trap checks exactly the markers the band test walks' );
         $this->assertSame( [], array_slice( array_values( array_unique( $problems ) ), 0, 40 ), 'a marked card keeps only structure: its own card decoration survives the kit\'s deep merge' );
 
         // Under a lift kit, hero-gradient-stats' cards keep their rest tilt AND get the kit's hover lift.
@@ -1125,7 +1269,7 @@ class RecipeLibraryTest extends TestCase
     {
         $problems = [];
         foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $recipe ) {
-            if ( 1 !== preg_match( '/"aied":\{"kit":"(?:card|panel)"/', (string) $recipe['markup'] ) ) {
+            if ( 0 === self::cardMarkerCount( (string) $recipe['markup'] ) ) {
                 continue;
             }
             foreach ( [ 'title', 'description', 'when' ] as $field ) {
@@ -1142,6 +1286,14 @@ class RecipeLibraryTest extends TestCase
         $this->assertSame( 1, preg_match( self::CARD_DECIDED_PHRASES[0], 'a rounded card on the page colour' ) );
         $this->assertSame( 1, preg_match( self::CARD_DECIDED_PHRASES[1], 'modern, rounded and dark-glass brands' ) );
         $this->assertSame( 0, preg_match( self::CARD_DECIDED_PHRASES[0], 'a card of ruled label/value lines' ) );
+        // Task 8's wording (the old descriptions and `when` lines of the nine group recipes).
+        foreach ( [ 'over two square-cornered panels', 'upscale brands with square corners', 'editorial brands with small corners', 'carry heavy borders', 'inside a heavy-bordered panel' ] as $old ) {
+            $this->assertSame( 1, preg_match( self::CARD_DECIDED_PHRASES[3], $old ), $old );
+        }
+        foreach ( [ 'square, flat and upscale brands', 'rounded, soft and layered brands', 'sharp, technical and upscale brands', 'warm, friendly and rounded brands', 'a framed Divi contact form', 'a raised surface card' ] as $old ) {
+            $this->assertSame( 1, preg_match( self::CARD_DECIDED_PHRASES[4], $old ), $old );
+        }
+        $this->assertSame( 0, preg_match( self::CARD_DECIDED_PHRASES[4], 'a large rounded image on the left' ), 'an image keeps its own corners' );
     }
 
     /**
@@ -1158,7 +1310,8 @@ class RecipeLibraryTest extends TestCase
         '/pill(-shaped)? button/i',
         '/heavy borders and square corners/i',
         // A corner shape in `when` that only the old baked button gave: cta-band and faq-two-column have no other element with
-        // a corner radius. (pricing-two-plan-highlight's "upscale brands with square corners" stays: its plans are 0px panels.)
+        // a corner radius. (pricing-two-plan-highlight's "upscale brands with square corners" went with the card adapter, Task 8:
+        // its plans now take the kit's card radius, CARD_DECIDED_PHRASES.)
         '/editorial brands with (small|square) corners/i',
     ];
 
@@ -1204,8 +1357,9 @@ class RecipeLibraryTest extends TestCase
             }
         }
         // 22 recipes have a button; compare-two-panels has only a bespoke one (BESPOKE_BUTTONS): 21 with a kit-driven button,
-        // plus cta-split-form, whose only kit marker is its card panel (card adapter Task 7).
-        $this->assertSame( 22, $checked, 'the recipes with a kit marker (button or card)' );
+        // plus the recipes whose only kit marker is a card or panel: cta-split-form (card adapter Task 7) and
+        // compare-two-panels, features-bento, contact-location-form, contact-details-form, transition-overlap-panel (Task 8).
+        $this->assertSame( 27, $checked, 'the recipes with a kit marker (button or card)' );
     }
 
     public function testRecipesWithoutPairsAreOnlyTheFrozenBaselineAndItOnlyShrinks(): void

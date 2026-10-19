@@ -190,9 +190,9 @@ class CardMigrationReportTest extends TestCase
         $groups = $this->counts( $this->shipped(), 'divi/group' );
         $this->assertSame( 356, array_sum( $groups ), 'divi/group blocks in the shipped recipes' );
         $this->assertSame(
-            // Task 7 marked 3 cards (now plain wrappers: the kit owns their padding) and 2 panels (padded wrappers: a panel
-            // keeps its own padding); a marked block is classified by the decoration it has left.
-            [ 'card' => 6, 'chip' => 14, 'grid-cell' => 40, 'inverted' => 4, 'padded-wrapper' => 43, 'panel' => 8, 'rule' => 26, 'wrapper' => 215 ],
+            // Tasks 7 and 8 marked every group card (9, now plain wrappers: the kit owns their padding) and panel (10, padded
+            // wrappers: a panel keeps its own padding); a marked block is classified by the decoration it has left.
+            [ 'chip' => 14, 'grid-cell' => 40, 'inverted' => 4, 'padded-wrapper' => 51, 'rule' => 26, 'wrapper' => 221 ],
             $groups
         );
     }
@@ -220,8 +220,8 @@ class CardMigrationReportTest extends TestCase
     public function test_the_marked_blocks_are_counted_and_fill_only_columns_are_unlisted(): void
     {
         $rows = $this->shipped();
-        $this->assertSame( 5, count( array_filter( $rows, fn ( $r ) => null !== $r['marked'] ) ), 'the blocks migrated so far (plan Task 7)' );
-        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 5 blocks', \CardReport::render( $rows, false ) );
+        $this->assertSame( 19, count( array_filter( $rows, fn ( $r ) => null !== $r['marked'] ) ), 'the blocks migrated so far (plan Tasks 7 and 8)' );
+        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 19 blocks', \CardReport::render( $rows, false ) );
         $listed = array_map( fn ( $r ) => $r['recipe'] . ' ' . $r['block'] . '#' . $r['index'], $rows );
         $this->assertNotContains( 'hero-cta divi/column#0', $listed, 'a surface fill with padding and no frame: nothing for a kit to restyle' );
         $this->assertNotContains( 'split-image-text divi/column#0', $listed );
@@ -239,38 +239,38 @@ class CardMigrationReportTest extends TestCase
         }
         sort( $got );
         $want = [
-            'compare-two-panels divi/group#2 panel',
+            'compare-two-panels divi/group#2 marked panel',
             'compare-two-panels divi/group#7 inverted',
-            'contact-details-form divi/group#13 panel',
-            'contact-location-form divi/group#6 panel',
-            'cta-card-over-image divi/group#1 panel',
+            'contact-details-form divi/group#13 marked panel',
+            'contact-location-form divi/group#6 marked panel',
+            'cta-card-over-image divi/group#1 marked panel',
             'cta-split-form divi/group#4 marked panel',
-            'features-bento divi/group#0 card',
+            'features-bento divi/group#0 marked card',
             'features-bento divi/group#1 inverted',
-            'features-bento divi/group#2 card',
+            'features-bento divi/group#2 marked card',
             'features-bento divi/group#3 inverted',
-            'features-bento divi/group#4 card',
-            'hero-bordered-cells divi/group#0 panel',
-            'hero-bordered-cells divi/group#2 card',
-            'hero-bordered-cells divi/group#3 card',
-            'hero-bordered-cells divi/group#4 card',
+            'features-bento divi/group#4 marked card',
+            'hero-bordered-cells divi/group#0 marked panel',
+            'hero-bordered-cells divi/group#2 marked card',
+            'hero-bordered-cells divi/group#3 marked card',
+            'hero-bordered-cells divi/group#4 marked card',
             'hero-gradient-stats divi/group#1 marked card',
             'hero-gradient-stats divi/group#2 marked card',
             'hero-gradient-stats divi/group#3 marked card',
             'hero-spec-card divi/group#1 marked panel',
-            'hero-split-left-overlap divi/group#0 panel',
+            'hero-split-left-overlap divi/group#0 marked panel',
             'icon-values divi/column#1 card',
             'icon-values divi/column#2 card',
             'icon-values divi/column#3 card',
             'pricing-three-tier divi/column#1 card',
             'pricing-three-tier divi/column#2 card',
             'pricing-three-tier divi/column#3 card',
-            'pricing-two-plan-highlight divi/group#1 panel',
+            'pricing-two-plan-highlight divi/group#1 marked panel',
             'pricing-two-plan-highlight divi/group#8 inverted',
             'testimonials-avatar-grid divi/column#1 card',
             'testimonials-avatar-grid divi/column#2 card',
             'testimonials-avatar-grid divi/column#3 card',
-            'transition-overlap-panel divi/group#2 panel',
+            'transition-overlap-panel divi/group#2 marked panel',
         ];
         sort( $want );
         $this->assertSame( $want, $got );
