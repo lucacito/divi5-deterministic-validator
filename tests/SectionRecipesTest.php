@@ -902,36 +902,51 @@ class SectionRecipesTest extends TestCase
     {
         $this->plantMarkedRecipe();
         try {
-            // Interim kits until Task 8: editorial is outline-2, glass-dark soft-solid.
-            $this->assertSame('outline-2', DesignLanguages::get('editorial')['kit']);
-            $this->assertSame('soft-solid', DesignLanguages::get('glass-dark')['kit']);
+            // Each language serves its own kit: editorial's quiet solid button and brutalist-flat's thick square frame differ in
+            // border, radius and lettering, read from the kit data (the fixture asserts the served markup follows it).
+            $ek = (array) StyleKits::get((string) DesignLanguages::get('editorial')['kit']);
+            $bk = (array) StyleKits::get((string) DesignLanguages::get('brutalist-flat')['kit']);
+            $this->assertNotSame($ek['id'], $bk['id']);
+            $this->assertSame('4px', $ek['radius']['control'], 'editorial: 4px buttons (its radius prose)');
+            $this->assertSame('0px', $bk['radius']['control'], 'brutalist-flat: square buttons (its radius prose)');
+            $this->assertSame('4px', $bk['border']['width'], 'brutalist-flat: a 4px border (its shadow prose)');
+            $this->assertSame('uppercase', $bk['text']['capitalization'], 'brutalist-flat: capital letters');
+            $this->assertSame('solid', $ek['fill'], 'editorial: an accent-filled primary, not a transparent outline');
 
             $editorial = SectionRecipes::recipe('kit-fixture', 'editorial');
+            $brutal    = SectionRecipes::recipe('kit-fixture', 'brutalist-flat');
             $glass     = SectionRecipes::recipe('kit-fixture', 'glass-dark');
             $this->assertNotNull($editorial);
+            $this->assertNotNull($brutal);
             $this->assertNotNull($glass);
-            $this->assertNotSame($editorial, $glass);
-            $e = $this->buttonAttrs($editorial)['button']['decoration']['border']['desktop']['value'];
-            $g = $this->buttonAttrs($glass)['button']['decoration']['border']['desktop']['value'];
-            $this->assertSame('2px', $e['styles']['all']['width']);
-            $this->assertSame('4px', $e['radius']['topLeft']);
-            $this->assertSame('8px', $g['radius']['topLeft']);
-            $this->assertNotSame($e['styles']['all']['width'], $g['styles']['all']['width']);
+            $this->assertNotSame($editorial, $brutal);
+            $e  = $this->buttonAttrs($editorial)['button']['decoration'];
+            $br = $this->buttonAttrs($brutal)['button']['decoration'];
+            $this->assertSame($ek['border']['width'], $e['border']['desktop']['value']['styles']['all']['width']);
+            $this->assertSame($bk['border']['width'], $br['border']['desktop']['value']['styles']['all']['width']);
+            $this->assertSame('4px', $e['border']['desktop']['value']['radius']['topLeft']);
+            $this->assertSame('0px', $br['border']['desktop']['value']['radius']['topLeft']);
+            $this->assertNotSame($e['border']['desktop']['value']['styles']['all']['width'], $br['border']['desktop']['value']['styles']['all']['width']);
+            $this->assertSame('none', $e['font']['font']['desktop']['value']['capitalization']);
+            $this->assertSame('uppercase', $br['font']['font']['desktop']['value']['capitalization']);
+            $this->assertSame(DesignLanguages::get('editorial')['colors']['accent'], $e['background']['desktop']['value']['color'], 'editorial fills its primary with the accent');
 
             // No language = the default language (editorial) and its kit.
             $this->assertSame($editorial, SectionRecipes::recipe('kit-fixture'));
 
             // An explicit kit wins over the language's.
             $override = SectionRecipes::recipe('kit-fixture', 'glass-dark', 'outline-2');
+            $gk       = (string) DesignLanguages::get('glass-dark')['kit'];
             $this->assertNotNull($override);
             $this->assertNotSame($glass, $override);
             $this->assertSame('2px', $this->buttonAttrs($override)['button']['decoration']['border']['desktop']['value']['styles']['all']['width']);
             $this->assertStringContainsString(DesignLanguages::get('glass-dark')['colors']['text'], $override, 'the language still sets the colours');
             $this->assertStringNotContainsString(DesignLanguages::get('editorial')['colors']['text'], $override);
-            $this->assertSame($glass, SectionRecipes::recipe('kit-fixture', 'glass-dark', 'soft-solid'));
+            $this->assertSame($glass, SectionRecipes::recipe('kit-fixture', 'glass-dark', $gk), 'naming the language\'s own kit changes nothing');
+            $this->assertNotSame($glass, SectionRecipes::recipe('kit-fixture', 'glass-dark', 'soft-solid'));
             $this->assertSame(SectionRecipes::recipe('kit-fixture', 'editorial', 'soft-solid'), SectionRecipes::recipe('kit-fixture', null, 'soft-solid'));
 
-            foreach ([$editorial, $glass, $override] as $served) {
+            foreach ([$editorial, $brutal, $glass, $override] as $served) {
                 $this->assertStringNotContainsString('{{aied:', $served);
                 $this->assertStringNotContainsString('"aied"', $served);
                 $this->assertSame([], KitResolver::leftovers($served));

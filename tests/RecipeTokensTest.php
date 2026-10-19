@@ -7,6 +7,7 @@ namespace Divi5Validator\Tests;
 use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\SectionRecipes;
+use AiEditorDivi5\WP\StyleKits;
 use Divi5Validator\Validator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -129,7 +130,7 @@ class RecipeTokensTest extends TestCase
         $e = (string) SectionRecipes::recipe( 'hero-cta', 'editorial' );
         $this->assertStringContainsString( $glass['colors']['accent'], $g );
         $this->assertStringContainsString( $glass['fonts']['display'], $g );
-        // Editorial's own kit (outline-2) draws the button in the text colour; with a solid kit the accent shows.
+        // Editorial's own kit fills its primary with the accent, and so does soft-solid.
         $es = (string) SectionRecipes::recipe( 'hero-cta', 'editorial', 'soft-solid' );
         $this->assertStringContainsString( $editorial['colors']['accent'], $es );
         $this->assertStringNotContainsString( $glass['colors']['accent'], $es );
@@ -406,9 +407,14 @@ class RecipeTokensTest extends TestCase
         foreach ( SectionRecipes::names() as $name ) {
             $raw     = (string) SectionRecipes::rawMarkup( $name );
             $marked += in_array( RecipeTokens::MARKER_ENTRY, (array) ( RecipeTokens::advise( $raw )['tokens'] ?? [] ), true ) ? 1 : 0;
-            foreach ( [ 'soft-solid', 'outline-2' ] as $kit ) {
-                $served = (string) SectionRecipes::recipe( $name, 'editorial', $kit );
-                $this->assertNotContains( RecipeTokens::MARKER_ENTRY, (array) ( RecipeTokens::advise( $served )['tokens'] ?? [] ), "$name with $kit" );
+            // Every shipped kit, under a light, a dark and a loud language (the full kit x language sweep that validates the
+            // markup is RecipeLibraryTest::testEveryKitDrivenRecipeIsServedValidUnderEveryLanguageAndKit).
+            foreach ( StyleKits::ids() as $kit ) {
+                foreach ( [ 'editorial', 'glass-dark', 'brutalist-flat', 'luxe' ] as $language ) {
+                    $served = (string) SectionRecipes::recipe( $name, $language, $kit );
+                    $this->assertNotSame( '', $served, "$name with $kit under $language" );
+                    $this->assertNotContains( RecipeTokens::MARKER_ENTRY, (array) ( RecipeTokens::advise( $served )['tokens'] ?? [] ), "$name with $kit under $language" );
+                }
             }
         }
         $this->assertGreaterThan( 0, $marked, 'the stored recipes carry kit markers' );

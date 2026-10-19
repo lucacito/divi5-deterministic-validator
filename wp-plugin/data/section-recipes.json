@@ -800,8 +800,8 @@
     {
         "name": "hero-bordered-cells",
         "title": "Hero / bold panel and three cells",
-        "description": "Loud, left-aligned stacked hero: a huge uppercase headline inside a heavy-bordered panel, a grid of three bordered cells under it (an index label and one line each; one column on phones), then one bordered button.",
-        "when": "Top of a page for bold, raw or flat brands (agencies, events, products with attitude) that say three things fast; works with heavy borders and square corners.",
+        "description": "Loud, left-aligned stacked hero: a huge uppercase headline inside a heavy-bordered panel, a grid of three bordered cells under it (an index label and one line each; one column on phones), then one button.",
+        "when": "Top of a page for bold, raw or flat brands (agencies, events, products with attitude) that say three things fast; its panel and cells carry heavy borders.",
         "stage": "Hero",
         "tags": {
             "role": "hero",
@@ -834,7 +834,7 @@
     {
         "name": "hero-spec-card",
         "title": "Hero / split with a ruled spec card",
-        "description": "Left-aligned split hero: a small version label in the eyebrow font (monospace where the language uses one, as tech-mono does), a tight headline, two lines of copy and a solid plus a bordered button on the left; a hairline-bordered card of ruled label/value lines on the right.",
+        "description": "Left-aligned split hero: a small version label in the eyebrow font (monospace where the language uses one, as tech-mono does), a tight headline, two lines of copy and a primary and a secondary button on the left; a hairline-bordered card of ruled label/value lines on the right.",
         "when": "Top of a page for software, tools, developer products or technical services; the label and every value in the card are placeholders the owner replaces with real facts, or removes.",
         "stage": "Hero",
         "tags": {
@@ -1682,7 +1682,7 @@
     {
         "name": "pricing-three-tier",
         "title": "Pricing / three plans, the middle one raised",
-        "description": "A centred intro over three plan cards side by side (rounded, on the surface colour): plan name, one line, a large price, a ruled list of three ticked features and a button; the middle card carries a \"[Most popular]\" label, an accent frame, a shadow and the only filled button; one column on tablets and phones.",
+        "description": "A centred intro over three plan cards side by side (rounded, on the surface colour): plan name, one line, a large price, a ruled list of three ticked features and a button; the middle card carries a \"[Most popular]\" label, an accent frame, a shadow and the primary button; one column on tablets and phones.",
         "when": "Pricing for software, memberships or packaged services with three clear levels; modern, rounded and dark-glass brands. Plan names, prices, periods, features and the label are placeholders: use the owner's real offer only.",
         "stage": "Objection handling / Pricing",
         "tags": {
@@ -1939,7 +1939,7 @@
     {
         "name": "faq-two-column",
         "title": "FAQ / questions and answers in two columns",
-        "description": "A split intro (heading and line left, a contact line and a ghost button right) over two columns of open questions and answers set as plain text, each pair under a thin rule; nothing to click; one column on phones.",
+        "description": "A split intro (heading and line left, a contact line and a secondary button right) over two columns of open questions and answers set as plain text, each pair under a thin rule; nothing to click; one column on phones.",
         "when": "Objection handling when the answers are short and should be seen without clicking (local services, shops, events, clinics); calm, flat and editorial brands with square corners. Questions, answers and the contact line are placeholders for the owner's real answers.",
         "stage": "Objection handling / FAQ",
         "tags": {
@@ -2031,7 +2031,7 @@
     {
         "name": "cta-band",
         "title": "Call to action / one bold line and a button",
-        "description": "A full-width band in the accent colour: one large headline on the left and, on the right, a single button in the surface colour with a small optional note under it; on one line on wide screens, the button drops under the headline on narrower screens.",
+        "description": "A full-width band in the accent colour: one large headline on the left and, on the right, a single button with a small optional note under it; on one line on wide screens, the button drops under the headline on narrower screens.",
         "when": "The closing call to action of a page, or between long sections, for any offer with one clear next step; calm, flat and editorial brands with small corners. The headline and button label are placeholders for the owner's real offer.",
         "stage": "Call to action",
         "tags": {
@@ -2217,7 +2217,7 @@
     {
         "name": "portfolio-featured-grid",
         "title": "Portfolio / one featured project over a grid",
-        "description": "A heading with a ghost button beside it, then a two-column grid of rounded project images: the first project spans both columns, four more sit two by two; each has its name and a small bordered category label under the picture; one column on phones. A static grid: nothing filters.",
+        "description": "A heading with a secondary button beside it, then a two-column grid of rounded project images: the first project spans both columns, four more sit two by two; each has its name and a small bordered category label under the picture; one column on phones. A static grid: nothing filters.",
         "when": "A studio, agency or freelancer portfolio, or case studies, with five projects to show; modern, rounded and dark-glass brands. Project names, categories and images are placeholders for the owner's real work, shown with the client's permission.",
         "stage": "Social proof (work)",
         "tags": {

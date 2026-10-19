@@ -13,7 +13,15 @@ require_once __DIR__ . '/../wp-plugin/src/StyleKits.php';
 require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
 require_once __DIR__ . '/../wp-plugin/src/KitResolver.php';
 
-/** The emitter: serialisation like WordPress's, and every attribute path grounded in a real export or recipe. */
+/**
+ * The emitter: serialisation like WordPress's, and every attribute path grounded in a real export or recipe.
+ *
+ * Recipes are read AS SERVED, with every style kit's markers resolved, so the paths a kit adapter writes also ground
+ * DiviMarkup paths (for example `module.decoration.spacing.desktop.value.padding` on a `divi/button`, which KitAdapters
+ * writes for the control padding and no stored recipe button carries). Every adapter-written path is in the verified
+ * shape registry (fixtures/shapes/verified-shapes.json, pinned by KitAdaptersTest::testEveryEmittedPathIsInTheRegistry)
+ * and none is in fixtures/shapes/dead-on-module.txt, so this grounding source is proven on the real Divi too.
+ */
 final class DiviMarkupTest extends HtmlTestCase
 {
     /** @var ?array<string,array<string,true>> block name => attribute paths seen in real exports and recipes */

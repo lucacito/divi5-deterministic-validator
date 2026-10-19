@@ -53,7 +53,7 @@ final class SectionRecipes
      */
     public static function styleKitHelp(): string
     {
-        return 'With name: serve the recipe\'s buttons in this style kit instead of the design language\'s own kit (ids: ' . implode( ', ', StyleKits::ids() ) . '); an unknown id is refused with the valid list.';
+        return 'With name: serve the recipe\'s buttons in this style kit, not the language\'s own kit (ids: ' . implode( ', ', StyleKits::ids() ) . '); an unknown id is refused with the valid list.';
     }
 
     /** Forgets the memoised recipes (for tests that change the data in-process). */

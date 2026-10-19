@@ -185,7 +185,7 @@ final class StyleGuide
             . "- One kit per page. Don't mix kits on one page: a soft filled button next to a tight outline one looks like two designs.\n"
             . "- Buttons on an accent band or on a photo keep the kit's shape; only their colours change (each kit topic says how).\n\n"
             . "## What is kit-driven today\n\n"
-            . "Only buttons are kit-driven so far. Cards, accordions, forms and the other modules still carry the recipe's own styling and will follow later; a kit's card radius and card padding are listed for that reason but are not applied yet. "
+            . "Only buttons are kit-driven so far. Cards, accordions, forms and the other modules still carry the recipe's own styling and are not kit-driven yet; a kit's card and media radius, shadow and card padding are listed for that reason but are not applied yet. "
             . "To build a button in a kit without a recipe, copy the block from the kit's topic and swap its colours for your design language's roles.\n";
     }
 
@@ -202,6 +202,13 @@ final class StyleGuide
         $secondary = self::kitButton( $kit, $language, 'control-secondary', 'Secondary button' );
 
         $lines = [ rtrim( StyleKits::markdown( $id ) ), '' ];
+        $lines[] = "Applied today: only the button's control values are (fill, border, control radius, hover, text and control padding). This kit's card and media radius, shadow and card padding are recorded but NOT applied today: cards and other modules keep the recipe's own styling.";
+        $textOnly = self::kitTextOnlySentence( $kit );
+        if ( '' !== $textOnly ) {
+            $lines[] = '';
+            $lines[] = $textOnly;
+        }
+        $lines[] = '';
         if ( '' !== $primary && '' !== $secondary ) {
             $lines[] = '## Buttons in this kit';
             $lines[] = '';
@@ -227,6 +234,30 @@ final class StyleGuide
         }
 
         return implode( "\n", $lines ) . "\n";
+    }
+
+    /**
+     * "The secondary button is text-only: ..." for each button role the kit draws with no fill and no border on a light
+     * section (read from the adapter's own patch, e.g. a solid kit with a 0px border makes its secondary a transparent,
+     * borderless button), or '' when every role has a fill or a border.
+     *
+     * @param array<string,mixed> $kit
+     */
+    private static function kitTextOnlySentence( array $kit ): string
+    {
+        $out = [];
+        foreach ( [ 'control' => 'primary', 'control-secondary' => 'secondary' ] as $role => $name ) {
+            $patch = KitAdapters::patch( 'divi/button', $role, 'light', $kit );
+            if ( null === $patch ) {
+                continue;
+            }
+            $d = (array) $patch['button']['decoration'];
+            if ( KitAdapters::TRANSPARENT === $d['background']['desktop']['value']['color'] && '0px' === $d['border']['desktop']['value']['styles']['all']['width'] ) {
+                $out[] = sprintf( 'The %s button is text-only: no fill and no border (this kit\'s border width is 0px), so it reads as a quiet link.', $name );
+            }
+        }
+
+        return implode( ' ', $out );
     }
 
     /**

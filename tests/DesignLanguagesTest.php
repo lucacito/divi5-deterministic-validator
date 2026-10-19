@@ -747,13 +747,126 @@ class DesignLanguagesTest extends TestCase
             $this->assertNotNull(StyleKits::get($kit), "$id.kit names a shipped kit");
             $this->assertSame([], StyleKits::problems(StyleKits::get($kit)), "$id.kit is a valid kit");
         }
-        // Interim (until the per-language kits): square or hairline languages outline-2, soft or round ones soft-solid.
-        foreach (['editorial', 'tech-mono', 'corporate-trust', 'brutalist-flat', 'luxe'] as $id) {
-            $this->assertSame('outline-2', DesignLanguages::get($id)['kit'], $id);
+    }
+
+    public function testEveryLanguageHasItsOwnKitAndTheTwoGeneralKitsStay(): void
+    {
+        $kits = array_map(static fn (string $id): string => (string) DesignLanguages::get($id)['kit'], DesignLanguages::ids());
+        $this->assertSame($kits, array_values(array_unique($kits)), 'each design language points at its own kit');
+        $this->assertNotContains('soft-solid', $kits, 'soft-solid stays a general kit, not a language default');
+        $this->assertNotContains('outline-2', $kits, 'outline-2 stays a general kit, not a language default');
+        $this->assertContains('soft-solid', StyleKits::ids());
+        $this->assertContains('outline-2', StyleKits::ids());
+        foreach (DesignLanguages::ids() as $id) {
+            $kit = (array) StyleKits::get((string) DesignLanguages::get($id)['kit']);
+            // Every language's hero and cta prose describes an accent-filled primary button (editorial's "primary button",
+            // glass-dark's "solid accent", luxe's "gold button" and so on): its own kit is a solid accent kit.
+            $this->assertSame(['solid', 'accent'], [$kit['fill'], $kit['color']], "$id: an accent-filled primary");
         }
-        foreach (['glass-dark', 'organic-warm', 'playful-pastel', 'soft-saas', 'bold-vibrant'] as $id) {
-            $this->assertSame('soft-solid', DesignLanguages::get($id)['kit'], $id);
+    }
+
+    /**
+     * The radius family of a px value: square 0-4px, soft 6-16px, round 20-48px, pill 999px; null outside them
+     * (5px or 17-19px belongs to no family and is a contradiction by construction).
+     */
+    private static function radiusFamily(int $px): ?string
+    {
+        if (999 === $px) {
+            return 'pill';
         }
+        if ($px >= 0 && $px <= 4) {
+            return 'square';
+        }
+        if ($px >= 6 && $px <= 16) {
+            return 'soft';
+        }
+        if ($px >= 20 && $px <= 48) {
+            return 'round';
+        }
+        return null;
+    }
+
+    /**
+     * The button and card radius a language's `radius` prose states, read clause by clause: the prose is cut at `;`,
+     * `.` and at every comma that is followed by a px value ("20px on cards, 12px on buttons"), and each clause gives its
+     * FIRST px value to the buttons and cards it names (or to both when it says "everywhere").
+     *
+     * @return array{button:?int,card:?int}
+     */
+    private static function proseRadius(string $prose): array
+    {
+        $out = ['button' => null, 'card' => null];
+        foreach ((array) preg_split('/[;.]\s*|,\s*(?=\d+px)/', $prose) as $clause) {
+            $clause = (string) $clause;
+            if (1 !== preg_match('/(\d+)px/', $clause, $m)) {
+                continue;
+            }
+            $everywhere = str_contains($clause, 'everywhere');
+            foreach (['button' => '/\bbuttons?\b/', 'card' => '/\bcards?\b/'] as $what => $noun) {
+                if (null === $out[$what] && ($everywhere || 1 === preg_match($noun, $clause))) {
+                    $out[$what] = (int) $m[1];
+                }
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * What is wrong between a language's radius prose and a kit ([] = they agree).
+     *
+     * @param array<string,mixed> $kit
+     * @return list<string>
+     */
+    private static function radiusContradictions(string $prose, array $kit): array
+    {
+        $out    = [];
+        $stated = self::proseRadius($prose);
+        foreach (['button' => 'control', 'card' => 'card'] as $what => $key) {
+            if (null === $stated[$what]) {
+                $out[] = "the prose states no $what radius the check can read";
+                continue;
+            }
+            $want = self::radiusFamily($stated[$what]);
+            $have = self::radiusFamily((int) $kit['radius'][$key]);
+            if (null === $want || $want !== $have) {
+                $out[] = sprintf('%s: prose %dpx (%s), kit radius.%s %s (%s)', $what, $stated[$what], $want ?? 'no family', $key, $kit['radius'][$key], $have ?? 'no family');
+            }
+        }
+        return $out;
+    }
+
+    public function testEachLanguagesKitAgreesWithItsRadiusProse(): void
+    {
+        $problems = [];
+        foreach (DesignLanguages::ids() as $id) {
+            $lang = (array) DesignLanguages::get($id);
+            $kit  = (array) StyleKits::get((string) $lang['kit']);
+            foreach (self::radiusContradictions((string) $lang['radius'], $kit) as $p) {
+                $problems[] = "$id ({$lang['kit']}): $p";
+            }
+        }
+        $this->assertSame([], $problems);
+    }
+
+    public function testTheRadiusCheckReadsTheProseAndCatchesAContradiction(): void
+    {
+        $this->assertSame(['button' => 12, 'card' => 20], self::proseRadius('20px on cards, 12px on buttons and images. Keep corners equal.'));
+        $this->assertSame(['button' => 999, 'card' => 28], self::proseRadius('Generous: 28px on cards and panels, 999px on buttons and tags, images 32px.'));
+        $this->assertSame(['button' => 6, 'card' => 6], self::proseRadius('Small: 6px on cards, buttons and inputs; images square or 6px.'));
+        $this->assertSame(['button' => 0, 'card' => 0], self::proseRadius('0px everywhere: cards, panels, images, buttons and inputs.'));
+        $this->assertSame(['button' => 8, 'card' => 32], self::proseRadius('Sharp: images square; cards and panels 32px on two corners and 0px on the others; buttons 8px.'));
+        $kit = ['radius' => ['control' => '999px', 'card' => '28px', 'media' => '0px']];
+        $this->assertSame([], self::radiusContradictions('28px on cards, 999px on buttons.', $kit));
+        $this->assertCount(1, self::radiusContradictions('28px on cards, 4px on buttons.', $kit), 'a pill kit for square-button prose');
+        $this->assertCount(2, self::radiusContradictions('2px on buttons and cards.', $kit));
+        $this->assertCount(1, self::radiusContradictions('28px on cards, 5px on buttons.', $kit), '5px is in no family');
+        $this->assertCount(2, self::radiusContradictions('No numbers at all.', $kit), 'unreadable prose fails loudly');
+        $this->assertSame('square', self::radiusFamily(4));
+        $this->assertSame('soft', self::radiusFamily(6));
+        $this->assertSame('soft', self::radiusFamily(16));
+        $this->assertSame('round', self::radiusFamily(20));
+        $this->assertSame('pill', self::radiusFamily(999));
+        $this->assertNull(self::radiusFamily(18));
     }
 
     public function testMarkdownNamesTheLanguagesStyleKit(): void

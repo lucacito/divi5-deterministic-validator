@@ -113,6 +113,39 @@ class StyleGuideKitTopicsTest extends TestCase
         }
     }
 
+    public function testTheGuideIsHonestAboutWhatAKitAppliesToday(): void
+    {
+        $catalog = StyleGuide::markdown( 'style-kits' );
+        $this->assertStringContainsString( 'are not kit-driven yet', $catalog );
+        $this->assertStringNotContainsString( 'will follow later', $catalog );
+        foreach ( StyleKits::ids() as $id ) {
+            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            $this->assertMatchesRegularExpression( '/card and media radius, shadow and card padding are recorded but NOT applied today/', $text, $id );
+            $this->assertStringContainsString( "only the button's control values are", $text, $id );
+        }
+    }
+
+    public function testATextOnlyButtonIsNamedExactlyWhenTheKitDrawsOne(): void
+    {
+        $seen = 0;
+        foreach ( StyleKits::ids() as $id ) {
+            $kit  = (array) StyleKits::get( $id );
+            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            foreach ( [ 'control' => 'primary', 'control-secondary' => 'secondary' ] as $role => $name ) {
+                $d        = KitAdapters::patch( 'divi/button', $role, 'light', $kit )['button']['decoration'];
+                $textOnly = KitAdapters::TRANSPARENT === $d['background']['desktop']['value']['color'] && '0px' === $d['border']['desktop']['value']['styles']['all']['width'];
+                $sentence = sprintf( 'The %s button is text-only', $name );
+                if ( $textOnly ) {
+                    ++$seen;
+                    $this->assertStringContainsString( $sentence, $text, "$id: its $name button has no fill and no border" );
+                } else {
+                    $this->assertStringNotContainsString( $sentence, $text, "$id: its $name button has a fill or a border" );
+                }
+            }
+        }
+        $this->assertGreaterThan( 0, $seen, 'soft-solid\'s borderless secondary is text-only' );
+    }
+
     /** @return list<array{0:string,1:array<string,mixed>}> block comment text and its decoded attributes, in document order */
     private function buttons( string $topic ): array
     {

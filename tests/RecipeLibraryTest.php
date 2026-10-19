@@ -77,6 +77,17 @@ class RecipeLibraryTest extends TestCase
         'pricing-two-plan-highlight#1' => 'bg-filled button on the text-coloured highlighted plan (no adapter surface for an inverted panel)',
     ];
 
+    /**
+     * Label-on-fill pairs that only a style kit's BUTTON draws, on the button's own fill: [label, fill]. Today the two
+     * `invert` hovers of a filled button (KitAdapters' role table): an accent fill turns into label accent on an
+     * accent-text fill, and the surface fill on an accent band into label surface on a text fill. Every
+     * shipped kit x language x role x surface x state is proven readable by KitAdaptersTest's contrast proof, and the pair
+     * itself by testTheKitLabelPairsAreReadableInEveryLanguage, so a recipe need not declare it in its `pairs` (declaring it
+     * in every kit-driven recipe would grow the recipe file, which the spec's byte rule forbids). A recipe's OWN text
+     * colours still need a declared pair.
+     */
+    private const KIT_LABEL_PAIRS = [ [ 'accent', 'accent-text' ], [ 'surface', 'text' ] ];
+
     /** A `divi/button` block comment: (json). Same possessive scan as KitResolver::BLOCK. */
     private const BUTTON = '/<!--\s+wp:divi\/button\s+(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\})\s+\/?-->/s';
 
@@ -370,11 +381,15 @@ class RecipeLibraryTest extends TestCase
             ++$checked;
             $foregrounds = array_map( static fn ( $p ): string => (string) $p[0], (array) $tags['pairs'] );
             // Read with every kit resolved: a kit-driven button's label colours exist only after resolution.
-            $roles = self::textColourRoles( (string) SectionRecipes::rawMarkup( $name ) );
+            $own   = self::textColourRoles( (string) SectionRecipes::rawMarkup( $name ) );
+            $roles = $own;
             foreach ( self::kitResolved( $name ) as $markup ) {
                 $roles = array_merge( $roles, self::textColourRoles( $markup ) );
             }
-            $roles = array_values( array_unique( $roles ) );
+            // A label colour only a kit's button brings, whose pair is one of KIT_LABEL_PAIRS (proven below in every language).
+            $kitOnly = array_diff( $roles, $own );
+            $roles   = array_merge( $own, array_diff( $kitOnly, array_map( static fn ( array $p ): string => $p[0], self::KIT_LABEL_PAIRS ) ) );
+            $roles   = array_values( array_unique( $roles ) );
             sort( $roles );
             $this->assertNotSame( [], $roles, "$name uses no text colour token?" );
             $this->assertSame( [], array_values( array_diff( $roles, $foregrounds ) ), "$name colours text with a role no declared pair has as its foreground: declare the pair it sits on" );
@@ -385,6 +400,15 @@ class RecipeLibraryTest extends TestCase
             . '<!-- wp:divi/text {"content":{"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"{{aied:color:muted}}"}}}}}}}} /-->'
             . '<!-- wp:divi/button {"button":{"decoration":{"background":{"desktop":{"value":{"color":"{{aied:color:accent}}"}}},"font":{"font":{"desktop":{"value":{"color":"{{aied:color:accent-text}}"},"hover":{"color":"{{aied:color:bg}}"}}}}}}} /-->';
         $this->assertSame( [ 'accent-text', 'bg', 'muted', 'text' ], self::textColourRoles( $m ) );
+    }
+
+    public function testTheKitLabelPairsAreReadableInEveryLanguage(): void
+    {
+        foreach ( DesignLanguages::ids() as $id ) {
+            $skipped = [];
+            $this->assertSame( [], self::pairProblems( self::KIT_LABEL_PAIRS, (array) DesignLanguages::get( $id ), $skipped ), $id );
+            $this->assertSame( [], $skipped, $id );
+        }
     }
 
     public function testThePairCheckerCatchesWhatItShould(): void
@@ -458,6 +482,154 @@ class RecipeLibraryTest extends TestCase
         clearstatcache();
         $this->assertLessThan( self::SIZE_BEFORE_KITS, filesize( $file ), 'the recipe file ends smaller than before the kits (spec section 4)' );
         $this->assertLessThan( 700 * 1024, filesize( $file ), 'the 700 KB bound holds' );
+    }
+
+    /**
+     * The surface a block's own background makes, or null when it sets none: `dark` for a background image or a gradient
+     * with an overlay stop (a photo under a scrim), `accent` for an accent colour or an enabled gradient with an accent
+     * stop, `light` for bg, surface or surface-glass (as a colour or as every stop of an enabled gradient), and
+     * `other:<what>` for anything else (an inverted `text` panel, an unknown colour): no adapter surface fits it.
+     *
+     * @param array<string,mixed> $attrs
+     */
+    private static function surfaceOf( array $attrs ): ?string
+    {
+        $v = $attrs['module']['decoration']['background']['desktop']['value'] ?? null;
+        if ( ! is_array( $v ) ) {
+            return null;
+        }
+        $roleOf = static fn ( $c ): string => is_string( $c ) && 1 === preg_match( '/^\{\{aied:color:([a-z-]+)\}\}$/', $c, $m ) ? $m[1] : 'literal';
+        $light  = [ 'bg', 'surface', 'surface-glass' ];
+        $image  = $v['image']['url'] ?? '';
+        $grad   = is_array( $v['gradient'] ?? null ) && 'on' === ( $v['gradient']['enabled'] ?? null ) ? $v['gradient'] : null;
+        $stops  = null === $grad ? [] : array_map( static fn ( $s ) => $roleOf( is_array( $s ) ? ( $s['color'] ?? null ) : null ), (array) ( $grad['stops'] ?? [] ) );
+        if ( ( is_string( $image ) && '' !== $image ) || in_array( 'overlay', $stops, true ) ) {
+            return 'dark';
+        }
+        if ( [] !== $stops ) {
+            if ( in_array( 'accent', $stops, true ) ) {
+                return 'accent';
+            }
+            return [] === array_diff( $stops, $light ) ? 'light' : 'other:gradient ' . implode( '/', $stops );
+        }
+        $colour = $v['color'] ?? '';
+        if ( ! is_string( $colour ) || '' === $colour ) {
+            return null;
+        }
+        $role = $roleOf( $colour );
+        if ( 'overlay' === $role ) {
+            return 'dark';
+        }
+        if ( 'accent' === $role ) {
+            return 'accent';
+        }
+        return in_array( $role, $light, true ) ? 'light' : 'other:' . $role;
+    }
+
+    /**
+     * Every button of a markup with the surface it really sits on: the surface of its NEAREST ancestor that sets a
+     * background colour, image or enabled gradient (`light` when none does: the page). Keyed "#index" in markup order,
+     * the value [marker or null, derived surface].
+     *
+     * @return array<string,array{0:?array<string,mixed>,1:string}>
+     */
+    private static function buttonSurfaces( string $markup ): array
+    {
+        $root = ( new \Divi5Validator\BlockParser() )->parse( '<!-- wp:divi/placeholder -->' . $markup . '<!-- /wp:divi/placeholder -->' )->root();
+        $out  = [];
+        $walk = static function ( \Divi5Validator\Block $b, array $surfaces ) use ( &$walk, &$out ): void {
+            if ( 'divi/button' === $b->name() ) {
+                $marker = $b->attrs()['aied'] ?? null;
+                $out[ '#' . count( $out ) ] = [ is_array( $marker ) ? $marker : null, [] === $surfaces ? 'light' : (string) end( $surfaces ) ];
+            }
+            $own = self::surfaceOf( $b->attrs() );
+            if ( null !== $own ) {
+                $surfaces[] = $own;
+            }
+            foreach ( $b->children() as $child ) {
+                $walk( $child, $surfaces );
+            }
+        };
+        $walk( $root, [] );
+        return $out;
+    }
+
+    public function testEveryMarkedButtonSaysTheSurfaceItReallySitsOn(): void
+    {
+        $checked  = 0;
+        $problems = [];
+        foreach ( SectionRecipes::names() as $name ) {
+            foreach ( self::buttonSurfaces( (string) SectionRecipes::rawMarkup( $name ) ) as $index => [ $marker, $surface ] ) {
+                if ( null === $marker ) {
+                    continue;
+                }
+                ++$checked;
+                $on = (string) ( $marker['on'] ?? 'light' );
+                if ( $on !== $surface ) {
+                    $problems[] = "$name$index: marker on=$on, but the nearest background makes it $surface";
+                }
+            }
+        }
+        $this->assertSame( 26, $checked, 'every kit marker is checked (update with the recipes)' );
+        $this->assertSame( [], $problems, 'a button\'s "on" must name the band it really sits on, or the kit picks unreadable colours' );
+    }
+
+    public function testTheSurfaceWalkCatchesWhatItShould(): void
+    {
+        $btn = static fn ( string $marker ): string => '<!-- wp:divi/button {' . $marker . '} /-->';
+        $bg  = static fn ( string $value ): string => '{"module":{"decoration":{"background":{"desktop":{"value":' . $value . '}}}}}';
+        $sec = static fn ( string $attrs, string $inner ): string => '<!-- wp:divi/section ' . $attrs . ' -->' . $inner . '<!-- /wp:divi/section -->';
+        $col = static fn ( string $attrs, string $inner ): string => '<!-- wp:divi/column ' . $attrs . ' -->' . $inner . '<!-- /wp:divi/column -->';
+        $m   = '"aied":{"kit":"control"}';
+
+        $this->assertSame( [ '#0' => [ [ 'kit' => 'control' ], 'light' ] ], self::buttonSurfaces( $btn( $m ) ), 'no background anywhere: the page' );
+        $this->assertSame( 'accent', self::buttonSurfaces( $sec( $bg( '{"color":"{{aied:color:accent}}"}' ), $btn( $m ) ) )['#0'][1] );
+        $this->assertSame( 'dark', self::buttonSurfaces( $sec( $bg( '{"color":"{{aied:color:bg}}","image":{"url":"x.jpg"}}' ), $btn( $m ) ) )['#0'][1] );
+        $this->assertSame( 'dark', self::buttonSurfaces( $sec( $bg( '{"gradient":{"enabled":"on","stops":[{"color":"{{aied:color:overlay}}"}]}}' ), $btn( $m ) ) )['#0'][1] );
+        $this->assertSame( 'light', self::buttonSurfaces( $sec( $bg( '{"gradient":{"enabled":"on","stops":[{"color":"{{aied:color:bg}}"},{"color":"{{aied:color:surface}}"}]}}' ), $btn( $m ) ) )['#0'][1] );
+        $this->assertSame( 'light', self::buttonSurfaces( $sec( $bg( '{"color":"{{aied:color:bg}}","gradient":{"enabled":"off","stops":[{"color":"{{aied:color:accent}}"}]}}' ), $btn( $m ) ) )['#0'][1], 'a disabled gradient is not painted' );
+        // The NEAREST background wins: a surface column on a photo section is light; an accent column on a bg section is accent.
+        $this->assertSame( 'light', self::buttonSurfaces( $sec( $bg( '{"image":{"url":"x.jpg"}}' ), $col( $bg( '{"color":"{{aied:color:surface}}"}' ), $btn( $m ) ) ) )['#0'][1] );
+        $this->assertSame( 'accent', self::buttonSurfaces( $sec( $bg( '{"color":"{{aied:color:bg}}"}' ), $col( $bg( '{"color":"{{aied:color:accent}}"}' ), $btn( $m ) ) ) )['#0'][1] );
+        // A column without a background is transparent: the section's surface shows through.
+        $this->assertSame( 'dark', self::buttonSurfaces( $sec( $bg( '{"image":{"url":"x.jpg"}}' ), $col( '{}', $btn( $m ) ) ) )['#0'][1] );
+        // An inverted panel is no adapter surface.
+        $this->assertSame( 'other:text', self::buttonSurfaces( $sec( $bg( '{"color":"{{aied:color:text}}"}' ), $btn( $m ) ) )['#0'][1] );
+        // A sibling's background never leaks into the next block.
+        $this->assertSame( 'light', self::buttonSurfaces( $col( $bg( '{"color":"{{aied:color:accent}}"}' ), '' ) . $btn( $m ) )['#0'][1] );
+    }
+
+    /**
+     * Phrases that describe a button look a style kit now decides (fill, border, colour), banned from the description and
+     * `when` of a recipe whose buttons are kit-driven: the prose must be true under every kit.
+     */
+    private const KIT_DECIDED_PHRASES = [
+        '/ghost button/i',
+        '/bordered button/i',
+        '/filled button/i',
+        '/outlined? button/i',
+        '/solid (plus a )?button/i',
+        '/button in the surface colou?r/i',
+        '/pill(-shaped)? button/i',
+        '/heavy borders and square corners/i',
+    ];
+
+    public function testKitDrivenRecipeProseDoesNotDescribeTheButtonLook(): void
+    {
+        $problems = [];
+        foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $recipe ) {
+            if ( ! str_contains( (string) $recipe['markup'], '"aied"' ) ) {
+                continue;
+            }
+            foreach ( [ 'title', 'description', 'when' ] as $field ) {
+                foreach ( self::KIT_DECIDED_PHRASES as $phrase ) {
+                    if ( 1 === preg_match( $phrase, (string) ( $recipe[ $field ] ?? '' ) ) ) {
+                        $problems[] = $recipe['name'] . ".$field matches $phrase";
+                    }
+                }
+            }
+        }
+        $this->assertSame( [], $problems, 'the style kit decides how a recipe button looks: describe its role, not its look' );
     }
 
     public function testEveryKitDrivenRecipeIsServedValidUnderEveryLanguageAndKit(): void
