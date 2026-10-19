@@ -23,6 +23,8 @@ require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
  * once, deliberately, in Task 4: the contrast proof moved the card's hover frame colour from `accent` to `text` (written
  * only on a `border` hairline frame), which changed the `card` patches of glass-edge, heavy-block (hover frame now
  * text), chunky-pill-offset and raw-frame (no hover frame any more: their frame already is text).
+ * Kit limits Task 2 ADDED the ground patches (`card|panel` x `light|surface` x `inverted|accent`, keys
+ * "<role>|<on>|<ground>") to each entry, reviewed by eye; the eight band patches of every entry stayed byte-identical.
  */
 class KitCardGoldenTest extends TestCase
 {
@@ -40,24 +42,43 @@ class KitCardGoldenTest extends TestCase
         }
         $this->assertEqualsCanonicalizing( $defaults, array_keys( $golden ), 'the golden holds exactly the ten language default kits' );
 
-        $patches = 0;
+        $patches       = 0;
+        $groundPatches = 0;
         foreach ( $golden as $id => $entry ) {
             $kit = StyleKits::get( (string) $id );
             $this->assertIsArray( $kit, "$id is still shipped" );
             $this->assertSame( json_encode( $entry['kit'] ), json_encode( $kit ), "$id: its decisions are unchanged" );
-            $this->assertCount( 8, $entry['patches'] );
+            $this->assertCount( 16, $entry['patches'] );
+            $bands   = [];
+            $grounds = [];
+            foreach ( [ 'card', 'panel' ] as $role ) {
+                foreach ( [ 'light', 'surface', 'accent', 'dark' ] as $on ) {
+                    $bands[] = "$role|$on";
+                }
+                foreach ( [ 'light', 'surface' ] as $on ) {
+                    foreach ( [ 'inverted', 'accent' ] as $ground ) {
+                        $grounds[] = "$role|$on|$ground";
+                    }
+                }
+            }
+            $this->assertSame( $bands, array_slice( array_keys( $entry['patches'] ), 0, 8 ), "$id: the eight band patches come first, as captured" );
+            $this->assertEqualsCanonicalizing( $grounds, array_slice( array_keys( $entry['patches'] ), 8 ), "$id: the eight ground patches" );
             foreach ( $entry['patches'] as $key => $patch ) {
-                [ $role, $on ] = explode( '|', (string) $key );
+                $parts  = explode( '|', (string) $key );
+                $role   = $parts[0];
+                $on     = $parts[1];
+                $ground = $parts[2] ?? null;
                 foreach ( [ 'divi/group', 'divi/column' ] as $carrier ) {
                     $this->assertSame(
                         json_encode( $patch, JSON_UNESCAPED_SLASHES ),
-                        json_encode( KitAdapters::patch( $carrier, $role, $on, $kit ), JSON_UNESCAPED_SLASHES ),
-                        "$id $role on $on ($carrier)"
+                        json_encode( null === $ground ? KitAdapters::patch( $carrier, $role, $on, $kit ) : KitAdapters::patch( $carrier, $role, $on, $kit, $ground ), JSON_UNESCAPED_SLASHES ),
+                        "$id $role on $on " . ( $ground ?? '' ) . " ($carrier)"
                     );
                 }
-                ++$patches;
+                null === $ground ? ++$patches : ++$groundPatches;
             }
         }
         $this->assertSame( 80, $patches );
+        $this->assertSame( 80, $groundPatches );
     }
 }

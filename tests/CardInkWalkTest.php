@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DesignLanguages;
+use AiEditorDivi5\WP\KitAdapters;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\SectionRecipes;
+use AiEditorDivi5\WP\StyleKits;
 use Divi5Validator\Tests\Support\Colour;
 use PHPUnit\Framework\TestCase;
 
@@ -15,12 +17,15 @@ require_once __DIR__ . '/../wp-plugin/src/ImageTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/DesignLanguages.php';
 require_once __DIR__ . '/../wp-plugin/src/RecipeTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
+require_once __DIR__ . '/../wp-plugin/src/StyleKits.php';
+require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
 require_once __DIR__ . '/Support/Colour.php';
 
 /**
  * The descendant ink walk (spec 2026-10-19-card-adapter-design.md section 3, point 2): for every recipe block that carries
- * a card or panel marker, the card's fill is the one the adapter writes for its band (`bg` on a `surface` band, else
- * `surface`), and every colour token on a descendant must be readable on the ground it sits on, in all ten languages:
+ * a card or panel marker, the card's fill is the one the adapter writes for it (KitAdapters::patch() with the marker's
+ * band and ground, read from the RESOLVED patch: `bg` on a `surface` band, else `surface`; `text` on an `inverted` ground,
+ * `accent` on an `accent` ground; a marker the adapter refuses is a problem), and every colour token on a descendant must be readable on the ground it sits on, in all ten languages:
  * text and heading font colours (and colours inside innerContent) at least 4.5:1, icon, divider and graphic colours at
  * least 3.0:1. This is what catches a recipe whose children assume the wrong ground.
  *
@@ -92,14 +97,35 @@ class CardInkWalkTest extends TestCase
         return $root['children'];
     }
 
-    /** @return array{0:string,1:string}|null [role, on] of a card marker on $node */
+    /** @return array{0:string,1:string,2:mixed}|null [role, on, ground (null when absent, else as written)] of a card marker on $node */
     private static function marker( array $node ): ?array
     {
         $m = $node['attrs']['aied'] ?? null;
         if ( ! is_array( $m ) || ! in_array( $m['kit'] ?? null, self::CARD_ROLES, true ) ) {
             return null;
         }
-        return [ (string) $m['kit'], (string) ( $m['on'] ?? 'light' ) ];
+        return [ (string) $m['kit'], (string) ( $m['on'] ?? 'light' ), $m['ground'] ?? null ];
+    }
+
+    /**
+     * The card's fill as an opaque hex in $lang: the background colour token of the adapter's RESOLVED patch for this
+     * marker (with the language's own kit; the fill does not depend on the kit), composited over the language's bg. Null
+     * when the adapter has no patch for the marker or the patch has no single colour fill.
+     *
+     * @param array<string,mixed> $lang
+     */
+    private static function resolvedFill( string $block, string $role, string $on, mixed $ground, array $lang ): ?string
+    {
+        $kit = StyleKits::get( (string) ( $lang['kit'] ?? '' ) );
+        if ( ! is_array( $kit ) || ( null !== $ground && ! is_string( $ground ) ) ) {
+            return null;
+        }
+        $patch = null === $ground ? KitAdapters::patch( $block, $role, $on, $kit ) : KitAdapters::patch( $block, $role, $on, $kit, $ground );
+        $token = $patch['module']['decoration']['background']['desktop']['value']['color'] ?? null;
+        if ( ! is_string( $token ) ) {
+            return null;
+        }
+        return Colour::opaque( RecipeTokens::resolve( $token, $lang ), (string) $lang['colors']['bg'] );
     }
 
     /** Every [path, string] leaf of $node that holds a colour token. @return list<array{0:string,1:string}> */
@@ -234,22 +260,26 @@ class CardInkWalkTest extends TestCase
             foreach ( $nodes as $node ) {
                 $marker = self::marker( $node );
                 if ( null !== $marker ) {
-                    [ $role, $on ] = $marker;
+                    [ $role, $on, $ground ] = $marker;
+                    $label         = null === $ground ? "$role on $on" : "$role on $on, ground " . ( is_string( $ground ) ? $ground : json_encode( $ground ) );
                     $index         = $cards++;
                     // Guard (not a model): a font colour on an ancestor is inherited by a card child that sets none, on a ground
                     // this walk does not pair it with.
                     foreach ( $ancestors as $ancestor ) {
                         foreach ( self::tokenLeaves( $ancestor['attrs'] ) as [ $path, $value ] ) {
                             if ( 'text' === self::kind( (string) $ancestor['name'], $path ) ) {
-                                $problems[] = "$recipe card#$index ({$node['name']} $role on $on): ancestor {$ancestor['name']} carries the font colour $value at $path; the walk cannot model inherited colour, so give the card children their own colours or move the colour off the ancestor";
+                                $problems[] = "$recipe card#$index ({$node['name']} $label): ancestor {$ancestor['name']} carries the font colour $value at $path; the walk cannot model inherited colour, so give the card children their own colours or move the colour off the ancestor";
                             }
                         }
                     }
                     foreach ( DesignLanguages::ids() as $langId ) {
                         $lang   = (array) DesignLanguages::get( $langId );
-                        $colors = (array) $lang['colors'];
-                        $fill   = (string) Colour::opaque( (string) $colors[ 'surface' === $on ? 'bg' : 'surface' ], (string) $colors['bg'] );
-                        foreach ( self::walk( $node['children'], $lang, $fill, "$recipe card#$index ({$node['name']} $role on $on) $langId", $recipe ) as $p ) {
+                        $fill   = self::resolvedFill( (string) $node['name'], $role, $on, $ground, $lang );
+                        if ( null === $fill ) {
+                            $problems[] = "$recipe card#$index ({$node['name']} $label) $langId: the adapter has no fill for this marker, so its children cannot be judged";
+                            continue;
+                        }
+                        foreach ( self::walk( $node['children'], $lang, $fill, "$recipe card#$index ({$node['name']} $label) $langId", $recipe ) as $p ) {
                             $problems[] = $p;
                         }
                     }
@@ -281,11 +311,11 @@ class CardInkWalkTest extends TestCase
     }
 
     /** A planted recipe: a section > row > column > group card on $on whose children carry $children. */
-    private static function planted( string $on, string $children ): string
+    private static function planted( string $on, string $children, ?string $ground = null ): string
     {
         return '<!-- wp:divi/placeholder --><!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"{{aied:color:bg}}"}}}}},"builderVersion":"5.15.1"} -->'
             . '<!-- wp:divi/row {"builderVersion":"5.15.1"} --><!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.15.1"} -->'
-            . '<!-- wp:divi/group {"builderVersion":"5.15.1","aied":{"kit":"card","on":"' . $on . '"}} -->' . $children . '<!-- /wp:divi/group -->'
+            . '<!-- wp:divi/group {"builderVersion":"5.15.1","aied":{"kit":"card","on":"' . $on . '"' . ( null === $ground ? '' : ',"ground":"' . $ground . '"' ) . '}} -->' . $children . '<!-- /wp:divi/group -->'
             . '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->';
     }
 
@@ -345,6 +375,29 @@ class CardInkWalkTest extends TestCase
         $this->assertSame( 2, $n );
         $this->assertStringContainsString( 'card#1 (divi/group panel on surface) editorial', implode( "\n", $p ) );
         $this->assertStringNotContainsString( 'card#0', implode( "\n", $p ), 'the nested card is not judged on its parent\'s fill' );
+    }
+
+    public function testTheWalkReadsTheResolvedGroundFill(): void
+    {
+        foreach ( [ 'light', 'surface' ] as $on ) {
+            // An inverted card: bg and surface children pass, a muted (or text) child fails.
+            $this->assertSame( [], self::walkRecipe( 'planted', self::planted( $on, self::heading( 'bg' ) . self::heading( 'surface' ), 'inverted' ) )[0], "inverted on $on" );
+            $muted = implode( "\n", self::walkRecipe( 'planted', self::planted( $on, self::heading( 'muted' ), 'inverted' ) )[0] );
+            $this->assertStringContainsString( "planted card#0 (divi/group card on $on, ground inverted) glass-dark: divi/heading", $muted );
+            $this->assertStringContainsString( '{{aied:color:muted}}', $muted );
+            $this->assertNotSame( [], self::walkRecipe( 'planted', self::planted( $on, self::heading( 'text' ), 'inverted' ) )[0] );
+            // An accent tile: accent-text passes, a text child fails.
+            $this->assertSame( [], self::walkRecipe( 'planted', self::planted( $on, self::heading( 'accent-text' ), 'accent' ) )[0], "accent on $on" );
+            $text = implode( "\n", self::walkRecipe( 'planted', self::planted( $on, self::heading( 'text' ), 'accent' ) )[0] );
+            $this->assertStringContainsString( "(divi/group card on $on, ground accent)", $text );
+            $this->assertStringContainsString( '{{aied:color:text}}', $text );
+            // The plain card judges the same children the other way round.
+            $this->assertNotSame( [], self::walkRecipe( 'planted', self::planted( $on, self::heading( 'bg' ) ) )[0] );
+        }
+        // A marker the adapter refuses (a ground on a dark band, an unknown ground) cannot be judged: reported, never passed.
+        $refused = implode( "\n", self::walkRecipe( 'planted', self::planted( 'dark', self::heading( 'bg' ), 'inverted' ) )[0] );
+        $this->assertStringContainsString( 'the adapter has no fill for this marker', $refused );
+        $this->assertStringContainsString( 'the adapter has no fill for this marker', implode( "\n", self::walkRecipe( 'planted', self::planted( 'light', self::heading( 'bg' ), 'x' ) )[0] ) );
     }
 
     public function testAnInheritedFontColourAboveACardFailsTheWalk(): void

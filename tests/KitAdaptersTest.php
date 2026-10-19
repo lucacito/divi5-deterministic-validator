@@ -42,6 +42,9 @@ class KitAdaptersTest extends TestCase
     private const ROLES    = [ 'control', 'control-secondary' ];
     private const SURFACES = [ 'light', 'accent', 'dark' ];
 
+    /** Every button surface: the three bands plus `panel` (a button inside an inverted, `text`-filled panel). */
+    private const ALL_SURFACES = [ 'light', 'accent', 'dark', 'panel' ];
+
     /**
      * The `dark` surface (a button over a photo) is modelled as the language's `overlay` composited over a mid grey
      * (#808080): the photo under the scrim is unknown, mid grey is the neutral middle of what it can be.
@@ -155,7 +158,7 @@ class KitAdaptersTest extends TestCase
         $killed   = [];
         foreach ( $this->allKitVariants() as $label => $kit ) {
             foreach ( self::ROLES as $role ) {
-                foreach ( self::SURFACES as $on ) {
+                foreach ( self::ALL_SURFACES as $on ) {
                     $patch = $this->patch( $kit, $role, $on );
                     // Exactly three decoration groups of the button element; on the module its spacing, plus a box shadow
                     // exactly when the kit has one and a transform exactly when it lifts, nothing else.
@@ -164,7 +167,10 @@ class KitAdaptersTest extends TestCase
                     $this->assertEqualsCanonicalizing( [ 'background', 'border', 'font' ], array_keys( $patch['button']['decoration'] ) );
                     $this->assertSame( [ 'decoration' ], array_keys( $patch['module'] ) );
                     $expected = [ 'spacing' ];
-                    if ( 'none/none' !== $kit['shadow']['rest'] . '/' . $kit['shadow']['hover'] ) {
+                    $pair     = $kit['shadow']['rest'] . '/' . $kit['shadow']['hover'];
+                    // On a panel a soft shadow (rest or hover) is not written: no ink is darker than a `text` panel in
+                    // every language (KitAdapters::shadow()).
+                    if ( 'none/none' !== $pair && ! ( 'panel' === $on && in_array( $pair, [ 'soft/soft', 'none/soft' ], true ) ) ) {
                         $expected[] = 'boxShadow';
                     }
                     if ( 'lift' === $kit['hover'] ) {
@@ -200,7 +206,7 @@ class KitAdaptersTest extends TestCase
     {
         foreach ( $this->allKitVariants() as $label => $kit ) {
             foreach ( self::ROLES as $role ) {
-                foreach ( self::SURFACES as $on ) {
+                foreach ( self::ALL_SURFACES as $on ) {
                     $markup = KitResolver::resolve( $this->buttonBlock( $role, $on ), $kit );
                     $this->assertStringNotContainsString( '"aied"', $markup, "$label $role on $on keeps its marker" );
                     $this->assertStringContainsString( '"text":"Start here"', $markup, 'innerContent is never touched' );
@@ -226,7 +232,7 @@ class KitAdaptersTest extends TestCase
     {
         foreach ( $this->allKitVariants() as $label => $kit ) {
             foreach ( self::ROLES as $role ) {
-                foreach ( self::SURFACES as $on ) {
+                foreach ( self::ALL_SURFACES as $on ) {
                     $json = (string) json_encode( $this->patch( $kit, $role, $on ), JSON_UNESCAPED_SLASHES );
                     $this->assertDoesNotMatchRegularExpression( '/#[0-9a-fA-F]{3,8}\b/', $json, "$label $role on $on has a hex colour" );
                     preg_match_all( '/rgba?\([^)]*\)/i', $json, $m );
@@ -236,9 +242,9 @@ class KitAdaptersTest extends TestCase
                     preg_match_all( '/\{\{[^}]*\}\}/', $json, $t );
                     foreach ( $t[0] as $token ) {
                         // A colour role, the soft shadow's overlay at the two proven opacities, the glow's accent (accent-text on
-                        // an accent band) at 45%, or a kit token.
+                        // an accent band, bg on a panel) at 45%, or a kit token.
                         $this->assertMatchesRegularExpression(
-                            '/^\{\{aied:(?:color:(?:' . implode( '|', array_map( 'preg_quote', array_keys( self::ROLE_KEYS ) ) ) . ')|color:overlay:(?:18|25)|color:(?:accent|accent-text):45|kit:(?:radius-control|space-control))\}\}$/',
+                            '/^\{\{aied:(?:color:(?:' . implode( '|', array_map( 'preg_quote', array_keys( self::ROLE_KEYS ) ) ) . ')|color:overlay:(?:18|25)|color:(?:accent|accent-text' . ( 'panel' === $on ? '|bg' : '' ) . '):45|kit:(?:radius-control|space-control))\}\}$/',
                             $token,
                             "$label $role on $on"
                         );
@@ -383,6 +389,15 @@ class KitAdaptersTest extends TestCase
         $this->assertNull( KitAdapters::patch( 'divi/button', 'Control', 'light', $kit ) );
         $this->assertNull( KitAdapters::patch( 'divi/button', 'control', 'photo', $kit ) );
         $this->assertNull( KitAdapters::patch( 'divi/button', 'control', '', $kit ) );
+        // `panel` is a button surface only; a ground is a card field only.
+        foreach ( [ 'divi/group', 'divi/column' ] as $carrier ) {
+            foreach ( [ 'card', 'panel' ] as $role ) {
+                $this->assertNull( KitAdapters::patch( $carrier, $role, 'panel', $kit ), "$carrier $role on panel" );
+            }
+        }
+        foreach ( self::ALL_SURFACES as $on ) {
+            $this->assertNull( KitAdapters::patch( 'divi/button', 'control', $on, $kit, 'inverted' ), "a ground on a button ($on)" );
+        }
         $bad         = $kit;
         $bad['fill'] = 'gradient';
         $this->assertNull( KitAdapters::patch( 'divi/button', 'control', 'light', $bad ), 'an invalid kit has no patch' );
@@ -642,6 +657,146 @@ class KitAdaptersTest extends TestCase
         }
         $this->assertGreaterThan( 0, $checked );
         $this->assertSame( [], array_values( $problems ), "invisible or unreadable buttons (fix the kit data or the adapter, never the bound; no exceptions):\n" . implode( "\n", $problems ) );
+    }
+
+    /**
+     * Problems of one state of one button on a `panel` (a `text`-filled panel, opaque over bg): the label and outline checks
+     * of stateProblems() against the panel, plus the fill is never the panel's own colour (the button would vanish).
+     *
+     * @return array<string,string>
+     */
+    private static function panelProblems( string $fill, string $label, string $border, string $width, string $panel, string $where ): array
+    {
+        $out     = self::stateProblems( $fill, $label, $border, $width, $panel, $where );
+        $painted = Colour::opaque( $fill, $panel );
+        $alpha   = Colour::rgba( $fill );
+        if ( null !== $painted && null !== $alpha && $alpha[3] >= 1.0 && Colour::contrast( $painted, $panel ) < 3.0 ) {
+            $out[ "$where|fill" ] = sprintf( '%s: fill %s on the panel %s is %.2f:1: the button loses its shape', $where, $painted, $panel, Colour::contrast( $painted, $panel ) );
+        }
+        return $out;
+    }
+
+    public function testNoInvisibleButtonOnAPanelInAnyKitLanguageRole(): void
+    {
+        $problems = [];
+        $checked  = 0;
+        foreach ( $this->shippedKits() as $kit ) {
+            foreach ( DesignLanguages::ids() as $langId ) {
+                $lang   = DesignLanguages::get( $langId );
+                $this->assertIsArray( $lang );
+                $colors = (array) $lang['colors'];
+                $panel  = (string) Colour::opaque( (string) $colors['text'], (string) $colors['bg'] );
+                foreach ( self::ROLES as $role ) {
+                    $d    = $this->patch( $kit, $role, 'panel' )['button']['decoration'];
+                    $side = $d['border']['desktop']['value']['styles']['bottom'] ?? $d['border']['desktop']['value']['styles']['all'];
+                    $states = [
+                        'rest'  => [ $d['background']['desktop']['value']['color'], $d['font']['font']['desktop']['value']['color'], $side['color'] ],
+                        'hover' => [ $d['background']['desktop']['hover']['color'], $d['font']['font']['desktop']['hover']['color'], $d['border']['desktop']['hover']['styles']['all']['color'] ],
+                    ];
+                    foreach ( $states as $state => [ $fill, $label, $border ] ) {
+                        ++$checked;
+                        $where = "{$kit['id']}|$langId|$role|panel|$state";
+                        if ( '{{aied:color:text}}' === $fill ) {
+                            $problems[ "$where|text-fill" ] = "$where: a text fill on a text panel";
+                        }
+                        $problems = array_merge( $problems, self::panelProblems(
+                            self::colourOf( (string) $fill, $colors ),
+                            self::colourOf( (string) $label, $colors ),
+                            self::colourOf( (string) $border, $colors ),
+                            (string) $side['width'],
+                            $panel,
+                            $where
+                        ) );
+                    }
+                }
+            }
+        }
+        $this->assertSame( 1600, $checked );
+        $this->assertSame( 40 * 10 * 2 * 2, $checked );
+        $this->assertSame( [], array_values( $problems ), "invisible or unreadable buttons on a panel (fix the panel row of the role table, never the bound; no exceptions):\n" . implode( "\n", $problems ) );
+    }
+
+    public function testThePanelCheckCatchesWhatItShould(): void
+    {
+        // A text fill on a text panel: no shape, and the label check alone would pass with a bg label.
+        $this->assertArrayHasKey( 'x|fill', self::panelProblems( '#111111', '#ffffff', '#111111', '2px', '#111111', 'x' ) );
+        // An accent fill close to the panel (tech-mono's accent on its text is 1.10:1).
+        $mono = (array) DesignLanguages::get( 'tech-mono' )['colors'];
+        $panel = (string) Colour::opaque( (string) $mono['text'], (string) $mono['bg'] );
+        $this->assertArrayHasKey( 'x|fill', self::panelProblems( (string) $mono['accent'], (string) $mono['accent_text'], (string) $mono['accent'], '0px', $panel, 'x' ) );
+        // A transparent button in `text` ink on a text panel: neither label nor outline can be seen.
+        $out = self::panelProblems( KitAdapters::TRANSPARENT, (string) $mono['text'], (string) $mono['text'], '2px', $panel, 'x' );
+        $this->assertArrayHasKey( 'x|label', $out );
+        $this->assertArrayHasKey( 'x|outline', $out );
+        // The panel row is fine: bg fill with a text label, and a transparent bg-ink button.
+        $this->assertSame( [], self::panelProblems( (string) $mono['bg'], (string) $mono['text'], (string) $mono['bg'], '2px', $panel, 'x' ) );
+        $this->assertSame( [], self::panelProblems( KitAdapters::TRANSPARENT, (string) $mono['bg'], (string) $mono['bg'], '2px', $panel, 'x' ) );
+    }
+
+    public function testThePanelRowFollowsTheDesign(): void
+    {
+        // Filled: fill bg, label text, whatever the kit's colour (soft-solid is accent, heavy-block text).
+        foreach ( [ 'soft-solid', 'heavy-block', 'quiet-solid' ] as $id ) {
+            $kit = (array) StyleKits::get( $id );
+            $this->assertSame( 'solid', $kit['fill'] );
+            $d = $this->patch( $kit, 'control', 'panel' )['button']['decoration'];
+            $this->assertSame( '{{aied:color:bg}}', $d['background']['desktop']['value']['color'], $id );
+            $this->assertSame( '{{aied:color:text}}', $d['font']['font']['desktop']['value']['color'], $id );
+            if ( 'same' === $kit['border']['color'] ) {
+                $this->assertSame( '{{aied:color:bg}}', $d['border']['desktop']['value']['styles']['all']['color'], "$id: a same border follows the fill" );
+            }
+            // The secondary of a solid kit is transparent in the panel's ink.
+            $s = $this->patch( $kit, 'control-secondary', 'panel' )['button']['decoration'];
+            $this->assertSame( KitAdapters::TRANSPARENT, $s['background']['desktop']['value']['color'], $id );
+            $this->assertSame( '{{aied:color:bg}}', $s['font']['font']['desktop']['value']['color'], $id );
+            $this->assertSame( '{{aied:color:bg}}', $s['border']['desktop']['value']['styles']['all']['color'], $id );
+        }
+        // An inverse kit colour is never a fill on a panel either.
+        $inv = $this->kitWith( 'soft-solid', [ 'color' => 'inverse' ] );
+        $this->assertSame( '{{aied:color:bg}}', $this->patch( $inv, 'control', 'panel' )['button']['decoration']['background']['desktop']['value']['color'] );
+        // Outline: transparent, label and border bg; fill-swap fills it bg with a text label.
+        $outline = (array) StyleKits::get( 'outline-2' );
+        $this->assertSame( [ 'outline', 'fill-swap' ], [ $outline['fill'], $outline['hover'] ] );
+        $d = $this->patch( $outline, 'control', 'panel' )['button']['decoration'];
+        $this->assertSame( KitAdapters::TRANSPARENT, $d['background']['desktop']['value']['color'] );
+        $this->assertSame( '{{aied:color:bg}}', $d['font']['font']['desktop']['value']['color'] );
+        $this->assertSame( '{{aied:color:bg}}', $d['border']['desktop']['value']['styles']['all']['color'] );
+        $this->assertSame( '{{aied:color:bg}}', $d['background']['desktop']['hover']['color'] );
+        $this->assertSame( '{{aied:color:text}}', $d['font']['font']['desktop']['hover']['color'] );
+        $this->assertSame( '{{aied:color:bg}}', $d['border']['desktop']['hover']['styles']['all']['color'] );
+        // A filled button with fill-swap goes transparent in bg.
+        $swap = $this->kitWith( 'soft-solid', [ 'hover' => 'fill-swap' ] );
+        $d    = $this->patch( $swap, 'control', 'panel' )['button']['decoration'];
+        $this->assertSame( KitAdapters::TRANSPARENT, $d['background']['desktop']['hover']['color'] );
+        $this->assertSame( '{{aied:color:bg}}', $d['font']['font']['desktop']['hover']['color'] );
+        // invert behaves as fill-swap on a panel (a text fill on a text panel would make the button vanish), both roles.
+        foreach ( [ 'soft-solid', 'outline-2', 'heavy-block' ] as $id ) {
+            foreach ( self::ROLES as $role ) {
+                $invert = $this->kitWith( $id, [ 'hover' => 'invert' ] );
+                $swapped = $this->kitWith( $id, [ 'hover' => 'fill-swap' ] );
+                $this->assertSame( $this->patch( $swapped, $role, 'panel' )['button'], $this->patch( $invert, $role, 'panel' )['button'], "$id $role: invert = fill-swap on a panel" );
+            }
+        }
+        // lift keeps the rest colours and lifts.
+        $lift = $this->kitWith( 'soft-solid', [ 'hover' => 'lift' ] );
+        $p    = $this->patch( $lift, 'control', 'panel' );
+        $this->assertSame( [ 'desktop' => [ 'hover' => [ 'translate' => [ 'y' => '-4px' ] ] ] ], $p['module']['decoration']['transform'] );
+        $this->assertSame( $p['button']['decoration']['background']['desktop']['value']['color'], $p['button']['decoration']['background']['desktop']['hover']['color'] );
+        // Shadows on a panel: hard and edge in bg (opaque), glow in bg at 45%, no soft shadow (rest or hover-only).
+        foreach ( [ 'hard' => [ 'style' => 'preset4', 'horizontal' => '6px', 'vertical' => '6px', 'blur' => '0px', 'color' => '{{aied:color:bg}}' ],
+            'edge' => [ 'style' => 'preset4', 'horizontal' => '0px', 'vertical' => '4px', 'blur' => '0px', 'color' => '{{aied:color:bg}}' ],
+            'glow' => [ 'style' => 'preset1', 'vertical' => '0px', 'blur' => '16px', 'color' => '{{aied:color:bg:45}}' ] ] as $shadow => $value ) {
+            $kit = $this->kitWith( 'outline-2', [ 'shadow' => [ 'rest' => $shadow, 'hover' => $shadow ] ] );
+            $this->assertSame( [ 'desktop' => [ 'value' => $value ] ], $this->patch( $kit, 'control', 'panel' )['module']['decoration']['boxShadow'], $shadow );
+        }
+        foreach ( [ [ 'soft', 'soft' ], [ 'none', 'soft' ] ] as [ $rest, $hover ] ) {
+            $kit = $this->kitWith( 'soft-solid', [ 'shadow' => [ 'rest' => $rest, 'hover' => $hover ] ] );
+            $this->assertArrayNotHasKey( 'boxShadow', $this->patch( $kit, 'control', 'panel' )['module']['decoration'], "$rest/$hover on a panel" );
+            $this->assertArrayHasKey( 'boxShadow', $this->patch( $kit, 'control', 'light' )['module']['decoration'], "$rest/$hover on light is unchanged" );
+        }
+        // An underline kit on a panel: the bottom side in the panel's ink.
+        $under = (array) StyleKits::get( 'underline-link' );
+        $this->assertSame( '{{aied:color:bg}}', $this->patch( $under, 'control-secondary', 'panel' )['button']['decoration']['border']['desktop']['value']['styles']['bottom']['color'] );
     }
 
     public function testTheContrastCheckCatchesWhatItShould(): void

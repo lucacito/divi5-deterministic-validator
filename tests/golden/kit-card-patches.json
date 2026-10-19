@@ -279,6 +279,250 @@
                         }
                     }
                 }
+            },
+            "card|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
@@ -583,6 +827,250 @@
                                             "width": "1px",
                                             "style": "solid",
                                             "color": "{{aied:color:border}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
                                         }
                                     }
                                 }
@@ -953,6 +1441,330 @@
                         }
                     }
                 }
+            },
+            "card|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset1",
+                                    "vertical": "8px",
+                                    "blur": "24px",
+                                    "color": "{{aied:color:overlay:18}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset1",
+                                    "vertical": "8px",
+                                    "blur": "24px",
+                                    "color": "{{aied:color:overlay:18}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset1",
+                                    "vertical": "8px",
+                                    "blur": "24px",
+                                    "color": "{{aied:color:overlay:18}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset1",
+                                    "vertical": "8px",
+                                    "blur": "24px",
+                                    "color": "{{aied:color:overlay:18}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset1",
+                                    "vertical": "8px",
+                                    "blur": "24px",
+                                    "color": "{{aied:color:overlay:18}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset1",
+                                    "vertical": "8px",
+                                    "blur": "24px",
+                                    "color": "{{aied:color:overlay:18}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset1",
+                                    "vertical": "8px",
+                                    "blur": "24px",
+                                    "color": "{{aied:color:overlay:18}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset1",
+                                    "vertical": "8px",
+                                    "blur": "24px",
+                                    "color": "{{aied:color:overlay:18}}"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
@@ -1229,6 +2041,250 @@
                                             "width": "1px",
                                             "style": "dashed",
                                             "color": "{{aied:color:border}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "dashed",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "dashed",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "dashed",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "dashed",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "dashed",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "dashed",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "dashed",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "dashed",
+                                            "color": "{{aied:color:accent}}"
                                         }
                                     }
                                 }
@@ -1607,6 +2663,338 @@
                         }
                     }
                 }
+            },
+            "card|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset4",
+                                    "horizontal": "6px",
+                                    "vertical": "6px",
+                                    "blur": "0px",
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset4",
+                                    "horizontal": "6px",
+                                    "vertical": "6px",
+                                    "blur": "0px",
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset4",
+                                    "horizontal": "6px",
+                                    "vertical": "6px",
+                                    "blur": "0px",
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset4",
+                                    "horizontal": "6px",
+                                    "vertical": "6px",
+                                    "blur": "0px",
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset4",
+                                    "horizontal": "6px",
+                                    "vertical": "6px",
+                                    "blur": "0px",
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset4",
+                                    "horizontal": "6px",
+                                    "vertical": "6px",
+                                    "blur": "0px",
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset4",
+                                    "horizontal": "6px",
+                                    "vertical": "6px",
+                                    "blur": "0px",
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "boxShadow": {
+                            "desktop": {
+                                "value": {
+                                    "style": "preset4",
+                                    "horizontal": "6px",
+                                    "vertical": "6px",
+                                    "blur": "0px",
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
@@ -1890,6 +3278,250 @@
                         }
                     }
                 }
+            },
+            "card|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
@@ -2166,6 +3798,250 @@
                                             "width": "1px",
                                             "style": "solid",
                                             "color": "{{aied:color:border}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
                                         }
                                     }
                                 }
@@ -2484,6 +4360,250 @@
                         }
                     }
                 }
+            },
+            "card|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "3px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "3px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "3px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "3px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "3px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "3px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "3px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "3px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
@@ -2767,6 +4887,250 @@
                         }
                     }
                 }
+            },
+            "card|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "4px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "4px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "4px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "4px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "4px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "4px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "4px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "4px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
@@ -3043,6 +5407,250 @@
                                             "width": "1px",
                                             "style": "solid",
                                             "color": "{{aied:color:border}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "card|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|light|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|inverted": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "panel|surface|accent": {
+                "module": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:accent}}"
+                                }
+                            }
+                        },
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "1px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:accent}}"
                                         }
                                     }
                                 }

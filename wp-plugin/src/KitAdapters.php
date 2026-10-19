@@ -12,10 +12,11 @@ require_once __DIR__ . '/StyleKits.php';
 
 /**
  * Adapters: turn a style kit's decisions into the attributes of one module, for KitResolver to merge where a recipe
- * carries a marker. APPLIED lists what is known: `divi/button` in two roles (`control`, `control-secondary`) on three
- * surfaces (`light`: the section's bg or surface, `accent`: an accent band, `dark`: a photo or overlay), and the cards,
- * `divi/group` and `divi/column` in two roles (`card`, `panel`) on four bands (`light` a bg band, `surface` a surface
- * band, `accent`, `dark`); see the card table at the end.
+ * carries a marker. APPLIED lists what is known: `divi/button` in two roles (`control`, `control-secondary`) on four
+ * surfaces (`light`: the section's bg or surface, `accent`: an accent band, `dark`: a photo or overlay, `panel`: inside an
+ * inverted, `text`-filled panel), and the cards, `divi/group` and `divi/column` in two roles (`card`, `panel`) on four
+ * bands (`light` a bg band, `surface` a surface band, `accent`, `dark`), optionally on a ground (`inverted` or `accent`,
+ * on a light or surface band only); see the card table and the ground table at the end.
  *
  * The button patch writes only `button.decoration.{background,border,font}` and `module.decoration.spacing` at
  * `desktop`, plus `module.decoration.boxShadow` when the kit has a shadow and `module.decoration.transform` when its hover
@@ -39,11 +40,14 @@ require_once __DIR__ . '/StyleKits.php';
  * - Colour c: the kit's `color` role, except that `control-secondary` on a `light` surface always uses `text` (the
  *   neutral secondary today's recipes ship: text ink and border on bg/surface), whatever the kit's colour.
  * - Ink of a transparent button (its label and border): light -> c (`text` when c is `inverse`), accent band -> `accent-text` (the language's
- *   guaranteed pair on accent), dark (photo or overlay) -> `inverse`.
+ *   guaranteed pair on accent), dark (photo or overlay) -> `inverse`, panel -> `bg` (bg on text is 11.98:1 or more in
+ *   every language; muted and inverse fail on a text panel in glass-dark, tech-mono and luxe).
  * - Filled treatment: light and dark -> fill c, label on(c) (on(accent)=accent-text, on(text)=bg); accent band ->
- *   fill `surface`, label `text`. `inverse` is an ink, never a fill: a filled `inverse` button (a kit whose colour is
- *   inverse) is `surface` with a `text` label, because no role is readable on inverse in every language (text and
- *   inverse are both light in the dark languages).
+ *   fill `surface`, label `text`; panel -> fill `bg`, label `text`, for every kit colour (an accent fill on a text panel
+ *   is 1.10:1 in tech-mono, so the button would lose its shape; a text fill would vanish). `inverse` is an ink, never a
+ *   fill: a filled `inverse` button (a kit whose colour is inverse) is `surface` with a `text` label (`bg` with a `text`
+ *   label on a panel), because no role is readable on inverse in every language (text and inverse are both light in the
+ *   dark languages).
  * - solid: the filled treatment, border the kit's (`same` = the fill colour) at the kit width.
  * - outline: transparent, label and border in the ink at the kit width.
  * - ghost: as outline with a zero border.
@@ -51,15 +55,18 @@ require_once __DIR__ . '/StyleKits.php';
  * Hover:
  * - `none` repeats the rest values.
  * - `fill-swap` swaps the filled and transparent treatments: a transparent button fills (light: fill = its ink, label
- *   on(ink); accent band and dark: fill `surface`, label `text`, the core pair readable in every language); a filled
- *   button goes transparent in the surface's ink (light: c, as above; accent band: `accent-text`; dark: `inverse`).
+ *   on(ink); panel: fill `bg`, label `text`; accent band and dark: fill `surface`, label `text`, the core pair readable
+ *   in every language); a filled button goes transparent in the surface's ink (light: c, as above; accent band:
+ *   `accent-text`; dark: `inverse`; panel: `bg`).
  * - `invert` swaps label and fill of a filled button (a `same` border follows the new fill). A transparent button has
- *   no fill colour to swap, so `invert` fills it exactly as `fill-swap` does.
+ *   no fill colour to swap, so `invert` fills it exactly as `fill-swap` does. On a panel `invert` IS `fill-swap` (the
+ *   swapped fill would be `text`, the panel's own colour, and the button would vanish).
  * - `lift` keeps the rest colours (as `none`) and moves the module up 4px on hover.
  * Underline (`border.sides` bottom): `styles.all.width` 0px plus `styles.bottom` at the kit width in the border colour the
  *   table above gives; its hover never changes colour (StyleKits allows only `none` or `lift`), so the hover frame colour
  *   written at `styles.all` equals the bottom side's.
- * Shadows: see shadow() (soft = the language's overlay at 18% / 25%, hard = the surface's ink, opaque).
+ * Shadows: see shadow() (soft = the language's overlay at 18% / 25%, hard = the surface's ink, opaque; on a panel no soft
+ *   shadow, hard and edge in `bg`, glow in `bg` at 45%).
  * Not written on purpose: `background.hover.enableColor` (every recipe button sets its hover colour without it and
  * renders; the registry knows the path but nothing proves it is needed), `border.value.radius.sync` (the radius token
  * is the four corners, as every recipe button writes it) and gradients (the form is proven, kb-gradient-stops, but no pair of
@@ -89,6 +96,18 @@ require_once __DIR__ . '/StyleKits.php';
  *   and NO `hover` key anywhere (border, boxShadow, transform): only the rest shadow, nothing for a hover-only shadow pair.
  * - Not used by cards: the kit's `fill`, `color` and `text` decisions (button only).
  *
+ * Ground table (marker field `ground`, roles `card` and `panel`, bands `light` and `surface` only; spec
+ * 2026-10-19-kit-limits-design.md section 2; proven by KitCardAdapterTest's ground proof, 3,200 cells, no exception):
+ * - Fill: `text` (`inverted`) or `accent` (`accent`), whatever the band; no hover fill. The children are NOT re-inked: the
+ *   recipe gives them `bg` or `surface` on an inverted ground (11.98:1 or more in every language; muted and inverse fail
+ *   in glass-dark, tech-mono and luxe) and `accent-text` on an accent ground (5.75:1 or more; text on accent fails in 8
+ *   languages). The fill against the band: inverted 11.98:1 or more; accent 2.30:1 or more, judged decorative (>= 2.0).
+ * - Frame: the plain card's sides, width and style (the 1px floor and the underline form included), in the FILL colour,
+ *   so a ground card keeps the size of its kit neighbours and its shape comes from the fill.
+ * - Radius, padding (`card`), shadow (the band's ink, a `surface` band treated as light) and lift: exactly the plain
+ *   card's on that band. No hover frame colour ever (on fill-swap/invert kits it would be the fill); a `panel` writes
+ *   no hover key, as a plain panel.
+ *
  * Pure and deterministic: no site access.
  */
 final class KitAdapters
@@ -110,12 +129,16 @@ final class KitAdapters
         'divi/column' => [ 'card', 'panel' ],
     ];
 
-    /** The bands a button may sit on. */
-    private const SURFACES = [ 'light', 'accent', 'dark' ];
+    /** The bands a button may sit on (`panel`: inside an inverted, `text`-filled panel). */
+    private const SURFACES = [ 'light', 'accent', 'dark', 'panel' ];
 
     /** The card roles, and the bands a card may sit on (a `surface` band is for cards only). */
     private const CARD_ROLES    = [ 'card', 'panel' ];
     private const CARD_SURFACES = [ 'light', 'surface', 'accent', 'dark' ];
+
+    /** A card ground => its fill colour role, and the bands a ground may sit on. */
+    private const GROUNDS       = [ 'inverted' => 'text', 'accent' => 'accent' ];
+    private const GROUND_BANDS  = [ 'light', 'surface' ];
 
     /**
      * A kit border colour => the card's frame colour role. A frame that carries meaning must be >= 3:1 on the card fill in
@@ -141,13 +164,14 @@ final class KitAdapters
     }
 
     /**
-     * The attribute subtree to merge into $blockName for a marker of $role on surface $on, or null when this
-     * adapter does not know the combination (any other block, role or surface, or an invalid kit).
+     * The attribute subtree to merge into $blockName for a marker of $role on surface $on (and, for a card role, the
+     * optional $ground), or null when this adapter does not know the combination (any other block, role, surface or
+     * ground, a ground on a button or on an accent or dark band, or an invalid kit). A null $ground is the plain card.
      *
      * @param array<string,mixed> $kit
      * @return array<string,mixed>|null
      */
-    public static function patch( string $blockName, string $role, string $on, array $kit ): ?array
+    public static function patch( string $blockName, string $role, string $on, array $kit, ?string $ground = null ): ?array
     {
         if ( ! in_array( $role, self::APPLIED[ $blockName ] ?? [], true ) ) {
             return null;
@@ -156,23 +180,28 @@ final class KitAdapters
         if ( ! in_array( $on, $card ? self::CARD_SURFACES : self::SURFACES, true ) ) {
             return null;
         }
+        if ( null !== $ground && ( ! $card || ! isset( self::GROUNDS[ $ground ] ) || ! in_array( $on, self::GROUND_BANDS, true ) ) ) {
+            return null;
+        }
         if ( [] !== StyleKits::problems( $kit ) ) {
             return null;
         }
-        return $card ? self::card( $role, $on, $kit ) : self::button( $role, $on, $kit );
+        return $card ? self::card( $role, $on, $kit, $ground ) : self::button( $role, $on, $kit );
     }
 
     /**
      * The card patch (roles `card` and `panel`, on `divi/group` and `divi/column`): only `module.decoration` at desktop.
-     * See the class docblock's card table.
+     * See the class docblock's card table and ground table ($ground null = the plain card).
      *
      * @param array<string,mixed> $kit a valid kit
      * @return array<string,mixed>
      */
-    private static function card( string $role, string $on, array $kit ): array
+    private static function card( string $role, string $on, array $kit, ?string $ground = null ): array
     {
         $border = (array) $kit['border'];
-        $frame  = self::CARD_FRAME[ (string) $border['color'] ] ?? (string) $border['color'];
+        $fill   = null === $ground ? ( 'surface' === $on ? 'bg' : 'surface' ) : self::GROUNDS[ $ground ];
+        // On a ground the frame is the fill colour (the shape comes from the fill; the frame keeps the box's size).
+        $frame  = null !== $ground ? $fill : ( self::CARD_FRAME[ (string) $border['color'] ] ?? (string) $border['color'] );
         $width  = '0px' === (string) $border['width'] ? '1px' : (string) $border['width'];
         $style  = (string) $border['style'];
         $colour = self::colour( $frame );
@@ -189,15 +218,15 @@ final class KitAdapters
 
         $hover = (string) $kit['hover'];
         $isCard = 'card' === $role;
-        if ( $isCard && ! $bottom && self::CARD_HOVER_FRAME !== $frame && ( 'fill-swap' === $hover || 'invert' === $hover ) ) {
+        if ( null === $ground && $isCard && ! $bottom && self::CARD_HOVER_FRAME !== $frame && ( 'fill-swap' === $hover || 'invert' === $hover ) ) {
             // kc-hover-frame (the hover colour path, proven with an accent value; the role is the colour token only). Never
             // on a bottom-only card (its hover frame colour is not proven) and never when the frame already is that colour
-            // (a redundant key): only a `border` hairline frame darkens to `text` on hover.
+            // (a redundant key): only a `border` hairline frame darkens to `text` on hover. Never on a ground (it would be the fill).
             $frameAttrs['desktop']['hover'] = [ 'styles' => [ 'all' => [ 'color' => self::colour( self::CARD_HOVER_FRAME ) ] ] ];
         }
 
         $module = [
-            'background' => [ 'desktop' => [ 'value' => [ 'color' => self::colour( 'surface' === $on ? 'bg' : 'surface' ) ] ] ],
+            'background' => [ 'desktop' => [ 'value' => [ 'color' => self::colour( $fill ) ] ] ],
             'border'     => $frameAttrs,
         ];
         if ( $isCard ) {
@@ -300,6 +329,10 @@ final class KitAdapters
      * `edge` (kb-shadow-edge-down): preset4, 0px across, 4px down, no blur, opaque, in the same ink as `hard`: a hard edge
      * straight below. `glow` (kb-shadow-glow): preset1, 0px down, 16px blur, the language's `accent` at 45% (`accent-text`
      * at 45% on an accent band, where the accent would vanish): a halo around the button.
+     * On a `panel` (a button inside a `text`-filled panel): `hard` and `edge` in `bg` (the panel's ink, 11.98:1 or more on
+     * text in every language), `glow` in `bg` at 45% (2.91 to 4.27:1 against the panel; the accent at 45% is 1.08:1 in
+     * tech-mono) and NO soft shadow, rest or hover: the soft shadow is a darker tint and nothing is darker than a text
+     * panel in every language (the overlay at 25% is 1.00 to 1.05:1 on the light languages' text), so it is not written.
      * A rest shadow is written once (value) and the hover keeps it. A shadow never changes a label or border colour, so the
      * contrast bounds are unaffected.
      *
@@ -310,6 +343,9 @@ final class KitAdapters
     {
         $rest  = (string) ( $shadow['rest'] ?? 'none' );
         $hover = (string) ( $shadow['hover'] ?? 'none' );
+        if ( 'panel' === $on && ( 'soft' === $rest || 'none' === $rest ) ) {
+            return null;
+        }
         if ( 'none' === $rest ) {
             return 'soft' === $hover
                 ? [ 'desktop' => [ 'hover' => [ 'style' => 'preset1', 'vertical' => '12px', 'blur' => '24px', 'color' => '{{aied:color:overlay:25}}' ] ] ]
@@ -319,7 +355,7 @@ final class KitAdapters
             return [ 'desktop' => [ 'value' => [ 'style' => 'preset1', 'vertical' => '8px', 'blur' => '24px', 'color' => '{{aied:color:overlay:18}}' ] ] ];
         }
         if ( 'glow' === $rest ) {
-            return [ 'desktop' => [ 'value' => [ 'style' => 'preset1', 'vertical' => '0px', 'blur' => '16px', 'color' => '{{aied:color:' . ( 'accent' === $on ? 'accent-text' : 'accent' ) . ':45}}' ] ] ];
+            return [ 'desktop' => [ 'value' => [ 'style' => 'preset1', 'vertical' => '0px', 'blur' => '16px', 'color' => '{{aied:color:' . ( [ 'accent' => 'accent-text', 'panel' => 'bg' ][ $on ] ?? 'accent' ) . ':45}}' ] ] ];
         }
         if ( 'edge' === $rest ) {
             return [ 'desktop' => [ 'value' => [ 'style' => 'preset4', 'horizontal' => '0px', 'vertical' => '4px', 'blur' => '0px', 'color' => self::colour( self::ink( 'text', $on ) ) ] ] ];
@@ -350,6 +386,9 @@ final class KitAdapters
     /** The ink (label and border) of a transparent button of colour $c on surface $on (`inverse` is for dark surfaces: on light it is `text`). */
     private static function ink( string $c, string $on ): string
     {
+        if ( 'panel' === $on ) {
+            return 'bg';
+        }
         if ( 'accent' === $on ) {
             return 'accent-text';
         }
@@ -366,6 +405,9 @@ final class KitAdapters
      */
     private static function filled( string $c, string $on ): array
     {
+        if ( 'panel' === $on ) {
+            return [ 'bg', 'text' ];
+        }
         if ( 'accent' === $on || ! isset( self::ON[ $c ] ) ) {
             return [ 'surface', 'text' ];
         }
@@ -386,11 +428,12 @@ final class KitAdapters
         }
         if ( null === $rest['fill'] ) {
             // Transparent at rest: fill-swap and invert both fill it.
-            [ $bg, $label ] = 'light' === $on ? self::filled( $rest['label'], $on ) : [ 'surface', 'text' ];
+            [ $bg, $label ] = 'light' === $on || 'panel' === $on ? self::filled( $rest['label'], $on ) : [ 'surface', 'text' ];
             return [ 'fill' => $bg, 'label' => $label, 'border' => $bg ];
         }
-        if ( 'fill-swap' === $hover ) {
-            // Filled at rest: transparent in the surface's ink.
+        if ( 'fill-swap' === $hover || 'panel' === $on ) {
+            // Filled at rest: transparent in the surface's ink (on a panel `invert` too: its swapped fill would be the
+            // panel's own `text`).
             $ink = self::ink( $c, $on );
             return [ 'fill' => null, 'label' => $ink, 'border' => $ink ];
         }

@@ -514,4 +514,99 @@ class KitResolverTest extends TestCase
         }
         $this->assertNotNull( KitAdapters::patch( 'divi/group', 'card', 'surface', $kit ) );
     }
+    public function testAGroundMarkerResolvesOnAGroupAndAColumnInAnyKeyOrder(): void
+    {
+        $kit = $this->shipped( 'soft-solid' );
+        foreach ( [ 'card', 'panel' ] as $role ) {
+            foreach ( [ 'light', 'surface' ] as $on ) {
+                foreach ( [ 'inverted' => '{{aied:color:text}}', 'accent' => '{{aied:color:accent}}' ] as $ground => $fill ) {
+                    $orders = [
+                        ',"aied":{"kit":"' . $role . '","on":"' . $on . '","ground":"' . $ground . '"}',
+                        ',"aied":{"ground":"' . $ground . '","kit":"' . $role . '","on":"' . $on . '"}',
+                        ',"aied":{"on":"' . $on . '","ground":"' . $ground . '","kit":"' . $role . '"}',
+                    ];
+                    $outs = [];
+                    foreach ( $orders as $marker ) {
+                        $out   = $this->noWarnings( fn() => KitResolver::resolve( $this->group( $marker ), $kit ) );
+                        $attrs = json_decode( $this->comments( $out )[0], true );
+                        $this->assertIsArray( $attrs );
+                        $this->assertArrayNotHasKey( 'aied', $attrs, "$role $ground on $on: the marker is stripped" );
+                        $this->assertSame( $fill, $attrs['module']['decoration']['background']['desktop']['value']['color'], "$role $ground on $on" );
+                        $this->assertSame( [], KitResolver::leftovers( $out ) );
+                        $outs[] = $out;
+                    }
+                    $this->assertSame( [ $outs[0] ], array_values( array_unique( $outs ) ), 'the key order does not matter' );
+                    $column = '<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}}},"aied":{"kit":"' . $role . '","on":"' . $on . '","ground":"' . $ground . '"}} --><!-- /wp:divi/column -->';
+                    $out    = KitResolver::resolve( $column, $kit );
+                    $this->assertSame( [], KitResolver::leftovers( $out ) );
+                    $this->assertStringContainsString( '"color":"' . $fill . '"', $out );
+                    $this->assertStringNotContainsString( '"ground"', $out );
+                }
+            }
+        }
+        // No `on` with a ground: the default light band, as for any card marker.
+        $this->assertSame(
+            KitResolver::resolve( $this->group( ',"aied":{"kit":"card","on":"light","ground":"inverted"}' ), $kit ),
+            KitResolver::resolve( $this->group( ',"aied":{"kit":"card","ground":"inverted"}' ), $kit )
+        );
+        // Without a ground the marker resolves exactly as before.
+        $this->assertSame(
+            KitResolver::resolve( $this->group( ',"aied":{"kit":"card","on":"light"}' ), $kit ),
+            KitResolver::resolve( $this->group( ',"aied":{"kit":"card"}' ), $kit )
+        );
+    }
+
+    public function testTheAdapterReceivesTheGround(): void
+    {
+        $seen    = [];
+        $adapter = static function ( string $b, string $r, string $o, array $k, ?string $g = null ) use ( &$seen ): ?array {
+            $seen[] = [ $b, $r, $o, $g ];
+            return [];
+        };
+        KitResolver::resolve(
+            $this->group( ',"aied":{"kit":"panel","on":"surface","ground":"accent"}' ) . $this->group( ',"aied":{"kit":"card"}' ),
+            $this->shipped( 'soft-solid' ),
+            $adapter
+        );
+        $this->assertSame( [ [ 'divi/group', 'panel', 'surface', 'accent' ], [ 'divi/group', 'card', 'light', null ] ], $seen );
+    }
+
+    public function testAGroundTheResolverDoesNotKnowIsLeftAndReported(): void
+    {
+        $kit = $this->shipped( 'soft-solid' );
+        $cases = [
+            'ground on an accent band'   => $this->group( ',"aied":{"kit":"card","on":"accent","ground":"inverted"}' ),
+            'ground on a dark band'      => $this->group( ',"aied":{"kit":"panel","on":"dark","ground":"accent"}' ),
+            'ground on a button'         => $this->button( ',"aied":{"kit":"control","on":"light","ground":"inverted"}' ),
+            'ground on a panel button'   => $this->button( ',"aied":{"kit":"control-secondary","on":"panel","ground":"accent"}' ),
+            'ground on an image'         => '<!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"x.svg"}}}},"aied":{"kit":"card","on":"light","ground":"inverted"}} /-->',
+            'unknown ground'             => $this->group( ',"aied":{"kit":"card","on":"light","ground":"x"}' ),
+            'empty ground'               => $this->group( ',"aied":{"kit":"card","on":"light","ground":""}' ),
+            'non-string ground'          => $this->group( ',"aied":{"kit":"card","on":"light","ground":1}' ),
+            'null ground'                => $this->group( ',"aied":{"kit":"card","on":"light","ground":null}' ),
+            'object ground'              => $this->group( ',"aied":{"kit":"panel","on":"surface","ground":{"a":"inverted"}}' ),
+            'extra key with a ground'    => $this->group( ',"aied":{"kit":"card","on":"light","ground":"inverted","x":1}' ),
+            'ground with a control role' => $this->group( ',"aied":{"kit":"control","on":"light","ground":"inverted"}' ),
+            'panel band for a card'      => $this->group( ',"aied":{"kit":"card","on":"panel"}' ),
+            'panel band with a ground'   => $this->group( ',"aied":{"kit":"panel","on":"panel","ground":"inverted"}' ),
+        ];
+        foreach ( $cases as $label => $markup ) {
+            $out = $this->noWarnings( fn() => KitResolver::resolve( $markup, $kit ) );
+            $this->assertSame( $markup, $out, "$label: left untouched, nothing guessed" );
+            $this->assertSame( [ KitResolver::LEFT_MARKER ], KitResolver::leftovers( $out ), "$label: reported" );
+        }
+    }
+
+    public function testAPanelBandResolvesForAButtonOnly(): void
+    {
+        $kit = $this->shipped( 'soft-solid' );
+        foreach ( [ 'control', 'control-secondary' ] as $role ) {
+            $out = $this->noWarnings( fn() => KitResolver::resolve( $this->button( ',"aied":{"kit":"' . $role . '","on":"panel"}' ), $kit ) );
+            $this->assertSame( [], KitResolver::leftovers( $out ), "$role on panel resolves" );
+            $this->assertStringNotContainsString( '"aied"', $out );
+            $this->assertStringContainsString( '{{aied:color:bg}}', $out );
+        }
+        $this->assertNotNull( KitAdapters::patch( 'divi/button', 'control', 'panel', $kit ) );
+        $this->assertNull( KitAdapters::patch( 'divi/group', 'card', 'panel', $kit ) );
+    }
 }

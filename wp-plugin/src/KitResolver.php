@@ -16,10 +16,13 @@ require_once __DIR__ . '/StyleKits.php';
  * a `<!-- wp:divi/<name> {json} -->` block comment (text and HTML are never parsed, so text that merely CONTAINS the
  * spelling is never rewritten):
  *
- * - A marker: a TOP-LEVEL attribute `"aied":{"kit":"<role>"}` or `"aied":{"kit":"<role>","on":"<surface>"}` (only those
- *   keys). Roles and where they may sit: `control` and `control-secondary` on `divi/button`, on `light`, `accent` or
- *   `dark`; `card` and `panel` on `divi/group` or `divi/column`, on `light`, `surface`, `accent` or `dark` (`surface` is a
- *   card band only). `on` defaults to `light`. The adapter's patch for (block, role, on, kit) is deep-merged into the
+ * - A marker: a TOP-LEVEL attribute `"aied":{"kit":"<role>"}`, `"aied":{"kit":"<role>","on":"<surface>"}` or, for a card
+ *   role, `"aied":{"kit":"<role>","on":"<surface>","ground":"<ground>"}` (only those keys, in any order). Roles and where
+ *   they may sit: `control` and `control-secondary` on `divi/button`, on `light`, `accent`, `dark` or `panel` (a button
+ *   inside an inverted panel); `card` and `panel` on `divi/group` or `divi/column`, on `light`, `surface`, `accent` or
+ *   `dark` (`surface` is a card band only, `panel` a button surface only). `on` defaults to `light`. `ground` (`inverted`
+ *   or `accent`, a string) is accepted only for the card roles and only on a `light` or `surface` band. The adapter's
+ *   patch for (block, role, on, kit, ground) is deep-merged into the
  *   attributes (the patch wins over a recipe literal at the same key; lists are replaced, not appended; untouched keys
  *   keep their place) and the marker is removed. A role on a block it does not belong to, or a surface the role does not
  *   accept, is never guessed: the marker is left and reported.
@@ -44,11 +47,18 @@ final class KitResolver
 
     /** Marker role => the surfaces (bands) it may name; `light` when it names none. `surface` is for the card roles only. */
     private const ROLE_SURFACES = [
-        'control'           => [ 'light', 'accent', 'dark' ],
-        'control-secondary' => [ 'light', 'accent', 'dark' ],
+        'control'           => [ 'light', 'accent', 'dark', 'panel' ],
+        'control-secondary' => [ 'light', 'accent', 'dark', 'panel' ],
         'card'              => [ 'light', 'surface', 'accent', 'dark' ],
         'panel'             => [ 'light', 'surface', 'accent', 'dark' ],
     ];
+
+    /** Marker role => the grounds it may name, and the surfaces a ground may sit on. Only the card roles take a ground. */
+    private const ROLE_GROUNDS   = [
+        'card'  => [ 'inverted', 'accent' ],
+        'panel' => [ 'inverted', 'accent' ],
+    ];
+    private const GROUND_SURFACES = [ 'light', 'surface' ];
 
     /**
      * An opening divi block comment with attributes: (prefix)(name)(json)(suffix). The JSON never spans a `-->` and
@@ -102,7 +112,7 @@ final class KitResolver
                     if ( null === $marker || null === $adapter ) {
                         return $m[0];
                     }
-                    $patch = $adapter( $m[2], $marker[0], $marker[1], $kit );
+                    $patch = null === $marker[2] ? $adapter( $m[2], $marker[0], $marker[1], $kit ) : $adapter( $m[2], $marker[0], $marker[1], $kit, $marker[2] );
                     if ( ! is_array( $patch ) ) {
                         return $m[0];
                     }
@@ -183,10 +193,11 @@ final class KitResolver
     }
 
     /**
-     * [role, on] for a well-formed marker this code knows on $block, else null.
+     * [role, on, ground] for a well-formed marker this code knows on $block (ground null when the marker names none),
+     * else null.
      *
      * @param mixed $marker
-     * @return ?array{0:string,1:string}
+     * @return ?array{0:string,1:string,2:?string}
      */
     private static function marker( $marker, string $block ): ?array
     {
@@ -196,7 +207,7 @@ final class KitResolver
         $vars = get_object_vars( $marker );
         $keys = array_keys( $vars );
         sort( $keys );
-        if ( [ 'kit' ] !== $keys && [ 'kit', 'on' ] !== $keys ) {
+        if ( [ 'kit' ] !== $keys && [ 'kit', 'on' ] !== $keys && [ 'ground', 'kit' ] !== $keys && [ 'ground', 'kit', 'on' ] !== $keys ) {
             return null;
         }
         $role = $vars['kit'];
@@ -207,8 +218,15 @@ final class KitResolver
         if ( ! in_array( $block, self::ROLE_BLOCKS[ $role ] ?? [], true ) ) {
             return null;
         }
+        $ground = null;
+        if ( array_key_exists( 'ground', $vars ) ) {
+            $ground = $vars['ground'];
+            if ( ! is_string( $ground ) || ! in_array( $ground, self::ROLE_GROUNDS[ $role ] ?? [], true ) || ! in_array( $on, self::GROUND_SURFACES, true ) ) {
+                return null;
+            }
+        }
 
-        return [ $role, $on ];
+        return [ $role, $on, $ground ];
     }
 
     /**
