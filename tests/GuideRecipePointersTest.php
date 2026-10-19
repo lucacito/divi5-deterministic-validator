@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DesignLanguages;
+use AiEditorDivi5\WP\KitAdapters;
 use AiEditorDivi5\WP\LandingGuide;
 use AiEditorDivi5\WP\SectionRecipes;
 use AiEditorDivi5\WP\SiteGuide;
@@ -17,6 +18,7 @@ require_once __DIR__ . '/../wp-plugin/src/ImageTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/DesignLanguages.php';
 require_once __DIR__ . '/../wp-plugin/src/RecipeTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
+require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
 require_once __DIR__ . '/../wp-plugin/src/StyleGuide.php';
 require_once __DIR__ . '/../wp-plugin/src/LandingGuide.php';
 require_once __DIR__ . '/../wp-plugin/src/SiteGuide.php';
@@ -82,7 +84,7 @@ class GuideRecipePointersTest extends TestCase
     private static function recipeMentions( string $text ): array
     {
         $names = SectionRecipes::names();
-        $skip  = array_merge( StyleGuide::topics(), DesignLanguages::ids(), StyleKits::ids(), self::NOT_RECIPES );
+        $skip  = array_merge( StyleGuide::topics(), DesignLanguages::ids(), StyleKits::ids(), self::NOT_RECIPES, array_merge( ...array_values( KitAdapters::APPLIED ) ) ); // the kit marker roles are not recipes
         $out   = [];
         preg_match_all( '/`([a-z][a-z0-9]*(?:-[a-z0-9]+)+)`/', $text, $m );
         foreach ( $m[1] as $word ) {

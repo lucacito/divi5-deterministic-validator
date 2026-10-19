@@ -397,6 +397,8 @@ class SectionRecipesLockstepTest extends TestCase
                 $this->assertStringContainsString( 'name', $d );
                 $this->assertStringContainsString( 'style-kits', $d, 'points at the guide topic that lists the kits' );
                 $this->assertStringContainsString( 'get_style_guide', $d );
+                $this->assertStringContainsString( 'cards', $d, 'a kit drives cards too' );
+                $this->assertStringContainsString( 'buttons', $d );
                 $this->assertMatchesRegularExpression( '/unknown id is refused with the (list of )?valid ids/', $d );
                 foreach ( StyleKits::ids() as $id ) {
                     $this->assertStringNotContainsString( $id, $d, 'the description names no kit id, so a new kit never grows it' );
@@ -440,6 +442,7 @@ class SectionRecipesLockstepTest extends TestCase
             if ( 'get_section_recipes' === $t['name'] ) {
                 $this->assertSame( $open, $t['inputSchema']['properties']['style_kit']['description'] );
                 $this->assertStringContainsString( 'style_kit', $t['description'] );
+                $this->assertStringNotContainsString( 'button style kit', $t['description'], 'a kit is not buttons only' );
                 return;
             }
         }

@@ -188,8 +188,46 @@ final class StyleGuide
             . "- One kit per page. Don't mix kits on one page: a soft filled button next to a tight outline one looks like two designs.\n"
             . "- Buttons on an accent band or on a photo keep the kit's shape; only their colours change (each kit topic says how).\n\n"
             . "## What is kit-driven today\n\n"
-            . "Only buttons are kit-driven so far. Cards, accordions, forms and the other modules still carry the recipe's own styling and are not kit-driven yet; a kit's card and media radius and card padding are listed for that reason but are not applied yet (a kit's shadow is applied to its buttons only). "
-            . "To build a button in a kit without a recipe, copy the block from the kit's topic and swap its colours for your design language's roles.\n";
+            . self::appliedSentence() . " Accordions, forms, blurbs, testimonials, image radius and every other module keep the recipe's own styling. "
+            . "To build one without a recipe, copy the block from the kit's topic (button, card or panel) and swap its colours for your design language's roles.\n";
+    }
+
+    /** What the sentence names, per marker role: a plain noun. A role without an entry is named by its id. */
+    private const APPLIED_NOUNS = [
+        'control'           => 'buttons',
+        'control-secondary' => 'buttons',
+        'card'              => 'cards',
+        'panel'             => 'cards',
+    ];
+
+    /**
+     * "Kit-driven today: buttons (`divi/button`: `control`, `control-secondary`) and cards (`divi/group`, `divi/column`: `card`, `panel`)."
+     * Generated from KitAdapters::APPLIED (block => roles), so the guide can only claim what an adapter exists for: blocks
+     * that answer the same roles are grouped, and each group is named by the noun of its first role.
+     *
+     * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED (a parameter only so a test can prove the sentence follows the map)
+     */
+    public static function appliedSentence( ?array $applied = null ): string
+    {
+        $applied ??= KitAdapters::APPLIED;
+        $groups = [];
+        foreach ( $applied as $block => $roles ) {
+            $groups[ implode( ',', $roles ) ]['blocks'][] = $block;
+            $groups[ implode( ',', $roles ) ]['roles']    = $roles;
+        }
+        $parts = [];
+        foreach ( $groups as $group ) {
+            $noun    = self::APPLIED_NOUNS[ $group['roles'][0] ] ?? '`' . $group['roles'][0] . '`';
+            $parts[] = sprintf(
+                '%s (%s: %s)',
+                $noun,
+                implode( ', ', array_map( static fn ( string $b ): string => '`' . $b . '`', $group['blocks'] ) ),
+                implode( ', ', array_map( static fn ( string $r ): string => '`' . $r . '`', $group['roles'] ) )
+            );
+        }
+        $joined = count( $parts ) > 1 ? implode( ', ', array_slice( $parts, 0, -1 ) ) . ' and ' . end( $parts ) : (string) ( $parts[0] ?? 'nothing' );
+
+        return 'Kit-driven today: ' . $joined . '.';
     }
 
     /** Topic `style-kit:<id>`: one kit's decisions and its primary and secondary button, resolved by the real pipeline for the editorial language. At most 10,000 bytes. */
@@ -205,7 +243,7 @@ final class StyleGuide
         $secondary = self::kitButton( $kit, $language, 'control-secondary', 'Secondary button' );
 
         $lines = [ rtrim( StyleKits::markdown( $id ) ), '' ];
-        $lines[] = "Applied today: only the button's control values are (fill, border and its sides, control radius, shadow, hover and lift, text and control padding). This kit's card and media radius and card padding are recorded but NOT applied today: cards and other modules keep the recipe's own styling.";
+        $lines[] = self::appliedSentence() . " For a button the kit's control values apply (fill, border and its sides, control radius, shadow, hover and lift, text and control padding); for a card or panel see the section on cards below.";
         $textOnly = self::kitTextOnlySentence( $kit );
         if ( '' !== $textOnly ) {
             $lines[] = '';
@@ -243,7 +281,106 @@ final class StyleGuide
             }
         }
 
+        $cards = self::kitCardSection( $kit, $language );
+        if ( '' !== $cards ) {
+            $lines[] = '';
+            $lines[] = $cards;
+        }
+
         return implode( "\n", $lines ) . "\n";
+    }
+
+    /**
+     * The "Cards and panels in this kit" section: what a card and a panel take from the kit (read from the adapter's own
+     * patch, never hand-typed per kit) and a resolved card and panel, produced by the real pipeline. '' when the pipeline
+     * cannot resolve them.
+     *
+     * @param array<string,mixed> $kit
+     * @param array<string,mixed> $language
+     */
+    private static function kitCardSection( array $kit, array $language ): string
+    {
+        $card  = self::kitCard( $kit, $language, 'card', 'Card' );
+        $panel = self::kitCard( $kit, $language, 'panel', 'Panel' );
+        $patch = KitAdapters::patch( 'divi/group', 'card', 'light', $kit );
+        if ( '' === $card || '' === $panel || null === $patch ) {
+            return '';
+        }
+        $deco   = (array) $patch['module']['decoration'];
+        $border = (array) $deco['border']['desktop']['value']['styles'];
+        $bottom = isset( $border['bottom'] );
+        $edge   = (array) ( $bottom ? $border['bottom'] : $border['all'] );
+        $role   = 1 === preg_match( '/^\{\{aied:color:([a-z-]+)\}\}$/', (string) $edge['color'], $m ) ? $m[1] : 'text';
+        $frame  = $bottom
+            ? sprintf( 'A card has only a bottom edge (an underline): %s %s in the %s colour.', $edge['width'], $edge['style'], $role )
+            : sprintf( 'A card has a %s %s frame in the %s colour.', $edge['width'], $edge['style'], $role );
+        if ( isset( $deco['transform'] ) ) {
+            $hover = 'On hover a card lifts 4px.';
+        } elseif ( isset( $deco['border']['desktop']['hover'] ) ) {
+            $hover = 'On hover a card\'s frame turns to the text colour.';
+        } else {
+            $hover = 'A card has no hover change.';
+        }
+        $shadow = (array) $kit['shadow'];
+        $space  = (array) $kit['space'];
+        $radius = (array) $kit['radius'];
+
+        $lines   = [];
+        $lines[] = '## Cards and panels in this kit';
+        $lines[] = '';
+        $lines[] = 'A `card` is a grid tile and a `panel` is a static surface; both go on a `divi/group` (or a `divi/column`). '
+            . sprintf( 'Corner radius %s, padding %s (a card only). ', (string) $radius['card'], (string) $space['card'] )
+            . 'The fill is always the language\'s surface colour (its bg colour on a surface-coloured band), never transparent, so an outline kit shows its character in the frame. '
+            . 'The kit\'s border width and style are used, but at least 1px; the frame colour is the text colour (an accent frame is drawn in the text colour: an accent frame is not readable enough in every language) or the border hairline when the kit\'s border colour is `same`. '
+            . $frame . ' ' . $hover
+            . sprintf( ' Shadow: rest %s, hover %s.', (string) $shadow['rest'], (string) $shadow['hover'] )
+            . ' A panel is a static surface: the same radius, frame and shadow, no hover, and the recipe keeps its own padding. A panel takes the rest shadow only.';
+        $lines[] = '';
+        $lines[] = 'Real blocks, resolved for the `editorial` language on a light section; a child text block holds the placeholder text. Put them inside a column and swap each colour for the same role of your language.';
+        $lines[] = '';
+        $lines[] = 'Card:';
+        $lines[] = '';
+        $lines[] = '```';
+        $lines[] = $card;
+        $lines[] = '```';
+        $lines[] = '';
+        $lines[] = 'Panel:';
+        $lines[] = '';
+        $lines[] = '```';
+        $lines[] = $panel;
+        $lines[] = '```';
+        $lines[] = '';
+        $lines[] = 'Kit decisions no card takes: the text decisions (capitalization, weight and letter spacing are button-only) and the fill colour; a kit\'s media radius is recorded in the kit but no module takes it yet.';
+
+        return implode( "\n", $lines );
+    }
+
+    /**
+     * One card or panel of a kit for a language on a light band: a group with one placeholder text child, the card marker
+     * resolved by the real pipeline (KitAdapters through KitResolver, then RecipeTokens), never hand-typed attributes.
+     * Empty when anything stays unresolved.
+     *
+     * @param array<string,mixed> $kit
+     * @param array<string,mixed> $language
+     */
+    private static function kitCard( array $kit, array $language, string $role, string $text ): string
+    {
+        $group = [
+            'aied'           => [ 'kit' => $role, 'on' => 'light' ],
+            'module'         => [ 'decoration' => [ 'layout' => [ 'desktop' => [ 'value' => [ 'flexDirection' => 'column', 'rowGap' => '12px' ] ] ] ] ],
+            'builderVersion' => '5.0.2',
+        ];
+        $child = [
+            'module'         => [ 'decoration' => [ 'layout' => [ 'desktop' => [ 'value' => [ 'display' => 'block' ] ] ] ] ],
+            'content'        => [ 'innerContent' => [ 'desktop' => [ 'value' => '<h4>' . $text . ' title</h4><p>Placeholder text for the ' . strtolower( $text ) . '.</p>' ] ] ],
+            'builderVersion' => '5.0.0-public-beta.1',
+        ];
+        $markup = '<!-- wp:divi/group ' . RecipeTokens::encodeJson( $group ) . ' -->' . "\n"
+            . '<!-- wp:divi/text ' . RecipeTokens::encodeJson( $child ) . ' /-->' . "\n"
+            . '<!-- /wp:divi/group -->';
+        $markup = RecipeTokens::resolve( KitResolver::resolve( $markup, $kit ), $language );
+
+        return str_contains( $markup, 'aied' ) ? '' : $markup;
     }
 
     /**

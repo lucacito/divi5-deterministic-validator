@@ -95,7 +95,8 @@ class StyleGuideKitTopicsTest extends TestCase
         $this->assertStringContainsString( 'design language', $text );
         $this->assertStringContainsString( 'style_kit', $text );
         $this->assertStringContainsString( 'get_section_recipes', $text );
-        $this->assertMatchesRegularExpression( '/only (the )?buttons?/i', $text, 'the scope today is said honestly' );
+        $this->assertStringContainsString( 'Kit-driven today:', $text, 'the scope today is said honestly' );
+        $this->assertMatchesRegularExpression( '/accordions/i', $text, 'what is NOT kit-driven is named' );
         $this->assertMatchesRegularExpression( '/do(n\'t| not) mix/i', $text, 'one kit per page' );
         $this->assertSame( 1, preg_match_all( '/^# /m', $text ), 'one H1' );
         // Each language's default kit is named with the language; the other kits are covered by one line.
@@ -121,19 +122,161 @@ class StyleGuideKitTopicsTest extends TestCase
         }
     }
 
-    public function testTheGuideIsHonestAboutWhatAKitAppliesToday(): void
+    /** The old "only buttons / not applied" wording is gone; what the guide says is applied is exactly KitAdapters::APPLIED. */
+    public function testTheGuideNamesExactlyWhatTheAdaptersApply(): void
+    {
+        $blocks = array_keys( KitAdapters::APPLIED );
+        $roles  = array_values( array_unique( array_merge( ...array_values( KitAdapters::APPLIED ) ) ) );
+        foreach ( self::everyKitTopic() as [ $topic ] ) {
+            $text = StyleGuide::markdown( $topic );
+            $this->assertDoesNotMatchRegularExpression( '/not applied|NOT applied|Only buttons are kit-driven|not kit-driven yet|not applied yet/i', $text, $topic );
+            $this->assertSame( 1, preg_match( '/Kit-driven today: [^\n]*?\.(?= |\n)/', $text, $m ), $topic . ' has the generated sentence' );
+            preg_match_all( '/`(divi\/[a-z0-9-]+)`/', $m[0], $b );
+            $this->assertEqualsCanonicalizing( $blocks, array_values( array_unique( $b[1] ) ), $topic . ': the blocks named are the blocks in APPLIED' );
+            foreach ( $roles as $role ) {
+                $this->assertStringContainsString( '`' . $role . '`', $m[0], $topic . ': role ' . $role );
+            }
+        }
+    }
+
+    public function testTheAppliedSentenceIsGeneratedFromTheMapItIsGiven(): void
+    {
+        $this->assertSame( StyleGuide::appliedSentence( KitAdapters::APPLIED ), StyleGuide::appliedSentence(), 'the default is the shipped map' );
+        $planted = StyleGuide::appliedSentence( [ 'divi/button' => [ 'control' ], 'divi/blurb' => [ 'tile', 'row' ] ] );
+        $this->assertStringContainsString( '`divi/blurb`', $planted );
+        $this->assertStringContainsString( '`tile`', $planted );
+        $this->assertStringContainsString( '`row`', $planted );
+        $this->assertStringContainsString( '`control`', $planted );
+        $this->assertStringNotContainsString( '`divi/group`', $planted, 'a block that has no adapter is never claimed' );
+        $this->assertStringNotContainsString( '`card`', $planted );
+        $this->assertStringStartsWith( 'Kit-driven today:', $planted );
+    }
+
+    public function testTheCatalogSaysWhatIsAndIsNotKitDrivenAndHowToBuildOne(): void
     {
         $catalog = StyleGuide::markdown( 'style-kits' );
-        $this->assertStringContainsString( 'are not kit-driven yet', $catalog );
-        $this->assertStringNotContainsString( 'will follow later', $catalog );
-        foreach ( StyleKits::ids() as $id ) {
-            $text = StyleGuide::markdown( 'style-kit:' . $id );
-            $this->assertMatchesRegularExpression( '/card and media radius and card padding are recorded but NOT applied today/', $text, $id );
-            $this->assertStringContainsString( "only the button's control values are", $text, $id );
-            $this->assertStringNotContainsString( 'shadow and card padding are recorded', $text, $id . ': a button shadow IS applied now' );
+        foreach ( [ 'accordions', 'forms', 'blurbs', 'testimonials', 'image radius' ] as $word ) {
+            $this->assertStringContainsStringIgnoringCase( $word, $catalog );
         }
-        $this->assertStringNotContainsString( 'shadow and card padding are listed', $catalog );
-        $this->assertStringContainsString( 'card and media radius and card padding are listed', $catalog );
+        $this->assertStringContainsString( 'card', $catalog );
+        $this->assertStringContainsString( 'panel', $catalog );
+        $this->assertStringContainsString( 'copy the block from the kit\'s topic', $catalog );
+        $this->assertStringNotContainsString( 'will follow later', $catalog );
+    }
+
+    /** @return array{0:string,1:string} the frame colour role and the hover sentence a card of $kit must carry (derived from the kit, not from the adapter) */
+    private static function expectedCardFacts( array $kit ): array
+    {
+        $role   = [ 'same' => 'border', 'inverse' => 'text', 'accent' => 'text' ][ $kit['border']['color'] ] ?? $kit['border']['color'];
+        $bottom = 'bottom' === ( $kit['border']['sides'] ?? 'all' );
+        if ( 'lift' === $kit['hover'] ) {
+            $hover = 'On hover a card lifts 4px.';
+        } elseif ( ! $bottom && 'text' !== $role && in_array( $kit['hover'], [ 'fill-swap', 'invert' ], true ) ) {
+            $hover = 'On hover a card\'s frame turns to the text colour.';
+        } else {
+            $hover = 'A card has no hover change.';
+        }
+
+        return [ $role, $hover ];
+    }
+
+    public function testEachKitTopicStatesItsCardAndPanelTruthfully(): void
+    {
+        $lifts = $frames = $none = $under = 0;
+        foreach ( StyleKits::ids() as $id ) {
+            $kit  = (array) StyleKits::get( $id );
+            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            [ $role, $hover ] = self::expectedCardFacts( $kit );
+            $width  = '0px' === $kit['border']['width'] ? '1px' : $kit['border']['width'];
+            $bottom = 'bottom' === ( $kit['border']['sides'] ?? 'all' );
+            $this->assertStringContainsString( '## Cards and panels in this kit', $text, $id );
+            $frame = $bottom
+                ? sprintf( 'A card has only a bottom edge (an underline): %s %s in the %s colour.', $width, $kit['border']['style'], $role )
+                : sprintf( 'A card has a %s %s frame in the %s colour.', $width, $kit['border']['style'], $role );
+            $this->assertStringContainsString( $frame, $text, $id );
+            $this->assertStringContainsString( $hover, $text, $id );
+            $this->assertStringContainsString( sprintf( 'Corner radius %s, padding %s', $kit['radius']['card'], $kit['space']['card'] ), $text, $id );
+            $this->assertStringContainsString( 'A panel is a static surface: the same radius, frame and shadow, no hover, and the recipe keeps its own padding.', $text, $id );
+            $this->assertStringContainsString( 'The fill is always the language\'s surface colour', $text, $id );
+            $this->assertStringContainsString( 'a kit\'s media radius is recorded in the kit but no module takes it yet', $text, $id );
+            $this->assertStringContainsString( 'capitalization, weight and letter spacing are button-only', $text, $id );
+            $bottom ? ++$under : ( 'text' === $role ? ++$frames : ++$none );
+            if ( 'lift' === $kit['hover'] ) {
+                ++$lifts;
+            }
+        }
+        $this->assertGreaterThan( 0, $lifts, 'a lift kit ships' );
+        $this->assertGreaterThan( 0, $under, 'an underline kit ships' );
+        $this->assertGreaterThan( 0, $frames + $none );
+    }
+
+    public function testNoKitTopicClaimsAHoverTheAdapterDoesNotWrite(): void
+    {
+        foreach ( StyleKits::ids() as $id ) {
+            $kit   = (array) StyleKits::get( $id );
+            $text  = StyleGuide::markdown( 'style-kit:' . $id );
+            $patch = (array) KitAdapters::patch( 'divi/group', 'card', 'light', $kit );
+            $deco  = (array) $patch['module']['decoration'];
+            $lifts = isset( $deco['transform'] );
+            $frame = isset( $deco['border']['desktop']['hover'] );
+            $this->assertSame( $lifts, str_contains( $text, 'On hover a card lifts 4px.' ), $id );
+            $this->assertSame( $frame, str_contains( $text, 'On hover a card\'s frame turns to the text colour.' ), $id );
+            $this->assertSame( ! $lifts && ! $frame, str_contains( $text, 'A card has no hover change.' ), $id );
+        }
+    }
+
+    /** @return array<string,array<string,mixed>> role => decoded attributes of the first block of that role in the topic */
+    private function cardBlocks( string $topic ): array
+    {
+        $text = StyleGuide::markdown( $topic );
+        $out  = [];
+        foreach ( [ 'Card' => 'card', 'Panel' => 'panel' ] as $label => $role ) {
+            $this->assertSame( 1, preg_match( '/' . $label . ':\n\n```\n(<!-- wp:divi\/group (\{.*?\}) -->.*?<!-- \/wp:divi\/group -->)\n```/s', $text, $m ), $topic . ': a ' . $role . ' snippet' );
+            $attrs = json_decode( $m[2], true );
+            $this->assertIsArray( $attrs, 'block attributes decode' );
+            $out[ $role ] = [ 'attrs' => $attrs, 'block' => $m[1] ];
+        }
+
+        return $out;
+    }
+
+    public function testEachKitTopicCarriesACardAndAPanelFromTheRealPipelineThatValidate(): void
+    {
+        $registry = ShapeRegistry::load();
+        $editorial = \AiEditorDivi5\WP\DesignLanguages::get( 'editorial' );
+        foreach ( StyleKits::ids() as $id ) {
+            $kit = (array) StyleKits::get( $id );
+            foreach ( $this->cardBlocks( 'style-kit:' . $id ) as $role => $found ) {
+                $expected = json_decode( substr(
+                    \AiEditorDivi5\WP\RecipeTokens::resolve(
+                        \AiEditorDivi5\WP\KitResolver::resolve( '<!-- wp:divi/group {"aied":{"kit":"' . $role . '","on":"light"}} -->', $kit ),
+                        $editorial
+                    ),
+                    strlen( '<!-- wp:divi/group ' ),
+                    -strlen( ' -->' )
+                ), true );
+                $this->assertIsArray( $expected, "$id $role: the pipeline resolves the marker" );
+                $attrs = $found['attrs'];
+                // The snippet adds a layout and a version of its own; everything else is the pipeline's patch, exactly.
+                unset( $attrs['module']['decoration']['layout'], $attrs['builderVersion'] );
+                $this->assertSame( $expected, $attrs, "$id $role: the snippet is the resolved kit, not hand-written" );
+                $this->assertArrayNotHasKey( 'aied', $found['attrs'] );
+                $this->assertStringNotContainsString( 'aied', $found['block'] );
+
+                $page   = '<!-- wp:divi/section {"builderVersion":"5.0.0-public-beta.1"} --><!-- wp:divi/row {"builderVersion":"5.0.0-public-beta.1"} --><!-- wp:divi/column {"builderVersion":"5.0.0-public-beta.1"} -->' . $found['block'] . '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->';
+                $result = ( new Validator() )->validateContent( $page );
+                $this->assertTrue( $result->isValid(), "$id $role: " . json_encode( array_map( static fn ( $v ) => $v->code() . ' ' . $v->path(), $result->violations() ) ) );
+                $this->assertTrue( LayoutGate::check( $page )->isValid(), "$id $role passes the plugin gate" );
+                foreach ( ShapePaths::fromBlockAttrs( $found['attrs'] ) as $path ) {
+                    $this->assertTrue( $registry->covers( $path ), "$id $role uses an unregistered path $path" );
+                }
+                $this->assertSame( 'card' === $role, isset( $found['attrs']['module']['decoration']['spacing'] ), "$id: only a card carries the kit padding" );
+                $hover = json_encode( $found['attrs'] );
+                if ( 'panel' === $role ) {
+                    $this->assertStringNotContainsString( '"hover"', (string) $hover, "$id: a panel has no hover" );
+                }
+            }
+        }
     }
 
     public function testEachKitTopicDescribesItsShadowLiftAndUnderlineTruthfully(): void
