@@ -387,21 +387,43 @@ class SectionRecipesLockstepTest extends TestCase
         ( new \ReflectionProperty( SectionRecipes::class, 'cache' ) )->setValue( null, [ [ 'name' => 'kit-fixture', 'title' => 't', 'description' => 'd', 'when' => 'w', 'stage' => 's', 'markup' => $markup ] ] );
     }
 
-    public function testOpenApiStyleKitParameterIsOneSentenceNamingTheIds(): void
+    public function testOpenApiStyleKitParameterIsOneSentencePointingAtTheKitTopic(): void
     {
         $spec = OpenApiSpec::spec( 'https://acme.example/wp-json/ai-editor-divi5/v1', '9.9.9' );
         foreach ( $spec['paths']['/section-recipes']['get']['parameters'] as $p ) {
             if ( 'style_kit' === $p['name'] ) {
                 $d = $p['schema']['description'];
+                $this->assertSame( SectionRecipes::styleKitHelp(), $d );
                 $this->assertStringContainsString( 'name', $d );
+                $this->assertStringContainsString( 'style-kits', $d, 'points at the guide topic that lists the kits' );
+                $this->assertStringContainsString( 'get_style_guide', $d );
+                $this->assertMatchesRegularExpression( '/unknown id is refused with the (list of )?valid ids/', $d );
                 foreach ( StyleKits::ids() as $id ) {
-                    $this->assertStringContainsString( $id, $d );
+                    $this->assertStringNotContainsString( $id, $d, 'the description names no kit id, so a new kit never grows it' );
                 }
                 $this->assertLessThanOrEqual( 300, mb_strlen( $d ) );
                 return;
             }
         }
         $this->fail( 'style_kit parameter missing' );
+    }
+
+    public function testTheStyleKitDescriptionDoesNotGrowWithTheKits(): void
+    {
+        $before = SectionRecipes::styleKitHelp();
+        $cache  = new \ReflectionProperty( StyleKits::class, 'cache' );
+        $kits   = StyleKits::parse( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/style-kits.json' ) );
+        for ( $i = count( $kits ); $i < 40; $i++ ) {
+            $kits[] = [ 'id' => 'fake-kit-number-' . $i ];
+        }
+        $cache->setValue( null, $kits );
+        try {
+            $this->assertCount( 40, StyleKits::ids() );
+            $this->assertSame( $before, SectionRecipes::styleKitHelp(), '40 kits: the same description' );
+            $this->assertLessThanOrEqual( 300, mb_strlen( SectionRecipes::styleKitHelp() ) );
+        } finally {
+            StyleKits::clearCache();
+        }
     }
 
     public function testStyleKitDescriptionIsTheSameInMcpAndOpenApi(): void

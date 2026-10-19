@@ -53,7 +53,8 @@ final class SectionRecipes
      */
     public static function styleKitHelp(): string
     {
-        return 'With name: serve the recipe\'s buttons in this style kit, not the language\'s own kit (ids: ' . implode( ', ', StyleKits::ids() ) . '); an unknown id is refused with the valid list.';
+        // Names no kit id on purpose: the text stays the same however many kits ship (the ids are in the style-kits topic).
+        return 'With name: serve the recipe\'s buttons in this style kit instead of the design language\'s own kit; get_style_guide topic style-kits lists the kits, and an unknown id is refused with the list of valid ids.';
     }
 
     /** Forgets the memoised recipes (for tests that change the data in-process). */

@@ -6,7 +6,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 
 | What | Detail | Bytes | Approx. tokens |
 | --- | --- | ---: | ---: |
-| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 21,705 | 5,427 |
+| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 21,618 | 5,405 |
 | Reading a page (smallest) | the page's layout content (get_page_layout adds a little wrapper), from page-17-variable-heading.json | 1,152 | 288 |
 | Reading a page's outline (smallest) | get_page_layout with view "outline" on the same page: 5 blocks, each with path, name, size and the start of its text | 358 | 90 |
 | Reading a page (median) | the page's layout content (get_page_layout adds a little wrapper), from page-45-layout-3.json | 49,842 | 12,461 |
@@ -43,7 +43,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic toggles | get_style_guide with topic "toggles", only when asked for | 5,602 | 1,401 |
 | The style guide, topic forms | get_style_guide with topic "forms", only when asked for | 6,315 | 1,579 |
 | The style guide, topic composition | get_style_guide with topic "composition", only when asked for | 8,589 | 2,148 |
-| The style guide, topic style-kits | get_style_guide with topic "style-kits", only when asked for | 4,236 | 1,059 |
+| The style guide, topic style-kits | get_style_guide with topic "style-kits", only when asked for | 4,226 | 1,057 |
 | The style guide, topic style-kit:quiet-solid | get_style_guide with topic "style-kit:quiet-solid", only when asked for | 3,612 | 903 |
 | The style guide, topic style-kit:glass-edge | get_style_guide with topic "style-kit:glass-edge", only when asked for | 3,506 | 877 |
 | The style guide, topic style-kit:warm-pill | get_style_guide with topic "style-kit:warm-pill", only when asked for | 3,610 | 903 |
@@ -51,7 +51,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic style-kit:chunky-pill | get_style_guide with topic "style-kit:chunky-pill", only when asked for | 3,487 | 872 |
 | The style guide, topic style-kit:steady-solid | get_style_guide with topic "style-kit:steady-solid", only when asked for | 3,616 | 904 |
 | The style guide, topic style-kit:soft-rounded | get_style_guide with topic "style-kit:soft-rounded", only when asked for | 3,495 | 874 |
-| The style guide, topic style-kit:heavy-block | get_style_guide with topic "style-kit:heavy-block", only when asked for | 3,495 | 874 |
+| The style guide, topic style-kit:heavy-block | get_style_guide with topic "style-kit:heavy-block", only when asked for | 3,490 | 873 |
 | The style guide, topic style-kit:raw-frame | get_style_guide with topic "style-kit:raw-frame", only when asked for | 3,492 | 873 |
 | The style guide, topic style-kit:gilt-hairline | get_style_guide with topic "style-kit:gilt-hairline", only when asked for | 3,493 | 874 |
 | The style guide, topic style-kit:soft-solid | get_style_guide with topic "style-kit:soft-solid", only when asked for | 3,571 | 893 |
