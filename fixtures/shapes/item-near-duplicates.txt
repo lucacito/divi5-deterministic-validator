@@ -1,0 +1,21 @@
+# Pairs of shipped style kits whose ITEM (the item adapter's `item` patch on a light band: radius, frame and shadow from the
+# accordion, padding from the toggle) is the same item by StyleKitsTest::testEveryKitHasAVisiblyDifferentItem: the card
+# radius differs by less than 4px, the toggle padding (the kit's card padding) by less than 8px, and the frame (sides,
+# width, style, colour role) and the rest shadow are equal. Measured in Task 3 of the accordion adapter plan (12 of 780
+# pairs): the 9 card near-duplicates plus 3 pairs that differ as cards only by their hover (items have none). The kits
+# differ as BUTTONS, which is what they were made for, and are never changed to pass this list.
+#
+# Shrink-only: the test asserts this file is exactly the set found and that it never holds more than 12 pairs. A pair that
+# stops being the same item must be removed; a new kit must not add one.
+quiet-solid|steady-solid
+hairline-mono|flat-square
+hairline-mono|block-caps
+steady-solid|soft-solid
+soft-rounded|soft-lift
+raw-frame|thick-frame-caps
+raw-frame|thick-frame
+hairline-frame-caps|text-link
+hairline-frame-caps|text-link-caps
+thick-frame-caps|thick-frame
+flat-square|block-caps
+text-link|text-link-caps
