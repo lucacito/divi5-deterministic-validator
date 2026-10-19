@@ -232,5 +232,4 @@ in `docs/button-sheet-classification.md`.
 radius and card padding are recorded in the kits but not applied; image-to-layout later. Known limits: every outline
 kit's secondary button is a solid block (the role table); the underline kit's edge is faint against the accent fill
 (about 2.4:1); the soft shadow is faint on dark languages because its colour is the language overlay; a shadow is not
-written for languages whose prose says none. Owner decisions left: merge and release, and the `docs/inspitarion`
-folder name.
+written for languages whose prose says none. Owner decisions left: merge and release, and (done) renaming the sheet folder to `docs/inspiration`.

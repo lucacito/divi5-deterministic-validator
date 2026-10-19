@@ -1,6 +1,6 @@
 # Button sheet: classification and kit selection
 
-Source: `docs/inspitarion/button-sheet-125.jpg` (125 numbered buttons; the sheet's order runs 01-12, 17-20, 13-16, 21 onwards).
+Source: `docs/inspiration/button-sheet-125.jpg` (125 numbered buttons; the sheet's order runs 01-12, 17-20, 13-16, 21 onwards).
 Read against `fixtures/shapes/kit-button-vocabulary.md` (what Divi 5.15.1 proved for `divi/button`) and the Task 9a brief
 (shadow none/soft/hard, hover lift, underline, gradient fill being added to the kit schema now). Written 2026-10-18.
 
