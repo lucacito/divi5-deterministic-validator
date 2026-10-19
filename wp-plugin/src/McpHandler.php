@@ -34,10 +34,28 @@ final class McpHandler
     public function register_routes(): void
     {
         register_rest_route('ai-editor-divi5/v1', '/mcp', [
-            'methods'             => 'POST',
-            'callback'            => [$this, 'handle'],
-            'permission_callback' => [$this, 'authenticate'],
+            [
+                'methods'             => 'POST',
+                'callback'            => [$this, 'handle'],
+                'permission_callback' => [$this, 'authenticate'],
+            ],
+            // MCP clients open a GET stream (and may send DELETE to end a session). This server offers neither,
+            // and the Streamable HTTP spec says to answer 405, not 404: a route registered for POST only makes
+            // core answer rest_no_route (404), which "too many 404s" firewall rules (ModSecurity) count against
+            // the client's IP. Public on purpose: the answer reveals nothing.
+            [
+                'methods'             => 'GET,DELETE',
+                'callback'            => [$this, 'methodNotAllowed'],
+                'permission_callback' => '__return_true',
+            ],
         ]);
+    }
+
+    public function methodNotAllowed(): WP_REST_Response
+    {
+        $response = new WP_REST_Response(['code' => 'method_not_allowed', 'message' => 'This MCP endpoint accepts POST only.'], 405);
+        $response->header('Allow', 'POST');
+        return $response;
     }
 
     public function authenticate(): bool|WP_Error

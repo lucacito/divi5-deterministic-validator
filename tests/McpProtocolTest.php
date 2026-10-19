@@ -51,4 +51,30 @@ class McpProtocolTest extends TestCase
         $r = $this->call( [ 'jsonrpc' => '2.0', 'id' => 9, 'method' => 'bogus/method' ] );
         $this->assertSame( -32601, $r->get_data()['error']['code'] );
     }
+
+    /**
+     * The MCP Streamable HTTP spec: a server that offers no GET stream answers GET with 405. A 404 (core's
+     * rest_no_route, which a route registered for POST only produces) is counted by "too many 404s" firewall rules.
+     */
+    public function testGetAndDeleteOnTheEndpointAre405WithAnAllowHeader(): void
+    {
+        $GLOBALS['__wp_rest_routes'] = [];
+        ( new McpHandler() )->register_routes();
+        $endpoints = $GLOBALS['__wp_rest_routes']['/ai-editor-divi5/v1/mcp'][0] ?? [];
+
+        $byMethod = [];
+        foreach ( $endpoints as $endpoint ) {
+            foreach ( explode( ',', (string) $endpoint['methods'] ) as $m ) {
+                $byMethod[ trim( $m ) ] = $endpoint;
+            }
+        }
+        $this->assertSame( [ 'POST', 'GET', 'DELETE' ], array_keys( $byMethod ), 'POST keeps the authenticated handler; GET and DELETE are answered' );
+        $this->assertNotSame( '__return_true', $byMethod['POST']['permission_callback'] ?? null, 'POST stays authenticated' );
+
+        $r = call_user_func( $byMethod['GET']['callback'], new \WP_REST_Request( null ) );
+        $this->assertSame( 405, $r->get_status() );
+        $this->assertSame( 'POST', $r->get_headers()['Allow'] ?? null );
+        $this->assertSame( $byMethod['GET']['callback'], $byMethod['DELETE']['callback'] );
+        $this->assertSame( '__return_true', $byMethod['GET']['permission_callback'], 'a 405 reveals nothing, so no credential is needed' );
+    }
 }

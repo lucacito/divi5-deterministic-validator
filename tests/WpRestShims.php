@@ -38,6 +38,18 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
         public function __construct( private $data = null, private int $status = 200 ) {}
         public function get_data() { return $this->data; }
         public function get_status(): int { return $this->status; }
+        /** @var array<string,string> */
+        private array $headers = [];
+        public function header( $key, $value, $replace = true ): void { $this->headers[ $key ] = (string) $value; }
+        /** @return array<string,string> */
+        public function get_headers(): array { return $this->headers; }
+    }
+}
+if ( ! function_exists( 'register_rest_route' ) ) {
+    /** Records every route a class registers, so a test can read the methods back. */
+    function register_rest_route( $namespace, $route, $args = [] ) {
+        $GLOBALS['__wp_rest_routes'][ '/' . $namespace . $route ][] = $args;
+        return true;
     }
 }
 if ( ! function_exists( 'current_user_can' ) ) {
