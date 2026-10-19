@@ -610,4 +610,79 @@ class KitResolverTest extends TestCase
         $this->assertNotNull( KitAdapters::patch( 'divi/button', 'control', 'panel', $kit ) );
         $this->assertNull( KitAdapters::patch( 'divi/group', 'card', 'panel', $kit ) );
     }
+
+    private function accordion( string $marker ): string
+    {
+        return '<!-- wp:divi/accordion {"module":{"decoration":{"layout":{"desktop":{"value":{"rowGap":"10px"}}}}},"builderVersion":"5.15.1"' . $marker . '} -->'
+            . '<!-- wp:divi/accordion-item {"title":{"innerContent":{"desktop":{"value":"Q"}}},"content":{"innerContent":{"desktop":{"value":"<p>A</p>"}}}} /-->'
+            . '<!-- /wp:divi/accordion -->';
+    }
+
+    private function toggle( string $marker ): string
+    {
+        return '<!-- wp:divi/toggle {"title":{"innerContent":{"desktop":{"value":"Q"}}},"content":{"innerContent":{"desktop":{"value":"<p>A</p>"}}},"builderVersion":"5.15.1"' . $marker . '} /-->';
+    }
+
+    public function testItemMarkersResolveAndAreStrippedOnAnAccordionAndAToggle(): void
+    {
+        $kit = $this->shipped( 'soft-solid' );
+        foreach ( [ 'item' => [ 'light', 'surface', 'accent', 'dark' ], 'item-rule' => [ 'light', 'surface' ] ] as $role => $bands ) {
+            foreach ( $bands as $on ) {
+                foreach ( [ 'divi/accordion' => $this->accordion( ',"aied":{"kit":"' . $role . '","on":"' . $on . '"}' ), 'divi/toggle' => $this->toggle( ',"aied":{"on":"' . $on . '","kit":"' . $role . '"}' ) ] as $block => $markup ) {
+                    $out   = $this->noWarnings( fn() => KitResolver::resolve( $markup, $kit ) );
+                    $attrs = json_decode( $this->comments( $out )[0], true );
+                    $this->assertIsArray( $attrs );
+                    $this->assertArrayNotHasKey( 'aied', $attrs, "$role on $on ($block): the marker is stripped" );
+                    $this->assertSame( [], KitResolver::leftovers( $out ), "$role on $on ($block)" );
+                    $this->assertArrayHasKey( 'openToggle', $attrs );
+                    $this->assertArrayHasKey( 'closedToggleIcon', $attrs );
+                    $radius = $attrs['module']['decoration']['border']['desktop']['value']['radius'];
+                    $this->assertSame( 'item' === $role ? '8px' : '0px', $radius['topLeft'], "$role on $on ($block): the radius is resolved" );
+                    if ( 'divi/toggle' === $block && 'item' === $role ) {
+                        $this->assertSame( [ 'top' => '24px', 'right' => '24px', 'bottom' => '24px', 'left' => '24px' ], $attrs['module']['decoration']['spacing']['desktop']['value']['padding'] );
+                    }
+                    if ( 'divi/toggle' === $block ) {
+                        $this->assertSame( '<p>A</p>', $attrs['content']['innerContent']['desktop']['value'], 'the answer content is untouched' );
+                        $this->assertSame( 'Q', $attrs['title']['innerContent']['desktop']['value'], 'the title is untouched' );
+                    } else {
+                        $this->assertStringContainsString( '<!-- wp:divi/accordion-item {"title":{"innerContent":{"desktop":{"value":"Q"}}},"content":{"innerContent":{"desktop":{"value":"<p>A</p>"}}}} /-->', $out, 'the child item stays byte-identical' );
+                    }
+                }
+            }
+        }
+        // No `on`: a light band.
+        $this->assertSame(
+            KitResolver::resolve( $this->toggle( ',"aied":{"kit":"item-rule","on":"light"}' ), $kit ),
+            KitResolver::resolve( $this->toggle( ',"aied":{"kit":"item-rule"}' ), $kit )
+        );
+        $out = KitResolver::resolve( $this->accordion( ',"aied":{"kit":"item"}' ), $kit );
+        $this->assertStringContainsString( '"rowGap":"10px"', $out, 'the recipe layout survives' );
+    }
+
+    public function testAnItemMarkerTheResolverDoesNotKnowIsLeftAndReported(): void
+    {
+        $kit   = $this->shipped( 'soft-solid' );
+        $cases = [
+            'rule row on accent'        => $this->toggle( ',"aied":{"kit":"item-rule","on":"accent"}' ),
+            'rule row on dark'          => $this->accordion( ',"aied":{"kit":"item-rule","on":"dark"}' ),
+            'item on panel'             => $this->toggle( ',"aied":{"kit":"item","on":"panel"}' ),
+            'item on photo'             => $this->accordion( ',"aied":{"kit":"item","on":"photo"}' ),
+            'card role on a toggle'     => $this->toggle( ',"aied":{"kit":"card","on":"light"}' ),
+            'panel role on an accordion' => $this->accordion( ',"aied":{"kit":"panel"}' ),
+            'control on a toggle'       => $this->toggle( ',"aied":{"kit":"control"}' ),
+            'item on a group'           => $this->group( ',"aied":{"kit":"item","on":"light"}' ),
+            'item-rule on a button'     => $this->button( ',"aied":{"kit":"item-rule"}' ),
+            'item on an accordion item' => '<!-- wp:divi/accordion-item {"title":{"innerContent":{"desktop":{"value":"Q"}}},"aied":{"kit":"item"}} /-->',
+            'extra key'                 => $this->toggle( ',"aied":{"kit":"item","on":"light","x":1}' ),
+            'a ground on an item'       => $this->accordion( ',"aied":{"kit":"item","on":"light","ground":"inverted"}' ),
+            'a ground on a rule row'    => $this->toggle( ',"aied":{"kit":"item-rule","on":"surface","ground":"accent"}' ),
+            'non-string role'           => $this->toggle( ',"aied":{"kit":["item"]}' ),
+            'non-string band'           => $this->toggle( ',"aied":{"kit":"item","on":1}' ),
+        ];
+        foreach ( $cases as $label => $markup ) {
+            $out = $this->noWarnings( fn() => KitResolver::resolve( $markup, $kit ) );
+            $this->assertSame( $markup, $out, "$label: left untouched, nothing guessed" );
+            $this->assertSame( [ KitResolver::LEFT_MARKER ], KitResolver::leftovers( $out ), "$label: reported" );
+        }
+    }
 }

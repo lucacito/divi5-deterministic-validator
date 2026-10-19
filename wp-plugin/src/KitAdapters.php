@@ -16,7 +16,8 @@ require_once __DIR__ . '/StyleKits.php';
  * surfaces (`light`: the section's bg or surface, `accent`: an accent band, `dark`: a photo or overlay, `panel`: inside an
  * inverted, `text`-filled panel), and the cards, `divi/group` and `divi/column` in two roles (`card`, `panel`) on four
  * bands (`light` a bg band, `surface` a surface band, `accent`, `dark`), optionally on a ground (`inverted` or `accent`,
- * on a light or surface band only); see the card table and the ground table at the end.
+ * on a light or surface band only), and the items, `divi/accordion` (one marker styles every item) and `divi/toggle`, in two
+ * roles (`item` on four bands, `item-rule` on `light` and `surface` only); see the card, ground and item tables at the end.
  *
  * The button patch writes only `button.decoration.{background,border,font}` and `module.decoration.spacing` at
  * `desktop`, plus `module.decoration.boxShadow` when the kit has a shadow and `module.decoration.transform` when its hover
@@ -113,6 +114,36 @@ require_once __DIR__ . '/StyleKits.php';
  *   card's on that band. No hover frame colour ever (on fill-swap/invert kits it would be the fill); a `panel` writes
  *   no hover key, as a plain panel.
  *
+ * Item table (roles `item` and `item-rule` on `divi/accordion` and `divi/toggle`; spec 2026-10-19-accordion-adapter-design.md
+ * sections 1 and 2, probe fixtures/shapes/kit-item-vocabulary.md: 46 candidates, every decision PASSED on both carriers, none
+ * dead, so fixtures/shapes/dead-on-module.txt gains nothing). Only desktop is written; never innerContent, a child
+ * (`divi/accordion-item`), `title` (the recipe keeps family, size, weight, heading level), `advanced` (`open`) or `layout`.
+ * Divi's defaults are NOT transparent (closed fill #f4f4f4, open #fff, closed title #666, open #333, icon #ccc, answer #666,
+ * frame 1px #d9d9d9) and an omitted key falls back to them, so every state key below is written explicitly:
+ * - Fill, open and closed (`openToggle` and `closedToggle` `.decoration.background`): `item` -> `surface` (`bg` on a surface
+ *   band), as a card, so the inside never depends on the band; `item-rule` -> the band itself (`bg` on light, `surface` on
+ *   surface). Both states the same: no open-state emphasis in v1 (spec Decision 3).
+ * - Titles `text`, open and closed: accordion `openToggle` + `closedToggle` `.decoration.font.font`; toggle `openToggle` +
+ *   `closedTitle` `.decoration.font.font` (a toggle's `closedToggle` has a background only). Body `muted`
+ *   (`content.decoration.bodyFont.body.font`). Icons `text`: `closedToggleIcon` on both, `openToggleIcon` on a toggle only
+ *   (an accordion item has no open icon: Divi hides it; never written, not a dead path).
+ * - Frame (`module.decoration.border`, on an accordion it frames EACH item): the card's, kit width (`1px` floor), kit style,
+ *   colour by CARD_FRAME; an underline kit takes the underline form (`styles.all` 0px + `styles.bottom`). `item-rule` always
+ *   takes the underline form: a rule row.
+ * - Radius: `item` -> `{{aied:kit:radius-card}}` (Divi prints `overflow: hidden` on each item; measured not to clip at the
+ *   kits' insets); `item-rule` -> 0px on the four corners, written.
+ * - Padding: `item` on a toggle only -> `{{aied:kit:space-card}}` (`module.decoration.spacing`). Never on an accordion: the
+ *   parent's spacing pads the ANSWER, not the item (ki-padding-accordion), so Divi's 20px item padding stays. `item-rule`
+ *   writes no padding (the recipe keeps its own, structural, like a panel).
+ * - Shadow: `item` -> the kit's REST shadow from shadow() for the band (a surface band treated as light), as a panel: no
+ *   hover value, so a hover-only pair writes nothing; on an accordion it lands on every item. `item-rule` -> none, and
+ *   nothing is written for it: no `none` value form of `module.decoration.boxShadow` was probed (a probed form would be
+ *   needed to override a recipe literal), so the recipe migration (accordion plan Task 6, the merge-trap test) drops the
+ *   recipe's own shadow from every migrated rule row instead.
+ * - Hover: none, on either role (spec Decision 4: an accordion's hover is the parent's and would recolour every item at
+ *   once; no hover path was probed on either carrier).
+ * - Not used by items: the kit's `fill`, `color` and `text` decisions (button only), `rowGap` (Divi's 10px stays).
+ *
  * Pure and deterministic: no site access.
  */
 final class KitAdapters
@@ -129,9 +160,11 @@ final class KitAdapters
      * @var array<string, list<string>>
      */
     public const APPLIED = [
-        'divi/button' => [ 'control', 'control-secondary' ],
-        'divi/group'  => [ 'card', 'panel' ],
-        'divi/column' => [ 'card', 'panel' ],
+        'divi/button'    => [ 'control', 'control-secondary' ],
+        'divi/group'     => [ 'card', 'panel' ],
+        'divi/column'    => [ 'card', 'panel' ],
+        'divi/accordion' => [ 'item', 'item-rule' ],
+        'divi/toggle'    => [ 'item', 'item-rule' ],
     ];
 
     /** The bands a button may sit on (`panel`: inside an inverted, `text`-filled panel). */
@@ -140,6 +173,15 @@ final class KitAdapters
     /** The card roles, and the bands a card may sit on (a `surface` band is for cards only). */
     private const CARD_ROLES    = [ 'card', 'panel' ];
     private const CARD_SURFACES = [ 'light', 'surface', 'accent', 'dark' ];
+
+    /** The item roles (accordion and toggle) => the bands each may sit on (a rule row only on a light or surface band). */
+    private const ITEM_BANDS = [
+        'item'      => [ 'light', 'surface', 'accent', 'dark' ],
+        'item-rule' => [ 'light', 'surface' ],
+    ];
+
+    /** A rule row's radius, written explicitly (Divi's own item corners are square, but a recipe literal must not survive). */
+    private const SQUARE = [ 'topLeft' => '0px', 'topRight' => '0px', 'bottomRight' => '0px', 'bottomLeft' => '0px' ];
 
     /** A card ground => its fill colour role, and the bands a ground may sit on. */
     private const GROUNDS       = [ 'inverted' => 'text', 'accent' => 'accent' ];
@@ -171,7 +213,7 @@ final class KitAdapters
     /**
      * The attribute subtree to merge into $blockName for a marker of $role on surface $on (and, for a card role, the
      * optional $ground), or null when this adapter does not know the combination (any other block, role, surface or
-     * ground, a ground on a button or on an accent or dark band, or an invalid kit). A null $ground is the plain card.
+     * ground, a ground on a button, an item or an accent or dark band, a rule row on an accent or dark band, or an invalid kit). A null $ground is the plain card.
      *
      * @param array<string,mixed> $kit
      * @return array<string,mixed>|null
@@ -182,7 +224,8 @@ final class KitAdapters
             return null;
         }
         $card = in_array( $role, self::CARD_ROLES, true );
-        if ( ! in_array( $on, $card ? self::CARD_SURFACES : self::SURFACES, true ) ) {
+        $item = isset( self::ITEM_BANDS[ $role ] );
+        if ( ! in_array( $on, $item ? self::ITEM_BANDS[ $role ] : ( $card ? self::CARD_SURFACES : self::SURFACES ), true ) ) {
             return null;
         }
         if ( null !== $ground && ( ! $card || ! isset( self::GROUNDS[ $ground ] ) || ! in_array( $on, self::GROUND_BANDS, true ) ) ) {
@@ -190,6 +233,9 @@ final class KitAdapters
         }
         if ( [] !== StyleKits::problems( $kit ) ) {
             return null;
+        }
+        if ( $item ) {
+            return self::item( $blockName, $role, $on, $kit );
         }
         return $card ? self::card( $role, $on, $kit, $ground ) : self::button( $role, $on, $kit );
     }
@@ -252,6 +298,73 @@ final class KitAdapters
         }
 
         return [ 'module' => [ 'decoration' => $module ] ];
+    }
+
+    /**
+     * The item patch (roles `item` and `item-rule`, on `divi/accordion` and `divi/toggle`): see the class docblock's item
+     * table. Every colour and every frame side the item shows is written, both states, so nothing falls back to Divi's
+     * non-transparent defaults (the merge trap).
+     *
+     * @param array<string,mixed> $kit a valid kit
+     * @return array<string,mixed>
+     */
+    private static function item( string $blockName, string $role, string $on, array $kit ): array
+    {
+        $toggle = 'divi/toggle' === $blockName;
+        $rule   = 'item-rule' === $role;
+        $border = (array) $kit['border'];
+        // A rule row's fill IS the band; a boxed item is a card: `surface`, or `bg` on a surface band.
+        $fill   = $rule ? ( 'surface' === $on ? 'surface' : 'bg' ) : ( 'surface' === $on ? 'bg' : 'surface' );
+        $colour = self::colour( self::CARD_FRAME[ (string) $border['color'] ] ?? (string) $border['color'] );
+        $width  = '0px' === (string) $border['width'] ? '1px' : (string) $border['width'];
+        $style  = (string) $border['style'];
+
+        $styles = $rule || 'bottom' === ( $border['sides'] ?? 'all' )
+            // The underline form (ki-edge-bottom): no frame, only the bottom side; a rule row always takes it.
+            ? [
+                'all'    => [ 'width' => '0px', 'style' => $style, 'color' => $colour ],
+                'bottom' => [ 'width' => $width, 'style' => $style, 'color' => $colour ],
+            ]
+            : [ 'all' => [ 'width' => $width, 'style' => $style, 'color' => $colour ] ];
+
+        $module = [ 'border' => [ 'desktop' => [ 'value' => [ 'radius' => $rule ? self::SQUARE : '{{aied:kit:radius-card}}', 'styles' => $styles ] ] ] ];
+        if ( ! $rule && $toggle ) {
+            // ki-padding-toggle. Never on an accordion: its parent padding pads the answer, not the item (ki-padding-accordion).
+            $module['spacing'] = [ 'desktop' => [ 'value' => [ 'padding' => '{{aied:kit:space-card}}' ] ] ];
+        }
+        if ( ! $rule ) {
+            // The rest shadow only (no hover on items); a surface band is a light band for the shadow's ink.
+            $shadow = self::shadow( (array) $kit['shadow'], 'surface' === $on ? 'light' : $on );
+            if ( null !== $shadow ) {
+                unset( $shadow['desktop']['hover'] );
+                if ( [] !== $shadow['desktop'] ) {
+                    $module['boxShadow'] = $shadow;
+                }
+            }
+        }
+
+        $background = [ 'desktop' => [ 'value' => [ 'color' => self::colour( $fill ) ] ] ];
+        $title      = [ 'font' => [ 'desktop' => [ 'value' => [ 'color' => self::colour( 'text' ) ] ] ] ];
+        $icon       = [ 'decoration' => [ 'icon' => [ 'desktop' => [ 'value' => [ 'color' => self::colour( 'text' ) ] ] ] ] ];
+
+        $patch = [
+            'module'     => [ 'decoration' => $module ],
+            'openToggle' => [ 'decoration' => [ 'background' => $background, 'font' => $title ] ],
+        ];
+        if ( $toggle ) {
+            // A toggle's closed title is its own group (ki-title-closed-toggle); its closedToggle has a background only.
+            $patch['closedToggle']     = [ 'decoration' => [ 'background' => $background ] ];
+            $patch['closedTitle']      = [ 'decoration' => [ 'font' => $title ] ];
+            $patch['closedToggleIcon'] = $icon;
+            $patch['openToggleIcon']   = $icon;
+        } else {
+            // An accordion has no open icon (Divi hides it on an open item): closedToggleIcon only.
+            $patch['closedToggle']     = [ 'decoration' => [ 'background' => $background, 'font' => $title ] ];
+            $patch['closedToggleIcon'] = $icon;
+        }
+        $patch['content'] = [ 'decoration' => [ 'bodyFont' => [ 'body' => [ 'font' => [ 'desktop' => [ 'value' => [ 'color' => self::colour( 'muted' ) ] ] ] ] ] ] ];
+
+        return $patch;
     }
 
     /**
