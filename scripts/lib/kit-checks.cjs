@@ -65,11 +65,19 @@ function selectCells({ kits: optKits = null, languages: optLangs = null } = {}, 
   if (optKits || optLangs) {
     for (const k of optKits || kitIds) for (const l of optLangs || sheetLanguages) cells.push([k, l]);
   } else {
+    const badSheet = sheetLanguages.filter((l) => !langIds.includes(l));
+    if (badSheet.length) throw new Error('Sheet language(s) not in the design languages: ' + badSheet.join(', '));
     for (const l of sheetLanguages) for (const k of kitIds) cells.push([k, l]);
-    for (const l of languages) if (l.kit) cells.push([l.kit, l.id]);
+    for (const l of languages) {
+      if (!l.kit) continue;
+      if (!kitIds.includes(l.kit)) throw new Error(`Language ${l.id} names an unknown default kit: ${l.kit}`);
+      cells.push([l.kit, l.id]);
+    }
   }
   const seen = new Set();
-  return cells.filter(([k, l]) => { const key = k + '/' + l; if (seen.has(key)) return false; seen.add(key); return true; });
+  const out = cells.filter(([k, l]) => { const key = k + '/' + l; if (seen.has(key)) return false; seen.add(key); return true; });
+  if (!out.length) { const e = new Error('No kit/language cell selected (no kits or no languages in the data): nothing would be checked'); e.empty = true; throw e; }
+  return out;
 }
 
 // ---- expectations from the resolved markup ---------------------------------------------------------------------------
@@ -98,7 +106,7 @@ function expectFromAttrs(attrs) {
   const d = dig(attrs, 'button', 'decoration') || {};
   const styles = dig(d, 'border', 'desktop', 'value', 'styles') || {};
   const all = styles.all || {};
-  const side = (k) => { const s = Object.assign({}, all, styles[k] || {}); return { width: parseFloat(s.width || '0'), style: s.style || null, color: s.color || null }; };
+  const side = (k) => { const s = Object.assign({}, all, styles[k] || {}); return { width: s.width !== undefined && s.width !== '' ? parseFloat(s.width) : null, style: s.style || null, color: s.color || null }; };
   const font = dig(d, 'font', 'font', 'desktop', 'value') || {};
   const radius = dig(d, 'border', 'desktop', 'value', 'radius') || {};
   const md = dig(attrs, 'module', 'decoration') || {};
@@ -126,6 +134,30 @@ function expectFromAttrs(attrs) {
     shadow: { rest: shadowRest, hover: shadowHover },
     lift: ty !== undefined ? parseFloat(ty) : null,
   };
+}
+
+/**
+ * The expectation fields that are missing (null or not a number) although KitAdapters::button() ALWAYS writes them, rest and hover
+ * (KitAdapters.php: background value/hover colour, border radius (four corners), styles.all width/style/colour (plus styles.bottom for an
+ * underline), hover styles.all colour, font colour/capitalization/letterSpacing/weight and hover colour, module spacing padding). A
+ * non-empty list means an attribute path drifted: the cell is a `gate` failure instead of a check that silently stops checking.
+ * Shadow and lift stay optional (written only when the kit has them).
+ */
+function missingExpectations(exp) {
+  const out = [];
+  const num = (v) => typeof v === 'number' && !Number.isNaN(v);
+  const r = exp.rest;
+  for (const k of ['fill', 'label', 'capitalization', 'weight']) if (!r[k]) out.push('rest.' + k);
+  if (!num(r.letterSpacing)) out.push('rest.letterSpacing');
+  if (!Array.isArray(r.padding) || r.padding.length !== 4 || !r.padding.every(num)) out.push('rest.padding');
+  if (!Array.isArray(r.radius) || r.radius.length !== 4 || !r.radius.every(num)) out.push('rest.radius');
+  for (const side of ['top', 'bottom']) {
+    if (!num(r[side].width)) out.push(`rest.${side}.width`);
+    if (!r[side].style) out.push(`rest.${side}.style`);
+    if (!r[side].color) out.push(`rest.${side}.color`);
+  }
+  for (const k of ['fill', 'label', 'border']) if (!exp.hover[k]) out.push('hover.' + k);
+  return out;
 }
 
 // ---- computed-style parsing and comparison ---------------------------------------------------------------------------
@@ -171,6 +203,8 @@ function translateY(str) {
 }
 const px = (v) => (v === 'normal' ? 0 : parseFloat(v));
 const near = (a, b, tol = 0.6) => Math.abs(a - b) <= tol;
+/** Border widths: Chrome reports whole-pixel widths at DPR 1, so a quarter pixel is enough room and a 1px vs 1.5px drift fails. */
+const BORDER_TOLERANCE = 0.25;
 
 /** Problems ([code, detail]) of one computed shadow state against the expectation; also says where the shadow landed. */
 function shadowProblems(exp, el, wrap, state) {
@@ -202,7 +236,7 @@ function compareButton(exp, computed) {
   for (const [side, cap] of [['top', 'Top'], ['bottom', 'Bottom']]) {
     const e = r[side];
     const w = px(el[`border${cap}Width`]);
-    if (!near(w, e.width)) out.push(['border', `rest: border-${side}-width ${el[`border${cap}Width`]}, expected ${e.width}px`]);
+    if (!near(w, e.width, BORDER_TOLERANCE)) out.push(['border', `rest: border-${side}-width ${el[`border${cap}Width`]}, expected ${e.width}px`]);
     if (e.width > 0) {
       if (e.style && el[`border${cap}Style`] !== e.style) out.push(['border', `rest: border-${side}-style ${el[`border${cap}Style`]}, expected ${e.style}`]);
       if (e.color && !sameColour(e.color, el[`border${cap}Color`])) out.push(['border', `rest: border-${side}-color ${el[`border${cap}Color`]}, expected ${e.color}`]);
@@ -353,7 +387,7 @@ function measureButtons() {
 }
 
 module.exports = {
-  SURFACES, ROLES, SLOTS, sheetMarkup, TITLE_PREFIX, runTitle, parseRunTitle, selectCells, buttonAttrs, expectFromAttrs,
+  SURFACES, ROLES, SLOTS, sheetMarkup, TITLE_PREFIX, runTitle, parseRunTitle, selectCells, buttonAttrs, expectFromAttrs, missingExpectations, BORDER_TOLERANCE,
   colour, sameColour, parseShadows, translateY, shadowProblems, compareButton, contrastProblems, overflowProblems,
   CONTRAST_LABEL, CONTRAST_SHAPE, decodePng, pixelStats, measureButtons, hex, round2,
 };

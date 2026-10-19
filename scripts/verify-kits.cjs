@@ -43,7 +43,7 @@ const ROOT = path.resolve(__dirname, '..');
 const PW = process.env.PLAYWRIGHT_PATH || path.resolve(ROOT, '..', 'layoutlab', 'node_modules', 'playwright');
 const SITE = (process.env.AIED_SITE || 'http://localhost:8181').replace(/\/$/, '');
 
-const { devSiteOnly, makeWp, loginCookies, watchConsole, throwawayPages, cleanupOnSignals } = require('./lib/throwaway-pages.cjs');
+const { devSiteOnly, makeWp, loginSession, endSession, watchConsole, throwawayPages, cleanupOnSignals } = require('./lib/throwaway-pages.cjs');
 devSiteOnly(SITE);
 
 const USAGE = 'usage: node scripts/verify-kits.cjs [--kits a,b] [--languages x,y]\n       node scripts/verify-kits.cjs --clean-orphans';
@@ -163,10 +163,18 @@ const transitionMs = (st) => {
   return Math.max(0, ...d.map((v, i) => (v || 0) + (dl[i % dl.length] || 0)));
 };
 
+/** A fresh login for the run; the previous session token is destroyed first. */
+function renewSession(state) {
+  if (state.token) endSession(wp, state.token);
+  const s = loginSession(wp);
+  state.cookies = s.cookies;
+  state.token = s.token;
+}
+
 /** Opens the preview, logged in; one retry with a fresh login when it is a 404 or has no page content. Returns { p, consoleErrors, html }. */
 async function openPreview(ctx, id, state) {
   for (let attempt = 0; attempt < 2; attempt++) {
-    if (attempt > 0 || !state.cookies) state.cookies = loginCookies(wp);
+    if (attempt > 0 || !state.cookies) renewSession(state);
     await ctx.clearCookies();
     await ctx.addCookies(state.cookies.map(([n, value]) => ({ name: n, value, url: SITE })));
     const p = await ctx.newPage();
@@ -186,11 +194,15 @@ async function openPreview(ctx, id, state) {
   let passes = 0;
   const status = new Map();
   const observations = [];
-  const state = { cookies: null };
+  const state = { cookies: null, token: null };
   cleanupOnSignals(run, sweep, pages.runPrefix);
   let cells = [];
   try {
-    try { cells = K.selectCells({ kits: optKits, languages: optLanguages }, kitIds, languages, SHEET_LANGUAGES); } catch (e) { console.error(e.message); process.exit(2); }
+    try { cells = K.selectCells({ kits: optKits, languages: optLanguages }, kitIds, languages, SHEET_LANGUAGES); } catch (e) {
+      // Unknown ids are a usage error (2); an empty selection would check nothing, which is a failure (1), never a silent pass.
+      if (e.empty) { console.log('FAIL ' + e.message + '\nFAILED'); process.exit(1); }
+      console.error(e.message); process.exit(2);
+    }
     const foreign = pages.foreignCount();
     if (foreign > 0) console.log(`WARNING ${foreign} leftover or concurrent kit pages (not deleted; run with --clean-orphans when no other run is going)`);
     fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -211,11 +223,13 @@ async function openPreview(ctx, id, state) {
       if (run.cleaning) break;
       let page = null;
       try {
-        state.cookies = loginCookies(wp); // a fresh session per cell: a long run outlives one cookie
+        renewSession(state); // a fresh session per cell (a long run outlives one cookie); the previous one is destroyed
         page = makePage(kit, lang);
         if (!page.valid) { report(kit, lang, 'gate', [['gate', 'not saved: ' + page.verdict]]); continue; }
         const expects = K.buttonAttrs(page.markup).map(K.expectFromAttrs);
         if (expects.length !== K.SLOTS.length) { report(kit, lang, 'gate', [['gate', `the resolved sheet has ${expects.length} buttons, expected ${K.SLOTS.length}`]]); continue; }
+        const missing = expects.flatMap((e, i) => K.missingExpectations(e).map((f) => `${K.SLOTS[i].surface}/${K.SLOTS[i].role} ${f}`));
+        if (missing.length) { report(kit, lang, 'gate', [['gate', 'expectation missing (an adapter attribute path drifted): ' + missing.slice(0, 6).join(', ') + (missing.length > 6 ? ` and ${missing.length - 6} more` : '')]]); continue; }
         for (const width of WIDTHS) {
           const ctx = await browser.newContext({ viewport: { width, height: 900 } });
           const problems = [];
@@ -254,14 +268,15 @@ async function openPreview(ctx, id, state) {
                 const wait = Math.min(2000, Math.max(transitionMs(b.el), transitionMs(b.wrap))) + 150;
                 await buttons.nth(i).hover();
                 await p.waitForTimeout(wait);
-                const hov = (await p.evaluate(K.measureButtons)).buttons[i];
+                const hovAll = await p.evaluate(K.measureButtons);
+                const hov = hovAll.buttons[i];
                 await p.mouse.move(0, 0);
                 await p.waitForTimeout(wait);
                 const cmp = K.compareButton(expects[i], { rest: { el: b.el, wrap: b.wrap }, hover: { el: hov.el, wrap: hov.wrap } });
                 const surface = surfaces[i].mean;
                 const cr = K.contrastProblems(b.el, surface, 'rest');
                 const ch = K.contrastProblems(hov.el, surface, 'hover');
-                const ov = [...K.overflowProblems(b, 'rest', rest), ...K.overflowProblems(hov, 'hover', rest)];
+                const ov = [...K.overflowProblems(b, 'rest', rest), ...K.overflowProblems(hov, 'hover', hovAll)];
                 for (const [code, detail] of [...cmp.problems, ...cr.problems, ...ch.problems, ...ov]) problems.push([code, `${where} ${detail}`]);
                 // Measurements for the report (never a verdict).
                 const sw = cmp.shadowWhere;
@@ -300,11 +315,13 @@ async function openPreview(ctx, id, state) {
     failures++;
   } finally {
     if (!run.cleaning) {
+      if (state.token) endSession(wp, state.token);
       if (!sweep()) failures++;
       if (browser) await browser.close();
     }
   }
   if (run.cleaning) return;
+  if (passes + failures === 0) { failures++; console.log('FAIL no cell/width was checked: nothing was measured'); }
   console.log(`\n${passes} PASS, ${failures} FAIL (cell/width lines) over ${cells.length} kit/language cell(s)`);
   console.log(failures ? 'FAILED' : 'Every selected kit renders as it says on the real Divi.');
   process.exit(failures ? 1 : 0);

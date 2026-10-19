@@ -21,6 +21,20 @@ const makeWp = (root) => (...a) => execFileSync('docker', ['compose', 'exec', '-
 /** [[name, value]] auth cookies of user 1, valid one hour. */
 const loginCookies = (wp) => JSON.parse(wp('eval', '$u=1;$e=time()+3600;$t=WP_Session_Tokens::get_instance($u)->create($e);echo json_encode([[AUTH_COOKIE,wp_generate_auth_cookie($u,$e,"auth",$t)],[LOGGED_IN_COOKIE,wp_generate_auth_cookie($u,$e,"logged_in",$t)]]);'));
 
+/**
+ * A logged-in session of user 1 that can be ended again: { cookies (as loginCookies), token }. endSession() destroys that one session token
+ * (WP_Session_Tokens), so a long run does not leave one stored session per renewal in user 1's meta.
+ */
+function loginSession(wp) {
+  const out = JSON.parse(wp('eval', '$u=1;$e=time()+3600;$t=WP_Session_Tokens::get_instance($u)->create($e);echo json_encode(["token"=>$t,"cookies"=>[[AUTH_COOKIE,wp_generate_auth_cookie($u,$e,"auth",$t)],[LOGGED_IN_COOKIE,wp_generate_auth_cookie($u,$e,"logged_in",$t)]]]);'));
+  return { cookies: out.cookies, token: String(out.token) };
+}
+/** Destroys one session token of user 1 made by loginSession (alphanumeric only; anything else is ignored). Never throws. */
+function endSession(wp, token) {
+  if (!/^[A-Za-z0-9]+$/.test(String(token || ''))) return;
+  try { wp('eval', `WP_Session_Tokens::get_instance(1)->destroy('${token}');`); } catch (e) { /* the session expires on its own in an hour */ }
+}
+
 /** Collects the page's own console errors and uncaught exceptions (its origin, or no URL; never favicon or third-party) into the returned array. */
 function watchConsole(p, site) {
   const errors = [];
@@ -110,4 +124,4 @@ function cleanupOnSignals(run, sweep, runPrefix) {
   }
 }
 
-module.exports = { devSiteOnly, makeWp, loginCookies, watchConsole, throwawayPages, cleanupOnSignals };
+module.exports = { devSiteOnly, makeWp, loginCookies, loginSession, endSession, watchConsole, throwawayPages, cleanupOnSignals };

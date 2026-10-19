@@ -93,6 +93,34 @@ t('hover expectations: a transparent outline fills on hover (fill-swap)', () => 
   assert.strictEqual(e.rest.letterSpacing, 2);
 });
 
+t('path drift: every field the adapter always writes is required; shadow and lift stay optional', () => {
+  for (const sample of [UNDERLINE_ACCENT, SOFT_LIFT_ACCENT, DOUBLE_FRAME_LIGHT]) assert.deepStrictEqual(K.missingExpectations(K.expectFromAttrs(K.buttonAttrs(sample)[0])), [], 'a full real sample has nothing missing');
+  const full = () => K.expectFromAttrs(K.buttonAttrs(DOUBLE_FRAME_LIGHT)[0]);
+  assert.strictEqual(full().shadow.rest, null, 'no shadow and no lift is not missing');
+  assert.strictEqual(full().lift, null);
+  const cases = {
+    'rest.fill': (e) => { e.rest.fill = null; }, 'rest.label': (e) => { e.rest.label = null; }, 'rest.capitalization': (e) => { e.rest.capitalization = null; },
+    'rest.weight': (e) => { e.rest.weight = null; }, 'rest.letterSpacing': (e) => { e.rest.letterSpacing = null; }, 'rest.padding': (e) => { e.rest.padding = null; },
+    'rest.radius': (e) => { e.rest.radius[2] = null; }, 'rest.top.width': (e) => { e.rest.top.width = null; }, 'rest.top.style': (e) => { e.rest.top.style = null; },
+    'rest.top.color': (e) => { e.rest.top.color = null; }, 'rest.bottom.width': (e) => { e.rest.bottom.width = null; }, 'rest.bottom.style': (e) => { e.rest.bottom.style = null; },
+    'rest.bottom.color': (e) => { e.rest.bottom.color = null; }, 'hover.fill': (e) => { e.hover.fill = null; }, 'hover.label': (e) => { e.hover.label = null; }, 'hover.border': (e) => { e.hover.border = null; },
+  };
+  for (const [field, drop] of Object.entries(cases)) { const e = full(); drop(e); assert.deepStrictEqual(K.missingExpectations(e), [field], field + ' missing is reported'); }
+  // A drifted path in the markup itself: no styles.all width, no padding, no hover font colour.
+  const drifted = JSON.parse(JSON.stringify(K.buttonAttrs(DOUBLE_FRAME_LIGHT)[0]));
+  delete drifted.button.decoration.border.desktop.value.styles.all.width;
+  delete drifted.module.decoration.spacing;
+  delete drifted.button.decoration.font.font.desktop.hover;
+  assert.deepStrictEqual(K.missingExpectations(K.expectFromAttrs(drifted)), ['rest.padding', 'rest.top.width', 'rest.bottom.width', 'hover.label']);
+  assert.deepStrictEqual(K.missingExpectations(K.expectFromAttrs({})).length, 16, 'an empty attribute object misses everything');
+});
+t('an empty selection is an error, never zero cells', () => {
+  const noKit = languages.map((l) => ({ id: l.id }));
+  assert.throws(() => K.selectCells({}, [], noKit), (e) => e.empty === true && /No kit\/language cell selected/.test(e.message));
+  assert.throws(() => K.selectCells({}, [], languages), /names an unknown default kit/, 'a language whose kit is not in the kit list is a data error');
+  assert.throws(() => K.selectCells({}, kitIds, []), /Sheet language\(s\) not in the design languages: editorial, glass-dark/);
+});
+
 // ---- comparison ----
 const style = (o) => Object.assign({
   borderTopWidth: '4px', borderTopStyle: 'double', borderTopColor: 'rgb(28, 26, 23)', borderBottomWidth: '4px', borderBottomStyle: 'double', borderBottomColor: 'rgb(28, 26, 23)',
@@ -111,6 +139,9 @@ t('a wrong computed border width FAILS', () => {
   assert.strictEqual(p.length, 1);
   assert.strictEqual(p[0][0], 'border');
   assert.match(p[0][1], /border-top-width 2px, expected 4px/);
+  const half = K.compareButton(dbl, { rest: { el: style({ borderTopWidth: '4.5px' }), wrap: plain }, hover: hoverOk }).problems;
+  assert.deepStrictEqual(half.map((x) => x[0]), ['border'], 'half a pixel off is a failure (tolerance 0.25px)');
+  assert.deepStrictEqual(K.compareButton(dbl, { rest: { el: style({ borderTopWidth: '4.2px' }), wrap: plain }, hover: hoverOk }).problems, [], 'a fifth of a pixel is within the tolerance');
 });
 t('wrong style, colour, radius, fill, label, transform, spacing, weight are each reported', () => {
   const codes = (o) => K.compareButton(dbl, { rest: { el: style(o), wrap: plain }, hover: hoverOk }).problems.map((x) => x[0]);
