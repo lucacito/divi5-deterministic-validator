@@ -12,6 +12,7 @@ use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\SectionRecipes;
 use AiEditorDivi5\WP\StyleKits;
+use Divi5Validator\Tests\Support\Colour;
 use Divi5Validator\Tests\Support\DeadOnModule;
 use Divi5Validator\Tests\Support\ShapePaths;
 use Divi5Validator\Tests\Support\ShapeRegistry;
@@ -30,13 +31,15 @@ require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
 require_once __DIR__ . '/Support/ShapePaths.php';
 require_once __DIR__ . '/Support/ShapeRegistry.php';
 require_once __DIR__ . '/Support/DeadOnModule.php';
+require_once __DIR__ . '/Support/Colour.php';
 
 /**
  * The item adapter: a kit's decisions become the attributes of an accordion (one marker styles every item) or a toggle,
  * roles `item` (a boxed item, four bands) and `item-rule` (a rule row, light and surface only). Only the paths the effect
  * probe passed on that carrier (fixtures/shapes/kit-item-vocabulary.md) are written, every state key Divi would otherwise
  * fill with its own non-transparent default is written for both states, and the merged block passes the real gate. The
- * contrast proof is a separate task (KitItemContrastTest).
+ * contrast proof (testNoUnreadableItemInAnyKitLanguageRoleBandState) judges every kit x language x role x band x state
+ * (closed, open) on both carriers, with zero exceptions.
  */
 class KitItemAdapterTest extends TestCase
 {
@@ -530,6 +533,254 @@ class KitItemAdapterTest extends TestCase
                 }
             }
         }
+    }
+
+    /** The fill colour role of an item: the spec's table (a boxed item is a card, a rule row is its band). */
+    private const FILL_ROLE = [
+        'item'      => [ 'light' => 'surface', 'surface' => 'bg', 'accent' => 'surface', 'dark' => 'surface' ],
+        'item-rule' => [ 'light' => 'bg', 'surface' => 'surface' ],
+    ];
+
+    /**
+     * The colour paths of one item state on one carrier: [fill, title, icon or null, body or null]. An accordion's closed
+     * title is `closedToggle`'s font, a toggle's is `closedTitle`'s; an accordion has no open icon (Divi hides it on an open
+     * item); the body (the answer) shows only when open.
+     *
+     * @return array{0:string,1:string,2:?string,3:?string}
+     */
+    private static function statePaths( string $carrier, string $state ): array
+    {
+        $toggle = 'divi/toggle' === $carrier;
+        if ( 'closed' === $state ) {
+            return [
+                'closedToggle.decoration.background.desktop.value.color',
+                $toggle ? 'closedTitle.decoration.font.font.desktop.value.color' : 'closedToggle.decoration.font.font.desktop.value.color',
+                'closedToggleIcon.decoration.icon.desktop.value.color',
+                null,
+            ];
+        }
+        return [
+            'openToggle.decoration.background.desktop.value.color',
+            'openToggle.decoration.font.font.desktop.value.color',
+            $toggle ? 'openToggleIcon.decoration.icon.desktop.value.color' : null,
+            'content.decoration.bodyFont.body.font.desktop.value.color',
+        ];
+    }
+
+    /** A colour token or value resolved by the real pipeline (RecipeTokens, alpha forms included) as an opaque hex over $ground. */
+    private static function opaqueOn( string $value, array $lang, string $ground ): ?string
+    {
+        return Colour::opaque( RecipeTokens::resolve( $value, $lang ), $ground );
+    }
+
+    /**
+     * Contrast problems of one item patch on one carrier in one language and state ([] = fine), keyed "$where|<check>":
+     * - fill: the state's fill is exactly the role FILL_ROLE names for (role, band) (never transparent, never another role);
+     *   it is judged as painted over the language's bg (an item's fill is opaque in every language, a translucent one stays
+     *   honest);
+     * - title: the state's title colour at least 4.5 on that fill; body (open only): at least 4.5 on the open fill;
+     * - icon: the state's icon (an accordion's open state has none) at least 3.0 on the fill; a carrier that writes an open
+     *   icon on an accordion is judged too;
+     * - frame: every side that is drawn (width not 0px) in a colour other than the decorative `border` hairline at least 3.0
+     *   on the fill (a `text` frame carries meaning; any other role fails closed). The frame against the BAND is not judged
+     *   (as cards). A missing colour is unreadable (0:1).
+     *
+     * @param array<string,mixed> $patch
+     * @param array<string,mixed> $lang
+     * @return array<string,string>
+     */
+    public static function itemContrastProblems( array $patch, string $carrier, string $role, string $on, array $lang, string $state, string $where ): array
+    {
+        $leaves = self::leaves( $patch );
+        [ $fillPath, $titlePath, $iconPath, $bodyPath ] = self::statePaths( $carrier, $state );
+        $want  = '{{aied:color:' . ( self::FILL_ROLE[ $role ][ $on ] ?? '?' ) . '}}';
+        $token = (string) ( $leaves[ $fillPath ] ?? '' );
+        if ( $want !== $token ) {
+            return [ "$where|fill" => "$where: the $state fill is '$token', not $want" ];
+        }
+        $fill = self::opaqueOn( $token, $lang, (string) $lang['colors']['bg'] );
+        if ( null === $fill ) {
+            return [ "$where|fill" => "$where: the $state fill does not resolve" ];
+        }
+        $out   = [];
+        $judge = static function ( string $check, ?string $value, float $need ) use ( &$out, $lang, $fill, $where, $state ): void {
+            $ink = null === $value ? null : self::opaqueOn( $value, $lang, $fill );
+            $r   = null === $ink ? 0.0 : Colour::contrast( $ink, $fill );
+            if ( $r < $need ) {
+                $out[ "$where|$check" ] = sprintf( '%s: %s %s (%s) on the %s fill %s is %.2f:1, needs %.1f', $where, $state, $check, (string) $value, $state, $fill, $r, $need );
+            }
+        };
+        $judge( 'title', isset( $leaves[ $titlePath ] ) ? (string) $leaves[ $titlePath ] : null, 4.5 );
+        if ( null !== $bodyPath ) {
+            $judge( 'body', isset( $leaves[ $bodyPath ] ) ? (string) $leaves[ $bodyPath ] : null, 4.5 );
+        }
+        if ( null === $iconPath && 'open' === $state && isset( $leaves['openToggleIcon.decoration.icon.desktop.value.color'] ) ) {
+            $iconPath = 'openToggleIcon.decoration.icon.desktop.value.color';
+        }
+        if ( null !== $iconPath ) {
+            $judge( 'icon', isset( $leaves[ $iconPath ] ) ? (string) $leaves[ $iconPath ] : null, 3.0 );
+        }
+        foreach ( (array) ( $patch['module']['decoration']['border']['desktop']['value']['styles'] ?? [] ) as $side => $s ) {
+            $s = (array) $s;
+            if ( '0px' === (string) ( $s['width'] ?? '' ) ) {
+                continue;
+            }
+            $colour = isset( $s['color'] ) ? (string) $s['color'] : null;
+            if ( '{{aied:color:border}}' !== $colour ) {
+                $judge( "frame-$side", $colour, 3.0 );
+            }
+        }
+        return $out;
+    }
+
+    public function testNoUnreadableItemInAnyKitLanguageRoleBandState(): void
+    {
+        $problems = [];
+        $cells    = [ 'item' => 0, 'item-rule' => 0 ];
+        $judged   = [];
+        foreach ( $this->shippedKits() as $id => $kit ) {
+            foreach ( DesignLanguages::ids() as $langId ) {
+                $lang = DesignLanguages::get( $langId );
+                $this->assertIsArray( $lang );
+                foreach ( self::BANDS as $role => $bands ) {
+                    foreach ( $bands as $on ) {
+                        $patches = [];
+                        foreach ( self::CARRIERS as $carrier ) {
+                            $patches[ $carrier ] = $this->patch( $kit, $role, $on, $carrier );
+                        }
+                        foreach ( [ 'closed', 'open' ] as $state ) {
+                            ++$cells[ $role ];
+                            // Each module once per cell: they write different title (and icon) groups.
+                            foreach ( $patches as $carrier => $patch ) {
+                                $judged[ $carrier ] = ( $judged[ $carrier ] ?? 0 ) + 1;
+                                $problems = array_merge( $problems, self::itemContrastProblems( $patch, $carrier, $role, $on, $lang, $state, "$id|$langId|$role|$on|$state|$carrier" ) );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        $this->assertSame( [ 'item' => 40 * 10 * 4 * 2, 'item-rule' => 40 * 10 * 2 * 2 ], $cells );
+        $this->assertSame( [ 'item' => 3200, 'item-rule' => 1600 ], $cells );
+        $this->assertSame( [ 'divi/accordion' => 4800, 'divi/toggle' => 4800 ], $judged, 'both modules judged in every cell, once each' );
+        $this->assertSame( [], array_values( $problems ), "unreadable items (fix the item role table in KitAdapters::item(), never the bound; no exceptions):\n" . implode( "\n", array_slice( $problems, 0, 40 ) ) );
+    }
+
+    public function testTheItemContrastCheckCatchesWhatItShould(): void
+    {
+        $pastel = DesignLanguages::get( 'playful-pastel' );
+        $this->assertIsArray( $pastel );
+        $kits  = $this->shippedKits();
+        $judge = static fn ( array $p, string $carrier, string $state, string $role = 'item', string $on = 'light', ?array $lang = null ): array => self::itemContrastProblems( $p, $carrier, $role, $on, $lang ?? $pastel, $state, 'x' );
+        foreach ( self::CARRIERS as $carrier ) {
+            $good = $this->patch( $kits['steady-solid'], 'item', 'light', $carrier );
+            foreach ( [ 'closed', 'open' ] as $state ) {
+                $this->assertSame( [], $judge( $good, $carrier, $state ), "$carrier $state is clean" );
+            }
+            [ , $closedTitle ] = self::statePaths( $carrier, 'closed' );
+
+            // A wrong fill: another role, transparent, missing, or the right role for another band (bg on a light band).
+            foreach ( [ '{{aied:color:accent}}', KitAdapters::TRANSPARENT, '{{aied:color:bg}}', null ] as $fill ) {
+                foreach ( [ 'closed' => 'closedToggle', 'open' => 'openToggle' ] as $state => $group ) {
+                    $bad = $good;
+                    if ( null === $fill ) {
+                        unset( $bad[ $group ]['decoration']['background'] );
+                    } else {
+                        $bad[ $group ]['decoration']['background']['desktop']['value']['color'] = $fill;
+                    }
+                    $this->assertSame( [ 'x|fill' ], array_keys( $judge( $bad, $carrier, $state ) ), "$carrier $state fill " . var_export( $fill, true ) );
+                }
+            }
+            $this->assertArrayHasKey( 'x|fill', $judge( $good, $carrier, 'closed', 'item', 'surface' ), 'a surface-band item is filled bg' );
+
+            // Bad title ink (the border hairline colour, about 1.1:1) in each state; the closed title on THIS carrier's group.
+            $bad = $good;
+            self::setLeaf( $bad, $closedTitle, '{{aied:color:border}}' );
+            $this->assertSame( [ 'x|title' ], array_keys( $judge( $bad, $carrier, 'closed' ) ), "$carrier closed title" );
+            $this->assertSame( [], $judge( $bad, $carrier, 'open' ), "$carrier: the closed title is not the open one" );
+            $bad = $good;
+            self::setLeaf( $bad, 'openToggle.decoration.font.font.desktop.value.color', '{{aied:color:border}}' );
+            $this->assertSame( [ 'x|title' ], array_keys( $judge( $bad, $carrier, 'open' ) ), "$carrier open title" );
+            // A title written on the OTHER carrier's group does not count: the right group missing is 0:1.
+            $other = $good;
+            self::unsetLeaf( $other, $closedTitle );
+            $this->assertSame( [ 'x|title' ], array_keys( $judge( $other, $carrier, 'closed' ) ), "$carrier: a missing closed title fails" );
+
+            // Bad body ink, judged only when open.
+            $bad = $good;
+            self::setLeaf( $bad, 'content.decoration.bodyFont.body.font.desktop.value.color', '{{aied:color:border}}' );
+            $this->assertSame( [ 'x|body' ], array_keys( $judge( $bad, $carrier, 'open' ) ) );
+            $this->assertSame( [], $judge( $bad, $carrier, 'closed' ) );
+
+            // An icon below 3:1 (the accent in playful-pastel is about 2.3:1 on its surface), and a translucent one.
+            foreach ( [ '{{aied:color:accent}}', '{{aied:color:text:25}}' ] as $ink ) {
+                $bad = $good;
+                self::setLeaf( $bad, 'closedToggleIcon.decoration.icon.desktop.value.color', $ink );
+                $this->assertSame( [ 'x|icon' ], array_keys( $judge( $bad, $carrier, 'closed' ) ), "$carrier closed icon $ink" );
+            }
+            if ( 'divi/toggle' === $carrier ) {
+                $bad = $good;
+                self::setLeaf( $bad, 'openToggleIcon.decoration.icon.desktop.value.color', '{{aied:color:accent}}' );
+                $this->assertSame( [ 'x|icon' ], array_keys( $judge( $bad, $carrier, 'open' ) ), 'a toggle\'s open icon' );
+            } else {
+                $bad = $good;
+                $bad['openToggleIcon'] = [ 'decoration' => [ 'icon' => [ 'desktop' => [ 'value' => [ 'color' => '{{aied:color:accent}}' ] ] ] ] ];
+                $this->assertSame( [ 'x|icon' ], array_keys( $judge( $bad, $carrier, 'open' ) ), 'an open icon written on an accordion is judged too' );
+            }
+
+            // A meaningful frame below 3:1: an accent frame, and a `text` frame in a language whose text is too light.
+            $bad = $good;
+            self::setLeaf( $bad, 'module.decoration.border.desktop.value.styles.all.color', '{{aied:color:accent}}' );
+            $this->assertSame( [ 'x|frame-all' ], array_keys( $judge( $bad, $carrier, 'closed' ) ) );
+            $text = $good;
+            self::setLeaf( $text, 'module.decoration.border.desktop.value.styles.all.color', '{{aied:color:text}}' );
+            $this->assertSame( [], $judge( $text, $carrier, 'closed' ) );
+            $pale                    = $pastel;
+            $pale['colors']['text']  = '#d0d0d0';
+            $paleProblems            = $judge( $text, $carrier, 'closed', 'item', 'light', $pale );
+            $this->assertArrayHasKey( 'x|frame-all', $paleProblems, 'a text frame below 3:1' );
+            $this->assertArrayHasKey( 'x|title', $paleProblems );
+            // The `border` hairline is exempt, a 0px side is not drawn, a bottom rule is judged, a frame with no colour fails.
+            $this->assertSame( [], $judge( $good, $carrier, 'closed' ), 'the border hairline is decorative' );
+            $rule = $this->patch( $kits['steady-solid'], 'item-rule', 'light', $carrier );
+            $this->assertSame( [], $judge( $rule, $carrier, 'open', 'item-rule' ) );
+            self::setLeaf( $rule, 'module.decoration.border.desktop.value.styles.all.color', '{{aied:color:accent}}' );
+            $this->assertSame( [], $judge( $rule, $carrier, 'open', 'item-rule' ), 'the 0px `all` side of a rule row is not drawn' );
+            self::setLeaf( $rule, 'module.decoration.border.desktop.value.styles.bottom.color', '{{aied:color:accent}}' );
+            $this->assertSame( [ 'x|frame-bottom' ], array_keys( $judge( $rule, $carrier, 'open', 'item-rule' ) ) );
+            self::unsetLeaf( $rule, 'module.decoration.border.desktop.value.styles.bottom.color' );
+            $this->assertSame( [ 'x|frame-bottom' ], array_keys( $judge( $rule, $carrier, 'open', 'item-rule' ) ) );
+            // A rule row on a surface band is filled surface; bg there is the wrong fill.
+            $this->assertArrayHasKey( 'x|fill', $judge( $this->patch( $kits['steady-solid'], 'item-rule', 'light', $carrier ), $carrier, 'open', 'item-rule', 'surface' ) );
+        }
+    }
+
+    /** Set the dotted $path of $node to $value. @param array<string,mixed> $node */
+    private static function setLeaf( array &$node, string $path, mixed $value ): void
+    {
+        $ref = &$node;
+        foreach ( explode( '.', $path ) as $k ) {
+            if ( ! isset( $ref[ $k ] ) || ! is_array( $ref[ $k ] ) ) {
+                $ref[ $k ] = [];
+            }
+            $ref = &$ref[ $k ];
+        }
+        $ref = $value;
+    }
+
+    /** Remove the dotted $path of $node. @param array<string,mixed> $node */
+    private static function unsetLeaf( array &$node, string $path ): void
+    {
+        $keys = explode( '.', $path );
+        $last = array_pop( $keys );
+        $ref  = &$node;
+        foreach ( $keys as $k ) {
+            if ( ! isset( $ref[ $k ] ) || ! is_array( $ref[ $k ] ) ) {
+                return;
+            }
+            $ref = &$ref[ $k ];
+        }
+        unset( $ref[ $last ] );
     }
 
     public function testAppliedNamesTheItemCarriers(): void
