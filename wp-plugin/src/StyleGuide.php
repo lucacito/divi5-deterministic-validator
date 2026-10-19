@@ -314,7 +314,23 @@ final class StyleGuide
             return ''; // fail closed: a frame colour that is not a role token is never guessed
         }
         $role   = $m[1];
-        $legend = self::kitColourLegend( array_values( array_filter( [ $patch, KitAdapters::patch( 'divi/group', 'panel', 'light', $kit ) ] ) ), $language );
+        $inverted = self::kitInvertedPanel( $kit, $language );
+        $ground   = KitAdapters::patch( 'divi/group', 'panel', 'light', $kit, 'inverted' );
+        $onPanel  = KitAdapters::patch( 'divi/button', 'control', 'panel', $kit );
+        $accentFill = KitAdapters::patch( 'divi/group', 'panel', 'light', $kit, 'accent' );
+        if ( '' === $inverted || null === $ground || null === $onPanel || null === $accentFill ) {
+            return '';
+        }
+        $fills  = [];
+        foreach ( [ $ground, $accentFill ] as $g ) {
+            $fills[] = (string) preg_replace( '/^\{\{aied:color:([a-z-]+)\}\}$/', '$1', (string) $g['module']['decoration']['background']['desktop']['value']['color'] );
+        }
+        if ( [ 'text', 'accent' ] !== $fills ) {
+            return ''; // fail closed: the sentence below names exactly these two grounds and their inks
+        }
+        // The inks the snippet and the prose name (background, and accent-text) join the legend as tokens of a synthetic patch.
+        $inks   = [ 'ink' => [ '{{aied:color:' . self::GROUND_INK['text'] . '}}', '{{aied:color:' . self::GROUND_INK['accent'] . '}}' ] ];
+        $legend = self::kitColourLegend( array_values( array_filter( [ $patch, KitAdapters::patch( 'divi/group', 'panel', 'light', $kit ), $ground, $onPanel, $inks ] ) ), $language );
         if ( '' === $legend ) {
             return '';
         }
@@ -337,13 +353,13 @@ final class StyleGuide
         $lines[] = '';
         $lines[] = 'A `card` is a grid tile and a `panel` is a static surface; both go on a `divi/group` (or a `divi/column`). '
             . sprintf( 'Corner radius %s, padding %s (a card only). ', (string) $radius['card'], (string) $space['card'] )
-            . 'The fill is always the language\'s surface colour (the `surface` role; the `bg` role on a surface-coloured band), never transparent, so an outline kit shows its character in the frame. '
-            . 'The kit\'s border width and style are used, but at least 1px; the frame colour is the text colour (an accent frame is drawn in the text colour: an accent frame is not readable enough in every language) or the border hairline (the `border` role) when the kit\'s border colour is `same` or `border`. '
+            . 'The fill is always the language\'s surface colour (the `surface` role; the `bg` role on a surface-coloured band), never transparent. '
+            . 'The kit\'s border width and style are used, but at least 1px; the frame colour is the text colour (an accent frame is drawn in the text colour) or the border hairline (the `border` role) when the kit\'s border colour is `same` or `border`. '
             . $frame . ' ' . $hover
             . sprintf( ' Shadow: rest %s, hover %s.', (string) $shadow['rest'], (string) $shadow['hover'] )
             . ' A panel is a static surface: the same radius, frame and shadow, no hover, and the recipe keeps its own padding. A panel takes the rest shadow only.';
         $lines[] = '';
-        $lines[] = 'Real blocks, resolved for the `editorial` language on a light section; a child text block holds the placeholder text. Put them inside a column and swap each colour for the role named in the text above, not by its value: two roles can share one value (listed together below).';
+        $lines[] = 'Real blocks, resolved for the `editorial` language on a light section, with a placeholder text child. Put them inside a column and swap each colour for its role below, not by its value: two roles can share one value.';
         $lines[] = '';
         $lines[] = 'Colours in these blocks, as value = role(s): ' . $legend . '.';
         $lines[] = '';
@@ -357,6 +373,15 @@ final class StyleGuide
         $lines[] = '';
         $lines[] = '```';
         $lines[] = $panel;
+        $lines[] = '```';
+        $lines[] = '';
+        $lines[] = 'A panel can sit on an `inverted` ground (text colour as fill; its text in the background colour, or the surface colour on a surface band) or an `accent` ground (accent colour as fill; its text in the accent-text colour). The frame takes the fill colour; the kit never re-inks the children. '
+            . 'A button on an inverted panel takes the `panel` treatment: ' . self::kitSurfaceSentence( $kit, 'panel', 'on it', [ 'control' => 'primary' ] );
+        $lines[] = '';
+        $lines[] = 'Inverted panel:';
+        $lines[] = '';
+        $lines[] = '```';
+        $lines[] = $inverted;
         $lines[] = '```';
         $lines[] = '';
         $lines[] = 'Kit decisions no card takes: the text decisions (capitalization, weight and letter spacing are button-only) and the fill colour; a kit\'s media radius is recorded in the kit but no module takes it yet.';
@@ -388,6 +413,36 @@ final class StyleGuide
             . '<!-- wp:divi/text ' . RecipeTokens::encodeJson( $child ) . ' /-->' . "\n"
             . '<!-- /wp:divi/group -->';
         $markup = RecipeTokens::resolve( KitResolver::resolve( $markup, $kit ), $language );
+
+        return str_contains( $markup, 'aied' ) ? '' : $markup;
+    }
+
+    /** The ink (colour role) a child uses on a ground of the given fill role: the one pairing KitAdapters::ON also uses for a filled button's label (pinned equal by a test). */
+    private const GROUND_INK = [ 'accent' => 'accent-text', 'text' => 'bg' ];
+
+    /**
+     * One inverted panel of a kit for a language on a light band: a group with the card marker's `inverted` ground, and a primary
+     * button on the `panel` surface, all resolved by the real pipeline
+     * (KitAdapters through KitResolver, then RecipeTokens). Empty when anything stays unresolved.
+     *
+     * @param array<string,mixed> $kit
+     * @param array<string,mixed> $language
+     */
+    private static function kitInvertedPanel( array $kit, array $language ): string
+    {
+        $group  = [
+            'aied'           => [ 'kit' => 'panel', 'on' => 'light', 'ground' => 'inverted' ],
+            'module'         => [ 'decoration' => [ 'layout' => [ 'desktop' => [ 'value' => [ 'flexDirection' => 'column', 'rowGap' => '12px' ] ] ] ] ],
+            'builderVersion' => '5.0.2',
+        ];
+        $button = self::kitButton( $kit, $language, 'control', 'Button', 'panel' );
+        if ( '' === $button ) {
+            return '';
+        }
+        $markup = '<!-- wp:divi/group ' . RecipeTokens::encodeJson( $group ) . ' -->' . "\n"
+            . '{{button}}' . "\n"
+            . '<!-- /wp:divi/group -->';
+        $markup = str_replace( '{{button}}', $button, RecipeTokens::resolve( KitResolver::resolve( $markup, $kit ), $language ) );
 
         return str_contains( $markup, 'aied' ) ? '' : $markup;
     }
@@ -474,15 +529,16 @@ final class StyleGuide
 
     /**
      * One button block of a kit for a language, produced by the real pipeline (KitAdapters through KitResolver, then
-     * RecipeTokens): never hand-typed attributes. Empty when anything stays unresolved.
+     * RecipeTokens): never hand-typed attributes. Empty when anything stays unresolved. $on names the surface the button
+     * sits on (the marker's `on`; '' = the default, a light section).
      *
      * @param array<string,mixed> $kit
      * @param array<string,mixed> $language
      */
-    private static function kitButton( array $kit, array $language, string $role, string $text ): string
+    private static function kitButton( array $kit, array $language, string $role, string $text, string $on = '' ): string
     {
         $attrs = [
-            'aied'           => [ 'kit' => $role ],
+            'aied'           => '' === $on ? [ 'kit' => $role ] : [ 'kit' => $role, 'on' => $on ],
             'module'         => [ 'decoration' => [ 'layout' => [ 'desktop' => [ 'value' => [ 'display' => 'block' ] ] ] ] ],
             'button'         => [
                 'decoration'   => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'family' => '{{aied:font:body}}' ] ] ] ] ],
@@ -546,10 +602,10 @@ final class StyleGuide
      *
      * @param array<string,mixed> $kit
      */
-    private static function kitSurfaceSentence( array $kit, string $on, string $where ): string
+    private static function kitSurfaceSentence( array $kit, string $on, string $where, array $roles = [ 'control' => 'primary', 'control-secondary' => 'secondary' ] ): string
     {
         $out = [];
-        foreach ( [ 'control' => 'primary', 'control-secondary' => 'secondary' ] as $role => $name ) {
+        foreach ( $roles as $role => $name ) {
             $patch = KitAdapters::patch( 'divi/button', $role, $on, $kit );
             if ( null === $patch ) {
                 continue;
