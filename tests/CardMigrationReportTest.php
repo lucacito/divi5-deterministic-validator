@@ -209,7 +209,7 @@ class CardMigrationReportTest extends TestCase
         $this->assertSame(
             [
                 'icon-values'              => [ 'wrapper', 'wrapper', 'wrapper' ], // marked (Task 9): classified by the decoration they have left
-                'pricing-three-tier'       => [ 'wrapper', 'panel', 'wrapper' ], // #2 is the featured plan: its frame and shadow stay, its radius is the kit's token (reads as 0)
+                'pricing-three-tier'       => [ 'wrapper', 'panel', 'wrapper' ], // #2 is the featured plan: its frame and shadow stay, its radius is the kit's token; it is `panel` because it is now the recipe's only card-like column left (the report calls several card-like blocks of one name `card` and a single one `panel`), see scripts/card-migration-report.php
                 'proof-press-quotes'       => [ 'rule', 'rule', 'rule' ], // a 2px top rule, no fill: a divider, like the group rules
                 'testimonials-avatar-grid' => [ 'wrapper', 'wrapper', 'wrapper' ],
             ],

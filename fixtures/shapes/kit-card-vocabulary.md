@@ -9,7 +9,7 @@ Rendered on the Docker dev site (Divi 5.15.1) at 1280, 900 and 400 px, 2026-10-1
 42 PASS, 0 DEAD, 0 css-only, no overflow at any width, no control noise. Every path is under `module.decoration.*`, the
 card's own element (the first `div` of the measurement); no `<module>.decoration` group of a child is involved.
 
-- **v1**: proven on the carrier AND the card adapter (Task 3 for the group, Task 8 for the column) may write it.
+- **v1**: proven on both carriers and written by `KitAdapters::card()` (Task 3; the same patch for `divi/group` and `divi/column`).
 - **later**: proven, but not in the v1 vocabulary.
 - **not taught**: DEAD or css-only. (None.)
 
@@ -19,7 +19,7 @@ card's own element (the first `div` of the measurement); no `<module>.decoration
 | frame style | `solid`, `dashed`, `dotted`, `double` (4px frame; each changes the style on all four sides) (kc-style-*) | `module.decoration.border.{bp}.value.styles.all.style` | PASS | PASS | v1 |
 | frame colour | any colour over a 2px solid frame (kc-frame-colour) | `module.decoration.border.{bp}.value.styles.all.color` | PASS | PASS | v1 |
 | underline edge (rest) | the exact underline form of `KitAdapters::button()` at rest: `styles.all` width `0px` + style + colour, `styles.bottom` width `3px` + style + colour. Result: only the bottom side is drawn (box height +3px, nothing else moves) (kc-edge-bottom) | `module.decoration.border.{bp}.value.styles.{all,bottom}.{width,style,color}` | PASS | PASS | v1 |
-| underline hover frame colour | NOT PROVEN: kc-edge-bottom sets `border.hover.styles.all.color` equal to the rest colour and has no hover state, so it could not show a change; the hover frame colour is proven on a full frame only (kc-hover-frame) | `module.decoration.border.{bp}.hover.styles.all.color` on a bottom-only card | not measured | not measured | later: the adapter must write NO hover border colour on a bottom-only card |
+| underline hover frame colour | NOT PROVEN: kc-edge-bottom sets `border.hover.styles.all.color` equal to the rest colour and has no hover state, so it could not show a change; the hover frame colour is proven on a full frame only (kc-hover-frame) | `module.decoration.border.{bp}.hover.styles.all.color` on a bottom-only card | not measured | not measured | NOT PROVEN and NOT written: the adapter writes no hover border colour on a bottom-only (underline) card; such a card keeps its lift and shadow only |
 | radius | four corners `16px` (kc-radius-16) and `999px` pill (kc-radius-pill) | `module.decoration.border.{bp}.value.radius.{topLeft,topRight,bottomRight,bottomLeft}` | PASS | PASS | v1 |
 | radius clips a child | with a radius Divi also prints `overflow: hidden` on the card (computed `visible` -> `hidden`), so a full-width image touching the card's corner is cut to the rounded corner: the screenshot pixel 2px inside the top-left corner is white (page) with `24px`, the image's blue without it, on both carriers at 1280 and 400 px (kc-radius-clips-image, plus a separate pixel check in the task report). The image keeps `border-radius: 0px` itself: the clip is the card's. Provenance: the pixel proof came from an uncommitted scratch script (not in the repo), values: corner pixel white with a 24px radius, the image's blue without it, at 1280 and 400; the probe itself only recorded the computed overflow/radius change | same radius paths | PASS | PASS | v1: a card with a radius clips its image child (an image-top card needs no radius on the image). Side effect to state: `overflow: hidden` also clips anything of a child that spills out of the card (a child shadow, a negative margin) |
 | padding | `32px` on all four sides (computes 32px on each side; height grows by 64px) (kc-padding) | `module.decoration.spacing.{bp}.value.padding.{top,right,bottom,left}` | PASS | PASS | v1 |
@@ -29,13 +29,17 @@ card's own element (the first `div` of the measurement); no `<module>.decoration
 | shadow: edge | `preset4` + horizontal `0px`, vertical `4px`, blur `0px`, colour computes `rgb(17, 24, 39) 0px 4px 0px 0px` (kc-shadow-edge) | same | PASS | PASS | v1 |
 | shadow: glow | `preset1` + vertical `0px`, blur `16px`, colour `rgba(245,158,11,0.45)` (on a 1px frame) computes `rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` (kc-shadow-glow) | `module.decoration.boxShadow.{bp}.value.{style,vertical,blur,color}` | PASS | PASS | v1 |
 | hover: lift | `translate.y: "-4px"` computes `matrix(1, 0, 0, 1, 0, -4)` with the pointer on the card; Divi also adds `transition-property: transform, translate` and `0.3s` (kc-hover-lift) | `module.decoration.transform.{bp}.hover.translate.y` | PASS | PASS | v1 |
-| hover: frame colour | `border.hover.styles.all.color` over a 2px solid frame changes all four border colours (kc-hover-frame) | `module.decoration.border.{bp}.hover.styles.all.color` | PASS | PASS | v1 |
+| hover: frame colour | `border.hover.styles.all.color` over a 2px solid frame changes all four border colours (kc-hover-frame) | `module.decoration.border.{bp}.hover.styles.all.color` | PASS | PASS | v1, but written ONLY with the value `text`, on a `card` (never a `panel`), only when the rest frame is not already `text`, and never on an underline card (the proof showed an `accent` hover frame fails the 3:1 bound in playful-pastel and brutalist-flat) |
 | hover: shadow | `preset1` + vertical `12px`, blur `24px`, colour `rgba(0,0,0,0.25)` over no rest shadow computes `rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` on hover (kc-hover-shadow) | `module.decoration.boxShadow.{bp}.hover.{style,vertical,blur,color}` | PASS | PASS | v1 |
+
+What `KitAdapters::card()` does with this vocabulary, and what the finished work found, is in the Outcome section of
+`docs/superpowers/specs/2026-10-19-card-adapter-design.md`. Padding and hover (lift, frame colour, shadow) are written for
+a `card` only; a `panel` keeps its own padding and gets no hover key.
 
 ## Findings the next tasks must act on
 
-1. **Nothing is dead on either carrier.** No line was added to `fixtures/shapes/dead-on-module.txt`, and the column part of
-   Task 8 is not cancelled. The registry gained no new path (`promote-shapes.php` reported 0 added: every path was
+1. **Nothing is dead on either carrier.** No line was added to `fixtures/shapes/dead-on-module.txt`, and the column
+   migration (Task 9) was not cancelled. The registry gained no new path (`promote-shapes.php` reported 0 added: every path was
    already registered from the earlier group probes and exports), so the new evidence is the 42 `kc-*` sections in
    `docs/shape-evidence-5.15.1.md`, which pin the measurement ON the group and ON the column.
 2. **A radius brings `overflow: hidden` with it, on both carriers.** That is what makes the card clip an image child (the
@@ -43,6 +47,8 @@ card's own element (the first `div` of the measurement); no `<module>.decoration
    keep the existing bespoke radius only where the image is NOT inside the card.
 3. **Measured on a plain card only.** The probe cards hold a text (and, for the clip, an image first). A column card sits in
    a row: its width comes from the row's column structure, and its border, padding and radius were measured at the
-   default `4_4` structure (no overflow at 400 px). A column inside a multi-column row was not measured here.
+   default `4_4` structure (no overflow at 400 px). A column inside a multi-column row was not measured here
+   (later covered by the `verify-kits` sheet, which renders a three-column row of column cards, and by the live renders of
+   icon-values, testimonials-avatar-grid and pricing-three-tier; see the spec Outcome).
 4. **Hover on the underline form is NOT proven.** The adapter writes no hover border colour on a bottom-only card until a
    probe in the hover state shows it (see the underline hover frame colour row).

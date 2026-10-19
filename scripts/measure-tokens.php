@@ -100,6 +100,11 @@ $md .= "\nA refusal used to repeat the full list of allowed block types in every
 $md .= "\nTo read a page cheaply, ask get_page_layout for view \"outline\" (every block's path, name, size and the start of its text), then view \"block\" with a path for one block's exact markup.\n";
 $md .= "\nTokens the assistant WRITES also count: sending a whole layout to update_page_layout costs roughly the size of the page read. edit_page_content avoids that (and a dry_run of it sends only the find-and-replace pair).\n";
 $md .= "\nThe style guide topics, the recipe catalog and a filtered catalog are read only when asked for; the default catalog is names only, and one recipe is fetched by name (with an optional design_language that fills in its colors and fonts without changing its size much).\n";
+$kitRows = array_values( array_filter( $rows, static fn ( array $r ): bool => 0 === strpos( $r[0], 'The style guide, topic style-kit:' ) ) );
+if ( [] !== $kitRows ) {
+    usort( $kitRows, static fn ( array $a, array $b ): int => $b[2] <=> $a[2] );
+    $md .= "\nEach style-kit:<id> topic now also describes the kit's cards and panels. The largest kit topic is " . substr( $kitRows[0][0], strlen( 'The style guide, topic ' ) ) . ' at ' . number_format( $kitRows[0][2] ) . ' bytes (the bound is 10,000); the smallest is ' . number_format( $kitRows[ count( $kitRows ) - 1 ][2] ) . " bytes.\n";
+}
 $md .= "\nThe Pro add-on adds its own tool definitions on top of the first row.\n";
 file_put_contents( __DIR__ . '/../docs/token-usage.md', $md );
 echo $md;

@@ -119,12 +119,13 @@ final class KitAdapters
 
     /**
      * A kit border colour => the card's frame colour role. A frame that carries meaning must be >= 3:1 on the card fill in
-     * every language, and only `text` is (an `accent` frame is 2.30:1 on playful-pastel's bg, 2.81:1 on brutalist-flat's):
+     * every language, and an `accent` frame is not (2.30:1 on playful-pastel's bg, 2.81:1 on brutalist-flat's); `text` is the
+     * role chosen and is >= 3:1 on every card fill (`muted` is also >= 5.47:1, but a muted frame would change meaning):
      * `accent` and `inverse` frames are `text`; `same` is the decorative `border` hairline; `text` and `border` as given.
      */
     private const CARD_FRAME = [ 'same' => 'border', 'inverse' => 'text', 'accent' => 'text' ];
 
-    /** The card's hover frame colour role (fill-swap / invert): the one role readable on every card fill, see CARD_FRAME. */
+    /** The card's hover frame colour role (fill-swap / invert): the role chosen (>= 3:1 on every card fill), see CARD_FRAME. */
     private const CARD_HOVER_FRAME = 'text';
 
     /** The label colour role on a fill of the given colour role (`inverse` is never a fill, see filled()). */

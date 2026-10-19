@@ -1119,7 +1119,7 @@ class RecipeLibraryTest extends TestCase
      * and nothing of the card decoration; the featured plan keeps its own).
      *
      * @param array<string,string>                    $markups recipe => raw markup
-     * @param array<string,array{0:string,1:string,2:string}> $pins    "<recipe>|<index>" => [role, on, json]
+     * @param array<string,array{0:?string,1:string,2:string}> $pins    "<recipe>|<index>" => [role (null: no marker), on, json]
      * @return list<string>
      */
     private static function columnPinProblems( array $markups, array $pins ): array
@@ -1160,7 +1160,8 @@ class RecipeLibraryTest extends TestCase
         $this->assertSame( [], self::columnPinProblems( $markups, self::MIGRATED_COLUMNS ) );
         // The featured plan is the one column left on its own decoration: marker-free, its corners the kit's.
         $this->assertSame( [], self::columnPinProblems( $markups, [ 'pricing-three-tier|2' => [ null, '', self::FEATURED_PLAN_COLUMN ] ] ) );
-        // No migrated column keeps any of the card decoration keys, whatever else it holds.
+        // Guards the pin constants themselves: the pinned JSON of a migrated column must not list a card decoration key (the
+        // check above already compares the real markup with it, so this loop only catches a mistake in MIGRATED_COLUMNS).
         foreach ( self::MIGRATED_COLUMNS as [ , , $json ] ) {
             $dec = array_keys( (array) ( json_decode( $json, true )['module']['decoration'] ?? [] ) );
             $this->assertSame( [], array_values( array_intersect( $dec, [ 'background', 'border', 'boxShadow', 'transform', 'spacing' ] ) ) );

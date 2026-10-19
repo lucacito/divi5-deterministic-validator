@@ -1,7 +1,8 @@
 # Card adapter: a style kit also styles the card surfaces
 
-Status: DRAFT for the owner's approval (2026-10-19). Nothing is built. Follows
-`2026-10-18-style-kits-design.md` (button pilot merged to local main, 71540da).
+Status: approved 2026-10-19 and BUILT on branch `feat/card-adapter` (nothing released; see the Outcome section at the end for what was
+built, how it differs from this text and what is left). Follows `2026-10-18-style-kits-design.md` (button pilot merged to
+local main, 71540da).
 
 ## Intent and why
 
@@ -13,24 +14,25 @@ language x surface, probe on the real Divi, registry lint, golden file).
 ## What the audit found (this changes the scope)
 
 The brief said 358 recipe blocks are `divi/group` cards. The audit (a throwaway
-script; the plan turns it into the committed `scripts/card-migration-report.php`) says **356 groups, of
-which about 20 are cards**:
+script; the plan turned it into the committed `scripts/card-migration-report.php`, `make card-report`) says **356 groups, of
+which 19 are cards or panels**:
 
 | Class of `divi/group` | Count | Kit-driven? |
 |---|---|---|
 | Plain wrapper (no decoration) | 212 | No. Layout only. |
 | Wrapper with padding only | 41 | No. |
 | Top-rule row (0px frame + `top` border 1-2px: team, FAQ, timeline, price rows) | 26 | No (v1). A divider, not a card. |
-| Flat fill cell in a hairline grid (logo wall, stat cells, comparison table: outer box `border` colour, cells `bg`) | 46 | No. The grid trick is structure. |
-| Chip / dot / step circle (999px, or a 12px accent chip) | 6 | No. Pills stay baked. |
-| Inverted panel (filled with the `text` colour: compare-two-panels#1, pricing-two-plan-highlight#1, bento tile) or accent tile | 4 | No (v1), see "Inverted surfaces". |
-| **Card or panel** (`surface`/`bg` fill + frame/radius/shadow) | **~20 in 12 recipes** | **Yes** |
+| Flat fill cell in a hairline grid (logo wall, stat cells, comparison table: outer box `border` colour, cells `bg`) | 40 | No. The grid trick is structure. |
+| Chip / dot / step circle / outlined category tag (999px, a 12px accent chip, a 1px-framed tag) | 14 | No. Pills stay baked. |
+| Inverted panel (filled with the `text` colour: compare-two-panels#7, pricing-two-plan-highlight#8, a bento tile) or accent tile (a bento tile) | 4 | No (v1), see "Inverted surfaces". |
+| **Card or panel** (`surface`/`bg` fill + frame/radius/shadow) | **19 in 12 recipes** (9 cards, 10 panels) | **Yes** |
 
-And the library's other cards are **not groups**: 12 are `divi/column` blocks with border/radius/shadow/fill
-(icon-values 3, proof-press-quotes 3, testimonials-avatar-grid 3, pricing-three-tier 3), 4 are `divi/blurb` with a fill
+And the library's other cards are **not groups**: 12 are `divi/column` blocks with border/radius/shadow, of which 9 are cards
+(icon-values 3, testimonials-avatar-grid 3, pricing-three-tier 3) and 3 are rules, not cards (proof-press-quotes: no fill, a
+2px top rule), 4 are `divi/blurb` with a fill
 only (blurb-grid), 1 is `divi/testimonial`. `card-grid-3/4`, `icon-features`, `features-zigzag` and most of the 13
-feature recipes have **no card frame at all**. So a group-only adapter restyles about 12 of 71 recipes; group plus
-column restyles about 16. Making cards appear in recipes that have none is a design change, not a kit application, and
+feature recipes have **no card frame at all**. So a group-only adapter restyles 12 of 71 recipes; group plus
+column restyles 15 (the three column recipes are new). Making cards appear in recipes that have none is a design change, not a kit application, and
 is out of scope.
 
 **Decision 1 (yours):** carriers. Recommended: **`divi/group` and `divi/column`** (one patch on `module.decoration.*`,
@@ -58,7 +60,7 @@ button roles keep light|accent|dark), `accent`, `dark` (photo/overlay).
 - `panel`: a static surface (forms, spec sheet, overlap panels, big CTA cards). The recipe keeps its own padding (they
   are structural, e.g. 56/48/56/152 on the overlap hero) and **no hover is written** (not clickable).
 
-Classification of the ~20 is generated and reviewed in plan task 1; my reading: cards = hero-gradient-stats (3),
+Classification of the 19 is generated (`make card-report`, plan task 2) and was reviewed; my reading: cards = hero-gradient-stats (3),
 features-bento surface tiles (3), hero-bordered-cells inner cells (3); panels = hero-split-left-overlap,
 hero-spec-card, hero-bordered-cells outer, compare-two-panels#0, pricing-two-plan-highlight#0, cta-split-form,
 cta-card-over-image, contact-location-form, contact-details-form, transition-overlap-panel.
@@ -102,9 +104,9 @@ first table had 50 failing cells).
 
 ### 4. Size rule
 
-`section-recipes.json` ends **smaller** than 695,877 B (bound 716,800 unchanged). Measured on the current file: the
-literal `border` + `boxShadow` + `spacing` objects on the 24 card-like groups total 9,969 B; a marker is about 35 B. Net
-saving about 8 KB for groups, about 3-4 KB for the 12 column cards, minus the cost of any literal left bespoke. The
+`section-recipes.json` ends **smaller** than 695,877 B (bound 716,800 unchanged). Estimated before building: the
+literal `border` + `boxShadow` + `spacing` objects on the card-like groups total about 10 KB; a marker is about 35 B. Measured
+after building: 695,877 -> 683,191 B (-12,686: -7,691 for the groups, -4,995 for the 8 column cards), see the Outcome. The
 adapter also writes the fill (it depends on `on`: `surface`, or `bg` on a surface band), so a migrated card drops its own
 background literal too (about 40 B each, not counted above); the marker owns fill, border, radius, padding, shadow and
 hover. Each phase is checked: file size after <= before; if a phase cannot
@@ -140,7 +142,7 @@ Each probe PASS goes into the registry and `fixtures/shapes/kit-card-vocabulary.
    lift/frame, child-image clipping), at 1280/900/400.
 2. **Remaining group recipes** (9 more), in chunks of ~18 recipes for renders. Mood tags re-read for each touched
    recipe; `mood-avoids-exemptions.txt` stays shrink-only.
-3. **Column cards** (4 recipes) if Decision 1 = yes; blurb/testimonial only on a separate go.
+3. **Column cards** (3 recipes: proof-press-quotes holds rules, not cards) if Decision 1 = yes; blurb/testimonial only on a separate go.
 4. Docs, token measurement, final whole-branch review.
 
 ### 7. Guide wording (generated, never hand-typed per kit)
@@ -176,7 +178,7 @@ and a follow-up spec adds `panel-inverted` once cards are proven.
 Exact marker spelling beyond the above; generated report script name; probe ids; the byte layout of the card golden;
 how verify-kits lays out a card on each band.
 
-## Decisions for you
+## Decisions for you (all five were taken as recommended)
 
 1. Carriers: group + column (recommended) or group only.
 2. Frame floor of 1px for every card (recommended) or let quiet kits' cards go frameless when width is 0.
@@ -184,3 +186,110 @@ how verify-kits lays out a card on each band.
    per band, i.e. the inverted-surface work).
 4. Hover on `card` only, `panel` static (recommended).
 5. Inverted surfaces: separate follow-up (recommended) or in this branch.
+
+## Outcome (2026-10-19)
+
+Built on branch `feat/card-adapter` (base 71540da; nothing released, pushed or version-bumped; the tracked zip is still the
+published 4.12.0 build; the validator copies are untouched). Numbers below come from `make card-report`, `wc -c`, `make test`
+and the task reports of the build; the full 88-cell `make verify-kits` run is not done yet (the controller's last task).
+
+**Built against the phasing.**
+- Phase 0, probes (Task 1): 21 decisions on each carrier, 42 candidates (`fixtures/shapes/candidates/kit-card.json`), all PASS
+  on `divi/group` and `divi/column` at 1280/900/400, 0 DEAD, 0 css-only, no overflow; the registry gained no path (every
+  path was already registered), the evidence is the 42 `kc-*` sections of `docs/shape-evidence-5.15.1.md`; vocabulary in
+  `fixtures/shapes/kit-card-vocabulary.md`. Finding: a radius makes Divi print `overflow: hidden`, so a card with a radius
+  clips an image child (pixel-measured, both carriers). Not probed: the hover frame colour of an underline (bottom-only)
+  card (see deviations).
+- Classification (Task 2): `scripts/card-migration-report.php` (`make card-report`, `CardMigrationReportTest`). 356 groups:
+  wrapper 212, padded-wrapper 41, rule 26, grid-cell 40, chip 14, inverted 4, card 9, panel 10; 12 columns with frame, radius
+  or shadow: 9 cards, 3 rules. The report also lists which blocks already carry a marker.
+- Adapter and resolver (Task 3): `KitAdapters::card()` and `KitAdapters::APPLIED`, roles `card` and `panel` on `divi/group`
+  and `divi/column`, bands light|surface|accent|dark in `KitResolver`; the golden `tests/golden/kit-card-patches.json`
+  (10 default kits, 80 patches).
+- Proofs (Task 4): card contrast over 40 kits x 10 languages x {card, panel} x 4 bands x {rest, hover} = 3,200 cells, zero
+  exceptions, no baseline file; `CardInkWalkTest` (every colour token on every descendant of every marked card, all 10
+  languages, with planted failing cases); a visible-difference clause for cards; the dead-on-module guard covers carriers;
+  `ROLE_BLOCKS` is tested against `APPLIED`.
+- Guide wording (Task 5): the sentence "Kit-driven today: buttons ... and cards ..." is built from `APPLIED`
+  (`StyleGuide::appliedSentence()`); each `style-kit:<id>` topic gained "Cards and panels in this kit" with a resolved card
+  and panel from the real pipeline; the `style_kit` description says "buttons and cards". Catalog 8,480 -> 8,435 B (9,919 B
+  at 50 kits, bound 10,000), largest kit topic neo-brutal 7,881 B; default guide unchanged at 28,739 B.
+- `verify-kits` (Task 6): each cell now renders 12 cards (card and panel on four bands, a zero-padding clip panel, a
+  three-column row of column cards) and measures computed border, radius, fill (computed and painted), padding, shadow, a
+  real hover, clipping, overflow, contrast and stacking at three widths; 42 pure tests plus a real-Chromium test on
+  synthetic pages (15 deliberate departures caught). The live smoke first FAILED on the accent band at 1280/900 (painted fill
+  differed from the computed fill): the cause was the fixed WordPress admin bar and its opened menu painted over the card in
+  the screenshot, a defect of the gate and not of Divi or the sheet. The gate now hides fixed/sticky elements while sampling
+  and parks the pointer at the right edge; smoke after the fix: 3 kits x editorial, glass-dark, 18 PASS, 0 FAIL.
+- Migrations (Tasks 7-9), each re-rendered live with `verify-recipes` (default look + 7 languages x 3 widths): 3 recipes /
+  72 PASS (hero-gradient-stats, hero-spec-card, cta-split-form), 9 recipes / 216 PASS, 3 recipes / 72 PASS, 0 FAIL in all.
+  19 groups carry a marker (9 cards, 10 panels in 12 recipes) and 8 columns (icon-values, testimonials-avatar-grid,
+  pricing-three-tier #1 and #3). 5 blocks stay bespoke in the shrink-only `BESPOKE_CARDS` of `RecipeLibraryTest` (max 5):
+  compare-two-panels group#7, features-bento group#1 (accent tile) and #3 (text tile), pricing-two-plan-highlight group#8
+  (inverted/accent) and the featured pricing column (pricing-three-tier column#2). Those five take the whole-value token
+  `{{aied:kit:radius-card}}` as their radius so a pair of neighbours keeps matching corners. Size:
+  `section-recipes.json` 695,877 -> 694,097 (T7, after the tilt was restored) -> 688,186 (T8, after a fix) -> 683,191 B (T9), -12,686 B in all.
+
+**Deviations from the spec.**
+- Both carriers were built (Decision 1 as recommended): the 42 probes passed, so the column part was not cancelled.
+- Frame colour amended from the spec's table: a kit border colour `accent` gives a `text` frame, and the hover frame of a
+  `fill-swap`/`invert` card is `text` (written only when the rest frame is not already `text`), not `accent`. Why: an accent
+  frame is 2.30-2.45:1 on the card fill in playful-pastel and 2.81:1 on brutalist-flat's bg, below the 3:1 a meaningful frame
+  needs; the first run of the contrast proof failed 125 cells (10 at rest, 115 on hover). The rule is language-independent;
+  `text` is the role chosen (it is at least 3:1 on every fill; `muted` also, but it would change meaning). Consequences,
+  to be read as design losses: a kit with a `text` frame has NO card hover change (a lift or shadow still applies), among
+  them the defaults of playful-pastel (chunky-pill-offset) and brutalist-flat (raw-frame) and every outline kit;
+  rimmed-solid lost its accent rim; only a kit with a `border` hairline frame darkens its frame on hover.
+- An underline card (`border.sides: bottom`) writes NO hover frame colour: the hover half of the underline form was never
+  measured (the candidate could not show a change), so it is NOT PROVEN and not written; such cards keep lift and shadow only.
+- The adapter writes the fill (spec section 4 already assumed it): a migrated block drops its own background literal.
+- The featured pricing column (pricing-three-tier#2) stays bespoke: a kit would give all three plans the same frame and
+  erase the highlight. It keeps its own accent frame, fill, shadow and padding and takes only the radius token.
+- The audit corrected the brief: not 358 groups that are cards but 19 cards or panels in 12 recipes plus 8 migrated column
+  cards in 3 (9 column cards, one bespoke). proof-press-quotes' three columns are rules (a 2px top rule, no fill), not cards,
+  and are not migrated.
+- A recipe's REST transform is recipe composition and is kept (hero-gradient-stats keeps its -3/2/-1 degree tilt and its
+  phone reset); only hover transform, border and shadow of a migrated card go. The literal 40px shadows of
+  hero-gradient-stats, hero-split-left-overlap and transition-overlap-panel were removed (the kit decides the shadow).
+- Recipe prose that described the old look ("rounded", "hairline-bordered", "square-cornered", "raised") was reworded for
+  every migrated recipe, enforced by a phrase test (`CARD_DECIDED_PHRASES`); moods were not changed (no language's `avoids`
+  concerns corners or shadow, and widening a mood would be a guess). Pricing-three-tier's title says "highlighted" now.
+- Size estimate: the spec guessed about 8 KB for groups and 3-4 KB for columns; measured -7,691 B and -4,995 B.
+- The spec's "about 12 recipes" for groups held (12); group plus column is 15 recipes.
+- The plan's bespoke list was first written as something each task extends; it is a shrink-only allow-list (listed blocks
+  must carry no marker, the list can only get shorter), the same convention as the other exemption lists.
+
+**Known limits.**
+- The ink walk fails open: a module with any element background is skipped entirely (no font or icon colour of it is
+  judged); only `{{aied:color:*}}` tokens are judged, so a literal hex is never seen; a colour inherited from outside the
+  card (a section's font colour) is not modelled; the marked block's own non-marker attributes are not walked. An
+  unresolvable background token is treated as an empty ground and not as "cannot judge".
+- Card text readability rests on the fill being `surface` or `bg`: the pairs the recipes already declare. A freehand card
+  in the guide's colour legend omits `surface` and the `border` hairline (the legend is built from button patches).
+- 9 of 780 kit pairs give the same card (`fixtures/shapes/card-near-duplicates.txt`, shrink-only, cap 9): quiet-solid /
+  steady-solid, steady-solid / soft-solid, raw-frame / thick-frame-caps, raw-frame / thick-frame, hairline-frame-caps /
+  text-link, hairline-frame-caps / text-link-caps, thick-frame-caps / thick-frame, flat-square / block-caps, text-link /
+  text-link-caps. They differ as buttons, which is what they were made for.
+- A kit gives one padding for all devices (24-40px); the migrated cards used to have per-device steps (phone 20-24px), so a
+  card is roomier on phones (features-bento, hero-bordered-cells, testimonials, pricing; accepted as not visible enough by the
+  build's controller, Ruling 7). features-bento's bespoke tiles keep their own padding next to kit cards.
+- Recipes that lost a literal shadow (hero-gradient-stats, hero-split-left-overlap, transition-overlap-panel) look flatter
+  under kits whose shadow is none; their depth now comes from the frame, zIndex and overlap. hero-bordered-cells' "heavy
+  border" character depends on the kit.
+- Under heavy-frame kits (hard/glow/edge shadow, thick frames) the two kit-driven pricing neighbours can look as prominent as
+  the bespoke featured plan, or more so (seen under playful-pastel); the highlight no longer wins everywhere.
+- Hover on a TILTED card (hero-gradient-stats under a lift kit: does Divi keep the rest rotate when the hover translate
+  applies?) was NOT verified live; the markup keeps both, the gate has no such cell.
+- Card media radius and the images' radius are still not applied; text decisions (capitalization, weight, letter spacing) stay
+  button-only; accordion, forms, blurb and testimonial modules keep the recipe's own styling.
+- `verify-kits`: a fixed/sticky element INSIDE a card would stay hidden after the fill sample (none in the sheet); the button
+  path still parks the pointer at (0,0) and does not hide fixed elements (it passed 264 of 264); `kit-checks.cjs` is about 770
+  lines doing two jobs; the offline PHP re-implements the sheet pipeline.
+- Columns were probed in a single-column row only; the multi-column case is covered by the sheet's three-column row and by
+  the live renders of the three column recipes, not by a probe.
+
+**Deferred and owner decisions left.** Merge and release; the full `make verify-kits` run (about an hour) and the final
+whole-branch review; next adapters (accordion/toggle, forms, blurb, testimonial); the inverted-surface role (the 4 bespoke
+groups and the 2 bespoke buttons, a second adapter-sized change); possibly a per-language frame colour instead of the
+language-independent `text`, which would bring back an accent rim and card hover on playful-pastel and brutalist-flat;
+image-to-layout later.

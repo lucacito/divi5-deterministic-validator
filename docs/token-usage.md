@@ -6,7 +6,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 
 | What | Detail | Bytes | Approx. tokens |
 | --- | --- | ---: | ---: |
-| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 21,618 | 5,405 |
+| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 21,621 | 5,406 |
 | Reading a page (smallest) | the page's layout content (get_page_layout adds a little wrapper), from page-17-variable-heading.json | 1,152 | 288 |
 | Reading a page's outline (smallest) | get_page_layout with view "outline" on the same page: 5 blocks, each with path, name, size and the start of its text | 358 | 90 |
 | Reading a page (median) | the page's layout content (get_page_layout adds a little wrapper), from page-45-layout-3.json | 49,842 | 12,461 |
@@ -43,49 +43,49 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic toggles | get_style_guide with topic "toggles", only when asked for | 5,602 | 1,401 |
 | The style guide, topic forms | get_style_guide with topic "forms", only when asked for | 6,315 | 1,579 |
 | The style guide, topic composition | get_style_guide with topic "composition", only when asked for | 8,589 | 2,148 |
-| The style guide, topic style-kits | get_style_guide with topic "style-kits", only when asked for | 8,480 | 2,120 |
-| The style guide, topic style-kit:quiet-solid | get_style_guide with topic "style-kit:quiet-solid", only when asked for | 3,903 | 976 |
-| The style guide, topic style-kit:glass-edge | get_style_guide with topic "style-kit:glass-edge", only when asked for | 3,797 | 950 |
-| The style guide, topic style-kit:warm-pill | get_style_guide with topic "style-kit:warm-pill", only when asked for | 3,901 | 976 |
-| The style guide, topic style-kit:hairline-mono | get_style_guide with topic "style-kit:hairline-mono", only when asked for | 3,787 | 947 |
-| The style guide, topic style-kit:chunky-pill | get_style_guide with topic "style-kit:chunky-pill", only when asked for | 3,776 | 944 |
-| The style guide, topic style-kit:steady-solid | get_style_guide with topic "style-kit:steady-solid", only when asked for | 3,907 | 977 |
-| The style guide, topic style-kit:soft-rounded | get_style_guide with topic "style-kit:soft-rounded", only when asked for | 3,786 | 947 |
-| The style guide, topic style-kit:heavy-block | get_style_guide with topic "style-kit:heavy-block", only when asked for | 3,781 | 946 |
-| The style guide, topic style-kit:raw-frame | get_style_guide with topic "style-kit:raw-frame", only when asked for | 3,781 | 946 |
-| The style guide, topic style-kit:gilt-hairline | get_style_guide with topic "style-kit:gilt-hairline", only when asked for | 3,784 | 946 |
-| The style guide, topic style-kit:soft-solid | get_style_guide with topic "style-kit:soft-solid", only when asked for | 3,862 | 966 |
-| The style guide, topic style-kit:outline-2 | get_style_guide with topic "style-kit:outline-2", only when asked for | 3,738 | 935 |
-| The style guide, topic style-kit:warm-pill-soft | get_style_guide with topic "style-kit:warm-pill-soft", only when asked for | 4,574 | 1,144 |
-| The style guide, topic style-kit:chunky-pill-offset | get_style_guide with topic "style-kit:chunky-pill-offset", only when asked for | 4,523 | 1,131 |
-| The style guide, topic style-kit:hairline-dashed | get_style_guide with topic "style-kit:hairline-dashed", only when asked for | 3,789 | 948 |
-| The style guide, topic style-kit:underline-link | get_style_guide with topic "style-kit:underline-link", only when asked for | 4,148 | 1,037 |
-| The style guide, topic style-kit:neo-brutal | get_style_guide with topic "style-kit:neo-brutal", only when asked for | 4,728 | 1,182 |
-| The style guide, topic style-kit:double-frame | get_style_guide with topic "style-kit:double-frame", only when asked for | 3,788 | 947 |
-| The style guide, topic style-kit:soft-lift | get_style_guide with topic "style-kit:soft-lift", only when asked for | 4,757 | 1,190 |
-| The style guide, topic style-kit:ghost-swap | get_style_guide with topic "style-kit:ghost-swap", only when asked for | 3,830 | 958 |
-| The style guide, topic style-kit:dotted-pill | get_style_guide with topic "style-kit:dotted-pill", only when asked for | 3,769 | 943 |
-| The style guide, topic style-kit:hairline-frame-caps | get_style_guide with topic "style-kit:hairline-frame-caps", only when asked for | 3,768 | 942 |
-| The style guide, topic style-kit:offset-frame | get_style_guide with topic "style-kit:offset-frame", only when asked for | 4,472 | 1,118 |
-| The style guide, topic style-kit:soft-hairline-caps | get_style_guide with topic "style-kit:soft-hairline-caps", only when asked for | 3,776 | 944 |
-| The style guide, topic style-kit:thick-frame-caps | get_style_guide with topic "style-kit:thick-frame-caps", only when asked for | 3,777 | 945 |
-| The style guide, topic style-kit:thick-rounded-caps | get_style_guide with topic "style-kit:thick-rounded-caps", only when asked for | 3,786 | 947 |
-| The style guide, topic style-kit:rimmed-solid | get_style_guide with topic "style-kit:rimmed-solid", only when asked for | 3,716 | 929 |
-| The style guide, topic style-kit:flat-square | get_style_guide with topic "style-kit:flat-square", only when asked for | 3,891 | 973 |
-| The style guide, topic style-kit:block-caps | get_style_guide with topic "style-kit:block-caps", only when asked for | 3,880 | 970 |
-| The style guide, topic style-kit:pill-caps | get_style_guide with topic "style-kit:pill-caps", only when asked for | 3,903 | 976 |
-| The style guide, topic style-kit:outline-pill | get_style_guide with topic "style-kit:outline-pill", only when asked for | 3,742 | 936 |
-| The style guide, topic style-kit:outline-soft | get_style_guide with topic "style-kit:outline-soft", only when asked for | 3,729 | 933 |
-| The style guide, topic style-kit:thick-frame | get_style_guide with topic "style-kit:thick-frame", only when asked for | 3,721 | 931 |
-| The style guide, topic style-kit:raised-square | get_style_guide with topic "style-kit:raised-square", only when asked for | 4,644 | 1,161 |
-| The style guide, topic style-kit:offset-block-caps | get_style_guide with topic "style-kit:offset-block-caps", only when asked for | 4,699 | 1,175 |
-| The style guide, topic style-kit:text-link | get_style_guide with topic "style-kit:text-link", only when asked for | 3,828 | 957 |
-| The style guide, topic style-kit:text-link-caps | get_style_guide with topic "style-kit:text-link-caps", only when asked for | 3,856 | 964 |
-| The style guide, topic style-kit:underlined-label | get_style_guide with topic "style-kit:underlined-label", only when asked for | 4,064 | 1,016 |
-| The style guide, topic style-kit:pressable | get_style_guide with topic "style-kit:pressable", only when asked for | 4,689 | 1,173 |
-| The style guide, topic style-kit:hairline-halo | get_style_guide with topic "style-kit:hairline-halo", only when asked for | 4,398 | 1,100 |
-| The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 6,270 | 1,568 |
-| The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 4,004 | 1,001 |
+| The style guide, topic style-kits | get_style_guide with topic "style-kits", only when asked for | 8,435 | 2,109 |
+| The style guide, topic style-kit:quiet-solid | get_style_guide with topic "style-kit:quiet-solid", only when asked for | 6,756 | 1,689 |
+| The style guide, topic style-kit:glass-edge | get_style_guide with topic "style-kit:glass-edge", only when asked for | 6,728 | 1,682 |
+| The style guide, topic style-kit:warm-pill | get_style_guide with topic "style-kit:warm-pill", only when asked for | 6,763 | 1,691 |
+| The style guide, topic style-kit:hairline-mono | get_style_guide with topic "style-kit:hairline-mono", only when asked for | 6,640 | 1,660 |
+| The style guide, topic style-kit:chunky-pill | get_style_guide with topic "style-kit:chunky-pill", only when asked for | 6,636 | 1,659 |
+| The style guide, topic style-kit:steady-solid | get_style_guide with topic "style-kit:steady-solid", only when asked for | 6,760 | 1,690 |
+| The style guide, topic style-kit:soft-rounded | get_style_guide with topic "style-kit:soft-rounded", only when asked for | 6,648 | 1,662 |
+| The style guide, topic style-kit:heavy-block | get_style_guide with topic "style-kit:heavy-block", only when asked for | 6,712 | 1,678 |
+| The style guide, topic style-kit:raw-frame | get_style_guide with topic "style-kit:raw-frame", only when asked for | 6,632 | 1,658 |
+| The style guide, topic style-kit:gilt-hairline | get_style_guide with topic "style-kit:gilt-hairline", only when asked for | 6,637 | 1,660 |
+| The style guide, topic style-kit:soft-solid | get_style_guide with topic "style-kit:soft-solid", only when asked for | 6,715 | 1,679 |
+| The style guide, topic style-kit:outline-2 | get_style_guide with topic "style-kit:outline-2", only when asked for | 6,589 | 1,648 |
+| The style guide, topic style-kit:warm-pill-soft | get_style_guide with topic "style-kit:warm-pill-soft", only when asked for | 7,666 | 1,917 |
+| The style guide, topic style-kit:chunky-pill-offset | get_style_guide with topic "style-kit:chunky-pill-offset", only when asked for | 7,625 | 1,907 |
+| The style guide, topic style-kit:hairline-dashed | get_style_guide with topic "style-kit:hairline-dashed", only when asked for | 6,645 | 1,662 |
+| The style guide, topic style-kit:underline-link | get_style_guide with topic "style-kit:underline-link", only when asked for | 7,144 | 1,786 |
+| The style guide, topic style-kit:neo-brutal | get_style_guide with topic "style-kit:neo-brutal", only when asked for | 7,881 | 1,971 |
+| The style guide, topic style-kit:double-frame | get_style_guide with topic "style-kit:double-frame", only when asked for | 6,642 | 1,661 |
+| The style guide, topic style-kit:soft-lift | get_style_guide with topic "style-kit:soft-lift", only when asked for | 7,795 | 1,949 |
+| The style guide, topic style-kit:ghost-swap | get_style_guide with topic "style-kit:ghost-swap", only when asked for | 6,681 | 1,671 |
+| The style guide, topic style-kit:dotted-pill | get_style_guide with topic "style-kit:dotted-pill", only when asked for | 6,632 | 1,658 |
+| The style guide, topic style-kit:hairline-frame-caps | get_style_guide with topic "style-kit:hairline-frame-caps", only when asked for | 6,619 | 1,655 |
+| The style guide, topic style-kit:offset-frame | get_style_guide with topic "style-kit:offset-frame", only when asked for | 7,565 | 1,892 |
+| The style guide, topic style-kit:soft-hairline-caps | get_style_guide with topic "style-kit:soft-hairline-caps", only when asked for | 6,636 | 1,659 |
+| The style guide, topic style-kit:thick-frame-caps | get_style_guide with topic "style-kit:thick-frame-caps", only when asked for | 6,628 | 1,657 |
+| The style guide, topic style-kit:thick-rounded-caps | get_style_guide with topic "style-kit:thick-rounded-caps", only when asked for | 6,646 | 1,662 |
+| The style guide, topic style-kit:rimmed-solid | get_style_guide with topic "style-kit:rimmed-solid", only when asked for | 6,567 | 1,642 |
+| The style guide, topic style-kit:flat-square | get_style_guide with topic "style-kit:flat-square", only when asked for | 6,813 | 1,704 |
+| The style guide, topic style-kit:block-caps | get_style_guide with topic "style-kit:block-caps", only when asked for | 6,802 | 1,701 |
+| The style guide, topic style-kit:pill-caps | get_style_guide with topic "style-kit:pill-caps", only when asked for | 6,834 | 1,709 |
+| The style guide, topic style-kit:outline-pill | get_style_guide with topic "style-kit:outline-pill", only when asked for | 6,602 | 1,651 |
+| The style guide, topic style-kit:outline-soft | get_style_guide with topic "style-kit:outline-soft", only when asked for | 6,589 | 1,648 |
+| The style guide, topic style-kit:thick-frame | get_style_guide with topic "style-kit:thick-frame", only when asked for | 6,572 | 1,643 |
+| The style guide, topic style-kit:raised-square | get_style_guide with topic "style-kit:raised-square", only when asked for | 7,787 | 1,947 |
+| The style guide, topic style-kit:offset-block-caps | get_style_guide with topic "style-kit:offset-block-caps", only when asked for | 7,854 | 1,964 |
+| The style guide, topic style-kit:text-link | get_style_guide with topic "style-kit:text-link", only when asked for | 6,679 | 1,670 |
+| The style guide, topic style-kit:text-link-caps | get_style_guide with topic "style-kit:text-link-caps", only when asked for | 6,707 | 1,677 |
+| The style guide, topic style-kit:underlined-label | get_style_guide with topic "style-kit:underlined-label", only when asked for | 7,060 | 1,765 |
+| The style guide, topic style-kit:pressable | get_style_guide with topic "style-kit:pressable", only when asked for | 7,844 | 1,961 |
+| The style guide, topic style-kit:hairline-halo | get_style_guide with topic "style-kit:hairline-halo", only when asked for | 7,481 | 1,871 |
+| The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 6,275 | 1,569 |
+| The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 3,914 | 979 |
 | A served recipe (hero-cta, default look) | get_section_recipes with name "hero-cta" and no design_language | 3,397 | 850 |
 | A served recipe (hero-cta, glass-dark) | the same recipe with design_language "glass-dark" (tokens filled in; the size is the markup alone) | 3,374 | 844 |
 
@@ -96,5 +96,7 @@ To read a page cheaply, ask get_page_layout for view "outline" (every block's pa
 Tokens the assistant WRITES also count: sending a whole layout to update_page_layout costs roughly the size of the page read. edit_page_content avoids that (and a dry_run of it sends only the find-and-replace pair).
 
 The style guide topics, the recipe catalog and a filtered catalog are read only when asked for; the default catalog is names only, and one recipe is fetched by name (with an optional design_language that fills in its colors and fonts without changing its size much).
+
+Each style-kit:<id> topic now also describes the kit's cards and panels. The largest kit topic is style-kit:neo-brutal at 7,881 bytes (the bound is 10,000); the smallest is 6,567 bytes.
 
 The Pro add-on adds its own tool definitions on top of the first row.

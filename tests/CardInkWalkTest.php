@@ -38,6 +38,17 @@ require_once __DIR__ . '/Support/Colour.php';
  *   a divider in any other colour carries meaning and needs 3.0:1. Shipped recipes use `border` dividers as separators
  *   inside cards (hero-spec-card: about 1.3:1), so judging them would refuse that recipe's migration for a rule line.
  * - Any other colour-token path is unclassified and reported.
+ *
+ * Where the walk fails OPEN (what it does not see; a passing walk is not a proof of these):
+ * - A module with any element background (anything but `module`) is skipped entirely: none of its font or icon colours is
+ *   judged, not only the ones on that element.
+ * - Only `{{aied:color:*}}` tokens are judged. A literal hex or rgba colour is never seen (another test bans literal colours
+ *   in tokenised recipes, but the walk itself would pass it).
+ * - A colour a text inherits from OUTSIDE the card (a section's or row's font colour) is not modelled: only colours written
+ *   on a descendant are judged.
+ * - The marked block's own non-marker attributes (a card that carries a font colour or an icon of its own) are not walked;
+ *   only its descendants are.
+ * - An unresolvable background token becomes an empty ground instead of "cannot judge" (known, deferred).
  */
 class CardInkWalkTest extends TestCase
 {
