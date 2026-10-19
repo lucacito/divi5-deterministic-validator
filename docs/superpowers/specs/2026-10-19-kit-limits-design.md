@@ -256,7 +256,7 @@ Decisions went the recommended way.
   rest and hover) and `featured` (mean luminance difference of a card's box against the band, featured >= 1.5x the larger
   neighbour at every width). 52 pure tests (`scripts/test-verify-kits.cjs`) and 7 new synthetic Chromium departures
   (`scripts/test-kit-card-run.cjs`); an offline proof over 400 kit/language pairs through the real pipeline. Live smoke
-  (3 kits x editorial, glass-dark): 18 PASS, 0 FAIL; the featured prominence ratios were 11.9x to 49x against the frozen 1.5
+  (3 kits x editorial, glass-dark): 18 PASS, 0 FAIL; the featured prominence ratios were 11.2x to 49x against the frozen 1.5
   threshold, at every width including 400px.
 - **T5 Four bespoke grounds and two bespoke buttons (Decision 5).** compare-two-panels #7 (inverted panel), features-bento #1
   (accent card) and #3 (inverted card), pricing-two-plan-highlight #8 (inverted panel on a surface band), and the buttons
@@ -268,7 +268,7 @@ Decisions went the recommended way.
   its primary button `on:"accent"`, the badge a `surface` chip with a `text` label. `BESPOKE_CARDS` 1 -> 0 (cap 0, asserted
   empty). Prominence proof over 400 cells, all pass: the weakest cell is playful-pastel, accent fill vs band 2.304:1 against
   the neighbour's plain card 1.062:1 (the 2.0 floor holds); the others range from brutalist-flat 2.814 to tech-mono 14.826.
-  Recipes 681,727 -> 681,269 B (-458). One dev-side script change: `scripts/card-migration-report.php` got `CHIP_OVERRIDES`
+  Recipes 681,727 -> 681,274 B (-453). One dev-side script change: `scripts/card-migration-report.php` got `CHIP_OVERRIDES`
   (13 lines, same mechanism as `PANEL_OVERRIDES`) so the surface-filled badge is not read as a bespoke card.
 - **T7 Kit topics show the inverted panel.** Each `style-kit:<id>` topic gained an "Inverted panel" snippet (a panel with
   ground `inverted` holding one primary `on:"panel"` button, resolved by the real pipeline) and the ground sentences, all
@@ -280,14 +280,14 @@ Decisions went the recommended way.
   Catalog 8,464 B and default guide 28,964 B are unchanged by T7.
 
 **Measured sizes and counts** (commands run in the worktree at the end of Task 8):
-- `wc -c wp-plugin/data/section-recipes.json`: **681,269 B**, against 683,182 B at the start (-1,913 B; the spec expected
+- `wc -c wp-plugin/data/section-recipes.json`: **681,274 B**, against 683,182 B at the start (-1,908 B; the spec expected
   about 681,200). `style-kits.json`: 25,479 B. Bound 716,800 B and the 700 KB rule hold.
 - `php scripts/card-migration-report.php`: `BESPOKE_CARDS` 0, `BESPOKE_BUTTONS` 0, **32 marked card/panel blocks** (27 at the
   start: +4 grounds +1 featured column; 28 marked buttons, 26 at the start), 0 card/panel literals left to replace; groups
   359 (wrapper 226, padded-wrapper 53, rule 26, grid-cell 40, chip 14), columns 12 (wrapper 9, rule 3).
 - `php scripts/measure-tokens.php` (`docs/token-usage.md`): default guide 28,964 B, catalog topic `style-kits` 8,464 B, kit
   topics 8,370 B (rimmed-solid) to 9,992 B (neo-brutal).
-- Suites: free 2573 tests (`php vendor/bin/phpunit -c phpunit.xml`), Pro 2169 (`-c pro-addon/phpunit.xml`), both OK; at the
+- Suites: free 2574 tests (`php vendor/bin/phpunit -c phpunit.xml`), Pro 2169 (`-c pro-addon/phpunit.xml`), both OK; at the
   start of the branch the card adapter's paragraph said 2535.
 
 **Deviations from the spec.**
@@ -332,7 +332,9 @@ forms, blurb and testimonial adapters (the accordion adapter is the next project
 (each cell now renders 20 cards, the inverted and accent grounds, the panel buttons and a featured middle card; it took about
 1 h 57 min, against about 70 minutes for the card gate). The narrowed recipe render (the 29 recipes that carry a kit marker plus
 10 untouched recipes drawn at random with seed 19, default look and glass-dark, 3 widths): 234 PASS, 0 KNOWN-FAIL, 0 FAIL, 0
-low-contrast advisories. `verify-shapes`: the probe agrees with every expectation (PASS, PASS, DEAD, DEAD). Earlier per-task
+low-contrast advisories. The full default `verify-recipes` over all 71 recipes was NOT run (owner-approved narrowing, 2026-10-19: the other
+32 recipes were not re-rendered on this branch), and the Done-means line about 'the touched recipes PASS under 8 looks' is met by the
+per-task renders of the five touched recipes (default + 7 languages), not by one final run. `verify-shapes`: the probe agrees with every expectation (PASS, PASS, DEAD, DEAD). Earlier per-task
 results: the T1 hover measurement (above) and hero-gradient-stats 24 PASS; the T4 smoke 18 PASS; the T5 render of three recipes
 72 PASS; the T6 pricing-three-tier render 24 PASS (default + 7 languages x 3 widths); all 0 FAIL.
 
