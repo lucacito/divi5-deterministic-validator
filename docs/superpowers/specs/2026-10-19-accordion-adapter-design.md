@@ -243,7 +243,7 @@ untouched. Decisions 1 to 5 went the recommended way.
   docblock (comments only).
 
 **Measured sizes and counts** (commands run in the worktree at the end of Task 7):
-- `wc -c wp-plugin/data/section-recipes.json`: **675,810 B** (681,274 B at the start of the branch; bound 716,800 B and the
+- `wc -c wp-plugin/data/section-recipes.json`: **675,810 B** (681,274 B at the kit-limits merge, 683,182 B at the branch point; bound 716,800 B and the
   700 KB rule hold). `style-kits.json`: 25,479 B (unchanged).
 - `php scripts/measure-tokens.php` (`docs/token-usage.md`): default guide 28,975 B, catalog topic `style-kits` 8,423 B, topic
   `kit-rules` 3,525 B, topic `toggles` 5,602 -> 5,834 B (+232 B, the generated kit sentence), kit topics 8,025 B (rimmed-solid)
@@ -292,7 +292,7 @@ emphasised.
 - Deferred minors: the item fill table exists three times in the tests (`KitItemAdapterTest`, `ItemMigrationTest::BANDS`);
   `kit-checks.cjs` is about 1,250 lines; the per-item checks are partly duplicated across the render phases.
 
-**Live gates (Divi 5.15.1, 2026-10-19, head adcf7e8).** The accordion smoke (3 kits x editorial, glass-dark) passed 18 of 18 on Divi 5.15.1 with a real click changing the state of 10 of 10 item blocks per cell (11 min 45 s for 6 cells). The remaining gates (the three recipes under 8 looks, the full make verify-kits, the narrowed recipe render, verify-shapes) were pending when this section was written; the controller records their results in the ledger and updates this paragraph.
+**Live gates (Divi 5.15.1, 2026-10-19, head adcf7e8, one run at a time on the dev site).** (1) Smoke: 3 kits x editorial, glass-dark passed 18 of 18, with a real click changing the state of 10 of 10 item blocks per cell (11 min 45 s for 6 cells). (2) The three recipes (faq-accordion, features-accordion-image, faq-toggle-list) under 8 looks: 72 PASS, 0 KNOWN-FAIL, 0 FAIL. (3) The full `make verify-kits`: 264 PASS, 0 FAIL over 88 kit/language cells, in about 2 h 50 min (17:08 to 20:00). (4) The narrowed recipe render (the 32 recipes that carry a kit marker plus 10 unmarked guard recipes picked with a fixed seed, in two chunks of 21): 252 PASS (126 + 126), 0 KNOWN-FAIL, 0 FAIL, 0 low-contrast warnings; the full default `verify-recipes` was not run, by the narrowing the owner approved at the kit-limits branch. (5) `make verify-shapes`: the probe agrees with every expectation (2 of 2, `probe-results-known.json` unchanged). The checkout stayed on adcf7e8 for the whole chain.
 
 **Owner decisions left.** Merge and release; forms next (4 recipes, and it fixes the contact-form submit button that does not
 follow the kit); the image-radius token pass (a separate small branch: 11 images in 5 recipes, no adapter); blurb and
