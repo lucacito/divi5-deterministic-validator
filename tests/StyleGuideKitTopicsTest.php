@@ -87,8 +87,10 @@ class StyleGuideKitTopicsTest extends TestCase
         foreach ( StyleKits::ids() as $id ) {
             $this->assertStringContainsString( '`' . $id . '`', $text );
             $this->assertStringContainsString( (string) StyleKits::get( $id )['summary'], $text, $id . ' summary comes from the catalog' );
-            $this->assertStringContainsString( 'style-kit:' . $id, $text, 'points to the topic of ' . $id );
         }
+        // One sentence names the per-kit topics; the ids are not enumerated a second time (the catalog above lists every kit).
+        $this->assertSame( 1, substr_count( $text, 'topic=style-kit:<id> with any id listed above' ), 'one sentence points to the kit topics' );
+        $this->assertStringNotContainsString( 'style-kit:' . ( StyleKits::ids()[0] ?? 'x' ), $text, 'the ids are not enumerated as topics' );
         $this->assertStringContainsString( 'bundle of decisions', $text );
         $this->assertStringContainsString( 'design language', $text );
         $this->assertStringContainsString( 'style_kit', $text );
@@ -268,6 +270,33 @@ class StyleGuideKitTopicsTest extends TestCase
             $this->assertStringNotContainsString( 'Divi 5 Layout Authoring Guide', $text );
             $this->assertSame( 1, preg_match_all( '/^# /m', $text ), 'a hostile id adds no heading' );
         }
+    }
+
+    /** The catalog lists every kit once (id + summary), so its size is linear in the kits; with 50 kits (the owner's cap) it must still fit. */
+    public function testTheCatalogTopicStaysWithinItsBudgetWithFiftyKits(): void
+    {
+        $property = new \ReflectionProperty( StyleKits::class, 'cache' );
+        $property->setAccessible( true );
+        $real = array_map( static fn ( string $id ): array => (array) StyleKits::get( $id ), StyleKits::ids() );
+        $this->assertNotSame( [], $real );
+        try {
+            $kits = $real;
+            for ( $n = 1; count( $kits ) < 50; $n++ ) {
+                $clone            = $real[ $n % count( $real ) ];
+                $clone['id']      = 'extra-kit-' . $n;
+                $clone['title']   = 'Extra kit ' . $n;
+                $kits[]           = $clone;
+            }
+            $property->setValue( null, $kits );
+            $this->assertCount( 50, StyleKits::ids() );
+            $text = StyleGuide::markdown( 'style-kits' );
+            $this->assertLessThanOrEqual( 10000, strlen( $text ), 'the catalog topic fits with 50 kits' );
+            $this->assertStringContainsString( '`extra-kit-' . ( 50 - count( $real ) ) . '`', $text, 'the 50th kit is listed' );
+            $this->assertStringContainsString( 'topic=style-kit:<id> with any id listed above', $text );
+        } finally {
+            StyleKits::clearCache();
+        }
+        $this->assertSame( array_column( $real, 'id' ), StyleKits::ids(), 'clearCache() restores the file data' );
     }
 
     public function testTheDefaultGuideNamesTheKitTopicsAndStaysUnderItsCeiling(): void

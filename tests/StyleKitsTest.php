@@ -362,6 +362,7 @@ final class StyleKitsTest extends TestCase
             }
         }
         $this->assertSame([], array_values(array_diff($found, array_keys(self::NEAR_DUPLICATE_EXEMPTIONS))), 'near-duplicate kits (change the new kit, never the bound)');
+        $this->assertLessThanOrEqual(4, count(self::NEAR_DUPLICATE_EXEMPTIONS), 'shrink-only by test: the exemption list can never grow past today\'s 4');
         $this->assertSame([], array_values(array_diff(array_keys(self::NEAR_DUPLICATE_EXEMPTIONS), $found)), 'shrink-only: an exemption that no longer applies must be removed');
         foreach (self::SHEET_KITS as $id) {
             foreach (array_keys(self::NEAR_DUPLICATE_EXEMPTIONS) as $pair) {
