@@ -17944,3 +17944,997 @@ Candidates from `kit-button.json` that were measured and are not taught, with th
 - `kb-skew-x-element`: no effect (dead). Skew written on the button ELEMENT (module.json names button.decoration.transform among dynamicSubgroupLockedSubgroupIds). Expected DEAD: transform is not a declared button.decoration group, and Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:664-712 and :760 (_sanitize_button_decoration_attrs keeps only the `button.decoration` groups module.json declares and drops each whose `<name>Group` field has render:false; module.json declares background, border, boxShadow, button, font, sizing, spacing and sets boxShadowGroup and spacingGroup to render:false). Transform values (translate.x/y, skew.x/y, ...) composed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:100-160; module.json prints the button module transform on {{wrapperSelector}} {{baseSelector}} (the button element).
 - `kb-text-weight`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Label weight 700. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432. Measured PASS(css-only), a disagreement kept on purpose: the default button on this site already computes font-weight 700 (the control of ty-b-font-weight measured 700 -> 800), so writing 700 changes the stylesheet but no computed style; kb-text-weight-from-400 proves the same path and value over a 400 base.
 - `kb-padding-element`: no effect (dead). The same padding on the button ELEMENT's spacing (button.decoration.spacing, the shape KitAdapters writes today; the registry knows the path only from a SLIDER's button in fixtures/valid/page-23-style-reference.json). Expected DEAD: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:664-712 and :760 (_sanitize_button_decoration_attrs keeps only the `button.decoration` groups module.json declares and drops each whose `<name>Group` field has render:false; module.json declares background, border, boxShadow, button, font, sizing, spacing and sets boxShadowGroup and spacingGroup to render:false).
+
+## kc-frame-width-1px-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 25.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 25.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 25.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame width 1px over a 3px solid frame on a group (module.decoration is the card's own element). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed here because the registry is path-only and the button lesson showed a path can be dead on one module and live on another.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-frame-width-2px-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 27.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 27.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 27.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame width 2px over a 3px solid frame on a group (module.decoration is the card's own element). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed here because the registry is path-only and the button lesson showed a path can be dead on one module and live on another.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-frame-width-4px-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 31.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 31.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 31.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame width 4px over a 3px solid frame on a group (module.decoration is the card's own element). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed here because the registry is path-only and the button lesson showed a path can be dead on one module and live on another.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-style-solid-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style solid over a 4px dashed frame on a group (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-style-dashed-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style dashed over a 4px solid frame on a group (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-style-dotted-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style dotted over a 4px solid frame on a group (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-style-double-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style double over a 4px solid frame on a group (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-frame-colour-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame colour over a 2px solid navy frame on a group (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-edge-bottom-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+- `module.decoration.border.desktop.value.styles.bottom.width` = `"3px"`
+- `module.decoration.border.desktop.value.styles.bottom.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.bottom.color` = `"#f59e0b"`
+- `module.decoration.border.desktop.hover.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 26.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 26.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 26.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-block-start-color`, `border-block-start-style`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-style`, `border-inline-start-color`, `border-inline-start-style`, `border-left-color`, `border-left-style`, `border-right-color`, `border-right-style`, `border-top-color`, `border-top-style`, `height`, `perspective-origin`, `transform-origin`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: The underline form the button adapter writes (styles.all width 0px plus styles.bottom 3px, hover styles.all.color) on a group (module.decoration is the card's own element). Expect only the bottom side to get a 3px solid border (changedProps border-bottom-*; the other three sides stay 0px).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-radius-16-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"16px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"16px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+| 900 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+| 400 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Four-corner radius 16px on a group (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-radius-pill-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"999px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"999px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"999px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"999px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 999px` |
+| 900 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 999px` |
+| 400 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 999px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Four-corner radius 999px on a group (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-padding-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"32px"`
+- `module.decoration.spacing.desktop.value.padding.right` = `"32px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"32px"`
+- `module.decoration.spacing.desktop.value.padding.left` = `"32px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 87.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 87.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 87.7969px` |
+
+Properties that changed (any width): `block-size`, `height`, `inline-size`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-inline-end`, `padding-inline-start`, `padding-left`, `padding-right`, `padding-top`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Padding 32px on four sides on a group (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-background-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.color` = `"#0f172a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-color: rgb(255, 255, 255) -> rgb(15, 23, 42)` |
+| 900 px | yes | 1 | yes | `0:div:background-color: rgb(255, 255, 255) -> rgb(15, 23, 42)` |
+| 400 px | yes | 1 | yes | `0:div:background-color: rgb(255, 255, 255) -> rgb(15, 23, 42)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Background colour #0f172a over a white fill on a group (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-shadow-soft-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"8px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"24px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(0,0,0,0.18)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Soft shadow in the exact form KitAdapters::shadow() writes (preset1, vertical 8px, blur 24px, colour overlay at 18%) on a group (module.decoration is the card's own element). Expect the computed box-shadow rgba(0, 0, 0, 0.18) 0px 8px 24px 0px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-shadow-hard-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Hard offset shadow in the exact form KitAdapters::shadow() writes (preset4, 6px 6px 0px, colour) on a group (module.decoration is the card's own element). Expect rgb(17, 24, 39) 6px 6px 0px 0px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-shadow-edge-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"4px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Edge shadow straight down in the exact form KitAdapters::shadow() writes (preset4, 0px 4px 0px, colour) on a group (module.decoration is the card's own element). Expect rgb(17, 24, 39) 0px 4px 0px 0px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-shadow-glow-group
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"16px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(245,158,11,0.45)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Glow in the exact form KitAdapters::shadow() writes (preset1, vertical 0px, blur 16px, accent at 45%) on a group (module.decoration is the card's own element). Expect rgba(245, 158, 11, 0.45) 0px 0px 16px 0px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-hover-lift-group
+
+Block: `group`, holding `text`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.transform.desktop.hover.translate.y` = `"-4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+| 900 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+| 400 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+
+Properties that changed (any width): `transform`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Hover lift translate.y -4px (the form KitAdapters writes) on a group (module.decoration is the card's own element), measured with the pointer on the card. Expect transform matrix(1, 0, 0, 1, 0, -4).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-hover-frame-group
+
+Block: `group`, holding `text`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.border.desktop.hover.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 10 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 900 px | yes | 10 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 400 px | yes | 10 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Hover frame colour (border.hover.styles.all.color) over a 2px solid navy frame on a group (module.decoration is the card's own element), measured with the pointer on the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-hover-shadow-group
+
+Block: `group`, holding `text`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.hover.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.hover.vertical` = `"12px"`
+- `module.decoration.boxShadow.desktop.hover.blur` = `"24px"`
+- `module.decoration.boxShadow.desktop.hover.color` = `"rgba(0,0,0,0.25)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+| 900 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+| 400 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Hover shadow over no rest shadow, the form KitAdapters::shadow() writes for rest none / hover soft (preset1, 12px down, 24px blur, overlay at 25%) on a group (module.decoration is the card's own element), measured with the pointer on the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-radius-clips-image-group
+
+Block: `group`, holding `image`, `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"24px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"24px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"24px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 24px` |
+| 900 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 24px` |
+| 400 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 24px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Does a card with a 24px radius clip a full-width image child on a group (module.decoration is the card's own element)? PASS only if the child image's corners are clipped (the card gets overflow hidden); otherwise recorded DEAD for the clip with the reason. The image is the first child, so its top corners touch the card's. Also read the card's computed overflow in changedProps. RESULT (separate pixel check, Docker site, Divi 5.15.1, 1280 and 400 px): writing a radius makes Divi print overflow:hidden on the group (computed overflow visible -> hidden, radius 24px), and a full-width image that touches the card's top-left corner is clipped: the screenshot pixel 2px inside the corner is white (the page) with the radius and the image's blue without it, on both widths. The probe's computed-style diff shows the card's overflow-x/overflow-y/overflow-block/overflow-inline change. The image's own border-radius stays 0px: the clip is the card's, not a radius on the child. Side effect: overflow:hidden also clips anything of a child that spills out of the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-frame-width-1px-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 25.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 25.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 25.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame width 1px over a 3px solid frame on a column (module.decoration is the card's own element). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed here because the registry is path-only and the button lesson showed a path can be dead on one module and live on another.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-frame-width-2px-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 27.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 27.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 27.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame width 2px over a 3px solid frame on a column (module.decoration is the card's own element). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed here because the registry is path-only and the button lesson showed a path can be dead on one module and live on another.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-frame-width-4px-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 31.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 31.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 29.7969px -> 31.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame width 4px over a 3px solid frame on a column (module.decoration is the card's own element). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed here because the registry is path-only and the button lesson showed a path can be dead on one module and live on another.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-style-solid-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style solid over a 4px dashed frame on a column (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-style-dashed-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style dashed over a 4px solid frame on a column (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-style-dotted-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style dotted over a 4px solid frame on a column (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-style-double-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style double over a 4px solid frame on a column (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-frame-colour-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame colour over a 2px solid navy frame on a column (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-edge-bottom-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+- `module.decoration.border.desktop.value.styles.bottom.width` = `"3px"`
+- `module.decoration.border.desktop.value.styles.bottom.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.bottom.color` = `"#f59e0b"`
+- `module.decoration.border.desktop.hover.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 26.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 26.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 26.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-block-start-color`, `border-block-start-style`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-style`, `border-inline-start-color`, `border-inline-start-style`, `border-left-color`, `border-left-style`, `border-right-color`, `border-right-style`, `border-top-color`, `border-top-style`, `height`, `perspective-origin`, `transform-origin`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: The underline form the button adapter writes (styles.all width 0px plus styles.bottom 3px, hover styles.all.color) on a column (module.decoration is the card's own element). Expect only the bottom side to get a 3px solid border (changedProps border-bottom-*; the other three sides stay 0px).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-radius-16-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"16px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"16px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+| 900 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+| 400 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Four-corner radius 16px on a column (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-radius-pill-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"999px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"999px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"999px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"999px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 999px` |
+| 900 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 999px` |
+| 400 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 999px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Four-corner radius 999px on a column (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-padding-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"32px"`
+- `module.decoration.spacing.desktop.value.padding.right` = `"32px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"32px"`
+- `module.decoration.spacing.desktop.value.padding.left` = `"32px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 87.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 87.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 87.7969px` |
+
+Properties that changed (any width): `block-size`, `height`, `inline-size`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-inline-end`, `padding-inline-start`, `padding-left`, `padding-right`, `padding-top`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Padding 32px on four sides on a column (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-background-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.color` = `"#0f172a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-color: rgb(255, 255, 255) -> rgb(15, 23, 42)` |
+| 900 px | yes | 1 | yes | `0:div:background-color: rgb(255, 255, 255) -> rgb(15, 23, 42)` |
+| 400 px | yes | 1 | yes | `0:div:background-color: rgb(255, 255, 255) -> rgb(15, 23, 42)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Background colour #0f172a over a white fill on a column (module.decoration is the card's own element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-shadow-soft-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"8px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"24px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(0,0,0,0.18)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Soft shadow in the exact form KitAdapters::shadow() writes (preset1, vertical 8px, blur 24px, colour overlay at 18%) on a column (module.decoration is the card's own element). Expect the computed box-shadow rgba(0, 0, 0, 0.18) 0px 8px 24px 0px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-shadow-hard-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Hard offset shadow in the exact form KitAdapters::shadow() writes (preset4, 6px 6px 0px, colour) on a column (module.decoration is the card's own element). Expect rgb(17, 24, 39) 6px 6px 0px 0px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-shadow-edge-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"4px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Edge shadow straight down in the exact form KitAdapters::shadow() writes (preset4, 0px 4px 0px, colour) on a column (module.decoration is the card's own element). Expect rgb(17, 24, 39) 0px 4px 0px 0px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-shadow-glow-column
+
+Block: `column`, holding `text`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"16px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(245,158,11,0.45)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Glow in the exact form KitAdapters::shadow() writes (preset1, vertical 0px, blur 16px, accent at 45%) on a column (module.decoration is the card's own element). Expect rgba(245, 158, 11, 0.45) 0px 0px 16px 0px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-hover-lift-column
+
+Block: `column`, holding `text`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.transform.desktop.hover.translate.y` = `"-4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+| 900 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+| 400 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+
+Properties that changed (any width): `transform`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Hover lift translate.y -4px (the form KitAdapters writes) on a column (module.decoration is the card's own element), measured with the pointer on the card. Expect transform matrix(1, 0, 0, 1, 0, -4).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-hover-frame-column
+
+Block: `column`, holding `text`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.border.desktop.hover.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 10 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 900 px | yes | 10 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 400 px | yes | 10 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Hover frame colour (border.hover.styles.all.color) over a 2px solid navy frame on a column (module.decoration is the card's own element), measured with the pointer on the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-hover-shadow-column
+
+Block: `column`, holding `text`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.hover.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.hover.vertical` = `"12px"`
+- `module.decoration.boxShadow.desktop.hover.blur` = `"24px"`
+- `module.decoration.boxShadow.desktop.hover.color` = `"rgba(0,0,0,0.25)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+| 900 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+| 400 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Hover shadow over no rest shadow, the form KitAdapters::shadow() writes for rest none / hover soft (preset1, 12px down, 24px blur, overlay at 25%) on a column (module.decoration is the card's own element), measured with the pointer on the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kc-radius-clips-image-column
+
+Block: `column`, holding `image`, `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"24px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"24px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"24px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 24px` |
+| 900 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 24px` |
+| 400 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 24px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Does a card with a 24px radius clip a full-width image child on a column (module.decoration is the card's own element)? PASS only if the child image's corners are clipped (the card gets overflow hidden); otherwise recorded DEAD for the clip with the reason. The image is the first child, so its top corners touch the card's. Also read the card's computed overflow in changedProps. RESULT (separate pixel check, Docker site, Divi 5.15.1, 1280 and 400 px): writing a radius makes Divi print overflow:hidden on the column (computed overflow visible -> hidden, radius 24px), and a full-width image that touches the card's top-left corner is clipped: the screenshot pixel 2px inside the corner is white (the page) with the radius and the image's blue without it, on both widths. The probe's computed-style diff shows the card's overflow-x/overflow-y/overflow-block/overflow-inline change. The image's own border-radius stays 0px: the clip is the card's, not a radius on the child. Side effect: overflow:hidden also clips anything of a child that spills out of the card.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).

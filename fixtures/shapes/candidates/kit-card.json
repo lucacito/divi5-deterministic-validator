@@ -1,0 +1,1854 @@
+[
+    {
+        "id": "kc-frame-width-1px-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "1px"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame width 1px over a 3px solid frame on a group (module.decoration is the card's own element). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed here because the registry is path-only and the button lesson showed a path can be dead on one module and live on another."
+    },
+    {
+        "id": "kc-frame-width-2px-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "2px"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame width 2px over a 3px solid frame on a group (module.decoration is the card's own element). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed here because the registry is path-only and the button lesson showed a path can be dead on one module and live on another."
+    },
+    {
+        "id": "kc-frame-width-4px-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "4px"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame width 4px over a 3px solid frame on a group (module.decoration is the card's own element). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed here because the registry is path-only and the button lesson showed a path can be dead on one module and live on another."
+    },
+    {
+        "id": "kc-style-solid-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "dashed",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "solid"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame style solid over a 4px dashed frame on a group (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-style-dashed-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "dashed"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame style dashed over a 4px solid frame on a group (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-style-dotted-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "dotted"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame style dotted over a 4px solid frame on a group (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-style-double-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "double"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame style double over a 4px solid frame on a group (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-frame-colour-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.color": "#f59e0b"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame colour over a 2px solid navy frame on a group (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-edge-bottom-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "0px",
+            "module.decoration.border.desktop.value.styles.all.style": "solid",
+            "module.decoration.border.desktop.value.styles.all.color": "#f59e0b",
+            "module.decoration.border.desktop.value.styles.bottom.width": "3px",
+            "module.decoration.border.desktop.value.styles.bottom.style": "solid",
+            "module.decoration.border.desktop.value.styles.bottom.color": "#f59e0b",
+            "module.decoration.border.desktop.hover.styles.all.color": "#f59e0b"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "The underline form the button adapter writes (styles.all width 0px plus styles.bottom 3px, hover styles.all.color) on a group (module.decoration is the card's own element). Expect only the bottom side to get a 3px solid border (changedProps border-bottom-*; the other three sides stay 0px)."
+    },
+    {
+        "id": "kc-radius-16-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.radius.topLeft": "16px",
+            "module.decoration.border.desktop.value.radius.topRight": "16px",
+            "module.decoration.border.desktop.value.radius.bottomRight": "16px",
+            "module.decoration.border.desktop.value.radius.bottomLeft": "16px"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Four-corner radius 16px on a group (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-radius-pill-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.radius.topLeft": "999px",
+            "module.decoration.border.desktop.value.radius.topRight": "999px",
+            "module.decoration.border.desktop.value.radius.bottomRight": "999px",
+            "module.decoration.border.desktop.value.radius.bottomLeft": "999px"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Four-corner radius 999px on a group (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-padding-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.spacing.desktop.value.padding.top": "32px",
+            "module.decoration.spacing.desktop.value.padding.right": "32px",
+            "module.decoration.spacing.desktop.value.padding.bottom": "32px",
+            "module.decoration.spacing.desktop.value.padding.left": "32px"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Padding 32px on four sides on a group (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-background-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.background.desktop.value.color": "#0f172a"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Background colour #0f172a over a white fill on a group (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-shadow-soft-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset1",
+            "module.decoration.boxShadow.desktop.value.vertical": "8px",
+            "module.decoration.boxShadow.desktop.value.blur": "24px",
+            "module.decoration.boxShadow.desktop.value.color": "rgba(0,0,0,0.18)"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Soft shadow in the exact form KitAdapters::shadow() writes (preset1, vertical 8px, blur 24px, colour overlay at 18%) on a group (module.decoration is the card's own element). Expect the computed box-shadow rgba(0, 0, 0, 0.18) 0px 8px 24px 0px."
+    },
+    {
+        "id": "kc-shadow-hard-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset4",
+            "module.decoration.boxShadow.desktop.value.horizontal": "6px",
+            "module.decoration.boxShadow.desktop.value.vertical": "6px",
+            "module.decoration.boxShadow.desktop.value.blur": "0px",
+            "module.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Hard offset shadow in the exact form KitAdapters::shadow() writes (preset4, 6px 6px 0px, colour) on a group (module.decoration is the card's own element). Expect rgb(17, 24, 39) 6px 6px 0px 0px."
+    },
+    {
+        "id": "kc-shadow-edge-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset4",
+            "module.decoration.boxShadow.desktop.value.horizontal": "0px",
+            "module.decoration.boxShadow.desktop.value.vertical": "4px",
+            "module.decoration.boxShadow.desktop.value.blur": "0px",
+            "module.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Edge shadow straight down in the exact form KitAdapters::shadow() writes (preset4, 0px 4px 0px, colour) on a group (module.decoration is the card's own element). Expect rgb(17, 24, 39) 0px 4px 0px 0px."
+    },
+    {
+        "id": "kc-shadow-glow-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset1",
+            "module.decoration.boxShadow.desktop.value.vertical": "0px",
+            "module.decoration.boxShadow.desktop.value.blur": "16px",
+            "module.decoration.boxShadow.desktop.value.color": "rgba(245,158,11,0.45)"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Glow in the exact form KitAdapters::shadow() writes (preset1, vertical 0px, blur 16px, accent at 45%) on a group (module.decoration is the card's own element). Expect rgba(245, 158, 11, 0.45) 0px 0px 16px 0px."
+    },
+    {
+        "id": "kc-hover-lift-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.transform.desktop.hover.translate.y": "-4px"
+        },
+        "state": "hover",
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Hover lift translate.y -4px (the form KitAdapters writes) on a group (module.decoration is the card's own element), measured with the pointer on the card. Expect transform matrix(1, 0, 0, 1, 0, -4)."
+    },
+    {
+        "id": "kc-hover-frame-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.hover.styles.all.color": "#f59e0b"
+        },
+        "state": "hover",
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Hover frame colour (border.hover.styles.all.color) over a 2px solid navy frame on a group (module.decoration is the card's own element), measured with the pointer on the card."
+    },
+    {
+        "id": "kc-hover-shadow-group",
+        "expect": "PASS",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.hover.style": "preset1",
+            "module.decoration.boxShadow.desktop.hover.vertical": "12px",
+            "module.decoration.boxShadow.desktop.hover.blur": "24px",
+            "module.decoration.boxShadow.desktop.hover.color": "rgba(0,0,0,0.25)"
+        },
+        "state": "hover",
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Hover shadow over no rest shadow, the form KitAdapters::shadow() writes for rest none / hover soft (preset1, 12px down, 24px blur, overlay at 25%) on a group (module.decoration is the card's own element), measured with the pointer on the card."
+    },
+    {
+        "id": "kc-radius-clips-image-group",
+        "block": "group",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.radius.topLeft": "24px",
+            "module.decoration.border.desktop.value.radius.topRight": "24px",
+            "module.decoration.border.desktop.value.radius.bottomRight": "24px",
+            "module.decoration.border.desktop.value.radius.bottomLeft": "24px"
+        },
+        "children": [
+            {
+                "block": "image"
+            },
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Does a card with a 24px radius clip a full-width image child on a group (module.decoration is the card's own element)? PASS only if the child image's corners are clipped (the card gets overflow hidden); otherwise recorded DEAD for the clip with the reason. The image is the first child, so its top corners touch the card's. Also read the card's computed overflow in changedProps. RESULT (separate pixel check, Docker site, Divi 5.15.1, 1280 and 400 px): writing a radius makes Divi print overflow:hidden on the group (computed overflow visible -> hidden, radius 24px), and a full-width image that touches the card's top-left corner is clipped: the screenshot pixel 2px inside the corner is white (the page) with the radius and the image's blue without it, on both widths. The probe's computed-style diff shows the card's overflow-x/overflow-y/overflow-block/overflow-inline change. The image's own border-radius stays 0px: the clip is the card's, not a radius on the child. Side effect: overflow:hidden also clips anything of a child that spills out of the card."
+    },
+    {
+        "id": "kc-frame-width-1px-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "1px"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame width 1px over a 3px solid frame on a column (module.decoration is the card's own element). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed here because the registry is path-only and the button lesson showed a path can be dead on one module and live on another."
+    },
+    {
+        "id": "kc-frame-width-2px-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "2px"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame width 2px over a 3px solid frame on a column (module.decoration is the card's own element). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed here because the registry is path-only and the button lesson showed a path can be dead on one module and live on another."
+    },
+    {
+        "id": "kc-frame-width-4px-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "4px"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame width 4px over a 3px solid frame on a column (module.decoration is the card's own element). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed here because the registry is path-only and the button lesson showed a path can be dead on one module and live on another."
+    },
+    {
+        "id": "kc-style-solid-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "dashed",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "solid"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame style solid over a 4px dashed frame on a column (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-style-dashed-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "dashed"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame style dashed over a 4px solid frame on a column (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-style-dotted-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "dotted"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame style dotted over a 4px solid frame on a column (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-style-double-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "double"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame style double over a 4px solid frame on a column (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-frame-colour-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.color": "#f59e0b"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Frame colour over a 2px solid navy frame on a column (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-edge-bottom-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "0px",
+            "module.decoration.border.desktop.value.styles.all.style": "solid",
+            "module.decoration.border.desktop.value.styles.all.color": "#f59e0b",
+            "module.decoration.border.desktop.value.styles.bottom.width": "3px",
+            "module.decoration.border.desktop.value.styles.bottom.style": "solid",
+            "module.decoration.border.desktop.value.styles.bottom.color": "#f59e0b",
+            "module.decoration.border.desktop.hover.styles.all.color": "#f59e0b"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "The underline form the button adapter writes (styles.all width 0px plus styles.bottom 3px, hover styles.all.color) on a column (module.decoration is the card's own element). Expect only the bottom side to get a 3px solid border (changedProps border-bottom-*; the other three sides stay 0px)."
+    },
+    {
+        "id": "kc-radius-16-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.radius.topLeft": "16px",
+            "module.decoration.border.desktop.value.radius.topRight": "16px",
+            "module.decoration.border.desktop.value.radius.bottomRight": "16px",
+            "module.decoration.border.desktop.value.radius.bottomLeft": "16px"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Four-corner radius 16px on a column (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-radius-pill-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.radius.topLeft": "999px",
+            "module.decoration.border.desktop.value.radius.topRight": "999px",
+            "module.decoration.border.desktop.value.radius.bottomRight": "999px",
+            "module.decoration.border.desktop.value.radius.bottomLeft": "999px"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Four-corner radius 999px on a column (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-padding-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.spacing.desktop.value.padding.top": "32px",
+            "module.decoration.spacing.desktop.value.padding.right": "32px",
+            "module.decoration.spacing.desktop.value.padding.bottom": "32px",
+            "module.decoration.spacing.desktop.value.padding.left": "32px"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Padding 32px on four sides on a column (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-background-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.background.desktop.value.color": "#0f172a"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Background colour #0f172a over a white fill on a column (module.decoration is the card's own element)."
+    },
+    {
+        "id": "kc-shadow-soft-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset1",
+            "module.decoration.boxShadow.desktop.value.vertical": "8px",
+            "module.decoration.boxShadow.desktop.value.blur": "24px",
+            "module.decoration.boxShadow.desktop.value.color": "rgba(0,0,0,0.18)"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Soft shadow in the exact form KitAdapters::shadow() writes (preset1, vertical 8px, blur 24px, colour overlay at 18%) on a column (module.decoration is the card's own element). Expect the computed box-shadow rgba(0, 0, 0, 0.18) 0px 8px 24px 0px."
+    },
+    {
+        "id": "kc-shadow-hard-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset4",
+            "module.decoration.boxShadow.desktop.value.horizontal": "6px",
+            "module.decoration.boxShadow.desktop.value.vertical": "6px",
+            "module.decoration.boxShadow.desktop.value.blur": "0px",
+            "module.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Hard offset shadow in the exact form KitAdapters::shadow() writes (preset4, 6px 6px 0px, colour) on a column (module.decoration is the card's own element). Expect rgb(17, 24, 39) 6px 6px 0px 0px."
+    },
+    {
+        "id": "kc-shadow-edge-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset4",
+            "module.decoration.boxShadow.desktop.value.horizontal": "0px",
+            "module.decoration.boxShadow.desktop.value.vertical": "4px",
+            "module.decoration.boxShadow.desktop.value.blur": "0px",
+            "module.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Edge shadow straight down in the exact form KitAdapters::shadow() writes (preset4, 0px 4px 0px, colour) on a column (module.decoration is the card's own element). Expect rgb(17, 24, 39) 0px 4px 0px 0px."
+    },
+    {
+        "id": "kc-shadow-glow-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset1",
+            "module.decoration.boxShadow.desktop.value.vertical": "0px",
+            "module.decoration.boxShadow.desktop.value.blur": "16px",
+            "module.decoration.boxShadow.desktop.value.color": "rgba(245,158,11,0.45)"
+        },
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Glow in the exact form KitAdapters::shadow() writes (preset1, vertical 0px, blur 16px, accent at 45%) on a column (module.decoration is the card's own element). Expect rgba(245, 158, 11, 0.45) 0px 0px 16px 0px."
+    },
+    {
+        "id": "kc-hover-lift-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.transform.desktop.hover.translate.y": "-4px"
+        },
+        "state": "hover",
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Hover lift translate.y -4px (the form KitAdapters writes) on a column (module.decoration is the card's own element), measured with the pointer on the card. Expect transform matrix(1, 0, 0, 1, 0, -4)."
+    },
+    {
+        "id": "kc-hover-frame-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.hover.styles.all.color": "#f59e0b"
+        },
+        "state": "hover",
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Hover frame colour (border.hover.styles.all.color) over a 2px solid navy frame on a column (module.decoration is the card's own element), measured with the pointer on the card."
+    },
+    {
+        "id": "kc-hover-shadow-column",
+        "expect": "PASS",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.hover.style": "preset1",
+            "module.decoration.boxShadow.desktop.hover.vertical": "12px",
+            "module.decoration.boxShadow.desktop.hover.blur": "24px",
+            "module.decoration.boxShadow.desktop.hover.color": "rgba(0,0,0,0.25)"
+        },
+        "state": "hover",
+        "children": [
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Hover shadow over no rest shadow, the form KitAdapters::shadow() writes for rest none / hover soft (preset1, 12px down, 24px blur, overlay at 25%) on a column (module.decoration is the card's own element), measured with the pointer on the card."
+    },
+    {
+        "id": "kc-radius-clips-image-column",
+        "block": "column",
+        "base": {
+            "module": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#ffffff"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.radius.topLeft": "24px",
+            "module.decoration.border.desktop.value.radius.topRight": "24px",
+            "module.decoration.border.desktop.value.radius.bottomRight": "24px",
+            "module.decoration.border.desktop.value.radius.bottomLeft": "24px"
+        },
+        "children": [
+            {
+                "block": "image"
+            },
+            {
+                "block": "text",
+                "base": {
+                    "content": {
+                        "innerContent": {
+                            "desktop": {
+                                "value": "<p>Card text for the probe.</p>"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "note": "Does a card with a 24px radius clip a full-width image child on a column (module.decoration is the card's own element)? PASS only if the child image's corners are clipped (the card gets overflow hidden); otherwise recorded DEAD for the clip with the reason. The image is the first child, so its top corners touch the card's. Also read the card's computed overflow in changedProps. RESULT (separate pixel check, Docker site, Divi 5.15.1, 1280 and 400 px): writing a radius makes Divi print overflow:hidden on the column (computed overflow visible -> hidden, radius 24px), and a full-width image that touches the card's top-left corner is clipped: the screenshot pixel 2px inside the corner is white (the page) with the radius and the image's blue without it, on both widths. The probe's computed-style diff shows the card's overflow-x/overflow-y/overflow-block/overflow-inline change. The image's own border-radius stays 0px: the clip is the card's, not a radius on the child. Side effect: overflow:hidden also clips anything of a child that spills out of the card."
+    }
+]
