@@ -34,8 +34,9 @@ require_once __DIR__ . '/../wp-plugin/src/KitResolver.php';
  * - merge trap: under every kit x language, every key of a marked block that the patch does not write is in ITEM_KEEPS
  *   (structure, content and the recipe's type scale), and every key the patch writes holds exactly the patch's value.
  *
- * No recipe carries an item marker before accordion-adapter Task 6, so the recipe tests are vacuous until then; the
- * planted tests below prove each check fails on an unmigrated recipe with a marker added and passes on the clean shape.
+ * Task 6 migrated the three recipes with items (faq-accordion, features-accordion-image, faq-toggle-list: 7 marker blocks),
+ * so the recipe tests are no longer vacuous (they assert the 7 markers they walk); the planted tests below prove each check
+ * fails on an UNMIGRATED recipe (the migrated one with the old ink put back, a marker added) and passes on the clean shape.
  */
 class ItemMigrationTest extends TestCase
 {
@@ -75,6 +76,41 @@ class ItemMigrationTest extends TestCase
 
     /** ITEM_KEEPS for a rule row only. */
     private const RULE_KEEPS = [ '/^module\.decoration\.spacing\.[^.]+\.[^.]+\.padding(\.|$)/' ];
+
+    /**
+     * Accordions and toggles deliberately NOT driven by a style kit: "<recipe>|<block>|<index among that block name>" => why.
+     * SHRINK-ONLY and EMPTY since accordion-adapter Task 6 (cap 0): every disclosure block in the recipes carries an item
+     * marker, and nothing may be added.
+     */
+    private const BESPOKE_ITEMS = [];
+
+    private const BESPOKE_ITEMS_MAX = 0;
+
+    /** The file size before the three recipes with items were migrated (accordion adapter plan, Task 6): the file must end below it. */
+    private const SIZE_BEFORE_ITEMS = 681274;
+
+    /**
+     * The 7 marker blocks of the three recipes: "<recipe>|<block>|<index among that block name>" => [role, band]. Pinned as
+     * literals, never read from git or the recipes, so a lost or added marker fails here.
+     */
+    private const MIGRATED_ITEMS = [
+        'faq-accordion|divi/accordion|0'            => [ 'item', 'light' ],
+        'features-accordion-image|divi/accordion|0' => [ 'item-rule', 'light' ],
+        'faq-toggle-list|divi/toggle|0'             => [ 'item-rule', 'light' ],
+        'faq-toggle-list|divi/toggle|1'             => [ 'item-rule', 'light' ],
+        'faq-toggle-list|divi/toggle|2'             => [ 'item-rule', 'light' ],
+        'faq-toggle-list|divi/toggle|3'             => [ 'item-rule', 'light' ],
+        'faq-toggle-list|divi/toggle|4'             => [ 'item-rule', 'light' ],
+    ];
+
+    /**
+     * Phrases that describe an item look a style kit now decides (corners, boxes, the rule's weight), banned from the title,
+     * description and `when` of a recipe with an item marker: the prose must be true under every kit.
+     */
+    private const ITEM_DECIDED_PHRASES = [
+        '/\b(rounded|hairline[- ]framed|framed|bordered|boxed)\s+(\w+\s+)?(questions?|boxes|items?|toggles?)\b/i',
+        '/\bhairline\b|\brounded brands\b|, rounded\b|\brounded and /i',
+    ];
 
     private const BLOCK = '/<!--\s+wp:(divi\/[a-z0-9-]+)(?:\s+(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\}))?\s+\/?-->/s';
 
@@ -282,6 +318,8 @@ class ItemMigrationTest extends TestCase
             $own   = array_merge( $own, self::ownInkProblems( $name, $raw, $ownSeen ) );
             $bands = array_merge( $bands, self::bandProblems( $name, $raw, $bandSeen ) );
         }
+        $this->assertSame( 7, $parsed, 'the three migrated recipes carry exactly 7 item markers' );
+        $this->assertGreaterThan( 0, $ownSeen );
         $this->assertSame( $parsed, $ownSeen, 'every item marker in the file is checked for its own ink' );
         $this->assertSame( $parsed, $bandSeen, 'every item marker in the file is checked against its band' );
         $this->assertSame( [], $own, 'a migrated item block keeps its own colour, border, shadow or background, or an item carries decoration' );
@@ -311,8 +349,82 @@ class ItemMigrationTest extends TestCase
                 }
             }
         }
+        $this->assertSame( 7, $blocks, 'the merge trap walks all 7 item markers' );
         $this->assertSame( self::markersInFile()[0], $blocks, 'the merge trap checks every item marker in the file' );
         $this->assertSame( [], array_slice( array_values( array_unique( $problems ) ), 0, 40 ), 'a marked item keeps only structure, content and its type scale: its own ink survives the kit\'s deep merge' );
+    }
+
+    /** Every `divi/accordion` and `divi/toggle` of the recipe file: "<recipe>|<block>|<index among that block name>" => [carries a marker, [role, on] or null]. @return array<string,?array{0:string,1:string}> */
+    private static function disclosureBlocks(): array
+    {
+        $out = [];
+        foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $recipe ) {
+            foreach ( self::blocks( (string) $recipe['markup'] ) as [ $name, $attrs, $i ] ) {
+                if ( 'divi/accordion' === $name || 'divi/toggle' === $name ) {
+                    $out[ $recipe['name'] . '|' . $name . '|' . $i ] = self::itemMarker( $attrs );
+                }
+            }
+        }
+        return $out;
+    }
+
+    public function testTheSevenItemMarkersArePinnedAndNoDisclosureBlockIsBespoke(): void
+    {
+        $blocks = self::disclosureBlocks();
+        $marked = array_filter( $blocks, static fn ( ?array $m ): bool => null !== $m );
+        $pinned = self::MIGRATED_ITEMS;
+        ksort( $pinned );
+        ksort( $marked );
+        $this->assertSame( $pinned, $marked, 'exactly these blocks carry an item marker, with this role and band' );
+        $this->assertCount( 7, $marked );
+        $bespoke = array_keys( array_filter( $blocks, static fn ( ?array $m ): bool => null === $m ) );
+        foreach ( $bespoke as $key ) {
+            $this->assertArrayHasKey( $key, self::BESPOKE_ITEMS, "$key is a disclosure block with no item marker: give it one (BESPOKE_ITEMS never grows)" );
+        }
+        foreach ( array_keys( self::BESPOKE_ITEMS ) as $key ) {
+            $this->assertContains( $key, $bespoke, "$key is listed as bespoke but carries a marker or is gone: remove it" );
+        }
+        $this->assertLessThanOrEqual( self::BESPOKE_ITEMS_MAX, count( self::BESPOKE_ITEMS ), 'shrink-only: BESPOKE_ITEMS can never grow' );
+        $this->assertSame( 0, self::BESPOKE_ITEMS_MAX, 'cap 0: every accordion and toggle in the recipes is kit-driven' );
+        $this->assertSame( [], self::BESPOKE_ITEMS );
+        $this->assertSame( [], $bespoke, 'every accordion and toggle in the recipes carries an item marker' );
+    }
+
+    public function testRecipesFileIsSmallerThanBeforeTheItems(): void
+    {
+        $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
+        clearstatcache();
+        $this->assertLessThan( self::SIZE_BEFORE_ITEMS, filesize( $file ), 'migrating the accordion and toggles shrinks the recipe file (accordion adapter plan, Task 6)' );
+        $this->assertLessThan( 700 * 1024, filesize( $file ), 'the 700 KB bound holds' );
+    }
+
+    public function testItemMarkedRecipeProseDoesNotDescribeTheItemLook(): void
+    {
+        $problems = [];
+        foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $recipe ) {
+            if ( 0 === self::markerCount( (string) $recipe['markup'] ) ) {
+                continue;
+            }
+            foreach ( [ 'title', 'description', 'when' ] as $field ) {
+                foreach ( self::ITEM_DECIDED_PHRASES as $phrase ) {
+                    if ( 1 === preg_match( $phrase, (string) ( $recipe[ $field ] ?? '' ) ) ) {
+                        $problems[] = $recipe['name'] . ".$field matches $phrase";
+                    }
+                }
+            }
+        }
+        $this->assertSame( [], $problems, 'the style kit decides an item\'s corners, frame and rule: describe its role, not its look' );
+        // The phrases catch the shipped wording they were written for (the three recipes before the migration).
+        foreach ( [ 'FAQ / accordion of rounded questions', 'six questions as rounded, hairline-framed boxes on the surface colour', 'a ruled accordion of four short feature items (no boxes, a hairline under each, the first open)', 'with no boxes, only a hairline under each' ] as $old ) {
+            $hit = false;
+            foreach ( self::ITEM_DECIDED_PHRASES as $phrase ) {
+                $hit = $hit || 1 === preg_match( $phrase, $old );
+            }
+            $this->assertTrue( $hit, $old );
+        }
+        $this->assertSame( 1, preg_match( self::ITEM_DECIDED_PHRASES[1], 'modern, rounded and dark-glass brands' ) );
+        $this->assertSame( 0, preg_match( self::ITEM_DECIDED_PHRASES[0], 'six questions as accordion items, one open at a time' ) );
+        $this->assertSame( 0, preg_match( self::ITEM_DECIDED_PHRASES[1], 'a rule under each question; one tall square-cornered picture' ), 'an image keeps its own corners' );
     }
 
     // ---- planted cases: each check fails on an unmigrated recipe with a marker added, and passes on the clean shape ----
@@ -363,6 +475,27 @@ class ItemMigrationTest extends TestCase
         );
     }
 
+    /** $markup with the old recipes' own ink put back on every block of $carrier (frame, shadow, fills, title/body/icon colours). */
+    private static function withOldInk( string $markup, string $carrier ): string
+    {
+        $ink = [
+            'module'            => [ 'decoration' => [
+                'border'    => [ 'desktop' => [ 'value' => [ 'styles' => [ 'all' => [ 'width' => '1px', 'color' => '{{aied:color:border}}', 'style' => 'solid' ] ], 'radius' => [ 'topLeft' => '16px', 'topRight' => '16px', 'bottomRight' => '16px', 'bottomLeft' => '16px' ] ] ] ],
+                'boxShadow' => [ 'desktop' => [ 'value' => [ 'blur' => '8px', 'color' => 'rgba(0,0,0,.1)' ] ] ],
+            ] ],
+            'openToggle'        => [ 'decoration' => [ 'background' => [ 'desktop' => [ 'value' => [ 'color' => '{{aied:color:surface}}' ] ] ] ] ],
+            'closedToggle'      => [ 'decoration' => [ 'background' => [ 'desktop' => [ 'value' => [ 'color' => '{{aied:color:surface}}' ] ] ] ] ],
+            'closedToggleIcon'  => [ 'decoration' => [ 'icon' => [ 'desktop' => [ 'value' => [ 'color' => '{{aied:color:text}}' ] ] ] ] ],
+            'title'             => [ 'decoration' => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'color' => '{{aied:color:text}}' ] ] ] ] ] ],
+            'content'           => [ 'decoration' => [ 'bodyFont' => [ 'body' => [ 'font' => [ 'desktop' => [ 'value' => [ 'color' => '{{aied:color:muted}}' ] ] ] ] ] ] ],
+        ];
+        return (string) preg_replace_callback(
+            '/(<!--\s+wp:' . preg_quote( $carrier, '/' ) . '\s+)(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\})(\s+\/?-->)/s',
+            static fn ( array $m ): string => $m[1] . RecipeTokens::encodeJson( array_replace_recursive( (array) json_decode( $m[2], true ), $ink ) ) . $m[3],
+            $markup
+        );
+    }
+
     /** The three recipes with items, each with its carrier, role and the band its section really paints. */
     private const PLANTS = [
         'faq-accordion'            => [ 'divi/accordion', 'item' ],
@@ -384,11 +517,12 @@ class ItemMigrationTest extends TestCase
         $this->assertIsArray( $lang );
         foreach ( self::PLANTS as $name => [ $carrier, $role ] ) {
             $raw  = (string) SectionRecipes::rawMarkup( $name );
-            $this->assertSame( 0, self::markerCount( $raw ), "$name is unmigrated in this task (Task 6 migrates it)" );
+            $this->assertGreaterThan( 0, self::markerCount( $raw ), "$name is migrated (Task 6)" );
             $band = self::realBand( $raw, $carrier );
             $this->assertContains( $band, self::BANDS[ $role ], "$name: its items sit on a band the role allows" );
 
-            $planted = self::markEvery( $raw, $carrier, $role, $band );
+            // The unmigrated shape: the old ink put back on every marked block, then the marker (re-)added.
+            $planted = self::markEvery( self::withOldInk( $raw, $carrier ), $carrier, $role, $band );
             $count   = self::markerCount( $planted );
             $this->assertGreaterThan( 0, $count );
             // (a) own ink: the recipe's frame, fills, title colour and icon colours are all reported.
