@@ -276,10 +276,26 @@ function nothingMeasured(m) {
   return !!m.visible && (seen > 0 || !!m.hasText) && m.contrastChecked === 0 && m.skippedUnknown === 0;
 }
 
+/*
+ * The colour arithmetic of the contrast check, for use OUTSIDE the page (scripts/verify-kits.cjs). measureInPage keeps its own copy of
+ * these few lines because Playwright serialises it and it cannot reach module scope: change both together.
+ */
+function parseColor(str) {
+  const m = /^rgba?\(([^)]+)\)$/.exec(String(str).trim());
+  if (!m) return null;
+  const parts = m[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+  if (parts.length < 3 || parts.some((n) => Number.isNaN(n))) return null;
+  return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
+}
+const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+const lum = (c) => 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+const over = (top, base) => ({ r: top.r * top.a + base.r * (1 - top.a), g: top.g * top.a + base.g * (1 - top.a), b: top.b * top.a + base.b * (1 - top.a), a: 1 });
+const ratioOf = (a, b) => { const l1 = lum(a); const l2 = lum(b); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); };
+
 const PHP_ERROR = [
   /(?:Fatal error|Parse error|Warning|Notice|Deprecated)(?:<\/b>)?:[^\n]{0,500}?\bon line\b/i,
   /(?:^|\n)\s*(?:<br \/>\s*)?(?:<b>)?(?:Fatal error|Parse error|Warning|Notice|Deprecated)(?:<\/b>)?: /,
   /\bUncaught (?:[\w\\]*)?(?:Error|Exception)\b/,
 ];
 
-module.exports = { BASELINABLE, NEVER_BASELINED, WIDTHS, parseEntry, parseBaseline, cellKey, knownFailures, isKnownFail, measureInPage, nothingMeasured, PHP_ERROR };
+module.exports = { BASELINABLE, NEVER_BASELINED, WIDTHS, parseEntry, parseBaseline, cellKey, knownFailures, isKnownFail, measureInPage, nothingMeasured, PHP_ERROR, parseColor, over, ratioOf };

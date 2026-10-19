@@ -50,8 +50,6 @@
  */
 'use strict';
 
-const { execFileSync } = require('child_process');
-const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -59,10 +57,8 @@ const ROOT = path.resolve(__dirname, '..');
 const PW = process.env.PLAYWRIGHT_PATH || path.resolve(ROOT, '..', 'layoutlab', 'node_modules', 'playwright');
 const SITE = (process.env.AIED_SITE || 'http://localhost:8181').replace(/\/$/, '');
 
-if (!/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(SITE)) {
-  console.error('Dev site only (localhost). Refusing ' + SITE);
-  process.exit(2);
-}
+const { devSiteOnly, makeWp, loginCookies, watchConsole, throwawayPages, cleanupOnSignals } = require('./lib/throwaway-pages.cjs');
+devSiteOnly(SITE);
 
 const USAGE = 'usage: node scripts/verify-recipes.cjs [--names a,b] [--languages x,y]\n       node scripts/verify-recipes.cjs --clean-orphans';
 const RECIPES_FILE = path.join(ROOT, 'wp-plugin', 'data', 'section-recipes.json');
@@ -94,64 +90,19 @@ let cleanOrphans = false;
 const { chromium } = require(PW);
 const { parseBaseline, knownFailures, isKnownFail, cellKey, measureInPage, nothingMeasured, PHP_ERROR } = require('./lib/recipe-checks.cjs');
 
-const wp = (...a) => execFileSync('docker', ['compose', 'exec', '-T', 'wpcli', 'php', '-d', 'memory_limit=1G', '/usr/local/bin/wp', ...a], { cwd: ROOT, encoding: 'utf8' }).trim();
+const wp = makeWp(ROOT);
 
-// Every throwaway page's title starts with RUN_PREFIX (the bare TITLE_PREFIX plus this run's token).
+// Every throwaway page's title starts with RUN_PREFIX (the bare TITLE_PREFIX plus this run's token): scripts/lib/throwaway-pages.cjs.
 const TITLE_PREFIX = 'aied recipe ';
-const RUN_TOKEN = process.pid + '-' + crypto.randomBytes(3).toString('hex');
-const RUN_PREFIX = TITLE_PREFIX + RUN_TOKEN + ' ';
-const created = [];
-let cleaning = false; // set by the signal handler: nothing new is created after it
-
-/** Every page's { ID, post_title } (a full list, never a content search). */
-function allPages() {
-  return JSON.parse(wp('post', 'list', '--post_type=page', '--post_status=any', '--fields=ID,post_title', '--format=json') || '[]');
-}
-const idsWithPrefix = (rows, prefix) => rows.filter((r) => typeof r.post_title === 'string' && r.post_title.startsWith(prefix)).map((r) => String(r.ID));
-
-/**
- * Deletes this run's throwaway pages: the recorded ids plus every page whose title starts with the exact RUN_PREFIX (a page
- * could have been inserted by a call that then failed before returning its id). Never a search, never a page without that
- * prefix, never another run's page, numeric ids only. Safe to call twice. Returns true when everything went well.
- */
-function sweep() {
-  let ok = true;
-  let swept = [];
-  try { swept = idsWithPrefix(allPages(), RUN_PREFIX); } catch (e) { console.log('WARNING could not list leftover recipe pages'); ok = false; }
-  for (const id of [...new Set([...created, ...swept])]) {
-    if (!/^\d+$/.test(String(id))) { console.log('WARNING ignoring non-numeric page id ' + id); ok = false; continue; }
-    try { wp('post', 'delete', String(id), '--force'); } catch (e) { console.log('WARNING could not delete page ' + id); ok = false; }
-  }
-  created.length = 0;
-  return ok;
-}
-
-/** Deletes one page this run created (recorded id, numeric only); the final sweep catches anything this misses. */
-function dropPage(id) {
-  if (!/^\d+$/.test(String(id))) return;
-  try { wp('post', 'delete', String(id), '--force'); } catch (e) { console.log('WARNING could not delete page ' + id + ' (the final sweep retries)'); return; }
-  const at = created.indexOf(String(id));
-  if (at >= 0) created.splice(at, 1);
-}
-
-/** --clean-orphans: deletes ALL pages whose title starts with the bare prefix (only when no other run is going). */
-function removeOrphans() {
-  let ok = true;
-  let ids = [];
-  try { ids = idsWithPrefix(allPages(), TITLE_PREFIX); } catch (e) { console.log('ERROR could not list pages'); return false; }
-  for (const id of ids) {
-    if (!/^\d+$/.test(id)) { console.log('WARNING ignoring non-numeric page id ' + id); ok = false; continue; }
-    try { wp('post', 'delete', id, '--force'); console.log('deleted orphan recipe page ' + id); } catch (e) { console.log('WARNING could not delete page ' + id); ok = false; }
-  }
-  console.log(`removed ${ids.length} orphan recipe page(s)`);
-  return ok;
-}
+const pages = throwawayPages(wp, TITLE_PREFIX, 'recipe');
+const { runToken: RUN_TOKEN, runPrefix: RUN_PREFIX, created, sweep, dropPage, removeOrphans } = pages;
+const run = { cleaning: false, browser: null }; // run.cleaning is set by the signal handler: nothing new is created after it
 
 if (cleanOrphans) process.exit(removeOrphans() ? 0 : 1);
 
 /** Serves the recipe in PHP, gates it, saves a draft. Returns { id, valid, verdict }. */
 function makePage(name, language) {
-  if (cleaning) throw new Error('interrupted');
+  if (run.cleaning) throw new Error('interrupted');
   // Name and language travel as one base64 JSON payload, so nothing can break out of the PHP string.
   const b64 = Buffer.from(JSON.stringify({ title: RUN_PREFIX + name + ' ' + language, name, language: language === 'default' ? null : language })).toString('base64');
   const NS = 'AiEditorDivi5' + BS + 'WP' + BS;
@@ -196,18 +147,7 @@ function selection() {
 }
 
 // ---- run ---------------------------------------------------------------------------------------------------------------
-let browserRef = null;
-for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
-  process.on(sig, async () => {
-    if (cleaning) return;
-    cleaning = true;
-    console.log('\n' + sig + ': removing the throwaway pages');
-    try { if (browserRef) await browserRef.close(); } catch (e) { /* leaving anyway */ }
-    const ok = sweep();
-    console.log(ok ? 'Cleaned up.' : 'WARNING cleanup was incomplete; run `wp post list --post_type=page --fields=ID,post_title` and look for "' + RUN_PREFIX + '"');
-    process.exit(sig === 'SIGINT' ? 130 : sig === 'SIGHUP' ? 129 : 143);
-  });
-}
+cleanupOnSignals(run, sweep, RUN_PREFIX);
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -272,18 +212,18 @@ ${rows}
   const seenKnown = new Set();
   try {
     const cells = selection();
-    const cookies = JSON.parse(wp('eval', '$u=1;$e=time()+3600;$t=WP_Session_Tokens::get_instance($u)->create($e);echo json_encode([[AUTH_COOKIE,wp_generate_auth_cookie($u,$e,"auth",$t)],[LOGGED_IN_COOKIE,wp_generate_auth_cookie($u,$e,"logged_in",$t)]]);'));
+    const cookies = loginCookies(wp);
     // Nothing is ours yet, so every page with the bare prefix is another run's or a leftover; it is reported, never deleted.
-    const foreign = idsWithPrefix(allPages(), TITLE_PREFIX).length;
+    const foreign = pages.foreignCount();
     if (foreign > 0) console.log(`WARNING ${foreign} leftover or concurrent recipe pages (not deleted; run with --clean-orphans when no other run is going)`);
     fs.mkdirSync(OUT_DIR, { recursive: true });
     // Playwright would otherwise install its own signal handlers and exit before the page cleanup finishes.
     browser = await chromium.launch({ handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false });
-    browserRef = browser;
+    run.browser = browser;
     console.log(`${cells.length} recipe/language cell(s) x ${WIDTHS.length} widths, run ${RUN_TOKEN}`);
 
     const report = (name, lang, width, outcome, code, reason) => {
-      if (cleaning) return; // interrupted: the in-flight cell's errors are noise
+      if (run.cleaning) return; // interrupted: the in-flight cell's errors are noise
       let label = outcome;
       // Only the EXACT cell (recipe, language, width, code) listed in the baseline is a known failure; render-error never is.
       if (outcome === 'FAIL' && isKnownFail(known, name, lang, width, code)) {
@@ -299,7 +239,7 @@ ${rows}
     };
 
     for (const [name, lang] of cells) {
-      if (cleaning) break;
+      if (run.cleaning) break;
       let page = null;
       const cellCounts = { checked: 0, unknown: 0, offPage: 0, hidden: 0, unparsed: 0, warn: 0 };
       try {
@@ -310,16 +250,7 @@ ${rows}
           try {
             await ctx.addCookies(cookies.map(([n, value]) => ({ name: n, value, url: SITE })));
             const p = await ctx.newPage();
-            const consoleErrors = [];
-            p.on('pageerror', (e) => consoleErrors.push('uncaught: ' + String(e && e.message ? e.message : e).slice(0, 200)));
-            p.on('console', (m) => {
-              if (m.type() !== 'error') return;
-              const url = (m.location() && m.location().url) || '';
-              if (/favicon\.ico/.test(url)) return;
-              // Only errors from the page itself: its own origin, or a script error with no URL. A third-party request is not ours.
-              if (url && !url.startsWith(SITE)) return;
-              consoleErrors.push(('console: ' + m.text()).slice(0, 200) + (url ? ' (' + url.slice(SITE.length) + ')' : ''));
-            });
+            const consoleErrors = watchConsole(p, SITE);
             await p.goto(`${SITE}/?page_id=${page.id}&preview=true`, { waitUntil: 'load' });
             await p.waitForTimeout(800);
             // Entrance animations start when an element scrolls into view and move or hide it until they end: scroll the whole page once,
@@ -365,26 +296,26 @@ ${rows}
             await ctx.close();
           }
         }
-        if (!cleaning) console.log(`CONTRAST ${name}/${lang} checked=${cellCounts.checked} skipped(unknown=${cellCounts.unknown} off-page=${cellCounts.offPage} hidden=${cellCounts.hidden} unparsed=${cellCounts.unparsed}) warn=${cellCounts.warn} (summed over the three widths)`);
+        if (!run.cleaning) console.log(`CONTRAST ${name}/${lang} checked=${cellCounts.checked} skipped(unknown=${cellCounts.unknown} off-page=${cellCounts.offPage} hidden=${cellCounts.hidden} unparsed=${cellCounts.unparsed}) warn=${cellCounts.warn} (summed over the three widths)`);
       } catch (e) {
         report(name, lang, 'prepare', 'FAIL', 'render-error', 'render-error: could not prepare the page: ' + (e && e.message ? e.message : e));
       } finally {
         if (page && /^\d+$/.test(page.id) && page.id !== '0') dropPage(page.id);
       }
     }
-    if (cleaning) return;
+    if (run.cleaning) return;
     for (const [key, e] of known) if (!seenKnown.has(key) && cells.some(([n, l]) => n === e.recipe && l === e.language)) console.log(`NOTE baseline render-failure "${key}" did not occur in this run: remove it if it is fixed`);
     writeContactSheet(status);
   } catch (e) {
     console.log('ERROR script: ' + (e && e.message ? e.message : e));
     failures++;
   } finally {
-    if (!cleaning) {
+    if (!run.cleaning) {
       if (!sweep()) failures++;
       if (browser) await browser.close();
     }
   }
-  if (cleaning) return;
+  if (run.cleaning) return;
   console.log(`\n${passes} PASS, ${knownFails} KNOWN-FAIL, ${failures} FAIL; ${contrastWarns} advisory low-contrast warning line(s) (3.0 to 4.5:1, never a failure)`);
   console.log(failures ? 'FAILED' : 'Every selected recipe renders cleanly (known failures aside).');
   process.exit(failures ? 1 : 0);

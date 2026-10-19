@@ -1,0 +1,324 @@
+#!/usr/bin/env node
+/*
+ * Dev-only: the style-kit render gate. For each (kit, language) cell it builds ONE "kit sheet" through the REAL pipeline (the sheet template
+ * of scripts/lib/kit-checks.cjs: a primary `control` and a secondary `control-secondary` button on each surface: light on a bg section, light
+ * on a surface section, an accent band ("on":"accent") and a photo band with the overlay scrim ("on":"dark"); resolved in PHP exactly as
+ * SectionRecipes::recipe serves a recipe: ImageTokens with the plugin's pack, KitResolver with the kit, RecipeTokens with the language),
+ * gates it through LayoutGate::check, saves it as a throwaway DRAFT and opens it with the real Divi in Chromium at 1280, 900 and 400 px.
+ *
+ *   node scripts/verify-kits.cjs [--kits a,b] [--languages x,y] [--clean-orphans]    (needs `make up`; Playwright from ../layoutlab)
+ *
+ * Selection. No flags: every kit under `editorial` and under `glass-dark`, plus every design language under its own default kit (its `kit`).
+ * `--kits` narrows the kits (under those two languages), `--languages` narrows the languages (every kit), both together = their product.
+ *
+ * The EXPECTED values of each button are read from the resolved markup the page was built from (the adapter's output), never from a table
+ * here. A cell/width FAILs (one line per reason, `FAIL <kit>/<language>/<width> <code>: detail`) on: PHP error text (php-error), no visible
+ * content (empty), a page wider than the window or a button outside its column or the window, at rest or on hover (overflow), a console
+ * error of the page (console-error), not 8 rendered buttons (buttons), a computed style that disagrees with the kit at rest: border-top and
+ * border-bottom width, style and colour (border), the four radii (radius), background colour (fill), label colour (label), text-transform,
+ * letter-spacing and weight (text), padding (padding), box-shadow presence, blur (zero for hard/edge, non-zero for soft/glow), offsets and
+ * colour on the button or its wrapper, whichever carries it (shadow); after a real Playwright hover(): background, label and border colours
+ * (hover), the shadow (shadow) and translateY -4px for a lift kit, none otherwise (lift); contrast (contrast): the label against the fill as
+ * painted over the surface >= 4.5 and, where the fill is not opaque, each drawn border side against the surface >= 3.0, rest and hover. The
+ * surface is MEASURED: the mean colour of a screenshot of the button's box with every button hidden (so the photo band is the real photo
+ * under the real scrim). A sheet the gate or the resolver refuses FAILs once as `<kit>/<language>/gate`. Problems in the script's own page
+ * handling are `render-error`. A preview that comes back as a 404 or without the page content is retried once with a fresh login.
+ *
+ * Output: PASS/FAIL lines and a summary; NOTE lines with measurements worth a look (an underline's contrast against its own fill, how much
+ * a shadow stands out from the surface, which element carries the shadow and its corners); dist/kit-sheet/<kit>-<language>-<width>.png,
+ * dist/kit-sheet/observations.json and dist/kit-sheet/index.html (one row per kit: editorial and glass-dark at 1280 and 400). dist/ is
+ * git-ignored; writing the sheet never fails the run.
+ *
+ * Dev site only (localhost). RUN ONE RUN AT A TIME. Every throwaway page is titled `aied kit <runToken> <kit> <language>`; the run deletes
+ * ONLY pages whose title starts with `aied kit <runToken> ` (after every cell, at the end, and on SIGINT/SIGTERM/SIGHUP).
+ * `--clean-orphans` deletes ALL pages whose title starts with `aied kit ` and exits: use it only when no other run is going.
+ * Pure parts: scripts/test-verify-kits.cjs (run first by `make verify-kits`).
+ */
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+
+const ROOT = path.resolve(__dirname, '..');
+const PW = process.env.PLAYWRIGHT_PATH || path.resolve(ROOT, '..', 'layoutlab', 'node_modules', 'playwright');
+const SITE = (process.env.AIED_SITE || 'http://localhost:8181').replace(/\/$/, '');
+
+const { devSiteOnly, makeWp, loginCookies, watchConsole, throwawayPages, cleanupOnSignals } = require('./lib/throwaway-pages.cjs');
+devSiteOnly(SITE);
+
+const USAGE = 'usage: node scripts/verify-kits.cjs [--kits a,b] [--languages x,y]\n       node scripts/verify-kits.cjs --clean-orphans';
+const KITS_FILE = path.join(ROOT, 'wp-plugin', 'data', 'style-kits.json');
+const LANGUAGES_FILE = path.join(ROOT, 'wp-plugin', 'data', 'design-languages.json');
+const OUT_DIR = path.join(ROOT, 'dist', 'kit-sheet');
+const WIDTHS = [1280, 900, 400];
+const SHEET_LANGUAGES = ['editorial', 'glass-dark'];
+const BS = String.fromCharCode(92);
+
+let optKits = null;
+let optLanguages = null;
+let cleanOrphans = false;
+{
+  const args = process.argv.slice(2);
+  const list = (v) => (v ? v.split(',').map((s) => s.trim()).filter(Boolean) : []);
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--kits') { optKits = list(args[++i]); if (!optKits.length) { console.error(USAGE); process.exit(2); } }
+    else if (args[i] === '--languages') { optLanguages = list(args[++i]); if (!optLanguages.length) { console.error(USAGE); process.exit(2); } }
+    else if (args[i] === '--clean-orphans') cleanOrphans = true;
+    else { console.error(USAGE); process.exit(2); }
+  }
+  if (cleanOrphans && (optKits || optLanguages)) { console.error(USAGE); process.exit(2); }
+}
+
+const K = require('./lib/kit-checks.cjs');
+const { measureInPage, PHP_ERROR, over, ratioOf } = require('./lib/recipe-checks.cjs');
+
+const wp = makeWp(ROOT);
+const pages = throwawayPages(wp, K.TITLE_PREFIX, 'kit');
+const { runToken: RUN_TOKEN, created, sweep, dropPage, removeOrphans } = pages;
+const run = { cleaning: false, browser: null };
+
+if (cleanOrphans) process.exit(removeOrphans() ? 0 : 1);
+
+const { chromium } = require(PW);
+
+/** Resolves the sheet in PHP (the real pipeline), gates it, saves a draft. Returns { id, valid, verdict, markup }. */
+function makePage(kit, language) {
+  if (run.cleaning) throw new Error('interrupted');
+  // Everything travels as one base64 JSON payload, so nothing can break out of the PHP string.
+  const b64 = Buffer.from(JSON.stringify({ title: K.runTitle(RUN_TOKEN, kit, language), kit, language, markup: K.sheetMarkup() })).toString('base64');
+  const NS = 'AiEditorDivi5' + BS + 'WP' + BS;
+  const out = wp('eval', `$p=json_decode(base64_decode('${b64}'),true);$k=${NS}StyleKits::get($p['kit']);$l=${NS}DesignLanguages::get($p['language']);if($k===null||$l===null||[]!==${NS}StyleKits::problems($k)){echo '0|INVALID kit or language unknown or invalid';return;}`
+    + `$m=${NS}ImageTokens::resolve($p['markup'],plugins_url('assets/images/',AI_EDITOR_DIVI5_FILE),null,static fn(?string $u,string $t):?string=>apply_filters('jhmg_aied_image_token',$u,$t));`
+    + `$m=${NS}RecipeTokens::resolve(${NS}KitResolver::resolve($m,$k),$l);$left=${NS}KitResolver::leftovers($m);if([]!==$left){echo '0|INVALID unresolved '.implode(',',$left);return;}if(str_contains($m,'{{aied:')){echo '0|INVALID unresolved token';return;}`
+    + `$c='<!-- wp:divi/placeholder -->'.$m.'<!-- /wp:divi/placeholder -->';$g=${NS}LayoutGate::check($c);if(!$g->isValid()){echo '0|INVALID '.implode(',',array_map(fn($v)=>$v->toArray()['code'],$g->violations()));return;}`
+    + `$id=wp_insert_post(wp_slash(['post_type'=>'page','post_title'=>$p['title'],'post_content'=>$c,'post_status'=>'draft','meta_input'=>['_et_pb_use_divi_5'=>'on','_et_pb_use_builder'=>'on']]));echo $id.'|valid|'.base64_encode($m);`);
+  const [id, verdict, m64] = out.split('|');
+  if (/^\d+$/.test(id) && id !== '0') created.push(id);
+  return { id, valid: verdict === 'valid', verdict, markup: m64 ? Buffer.from(m64, 'base64').toString('utf8') : '' };
+}
+
+// ---- data ------------------------------------------------------------------------------------------------------------
+const kitIds = JSON.parse(fs.readFileSync(KITS_FILE, 'utf8')).map((k) => k.id);
+const languages = JSON.parse(fs.readFileSync(LANGUAGES_FILE, 'utf8')).map((l) => ({ id: l.id, kit: l.kit }));
+
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+/** Writes dist/kit-sheet/index.html. Never throws. */
+function writeSheet(status, cells) {
+  try {
+    fs.mkdirSync(OUT_DIR, { recursive: true });
+    const cell = (kit, lang, width) => {
+      const file = `${kit}-${lang}-${width}.png`;
+      const st = status.get(kit + '/' + lang);
+      const badge = st ? `<span class="b ${st.toLowerCase()}">${esc(st)}</span>` : '';
+      return fs.existsSync(path.join(OUT_DIR, file))
+        ? `<td class="w${width}">${badge}<a href="${esc(file)}"><img loading="lazy" src="${esc(file)}" alt="${esc(kit)} ${esc(lang)} ${width}px"></a></td>`
+        : `<td class="w${width}">${badge}<em>not rendered</em></td>`;
+    };
+    const rows = kitIds.filter((k) => cells.some(([ck]) => ck === k)).map((k) => `<tr><th><strong>${esc(k)}</strong>${languages.filter((l) => l.kit === k).map((l) => `<br><small>default kit of ${esc(l.id)}</small>`).join('')}</th>`
+      + SHEET_LANGUAGES.map((l) => cell(k, l, 1280) + cell(k, l, 400)).join('') + '</tr>').join('\n');
+    const own = languages.filter((l) => !SHEET_LANGUAGES.includes(l.id) && cells.some(([ck, cl]) => ck === l.kit && cl === l.id))
+      .map((l) => `<tr><th><strong>${esc(l.id)}</strong><br><small>kit ${esc(l.kit)}</small></th>${cell(l.kit, l.id, 1280)}${cell(l.kit, l.id, 400)}</tr>`).join('\n');
+    const html = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kit sheet</title>
+<style>
+body{font:14px/1.4 system-ui,sans-serif;margin:16px;background:#f4f4f4;color:#111}
+h1{font-size:20px}h2{font-size:16px;margin-top:2em}p{max-width:70em}
+.wrap{overflow-x:auto}
+table{border-collapse:collapse}
+th,td{border:1px solid #ccc;padding:8px;vertical-align:top;background:#fff}
+th{text-align:left;min-width:12em;position:sticky;left:0}
+td img{display:block;max-width:100%;height:auto}
+td.w1280{width:420px;min-width:420px}td.w400{width:150px;min-width:150px}
+.b{display:inline-block;font:700 11px sans-serif;padding:1px 6px;border-radius:8px;margin-bottom:4px;color:#fff}
+.b.pass{background:#1a7f37}.b.fail{background:#b3261e}
+</style></head><body>
+<h1>Kit sheet</h1>
+<p>Generated by <code>make verify-kits</code> (${esc(new Date().toISOString())}). Each sheet is a primary and a secondary button on a bg section, a surface section, an accent band and a photo band, rendered on the real Divi at desktop (1280 px) and phone (400 px); a 900 px screenshot of each is in the same folder, and <code>observations.json</code> has the measurements. A cell says &quot;not rendered&quot; when this folder has no image for it.</p>
+<div class="wrap"><table>
+<thead><tr><th>Kit</th><th colspan="2">editorial</th><th colspan="2">glass-dark</th></tr></thead>
+<tbody>
+${rows}
+</tbody></table></div>
+<h2>Every other design language under its own kit</h2>
+<div class="wrap"><table>
+<thead><tr><th>Language</th><th>1280 px</th><th>400 px</th></tr></thead>
+<tbody>
+${own}
+</tbody></table></div>
+</body></html>
+`;
+    fs.writeFileSync(path.join(OUT_DIR, 'index.html'), html);
+    console.log('kit sheet: ' + path.relative(ROOT, path.join(OUT_DIR, 'index.html')));
+  } catch (e) {
+    console.log('WARNING could not write the kit sheet: ' + (e && e.message ? e.message : e));
+  }
+}
+
+/** Seconds of the longest transition (duration + delay) in computed lists like "0.3s, 0s". */
+const transitionMs = (st) => {
+  const list = (v) => String(v || '0s').split(',').map((x) => { const t = x.trim(); return t.endsWith('ms') ? parseFloat(t) : parseFloat(t) * 1000; });
+  const d = list(st.transitionDuration); const dl = list(st.transitionDelay);
+  return Math.max(0, ...d.map((v, i) => (v || 0) + (dl[i % dl.length] || 0)));
+};
+
+/** Opens the preview, logged in; one retry with a fresh login when it is a 404 or has no page content. Returns { p, consoleErrors, html }. */
+async function openPreview(ctx, id, state) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (attempt > 0 || !state.cookies) state.cookies = loginCookies(wp);
+    await ctx.clearCookies();
+    await ctx.addCookies(state.cookies.map(([n, value]) => ({ name: n, value, url: SITE })));
+    const p = await ctx.newPage();
+    const consoleErrors = watchConsole(p, SITE);
+    const resp = await p.goto(`${SITE}/?page_id=${id}&preview=true`, { waitUntil: 'load' });
+    const ok = resp && resp.status() < 400 && (await p.$('.et-l--post'));
+    if (ok || attempt === 1) return { p, consoleErrors, status: resp ? resp.status() : 0 };
+    console.log(`NOTE preview of page ${id} came back ${resp ? resp.status() : 'without a response'}: logging in again and retrying`);
+    await p.close();
+  }
+  return null;
+}
+
+(async () => {
+  let browser;
+  let failures = 0;
+  let passes = 0;
+  const status = new Map();
+  const observations = [];
+  const state = { cookies: null };
+  cleanupOnSignals(run, sweep, pages.runPrefix);
+  let cells = [];
+  try {
+    try { cells = K.selectCells({ kits: optKits, languages: optLanguages }, kitIds, languages, SHEET_LANGUAGES); } catch (e) { console.error(e.message); process.exit(2); }
+    const foreign = pages.foreignCount();
+    if (foreign > 0) console.log(`WARNING ${foreign} leftover or concurrent kit pages (not deleted; run with --clean-orphans when no other run is going)`);
+    fs.mkdirSync(OUT_DIR, { recursive: true });
+    browser = await chromium.launch({ handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false });
+    run.browser = browser;
+    console.log(`${cells.length} kit/language cell(s) x ${WIDTHS.length} widths, run ${RUN_TOKEN}`);
+
+    const report = (kit, lang, width, problems) => {
+      if (run.cleaning) return;
+      const k = kit + '/' + lang;
+      if (!problems.length) { passes++; console.log(`PASS ${k}/${width} ok`); if (!status.has(k)) status.set(k, 'PASS'); return; }
+      failures++;
+      status.set(k, 'FAIL');
+      for (const [code, detail] of problems) console.log(`FAIL ${k}/${width} ${code}: ${detail}`);
+    };
+
+    for (const [kit, lang] of cells) {
+      if (run.cleaning) break;
+      let page = null;
+      try {
+        state.cookies = loginCookies(wp); // a fresh session per cell: a long run outlives one cookie
+        page = makePage(kit, lang);
+        if (!page.valid) { report(kit, lang, 'gate', [['gate', 'not saved: ' + page.verdict]]); continue; }
+        const expects = K.buttonAttrs(page.markup).map(K.expectFromAttrs);
+        if (expects.length !== K.SLOTS.length) { report(kit, lang, 'gate', [['gate', `the resolved sheet has ${expects.length} buttons, expected ${K.SLOTS.length}`]]); continue; }
+        for (const width of WIDTHS) {
+          const ctx = await browser.newContext({ viewport: { width, height: 900 } });
+          const problems = [];
+          try {
+            const opened = await openPreview(ctx, page.id, state);
+            const { p, consoleErrors } = opened;
+            await p.waitForTimeout(600);
+            await p.evaluate(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += 400) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } window.scrollTo(0, 0); });
+            await p.waitForTimeout(500);
+            const html = await p.content();
+            const php = PHP_ERROR.map((re) => re.exec(html)).find(Boolean);
+            if (php) problems.push(['php-error', 'PHP error text in the HTML: ' + php[0].replace(/\s+/g, ' ').slice(0, 160)]);
+            const m = await p.evaluate(measureInPage);
+            if (!m.hasRoot) problems.push(['empty', `no .et-l--post content on the page (HTTP ${opened.status})`]);
+            else if (!m.visible) problems.push(['empty', 'the page content shows nothing visible']);
+            try { await p.screenshot({ path: path.join(OUT_DIR, `${kit}-${lang}-${width}.png`), fullPage: true }); } catch (e) { console.log(`WARNING screenshot failed for ${kit}/${lang}/${width}`); }
+            const rest = await p.evaluate(K.measureButtons);
+            if (rest.buttons.length !== K.SLOTS.length) {
+              problems.push(['buttons', `${rest.buttons.length} buttons rendered, expected ${K.SLOTS.length}`]);
+            } else {
+              // The surface under each button: a screenshot of its box with every button hidden (no transition, so it is hidden at once).
+              await p.evaluate(() => document.querySelectorAll('.et-l--post .et_pb_button_module_wrapper, .et-l--post a.et_pb_button').forEach((n) => { n.dataset.aiedT = n.style.transition; n.style.transition = 'none'; n.dataset.aiedV = n.style.visibility; n.style.visibility = 'hidden'; }));
+              await p.waitForTimeout(50);
+              const surfaces = [];
+              for (const b of rest.buttons) {
+                const clip = { x: Math.max(0, Math.round(b.rect.left)), y: Math.max(0, Math.round(b.rect.top)), width: Math.max(1, Math.round(b.rect.width)), height: Math.max(1, Math.round(b.rect.height)) };
+                surfaces.push(K.pixelStats(K.decodePng(await p.screenshot({ clip, fullPage: true }))));
+              }
+              await p.evaluate(() => document.querySelectorAll('.et-l--post .et_pb_button_module_wrapper, .et-l--post a.et_pb_button').forEach((n) => { n.style.visibility = n.dataset.aiedV || ''; n.style.transition = n.dataset.aiedT || ''; delete n.dataset.aiedV; delete n.dataset.aiedT; }));
+              await p.waitForTimeout(50);
+              const buttons = p.locator('.et-l--post a.et_pb_button');
+              for (let i = 0; i < rest.buttons.length; i++) {
+                const slot = K.SLOTS[i];
+                const where = `${slot.surface}/${slot.role}`;
+                const b = rest.buttons[i];
+                const wait = Math.min(2000, Math.max(transitionMs(b.el), transitionMs(b.wrap))) + 150;
+                await buttons.nth(i).hover();
+                await p.waitForTimeout(wait);
+                const hov = (await p.evaluate(K.measureButtons)).buttons[i];
+                await p.mouse.move(0, 0);
+                await p.waitForTimeout(wait);
+                const cmp = K.compareButton(expects[i], { rest: { el: b.el, wrap: b.wrap }, hover: { el: hov.el, wrap: hov.wrap } });
+                const surface = surfaces[i].mean;
+                const cr = K.contrastProblems(b.el, surface, 'rest');
+                const ch = K.contrastProblems(hov.el, surface, 'hover');
+                const ov = [...K.overflowProblems(b, 'rest', rest), ...K.overflowProblems(hov, 'hover', rest)];
+                for (const [code, detail] of [...cmp.problems, ...cr.problems, ...ch.problems, ...ov]) problems.push([code, `${where} ${detail}`]);
+                // Measurements for the report (never a verdict).
+                const sw = cmp.shadowWhere;
+                const shState = sw.rest ? 'rest' : sw.hover ? 'hover' : null;
+                const shNode = shState === null ? null : (shState === 'rest' ? { el: b.el, wrap: b.wrap } : { el: hov.el, wrap: hov.wrap })[sw[shState] === 'button' ? 'el' : 'wrap'];
+                const sh = shNode ? K.parseShadows(shNode.boxShadow)[0] : null;
+                let shadowVsSurface = null;
+                if (sh && sh.color) { const base = { ...surface, a: 1 }; shadowVsSurface = K.round2(ratioOf(over(K.colour(sh.color), base), base)); }
+                observations.push({ kit, language: lang, width, slot: where, surface: K.hex(surface), surfaceLightest: K.hex(surfaces[i].lightest), surfaceDarkest: K.hex(surfaces[i].darkest), rest: cr.info, hover: ch.info,
+                  shadow: sh ? { state: shState, on: sw[shState], value: shNode.boxShadow, shadowVsSurface, radius: shNode.borderTopLeftRadius, fill: b.el.backgroundColor } : null,
+                  underline: expects[i].rest.top.width === 0 && expects[i].rest.bottom.width > 0 ? { bottomOnFill: cr.info.bottomOnFill, bottomOnSurface: cr.info.bottom } : null,
+                  lift: expects[i].lift !== null ? { button: K.translateY(hov.el.transform), wrapper: K.translateY(hov.wrap.transform) } : null });
+              }
+            }
+            if (consoleErrors.length) problems.push(['console-error', [...new Set(consoleErrors)].slice(0, 3).join(' | ')]);
+            await p.close();
+          } catch (e) {
+            problems.push(['render-error', (e && e.message ? e.message : String(e)).split('\n')[0]]);
+          } finally {
+            await ctx.close();
+          }
+          report(kit, lang, width, problems);
+        }
+      } catch (e) {
+        report(kit, lang, 'prepare', [['render-error', 'could not prepare the page: ' + (e && e.message ? e.message : e)]]);
+      } finally {
+        if (page && /^\d+$/.test(page.id) && page.id !== '0') dropPage(page.id);
+      }
+    }
+    if (run.cleaning) return;
+    try { fs.writeFileSync(path.join(OUT_DIR, 'observations.json'), JSON.stringify(observations, null, 1)); } catch (e) { console.log('WARNING could not write observations.json'); }
+    printNotes(observations);
+    writeSheet(status, cells);
+  } catch (e) {
+    console.log('ERROR script: ' + (e && e.message ? e.message : e));
+    failures++;
+  } finally {
+    if (!run.cleaning) {
+      if (!sweep()) failures++;
+      if (browser) await browser.close();
+    }
+  }
+  if (run.cleaning) return;
+  console.log(`\n${passes} PASS, ${failures} FAIL (cell/width lines) over ${cells.length} kit/language cell(s)`);
+  console.log(failures ? 'FAILED' : 'Every selected kit renders as it says on the real Divi.');
+  process.exit(failures ? 1 : 0);
+})();
+
+/** NOTE lines at 1280 px, one per kit/language: the underline's weakest contrast against its own fill, and the shadow (which element carries it, its corners, how far its colour stands out from the surface). */
+function printNotes(obs) {
+  const groups = new Map();
+  for (const o of obs.filter((x) => x.width === 1280)) { const k = o.kit + '/' + o.language; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(o); }
+  const range = (v) => { const n = v.filter((x) => typeof x === 'number'); return n.length ? `${Math.min(...n)}..${Math.max(...n)}` : 'n/a'; };
+  for (const [k, list] of groups) {
+    const ul = list.filter((o) => o.underline);
+    if (ul.length) console.log(`NOTE underline ${k}: bottom edge vs its own fill ${range(ul.map((o) => o.underline.bottomOnFill))}:1 (weakest ${ul.reduce((a, o) => (o.underline.bottomOnFill < a.underline.bottomOnFill ? o : a)).slot})`);
+    const sh = list.filter((o) => o.shadow);
+    if (sh.length) console.log(`NOTE shadow ${k}: ${[...new Set(sh.map((o) => o.shadow.state + ' on the ' + o.shadow.on + ' (radius ' + o.shadow.radius + ')'))].join(', ')}; shadow colour vs surface ${range(sh.map((o) => o.shadow.shadowVsSurface))}:1; e.g. "${sh[0].shadow.value}"`);
+  }
+}
