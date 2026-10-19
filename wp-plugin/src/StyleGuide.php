@@ -24,7 +24,7 @@ final class StyleGuide
     /**
      * The topics served on request: `design-languages`, `design-language:<id>` for every design language, then the
      * vocabulary-family topics (each teaches only shapes proven on the real Divi; see docs/shape-evidence-5.15.1.md),
-     * then `style-kits` and `style-kit:<id>` for every style kit.
+     * then `style-kits`, `kit-rules` (what each module takes from a kit) and `style-kit:<id>` for every style kit.
      *
      * @return list<string>
      */
@@ -47,6 +47,7 @@ final class StyleGuide
         $topics[] = 'forms';
         $topics[] = 'composition';
         $topics[] = 'style-kits';
+        $topics[] = 'kit-rules';
         foreach ( StyleKits::ids() as $id ) {
             $topics[] = 'style-kit:' . $id;
         }
@@ -84,7 +85,7 @@ final class StyleGuide
     /** The description of the `topic` parameter in the MCP schema and the OpenAPI spec (generated, at most 300 characters). */
     public static function topicParameterDescription(): string
     {
-        return 'Optional. One topic instead of the whole guide: ' . implode( ', ', self::topicNames() ) . '. <id> topics serve one language or kit in full.';
+        return 'Optional. One topic instead of the whole guide: ' . implode( ', ', self::topicNames() ) . '. <id>: one language or kit in full.';
     }
 
     /**
@@ -139,6 +140,9 @@ final class StyleGuide
         if ( 'style-kits' === $topic ) {
             return self::styleKitsTopic();
         }
+        if ( 'kit-rules' === $topic ) {
+            return self::kitRules();
+        }
         if ( str_starts_with( $topic, 'design-language:' ) && in_array( $topic, self::topics(), true ) ) {
             return DesignLanguages::markdown( substr( $topic, strlen( 'design-language:' ) ) );
         }
@@ -180,17 +184,19 @@ final class StyleGuide
             . "Colour and font are NOT part of a kit: they always come from the page's design language, so one kit looks different in every language and stays readable in all of them.\n\n"
             . "Every design language has a default kit (named in its brief). `get_section_recipes` takes `style_kit` together with `name` to serve one recipe in another kit; without it the recipe uses the language's own kit.\n\n"
             . "## The kits\n\n" . $catalog . "\n"
-            . "Each kit in full, with ready-made primary and secondary buttons: topic=style-kit:<id> with any id listed above.\n\n"
+            . "Each kit in full, with ready-made blocks: topic=style-kit:<id> with any id listed above. What each module takes from a kit: topic=kit-rules.\n\n"
             . "## Default kit of each design language\n\n" . implode( "\n", $defaults ) . "\n\n"
             . "## How to choose\n\n"
             . "- Start from the design language you picked and use its default kit; change kit only when the brief asks for another feel.\n"
             . "- Match the kit to the language: its corner radius family (tight or soft) and its weight (outline and thin against filled and heavy) should read like the rest of the page.\n"
-            . "- One kit per page. Don't mix kits on one page: a soft filled button next to a tight outline one looks like two designs.\n"
-            . "- Buttons on an accent band or on a photo keep the kit's shape; only their colours change (each kit topic says how).\n\n"
+            . "- One kit per page. Don't mix kits on one page: a soft filled button next to a tight outline one looks like two designs.\n\n"
             . "## What is kit-driven today\n\n"
-            . self::appliedSentence() . " Accordions, forms, blurbs, testimonials, image radius and every other module keep the recipe's own styling. "
-            . "To build one without a recipe, copy the block from the kit's topic (button, card or panel) and swap its colours for your design language's roles.\n";
+            . self::appliedSentence() . ' ' . self::notAppliedSentence() . ' '
+            . "To build one without a recipe, copy the block from the kit's topic and swap its colours for your design language's roles.\n";
     }
+
+    /** The ink (colour role) a child uses on a ground of the given fill role: the one pairing KitAdapters::ON also uses for a filled button's label (pinned equal by a test). */
+    private const GROUND_INK = [ 'accent' => 'accent-text', 'text' => 'bg' ];
 
     /** What the sentence names, per marker role: a plain noun. A role without an entry is named by its id. */
     private const APPLIED_NOUNS = [
@@ -198,7 +204,119 @@ final class StyleGuide
         'control-secondary' => 'buttons',
         'card'              => 'cards',
         'panel'             => 'cards',
+        'item'              => 'accordion and toggle items',
+        'item-rule'         => 'accordion and toggle items',
     ];
+
+    /**
+     * The modules the guide names as keeping the recipe's own styling, each with the blocks that would make it kit-driven:
+     * a noun is named only while NONE of its blocks is in KitAdapters::APPLIED, so the sentence cannot claim a module that an
+     * adapter now styles (accordions left this list with the item adapter).
+     */
+    private const NOT_APPLIED_NOUNS = [
+        'accordions'   => [ 'divi/accordion', 'divi/toggle' ],
+        'forms'        => [ 'divi/contact-form' ],
+        'blurbs'       => [ 'divi/blurb' ],
+        'testimonials' => [ 'divi/testimonial' ],
+        'image radius' => [ 'divi/image' ],
+    ];
+
+    /**
+     * "Forms, blurbs, testimonials, image radius and every other module keep the recipe's own styling.", generated from
+     * KitAdapters::APPLIED (see NOT_APPLIED_NOUNS).
+     *
+     * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED
+     */
+    public static function notAppliedSentence( ?array $applied = null ): string
+    {
+        $applied ??= KitAdapters::APPLIED;
+        $nouns = [];
+        foreach ( self::NOT_APPLIED_NOUNS as $noun => $blocks ) {
+            if ( [] === array_intersect( $blocks, array_keys( $applied ) ) ) {
+                $nouns[] = $noun;
+            }
+        }
+        $nouns[] = 'every other module';
+
+        return ucfirst( count( $nouns ) > 1 ? implode( ', ', array_slice( $nouns, 0, -1 ) ) . ' and ' . end( $nouns ) : $nouns[0] ) . " keep the recipe's own styling.";
+    }
+
+    /**
+     * The kit-rules paragraph on grounds, with the fill roles read from the adapter's own ground patches (KitAdapters::GROUNDS
+     * through patch(), for the first shipped kit) and the child inks from GROUND_INK, followed by a blank line; '' (the
+     * paragraph is dropped, fail closed) unless the fills are exactly `text` (inverted) and `accent` (accent), the two the
+     * sentence and GROUND_INK describe.
+     *
+     * @param array<string,string>|null $fills ground => fill colour role; defaults to the adapter's (a parameter only so a test can prove the check fails closed)
+     */
+    public static function groundSentence( ?array $fills = null ): string
+    {
+        if ( null === $fills ) {
+            $fills = [];
+            $kit   = StyleKits::get( (string) ( StyleKits::ids()[0] ?? '' ) );
+            foreach ( [ 'inverted', 'accent' ] as $ground ) {
+                $patch            = null === $kit ? null : KitAdapters::patch( 'divi/group', 'panel', 'light', $kit, $ground );
+                $fills[ $ground ] = (string) preg_replace( '/^\{\{aied:color:([a-z-]+)\}\}$/', '$1', (string) ( $patch['module']['decoration']['background']['desktop']['value']['color'] ?? '' ) );
+            }
+        }
+        if ( [ 'inverted' => 'text', 'accent' => 'accent' ] !== $fills ) {
+            return '';
+        }
+
+        return sprintf(
+            'A panel can sit on an `inverted` ground (%s colour as fill; its text in the %s colour, or the surface colour on a surface band) or an `accent` ground (%s colour as fill; its text in the %s colour). The frame takes the fill colour; the kit never re-inks the children. ',
+            $fills['inverted'],
+            self::GROUND_INK[ $fills['inverted'] ],
+            $fills['accent'],
+            self::GROUND_INK[ $fills['accent'] ]
+        ) . 'A button on an inverted panel takes the `panel` treatment (each kit topic says how).' . "\n\n";
+    }
+
+    /**
+     * Topic `kit-rules`: what each module takes from a kit, the same for every kit, said ONCE here instead of in every kit
+     * topic. Generated from KitAdapters::APPLIED: a module's section is served only while an adapter answers its roles. At
+     * most 10,000 bytes.
+     *
+     * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED (a parameter only so a test can prove the topic follows the map)
+     */
+    public static function kitRules( ?array $applied = null ): string
+    {
+        $applied ??= KitAdapters::APPLIED;
+        $roles   = array_merge( [], ...array_values( $applied ) );
+        $has     = static fn ( string $role ): bool => in_array( $role, $roles, true );
+
+        $out = "# Kit rules: what each module takes from a kit\n\n"
+            . "The same for every kit. Each kit's own values and ready-made blocks: topic=style-kit:<id>.\n\n"
+            . self::appliedSentence( $applied ) . ' ' . self::notAppliedSentence( $applied ) . "\n\n"
+            . "## Reusing a kit topic's blocks\n\n"
+            . "Every block in a kit topic is real: resolved by the plugin's own pipeline for the `editorial` language on a light section, with placeholder text. "
+            . "Put it inside a column. With another design language keep the structure and swap each colour for its role (listed beside the blocks as value = role(s)), not by its value: two roles can share one value; "
+            . "and swap the font family for your language's body font.\n";
+        if ( $has( 'control' ) ) {
+            $out .= "\n## Buttons\n\n"
+                . "A button takes the kit's control values: fill, border and its sides, control radius, shadow, hover and lift, text and control padding. "
+                . "On an accent band or a photo a button keeps the kit's shape; only its colours change (each kit topic says how). "
+                . "Shadows and transforms belong on the button module (module.decoration.boxShadow, module.decoration.transform), never on button.decoration: Divi drops those on a button.\n";
+        }
+        if ( $has( 'card' ) ) {
+            $out .= "\n## Cards and panels\n\n"
+                . 'A `card` is a grid tile and a `panel` is a static surface; both go on a `divi/group` (or a `divi/column`). '
+                . 'The fill is always the language\'s surface colour (the `surface` role; the `bg` role on a surface-coloured band), never transparent. '
+                . 'The kit\'s border width and style are used, but at least 1px; the frame colour is the text colour (an accent frame is drawn in the text colour) or the border hairline (the `border` role) when the kit\'s border colour is `same` or `border`. '
+                . 'A card takes the card radius and padding. A panel is a static surface: the same radius, frame and shadow, no hover, and the recipe keeps its own padding. A panel takes the rest shadow only.' . "\n\n"
+                . self::groundSentence()
+                . 'Kit decisions no card takes: the text decisions (capitalization, weight and letter spacing are button-only) and the fill colour; a kit\'s media radius is recorded in the kit but no module takes it yet.' . "\n";
+        }
+        if ( $has( 'item' ) ) {
+            $out .= "\n## Accordion and toggle items\n\n"
+                . 'An `item` is a boxed item and an `item-rule` a rule row, on a `divi/accordion` (one accordion styles all its items, never one item alone) or a `divi/toggle`. '
+                . 'Both: the title in the text colour, open and closed; the answer in the muted colour; the icons in the text colour (an accordion has no open icon); every state is written, so none falls back to Divi\'s grey defaults; no hover. '
+                . 'An `item` is filled like a card (the surface colour, the bg colour on a surface band), the same in both states, and takes the card\'s frame, radius and rest shadow; on a toggle it also takes the card padding (an accordion keeps Divi\'s own item padding: its padding setting would pad the answer). '
+                . 'An `item-rule` (on a light or surface band only) is filled with the band colour, has square corners, only a bottom rule (the kit\'s width, at least 1px, and style, in the card frame colour) and no shadow; the recipe keeps its own padding.' . "\n";
+        }
+
+        return $out;
+    }
 
     /**
      * "Kit-driven today: buttons (`divi/button`: `control`, `control-secondary`) and cards (`divi/group`, `divi/column`: `card`, `panel`)."
@@ -230,7 +348,11 @@ final class StyleGuide
         return 'Kit-driven today: ' . $joined . '.';
     }
 
-    /** Topic `style-kit:<id>`: one kit's decisions and its primary and secondary button, resolved by the real pipeline for the editorial language. At most 10,000 bytes. */
+    /**
+     * Topic `style-kit:<id>`: one kit's decisions and its own resolved blocks (primary and secondary button, card, panel,
+     * inverted panel, toggle), produced by the real pipeline for the editorial language, plus ONE pointer to `kit-rules` for
+     * what is the same in every kit. At most 10,000 bytes.
+     */
     private static function styleKitTopic( string $id ): string
     {
         $kit      = StyleKits::get( $id );
@@ -243,7 +365,7 @@ final class StyleGuide
         $secondary = self::kitButton( $kit, $language, 'control-secondary', 'Secondary button' );
 
         $lines = [ rtrim( StyleKits::markdown( $id ) ), '' ];
-        $lines[] = self::appliedSentence() . " For a button the kit's control values apply (fill, border and its sides, control radius, shadow, hover and lift, text and control padding); for a card or panel see the section on cards below.";
+        $lines[] = 'What each module takes from a kit, and how to reuse these blocks in another design language (the same for every kit): topic=kit-rules.';
         $textOnly = self::kitTextOnlySentence( $kit );
         if ( '' !== $textOnly ) {
             $lines[] = '';
@@ -253,9 +375,8 @@ final class StyleGuide
         if ( '' !== $primary && '' !== $secondary ) {
             $lines[] = '## Buttons in this kit';
             $lines[] = '';
-            $lines[] = 'Real blocks, resolved for the `editorial` language on a light section, with placeholder text. Put them inside a column. The hex colours are editorial\'s: '
-                . 'with another design language keep the structure and swap each colour for the same role of that language, listed here as value = role(s) ('
-                . self::kitColourLegend( array_values( array_filter( [ KitAdapters::patch( 'divi/button', 'control', 'light', $kit ), KitAdapters::patch( 'divi/button', 'control-secondary', 'light', $kit ) ] ) ), $language ) . '), and the font family for your language\'s body font.';
+            $lines[] = 'Colours in these blocks (resolved for `editorial` on a light section), as value = role(s): '
+                . self::kitColourLegend( array_values( array_filter( [ KitAdapters::patch( 'divi/button', 'control', 'light', $kit ), KitAdapters::patch( 'divi/button', 'control-secondary', 'light', $kit ) ] ) ), $language ) . '.';
             $lines[] = '';
             $lines[] = 'Primary:';
             $lines[] = '';
@@ -291,9 +412,9 @@ final class StyleGuide
     }
 
     /**
-     * The "Cards and panels in this kit" section: what a card and a panel take from the kit (read from the adapter's own
-     * patch, never hand-typed per kit) and a resolved card and panel, produced by the real pipeline. '' when the pipeline
-     * cannot resolve them.
+     * The "Cards and panels in this kit" section: this kit's own card values (read from the adapter's own patch, never
+     * hand-typed per kit) and a resolved card, panel, inverted panel and toggle, produced by the real pipeline; what every
+     * kit shares is in `kit-rules`. '' when the pipeline cannot resolve them.
      *
      * @param array<string,mixed> $kit
      * @param array<string,mixed> $language
@@ -313,24 +434,17 @@ final class StyleGuide
         if ( 1 !== preg_match( '/^\{\{aied:color:([a-z-]+)\}\}$/', (string) $edge['color'], $m ) ) {
             return ''; // fail closed: a frame colour that is not a role token is never guessed
         }
-        $role   = $m[1];
+        $role     = $m[1];
         $inverted = self::kitInvertedPanel( $kit, $language );
+        $toggle   = self::kitToggle( $kit, $language );
         $ground   = KitAdapters::patch( 'divi/group', 'panel', 'light', $kit, 'inverted' );
         $onPanel  = KitAdapters::patch( 'divi/button', 'control', 'panel', $kit );
-        $accentFill = KitAdapters::patch( 'divi/group', 'panel', 'light', $kit, 'accent' );
-        if ( '' === $inverted || null === $ground || null === $onPanel || null === $accentFill ) {
+        $item     = KitAdapters::patch( 'divi/toggle', 'item', 'light', $kit );
+        if ( '' === $inverted || '' === $toggle || null === $ground || null === $onPanel || null === $item ) {
             return '';
         }
-        $fills  = [];
-        foreach ( [ $ground, $accentFill ] as $g ) {
-            $fills[] = (string) preg_replace( '/^\{\{aied:color:([a-z-]+)\}\}$/', '$1', (string) $g['module']['decoration']['background']['desktop']['value']['color'] );
-        }
-        if ( [ 'text', 'accent' ] !== $fills ) {
-            return ''; // fail closed: the sentence below names exactly these two grounds and their inks
-        }
-        // The inks the snippet and the prose name (background, and accent-text) join the legend as tokens of a synthetic patch.
-        $inks   = [ 'ink' => [ '{{aied:color:' . self::GROUND_INK['text'] . '}}', '{{aied:color:' . self::GROUND_INK['accent'] . '}}' ] ];
-        $legend = self::kitColourLegend( array_values( array_filter( [ $patch, KitAdapters::patch( 'divi/group', 'panel', 'light', $kit ), $ground, $onPanel, $inks ] ) ), $language );
+        // Every colour the four snippets carry, in one legend (the toggle adds the muted answer colour).
+        $legend = self::kitColourLegend( array_values( array_filter( [ $patch, KitAdapters::patch( 'divi/group', 'panel', 'light', $kit ), $ground, $onPanel, $item ] ) ), $language );
         if ( '' === $legend ) {
             return '';
         }
@@ -351,15 +465,9 @@ final class StyleGuide
         $lines   = [];
         $lines[] = '## Cards and panels in this kit';
         $lines[] = '';
-        $lines[] = 'A `card` is a grid tile and a `panel` is a static surface; both go on a `divi/group` (or a `divi/column`). '
-            . sprintf( 'Corner radius %s, padding %s (a card only). ', (string) $radius['card'], (string) $space['card'] )
-            . 'The fill is always the language\'s surface colour (the `surface` role; the `bg` role on a surface-coloured band), never transparent. '
-            . 'The kit\'s border width and style are used, but at least 1px; the frame colour is the text colour (an accent frame is drawn in the text colour) or the border hairline (the `border` role) when the kit\'s border colour is `same` or `border`. '
+        $lines[] = sprintf( 'Corner radius %s, padding %s (a card only). ', (string) $radius['card'], (string) $space['card'] )
             . $frame . ' ' . $hover
-            . sprintf( ' Shadow: rest %s, hover %s.', (string) $shadow['rest'], (string) $shadow['hover'] )
-            . ' A panel is a static surface: the same radius, frame and shadow, no hover, and the recipe keeps its own padding. A panel takes the rest shadow only.';
-        $lines[] = '';
-        $lines[] = 'Real blocks, resolved for the `editorial` language on a light section, with a placeholder text child. Put them inside a column and swap each colour for its role below, not by its value: two roles can share one value.';
+            . sprintf( ' Shadow: rest %s, hover %s.', (string) $shadow['rest'], (string) $shadow['hover'] );
         $lines[] = '';
         $lines[] = 'Colours in these blocks, as value = role(s): ' . $legend . '.';
         $lines[] = '';
@@ -375,8 +483,8 @@ final class StyleGuide
         $lines[] = $panel;
         $lines[] = '```';
         $lines[] = '';
-        $lines[] = 'A panel can sit on an `inverted` ground (text colour as fill; its text in the background colour, or the surface colour on a surface band) or an `accent` ground (accent colour as fill; its text in the accent-text colour). The frame takes the fill colour; the kit never re-inks the children. '
-            . 'A button on an inverted panel takes the `panel` treatment: ' . self::kitSurfaceSentence( $kit, 'panel', 'on it', [ 'control' => 'primary' ] );
+        $lines[] = 'A button on an inverted panel takes the `panel` treatment: ' . self::kitSurfaceSentence( $kit, 'panel', 'on it', [ 'control' => 'primary' ] )
+            . ' The recipe keeps its own padding on a panel (' . self::PANEL_PADDING . ' here).';
         $lines[] = '';
         $lines[] = 'Inverted panel:';
         $lines[] = '';
@@ -384,9 +492,37 @@ final class StyleGuide
         $lines[] = $inverted;
         $lines[] = '```';
         $lines[] = '';
-        $lines[] = 'Kit decisions no card takes: the text decisions (capitalization, weight and letter spacing are button-only) and the fill colour; a kit\'s media radius is recorded in the kit but no module takes it yet.';
+        $lines[] = sprintf( 'Toggle (an `item`, padding %s). An accordion is styled on its parent: no padding, `closedToggle` font instead of `closedTitle`, no open icon.', (string) $space['card'] );
+        $lines[] = '';
+        $lines[] = '```';
+        $lines[] = $toggle;
+        $lines[] = '```';
 
         return implode( "\n", $lines );
+    }
+
+    /** The padding the inverted panel snippet carries: a panel keeps the recipe's own (structural) padding, the kit gives none. */
+    private const PANEL_PADDING = '32px';
+
+    /**
+     * One toggle of a kit for a language on a light band, role `item`: the marker resolved by the real pipeline (KitAdapters
+     * through KitResolver, then RecipeTokens), never hand-typed attributes. Empty when anything stays unresolved.
+     *
+     * @param array<string,mixed> $kit
+     * @param array<string,mixed> $language
+     */
+    private static function kitToggle( array $kit, array $language ): string
+    {
+        $attrs  = [
+            'aied'           => [ 'kit' => 'item', 'on' => 'light' ],
+            'title'          => [ 'innerContent' => [ 'desktop' => [ 'value' => 'Toggle title' ] ] ],
+            'content'        => [ 'innerContent' => [ 'desktop' => [ 'value' => '<p>Placeholder answer.</p>' ] ] ],
+            'builderVersion' => '5.8.0',
+        ];
+        $markup = '<!-- wp:divi/toggle ' . RecipeTokens::encodeJson( $attrs ) . ' /-->';
+        $markup = RecipeTokens::resolve( KitResolver::resolve( $markup, $kit ), $language );
+
+        return str_contains( $markup, 'aied' ) ? '' : $markup;
     }
 
     /**
@@ -417,9 +553,6 @@ final class StyleGuide
         return str_contains( $markup, 'aied' ) ? '' : $markup;
     }
 
-    /** The ink (colour role) a child uses on a ground of the given fill role: the one pairing KitAdapters::ON also uses for a filled button's label (pinned equal by a test). */
-    private const GROUND_INK = [ 'accent' => 'accent-text', 'text' => 'bg' ];
-
     /**
      * One inverted panel of a kit for a language on a light band: a group with the card marker's `inverted` ground, and a primary
      * button on the `panel` surface, all resolved by the real pipeline
@@ -432,7 +565,11 @@ final class StyleGuide
     {
         $group  = [
             'aied'           => [ 'kit' => 'panel', 'on' => 'light', 'ground' => 'inverted' ],
-            'module'         => [ 'decoration' => [ 'layout' => [ 'desktop' => [ 'value' => [ 'flexDirection' => 'column', 'rowGap' => '12px' ] ] ] ] ],
+            'module'         => [ 'decoration' => [
+                'layout'  => [ 'desktop' => [ 'value' => [ 'flexDirection' => 'column', 'rowGap' => '12px' ] ] ],
+                // The kit writes no padding on a panel; without the recipe's own the button would sit on the panel's edges.
+                'spacing' => [ 'desktop' => [ 'value' => [ 'padding' => array_fill_keys( [ 'top', 'right', 'bottom', 'left' ], self::PANEL_PADDING ) ] ] ],
+            ] ],
             'builderVersion' => '5.0.2',
         ];
         $button = self::kitButton( $kit, $language, 'control', 'Button', 'panel' );
@@ -485,12 +622,6 @@ final class StyleGuide
             if ( '0px' === (string) ( $secondary['button']['decoration']['border']['desktop']['value']['styles']['bottom']['width'] ?? '' ) ) {
                 $out[] = 'The secondary button draws no underline: it is a plain label (its bottom side is 0px).';
             }
-        }
-        if ( [] === $out ) {
-            return '';
-        }
-        if ( isset( $module['boxShadow'] ) || isset( $module['transform'] ) ) {
-            $out[] = 'Shadows and transforms belong on the button module (module.decoration.boxShadow, module.decoration.transform), never on button.decoration: Divi drops those on a button.';
         }
 
         return implode( ' ', $out );
@@ -600,7 +731,8 @@ final class StyleGuide
      * The colour rules of the kit's primary and secondary button on a surface, read from the adapter's own patch
      * (role names only), e.g. "Primary: surface fill, text label, surface border."
      *
-     * @param array<string,mixed> $kit
+     * @param array<string,mixed>  $kit
+     * @param array<string,string> $roles button marker role => the name the sentence gives it (default: both buttons)
      */
     private static function kitSurfaceSentence( array $kit, string $on, string $where, array $roles = [ 'control' => 'primary', 'control-secondary' => 'secondary' ] ): string
     {
@@ -1661,6 +1793,27 @@ MD;
 
     /** Topic `toggles`: accordion, toggle and tabs colours, every shape proven on the real Divi 5.15.1. At most 10,000 bytes. */
     private static function togglesTopic(): string
+    {
+        return self::togglesTopicText() . self::togglesKitSentence();
+    }
+
+    /**
+     * The `toggles` topic's one style-kit sentence, generated from KitAdapters::APPLIED: '' while no adapter styles an
+     * accordion or a toggle (tabs are never kit-driven: Divi paints their bar, see the Tabs section).
+     *
+     * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED
+     */
+    public static function togglesKitSentence( ?array $applied = null ): string
+    {
+        $applied ??= KitAdapters::APPLIED;
+        if ( ! isset( $applied['divi/accordion'] ) && ! isset( $applied['divi/toggle'] ) ) {
+            return '';
+        }
+
+        return "\n\n## Style kits\n\nAn accordion or a toggle can take the page's style kit (frame, corners, shadow and every state colour): a ready-made toggle per kit is in topic=style-kit:<id>, the rules in topic=kit-rules. Tabs keep their own look.";
+    }
+
+    private static function togglesTopicText(): string
     {
         return <<<'MD'
 # Toggles: accordion, toggle and tabs colours

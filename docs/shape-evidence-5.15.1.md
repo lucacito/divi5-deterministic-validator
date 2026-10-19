@@ -19006,3 +19006,1073 @@ Phone overflow at 400 px: no.
 Note: A sticky GROUP inside a column (position top, offset.top 20px) with a 1200px sibling after it in the same column, between two tall sections. Scrolled (scrollAt -2) so the viewport top is about 500px below the bottom of the section: without a limit Divi's sticky script keeps the group stuck at the top of the screen; with limit.bottom it must have stopped at that limit and scrolled away with the section. Divi 5.15.1 source: limit.top / limit.bottom, values none|body|section|row|column (includes/builder/module/field/Sticky.php get_limit_options, includes/builder-5/server/Packages/Conversion/AdvancedOptionConversion.php $stickyConversionMap 'limit.bottom', scripts/utils/sticky.js getLimit validLimits). A section's own limit list has no section/row/column (Sticky.php get_limit_options); a group is a module, so it has all of them. The probe scrolls in ONE jump, which leaves Divi's sticky script mid-update, so it proves only that the key changes the page. The behaviour itself (the group sticks inside the section, stops with its bottom edge on the section's bottom edge and scrolls away with it; without the limit it keeps following the reader 600px past the end of the section) is measured with scrolling in 150px steps by `make verify-guide-shapes` (step 7b).
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-frame-width-1px-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 60 | yes | `0:div:block-size: 249.797px -> 237.797px` |
+| 900 px | yes | 60 | yes | `0:div:block-size: 249.797px -> 237.797px` |
+| 400 px | yes | 60 | yes | `0:div:block-size: 249.797px -> 237.797px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame width 1px over a 3px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed ON this module because the registry is path-only.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-frame-width-2px-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 60 | yes | `0:div:block-size: 249.797px -> 243.797px` |
+| 900 px | yes | 60 | yes | `0:div:block-size: 249.797px -> 243.797px` |
+| 400 px | yes | 60 | yes | `0:div:block-size: 249.797px -> 243.797px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame width 2px over a 3px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed ON this module because the registry is path-only.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-frame-width-4px-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 60 | yes | `0:div:block-size: 249.797px -> 255.797px` |
+| 900 px | yes | 60 | yes | `0:div:block-size: 249.797px -> 255.797px` |
+| 400 px | yes | 60 | yes | `0:div:block-size: 249.797px -> 255.797px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame width 4px over a 3px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed ON this module because the registry is path-only.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-style-solid-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `1:div:border-block-end-style: dashed -> solid` |
+| 900 px | yes | 24 | yes | `1:div:border-block-end-style: dashed -> solid` |
+| 400 px | yes | 24 | yes | `1:div:border-block-end-style: dashed -> solid` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style solid (4px frame, base dashed) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle').
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-style-dashed-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `1:div:border-block-end-style: solid -> dashed` |
+| 900 px | yes | 24 | yes | `1:div:border-block-end-style: solid -> dashed` |
+| 400 px | yes | 24 | yes | `1:div:border-block-end-style: solid -> dashed` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style dashed (4px frame, base solid) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle').
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-style-dotted-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `1:div:border-block-end-style: solid -> dotted` |
+| 900 px | yes | 24 | yes | `1:div:border-block-end-style: solid -> dotted` |
+| 400 px | yes | 24 | yes | `1:div:border-block-end-style: solid -> dotted` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style dotted (4px frame, base solid) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle').
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-style-double-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `1:div:border-block-end-style: solid -> double` |
+| 900 px | yes | 24 | yes | `1:div:border-block-end-style: solid -> double` |
+| 400 px | yes | 24 | yes | `1:div:border-block-end-style: solid -> double` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style double (4px frame, base solid) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle').
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-frame-colour-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `1:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 900 px | yes | 24 | yes | `1:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 400 px | yes | 24 | yes | `1:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame colour over a 2px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle').
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-edge-bottom-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+- `module.decoration.border.desktop.value.styles.bottom.width` = `"3px"`
+- `module.decoration.border.desktop.value.styles.bottom.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.bottom.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 84 | yes | `0:div:block-size: 237.797px -> 240.797px` |
+| 900 px | yes | 84 | yes | `0:div:block-size: 237.797px -> 240.797px` |
+| 400 px | yes | 84 | yes | `0:div:block-size: 237.797px -> 240.797px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-width`, `border-block-start-color`, `border-block-start-width`, `border-bottom-color`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-width`, `border-left-color`, `border-left-width`, `border-right-color`, `border-right-width`, `border-top-color`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: The underline rest form KitAdapters::card() writes (styles.all width 0px + styles.bottom width 3px, same style and colour) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'); only the bottom side should be drawn on each item (an accordion's items would each carry the rule). NOTE: written without the hover frame colour (not proven).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-radius-16-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"16px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"16px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 36 | yes | `1:div:border-bottom-left-radius: 0px -> 16px` |
+| 900 px | yes | 36 | yes | `1:div:border-bottom-left-radius: 0px -> 16px` |
+| 400 px | yes | 36 | yes | `1:div:border-bottom-left-radius: 0px -> 16px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Four corners 16px over a 1px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). Whether the radius clips the open answer and the icon is measured separately (task report, pixel check).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-radius-36-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"36px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"36px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"36px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"36px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 36 | yes | `1:div:border-bottom-left-radius: 0px -> 36px` |
+| 900 px | yes | 36 | yes | `1:div:border-bottom-left-radius: 0px -> 36px` |
+| 400 px | yes | 36 | yes | `1:div:border-bottom-left-radius: 0px -> 36px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Four corners 36px over a 1px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). Whether the radius clips the open answer and the icon is measured separately (task report, pixel check).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-shadow-soft-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"8px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"24px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(0,0,0,0.18)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `1:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 900 px | yes | 3 | yes | `1:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 400 px | yes | 3 | yes | `1:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Soft rest shadow (KitAdapters::shadow soft: preset1, 0 8px 24px, overlay 18%) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle').
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-shadow-hard-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `1:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 900 px | yes | 3 | yes | `1:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 400 px | yes | 3 | yes | `1:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Hard rest shadow (preset4, 6px 6px 0 0, text ink) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle').
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-shadow-edge-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"4px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `1:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 900 px | yes | 3 | yes | `1:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 400 px | yes | 3 | yes | `1:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Edge rest shadow (preset4, 0 4px 0 0) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle').
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-shadow-glow-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"16px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(245,158,11,0.45)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `1:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 900 px | yes | 3 | yes | `1:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 400 px | yes | 3 | yes | `1:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Glow rest shadow (preset1, 0 0 16px, accent 45%) over a 1px frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle').
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-fill-open-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `openToggle.decoration.background.desktop.value.color` = `"#151c33"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `1:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 900 px | yes | 1 | yes | `1:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 400 px | yes | 1 | yes | `1:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Open fill under a 2px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle') (openToggle background; the open item is the first one of an accordion).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-fill-closed-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `closedToggle.decoration.background.desktop.value.color` = `"#151c33"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `5:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)` |
+| 900 px | yes | 2 | yes | `5:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)` |
+| 400 px | yes | 2 | yes | `5:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Closed fill under a 2px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle') (closedToggle background; measured on the closed items; a toggle is closed here).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-title-open-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `openToggle.decoration.font.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `2:h5:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 900 px | yes | 17 | yes | `2:h5:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 400 px | yes | 17 | yes | `2:h5:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Open title colour through the openToggle font group on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). NEW on divi/accordion (its openToggle font group has no earlier probe).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-title-closed-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `closedToggle.decoration.font.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 34 | yes | `6:h5:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 900 px | yes | 34 | yes | `6:h5:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 400 px | yes | 34 | yes | `6:h5:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Closed title colour through the closedToggle font group on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). NEW on divi/accordion.
+
+Registered paths added:
+
+- `closedToggle.decoration.font.font.{bp}.value.color`
+
+## ki-icon-closed-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `closedToggleIcon.decoration.icon.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 36 | yes | `6:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+| 900 px | yes | 36 | yes | `6:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+| 400 px | yes | 36 | yes | `6:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `::before:-webkit-text-fill-color`, `::before:-webkit-text-stroke-color`, `::before:border-block-end-color`, `::before:border-block-start-color`, `::before:border-bottom-color`, `::before:border-inline-end-color`, `::before:border-inline-start-color`, `::before:border-left-color`, `::before:border-right-color`, `::before:border-top-color`, `::before:caret-color`, `::before:color`, `::before:column-rule-color`, `::before:outline-color`, `::before:row-rule-color`, `::before:text-decoration-color`, `::before:text-emphasis-color`, `::before:text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Closed icon colour on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle') (drawn on the title's ::before).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-body-colour-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 102 | yes | `3:div:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 900 px | yes | 102 | yes | `3:div:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 400 px | yes | 102 | yes | `3:div:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Answer text colour through the content bodyFont group on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle') (the open answer).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-frame-width-1px-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 105.797px -> 101.797px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 105.797px -> 101.797px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 105.797px -> 101.797px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame width 1px over a 3px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed ON this module because the registry is path-only.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-frame-width-2px-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 105.797px -> 103.797px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 105.797px -> 103.797px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 105.797px -> 103.797px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame width 2px over a 3px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed ON this module because the registry is path-only.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-frame-width-4px-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 105.797px -> 107.797px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 105.797px -> 107.797px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 105.797px -> 107.797px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame width 4px over a 3px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed ON this module because the registry is path-only.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-style-solid-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style solid (4px frame, base dashed) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-style-dashed-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style dashed (4px frame, base solid) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-style-dotted-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style dotted (4px frame, base solid) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-style-double-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style double (4px frame, base solid) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-frame-colour-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame colour over a 2px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-edge-bottom-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+- `module.decoration.border.desktop.value.styles.bottom.width` = `"3px"`
+- `module.decoration.border.desktop.value.styles.bottom.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.bottom.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 32 | yes | `0:div:block-size: 101.797px -> 102.797px` |
+| 900 px | yes | 32 | yes | `0:div:block-size: 101.797px -> 102.797px` |
+| 400 px | yes | 32 | yes | `0:div:block-size: 101.797px -> 102.797px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-width`, `border-block-start-color`, `border-block-start-width`, `border-bottom-color`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-width`, `border-left-color`, `border-left-width`, `border-right-color`, `border-right-width`, `border-top-color`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: The underline rest form KitAdapters::card() writes (styles.all width 0px + styles.bottom width 3px, same style and colour) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state); only the bottom side should be drawn on each item (an accordion's items would each carry the rule). NOTE: written without the hover frame colour (not proven).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-radius-16-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"16px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"16px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+| 900 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+| 400 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Four corners 16px over a 1px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state). Whether the radius clips the open answer and the icon is measured separately (task report, pixel check).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-radius-36-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"36px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"36px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"36px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"36px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 36px` |
+| 900 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 36px` |
+| 400 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 36px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Four corners 36px over a 1px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state). Whether the radius clips the open answer and the icon is measured separately (task report, pixel check).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-shadow-soft-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"8px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"24px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(0,0,0,0.18)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Soft rest shadow (KitAdapters::shadow soft: preset1, 0 8px 24px, overlay 18%) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-shadow-hard-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Hard rest shadow (preset4, 6px 6px 0 0, text ink) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-shadow-edge-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"4px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Edge rest shadow (preset4, 0 4px 0 0) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-shadow-glow-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"16px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(245,158,11,0.45)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Glow rest shadow (preset1, 0 0 16px, accent 45%) over a 1px frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-fill-open-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `openToggle.decoration.background.desktop.value.color` = `"#151c33"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 900 px | yes | 1 | yes | `0:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+| 400 px | yes | 1 | yes | `0:div:background-color: rgb(255, 255, 255) -> rgb(21, 28, 51)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Open fill under a 2px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state) (openToggle background; the open item is the first one of an accordion).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-fill-closed-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `closedToggle.decoration.background.desktop.value.color` = `"#151c33"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)` |
+| 900 px | yes | 1 | yes | `0:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)` |
+| 400 px | yes | 1 | yes | `0:div:background-color: rgb(244, 244, 244) -> rgb(21, 28, 51)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Closed fill under a 2px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state) (closedToggle background; measured on the closed items; a toggle is closed here).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-title-open-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `openToggle.decoration.font.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 900 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+| 400 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(51, 51, 51) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Open title colour through the openToggle font group on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state). NEW on divi/accordion (its openToggle font group has no earlier probe).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-title-closed-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `closedTitle.decoration.font.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 900 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 400 px | yes | 17 | yes | `1:h5:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Closed title colour through the closedTitle font group on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-icon-closed-toggle
+
+Block: `toggle`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `closedToggleIcon.decoration.icon.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 18 | yes | `1:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+| 900 px | yes | 18 | yes | `1:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+| 400 px | yes | 18 | yes | `1:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `::before:-webkit-text-fill-color`, `::before:-webkit-text-stroke-color`, `::before:border-block-end-color`, `::before:border-block-start-color`, `::before:border-bottom-color`, `::before:border-inline-end-color`, `::before:border-inline-start-color`, `::before:border-left-color`, `::before:border-right-color`, `::before:border-top-color`, `::before:caret-color`, `::before:color`, `::before:column-rule-color`, `::before:outline-color`, `::before:row-rule-color`, `::before:text-decoration-color`, `::before:text-emphasis-color`, `::before:text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Closed icon colour on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state) (drawn on the title's ::before).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-icon-open-toggle
+
+Block: `toggle`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `openToggleIcon.decoration.icon.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 18 | yes | `1:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+| 900 px | yes | 18 | yes | `1:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+| 400 px | yes | 18 | yes | `1:h5:::before:border-block-end-color: rgb(204, 204, 204) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `::before:-webkit-text-fill-color`, `::before:-webkit-text-stroke-color`, `::before:border-block-end-color`, `::before:border-block-start-color`, `::before:border-bottom-color`, `::before:border-inline-end-color`, `::before:border-inline-start-color`, `::before:border-left-color`, `::before:border-right-color`, `::before:border-top-color`, `::before:caret-color`, `::before:color`, `::before:column-rule-color`, `::before:outline-color`, `::before:row-rule-color`, `::before:text-decoration-color`, `::before:text-emphasis-color`, `::before:text-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Open icon colour on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state) (drawn on the title's ::before). An accordion has NO open icon (Divi hides it).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-body-colour-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.color` = `"#c0392b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 34 | yes | `2:div:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 900 px | yes | 34 | yes | `2:div:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+| 400 px | yes | 34 | yes | `2:div:border-block-end-color: rgb(102, 102, 102) -> rgb(192, 57, 43)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Answer text colour through the content bodyFont group on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state) (the open answer).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-padding-toggle
+
+Block: `toggle`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"24px"`
+- `module.decoration.spacing.desktop.value.padding.right` = `"24px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"24px"`
+- `module.decoration.spacing.desktop.value.padding.left` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 101.797px -> 109.797px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 101.797px -> 109.797px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 101.797px -> 109.797px` |
+
+Properties that changed (any width): `block-size`, `height`, `inline-size`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-inline-end`, `padding-inline-start`, `padding-left`, `padding-right`, `padding-top`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Padding 24px on all four sides of divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state) (the toggle's own spacing, printed important).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-padding-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"24px"`
+- `module.decoration.spacing.desktop.value.padding.right` = `"24px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"24px"`
+- `module.decoration.spacing.desktop.value.padding.left` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 40 | yes | `0:div:block-size: 237.797px -> 265.797px` |
+| 900 px | yes | 40 | yes | `0:div:block-size: 237.797px -> 265.797px` |
+| 400 px | yes | 40 | yes | `0:div:block-size: 237.797px -> 265.797px` |
+
+Properties that changed (any width): `block-size`, `height`, `inline-size`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-inline-end`, `padding-inline-start`, `padding-left`, `padding-right`, `padding-top`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Padding 24px on all four sides set on the divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). Expected to pad the ANSWER (module.json spacing propertySelectors padding -> '.et_pb_toggle_content'), not the item: recorded as an effect, it will NOT be written by the adapter.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## ki-rowgap-accordion
+
+Block: `accordion`, holding `accordion-item`, `accordion-item`, `accordion-item`. Set on top of the base block:
+
+- `module.decoration.layout.desktop.value.rowGap` = `"30px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 243.797px -> 283.797px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 243.797px -> 283.797px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 243.797px -> 283.797px` |
+
+Properties that changed (any width): `--vertical-gap`, `block-size`, `height`, `perspective-origin`, `row-gap`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Row gap 30px (module.decoration.layout rowGap, the layout group's default is 30px in module.json) under a 2px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'): does the gap between framed items move? The printed default between items is measured separately (task report).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).

@@ -337,7 +337,7 @@ final class StyleKits
      * or ghost kit) is what the AI expects and is not stated.
      */
     private const SECONDARY_SENTENCES = [
-        'solid' => 'The secondary is a filled block.',
+        // No 'solid' entry: since kit limits Decision 4 no secondary is solid (KitAdapters::secondaryFill), so it was unreachable.
         'ghost' => 'The secondary is a plain text link.',
     ];
 

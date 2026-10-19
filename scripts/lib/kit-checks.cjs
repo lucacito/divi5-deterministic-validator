@@ -9,7 +9,9 @@
  *  - the in-page measurement (runs in the browser; it must stay self-contained: Playwright serialises it),
  *  - the same for cards: the card/panel part of the sheet (CARD_SLOTS), expectations read from the resolved block tree (a card is found by
  *    the heading it holds, because the resolver strips the marker), the comparison with the computed style at rest and on a real hover,
- *    the clip, the contrast on the measured card fill, overflow and the three-column row.
+ *    the clip, the contrast on the measured card fill, overflow and the three-column row,
+ *  - and for the ITEMS (accordion and toggle, roles item / item-rule): ITEM_SLOTS, expectations read from the resolved block tree per state
+ *    (open and closed), the comparison with the computed style, contrast on the painted fill, the count and the real click.
  */
 const zlib = require('zlib');
 const { parseColor, over, ratioOf } = require('./recipe-checks.cjs');
@@ -65,6 +67,41 @@ for (const s of SURFACES) {
 // The three-column row: plain cards either side of an ACCENT-ground middle card (the featured plan).
 for (const i of [1, 2, 3]) addSlot({ key: `column-${i}`, heading: `Column card ${i}`, band: 'bg', on: 'light', role: 'card', carrier: 'column', row: true, ground: i === 2 ? 'accent' : null, featured: i === 2 });
 
+/**
+ * The items of the sheet (accordion and toggle, Task 5 of the accordion-adapter plan). Every slot is ONE marked block (`item` on all four
+ * bands, `item-rule` on the two light ones) whose UNIQUE first title finds it again in the markup and in the page: `carrier` accordion = a
+ * `divi/accordion` of three items (the first open, two closed) that one marker styles, toggle = a stand-alone `divi/toggle` (a boxed
+ * `item` one, closed, and two `item-rule` ones, one open and one closed). `items` = the titles and the opening state the sheet gives them.
+ */
+const ITEM_SLOTS = [];
+for (const s of SURFACES) {
+  const on = CARD_ON[s.key];
+  ITEM_SLOTS.push({ key: `accordion-${s.key}`, carrier: 'accordion', role: 'item', band: s.key, on, items: [{ title: `Accordion on ${s.key} one`, open: true }, { title: `Accordion on ${s.key} two`, open: false }, { title: `Accordion on ${s.key} three`, open: false }] });
+  if (s.key === 'bg' || s.key === 'surface') {
+    // A boxed toggle (role item): the only block that carries the kit's card padding (space-card), which an accordion item never takes.
+    ITEM_SLOTS.push({ key: `toggle-item-${s.key}`, carrier: 'toggle', role: 'item', band: s.key, on, items: [{ title: `Boxed toggle on ${s.key}`, open: false }] });
+    ITEM_SLOTS.push({ key: `toggle-open-${s.key}`, carrier: 'toggle', role: 'item-rule', band: s.key, on, items: [{ title: `Rule toggle open on ${s.key}`, open: true }] });
+    ITEM_SLOTS.push({ key: `toggle-closed-${s.key}`, carrier: 'toggle', role: 'item-rule', band: s.key, on, items: [{ title: `Rule toggle closed on ${s.key}`, open: false }] });
+  }
+}
+const ITEM_ANSWER = '<p>Placeholder answer: one short sentence that the surrounding colours must keep readable.</p>';
+
+/** One item slot as markup: the marked accordion (with its three items) or toggle. The recipe's own keys only (headingLevel, family, size, line height; a rule toggle's structural padding): the kit supplies every colour, frame, radius and shadow. */
+function itemMarkup(slot) {
+  const marker = slot.on === 'light' ? { kit: slot.role } : { kit: slot.role, on: slot.on };
+  const titleFont = { decoration: { font: { font: { desktop: { value: { headingLevel: 'h3', family: '{{aied:font:display}}', size: '20px', lineHeight: '1.3em' } } } } } };
+  const bodyFont = { decoration: { bodyFont: { body: { font: { desktop: { value: { family: '{{aied:font:body}}', size: '16px', lineHeight: '1.7em' } } } } } } };
+  const open = (it) => (it.open ? { advanced: { open: { desktop: { value: 'on' } } } } : null);
+  if (slot.carrier === 'accordion') {
+    const kids = slot.items.map((it) => blockOf('accordion-item', Object.assign({ title: { innerContent: { desktop: { value: it.title } } }, content: { innerContent: { desktop: { value: ITEM_ANSWER } } } }, open(it) ? { module: open(it) } : {}, { builderVersion: '5.8.0' }), null)).join('\n');
+    return blockOf('accordion', { title: titleFont, content: bodyFont, builderVersion: '5.8.0', aied: marker }, kids);
+  }
+  const it = slot.items[0];
+  const decoration = slot.role === 'item-rule' ? { spacing: { desktop: { value: { padding: { top: '28px', right: '0px', bottom: '28px', left: '0px' } } } } } : null;
+  const module = Object.assign({}, decoration ? { decoration } : {}, open(it) || {});
+  return blockOf('toggle', Object.assign({ title: Object.assign({ innerContent: { desktop: { value: it.title } } }, titleFont), content: Object.assign({ innerContent: { desktop: { value: ITEM_ANSWER } } }, bodyFont) }, Object.keys(module).length ? { module } : {}, { builderVersion: '5.8.0', aied: marker }), null);
+}
+
 /** The kit buttons a button slot holds, in order: [{ role, text }]. */
 const PANEL_BUTTONS = [{ role: 'control', text: 'Primary action' }, { role: 'control-secondary', text: 'Secondary action' }];
 /** One button block of the sheet: the marker names the surface (`on`, omitted for light). */
@@ -91,12 +128,12 @@ function cardMarkup(slot) {
   return blockOf('group', { module: { decoration }, builderVersion: '5.8.0', aied: marker }, body);
 }
 
-/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS) and, inside the two button panels, 4 more buttons. */
+/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS), inside the two button panels 4 more buttons, and 10 item blocks (ITEM_SLOTS: 4 accordions, 6 toggles). */
 function sheetMarkup() {
   const v = V;
   const sections = SURFACES.map((s) => {
     const buttons = ROLES.map((r) => buttonBlock(r.role, r.text, s.on)).join('\n');
-    const cards = CARD_SLOTS.filter((c) => c.band === s.key && !c.row).map(cardMarkup).join('\n');
+    const cards = [...CARD_SLOTS.filter((c) => c.band === s.key && !c.row).map(cardMarkup), ...ITEM_SLOTS.filter((c) => c.band === s.key).map(itemMarkup)].join('\n');
     return `<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":${s.bg}}},"spacing":{"desktop":{"value":{"padding":{"top":"64px","bottom":"64px"}}}}}},${v}} -->
 <!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},${v}} -->
 <!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},${v}} -->
@@ -559,10 +596,11 @@ function missingCardExpectations(exp, role, ground = null) {
  * Every disagreement ([code, detail]) between a card's expectation and what the browser computed: codes card-border (the four sides' width,
  * style, colour), card-radius, card-fill, card-padding, card-shadow (it must sit on the card element itself) and card-hover (hover frame
  * colour only when the markup has one, the hover shadow, translateY of the lift, and that nothing else moved or changed; a PANEL must show
- * no change at all). `computed` = { rest: { el }, hover: { el } } with the fields measureCards collects; the hover state is REQUIRED.
+ * no change at all). `computed` = { rest: { el }, hover: { el } } with the fields measureCards collects; the hover state is REQUIRED. `ground`
+ * (the slot's, or null) holds the expectation to the ground contract of missingCardExpectations too.
  */
-function compareCard(exp, role, computed) {
-  const miss = missingCardExpectations(exp, role);
+function compareCard(exp, role, computed, ground = null) {
+  const miss = missingCardExpectations(exp, role, ground);
   if (miss.length) return { problems: [['card-expectation', 'expectation missing (an adapter attribute path drifted): ' + miss.join(', ')]], shadowWhere: null };
   const out = [];
   const el = computed.rest.el;
@@ -805,11 +843,237 @@ function cardSampleClip(rect, el) {
   return { x: Math.max(0, Math.round(rect.left + inset)), y: Math.max(0, Math.round(rect.top + inset)), width: Math.max(1, Math.round(w - 2 * inset)), height: Math.max(1, Math.round(h - 2 * inset)) };
 }
 
-/** What a finished run must have checked: at least one cell/width and at least one card (an empty card selection fails the run). */
-function emptyRunProblems({ checked, cardsChecked }) {
+// ---- items (accordion and toggle) ------------------------------------------------------------------------------------
+/** The item blocks of the RESOLVED markup (the marker is gone, so a block is found by its first title): [{ slot, attrs, items: [{ title, open }] }] in ITEM_SLOTS order; attrs and items are null when the block is not in the markup. */
+function itemAttrs(markup, slots = ITEM_SLOTS) {
+  const titleOf = (n) => dig(n.attrs, 'title', 'innerContent', 'desktop', 'value');
+  const openOf = (n) => dig(n.attrs, 'module', 'advanced', 'open', 'desktop', 'value') === 'on';
+  const nodes = [];
+  const walk = (list) => { for (const n of list) { if (n.name === 'divi/accordion' || n.name === 'divi/toggle') nodes.push(n); walk(n.children); } };
+  walk(blockTree(markup));
+  const itemsOf = (n) => (n.name === 'divi/accordion' ? n.children.filter((c) => c.name === 'divi/accordion-item') : [n]).map((c) => ({ title: titleOf(c), open: openOf(c) }));
+  return slots.map((slot) => {
+    const name = slot.carrier === 'accordion' ? 'divi/accordion' : 'divi/toggle';
+    const node = nodes.find((n) => n.name === name && (itemsOf(n)[0] || {}).title === slot.items[0].title) || null;
+    return { slot, attrs: node ? node.attrs : null, items: node ? itemsOf(node) : null };
+  });
+}
+
+/**
+ * What the kit says about one item block, read ONLY from its resolved attributes: { carrier, rest: { top|right|bottom|left: {width, style,
+ * color}, radius:[4], padding:[4]|null }, shadow: shadowExpect|null, hoverKeys, open: { fill, title, body, icon }, closed: { fill, title,
+ * body, icon } }. Every colour lives on a state group of the block itself (KitAdapters::item): `openToggle` and `closedToggle` carry the
+ * fill and, on an accordion, the title; a toggle's closed title is the `closedTitle` group; the answer is `content`; the icons are
+ * `closedToggleIcon` and (toggle only) `openToggleIcon`. The frame, radius, padding and shadow are `module.decoration`, like a card.
+ */
+function expectItemFromAttrs(attrs, carrier) {
+  const md = dig(attrs, 'module', 'decoration') || {};
+  const border = dig(md, 'border', 'desktop', 'value') || {};
+  const styles = border.styles || {};
+  const all = styles.all || {};
+  const side = (k) => { const e = Object.assign({}, all, styles[k] || {}); return { width: e.width !== undefined && e.width !== '' ? parseFloat(e.width) : null, style: e.style || null, color: e.color || null }; };
+  const radius = border.radius || {};
+  const pad = dig(md, 'spacing', 'desktop', 'value', 'padding') || null;
+  const hoverKeys = [];
+  if (dig(md, 'border', 'desktop', 'hover') !== undefined) hoverKeys.push('border.hover');
+  if (dig(md, 'boxShadow', 'desktop', 'hover') !== undefined) hoverKeys.push('boxShadow.hover');
+  if (dig(md, 'transform') !== undefined) hoverKeys.push('transform');
+  if (dig(md, 'background', 'desktop', 'hover') !== undefined) hoverKeys.push('background.hover');
+  const fill = (g) => dig(attrs, g, 'decoration', 'background', 'desktop', 'value', 'color') || null;
+  const title = (g) => dig(attrs, g, 'decoration', 'font', 'font', 'desktop', 'value', 'color') || null;
+  const icon = (g) => dig(attrs, g, 'decoration', 'icon', 'desktop', 'value', 'color') || null;
+  const body = dig(attrs, 'content', 'decoration', 'bodyFont', 'body', 'font', 'desktop', 'value', 'color') || null;
+  const toggle = carrier === 'toggle';
+  return {
+    carrier,
+    rest: {
+      top: side('top'), right: side('right'), bottom: side('bottom'), left: side('left'),
+      radius: CORNERS.map((k) => (radius[k] !== undefined ? parseFloat(radius[k]) : null)),
+      padding: pad ? ['top', 'right', 'bottom', 'left'].map((k) => (pad[k] !== undefined && pad[k] !== '' ? parseFloat(pad[k]) : null)) : null,
+    },
+    shadow: shadowExpect(dig(md, 'boxShadow', 'desktop', 'value')),
+    hoverKeys,
+    open: { fill: fill('openToggle'), title: title('openToggle'), body, icon: icon('openToggleIcon') },
+    closed: { fill: fill('closedToggle'), title: toggle ? title('closedTitle') : title('closedToggle'), body, icon: icon('closedToggleIcon') },
+  };
+}
+
+/**
+ * The expectation fields that are missing although KitAdapters::item() ALWAYS writes them (the frame on every side, the four radii, both
+ * states' fill and title, the answer colour, the closed icon and, on a toggle, the open icon and the padding), plus what the adapter must
+ * NEVER write: an open icon or a padding on an accordion (Divi hides the first and pads the ANSWER with the second), any hover key, and a
+ * shadow on a rule row. A non-empty list is a `gate` failure and compareItem refuses to compare: a null never silently skips a check.
+ */
+function missingItemExpectations(exp, role) {
+  const out = [];
+  const num = (v) => typeof v === 'number' && !Number.isNaN(v);
+  const r = exp.rest;
+  if (!Array.isArray(r.radius) || r.radius.length !== 4 || !r.radius.every(num)) out.push('rest.radius');
+  for (const [k] of SIDES) {
+    if (!num(r[k].width)) out.push(`rest.${k}.width`);
+    if (!r[k].style) out.push(`rest.${k}.style`);
+    if (!r[k].color) out.push(`rest.${k}.color`);
+  }
+  for (const [state, name] of [['open', 'open'], ['closed', 'closed']]) {
+    if (!exp[state].fill) out.push(`${name}.fill`);
+    if (!exp[state].title) out.push(`${name}.title`);
+  }
+  if (!exp.open.body) out.push('open.body');
+  if (!exp.closed.icon) out.push('closed.icon');
+  if (exp.carrier === 'toggle') {
+    if (!exp.open.icon) out.push('open.icon');
+    if (!Array.isArray(r.padding) || r.padding.length !== 4 || !r.padding.every(num)) out.push('rest.padding');
+  } else {
+    if (exp.open.icon) out.push('accordion carries an open icon (Divi hides it)');
+    if (r.padding) out.push('accordion item padding is written (it would pad the answer)');
+  }
+  for (const k of exp.hoverKeys) out.push('item carries ' + k);
+  if (role === 'item-rule' && exp.shadow) out.push('rule row carries a shadow');
+  return out;
+}
+
+/**
+ * Every disagreement ([code, detail]) between an item's expectation and the item as the browser measured it in `phase` ('rest', 'after
+ * click', ...): m = { open, el, title: {color}, icon: {color, shown, content, display}, body: {color, visible} } (measureItems). State
+ * independent: item-border (width, style, colour of each side), item-radius, item-padding (only where the markup writes one), item-shadow
+ * (on the item element itself; a rule row shows none). Per STATE (open or closed, as the item's class says): item-fill (the item's
+ * background), item-title, item-body (an open item only: a closed answer is hidden), item-icon (a drawn ::before in the colour of that
+ * state; an accordion's open icon is hidden by Divi and not judged). An expectation with a hole is refused (item-expectation).
+ */
+function compareItem(exp, role, m, phase = 'rest') {
+  const miss = missingItemExpectations(exp, role);
+  if (miss.length) return { problems: [['item-expectation', 'expectation missing (an adapter attribute path drifted): ' + miss.join(', ')]] };
+  const out = [];
+  const el = m.el;
+  const r = exp.rest;
+  const at = (s) => `${phase}: ${s}`;
+  for (const [side, cap] of SIDES) {
+    const e = r[side];
+    if (!near(px(el[`border${cap}Width`]), e.width, BORDER_TOLERANCE)) out.push(['item-border', at(`border-${side}-width ${el[`border${cap}Width`]}, expected ${e.width}px`)]);
+    if (e.width > 0) {
+      if (el[`border${cap}Style`] !== e.style) out.push(['item-border', at(`border-${side}-style ${el[`border${cap}Style`]}, expected ${e.style}`)]);
+      if (!sameColour(e.color, el[`border${cap}Color`])) out.push(['item-border', at(`border-${side}-color ${el[`border${cap}Color`]}, expected ${e.color}`)]);
+    }
+  }
+  CORNER_PROPS.forEach((k, i) => { if (!near(px(el[k]), r.radius[i])) out.push(['item-radius', at(`${k} ${el[k]}, expected ${r.radius[i]}px`)]); });
+  if (r.padding) ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'].forEach((k, i) => { if (!near(px(el[k]), r.padding[i])) out.push(['item-padding', at(`${k} ${el[k]}, expected ${r.padding[i]}px`)]); });
+  for (const [, d] of shadowProblems(exp.shadow, el, { boxShadow: 'none' }, phase, ['item', 'item']).problems) out.push(['item-shadow', d]);
+
+  const s = m.open ? exp.open : exp.closed;
+  const state = m.open ? 'open' : 'closed';
+  if (!sameColour(s.fill, el.backgroundColor)) out.push(['item-fill', at(`background-color ${el.backgroundColor}, expected ${s.fill} (${state} item)`)]);
+  if (!m.title || !sameColour(s.title, m.title.color)) out.push(['item-title', at(`title colour ${m.title ? m.title.color : 'not found'}, expected ${s.title} (${state} item)`)]);
+  if (m.open && (!m.body || !sameColour(exp.open.body, m.body.color))) out.push(['item-body', at(`answer colour ${m.body ? m.body.color : 'not found'}, expected ${exp.open.body}`)]);
+  if (s.icon) {
+    if (!m.icon || !m.icon.shown) out.push(['item-icon', at(`no icon is drawn on the ${state} item (::before content ${m.icon ? m.icon.content : 'n/a'}, display ${m.icon ? m.icon.display : 'n/a'}), expected ${s.icon}`)]);
+    else if (!sameColour(s.icon, m.icon.color)) out.push(['item-icon', at(`icon colour ${m.icon.color}, expected ${s.icon} (${state} item)`)]);
+  }
+  return { problems: out };
+}
+
+/**
+ * Problems of the item count (code items): every sheet block rendered with the number of items and the opening state the resolved markup
+ * gives it, an accordion inside an accordion and a toggle outside one, and every answer shown exactly when its item is open. measured =
+ * measureItems(...).items in ITEM_SLOTS order; lists = for each slot the [{ title, open }] the resolved markup gives it. An empty slot
+ * list is an error.
+ */
+function itemCountProblems(measured, lists, slots = ITEM_SLOTS) {
+  if (!slots.length) throw new Error('no item slots: nothing would be checked');
+  const bad = [];
+  slots.forEach((slot, i) => {
+    const mm = measured[i]; const want = lists[i] || [];
+    if (!mm || !mm.found) { bad.push(`${slot.key} is not in the page`); return; }
+    if (mm.accordion !== (slot.carrier === 'accordion')) { bad.push(mm.accordion ? `${slot.key} is inside an accordion, expected a stand-alone toggle` : `${slot.key} is not inside an accordion`); return; }
+    if (mm.count !== want.length || mm.items.length !== want.length) { bad.push(`${slot.key} renders ${mm.count} items, expected ${want.length}`); return; }
+    const openNow = mm.items.map((it, j) => (it.open ? j + 1 : null)).filter(Boolean);
+    const openWant = want.map((it, j) => (it.open ? j + 1 : null)).filter(Boolean);
+    if (openNow.join() !== openWant.join()) { bad.push(`${slot.key} opens items [${openNow.join(',')}] at rest, expected [${openWant.join(',')}]`); return; }
+    mm.items.forEach((it, j) => { if (it.body.visible !== it.open) bad.push(`${slot.key} item ${j + 1} is ${it.open ? 'open but its answer is not shown' : 'closed but its answer is shown'}`); });
+  });
+  if (measured.length > slots.length) bad.push(`${measured.length} blocks measured for ${slots.length} slots`);
+  if (!bad.length) return [];
+  const found = slots.filter((s, i) => measured[i] && measured[i].found).length;
+  return [['items', `${found} of ${slots.length} item blocks rendered as the sheet says: ${bad.slice(0, 6).join('; ')}${bad.length > 6 ? ` and ${bad.length - 6} more` : ''}`]];
+}
+
+/** The index of the item the gate clicks: an accordion's first CLOSED item, a toggle's only item; -1 when there is nothing to click on (the gate then fails). */
+function clickTarget(slot, block) {
+  if (!block || !block.found || !block.items.length) return -1;
+  return slot.carrier === 'accordion' ? block.items.findIndex((it) => !it.open) : 0;
+}
+
+/**
+ * Code item-click: after a real click on item `idx`'s title (and Divi's slide), an accordion has exactly that item open and every other
+ * item closed (the previously open one closed), a toggle has flipped, and every answer is shown exactly when its item is open. before and
+ * after = measureItems blocks of the slot.
+ */
+function itemClickProblems(slot, before, after, idx) {
+  if (!after || !after.found) return [['item-click', `the block is gone after the click`]];
+  const out = [];
+  const name = (j) => `item ${j + 1} (${(after.items[j] && after.items[j].text) || 'no title'})`;
+  after.items.forEach((it, j) => {
+    let want;
+    if (slot.carrier === 'accordion') want = j === idx;
+    else want = !before.items[j].open;
+    if (it.open !== want) {
+      if (j === idx) out.push(['item-click', `${name(j)} did not ${want ? 'open' : 'close'} after a click on its title`]);
+      else out.push(['item-click', `item ${j + 1} (previously open) did not close when item ${idx + 1} opened`]);
+    }
+    if (it.body.visible !== it.open) out.push(['item-click', `item ${j + 1} is ${it.open ? 'open but its answer is not shown' : 'closed but its answer is shown'} after the click`]);
+  });
+  return out;
+}
+
+/**
+ * Contrast on the MEASURED item fill ({r,g,b}, the mean of a screenshot of the item's inner box with its children hidden), code
+ * item-contrast: the title colour of the item's state against it >= 4.5, the answer colour >= 4.5 on an open item, a DRAWN icon >= 3.0, and
+ * every drawn frame side >= 3.0 except the decorative `border` hairline (`hairline`), which is reported but not judged. An unreadable
+ * colour, a missing title or a missing fill sample is a failure, never a skip. m = a measureItems item.
+ */
+function itemContrastProblems(m, fill, hairline = null) {
+  if (!fill) return { problems: [['item-contrast', 'the painted item fill was not sampled']], info: {} };
+  const out = []; const info = {};
+  const base = { r: fill.r, g: fill.g, b: fill.b, a: 1 };
+  const check = (name, raw, min) => {
+    const col = raw ? colour(raw) : null;
+    if (!col) { out.push(['item-contrast', `${name}: no readable colour found (${raw === undefined || raw === null ? 'none' : raw})`]); return; }
+    const r = round2(ratioOf(over(col, base), base));
+    info[name] = r;
+    if (r < min) out.push(['item-contrast', `${name} colour ${hex(over(col, base))} on the painted item fill ${hex(base)} is ${r}:1, needs ${min}`]);
+  };
+  check('title', m.title ? m.title.color : null, CONTRAST_LABEL);
+  if (m.open) check('answer', m.body ? m.body.color : null, CONTRAST_LABEL);
+  if (m.icon && m.icon.shown) check('icon', m.icon.color, CONTRAST_SHAPE);
+  for (const [side, cap] of SIDES) {
+    if (!(px(m.el[`border${cap}Width`]) > 0)) continue;
+    const raw = m.el[`border${cap}Color`];
+    const bc = colour(raw);
+    if (!bc) { out.push(['item-contrast', `border-${side}: unreadable colour ${raw}`]); continue; }
+    const r = round2(ratioOf(over(bc, base), base));
+    info[side] = r;
+    if (hairline && sameColour(hairline, raw)) { info.hairline = true; continue; }
+    if (r < CONTRAST_SHAPE) out.push(['item-contrast', `frame ${side} ${hex(over(bc, base))} on the painted item fill ${hex(base)} is ${r}:1, needs ${CONTRAST_SHAPE}`]);
+  }
+  return { problems: out, info };
+}
+
+/** The painted fill (screenshot mean) against the computed one: item-fill when an opaque computed fill differs by more than 4 per channel, or when nothing was sampled. */
+function itemPaintedFillProblems(el, fill) {
+  if (!fill) return [['item-fill', 'the painted item fill was not sampled']];
+  return paintedFillProblems(el, fill).map(([, d]) => ['item-fill', d.replace('over the card', 'over the item')]);
+}
+
+/** Overflow of one measured item: beyond its column (1px) or the window, or the page wider than the window. */
+function itemOverflowProblems(it, state, page) {
+  return cardOverflowProblems(it, state, page).map(([c, d]) => [c, d.replace(/^([^:]+: )card /, '$1item ')]);
+}
+
+/** What a finished run must have checked: at least one cell/width, at least one card and at least one item block (an empty selection fails the run, and so does a caller that forgot to count). */
+function emptyRunProblems({ checked, cardsChecked, itemsChecked }) {
   const out = [];
   if (!checked) out.push('no cell/width was checked: nothing was measured');
   if (!cardsChecked) out.push('no card was checked: the card selection was empty');
+  if (!itemsChecked) out.push('no item was checked: the item selection was empty');
   return out;
 }
 
@@ -923,6 +1187,53 @@ function measureCards(slots) {
   };
 }
 
+/**
+ * Runs IN THE PAGE (self-contained). For each slot ({ key, carrier, titles }) the rendered item block: found by the `.et_pb_toggle_title`
+ * that holds the slot's first title (an accordion = the `.et_pb_accordion` around it, its items the `.et_pb_toggle` children; a toggle = the
+ * `.et_pb_toggle` itself), every item tagged `data-aied-item="<key>:<n>"` so the script can click it, with the computed fields compareItem
+ * and itemContrastProblems read: open / closed (Divi's `et_pb_toggle_open` class), the item's own style, the title colour, the ::before
+ * icon (colour, display, content) and the answer (the colour of its first paragraph, and whether it is shown).
+ */
+function measureItems(slots) {
+  const root = document.querySelector('.et-l--post');
+  const F = ['borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderRightWidth', 'borderRightStyle', 'borderRightColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderLeftWidth', 'borderLeftStyle', 'borderLeftColor', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius', 'backgroundColor', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'boxShadow', 'transform', 'overflowX', 'overflowY', 'transitionDuration', 'transitionDelay'];
+  const pick = (node) => { const cs = getComputedStyle(node); const o = {}; for (const k of F) o[k] = cs[k]; return o; };
+  const box = (n) => { const r = n.getBoundingClientRect(); return { left: r.left + window.scrollX, right: r.right + window.scrollX, top: r.top + window.scrollY, bottom: r.bottom + window.scrollY, width: r.width, height: r.height }; };
+  const titles = root ? [...root.querySelectorAll('.et_pb_toggle_title')] : [];
+  return {
+    hasRoot: !!root,
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth: window.innerWidth,
+    items: slots.map((s) => {
+      const first = titles.find((n) => (n.textContent || '').trim() === s.titles[0]);
+      const firstItem = first ? first.closest('.et_pb_toggle') : null;
+      if (!firstItem) return { key: s.key, found: false };
+      const acc = firstItem.closest('.et_pb_accordion');
+      const els = acc ? [...acc.querySelectorAll('.et_pb_toggle')] : [firstItem];
+      return {
+        key: s.key, found: true, accordion: !!acc, count: els.length,
+        items: els.map((it, j) => {
+          it.setAttribute('data-aied-item', s.key + ':' + j);
+          const title = it.querySelector('.et_pb_toggle_title');
+          const content = it.querySelector('.et_pb_toggle_content');
+          const p = content ? content.querySelector('p') : null;
+          const before = title ? getComputedStyle(title, '::before') : null;
+          const cs = content ? getComputedStyle(content) : null;
+          const cr = content ? content.getBoundingClientRect() : null;
+          const container = it.closest('.et_pb_column') || it.parentElement;
+          return {
+            open: it.classList.contains('et_pb_toggle_open'), text: title ? (title.textContent || '').trim() : '',
+            el: pick(it), rect: box(it), parentRect: box(container),
+            title: title ? { color: getComputedStyle(title).color } : null,
+            icon: before ? { color: before.color, display: before.display, content: before.content, shown: before.display !== 'none' && before.content !== 'none' && before.content !== 'normal' } : null,
+            body: content ? { color: getComputedStyle(p || content).color, contentColor: cs.color, visible: cs.display !== 'none' && cs.visibility !== 'hidden' && cr.height > 0 } : { color: null, contentColor: null, visible: false },
+          };
+        }),
+      };
+    }),
+  };
+}
+
 module.exports = {
   SURFACES, ROLES, SLOTS, sheetMarkup, TITLE_PREFIX, runTitle, parseRunTitle, selectCells, buttonAttrs, expectFromAttrs, missingExpectations, BORDER_TOLERANCE,
   colour, sameColour, parseShadows, translateY, matrix2d, sameTransform, shadowProblems, compareButton, contrastProblems, overflowProblems,
@@ -930,4 +1241,6 @@ module.exports = {
   CARD_ON, CARD_SLOTS, cardMarkup, blockTree, cardAttrs, expectCardFromAttrs, missingCardExpectations, compareCard, cardClipProblems, cardContrastProblems,
   paintedFillProblems, cardOverflowProblems, columnRowProblems, cardCountProblems, cardSampleClip, emptyRunProblems, measureCards,
   pageButtonAttrs, groundFillProblems, FEATURED_RATIO, boxProminence, featuredProblems, panelButtonProblems, PANEL_BUTTONS,
+  ITEM_SLOTS, itemMarkup, itemAttrs, expectItemFromAttrs, missingItemExpectations, compareItem, itemCountProblems, clickTarget, itemClickProblems,
+  itemContrastProblems, itemPaintedFillProblems, itemOverflowProblems, measureItems,
 };

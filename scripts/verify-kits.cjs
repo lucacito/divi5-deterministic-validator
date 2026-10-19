@@ -26,7 +26,7 @@
  * under the real scrim).
  *
  * The 20 CARDS (scripts/lib/kit-card-run.cjs, judged by the pure comparisons of kit-checks.cjs) are found by the unique heading each holds and
- * their expectations are read from the resolved block tree, never a table here. Codes, each `<slot> <detail>`: cards (not all 12 rendered,
+ * their expectations are read from the resolved block tree, never a table here. Codes, each `<slot> <detail>`: cards (not all 20 rendered,
  * nothing else is then checked); card-border (width, style and colour of each of the four sides: an underline kit draws only its bottom
  * edge); card-radius (the four corners); card-fill (computed background, and the painted fill under the card); card-padding (a card: the
  * kit's, a panel: its own literal); card-shadow (presence, blur, offsets, colour, on the card element itself); card-hover, after a real
@@ -45,7 +45,27 @@
  * against the panel, rest and hover, and the hover colours as resolved; its other attributes keep the button codes border, radius, fill,
  * label, text, padding, shadow, lift); featured (the accent middle card of the row: the mean painted luminance difference between its box
  * and the band, per pixel, must be at least FEATURED_RATIO = 1.5 times the larger neighbour's, at every width; the ratio is confirmed on
- * the first live smoke and then frozen, never lowered after a failure). A run whose card selection is empty fails. A sheet the gate or the
+ * the first live smoke and then frozen, never lowered after a failure). A run whose card selection is empty fails.
+ *
+ * The 10 ITEM BLOCKS (scripts/lib/kit-item-run.cjs, judged by the pure comparisons of kit-checks.cjs) are found by the unique title of their
+ * first item; their expectations are read from the resolved block tree, per STATE (open and closed), never a table here. On the bg and
+ * surface bands: an `item` accordion (three items, the first open), a boxed `item` toggle (closed) and two `item-rule` toggles (one open,
+ * one closed); on the accent and photo bands: an `item` accordion. Codes, each `<block> item <n> <detail>`: items (a block missing, the
+ * wrong number of items, the wrong item open at rest, an answer shown on a closed item: nothing else is then checked); item-border (width,
+ * style and colour of each of the four sides: an underline kit and every rule row draw only the bottom edge); item-radius (the four
+ * corners); item-padding (a toggle: the kit's, or a rule row's own literal; an accordion item keeps Divi's, nothing is judged);
+ * item-shadow (presence, blur, offsets, colour, on the item element itself; a rule row shows none); item-fill (the computed background
+ * of the item in ITS state, and the painted fill under it); item-title (the title colour in its state); item-body (the answer colour of an
+ * open item); item-icon (a drawn ::before in the colour of the state; an accordion's open icon is hidden by Divi and not judged);
+ * item-contrast, on the MEASURED painted fill, in the state the item is in at rest and again after the click: the title and the answer
+ * >= 4.5, a drawn icon >= 3.0, every drawn frame side >= 3.0 unless it is the language's decorative `border` hairline; and item-click,
+ * the real interaction: a real Playwright click on the title of an accordion's first closed item (a toggle's only item) must open it
+ * (and close a toggle that was open) after Divi's slide (waited for once, then polled until the page stops changing), the previously open
+ * accordion item must close, every answer must follow its item, and the item's computed fill, title and icon must switch to the values of
+ * its new state (item-fill, item-title, item-icon, reported with `after click`). Overflow also covers every item, at rest and after the
+ * click. A cell whose item expectations have a hole stops at the gate before any browser work; a run whose item selection is empty fails.
+ *
+ * A sheet the gate or the
  * resolver refuses FAILs once as `<kit>/<language>/gate`. Problems in the script's own page handling are `render-error`. A preview that
  * comes back as a 404 or without the page content is retried once with a fresh login.
  *
@@ -53,7 +73,8 @@
  * a shadow stands out from the surface, which element carries the shadow and its corners; for cards how many carry a shadow and on which
  * element, how far the card stands out from its band, whether the flush image corner is cut by the radius, the column row's layout at 900);
  * dist/kit-sheet/<kit>-<language>-<width>.png (the full page, cards included), dist/kit-sheet/observations.json,
- * dist/kit-sheet/card-observations.json (with the button-panel contrast and the featured card's prominence) and dist/kit-sheet/index.html (one row per kit: editorial and glass-dark at 1280 and 400). dist/
+ * dist/kit-sheet/card-observations.json (with the button-panel contrast and the featured card's prominence), dist/kit-sheet/item-observations.json (the painted fills
+ * and the click of every item) and dist/kit-sheet/index.html (one row per kit: editorial and glass-dark at 1280 and 400). dist/
  * is git-ignored; writing the sheet never fails the run.
  *
  * Dev site only (localhost). RUN ONE RUN AT A TIME. Every throwaway page is titled `aied kit <runToken> <kit> <language>`; the run deletes
@@ -99,6 +120,7 @@ let cleanOrphans = false;
 const K = require('./lib/kit-checks.cjs');
 const { measureInPage, PHP_ERROR, over, ratioOf } = require('./lib/recipe-checks.cjs');
 const { checkCards, transitionMs } = require('./lib/kit-card-run.cjs');
+const { checkItems } = require('./lib/kit-item-run.cjs');
 
 const wp = makeWp(ROOT);
 const pages = throwawayPages(wp, K.TITLE_PREFIX, 'kit');
@@ -219,7 +241,9 @@ async function openPreview(ctx, id, state) {
   const status = new Map();
   const observations = [];
   const cardObservations = [];
+  const itemObservations = [];
   let cardsChecked = 0;
+  let itemsChecked = 0;
   const state = { cookies: null, token: null };
   cleanupOnSignals(run, sweep, pages.runPrefix);
   let cells = [];
@@ -268,6 +292,14 @@ async function openPreview(ctx, id, state) {
         if (wrongButtons.length) { report(kit, lang, 'gate', [['gate', 'button panels not as the sheet says: ' + wrongButtons.join(', ')]]); continue; }
         const buttonMissing = buttonExpects.flatMap((es, i) => es.flatMap((e, j) => K.missingExpectations(e).map((f) => `${cardBlocks[i].slot.key}:${j} ${f}`)));
         if (buttonMissing.length) { report(kit, lang, 'gate', [['gate', 'panel button expectation missing (an adapter attribute path drifted): ' + buttonMissing.slice(0, 6).join(', ') + (buttonMissing.length > 6 ? ` and ${buttonMissing.length - 6} more` : '')]]); continue; }
+        // The item blocks (accordions and toggles): found in the resolved sheet by their first title, with complete expectations and exactly the items the sheet gives them.
+        const itemBlocks = K.itemAttrs(page.markup);
+        const itemAbsent = itemBlocks.filter((b) => !b.attrs).map((b) => b.slot.key);
+        if (itemAbsent.length) { report(kit, lang, 'gate', [['gate', 'item blocks not found in the resolved sheet (by their first title): ' + itemAbsent.join(', ')]]); continue; }
+        const itemExpects = itemBlocks.map((b) => K.expectItemFromAttrs(b.attrs, b.slot.carrier));
+        const itemMissing = itemExpects.flatMap((e, i) => K.missingItemExpectations(e, itemBlocks[i].slot.role).map((f) => `${itemBlocks[i].slot.key} ${f}`));
+        if (itemMissing.length) { report(kit, lang, 'gate', [['gate', 'item expectation missing (an adapter attribute path drifted): ' + itemMissing.slice(0, 6).join(', ') + (itemMissing.length > 6 ? ` and ${itemMissing.length - 6} more` : '')]]); continue; }
+        const itemLists = itemBlocks.map((b) => b.items);
         for (const width of WIDTHS) {
           const ctx = await browser.newContext({ viewport: { width, height: 900 } });
           const problems = [];
@@ -307,7 +339,7 @@ async function openPreview(ctx, id, state) {
                 await p.waitForTimeout(wait);
                 const hovAll = await p.evaluate(K.measureButtons);
                 const hov = hovAll.buttons[i];
-                await p.mouse.move(0, 0);
+                await p.mouse.move(Math.max(0, width - 2), 450); // parked at the right edge: (0,0) would open the admin bar's menu
                 await p.waitForTimeout(wait);
                 const cmp = K.compareButton(expects[i], { rest: { el: b.el, wrap: b.wrap }, hover: { el: hov.el, wrap: hov.wrap } });
                 const surface = surfaces[i].mean;
@@ -334,6 +366,12 @@ async function openPreview(ctx, id, state) {
               for (const pr of cr.problems) problems.push(pr);
               for (const o of cr.observations) cardObservations.push({ kit, language: lang, columns: cr.layout, ...o });
             }
+            if (m.hasRoot) {
+              const ir = await checkItems(p, { width, expects: itemExpects, lists: itemLists, hairline: hairlines[lang] });
+              itemsChecked += ir.itemsChecked;
+              for (const pr of ir.problems) problems.push(pr);
+              for (const o of ir.observations) itemObservations.push({ kit, language: lang, ...o });
+            }
             if (consoleErrors.length) problems.push(['console-error', [...new Set(consoleErrors)].slice(0, 3).join(' | ')]);
             await p.close();
           } catch (e) {
@@ -352,8 +390,10 @@ async function openPreview(ctx, id, state) {
     if (run.cleaning) return;
     try { fs.writeFileSync(path.join(OUT_DIR, 'observations.json'), JSON.stringify(observations, null, 1)); } catch (e) { console.log('WARNING could not write observations.json'); }
     try { fs.writeFileSync(path.join(OUT_DIR, 'card-observations.json'), JSON.stringify(cardObservations, null, 1)); } catch (e) { console.log('WARNING could not write card-observations.json'); }
+    try { fs.writeFileSync(path.join(OUT_DIR, 'item-observations.json'), JSON.stringify(itemObservations, null, 1)); } catch (e) { console.log('WARNING could not write item-observations.json'); }
     printNotes(observations);
     printCardNotes(cardObservations);
+    printItemNotes(itemObservations);
     writeSheet(status, cells);
   } catch (e) {
     console.log('ERROR script: ' + (e && e.message ? e.message : e));
@@ -366,7 +406,7 @@ async function openPreview(ctx, id, state) {
     }
   }
   if (run.cleaning) return;
-  for (const why of K.emptyRunProblems({ checked: passes + failures, cardsChecked })) { failures++; console.log('FAIL ' + why); }
+  for (const why of K.emptyRunProblems({ checked: passes + failures, cardsChecked, itemsChecked })) { failures++; console.log('FAIL ' + why); }
   console.log(`\n${passes} PASS, ${failures} FAIL (cell/width lines) over ${cells.length} kit/language cell(s)`);
   console.log(failures ? 'FAILED' : 'Every selected kit renders as it says on the real Divi.');
   process.exit(failures ? 1 : 0);
@@ -408,5 +448,18 @@ function printCardNotes(obs) {
     }
     const cols = list.find((o) => o.width === 900 && o.columns);
     if (cols) console.log(`NOTE card-columns ${k}: the three column cards are ${cols.columns} at 900px`);
+  }
+}
+
+/** NOTE lines for the items, one set per kit/language at 1280 px: which blocks open and close on the click and how readable the titles are on their painted fills. */
+function printItemNotes(obs) {
+  const groups = new Map();
+  for (const o of obs.filter((x) => x.width === 1280)) { const k = o.kit + '/' + o.language; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(o); }
+  const range = (v) => { const n = v.filter((x) => typeof x === 'number'); return n.length ? `${Math.min(...n)}..${Math.max(...n)}` : 'n/a'; };
+  for (const [k, list] of groups) {
+    const clicked = list.filter((o) => o.click && o.click.after);
+    const titles = list.flatMap((o) => o.rest.map((i) => i.contrast && i.contrast.title));
+    const frames = list.flatMap((o) => o.rest.flatMap((i) => ['top', 'right', 'bottom', 'left'].map((s) => i.contrast && i.contrast[s])));
+    console.log(`NOTE items ${k}: ${clicked.length} of ${list.length} blocks changed state on a real click; title on its painted fill ${range(titles)}:1; drawn frame sides ${range(frames)}:1`);
   }
 }

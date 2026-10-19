@@ -841,17 +841,30 @@ class RecipeLibraryTest extends TestCase
      */
     private static function cardBands( string $markup ): array
     {
+        return self::markerBands( $markup, static fn ( array $attrs ): ?array => self::cardMarker( $attrs ) );
+    }
+
+    /**
+     * The band walk of cardBands() for any marker kind: every block for which $marker (attrs => the marker as a list whose
+     * second element is `on`, or null) answers, with the band of its NEAREST ancestor that paints a ground (cardBandOf),
+     * or `none`. Keyed "<block>#<index>" as cardBands(). Shared with ItemMigrationTest (item and item-rule markers).
+     *
+     * @param callable(array<string,mixed>):?array $marker
+     * @return array<string,array{0:array,1:string}>
+     */
+    public static function markerBands( string $markup, callable $marker ): array
+    {
         $root  = ( new \Divi5Validator\BlockParser() )->parse( '<!-- wp:divi/placeholder -->' . $markup . '<!-- /wp:divi/placeholder -->' )->root();
         $out   = [];
         $seen  = [];
-        $walk  = static function ( \Divi5Validator\Block $b, array $bands ) use ( &$walk, &$out, &$seen ): void {
+        $walk  = static function ( \Divi5Validator\Block $b, array $bands ) use ( &$walk, &$out, &$seen, $marker ): void {
             $name = $b->name();
             if ( 'divi/placeholder' !== $name ) {
                 $seen[ $name ] = ( $seen[ $name ] ?? -1 ) + 1;
             }
-            $marker = self::cardMarker( $b->attrs() );
-            if ( null !== $marker ) {
-                $out[ $name . '#' . $seen[ $name ] ] = [ $marker, [] === $bands ? 'none' : (string) end( $bands ) ];
+            $found = $marker( $b->attrs() );
+            if ( null !== $found ) {
+                $out[ $name . '#' . $seen[ $name ] ] = [ $found, [] === $bands ? 'none' : (string) end( $bands ) ];
             }
             $own = self::cardBandOf( $b->attrs() );
             if ( null !== $own ) {
@@ -1767,8 +1780,9 @@ class RecipeLibraryTest extends TestCase
         // 22 recipes have a button; every one of them is kit-driven,
         // plus the recipes whose only kit marker is a card or panel: cta-split-form (card adapter Task 7) and
         // compare-two-panels, features-bento, contact-location-form, contact-details-form, transition-overlap-panel (Task 8),
-        // and icon-values, testimonials-avatar-grid (Task 9; pricing-three-tier already has kit-driven buttons).
-        $this->assertSame( 29, $checked, 'the recipes with a kit marker (button or card)' );
+        // and icon-values, testimonials-avatar-grid (Task 9; pricing-three-tier already has kit-driven buttons), plus the three
+        // recipes whose only kit marker is an item: faq-accordion, features-accordion-image, faq-toggle-list (accordion adapter Task 6).
+        $this->assertSame( 32, $checked, 'the recipes with a kit marker (button, card or item)' );
     }
 
     public function testRecipesWithoutPairsAreOnlyTheFrozenBaselineAndItOnlyShrinks(): void

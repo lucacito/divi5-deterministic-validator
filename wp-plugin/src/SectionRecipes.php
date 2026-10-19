@@ -54,7 +54,7 @@ final class SectionRecipes
     public static function styleKitHelp(): string
     {
         // Names no kit id on purpose: the text stays the same however many kits ship (the ids are in the style-kits topic).
-        return 'With name: serve the recipe\'s buttons and cards in this style kit instead of the design language\'s own kit; get_style_guide topic style-kits lists the kits, and an unknown id is refused with the list of valid ids.';
+        return 'With name: serve the recipe\'s buttons, cards, accordions and toggles in this style kit instead of the design language\'s own kit; get_style_guide topic style-kits lists the kits, and an unknown id is refused with the list of valid ids.';
     }
 
     /** Forgets the memoised recipes (for tests that change the data in-process). */

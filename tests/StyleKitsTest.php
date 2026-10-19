@@ -500,6 +500,111 @@ final class StyleKitsTest extends TestCase
         $this->assertTrue(self::sameCard($a, $h));
     }
 
+    /** The item near-duplicate pairs measured in accordion-adapter Task 3 (12 of 780). It may only be LOWERED, never raised. */
+    private const ITEM_NEAR_DUPLICATES_CAP = 12;
+
+    private const ITEM_NEAR_DUPLICATES = __DIR__ . '/../fixtures/shapes/item-near-duplicates.txt';
+
+    /**
+     * What a kit's item looks like, from the item adapter's `item` patch on a light band, on an accordion (radius, frame and
+     * shadow) and a toggle (padding: an accordion writes none). One fixed language is the patch itself (colours are role
+     * tokens). Radius and padding in px from the kit's card values the whole-value tokens resolve to; the frame is sides,
+     * width, style and colour role; the shadow is the rest shadow (items have no hover).
+     *
+     * @param array<string,mixed> $kit
+     * @return array{radius:int,padding:int,frame:string,shadow:string}
+     */
+    private static function itemLook(array $kit): array
+    {
+        $patch  = KitAdapters::patch('divi/accordion', 'item', 'light', $kit);
+        $toggle = KitAdapters::patch('divi/toggle', 'item', 'light', $kit);
+        self::assertIsArray($patch);
+        self::assertIsArray($toggle);
+        self::assertSame('{{aied:kit:radius-card}}', $patch['module']['decoration']['border']['desktop']['value']['radius']);
+        self::assertSame('{{aied:kit:space-card}}', $toggle['module']['decoration']['spacing']['desktop']['value']['padding']);
+        $d      = $patch['module']['decoration'];
+        $styles = $d['border']['desktop']['value']['styles'];
+        $side   = $styles['bottom'] ?? $styles['all'];
+        return [
+            'radius'  => (int) $kit['radius']['card'],
+            'padding' => (int) $kit['space']['card'],
+            'frame'   => (string) json_encode([ isset($styles['bottom']) ? 'bottom' : 'all', $side['width'], $side['style'], $side['color'] ]),
+            'shadow'  => (string) json_encode($d['boxShadow'] ?? null),
+        ];
+    }
+
+    /** Two kits make the same item: radius < 4px apart, toggle padding < 8px apart, frame and shadow equal. */
+    private static function sameItem(array $a, array $b): bool
+    {
+        $x = self::itemLook($a);
+        $y = self::itemLook($b);
+        return abs($x['radius'] - $y['radius']) < 4 && abs($x['padding'] - $y['padding']) < 8
+            && $x['frame'] === $y['frame'] && $x['shadow'] === $y['shadow'];
+    }
+
+    public function testEveryKitHasAVisiblyDifferentItem(): void
+    {
+        $kits = [];
+        foreach (StyleKits::ids() as $id) {
+            $kits[$id] = (array) StyleKits::get($id);
+        }
+        $ids   = array_keys($kits);
+        $found = [];
+        $pairs = 0;
+        for ($i = 0; $i < count($ids); $i++) {
+            for ($j = $i + 1; $j < count($ids); $j++) {
+                ++$pairs;
+                if (self::sameItem($kits[$ids[$i]], $kits[$ids[$j]])) {
+                    $found[] = $ids[$i] . '|' . $ids[$j];
+                }
+            }
+        }
+        $this->assertSame(780, $pairs);
+        $listed = [];
+        foreach ((array) file(self::ITEM_NEAR_DUPLICATES, FILE_IGNORE_NEW_LINES) as $line) {
+            $line = trim((string) $line);
+            if ('' !== $line && '#' !== $line[0]) {
+                $listed[] = $line;
+            }
+        }
+        $this->assertSame($listed, $found, 'fixtures/shapes/item-near-duplicates.txt is exactly the set of kit pairs with the same item (remove a pair that no longer is one; a new kit must not add one)');
+        $this->assertLessThanOrEqual(self::ITEM_NEAR_DUPLICATES_CAP, count($listed), 'shrink-only by test: the item near-duplicate list can never grow past the pairs measured in accordion-adapter Task 3');
+    }
+
+    public function testTheSameItemRuleCatchesWhatItShould(): void
+    {
+        $a = (array) StyleKits::get('soft-solid');
+        $a['border']['width'] = '1px';      // so an underline variant is valid
+        $this->assertSame([], StyleKits::problems($a));
+        $b = $a;
+        $b['radius']['card'] = ((int) $a['radius']['card'] + 3) . 'px';
+        $b['space']['card']  = ((int) $a['space']['card'] + 7) . 'px';
+        $this->assertTrue(self::sameItem($a, $b), '3px of radius and 7px of padding are the same item');
+        $c = $b;
+        $c['radius']['card'] = ((int) $a['radius']['card'] + 4) . 'px';
+        $this->assertFalse(self::sameItem($a, $c), '4px of radius is visible');
+        $d = $b;
+        $d['space']['card'] = ((int) $a['space']['card'] + 8) . 'px';
+        $this->assertFalse(self::sameItem($a, $d), '8px of toggle padding is visible');
+        foreach ([ [ 'border', 'style', 'dashed' ], [ 'border', 'width', '2px' ], [ 'border', 'color', 'text' ], [ 'border', 'sides', 'bottom' ] ] as [ $g, $k, $v ]) {
+            $e = $a;
+            $e[$g][$k] = $v;
+            $this->assertSame([], StyleKits::problems($e), "$g.$k");
+            $this->assertFalse(self::sameItem($a, $e), "a different frame $k is visible");
+        }
+        $g = $a;
+        $g['shadow'] = [ 'rest' => 'soft', 'hover' => 'soft' ];
+        $this->assertFalse(self::sameItem($a, $g), 'a rest shadow is visible');
+        // A hover decision never reaches an item (no hover on items): a kit differing only in hover, hover shadow, fill or
+        // text is the same item.
+        $h = $a;
+        $h['fill']                   = 'outline';
+        $h['hover']                  = 'lift';
+        $h['text']['capitalization'] = 'uppercase';
+        $this->assertSame([], StyleKits::problems($h));
+        $this->assertTrue(self::sameItem($a, $h));
+    }
+
     public function testParseOfCorruptTextIsEmpty(): void
     {
         $this->assertSame([], StyleKits::parse(''));

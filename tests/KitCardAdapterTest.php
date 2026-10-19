@@ -1126,7 +1126,13 @@ class KitCardAdapterTest extends TestCase
     public function testAppliedNamesEveryBlockAndRoleThePatchAnswers(): void
     {
         $this->assertSame(
-            [ 'divi/button' => [ 'control', 'control-secondary' ], 'divi/group' => [ 'card', 'panel' ], 'divi/column' => [ 'card', 'panel' ] ],
+            [
+                'divi/button'    => [ 'control', 'control-secondary' ],
+                'divi/group'     => [ 'card', 'panel' ],
+                'divi/column'    => [ 'card', 'panel' ],
+                'divi/accordion' => [ 'item', 'item-rule' ],
+                'divi/toggle'    => [ 'item', 'item-rule' ],
+            ],
             KitAdapters::APPLIED
         );
         $kit = $this->shippedKits()['soft-solid'];
