@@ -1,0 +1,1774 @@
+[
+    {
+        "id": "ki-frame-width-1px-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "1px"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Frame width 1px over a 3px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed ON this module because the registry is path-only."
+    },
+    {
+        "id": "ki-frame-width-2px-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "2px"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Frame width 2px over a 3px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed ON this module because the registry is path-only."
+    },
+    {
+        "id": "ki-frame-width-4px-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "4px"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Frame width 4px over a 3px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed ON this module because the registry is path-only."
+    },
+    {
+        "id": "ki-style-solid-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "dashed",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "solid"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Frame style solid (4px frame, base dashed) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle')."
+    },
+    {
+        "id": "ki-style-dashed-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "dashed"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Frame style dashed (4px frame, base solid) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle')."
+    },
+    {
+        "id": "ki-style-dotted-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "dotted"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Frame style dotted (4px frame, base solid) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle')."
+    },
+    {
+        "id": "ki-style-double-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "double"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Frame style double (4px frame, base solid) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle')."
+    },
+    {
+        "id": "ki-frame-colour-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.color": "#f59e0b"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Frame colour over a 2px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle')."
+    },
+    {
+        "id": "ki-edge-bottom-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "0px",
+            "module.decoration.border.desktop.value.styles.all.style": "solid",
+            "module.decoration.border.desktop.value.styles.all.color": "#f59e0b",
+            "module.decoration.border.desktop.value.styles.bottom.width": "3px",
+            "module.decoration.border.desktop.value.styles.bottom.style": "solid",
+            "module.decoration.border.desktop.value.styles.bottom.color": "#f59e0b"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "The underline rest form KitAdapters::card() writes (styles.all width 0px + styles.bottom width 3px, same style and colour) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'); only the bottom side should be drawn on each item (an accordion's items would each carry the rule). NOTE: written without the hover frame colour (not proven)."
+    },
+    {
+        "id": "ki-radius-16-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.radius.topLeft": "16px",
+            "module.decoration.border.desktop.value.radius.topRight": "16px",
+            "module.decoration.border.desktop.value.radius.bottomRight": "16px",
+            "module.decoration.border.desktop.value.radius.bottomLeft": "16px"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Four corners 16px over a 1px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). Whether the radius clips the open answer and the icon is measured separately (task report, pixel check)."
+    },
+    {
+        "id": "ki-radius-36-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.radius.topLeft": "36px",
+            "module.decoration.border.desktop.value.radius.topRight": "36px",
+            "module.decoration.border.desktop.value.radius.bottomRight": "36px",
+            "module.decoration.border.desktop.value.radius.bottomLeft": "36px"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Four corners 36px over a 1px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). Whether the radius clips the open answer and the icon is measured separately (task report, pixel check)."
+    },
+    {
+        "id": "ki-shadow-soft-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset1",
+            "module.decoration.boxShadow.desktop.value.vertical": "8px",
+            "module.decoration.boxShadow.desktop.value.blur": "24px",
+            "module.decoration.boxShadow.desktop.value.color": "rgba(0,0,0,0.18)"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Soft rest shadow (KitAdapters::shadow soft: preset1, 0 8px 24px, overlay 18%) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle')."
+    },
+    {
+        "id": "ki-shadow-hard-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset4",
+            "module.decoration.boxShadow.desktop.value.horizontal": "6px",
+            "module.decoration.boxShadow.desktop.value.vertical": "6px",
+            "module.decoration.boxShadow.desktop.value.blur": "0px",
+            "module.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Hard rest shadow (preset4, 6px 6px 0 0, text ink) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle')."
+    },
+    {
+        "id": "ki-shadow-edge-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset4",
+            "module.decoration.boxShadow.desktop.value.horizontal": "0px",
+            "module.decoration.boxShadow.desktop.value.vertical": "4px",
+            "module.decoration.boxShadow.desktop.value.blur": "0px",
+            "module.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Edge rest shadow (preset4, 0 4px 0 0) on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle')."
+    },
+    {
+        "id": "ki-shadow-glow-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset1",
+            "module.decoration.boxShadow.desktop.value.vertical": "0px",
+            "module.decoration.boxShadow.desktop.value.blur": "16px",
+            "module.decoration.boxShadow.desktop.value.color": "rgba(245,158,11,0.45)"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Glow rest shadow (preset1, 0 0 16px, accent 45%) over a 1px frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle')."
+    },
+    {
+        "id": "ki-fill-open-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "openToggle.decoration.background.desktop.value.color": "#151c33"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Open fill under a 2px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle') (openToggle background; the open item is the first one of an accordion)."
+    },
+    {
+        "id": "ki-fill-closed-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "closedToggle.decoration.background.desktop.value.color": "#151c33"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Closed fill under a 2px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle') (closedToggle background; measured on the closed items; a toggle is closed here)."
+    },
+    {
+        "id": "ki-title-open-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "set": {
+            "openToggle.decoration.font.font.desktop.value.color": "#c0392b"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Open title colour through the openToggle font group on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). NEW on divi/accordion (its openToggle font group has no earlier probe)."
+    },
+    {
+        "id": "ki-title-closed-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "set": {
+            "closedToggle.decoration.font.font.desktop.value.color": "#c0392b"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Closed title colour through the closedToggle font group on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). NEW on divi/accordion."
+    },
+    {
+        "id": "ki-icon-closed-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "set": {
+            "closedToggleIcon.decoration.icon.desktop.value.color": "#c0392b"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "pseudo": [
+            "::before"
+        ],
+        "note": "Closed icon colour on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle') (drawn on the title's ::before)."
+    },
+    {
+        "id": "ki-body-colour-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "set": {
+            "content.decoration.bodyFont.body.font.desktop.value.color": "#c0392b"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Answer text colour through the content bodyFont group on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle') (the open answer)."
+    },
+    {
+        "id": "ki-frame-width-1px-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "1px"
+        },
+        "note": "Frame width 1px over a 3px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed ON this module because the registry is path-only."
+    },
+    {
+        "id": "ki-frame-width-2px-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "2px"
+        },
+        "note": "Frame width 2px over a 3px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed ON this module because the registry is path-only."
+    },
+    {
+        "id": "ki-frame-width-4px-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "4px"
+        },
+        "note": "Frame width 4px over a 3px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state). Path registered (module.decoration.border.{bp}.value.styles.all.width); probed ON this module because the registry is path-only."
+    },
+    {
+        "id": "ki-style-solid-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "dashed",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "solid"
+        },
+        "note": "Frame style solid (4px frame, base dashed) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state)."
+    },
+    {
+        "id": "ki-style-dashed-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "dashed"
+        },
+        "note": "Frame style dashed (4px frame, base solid) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state)."
+    },
+    {
+        "id": "ki-style-dotted-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "dotted"
+        },
+        "note": "Frame style dotted (4px frame, base solid) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state)."
+    },
+    {
+        "id": "ki-style-double-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.style": "double"
+        },
+        "note": "Frame style double (4px frame, base solid) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state)."
+    },
+    {
+        "id": "ki-frame-colour-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.color": "#f59e0b"
+        },
+        "note": "Frame colour over a 2px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state)."
+    },
+    {
+        "id": "ki-edge-bottom-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.styles.all.width": "0px",
+            "module.decoration.border.desktop.value.styles.all.style": "solid",
+            "module.decoration.border.desktop.value.styles.all.color": "#f59e0b",
+            "module.decoration.border.desktop.value.styles.bottom.width": "3px",
+            "module.decoration.border.desktop.value.styles.bottom.style": "solid",
+            "module.decoration.border.desktop.value.styles.bottom.color": "#f59e0b"
+        },
+        "note": "The underline rest form KitAdapters::card() writes (styles.all width 0px + styles.bottom width 3px, same style and colour) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state); only the bottom side should be drawn on each item (an accordion's items would each carry the rule). NOTE: written without the hover frame colour (not proven)."
+    },
+    {
+        "id": "ki-radius-16-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.radius.topLeft": "16px",
+            "module.decoration.border.desktop.value.radius.topRight": "16px",
+            "module.decoration.border.desktop.value.radius.bottomRight": "16px",
+            "module.decoration.border.desktop.value.radius.bottomLeft": "16px"
+        },
+        "note": "Four corners 16px over a 1px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state). Whether the radius clips the open answer and the icon is measured separately (task report, pixel check)."
+    },
+    {
+        "id": "ki-radius-36-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.border.desktop.value.radius.topLeft": "36px",
+            "module.decoration.border.desktop.value.radius.topRight": "36px",
+            "module.decoration.border.desktop.value.radius.bottomRight": "36px",
+            "module.decoration.border.desktop.value.radius.bottomLeft": "36px"
+        },
+        "note": "Four corners 36px over a 1px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state). Whether the radius clips the open answer and the icon is measured separately (task report, pixel check)."
+    },
+    {
+        "id": "ki-shadow-soft-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset1",
+            "module.decoration.boxShadow.desktop.value.vertical": "8px",
+            "module.decoration.boxShadow.desktop.value.blur": "24px",
+            "module.decoration.boxShadow.desktop.value.color": "rgba(0,0,0,0.18)"
+        },
+        "note": "Soft rest shadow (KitAdapters::shadow soft: preset1, 0 8px 24px, overlay 18%) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state)."
+    },
+    {
+        "id": "ki-shadow-hard-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset4",
+            "module.decoration.boxShadow.desktop.value.horizontal": "6px",
+            "module.decoration.boxShadow.desktop.value.vertical": "6px",
+            "module.decoration.boxShadow.desktop.value.blur": "0px",
+            "module.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "note": "Hard rest shadow (preset4, 6px 6px 0 0, text ink) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state)."
+    },
+    {
+        "id": "ki-shadow-edge-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset4",
+            "module.decoration.boxShadow.desktop.value.horizontal": "0px",
+            "module.decoration.boxShadow.desktop.value.vertical": "4px",
+            "module.decoration.boxShadow.desktop.value.blur": "0px",
+            "module.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "note": "Edge rest shadow (preset4, 0 4px 0 0) on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state)."
+    },
+    {
+        "id": "ki-shadow-glow-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset1",
+            "module.decoration.boxShadow.desktop.value.vertical": "0px",
+            "module.decoration.boxShadow.desktop.value.blur": "16px",
+            "module.decoration.boxShadow.desktop.value.color": "rgba(245,158,11,0.45)"
+        },
+        "note": "Glow rest shadow (preset1, 0 0 16px, accent 45%) over a 1px frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state)."
+    },
+    {
+        "id": "ki-fill-open-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                },
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "openToggle.decoration.background.desktop.value.color": "#151c33"
+        },
+        "note": "Open fill under a 2px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state) (openToggle background; the open item is the first one of an accordion)."
+    },
+    {
+        "id": "ki-fill-closed-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "closedToggle.decoration.background.desktop.value.color": "#151c33"
+        },
+        "note": "Closed fill under a 2px solid frame on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state) (closedToggle background; measured on the closed items; a toggle is closed here)."
+    },
+    {
+        "id": "ki-title-open-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "openToggle.decoration.font.font.desktop.value.color": "#c0392b"
+        },
+        "note": "Open title colour through the openToggle font group on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state). NEW on divi/accordion (its openToggle font group has no earlier probe)."
+    },
+    {
+        "id": "ki-title-closed-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "set": {
+            "closedTitle.decoration.font.font.desktop.value.color": "#c0392b"
+        },
+        "note": "Closed title colour through the closedTitle font group on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state)."
+    },
+    {
+        "id": "ki-icon-closed-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "set": {
+            "closedToggleIcon.decoration.icon.desktop.value.color": "#c0392b"
+        },
+        "pseudo": [
+            "::before"
+        ],
+        "note": "Closed icon colour on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state) (drawn on the title's ::before)."
+    },
+    {
+        "id": "ki-icon-open-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "openToggleIcon.decoration.icon.desktop.value.color": "#c0392b"
+        },
+        "pseudo": [
+            "::before"
+        ],
+        "note": "Open icon colour on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state) (drawn on the title's ::before). An accordion has NO open icon (Divi hides it)."
+    },
+    {
+        "id": "ki-body-colour-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "content.decoration.bodyFont.body.font.desktop.value.color": "#c0392b"
+        },
+        "note": "Answer text colour through the content bodyFont group on divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state) (the open answer)."
+    },
+    {
+        "id": "ki-padding-toggle",
+        "expect": "PASS",
+        "block": "toggle",
+        "base": {
+            "module": {
+                "advanced": {
+                    "open": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.spacing.desktop.value.padding.top": "24px",
+            "module.decoration.spacing.desktop.value.padding.right": "24px",
+            "module.decoration.spacing.desktop.value.padding.bottom": "24px",
+            "module.decoration.spacing.desktop.value.padding.left": "24px"
+        },
+        "note": "Padding 24px on all four sides of divi/toggle (a stand-alone toggle, opened with module.advanced.open unless the decision is about the closed state) (the toggle's own spacing, printed important)."
+    },
+    {
+        "id": "ki-padding-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "set": {
+            "module.decoration.spacing.desktop.value.padding.top": "24px",
+            "module.decoration.spacing.desktop.value.padding.right": "24px",
+            "module.decoration.spacing.desktop.value.padding.bottom": "24px",
+            "module.decoration.spacing.desktop.value.padding.left": "24px"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Padding 24px on all four sides set on the divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'). Expected to pad the ANSWER (module.json spacing propertySelectors padding -> '.et_pb_toggle_content'), not the item: recorded as an effect, it will NOT be written by the adapter."
+    },
+    {
+        "id": "ki-rowgap-accordion",
+        "expect": "PASS",
+        "block": "accordion",
+        "base": {
+            "module": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.layout.desktop.value.rowGap": "30px"
+        },
+        "children": [
+            {
+                "block": "accordion-item",
+                "base": {
+                    "module": {
+                        "advanced": {
+                            "open": {
+                                "desktop": {
+                                    "value": "on"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "accordion-item"
+            },
+            {
+                "block": "accordion-item"
+            }
+        ],
+        "note": "Row gap 30px (module.decoration.layout rowGap, the layout group's default is 30px in module.json) under a 2px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'): does the gap between framed items move? The printed default between items is measured separately (task report)."
+    }
+]
