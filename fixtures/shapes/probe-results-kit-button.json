@@ -2105,5 +2105,302 @@
         "overflowPx": 0
       }
     }
+  },
+  {
+    "id": "kb-border-bottom-adapter-form",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 15,
+        "sample": [
+          "0:a:block-size: 59.7969px -> 62.7969px",
+          "0:a:border-block-end-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-block-end-width: 0px -> 3px",
+          "0:a:border-block-start-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-width: 0px -> 3px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-color",
+          "border-block-end-width",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-bottom-width",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "height",
+          "perspective-origin",
+          "transform-origin",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 15,
+        "sample": [
+          "0:a:block-size: 59.7969px -> 62.7969px",
+          "0:a:border-block-end-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-block-end-width: 0px -> 3px",
+          "0:a:border-block-start-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-width: 0px -> 3px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-color",
+          "border-block-end-width",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-bottom-width",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "height",
+          "perspective-origin",
+          "transform-origin",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 15,
+        "sample": [
+          "0:a:block-size: 59.7969px -> 62.7969px",
+          "0:a:border-block-end-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-block-end-width: 0px -> 3px",
+          "0:a:border-block-start-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-width: 0px -> 3px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-color",
+          "border-block-end-width",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-bottom-width",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "height",
+          "perspective-origin",
+          "transform-origin",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-shadow-soft-on-pill",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-shadow-hard-on-outline",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-shadow-edge-down",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-shadow-glow",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
   }
 ]

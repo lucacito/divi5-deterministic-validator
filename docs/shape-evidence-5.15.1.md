@@ -17806,6 +17806,136 @@ Note: Padding 14px 28px on the button module spacing. Source: Divi 5.15.1 includ
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
 
+## kb-border-bottom-adapter-form
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `button.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `button.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+- `button.decoration.border.desktop.value.styles.bottom.width` = `"3px"`
+- `button.decoration.border.desktop.value.styles.bottom.style` = `"solid"`
+- `button.decoration.border.desktop.value.styles.bottom.color` = `"#f59e0b"`
+- `button.decoration.border.desktop.hover.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 15 | yes | `0:a:block-size: 59.7969px -> 62.7969px` |
+| 900 px | yes | 15 | yes | `0:a:block-size: 59.7969px -> 62.7969px` |
+| 400 px | yes | 15 | yes | `0:a:block-size: 59.7969px -> 62.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-width`, `border-block-start-color`, `border-bottom-color`, `border-bottom-width`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `height`, `perspective-origin`, `transform-origin`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Task 9a review M6, run in Task 9: the exact underline form KitAdapters writes for border.sides bottom, a superset of kb-border-bottom-only: styles.all carries width 0px plus style and colour, the bottom side carries width, style and colour, and the hover writes styles.all.color equal to the bottom colour. Expect only the bottom side to get a 3px solid border at rest and on hover (the other three sides stay 0px). Every path is registered (export or probe).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-shadow-soft-on-pill
+
+Block: `button`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"8px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"24px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(0,0,0,0.18)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 900 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 400 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Task 9 (sheet #40 raised pill; the shipped warm-pill-soft): the exact soft rest shadow KitAdapters writes (kb-shadow-module-soft) on a PILL button (radius 999px on the four corners, the form ty-b-radius proved, Border.php:92-102). PASS means the computed box-shadow is on the same element (0:a, the button) that carries the 999px radius, so the shadow follows the round ends (CSS draws a box shadow along the element's own border radius) and is not a rectangle on a wrapper. Box shadow presets and the value composition in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 (preset1 = 0px 2px 18px 0px rgba(0,0,0,0.3); preset4 = 10px 10px 0px 0px rgba(0,0,0,0.3)) and :111-146 (written values replace the preset's, array_filter keeps "0px"); module.json gives the button module boxShadow (printed on {{selector}}, the button element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-shadow-hard-on-outline
+
+Block: `button`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 900 px | yes | 1 | yes | `0:a:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 400 px | yes | 1 | yes | `0:a:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Task 9 (sheet #18 offset frame): the exact hard shadow KitAdapters writes (kb-shadow-module-hard, which used a FILLED button) behind a TRANSPARENT 2px outline button (rgba(255,255,255,0) fill, the form kb-fill-transparent-rgba proved). Expect the computed box-shadow rgb(17, 24, 39) 6px 6px 0px 0px on the button element. Box shadow presets and the value composition in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 (preset1 = 0px 2px 18px 0px rgba(0,0,0,0.3); preset4 = 10px 10px 0px 0px rgba(0,0,0,0.3)) and :111-146 (written values replace the preset's, array_filter keeps "0px"); module.json gives the button module boxShadow (printed on {{selector}}, the button element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-shadow-edge-down
+
+Block: `button`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"4px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 900 px | yes | 1 | yes | `0:a:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 400 px | yes | 1 | yes | `0:a:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Task 9 (sheet #97 pressable): a hard edge straight down, preset4 with horizontal 0px (overriding the preset's 10px), vertical 4px, blur 0px, on a button with 4px corners. Expect the computed box-shadow rgb(17, 24, 39) 0px 4px 0px 0px on the button element (the one with the radius). Box shadow presets and the value composition in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 (preset1 = 0px 2px 18px 0px rgba(0,0,0,0.3); preset4 = 10px 10px 0px 0px rgba(0,0,0,0.3)) and :111-146 (written values replace the preset's, array_filter keeps "0px"); module.json gives the button module boxShadow (printed on {{selector}}, the button element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-shadow-glow
+
+Block: `button`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"16px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(245,158,11,0.45)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 900 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 400 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Task 9 (sheet #75 hairline halo): a glow with no offset, preset1 (horizontal 0px) with vertical 0px (overriding the preset's 2px), blur 16px, a translucent colour (the alpha form RecipeTokens writes for {{aied:color:<role>:NN}}), behind a transparent 1px outline button. Expect the computed box-shadow rgba(245, 158, 11, 0.45) 0px 0px 16px 0px on the button element. Box shadow presets and the value composition in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 (preset1 = 0px 2px 18px 0px rgba(0,0,0,0.3); preset4 = 10px 10px 0px 0px rgba(0,0,0,0.3)) and :111-146 (written values replace the preset's, array_filter keeps "0px"); module.json gives the button module boxShadow (printed on {{selector}}, the button element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
 ## Not taught (kit-button)
 
 Candidates from `kit-button.json` that were measured and are not taught, with the reason:
