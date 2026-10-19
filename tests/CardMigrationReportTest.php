@@ -287,4 +287,87 @@ class CardMigrationReportTest extends TestCase
         $rows = $this->byKey( array_values( array_filter( $this->shipped(), fn ( $r ) => 'pricing-three-tier' === $r['recipe'] ) ) );
         $this->assertSame( 'chip', $rows['divi/group#10']['class'] );
     }
+    /**
+     * What is wrong with the CHIP_OVERRIDES target "$block#$index" of $markup ([] = fine): it must be the badge, that is a block of
+     * that name whose subtree holds exactly one `divi/text` carrying $text and nothing else, and whose own fill is the `surface`
+     * token. An index that shifted (a block added above it) fails here instead of quietly classing another card-like block as a chip.
+     *
+     * @return list<string>
+     */
+    private static function chipTargetProblems( string $markup, string $block, int $index, string $text ): array
+    {
+        preg_match_all( '/<!--\s+(\/)?wp:(divi\/[a-z0-9-]+)(?:\s+(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\}))?\s+(\/)?-->/s', $markup, $all, PREG_SET_ORDER );
+        $seen  = -1;
+        $depth = 0;
+        $inner = [];
+        $attrs = null;
+        foreach ( $all as $m ) {
+            $close = '/' === $m[1];
+            if ( null !== $attrs ) {
+                if ( $close ) {
+                    --$depth;
+                    if ( 0 === $depth ) {
+                        break;
+                    }
+                } else {
+                    $inner[] = $m[2] . ( isset( $m[3] ) ? ' ' . $m[3] : '' );
+                    if ( '/' !== ( $m[4] ?? '' ) ) {
+                        ++$depth;
+                    }
+                }
+                continue;
+            }
+            if ( $close || $m[2] !== $block || ++$seen !== $index ) {
+                continue;
+            }
+            $attrs = (array) json_decode( $m[3] ?? '{}', true );
+            $depth = '/' === ( $m[4] ?? '' ) ? 0 : 1;
+            if ( 0 === $depth ) {
+                break;
+            }
+        }
+        if ( null === $attrs ) {
+            return [ "$block#$index: no such block" ];
+        }
+        $out = [];
+        if ( '{{aied:color:surface}}' !== ( $attrs['module']['decoration']['background']['desktop']['value']['color'] ?? null ) ) {
+            $out[] = "$block#$index: its fill is not the surface token";
+        }
+        $names = array_map( static fn ( string $x ): string => explode( ' ', $x )[0], $inner );
+        if ( [ 'divi/text' ] !== $names ) {
+            $out[] = "$block#$index: its children are " . implode( ',', $names ) . ', not one divi/text';
+        } elseif ( ! str_contains( $inner[0], $text ) ) {
+            $out[] = "$block#$index: its text is not $text";
+        }
+        return $out;
+    }
+
+    public function test_every_chip_override_targets_the_badge(): void
+    {
+        $overrides = ( new \ReflectionClassConstant( \CardReport::class, 'CHIP_OVERRIDES' ) )->getValue();
+        $texts     = [ 'pricing-three-tier|divi/group|10' => '[Most popular]' ];
+        $recipes   = [];
+        foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $r ) {
+            $recipes[ $r['name'] ] = (string) $r['markup'];
+        }
+        $listed = [];
+        foreach ( $overrides as $recipe => $blocks ) {
+            foreach ( $blocks as $block => $indexes ) {
+                foreach ( array_keys( $indexes ) as $index ) {
+                    $key = "$recipe|$block|$index";
+                    $listed[] = $key;
+                    $this->assertArrayHasKey( $key, $texts, "$key: add the badge text it must hold to this test" );
+                    $this->assertSame( [], self::chipTargetProblems( $recipes[ $recipe ] ?? '', $block, (int) $index, $texts[ $key ] ), $key );
+                }
+            }
+        }
+        $this->assertSame( array_keys( $texts ), $listed, 'every override has a pinned badge text and the other way round' );
+        // Planted: a shifted index lands on another group, a missing badge text or a non-surface fill fails.
+        $markup = $recipes['pricing-three-tier'];
+        $this->assertNotSame( [], self::chipTargetProblems( $markup, 'divi/group', 9, '[Most popular]' ), 'index shifted down' );
+        $this->assertNotSame( [], self::chipTargetProblems( $markup, 'divi/group', 11, '[Most popular]' ), 'index shifted up' );
+        $this->assertSame( [ 'divi/group#99: no such block' ], self::chipTargetProblems( $markup, 'divi/group', 99, '[Most popular]' ) );
+        $this->assertNotSame( [], self::chipTargetProblems( str_replace( '[Most popular]', '[Best value]', $markup ), 'divi/group', 10, '[Most popular]' ), 'another text' );
+        $this->assertNotSame( [], self::chipTargetProblems( str_replace( 'aied:color:surface}}"}}},"border":{"desktop":{"value":{"radius":{"topLeft":"12px"', 'aied:color:bg}}"}}},"border":{"desktop":{"value":{"radius":{"topLeft":"12px"', $markup ), 'divi/group', 10, '[Most popular]' ), 'a non-surface fill' );
+    }
 }

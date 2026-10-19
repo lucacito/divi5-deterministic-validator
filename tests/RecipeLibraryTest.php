@@ -1321,6 +1321,11 @@ class RecipeLibraryTest extends TestCase
         if ( str_contains( $column, '{{aied:color:accent}}' ) ) {
             $out[] = 'the plan holds an accent colour of its own: the kit writes the accent body';
         }
+        // The divider rules sit on the accent body: their colour is an accent-text alpha form (the `border` hairline would vanish there).
+        preg_match_all( '/"all":\{"width":"0px","color":"(\{\{aied:color:[a-z-]+(?::[1-9][0-9]?)?\}\})"/', $column, $rules );
+        if ( [] === $rules[1] || [] !== array_filter( $rules[1], static fn ( string $c ): bool => 1 !== preg_match( '/^\{\{aied:color:accent-text:[1-9][0-9]?\}\}$/', $c ) ) ) {
+            $out[] = 'the divider rules must be an accent-text alpha form (accent-text:NN), found ' . ( [] === $rules[1] ? 'none' : implode( ',', $rules[1] ) );
+        }
         if ( 1 !== substr_count( $column, '"aied":{"kit":"control","on":"accent"}' ) || str_contains( $column, 'control-secondary' ) ) {
             $out[] = 'the plan\'s button must be one kit primary on the accent ground';
         }
@@ -1340,6 +1345,8 @@ class RecipeLibraryTest extends TestCase
         $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '{{aied:color:surface}}"}}},"border"', '{{aied:color:accent}}"}}},"border"', $column ) ), 'an accent chip' );
         $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '"kit":"control"', '"kit":"control-secondary"', $column ) ), 'a secondary button' );
         $this->assertNotSame( [], self::featuredPlanProblems( str_replace( ',"ground":"accent"', '', $column ) ), 'no ground' );
+        $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '{{aied:color:accent-text:40}}', '{{aied:color:border}}', $column ) ), 'the border hairline on the accent body' );
+        $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '{{aied:color:accent-text:40}}', '{{aied:color:accent-text}}', $column ) ), 'a solid rule colour is not the alpha form' );
         $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '"on":"accent"}', '"on":"light"}', $column ) ), 'a button on the wrong band' );
     }
 

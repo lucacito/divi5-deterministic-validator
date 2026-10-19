@@ -1686,7 +1686,7 @@
     {
         "name": "pricing-three-tier",
         "title": "Pricing / three plans, the middle one highlighted",
-        "description": "A centred intro over three plan cards side by side (on the surface colour): plan name, one line, a large price, a ruled list of three ticked features and a button; the middle plan is the one filled with the accent colour and carries a \"[Most popular]\" label and the primary button; one column on tablets and phones.",
+        "description": "A centred intro over three plan cards side by side (two on the surface colour, the middle one filled with the accent colour): plan name, one line, a large price, a ruled list of three ticked features and a button; the middle plan carries a \"[Most popular]\" label and the primary button; one column on tablets and phones.",
         "when": "Pricing for software, memberships or packaged services with three clear levels; modern and dark-glass brands. Plan names, prices, periods, features and the label are placeholders: use the owner's real offer only.",
         "stage": "Objection handling / Pricing",
         "tags": {
