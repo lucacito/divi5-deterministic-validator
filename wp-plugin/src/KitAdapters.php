@@ -12,8 +12,10 @@ require_once __DIR__ . '/StyleKits.php';
 
 /**
  * Adapters: turn a style kit's decisions into the attributes of one module, for KitResolver to merge where a recipe
- * carries a marker. v1 knows one module, `divi/button`, in two roles (`control`, `control-secondary`) on three
- * surfaces (`light`: the section's bg or surface, `accent`: an accent band, `dark`: a photo or overlay).
+ * carries a marker. APPLIED lists what is known: `divi/button` in two roles (`control`, `control-secondary`) on three
+ * surfaces (`light`: the section's bg or surface, `accent`: an accent band, `dark`: a photo or overlay), and the cards,
+ * `divi/group` and `divi/column` in two roles (`card`, `panel`) on four bands (`light` a bg band, `surface` a surface
+ * band, `accent`, `dark`); see the card table at the end.
  *
  * The button patch writes only `button.decoration.{background,border,font}` and `module.decoration.spacing` at
  * `desktop`, plus `module.decoration.boxShadow` when the kit has a shadow and `module.decoration.transform` when its hover
@@ -63,6 +65,27 @@ require_once __DIR__ . '/StyleKits.php';
  * is the four corners, as every recipe button writes it) and gradients (the form is proven, kb-gradient-stops, but no pair of
  * colour roles gives a label readable on both stops in every design language, so no kit could pass the contrast proof).
  *
+ * Card table (roles `card` and `panel` on `divi/group` and `divi/column`; spec 2026-10-19-card-adapter-design.md section 2,
+ * probe fixtures/shapes/kit-card-vocabulary.md, every decision PASSED on both carriers). The patch writes only
+ * `module.decoration.{background,border,spacing,boxShadow,transform}` at `desktop` (never innerContent, never a child, never
+ * `layout`/`sizing`/`advanced`: a recipe's own structure survives the merge). The same patch for both carriers.
+ * - Fill: always filled, never transparent (a card's children carry colours chosen for a filled ground, so an outline or
+ *   ghost kit keeps a filled card and shows its character in the frame): `surface`, or `bg` on a `surface` band. No hover fill.
+ * - Radius: `{{aied:kit:radius-card}}`. A radius makes Divi print `overflow: hidden` on the card, so it clips an image child.
+ * - Frame: `styles.all` at the kit width, `1px` when the kit's is `0px` (a quiet kit's card still separates from its band),
+ *   in the kit style; colour role: `same` -> `border`, `inverse` -> `text`, `accent`/`text`/`border` as given (the band
+ *   never changes it: the frame sits on the card's own fill).
+ * - Underline kits (`border.sides` bottom): the button's underline form, `styles.all.width` 0px plus `styles.bottom` (width as
+ *   above, style, colour), and NO hover border colour at all (the hover frame colour on a bottom-only card is not proven).
+ * - `card` only: padding `{{aied:kit:space-card}}` (four sides) on `module.decoration.spacing`; hover `lift` ->
+ *   `transform.desktop.hover.translate.y` -4px; hover `fill-swap` / `invert` -> `border.desktop.hover.styles.all.color`
+ *   `accent` (a card cannot swap its fill: its children would lose contrast), written only when the rest frame is not
+ *   already `accent`; hover `none` -> nothing. The shadow is shadow()'s pair (rest and hover) for the band, with a `surface`
+ *   band treated as `light` (a surface band is a light band): the same value the button gets.
+ * - `panel` (a static surface: forms, spec sheets, overlap panels): no padding key (the recipe keeps its structural padding)
+ *   and NO `hover` key anywhere (border, boxShadow, transform): only the rest shadow, nothing for a hover-only shadow pair.
+ * - Not used by cards: the kit's `fill`, `color` and `text` decisions (button only).
+ *
  * Pure and deterministic: no site access.
  */
 final class KitAdapters
@@ -73,8 +96,26 @@ final class KitAdapters
      */
     public const TRANSPARENT = 'rgba(255,255,255,0)';
 
-    private const ROLES    = [ 'control', 'control-secondary' ];
+    /**
+     * Block => the marker roles this adapter answers on it: the one list the resolver's roles and the guide's wording follow.
+     *
+     * @var array<string, list<string>>
+     */
+    public const APPLIED = [
+        'divi/button' => [ 'control', 'control-secondary' ],
+        'divi/group'  => [ 'card', 'panel' ],
+        'divi/column' => [ 'card', 'panel' ],
+    ];
+
+    /** The bands a button may sit on. */
     private const SURFACES = [ 'light', 'accent', 'dark' ];
+
+    /** The card roles, and the bands a card may sit on (a `surface` band is for cards only). */
+    private const CARD_ROLES    = [ 'card', 'panel' ];
+    private const CARD_SURFACES = [ 'light', 'surface', 'accent', 'dark' ];
+
+    /** A kit border colour => the card's frame colour role (`accent`, `text` and `border` are used as given). */
+    private const CARD_FRAME = [ 'same' => 'border', 'inverse' => 'text' ];
 
     /** The label colour role on a fill of the given colour role (`inverse` is never a fill, see filled()). */
     private const ON = [ 'accent' => 'accent-text', 'text' => 'bg' ];
@@ -97,13 +138,74 @@ final class KitAdapters
      */
     public static function patch( string $blockName, string $role, string $on, array $kit ): ?array
     {
-        if ( 'divi/button' !== $blockName || ! in_array( $role, self::ROLES, true ) || ! in_array( $on, self::SURFACES, true ) ) {
+        if ( ! in_array( $role, self::APPLIED[ $blockName ] ?? [], true ) ) {
+            return null;
+        }
+        $card = in_array( $role, self::CARD_ROLES, true );
+        if ( ! in_array( $on, $card ? self::CARD_SURFACES : self::SURFACES, true ) ) {
             return null;
         }
         if ( [] !== StyleKits::problems( $kit ) ) {
             return null;
         }
-        return self::button( $role, $on, $kit );
+        return $card ? self::card( $role, $on, $kit ) : self::button( $role, $on, $kit );
+    }
+
+    /**
+     * The card patch (roles `card` and `panel`, on `divi/group` and `divi/column`): only `module.decoration` at desktop.
+     * See the class docblock's card table.
+     *
+     * @param array<string,mixed> $kit a valid kit
+     * @return array<string,mixed>
+     */
+    private static function card( string $role, string $on, array $kit ): array
+    {
+        $border = (array) $kit['border'];
+        $frame  = self::CARD_FRAME[ (string) $border['color'] ] ?? (string) $border['color'];
+        $width  = '0px' === (string) $border['width'] ? '1px' : (string) $border['width'];
+        $style  = (string) $border['style'];
+        $colour = self::colour( $frame );
+        $bottom = 'bottom' === ( $border['sides'] ?? 'all' );
+
+        $styles = $bottom
+            // The button's underline form (kc-edge-bottom): no frame, only the bottom side.
+            ? [
+                'all'    => [ 'width' => '0px', 'style' => $style, 'color' => $colour ],
+                'bottom' => [ 'width' => $width, 'style' => $style, 'color' => $colour ],
+            ]
+            : [ 'all' => [ 'width' => $width, 'style' => $style, 'color' => $colour ] ];
+        $frameAttrs = [ 'desktop' => [ 'value' => [ 'radius' => '{{aied:kit:radius-card}}', 'styles' => $styles ] ] ];
+
+        $hover = (string) $kit['hover'];
+        $isCard = 'card' === $role;
+        if ( $isCard && ! $bottom && 'accent' !== $frame && ( 'fill-swap' === $hover || 'invert' === $hover ) ) {
+            // kc-hover-frame. Never on a bottom-only card (its hover frame colour is not proven) and never when the frame is
+            // already accent (a redundant key).
+            $frameAttrs['desktop']['hover'] = [ 'styles' => [ 'all' => [ 'color' => self::colour( 'accent' ) ] ] ];
+        }
+
+        $module = [
+            'background' => [ 'desktop' => [ 'value' => [ 'color' => self::colour( 'surface' === $on ? 'bg' : 'surface' ) ] ] ],
+            'border'     => $frameAttrs,
+        ];
+        if ( $isCard ) {
+            $module['spacing'] = [ 'desktop' => [ 'value' => [ 'padding' => '{{aied:kit:space-card}}' ] ] ];
+        }
+        // A surface band is a light band for the shadow's ink.
+        $shadow = self::shadow( (array) $kit['shadow'], 'surface' === $on ? 'light' : $on );
+        if ( null !== $shadow && ! $isCard ) {
+            unset( $shadow['desktop']['hover'] );
+            $shadow = [] === $shadow['desktop'] ? null : $shadow;
+        }
+        if ( null !== $shadow ) {
+            $module['boxShadow'] = $shadow;
+        }
+        if ( $isCard && 'lift' === $hover ) {
+            // kc-hover-lift.
+            $module['transform'] = [ 'desktop' => [ 'hover' => [ 'translate' => [ 'y' => '-4px' ] ] ] ];
+        }
+
+        return [ 'module' => [ 'decoration' => $module ] ];
     }
 
     /**

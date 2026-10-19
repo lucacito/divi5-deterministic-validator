@@ -377,7 +377,8 @@ class KitAdaptersTest extends TestCase
     {
         $kit = $this->shippedKits()[0];
         $this->assertNull( KitAdapters::patch( 'divi/text', 'control', 'light', $kit ) );
-        $this->assertNull( KitAdapters::patch( 'divi/group', 'card', 'light', $kit ) );
+        $this->assertNull( KitAdapters::patch( 'divi/group', 'control', 'light', $kit ), 'a group answers the card roles only (KitCardAdapterTest)' );
+        $this->assertNull( KitAdapters::patch( 'divi/button', 'control', 'surface', $kit ), 'surface is a card band only' );
         $this->assertNull( KitAdapters::patch( 'divi/button', 'card', 'light', $kit ) );
         $this->assertNull( KitAdapters::patch( 'divi/button', 'Control', 'light', $kit ) );
         $this->assertNull( KitAdapters::patch( 'divi/button', 'control', 'photo', $kit ) );

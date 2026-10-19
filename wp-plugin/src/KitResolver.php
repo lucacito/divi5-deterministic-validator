@@ -16,9 +16,13 @@ require_once __DIR__ . '/StyleKits.php';
  * a `<!-- wp:divi/<name> {json} -->` block comment (text and HTML are never parsed, so text that merely CONTAINS the
  * spelling is never rewritten):
  *
- * - A marker: a TOP-LEVEL attribute `"aied":{"kit":"<role>"}` or `"aied":{"kit":"<role>","on":"<surface>"}`. The
- *   adapter's patch for (block, role, on, kit) is deep-merged into the attributes (the patch wins; lists are replaced,
- *   not appended; untouched keys keep their place) and the marker is removed.
+ * - A marker: a TOP-LEVEL attribute `"aied":{"kit":"<role>"}` or `"aied":{"kit":"<role>","on":"<surface>"}` (only those
+ *   keys). Roles and where they may sit: `control` and `control-secondary` on `divi/button`, on `light`, `accent` or
+ *   `dark`; `card` and `panel` on `divi/group` or `divi/column`, on `light`, `surface`, `accent` or `dark` (`surface` is a
+ *   card band only). `on` defaults to `light`. The adapter's patch for (block, role, on, kit) is deep-merged into the
+ *   attributes (the patch wins over a recipe literal at the same key; lists are replaced, not appended; untouched keys
+ *   keep their place) and the marker is removed. A role on a block it does not belong to, or a surface the role does not
+ *   accept, is never guessed: the marker is left and reported.
  * - A whole-value token: an attribute value that is exactly `{{aied:kit:<name>}}` (a name StyleKits::valueToken()
  *   answers) becomes that object.
  *
@@ -30,14 +34,21 @@ require_once __DIR__ . '/StyleKits.php';
  */
 final class KitResolver
 {
-    /** Marker role => the blocks it may sit on (v1). */
+    /** Marker role => the blocks it may sit on (KitAdapters::APPLIED, by role). */
     private const ROLE_BLOCKS = [
         'control'           => [ 'divi/button' ],
         'control-secondary' => [ 'divi/button' ],
+        'card'              => [ 'divi/group', 'divi/column' ],
+        'panel'             => [ 'divi/group', 'divi/column' ],
     ];
 
-    /** Surfaces a marker may name; `light` when it names none. */
-    private const SURFACES = [ 'light', 'accent', 'dark' ];
+    /** Marker role => the surfaces (bands) it may name; `light` when it names none. `surface` is for the card roles only. */
+    private const ROLE_SURFACES = [
+        'control'           => [ 'light', 'accent', 'dark' ],
+        'control-secondary' => [ 'light', 'accent', 'dark' ],
+        'card'              => [ 'light', 'surface', 'accent', 'dark' ],
+        'panel'             => [ 'light', 'surface', 'accent', 'dark' ],
+    ];
 
     /**
      * An opening divi block comment with attributes: (prefix)(name)(json)(suffix). The JSON never spans a `-->` and
@@ -190,7 +201,7 @@ final class KitResolver
         }
         $role = $vars['kit'];
         $on   = array_key_exists( 'on', $vars ) ? $vars['on'] : 'light';
-        if ( ! is_string( $role ) || ! is_string( $on ) || ! in_array( $on, self::SURFACES, true ) ) {
+        if ( ! is_string( $role ) || ! is_string( $on ) || ! in_array( $on, self::ROLE_SURFACES[ $role ] ?? [], true ) ) {
             return null;
         }
         if ( ! in_array( $block, self::ROLE_BLOCKS[ $role ] ?? [], true ) ) {

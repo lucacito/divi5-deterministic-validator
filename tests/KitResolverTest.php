@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\KitAdapters;
 use AiEditorDivi5\WP\KitResolver;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\SectionRecipes;
@@ -17,6 +18,7 @@ require_once __DIR__ . '/../wp-plugin/src/RecipeTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
 require_once __DIR__ . '/../wp-plugin/src/StyleKits.php';
 require_once __DIR__ . '/../wp-plugin/src/KitResolver.php';
+require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
 
 /**
  * The kit resolver: block-comment markers ("aied":{"kit":"<role>"}) get the adapter's patch merged in and lose the
@@ -413,5 +415,103 @@ class KitResolverTest extends TestCase
             ini_set( 'pcre.jit', (string) $oldJit );
         }
         $this->assertSame( [ KitResolver::LEFT_MARKER, KitResolver::LEFT_TOKEN ], KitResolver::leftovers( $markup ) );
+    }
+    /** A shipped kit by id. @return array<string,mixed> */
+    private function shipped( string $id ): array
+    {
+        $kit = StyleKits::get( $id );
+        $this->assertIsArray( $kit );
+        return $kit;
+    }
+
+    private function group( string $marker, string $decoration = '' ): string
+    {
+        return '<!-- wp:divi/group {"module":{"decoration":{' . $decoration . '"layout":{"desktop":{"value":{"flexDirection":"column"}}}}},'
+            . '"builderVersion":"5.15.1"' . $marker . '} --><!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>x</p>"}}}} /--><!-- /wp:divi/group -->';
+    }
+
+    public function testCardMarkerOnAGroupResolvesAndIsStripped(): void
+    {
+        $kit = $this->shipped( 'soft-solid' );
+        foreach ( [ 'card', 'panel' ] as $role ) {
+            foreach ( [ 'light', 'surface', 'accent', 'dark' ] as $on ) {
+                $out   = KitResolver::resolve( $this->group( ',"aied":{"kit":"' . $role . '","on":"' . $on . '"}' ), $kit );
+                $attrs = json_decode( $this->comments( $out )[0], true );
+                $this->assertIsArray( $attrs );
+                $this->assertArrayNotHasKey( 'aied', $attrs, "$role on $on" );
+                $deco = $attrs['module']['decoration'];
+                $this->assertSame( [ 'flexDirection' => 'column' ], $deco['layout']['desktop']['value'], 'the recipe layout survives' );
+                $this->assertSame( 'surface' === $on ? '{{aied:color:bg}}' : '{{aied:color:surface}}', $deco['background']['desktop']['value']['color'] );
+                $this->assertSame( [ 'topLeft' => '8px', 'topRight' => '8px', 'bottomRight' => '8px', 'bottomLeft' => '8px' ], $deco['border']['desktop']['value']['radius'], 'the card radius token is resolved' );
+                if ( 'card' === $role ) {
+                    $this->assertSame( [ 'top' => '24px', 'right' => '24px', 'bottom' => '24px', 'left' => '24px' ], $deco['spacing']['desktop']['value']['padding'] );
+                } else {
+                    $this->assertArrayNotHasKey( 'spacing', $deco );
+                }
+                $this->assertStringContainsString( '<p>x</p>', $out, 'the children are untouched' );
+                $this->assertSame( [], KitResolver::leftovers( $out ) );
+            }
+        }
+        // No `on`: a light band. A column carries a card too.
+        $this->assertSame(
+            KitResolver::resolve( $this->group( ',"aied":{"kit":"card","on":"light"}' ), $kit ),
+            KitResolver::resolve( $this->group( ',"aied":{"kit":"card"}' ), $kit )
+        );
+        $column = '<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}}},"aied":{"kit":"panel","on":"accent"}} --><!-- /wp:divi/column -->';
+        $out    = KitResolver::resolve( $column, $kit );
+        $this->assertSame( [], KitResolver::leftovers( $out ) );
+        $this->assertStringContainsString( '"type":{"desktop":{"value":"1_3"}}', $out );
+        $this->assertStringContainsString( '"color":"{{aied:color:surface}}"', $out );
+    }
+
+    public function testMarkerValueWinsOverARecipeLiteral(): void
+    {
+        $literal = '"background":{"desktop":{"value":{"color":"{{aied:color:muted}}"}}},'
+            . '"border":{"desktop":{"value":{"radius":{"topLeft":"3px","topRight":"3px","bottomRight":"3px","bottomLeft":"3px"},"styles":{"all":{"width":"7px","color":"{{aied:color:accent}}"}}}}},';
+        $kit   = $this->shipped( 'hairline-dashed' );
+        $out   = KitResolver::resolve( $this->group( ',"aied":{"kit":"card","on":"light"}', $literal ), $kit );
+        $json  = $this->comments( $out )[0];
+        $attrs = json_decode( $json, true );
+        $deco  = $attrs['module']['decoration'];
+        $this->assertSame( '{{aied:color:surface}}', $deco['background']['desktop']['value']['color'], 'the adapter fill wins' );
+        $this->assertEquals( [ 'width' => '1px', 'style' => 'dashed', 'color' => '{{aied:color:border}}' ], $deco['border']['desktop']['value']['styles']['all'], 'the adapter frame wins (the recipe key order is kept)' );
+        $this->assertSame( '2px', $deco['border']['desktop']['value']['radius']['topLeft'], 'the kit card radius wins' );
+        foreach ( [ '"background"', '"border"', '"radius"', '"styles"', '"all"', '"width"' ] as $key ) {
+            $this->assertSame( 1, substr_count( $json, $key ), "$key appears once" );
+        }
+        $this->assertStringNotContainsString( '7px', $json );
+        $this->assertStringNotContainsString( '3px', $json );
+        $this->assertStringNotContainsString( 'muted', $json );
+    }
+
+    public function testCardMarkerOnAnImageIsLeftAndReported(): void
+    {
+        $kit = $this->shipped( 'soft-solid' );
+        foreach ( [
+            '<!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"x.svg"}}}},"aied":{"kit":"card"}} /-->',
+            '<!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"x.svg"}}}},"aied":{"kit":"panel","on":"surface"}} /-->',
+            '<!-- wp:divi/blurb {"aied":{"kit":"card","on":"light"}} /-->',
+            '<!-- wp:divi/section {"aied":{"kit":"panel"}} --><!-- /wp:divi/section -->',
+            $this->group( ',"aied":{"kit":"card","on":"photo"}' ),
+            $this->group( ',"aied":{"kit":"control"}' ),
+            $this->group( ',"aied":{"kit":"card","on":"light","x":1}' ),
+        ] as $markup ) {
+            $out = $this->noWarnings( fn() => KitResolver::resolve( $markup, $kit ) );
+            $this->assertSame( $markup, $out, 'left untouched' );
+            $this->assertSame( [ KitResolver::LEFT_MARKER ], KitResolver::leftovers( $out ), 'reported' );
+        }
+    }
+
+    public function testSurfaceOnAButtonIsLeftAndReported(): void
+    {
+        $kit = $this->shipped( 'soft-solid' );
+        foreach ( [ 'control', 'control-secondary' ] as $role ) {
+            $markup = $this->button( ',"aied":{"kit":"' . $role . '","on":"surface"}' );
+            $this->assertSame( $markup, $this->noWarnings( fn() => KitResolver::resolve( $markup, $kit ) ), "$role on surface is a card band only" );
+            $this->assertSame( [ KitResolver::LEFT_MARKER ], KitResolver::leftovers( $markup ) );
+            // The same marker with a button band resolves.
+            $this->assertSame( [], KitResolver::leftovers( KitResolver::resolve( $this->button( ',"aied":{"kit":"' . $role . '","on":"accent"}' ), $kit ) ) );
+        }
+        $this->assertNotNull( KitAdapters::patch( 'divi/group', 'card', 'surface', $kit ) );
     }
 }
