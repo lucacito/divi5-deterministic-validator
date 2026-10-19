@@ -293,7 +293,7 @@ class KitResolverTest extends TestCase
         foreach ( SectionRecipes::names() as $name ) {
             $raw = (string) SectionRecipes::rawMarkup( $name );
             if ( [] !== KitResolver::leftovers( $raw ) ) {
-                continue; // a migrated recipe (none yet in this task)
+                continue; // a migrated recipe (its kit markers are resolved, so it changes)
             }
             $this->assertSame( $raw, KitResolver::resolve( $raw, $kit ), $name );
         }

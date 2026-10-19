@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\KitResolver;
 use AiEditorDivi5\WP\SectionRecipes;
 use AiEditorDivi5\WP\StyleGuide;
+use AiEditorDivi5\WP\StyleKits;
 use Divi5Validator\Tests\Support\ShapePaths;
 use Divi5Validator\Tests\Support\ShapeRegistry;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/Support/ShapePaths.php';
 require_once __DIR__ . '/Support/ShapeRegistry.php';
-foreach ( [ 'ImagePack', 'ImageTokens', 'SectionRecipes', 'StyleGuide' ] as $shapeRegistryClass ) {
+foreach ( [ 'ImagePack', 'ImageTokens', 'SectionRecipes', 'StyleGuide', 'StyleKits', 'KitAdapters', 'KitResolver' ] as $shapeRegistryClass ) {
     require_once __DIR__ . '/../wp-plugin/src/' . $shapeRegistryClass . '.php';
 }
 
@@ -62,7 +64,13 @@ final class ShapeRegistryTest extends TestCase
         foreach ( SectionRecipes::names() as $name ) {
             $markup = SectionRecipes::rawMarkup( $name );
             $this->assertNotNull( $markup, "recipe $name should resolve" );
-            $markups[ $name ] = (string) $markup;
+            // The paths a recipe really uses are those it is SERVED with: every style kit's markers resolved (a marker
+            // is not a Divi attribute), so the paths each kit's adapter writes are linted too.
+            $served = [];
+            foreach ( StyleKits::ids() as $kit ) {
+                $served[] = KitResolver::resolve( (string) $markup, (array) StyleKits::get( $kit ) );
+            }
+            $markups[ $name ] = implode( "\n", $served );
         }
         $problems = $this->recipeProblems( $registry, $markups, $this->lines( 'ungrounded-recipe-paths.txt' ) );
         $lines = [];

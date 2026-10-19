@@ -6,8 +6,11 @@ namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\DesignVariety;
+use AiEditorDivi5\WP\KitResolver;
+use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\SectionRecipes;
+use AiEditorDivi5\WP\StyleKits;
 use Divi5Validator\Tests\Support\Colour;
 use Divi5Validator\Validator;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +21,11 @@ require_once __DIR__ . '/../wp-plugin/src/DesignLanguages.php';
 require_once __DIR__ . '/../wp-plugin/src/RecipeTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
 require_once __DIR__ . '/../wp-plugin/src/DesignVariety.php';
+require_once __DIR__ . '/../wp-plugin/src/StyleKits.php';
+require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
+require_once __DIR__ . '/../wp-plugin/src/KitResolver.php';
+require_once __DIR__ . '/../wp-plugin/src/CodePolicy.php';
+require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
 require_once __DIR__ . '/Support/Colour.php';
 
 /**
@@ -53,6 +61,40 @@ class RecipeLibraryTest extends TestCase
      * removes entries), never raised: a new render failure is fixed or the recipe retired, not frozen. Plan task 11 sets it to 0.
      */
     private const RENDER_FAILURE_CAP = 0;
+
+    /** The file size before the button migration (plan Task 7): the recipe file must stay below it (spec section 4). */
+    private const SIZE_BEFORE_KITS = 702311;
+
+    /**
+     * Recipe buttons deliberately NOT driven by a style kit: "recipe#index" (the index counts the recipe's buttons in
+     * markup order) => why. Shrink-only. Both sit on a `text`-coloured (inverted) panel, a surface the button adapter
+     * does not have: its `light` ink is `text` (invisible on the panel) and its `dark` ink is `inverse`, which is light on
+     * a light `text` panel in the dark languages (glass-dark, tech-mono, luxe). They keep their own colours until the
+     * adapter learns an inverted surface.
+     */
+    private const BESPOKE_BUTTONS = [
+        'compare-two-panels#0'         => 'solid accent button on the text-coloured "after" panel (no adapter surface for an inverted panel)',
+        'pricing-two-plan-highlight#1' => 'bg-filled button on the text-coloured highlighted plan (no adapter surface for an inverted panel)',
+    ];
+
+    /** A `divi/button` block comment: (json). Same possessive scan as KitResolver::BLOCK. */
+    private const BUTTON = '/<!--\s+wp:divi\/button\s+(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\})\s+\/?-->/s';
+
+    /**
+     * A recipe's stored markup with every style kit's markers resolved and its colour/font tokens left in, one entry
+     * per shipped kit (kit id => markup): what the colour checks read, so a kit-driven button's colours are seen.
+     *
+     * @return array<string,string>
+     */
+    private static function kitResolved( string $name ): array
+    {
+        $raw = (string) SectionRecipes::rawMarkup( $name );
+        $out = [];
+        foreach ( StyleKits::ids() as $kit ) {
+            $out[ $kit ] = KitResolver::resolve( $raw, (array) StyleKits::get( $kit ) );
+        }
+        return $out;
+    }
 
     /** @return array{no-pairs:list<string>,duplicate-layouts:list<string>,render-failures:list<string>} */
     private function baseline(): array
@@ -274,6 +316,9 @@ class RecipeLibraryTest extends TestCase
             }
             ++$checked;
             $this->assertSame( [], self::literalColours( (string) SectionRecipes::rawMarkup( $name ) ), "$name still holds literal colours (use a {{aied:color:<role>}} token)" );
+            foreach ( self::kitResolved( $name ) as $kit => $markup ) {
+                $this->assertSame( [], self::literalColours( $markup ), "$name under the $kit kit holds literal colours" );
+            }
             $this->assertDoesNotMatchRegularExpression( '/"family":"(?!\{\{aied:font:)[^"]*"/', (string) SectionRecipes::rawMarkup( $name ), "$name still holds a literal font family (use {{aied:font:<role>}})" );
         }
         $this->assertGreaterThan( 0, $checked );
@@ -324,7 +369,13 @@ class RecipeLibraryTest extends TestCase
             }
             ++$checked;
             $foregrounds = array_map( static fn ( $p ): string => (string) $p[0], (array) $tags['pairs'] );
-            $roles       = self::textColourRoles( (string) SectionRecipes::rawMarkup( $name ) );
+            // Read with every kit resolved: a kit-driven button's label colours exist only after resolution.
+            $roles = self::textColourRoles( (string) SectionRecipes::rawMarkup( $name ) );
+            foreach ( self::kitResolved( $name ) as $markup ) {
+                $roles = array_merge( $roles, self::textColourRoles( $markup ) );
+            }
+            $roles = array_values( array_unique( $roles ) );
+            sort( $roles );
             $this->assertNotSame( [], $roles, "$name uses no text colour token?" );
             $this->assertSame( [], array_values( array_diff( $roles, $foregrounds ) ), "$name colours text with a role no declared pair has as its foreground: declare the pair it sits on" );
         }
@@ -366,6 +417,74 @@ class RecipeLibraryTest extends TestCase
         $skipped = [];
         $this->assertSame( [], self::pairProblems( [ [ 'text', 'surface-glass' ] ], $glass, $skipped ) );
         $this->assertSame( [], $skipped );
+    }
+
+    public function testEveryRecipeButtonIsKitDriven(): void
+    {
+        $total    = 0;
+        $migrated = 0;
+        $bespoke  = [];
+        foreach ( SectionRecipes::names() as $name ) {
+            preg_match_all( self::BUTTON, (string) SectionRecipes::rawMarkup( $name ), $m );
+            foreach ( $m[1] as $i => $json ) {
+                ++$total;
+                $key   = $name . '#' . $i;
+                $attrs = json_decode( $json, true );
+                $this->assertIsArray( $attrs, "$key: button attributes decode" );
+                $decoration = (array) ( $attrs['button']['decoration'] ?? [] );
+                if ( isset( self::BESPOKE_BUTTONS[ $key ] ) ) {
+                    $bespoke[] = $key;
+                    $this->assertArrayNotHasKey( 'aied', $attrs, "$key is listed as bespoke but carries a kit marker: remove it from BESPOKE_BUTTONS" );
+                    continue;
+                }
+                ++$migrated;
+                $this->assertContains( $attrs['aied']['kit'] ?? null, [ 'control', 'control-secondary' ], "$key: a recipe button asks the style kit for its look (top-level \"aied\":{\"kit\":...})" );
+                $this->assertArrayNotHasKey( 'background', $decoration, "$key: the kit writes the button background" );
+                $this->assertArrayNotHasKey( 'border', $decoration, "$key: the kit writes the button border" );
+                $this->assertArrayNotHasKey( 'spacing', $decoration, "$key: the kit writes the button padding" );
+                $font = (array) ( $decoration['font']['font'] ?? [] );
+                foreach ( $font as $bp => $states ) {
+                    foreach ( (array) $states as $state => $value ) {
+                        $this->assertArrayNotHasKey( 'color', (array) $value, "$key: the kit writes the label colour (font.font.$bp.$state.color)" );
+                    }
+                }
+                $this->assertArrayNotHasKey( 'hover', $font['desktop'] ?? [], "$key: the kit writes the hover label" );
+            }
+        }
+        $this->assertSame( 28, $total, 'the recipes hold 28 buttons (update this count with the recipes)' );
+        $this->assertSame( array_keys( self::BESPOKE_BUTTONS ), $bespoke, 'every bespoke entry names a real button that is still bespoke' );
+        $this->assertSame( $total - count( self::BESPOKE_BUTTONS ), $migrated );
+        $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
+        clearstatcache();
+        $this->assertLessThan( self::SIZE_BEFORE_KITS, filesize( $file ), 'the recipe file ends smaller than before the kits (spec section 4)' );
+        $this->assertLessThan( 700 * 1024, filesize( $file ), 'the 700 KB bound holds' );
+    }
+
+    public function testEveryKitDrivenRecipeIsServedValidUnderEveryLanguageAndKit(): void
+    {
+        $checked = 0;
+        foreach ( SectionRecipes::names() as $name ) {
+            if ( ! str_contains( (string) SectionRecipes::rawMarkup( $name ), '"aied"' ) ) {
+                continue;
+            }
+            ++$checked;
+            foreach ( DesignLanguages::ids() as $lang ) {
+                foreach ( StyleKits::ids() as $kit ) {
+                    $label  = "$name under $lang with the $kit kit";
+                    $markup = SectionRecipes::recipe( $name, $lang, $kit );
+                    $this->assertIsString( $markup, $label );
+                    $this->assertStringNotContainsString( '"aied"', $markup, "$label leaves a kit marker" );
+                    $this->assertStringNotContainsString( '{{aied:', $markup, "$label leaves a token" );
+                    $this->assertSame( [], KitResolver::leftovers( $markup ), $label );
+                    $result = LayoutGate::check( $this->wrap( $markup ) );
+                    $codes  = implode( ', ', array_map( static fn ( $v ) => $v->toArray()['code'], $result->violations() ) );
+                    $this->assertTrue( $result->isValid(), "$label must pass the layout gate, got: $codes" );
+                    $this->assertTrue( ( new Validator() )->validateContent( $this->wrap( $markup ) )->isValid(), "$label must validate" );
+                }
+            }
+        }
+        // 22 recipes have a button; compare-two-panels has only a bespoke one (BESPOKE_BUTTONS).
+        $this->assertSame( 21, $checked, 'the recipes with a kit-driven button' );
     }
 
     public function testRecipesWithoutPairsAreOnlyTheFrozenBaselineAndItOnlyShrinks(): void

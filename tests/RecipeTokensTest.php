@@ -129,7 +129,11 @@ class RecipeTokensTest extends TestCase
         $e = (string) SectionRecipes::recipe( 'hero-cta', 'editorial' );
         $this->assertStringContainsString( $glass['colors']['accent'], $g );
         $this->assertStringContainsString( $glass['fonts']['display'], $g );
-        $this->assertStringContainsString( $editorial['colors']['accent'], $e );
+        // Editorial's own kit (outline-2) draws the button in the text colour; with a solid kit the accent shows.
+        $es = (string) SectionRecipes::recipe( 'hero-cta', 'editorial', 'soft-solid' );
+        $this->assertStringContainsString( $editorial['colors']['accent'], $es );
+        $this->assertStringNotContainsString( $glass['colors']['accent'], $es );
+        $this->assertStringContainsString( $editorial['colors']['text'], $e );
         $this->assertStringNotContainsString( $glass['colors']['accent'], $e );
         $this->assertSame( $e, (string) SectionRecipes::recipe( 'hero-cta' ), 'no language = the default (editorial)' );
     }
@@ -397,9 +401,16 @@ class RecipeTokensTest extends TestCase
         $this->assertSame( [ RecipeTokens::MARKER_ENTRY ], RecipeTokens::advise( '<!-- wp:divi/button {"button":{"aied":{"kit":"control"}}} /-->' )['tokens'], 'nested' );
         $this->assertSame( [ RecipeTokens::MARKER_ENTRY ], RecipeTokens::advise( '<!-- wp:divi/button {"aied":{"kit":"control"},} /-->' )['tokens'], 'malformed' );
         $this->assertNull( RecipeTokens::advise( '<!-- wp:divi/text {"t":"\\"aied\\":{\\"kit\\":\\"control\\"}"} --><p>"aied":{"kit":"control"}</p><!-- /wp:divi/text -->' ), 'text is not a marker' );
+        // The stored recipes carry markers (their buttons are kit-driven); the served ones never do.
+        $marked = 0;
         foreach ( SectionRecipes::names() as $name ) {
-            $raw = (string) SectionRecipes::rawMarkup( $name );
-            $this->assertNotContains( RecipeTokens::MARKER_ENTRY, (array) ( RecipeTokens::advise( $raw )['tokens'] ?? [] ), $name );
+            $raw     = (string) SectionRecipes::rawMarkup( $name );
+            $marked += in_array( RecipeTokens::MARKER_ENTRY, (array) ( RecipeTokens::advise( $raw )['tokens'] ?? [] ), true ) ? 1 : 0;
+            foreach ( [ 'soft-solid', 'outline-2' ] as $kit ) {
+                $served = (string) SectionRecipes::recipe( $name, 'editorial', $kit );
+                $this->assertNotContains( RecipeTokens::MARKER_ENTRY, (array) ( RecipeTokens::advise( $served )['tokens'] ?? [] ), "$name with $kit" );
+            }
         }
+        $this->assertGreaterThan( 0, $marked, 'the stored recipes carry kit markers' );
     }
 }

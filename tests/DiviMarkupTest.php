@@ -8,6 +8,11 @@ use AiEditorDivi5\WP\DiviMarkup;
 use Divi5Validator\Validator;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+require_once __DIR__ . '/../wp-plugin/src/RecipeTokens.php';
+require_once __DIR__ . '/../wp-plugin/src/StyleKits.php';
+require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
+require_once __DIR__ . '/../wp-plugin/src/KitResolver.php';
+
 /** The emitter: serialisation like WordPress's, and every attribute path grounded in a real export or recipe. */
 final class DiviMarkupTest extends HtmlTestCase
 {
@@ -28,7 +33,10 @@ final class DiviMarkupTest extends HtmlTestCase
             }
         }
         foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $r ) {
-            $sources[] = (string) ( $r['markup'] ?? '' );
+            // As served: every style kit's markers resolved (a kit marker is not a Divi attribute and grounds nothing).
+            foreach ( \AiEditorDivi5\WP\StyleKits::ids() as $kit ) {
+                $sources[] = \AiEditorDivi5\WP\KitResolver::resolve( (string) ( $r['markup'] ?? '' ), (array) \AiEditorDivi5\WP\StyleKits::get( $kit ) );
+            }
         }
         $known = [];
         foreach ( $sources as $content ) {
