@@ -78,13 +78,19 @@ class RecipeLibraryTest extends TestCase
     ];
 
     /**
-     * Label-on-fill pairs that only a style kit's BUTTON draws, on the button's own fill: [label, fill]. Today the two
-     * `invert` hovers of a filled button (KitAdapters' role table): an accent fill turns into label accent on an
-     * accent-text fill, and the surface fill on an accent band into label surface on a text fill. Every
-     * shipped kit x language x role x surface x state is proven readable by KitAdaptersTest's contrast proof, and the pair
-     * itself by testTheKitLabelPairsAreReadableInEveryLanguage, so a recipe need not declare it in its `pairs` (declaring it
-     * in every kit-driven recipe would grow the recipe file, which the spec's byte rule forbids). A recipe's OWN text
-     * colours still need a declared pair.
+     * Label roles a style kit's BUTTON may bring that a recipe need not declare: [label, fill], where the fill names the
+     * button fill the label sits on. Today the two `invert` hovers of a filled button (KitAdapters' role table): an accent
+     * fill turns into label accent on an accent-text fill, and the surface fill on an accent band into label surface on a
+     * text fill.
+     *
+     * What is exempted, precisely: testEveryTextColourRoleIsTheForegroundOfADeclaredPair drops a label ROLE in this list
+     * (the first element) when it appears ONLY in the kit-resolved markup, never in the recipe's own markup. It does not
+     * read the fill, so the exemption is by label role, not by exact pair. That is safe because every colour a kit button
+     * paints (each label on its real fill, every shipped kit x language x role x surface x rest/hover) is proven >= 4.5:1
+     * by KitAdaptersTest::testNoInvisibleButtonInAnyKitLanguageRoleSurface; these two pairs are additionally proven AA in
+     * every language by testTheKitLabelPairsAreReadableInEveryLanguage. A recipe's OWN text colours still need a declared
+     * pair. Declaring the pairs in every kit-driven recipe instead would grow the recipe file, which the spec's byte rule
+     * forbids.
      */
     private const KIT_LABEL_PAIRS = [ [ 'accent', 'accent-text' ], [ 'surface', 'text' ] ];
 
@@ -612,6 +618,9 @@ class RecipeLibraryTest extends TestCase
         '/button in the surface colou?r/i',
         '/pill(-shaped)? button/i',
         '/heavy borders and square corners/i',
+        // A corner shape in `when` that only the old baked button gave: cta-band and faq-two-column have no other element with
+        // a corner radius. (pricing-two-plan-highlight's "upscale brands with square corners" stays: its plans are 0px panels.)
+        '/editorial brands with (small|square) corners/i',
     ];
 
     public function testKitDrivenRecipeProseDoesNotDescribeTheButtonLook(): void

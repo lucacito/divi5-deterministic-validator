@@ -1940,7 +1940,7 @@
         "name": "faq-two-column",
         "title": "FAQ / questions and answers in two columns",
         "description": "A split intro (heading and line left, a contact line and a secondary button right) over two columns of open questions and answers set as plain text, each pair under a thin rule; nothing to click; one column on phones.",
-        "when": "Objection handling when the answers are short and should be seen without clicking (local services, shops, events, clinics); calm, flat and editorial brands with square corners. Questions, answers and the contact line are placeholders for the owner's real answers.",
+        "when": "Objection handling when the answers are short and should be seen without clicking (local services, shops, events, clinics); calm, flat and editorial brands. Questions, answers and the contact line are placeholders for the owner's real answers.",
         "stage": "Objection handling / FAQ",
         "tags": {
             "role": "faq",
@@ -2032,7 +2032,7 @@
         "name": "cta-band",
         "title": "Call to action / one bold line and a button",
         "description": "A full-width band in the accent colour: one large headline on the left and, on the right, a single button with a small optional note under it; on one line on wide screens, the button drops under the headline on narrower screens.",
-        "when": "The closing call to action of a page, or between long sections, for any offer with one clear next step; calm, flat and editorial brands with small corners. The headline and button label are placeholders for the owner's real offer.",
+        "when": "The closing call to action of a page, or between long sections, for any offer with one clear next step; calm, flat and editorial brands. The headline and button label are placeholders for the owner's real offer.",
         "stage": "Call to action",
         "tags": {
             "role": "cta",

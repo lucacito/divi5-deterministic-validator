@@ -68,7 +68,7 @@ class EchoedInputIsPlainTest extends TestCase
             // The hostile input adds at most its 40-character plain quote to the answer for a plain unknown topic (the list of
             // valid topics grows with every design language and style kit, so the bound follows it instead of a fixed size).
             $this->assertLessThanOrEqual( strlen( StyleGuide::markdown( 'x' ) ) + 40, strlen( $text ) );
-            $this->assertLessThan( 1500, strlen( $text ) );
+            $this->assertLessThan( 1500, strlen( $text ) ); // a sanity ceiling only; the bound above carries the test's intent
             $this->assertSame( [ '# Unknown topic' ], $this->headingLines( $text ) );
             foreach ( StyleGuide::topics() as $valid ) {
                 $this->assertStringContainsString( $valid, $text );
