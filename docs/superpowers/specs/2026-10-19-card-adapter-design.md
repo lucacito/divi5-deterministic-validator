@@ -73,10 +73,10 @@ No kit file changes. The adapter derives the card from fields that exist:
 | Radius | `radius.card` | `{{aied:kit:radius-card}}` (exists). |
 | Padding (`card` only) | `space.card` | `{{aied:kit:space-card}}`, four sides (exists), on `module.decoration.spacing`. |
 | Frame width / style | `border.width`, `border.style` | Kit width, **floor 1px** so a quiet kit's card is still separable from its band (recipes already use a 1px `border` hairline for that); style solid/dashed/dotted/double as the kit says. |
-| Frame colour | `border.color` | `same` -> `border` role; `accent`/`text`/`border` as given; `inverse` -> `text` (the button's `ink()` rule). |
+| Frame colour | `border.color` | `same` -> `border` role; `border` and `text` as given; `accent` -> `text` and `inverse` -> `text` (amended in Task 4: an accent frame is 2.30-2.81:1 on the card fill in playful-pastel and brutalist-flat, below the 3:1 a meaningful frame needs, so the role table is language-independent and uses `text`). |
 | Underline kits (`border.sides: bottom`) | `border.sides` | Card gets only a bottom edge (`styles.all.width 0px` + `styles.bottom`). |
 | Shadow rest / hover | `shadow` | Same value forms as the button (`soft`, `hard`, `edge`, `glow`; ink by band) on `module.decoration.boxShadow`; hover shadow only on `card`. |
-| Hover (`card` only) | `hover` | `lift` -> `translate.y -4px` on hover. `fill-swap` / `invert` -> the frame colour goes to `accent` on hover (a card cannot swap its fill: children would lose contrast). `none` -> nothing. |
+| Hover (`card` only) | `hover` | `lift` -> `translate.y -4px` on hover. `fill-swap` / `invert` -> the frame colour goes to `text` on hover, written only when the rest frame is not already `text` (amended in Task 4; a card cannot swap its fill: children would lose contrast). Consequence: a kit with a `text` frame has no card hover change. `none` -> nothing. |
 | Text decisions, `fill`, `color` | button only | Not used by cards. |
 
 Frame colour is the one new judgement call; the contrast test pins it (below). The golden file
@@ -95,7 +95,7 @@ Because the fill is always `surface` or `bg`, card text readability reduces to p
    text, icon, button label) must be a role proven AA on the card's resolved fill. This is what catches a recipe whose
    children assume the wrong ground.
 3. The frame colour, when it carries meaning (`accent`, `text`), is >= 3:1 against the card fill (the button outline's
-   bound); the `border` hairline is decorative and exempt, as today. Hover frame colour (`accent`) the same.
+   bound); the `border` hairline is decorative and exempt, as today. Hover frame colour (`text`, see section 2) the same.
 
 Rule changes are made by fixing the role table, never by a frozen exceptions file (lesson from the button table: the
 first table had 50 failing cells).
