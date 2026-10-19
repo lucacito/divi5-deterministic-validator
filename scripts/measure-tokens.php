@@ -103,7 +103,7 @@ $md .= "\nThe style guide topics, the recipe catalog and a filtered catalog are 
 $kitRows = array_values( array_filter( $rows, static fn ( array $r ): bool => 0 === strpos( $r[0], 'The style guide, topic style-kit:' ) ) );
 if ( [] !== $kitRows ) {
     usort( $kitRows, static fn ( array $a, array $b ): int => $b[2] <=> $a[2] );
-    $md .= "\nEach style-kit:<id> topic now also describes the kit's cards and panels. The largest kit topic is " . substr( $kitRows[0][0], strlen( 'The style guide, topic ' ) ) . ' at ' . number_format( $kitRows[0][2] ) . ' bytes (the bound is 10,000); the smallest is ' . number_format( $kitRows[ count( $kitRows ) - 1 ][2] ) . " bytes.\n";
+    $md .= "\nEach style-kit:<id> topic now also describes the kit's cards and panels and shows an inverted panel with a panel button. The largest kit topic is " . substr( $kitRows[0][0], strlen( 'The style guide, topic ' ) ) . ' at ' . number_format( $kitRows[0][2] ) . ' bytes (the bound is 10,000, so ' . number_format( 10000 - $kitRows[0][2] ) . ' bytes of headroom: a kit topic cannot grow until the planned `kit-rules` topic moves the repeated card and panel explanation out of the 40 topics); the smallest is ' . number_format( $kitRows[ count( $kitRows ) - 1 ][2] ) . " bytes.\n";
 }
 $md .= "\nThe Pro add-on adds its own tool definitions on top of the first row.\n";
 file_put_contents( __DIR__ . '/../docs/token-usage.md', $md );

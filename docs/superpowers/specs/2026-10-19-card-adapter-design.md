@@ -229,7 +229,7 @@ verify-shapes` agrees with every expectation. Three advisory low-contrast lines 
 - Migrations (Tasks 7-9), each re-rendered live with `verify-recipes` (default look + 7 languages x 3 widths): 3 recipes /
   72 PASS (hero-gradient-stats, hero-spec-card, cta-split-form), 9 recipes / 216 PASS, 3 recipes / 72 PASS, 0 FAIL in all.
   19 groups carry a marker (9 cards, 10 panels in 12 recipes) and 8 columns (icon-values, testimonials-avatar-grid,
-  pricing-three-tier #1 and #3). 5 blocks stay bespoke in the shrink-only `BESPOKE_CARDS` of `RecipeLibraryTest` (max 5):
+  pricing-three-tier #1 and #3). ~~5 blocks stay bespoke in the shrink-only `BESPOKE_CARDS` of `RecipeLibraryTest` (max 5):~~ **Fixed in kit-limits, see `2026-10-19-kit-limits-design.md` Outcome.** (the list ended empty, cap 0; it was:)
   compare-two-panels group#7, features-bento group#1 (accent tile) and #3 (text tile), pricing-two-plan-highlight group#8
   (inverted/accent) and the featured pricing column (pricing-three-tier column#2). Those five take the whole-value token
   `{{aied:kit:radius-card}}` as their radius so a pair of neighbours keeps matching corners. Size:
@@ -248,13 +248,16 @@ verify-shapes` agrees with every expectation. Three advisory low-contrast lines 
 - An underline card (`border.sides: bottom`) writes NO hover frame colour: the hover half of the underline form was never
   measured (the candidate could not show a change), so it is NOT PROVEN and not written; such cards keep lift and shadow only.
 - The adapter writes the fill (spec section 4 already assumed it): a migrated block drops its own background literal.
-- The featured pricing column (pricing-three-tier#2) stays bespoke: a kit would give all three plans the same frame and
-  erase the highlight. It keeps its own accent frame, fill, shadow and padding and takes only the radius token.
+- ~~The featured pricing column (pricing-three-tier#2) stays bespoke: a kit would give all three plans the same frame and
+  erase the highlight. It keeps its own accent frame, fill, shadow and padding and takes only the radius token.~~
+  **Fixed in kit-limits, see `2026-10-19-kit-limits-design.md` Outcome.** It is now an accent ground card.
 - The audit corrected the brief: not 358 groups that are cards but 19 cards or panels in 12 recipes plus 8 migrated column
   cards in 3 (9 column cards, one bespoke). proof-press-quotes' three columns are rules (a 2px top rule, no fill), not cards,
   and are not migrated.
-- A recipe's REST transform is recipe composition and is kept (hero-gradient-stats keeps its -3/2/-1 degree tilt and its
-  phone reset); only hover transform, border and shadow of a migrated card go. The literal 40px shadows of
+- ~~A recipe's REST transform is recipe composition and is kept on the marked card~~ (kit-limits tightened this: a marked
+  block now carries NO transform but the kit's hover; hero-gradient-stats keeps its -3/2/-1 degree tilt and its phone reset
+  on three UNMARKED wrapper groups around the cards, see `2026-10-19-kit-limits-design.md` Outcome, Task 1); only hover
+  transform, border and shadow of a migrated card go. The literal 40px shadows of
   hero-gradient-stats, hero-split-left-overlap and transition-overlap-panel were removed (the kit decides the shadow).
 - Recipe prose that described the old look ("rounded", "hairline-bordered", "square-cornered", "raised") was reworded for
   every migrated recipe, enforced by a phrase test (`CARD_DECIDED_PHRASES`); moods were not changed (no language's `avoids`
@@ -281,16 +284,20 @@ verify-shapes` agrees with every expectation. Three advisory low-contrast lines 
 - Recipes that lost a literal shadow (hero-gradient-stats, hero-split-left-overlap, transition-overlap-panel) look flatter
   under kits whose shadow is none; their depth now comes from the frame, zIndex and overlap. hero-bordered-cells' "heavy
   border" character depends on the kit.
-- Under heavy-frame kits (hard/glow/edge shadow, thick frames) the two kit-driven pricing neighbours can look as prominent as
-  the bespoke featured plan, or more so (seen under playful-pastel); the highlight no longer wins everywhere.
+- ~~Under heavy-frame kits (hard/glow/edge shadow, thick frames) the two kit-driven pricing neighbours can look as prominent as
+  the bespoke featured plan, or more so (seen under playful-pastel); the highlight no longer wins everywhere.~~
+  **Fixed in kit-limits, see `2026-10-19-kit-limits-design.md` Outcome.** The featured plan is an accent ground card, proven more prominent than its neighbour in 400 of 400 kit x
+  language cells (weakest: playful-pastel, 2.304:1 against 1.062:1).
 - hero-gradient-stats still has the title "floating figures" although its deep literal shadow was removed (the depth that title
   described came from that shadow; the cards still overlap and tilt). cta-card-over-image's title was "a card floating on a
   photo", which a kit without a shadow does not give: it now reads "a card on a photo" (the final review).
-- Hover on a TILTED card, measured live (hero-gradient-stats, editorial, kit soft-lift): the hover transform REPLACES the rest
+- ~~Hover on a TILTED card, measured live (hero-gradient-stats, editorial, kit soft-lift): the hover transform REPLACES the rest
   transform, so each card goes from its tilt (-3, +2, -1 deg) to `matrix(1,0,0,1,0,-4)` (no rotation, 4px up) and tilts back when the
   pointer leaves; under quiet-solid (no lift) rest and hover are identical. Under a lift kit the tilted cards therefore straighten on
   hover. It reads as a settle, not a break, but it is not what the markup spells out (rest rotate + hover translate). If the tilt
-  should survive, the hover state would have to carry the rotation too (`rotate.z` next to `translate.y`, not probed).
+  should survive, the hover state would have to carry the rotation too (`rotate.z` next to `translate.y`, not probed).~~
+  **Fixed in kit-limits, see `2026-10-19-kit-limits-design.md` Outcome.** The tilt sits on an unmarked wrapper group and the card lifts inside it; measured live
+  (soft-lift): the wrapper keeps its tilt, the card goes up exactly 4px.
 - Card media radius and the images' radius are still not applied; text decisions (capitalization, weight, letter spacing) stay
   button-only; accordion, forms, blurb and testimonial modules keep the recipe's own styling.
 - `verify-kits`: a fixed/sticky element INSIDE a card used to stay hidden after the fill sample (fixed in the final review:
@@ -301,7 +308,7 @@ verify-shapes` agrees with every expectation. Three advisory low-contrast lines 
   the live renders of the three column recipes, not by a probe.
 
 **Deferred and owner decisions left.** Merge and release; the full `make verify-kits` run (about an hour) and the final
-whole-branch review; next adapters (accordion/toggle, forms, blurb, testimonial); the inverted-surface role (the 4 bespoke
-groups and the 2 bespoke buttons, a second adapter-sized change); possibly a per-language frame colour instead of the
+whole-branch review; next adapters (accordion/toggle, forms, blurb, testimonial); ~~the inverted-surface role (the 4 bespoke
+groups and the 2 bespoke buttons, a second adapter-sized change)~~ (Fixed in kit-limits, see `2026-10-19-kit-limits-design.md` Outcome.); possibly a per-language frame colour instead of the
 language-independent `text`, which would bring back an accent rim and card hover on playful-pastel and brutalist-flat;
 image-to-layout later.

@@ -100,6 +100,9 @@ require_once __DIR__ . '/StyleKits.php';
  *   band treated as `light` (a surface band is a light band): the same value the button gets.
  * - `panel` (a static surface: forms, spec sheets, overlap panels): no padding key (the recipe keeps its structural padding)
  *   and NO `hover` key anywhere (border, boxShadow, transform): only the rest shadow, nothing for a hover-only shadow pair.
+ * - A marked card or panel carries no transform of its own but this kit hover (kit limits Task 1, `RecipeLibraryTest`'s merge
+ *   rule): a recipe that tilts a card puts the rest transform on an UNMARKED wrapper `divi/group` that holds the card, so the
+ *   wrapper keeps its tilt while the card lifts inside it (hover measured live: wrapper rotated, card 4px up).
  * - Not used by cards: the kit's `fill`, `color` and `text` decisions (button only).
  *
  * Ground table (marker field `ground`, roles `card` and `panel`, bands `light` and `surface` only; spec
@@ -113,6 +116,12 @@ require_once __DIR__ . '/StyleKits.php';
  * - Radius, padding (`card`), shadow (the band's ink, a `surface` band treated as light) and lift: exactly the plain
  *   card's on that band. No hover frame colour ever (on fill-swap/invert kits it would be the fill); a `panel` writes
  *   no hover key, as a plain panel.
+ * - A button on a ground: inside an `inverted` ground it takes the `panel` surface (see the button role table); inside an
+ *   `accent` ground it takes the `accent` surface (same colours as on an accent band). `ground` is refused (a leftover marker)
+ *   on an accent or photo band and on any block other than group/column.
+ * - Known looks, not contrast issues: a `hard` or `edge` shadow drawn in `text` ink next to an inverted fill merges with it
+ *   and reads as a slightly larger block (chunky-pill-offset, raw-frame); the frame equals the fill, so on a framed kit an
+ *   accent ground merges into its body (the shape comes from the fill).
  *
  * Item table (roles `item` and `item-rule` on `divi/accordion` and `divi/toggle`; spec 2026-10-19-accordion-adapter-design.md
  * sections 1 and 2, probe fixtures/shapes/kit-item-vocabulary.md: 46 candidates, every decision PASSED on both carriers, none

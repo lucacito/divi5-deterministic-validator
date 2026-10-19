@@ -1,6 +1,7 @@
 # Kit limits: tilted cards, inverted and accent grounds, a featured plan that stays featured
 
-Status: DRAFT for the owner's approval (2026-10-19). Nothing is built. Follows `2026-10-19-card-adapter-design.md` (its Outcome
+Status: APPROVED (owner, 2026-10-19, all five recommendations) and BUILT on branch `feat/kit-limits` (nothing released; see the
+Outcome section at the end). Follows `2026-10-19-card-adapter-design.md` (its Outcome
 section records the three limits below as measured on Divi 5.15.1) and `2026-10-18-style-kits-design.md`.
 
 ## Intent and why
@@ -208,3 +209,132 @@ Item 1 alone is about 1 hour; item 4 alone about 2 hours plus a full verify-kits
 Exact marker spelling; how the wrapper carries the overlap/zIndex of hero-gradient-stats; byte layout of the new golden entries;
 the luminance-difference threshold (confirmed on the first smoke, then frozen); how verify-kits lays out the new cards; wording of
 the regenerated kit-topic lines and of the `underlined-label` summary.
+
+## Outcome (2026-10-19)
+
+Built on branch `feat/kit-limits` from main ae0688d in eight tasks (Task 9, the full live gates, is the controller's). NO release,
+version bump or zip rebuild: the tracked root zip is still the published 4.12.0 build; the validator (`src/`,
+`wp-plugin/validator/`) is untouched. The three flaws of the card adapter and the outline secondary are fixed; the five
+Decisions went the recommended way.
+
+**What was built, per task.**
+- **T1 Tilt wrapper (Decision 1).** hero-gradient-stats: the three tilts (-3, 2, -1 deg, with the phone reset) moved to three
+  UNMARKED wrapper groups (#1, #3, #5) that hold the marked cards (#2, #4, #6). The wrapper carries the outer box (zIndex,
+  width, maxWidth, alignment, margins) and the tilt; the card carries only `width: 100%` plus what the kit writes. The merge
+  rule is tighter: a marked block (card, panel, group or column) may carry NO transform at all except the kit's exact hover
+  (`RecipeLibraryTest::markedCardProblems`, planted cases for a rest rotate on a card, a panel and a column). Live hover
+  measurement (soft-lift, editorial): the WRAPPER keeps its tilt (-3/2/-1 deg) while the CARD lifts exactly 4px inside it
+  (rotation 0, translateY -4px, back on unhover); quiet-solid: no change; at 400px nothing is tilted at rest, the card still
+  lifts 4px. Recipes file 683,182 -> 683,633 B (+451, cap +500). The fallback option (a) was not needed.
+- **T2 Grounds and the button surface `panel` (Decision 2).** `KitAdapters::patch()` gained an optional fifth parameter
+  `ground` (`inverted|accent`); the marker is `{"kit":"card|panel","on":"light|surface","ground":"inverted|accent"}`;
+  `KitResolver` accepts it only on a group/column, a card role and a light or surface band, anything else is a reported
+  leftover. `APPLIED` is unchanged, so the guide sentence did not change. Button surface `on:"panel"` (filled: fill `bg`,
+  label `text`; transparent: `bg` ink; `invert` is `fill-swap`; hard/edge shadow in `bg`, glow in `bg` at 45%
+  (`{{aied:color:bg:45}}`), no soft shadow on a panel). Proofs, zero exceptions, no baseline file: **6,400 ground cells**
+  (40 kits x 10 languages x 2 roles x 2 grounds x 2 bands x 2 states; the spec said 3,200, but its own product is 6,400) and
+  **1,600 panel button cells** (40 x 10 x 2 roles x 2 states). Goldens: additions only (card golden 80 -> 160 patches; button
+  golden 72 -> 92 patches). **Ruling 2:** on a panel the border of a FILLED button is its fill (`bg`) at rest and on hover,
+  whatever the kit's border colour; a `text` or `accent` border would melt into the `text` panel at rest and reappear on
+  hover, so the box would shrink beside its secondary and jump (six kits were affected; only raw-frame and chunky-pill-offset
+  have golden entries, and both are new keys). The inverted band contrast is stated as the measured least, 11.978:1
+  (organic-warm; the spec's 11.98 was rounded up); the accent ground's measured least is 2.30:1 (playful-pastel).
+  `CardInkWalkTest` now reads the fill from the adapter's resolved patch, so a ground makes the walk demand `bg`/`surface` or
+  `accent-text` from every descendant (planted failures: `muted` on an inverted card, `text` on an accent tile).
+- **T3 Outline secondary is a ghost (Decision 4).** One entry of the role table (`SECONDARY['outline'] = 'ghost'`); 13 outline
+  kits; no new pair (every pair is one the 3 ghost kits already passed: 3,200 band cells and 1,600 panel cells, zero
+  exceptions, no role-table amendment). The catalog wording is derived from the adapter ("The secondary is a plain text
+  link."; no catalog line says "filled block"); `StyleGuide::kitTextOnlySentence()` also fixed an existing false claim
+  ("this kit's border width is 0px" for the ghost kits whose border is 1px). One data string changed
+  (`style-kits.json`, underlined-label: "the secondary is a plain label with no underline", 25,486 -> 25,479 B); no decision
+  changed. Golden: exactly 3 keys (`outline-2|control-secondary|light|accent|dark`); the card golden untouched; the
+  near-duplicate exemptions stay at 4.
+- **T4 Render gate.** `scripts/verify-kits.cjs`, `scripts/lib/kit-card-run.cjs`, `scripts/lib/kit-checks.cjs`: each kit/language
+  cell now renders **20 cards** (an inverted card, an inverted panel, an accent tile and a panel-button pair on the light and
+  surface bands; the three-column row's middle card is an accent ground and the featured one) and measures them. New codes:
+  `ground-fill` (painted fill vs the resolved ground fill), `panel-button` (label and border contrast on the painted panel,
+  rest and hover) and `featured` (mean luminance difference of a card's box against the band, featured >= 1.5x the larger
+  neighbour at every width). 52 pure tests (`scripts/test-verify-kits.cjs`) and 7 new synthetic Chromium departures
+  (`scripts/test-kit-card-run.cjs`); an offline proof over 400 kit/language pairs through the real pipeline. Live smoke
+  (3 kits x editorial, glass-dark): 18 PASS, 0 FAIL; the featured prominence ratios were 11.9x to 49x against the frozen 1.5
+  threshold, at every width including 400px.
+- **T5 Four bespoke grounds and two bespoke buttons (Decision 5).** compare-two-panels #7 (inverted panel), features-bento #1
+  (accent card) and #3 (inverted card), pricing-two-plan-highlight #8 (inverted panel on a surface band), and the buttons
+  compare-two-panels #0 and pricing-two-plan-highlight #1 (`control` on `panel`, the pricing one is the primary) now carry
+  markers and lost their literals. `BESPOKE_BUTTONS` ended empty; `BESPOKE_CARDS` 5 -> 1. The ink walk passed with no child
+  re-inking. Recipes 683,633 -> 681,727 B (-1,906). Live: 3 recipes x (default + 7 languages) x 3 widths = 72 PASS, 0 FAIL.
+- **T6 The featured plan is an accent ground card (Decision 3).** pricing-three-tier column #2 is
+  `{"kit":"card","on":"light","ground":"accent"}`: attribute-identical to its neighbours, children re-inked to `accent-text`,
+  its primary button `on:"accent"`, the badge a `surface` chip with a `text` label. `BESPOKE_CARDS` 1 -> 0 (cap 0, asserted
+  empty). Prominence proof over 400 cells, all pass: the weakest cell is playful-pastel, accent fill vs band 2.304:1 against
+  the neighbour's plain card 1.062:1 (the 2.0 floor holds); the others range from brutalist-flat 2.814 to tech-mono 14.826.
+  Recipes 681,727 -> 681,269 B (-458). One dev-side script change: `scripts/card-migration-report.php` got `CHIP_OVERRIDES`
+  (13 lines, same mechanism as `PANEL_OVERRIDES`) so the surface-filled badge is not read as a bespoke card.
+- **T7 Kit topics show the inverted panel.** Each `style-kit:<id>` topic gained an "Inverted panel" snippet (a panel with
+  ground `inverted` holding one primary `on:"panel"` button, resolved by the real pipeline) and the ground sentences, all
+  generated from the adapter's patches; the legend covers every hex. The largest topic (neo-brutal) went **8,124 -> 9,992 B**
+  against the 10,000 B bound: **8 B of headroom**. The spec's estimate (about 800 B) was too low (+2,770 B measured for a
+  heading, a paragraph and a button), so the snippet holds the button ONLY and three unpinned prose phrases were trimmed.
+  Ruling 3: accepted for now; the 8 B headroom blocks any further kit-topic growth, and the accordion project's generated
+  `kit-rules` topic (it moves the repeated card and panel explanation out of the 40 topics) is the planned way to free space.
+  Catalog 8,464 B and default guide 28,964 B are unchanged by T7.
+
+**Measured sizes and counts** (commands run in the worktree at the end of Task 8):
+- `wc -c wp-plugin/data/section-recipes.json`: **681,269 B**, against 683,182 B at the start (-1,913 B; the spec expected
+  about 681,200). `style-kits.json`: 25,479 B. Bound 716,800 B and the 700 KB rule hold.
+- `php scripts/card-migration-report.php`: `BESPOKE_CARDS` 0, `BESPOKE_BUTTONS` 0, **32 marked card/panel blocks** (27 at the
+  start: +4 grounds +1 featured column; 28 marked buttons, 26 at the start), 0 card/panel literals left to replace; groups
+  359 (wrapper 226, padded-wrapper 53, rule 26, grid-cell 40, chip 14), columns 12 (wrapper 9, rule 3).
+- `php scripts/measure-tokens.php` (`docs/token-usage.md`): default guide 28,964 B, catalog topic `style-kits` 8,464 B, kit
+  topics 8,370 B (rimmed-solid) to 9,992 B (neo-brutal).
+- Suites: free 2573 tests (`php vendor/bin/phpunit -c phpunit.xml`), Pro 2169 (`-c pro-addon/phpunit.xml`), both OK; at the
+  start of the branch the card adapter's paragraph said 2535.
+
+**Deviations from the spec.**
+- 6,400 ground cells, not 3,200 (arithmetic of the spec's own product).
+- Ruling 2 (a filled panel button's border is its fill) is not in the spec; Ruling 3 (a button-only inverted-panel snippet).
+- The kit topic cost +2,770 B, not about 800 B; headroom 8 B instead of about 1,300 B.
+- One kit-data string was edited (underlined-label), although the spec's non-goals say "no kit data changes except one summary".
+  It is that summary.
+- `scripts/card-migration-report.php` was touched (the chip override), a dev-side script.
+- The hard/edge `bg` shadows and the `bg` at 45% glow on a panel, and no soft shadow on a panel, were decisions of T2 (the
+  overlay at 18/25% is 1.00-1.05:1 on the light languages' `text`).
+
+**What changed on purpose (read as design changes).** The 13 outline kits' secondary buttons are plain text links now
+(hierarchy: outlined primary, plain secondary) on every surface. compare-two-panels' "after" CTA is no longer accent-coloured:
+under every kit it is a `bg` fill with a `text` label on the text panel (the treatment pricing-two-plan-highlight already
+shipped). The featured pricing plan is an accent block with the kit's frame, shadow, padding and corners instead of a framed
+white card. The four recipe grounds take the kit's corners, frame, shadow and padding; features-bento's tiles take the kit's
+padding in place of their fixed 36/28/24px.
+
+**Not done.** A ground on an accent or photo band (none exists; the resolver refuses it). A `card-featured` role (rejected in
+the spec). Gradient fills. An accent-ground snippet in the kit topics (described in words only). Media radius; the accordion,
+forms, blurb and testimonial adapters (the accordion adapter is the next project). No new tool, route or OpenAPI operation.
+
+**Known limits.**
+- A `hard` or `edge` shadow drawn in `text` ink next to an inverted fill merges with it and reads as a slightly larger block
+  (chunky-pill-offset, raw-frame). Decorative; changing the shadow ink would be a new rule.
+- A text-bordered kit's panel button (raw-frame, chunky-pill-offset) has its border painted in the fill, so a primary reads as
+  its fill only; there is no soft shadow on a panel at all (soft-lift and warm-pill-soft buttons on a panel have none).
+- The ink walk's fail-open limits remain (a module with any element background is skipped, only `{{aied:color:*}}` tokens are
+  judged, the marked block's own attributes are not walked); an ancestor font colour is guarded now (a ground makes the walk
+  demand the right inks), but a literal hex is still never seen.
+- The ghost secondary is quieter than the old solid block on a photo band; underlined-label's ghost secondary is a plain
+  label with no underline (the topic says so).
+- The divider rules inside the featured plan are `accent-text` at 40% alpha and the ink walk does not judge borders, so
+  nothing proves their visibility except the live render. The featured plan's frame equals its accent fill, so on framed kits
+  it merges into the body (its shape is the fill).
+- The accent ground is 2.30:1 against the band in playful-pastel (strong as a shape, decorative by the 2.0 floor); the
+  inverted band contrast has a measured least of 11.978:1 (organic-warm).
+- The kit topics have 8 B of headroom (see T7).
+
+**Live gates (Divi 5.15.1, 2026-10-19, head 3b2ef9d).** The full `make verify-kits`: 264 PASS, 0 FAIL over 88 kit/language cells
+(each cell now renders 20 cards, the inverted and accent grounds, the panel buttons and a featured middle card; it took about
+1 h 57 min, against about 70 minutes for the card gate). The narrowed recipe render (the 29 recipes that carry a kit marker plus
+10 untouched recipes drawn at random with seed 19, default look and glass-dark, 3 widths): 234 PASS, 0 KNOWN-FAIL, 0 FAIL, 0
+low-contrast advisories. `verify-shapes`: the probe agrees with every expectation (PASS, PASS, DEAD, DEAD). Earlier per-task
+results: the T1 hover measurement (above) and hero-gradient-stats 24 PASS; the T4 smoke 18 PASS; the T5 render of three recipes
+72 PASS; the T6 pricing-three-tier render 24 PASS (default + 7 languages x 3 widths); all 0 FAIL.
+
+**Owner decisions left.** Merge and release; the accordion/toggle adapter next (its `kit-rules` topic frees the kit-topic
+headroom), then forms and blurb; image-to-layout later.
