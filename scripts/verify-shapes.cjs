@@ -25,9 +25,10 @@
  *            real export fixtures/valid/page-7-home.json); `countdown-timer` was added for the calls to action, gallery, contact and transitions task: a
  *            title and a past end date (Divi's own default), the shape of fixtures/valid/page-17-newpage.json, so the timer shows zeros on every load).
  *            Real-export content shapes are filled in for the content of each, `base` wins.
- *   neighbours  (section candidates only) { "before": [<section spec>], "after": [<section spec>] }: plain sections placed before/after the
- *            candidate section on the page, identical in the A and B pages (e.g. a differently coloured section so that a divider is
- *            visible). The measured element is then the candidate section, not a neighbour. Absent = the page is unchanged.
+ *   neighbours  { "before": [<section spec>], "after": [<section spec>] }: plain sections placed before/after the page's top-level section (the candidate section itself, or the
+ *            section the probe wraps around any other candidate; added in the sticky-limit task so that a sticky group can be scrolled past its section),
+ *            identical in the A and B pages (e.g. a differently coloured section so that a divider is visible). The measured element is the
+ *            candidate, never a neighbour. Absent = the page is unchanged.
  *   state    (optional) how the measured element is put in the state under test before it is measured. The same action is done on the
  *            A page (control, base only) and on the B page, so only the candidate's `set` can make them differ:
  *              "hover"   the pointer is moved onto the measured element (Playwright hover) and the page waits `settleMs` (default 1200) so a
@@ -265,7 +266,6 @@ function pageFor(c, apply) {
 function neighbourNodes(c) {
   const out = { before: [], after: [] };
   if (c.neighbours === undefined || c.neighbours === null) return out;
-  if (c.block !== 'section') throw new Error('`neighbours` is only supported on a section candidate');
   if (typeof c.neighbours !== 'object' || Array.isArray(c.neighbours)) throw new Error('`neighbours` must be an object { before: [...], after: [...] }');
   for (const side of ['before', 'after']) {
     const list = c.neighbours[side] || [];
@@ -536,7 +536,7 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
         if (c.attrs !== undefined && !(Array.isArray(c.attrs) && c.attrs.every((x) => typeof x === 'string'))) throw new Error('`attrs` must be a list of attribute names');
         const cls = classOf(c.block);
         // The candidate comes after its `before` neighbours (sections) and after its `before` siblings of the same block name.
-        const index = neighbourNodes(c).before.length + siblingNodes(c).before.filter((n) => n.block === c.block).length + (c.parent === c.block ? 1 : 0);
+        const index = (c.block === 'section' ? neighbourNodes(c).before.length : 0) + siblingNodes(c).before.filter((n) => n.block === c.block).length + (c.parent === c.block ? 1 : 0);
         if (c.geometry !== undefined && c.geometry !== true) throw new Error('`geometry` must be true');
         // The number counter counts up after load: let it finish, or two loads of the same page never agree.
         const settle = typeof c.settleMs === 'number' ? c.settleMs : c.block === 'number-counter' || c.block === 'circle-counter' ? 3000 : c.state ? 1200 : 600;

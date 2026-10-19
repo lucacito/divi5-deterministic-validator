@@ -1,0 +1,275 @@
+[
+  {
+    "id": "mo-st-limit-bottom-section",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "sticky": {
+            "desktop": {
+              "value": {
+                "position": "top",
+                "offset": {
+                  "top": "20px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.sticky.desktop.value.limit.bottom": "section"
+    },
+    "siblings": {
+      "after": [
+        {
+          "block": "group",
+          "base": {
+            "module": {
+              "decoration": {
+                "sizing": {
+                  "desktop": {
+                    "value": {
+                      "minHeight": "1200px"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "state": "scroll",
+    "scrollAt": -2,
+    "expect": "PASS",
+    "note": "A sticky GROUP inside a column (position top, offset.top 20px) with a 1200px sibling after it in the same column, between two tall sections. Scrolled (scrollAt -2) so the viewport top is about 500px below the bottom of the section: without a limit Divi's sticky script keeps the group stuck at the top of the screen; with limit.bottom it must have stopped at that limit and scrolled away with the section. Divi 5.15.1 source: limit.top / limit.bottom, values none|body|section|row|column (includes/builder/module/field/Sticky.php get_limit_options, includes/builder-5/server/Packages/Conversion/AdvancedOptionConversion.php $stickyConversionMap 'limit.bottom', scripts/utils/sticky.js getLimit validLimits). A section's own limit list has no section/row/column (Sticky.php get_limit_options); a group is a module, so it has all of them. The probe scrolls in ONE jump, which leaves Divi's sticky script mid-update, so it proves only that the key changes the page. The behaviour itself (the group sticks inside the section, stops with its bottom edge on the section's bottom edge and scrolls away with it; without the limit it keeps following the reader 600px past the end of the section) is measured with scrolling in 150px steps by `make verify-guide-shapes` (step 7b)."
+  },
+  {
+    "id": "mo-st-limit-bottom-row",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "sticky": {
+            "desktop": {
+              "value": {
+                "position": "top",
+                "offset": {
+                  "top": "20px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.sticky.desktop.value.limit.bottom": "row"
+    },
+    "siblings": {
+      "after": [
+        {
+          "block": "group",
+          "base": {
+            "module": {
+              "decoration": {
+                "sizing": {
+                  "desktop": {
+                    "value": {
+                      "minHeight": "1200px"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "state": "scroll",
+    "scrollAt": -2,
+    "expect": "PASS",
+    "note": "A sticky GROUP inside a column (position top, offset.top 20px) with a 1200px sibling after it in the same column, between two tall sections. Scrolled (scrollAt -2) so the viewport top is about 500px below the bottom of the section: without a limit Divi's sticky script keeps the group stuck at the top of the screen; with limit.bottom it must have stopped at that limit and scrolled away with the section. Divi 5.15.1 source: limit.top / limit.bottom, values none|body|section|row|column (includes/builder/module/field/Sticky.php get_limit_options, includes/builder-5/server/Packages/Conversion/AdvancedOptionConversion.php $stickyConversionMap 'limit.bottom', scripts/utils/sticky.js getLimit validLimits). A section's own limit list has no section/row/column (Sticky.php get_limit_options); a group is a module, so it has all of them. The probe scrolls in ONE jump, which leaves Divi's sticky script mid-update, so it proves only that the key changes the page. The behaviour itself (the group sticks inside the section, stops with its bottom edge on the section's bottom edge and scrolls away with it; without the limit it keeps following the reader 600px past the end of the section) is measured with scrolling in 150px steps by `make verify-guide-shapes` (step 7b)."
+  },
+  {
+    "id": "mo-st-limit-bottom-column",
+    "block": "group",
+    "base": {
+      "module": {
+        "decoration": {
+          "sticky": {
+            "desktop": {
+              "value": {
+                "position": "top",
+                "offset": {
+                  "top": "20px"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "set": {
+      "module.decoration.sticky.desktop.value.limit.bottom": "column"
+    },
+    "siblings": {
+      "after": [
+        {
+          "block": "group",
+          "base": {
+            "module": {
+              "decoration": {
+                "sizing": {
+                  "desktop": {
+                    "value": {
+                      "minHeight": "1200px"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbours": {
+      "before": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "block": "section",
+          "base": {
+            "module": {
+              "decoration": {
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "500px",
+                        "bottom": "500px"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "state": "scroll",
+    "scrollAt": -2,
+    "expect": "PASS",
+    "note": "A sticky GROUP inside a column (position top, offset.top 20px) with a 1200px sibling after it in the same column, between two tall sections. Scrolled (scrollAt -2) so the viewport top is about 500px below the bottom of the section: without a limit Divi's sticky script keeps the group stuck at the top of the screen; with limit.bottom it must have stopped at that limit and scrolled away with the section. Divi 5.15.1 source: limit.top / limit.bottom, values none|body|section|row|column (includes/builder/module/field/Sticky.php get_limit_options, includes/builder-5/server/Packages/Conversion/AdvancedOptionConversion.php $stickyConversionMap 'limit.bottom', scripts/utils/sticky.js getLimit validLimits). A section's own limit list has no section/row/column (Sticky.php get_limit_options); a group is a module, so it has all of them. The probe scrolls in ONE jump, which leaves Divi's sticky script mid-update, so it proves only that the key changes the page. The behaviour itself (the group sticks inside the section, stops with its bottom edge on the section's bottom edge and scrolls away with it; without the limit it keeps following the reader 600px past the end of the section) is measured with scrolling in 150px steps by `make verify-guide-shapes` (step 7b)."
+  }
+]

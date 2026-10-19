@@ -17944,3 +17944,71 @@ Candidates from `kit-button.json` that were measured and are not taught, with th
 - `kb-skew-x-element`: no effect (dead). Skew written on the button ELEMENT (module.json names button.decoration.transform among dynamicSubgroupLockedSubgroupIds). Expected DEAD: transform is not a declared button.decoration group, and Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:664-712 and :760 (_sanitize_button_decoration_attrs keeps only the `button.decoration` groups module.json declares and drops each whose `<name>Group` field has render:false; module.json declares background, border, boxShadow, button, font, sizing, spacing and sets boxShadowGroup and spacingGroup to render:false). Transform values (translate.x/y, skew.x/y, ...) composed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:100-160; module.json prints the button module transform on {{wrapperSelector}} {{baseSelector}} (the button element).
 - `kb-text-weight`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Label weight 700. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432. Measured PASS(css-only), a disagreement kept on purpose: the default button on this site already computes font-weight 700 (the control of ty-b-font-weight measured 700 -> 800), so writing 700 changes the stylesheet but no computed style; kb-text-weight-from-400 proves the same path and value over a 400 base.
 - `kb-padding-element`: no effect (dead). The same padding on the button ELEMENT's spacing (button.decoration.spacing, the shape KitAdapters writes today; the registry knows the path only from a SLIDER's button in fixtures/valid/page-23-style-reference.json). Expected DEAD: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:664-712 and :760 (_sanitize_button_decoration_attrs keeps only the `button.decoration` groups module.json declares and drops each whose `<name>Group` field has render:false; module.json declares background, border, boxShadow, button, font, sizing, spacing and sets boxShadowGroup and spacingGroup to render:false).
+
+## mo-st-limit-bottom-section
+
+Block: `group`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, with `group` after it in the same container, measured in the `scroll` state (element centre at -2 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.desktop.value.limit.bottom` = `"section"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | no | `0:div:bottom: 808px -> 254px` |
+| 900 px | yes | 5 | no | `0:div:bottom: 808px -> 254px` |
+| 400 px | yes | 5 | no | `0:div:bottom: 840px -> 332px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `margin-block-start`, `margin-top`, `rect:top`.
+
+Phone overflow at 400 px: no.
+
+Note: A sticky GROUP inside a column (position top, offset.top 20px) with a 1200px sibling after it in the same column, between two tall sections. Scrolled (scrollAt -2) so the viewport top is about 500px below the bottom of the section: without a limit Divi's sticky script keeps the group stuck at the top of the screen; with limit.bottom it must have stopped at that limit and scrolled away with the section. Divi 5.15.1 source: limit.top / limit.bottom, values none|body|section|row|column (includes/builder/module/field/Sticky.php get_limit_options, includes/builder-5/server/Packages/Conversion/AdvancedOptionConversion.php $stickyConversionMap 'limit.bottom', scripts/utils/sticky.js getLimit validLimits). A section's own limit list has no section/row/column (Sticky.php get_limit_options); a group is a module, so it has all of them. The probe scrolls in ONE jump, which leaves Divi's sticky script mid-update, so it proves only that the key changes the page. The behaviour itself (the group sticks inside the section, stops with its bottom edge on the section's bottom edge and scrolls away with it; without the limit it keeps following the reader 600px past the end of the section) is measured with scrolling in 150px steps by `make verify-guide-shapes` (step 7b).
+
+Registered paths added:
+
+- `module.decoration.sticky.{bp}.value.limit.bottom`
+
+## mo-st-limit-bottom-row
+
+Block: `group`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, with `group` after it in the same container, measured in the `scroll` state (element centre at -2 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.desktop.value.limit.bottom` = `"row"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | no | `0:div:bottom: 808px -> 198px` |
+| 900 px | yes | 5 | no | `0:div:bottom: 808px -> 198px` |
+| 400 px | yes | 5 | no | `0:div:bottom: 840px -> 276px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `margin-block-start`, `margin-top`, `rect:top`.
+
+Phone overflow at 400 px: no.
+
+Note: A sticky GROUP inside a column (position top, offset.top 20px) with a 1200px sibling after it in the same column, between two tall sections. Scrolled (scrollAt -2) so the viewport top is about 500px below the bottom of the section: without a limit Divi's sticky script keeps the group stuck at the top of the screen; with limit.bottom it must have stopped at that limit and scrolled away with the section. Divi 5.15.1 source: limit.top / limit.bottom, values none|body|section|row|column (includes/builder/module/field/Sticky.php get_limit_options, includes/builder-5/server/Packages/Conversion/AdvancedOptionConversion.php $stickyConversionMap 'limit.bottom', scripts/utils/sticky.js getLimit validLimits). A section's own limit list has no section/row/column (Sticky.php get_limit_options); a group is a module, so it has all of them. The probe scrolls in ONE jump, which leaves Divi's sticky script mid-update, so it proves only that the key changes the page. The behaviour itself (the group sticks inside the section, stops with its bottom edge on the section's bottom edge and scrolls away with it; without the limit it keeps following the reader 600px past the end of the section) is measured with scrolling in 150px steps by `make verify-guide-shapes` (step 7b).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-st-limit-bottom-column
+
+Block: `group`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, with `group` after it in the same container, measured in the `scroll` state (element centre at -2 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.desktop.value.limit.bottom` = `"column"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | no | `0:div:bottom: 808px -> 198px` |
+| 900 px | yes | 5 | no | `0:div:bottom: 808px -> 198px` |
+| 400 px | yes | 5 | no | `0:div:bottom: 840px -> 276px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `margin-block-start`, `margin-top`, `rect:top`.
+
+Phone overflow at 400 px: no.
+
+Note: A sticky GROUP inside a column (position top, offset.top 20px) with a 1200px sibling after it in the same column, between two tall sections. Scrolled (scrollAt -2) so the viewport top is about 500px below the bottom of the section: without a limit Divi's sticky script keeps the group stuck at the top of the screen; with limit.bottom it must have stopped at that limit and scrolled away with the section. Divi 5.15.1 source: limit.top / limit.bottom, values none|body|section|row|column (includes/builder/module/field/Sticky.php get_limit_options, includes/builder-5/server/Packages/Conversion/AdvancedOptionConversion.php $stickyConversionMap 'limit.bottom', scripts/utils/sticky.js getLimit validLimits). A section's own limit list has no section/row/column (Sticky.php get_limit_options); a group is a module, so it has all of them. The probe scrolls in ONE jump, which leaves Divi's sticky script mid-update, so it proves only that the key changes the page. The behaviour itself (the group sticks inside the section, stops with its bottom edge on the section's bottom edge and scrolls away with it; without the limit it keeps following the reader 600px past the end of the section) is measured with scrolling in 150px steps by `make verify-guide-shapes` (step 7b).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
