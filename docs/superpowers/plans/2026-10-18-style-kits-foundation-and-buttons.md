@@ -187,6 +187,25 @@
 - [ ] **Step 4: Run** `make test`.
 - [ ] **Step 5: Commit** `feat: a default style kit per design language`.
 
+### Task 9a: Use the probed vocabulary (shadow, lift, underline, gradient, border styles)
+
+Added by the controller after the Task 8 review (Ruling 12): the ten language kits are all solid accent and differ mainly in radius, caps and weight; the probe (Task 1) proved shadows, lift, one-side borders, gradient fills and the dashed/dotted/double border styles on `divi/button`, but the adapter cannot write them yet.
+
+**Files:**
+- Modify: `wp-plugin/src/StyleKits.php`, `wp-plugin/src/KitAdapters.php`, `wp-plugin/data/style-kits.json`, `wp-plugin/data/design-languages.json` (kit pointers only), `fixtures/shapes/dead-on-module.txt` (only if needed), tests `StyleKitsTest`, `KitAdaptersTest`, `DesignLanguagesTest`
+- Read first: `fixtures/shapes/kit-button-vocabulary.md` (exact PASS value forms and registered paths; anything marked not taught stays out)
+
+**Interfaces:**
+- Produces (schema additions, all optional, default = today's behaviour so no existing kit changes meaning): `shadow.rest` and `shadow.hover` accept `none|soft|hard`; `hover` additionally accepts `lift` (module transform translate y `-4px`, combinable with a hover shadow); `border.sides` in `all|bottom` (`bottom` = underline: `styles.all.width` 0px plus `styles.bottom`); `fill` additionally accepts `gradient` with `color2` (a second colour role from `accent|text|inverse`) and `direction` in `90deg|135deg`; `border.style` already allows `dashed|dotted|double`. The adapter writes shadow and transform ONLY at `module.decoration.boxShadow` / `module.decoration.transform` (never on `button.decoration.*`, guarded by `dead-on-module.txt`), only in the value forms the probe passed. A soft shadow needs a translucent colour: add an alpha form to the colour token (e.g. `{{aied:color:<role>:<NN>}}`, NN a percent, resolved to `rgba(r,g,b,a)` by `RecipeTokens` from the language's hex, JSON-safe; unit-tested incl. the existing `found()`/`advise()` regexes) — deterministic colour maths, not a Divi setting.
+- Contrast: gradient label contrast is checked against BOTH stops (worst case); a shadow never changes contrast bounds; lift and shadows must not push a button outside its column (no new overflow: covered later by `make verify-kits`).
+- Variety goal (acceptance): after re-authoring, the shipped kits must show at least 8 visibly distinct button looks across the ten languages, e.g. a hard-shadow flat kit (brutalist-flat), an underline text button, a gradient pill, a soft-shadow lift kit, a dashed/double-border kit, a ghost kit; each language's kit still agrees with its prose radius family and uses an effect only if the language prose asks for it (playful-pastel's chunky offset shadow, brutalist-flat's flat hard edges, glass-dark's layered depth, tech-mono's hairline/dashed structure). Report which prose effects remain inexpressible.
+
+- [ ] **Step 1: Failing tests** for each new value (schema accepts it, adapter emits only registry/probe-proven paths on `module.*` or `button.*` as allowed, contrast covers it, dead-on-module guard still passes, resolve is idempotent), plus the alpha colour token cases.
+- [ ] **Step 2: Run**; expected FAIL.
+- [ ] **Step 3: Implement** the schema additions, adapter branches and the alpha token.
+- [ ] **Step 4: Re-author** the language kits and add the extra kits; run the full contrast proof (zero exceptions).
+- [ ] **Step 5: Run** `make test` and `make test-pro`; **Commit** `feat: style kits use shadow, lift, underline, gradient and border styles`.
+
 ### Task 9: The button catalog from the owner's sheet (needs the sheet)
 
 **Blocked until** the owner puts the 125-button sheet image in the repo (proposed `docs/inspiration/button-sheet-125.png`, ask the controller; the image was shared in chat in an earlier session and is not on disk).
