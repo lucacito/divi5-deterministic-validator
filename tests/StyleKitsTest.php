@@ -93,7 +93,8 @@ final class StyleKitsTest extends TestCase
             'missing id'                 => [ static function (array $k): array { unset($k['id']); return $k; } ],
             'id not kebab-case'          => [ static function (array $k): array { $k['id'] = 'Test_Kit'; return $k; } ],
             'border width 5px'           => [ static function (array $k): array { $k['border']['width'] = '5px'; return $k; } ],
-            'border style dashed'        => [ static function (array $k): array { $k['border']['style'] = 'dashed'; return $k; } ],
+            'border style groove'        => [ static function (array $k): array { $k['border']['style'] = 'groove'; return $k; } ],
+            'border style none'          => [ static function (array $k): array { $k['border']['style'] = 'none'; return $k; } ],
             'border colour unknown'      => [ static function (array $k): array { $k['border']['color'] = 'red'; return $k; } ],
             'shadow not none'            => [ static function (array $k): array { $k['shadow']['rest'] = '0 4px 8px'; return $k; } ],
             'hover lift not v1'          => [ static function (array $k): array { $k['hover'] = 'lift'; return $k; } ],
@@ -125,7 +126,7 @@ final class StyleKitsTest extends TestCase
 
     public function testTheVocabularyConstantsAreTheOnlyAllowedValues(): void
     {
-        $this->assertSame([ 'solid' ], StyleKits::BORDER_STYLES);
+        $this->assertSame([ 'solid', 'dashed', 'dotted', 'double' ], StyleKits::BORDER_STYLES);
         $this->assertSame([ 'fill-swap', 'invert', 'none' ], StyleKits::HOVERS);
         $this->assertSame([ 'none' ], StyleKits::SHADOWS);
     }

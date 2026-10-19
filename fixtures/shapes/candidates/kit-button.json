@@ -1,0 +1,1112 @@
+[
+    {
+        "id": "kb-fill-transparent-rgba",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.background.desktop.value.color": "rgba(255,255,255,0)"
+        },
+        "note": "Transparent fill as rgba(255,255,255,0) (the value KitAdapters::TRANSPARENT writes and the hero-image-scrim recipe ships) over a navy fill; the computed background-color must have alpha 0. Path export-proven (button.decoration.background.{bp}.value.color); a real builder export writes a transparent button fill as RGBA(0,0,0,0) (fixtures/valid/page-86-layout-5.json). Colour value printed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Background.php (background-color)."
+    },
+    {
+        "id": "kb-fill-transparent-keyword",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.background.desktop.value.color": "transparent"
+        },
+        "note": "Transparent fill as the CSS keyword `transparent` over a navy fill; the computed background-color must have alpha 0. Same path and source as kb-fill-transparent-rgba."
+    },
+    {
+        "id": "kb-fill-transparent-vs-default",
+        "block": "button",
+        "set": {
+            "button.decoration.background.desktop.value.color": "rgba(255,255,255,0)"
+        },
+        "note": "rgba(255,255,255,0) against the site's DEFAULT button (no fill written): tells whether the default button already has no fill on this site (then DEAD) or whether the theme or customizer gives it one (then PASS). Recorded, not expected either way. Same path and source as kb-fill-transparent-rgba."
+    },
+    {
+        "id": "kb-border-style-solid",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "color": "#f59e0b",
+                                        "style": "dashed"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.style": "solid"
+        },
+        "note": "Border style solid over a 4px dashed border. Border style values from the builder's own border-style field options in Divi 5.15.1 includes/builder-5/visual-builder/build/module.js (solid, dashed, dotted, double, groove, ridge, inset, outset, none); printed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-195 (styles.all first, then top/right/bottom/left)."
+    },
+    {
+        "id": "kb-border-style-dashed",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "color": "#f59e0b",
+                                        "style": "solid"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.style": "dashed"
+        },
+        "note": "Border style dashed over a 4px solid border (4px so a double line has room for two strokes). Border style values from the builder's own border-style field options in Divi 5.15.1 includes/builder-5/visual-builder/build/module.js (solid, dashed, dotted, double, groove, ridge, inset, outset, none); printed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-195 (styles.all first, then top/right/bottom/left)."
+    },
+    {
+        "id": "kb-border-style-dotted",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "color": "#f59e0b",
+                                        "style": "solid"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.style": "dotted"
+        },
+        "note": "Border style dotted over a 4px solid border (4px so a double line has room for two strokes). Border style values from the builder's own border-style field options in Divi 5.15.1 includes/builder-5/visual-builder/build/module.js (solid, dashed, dotted, double, groove, ridge, inset, outset, none); printed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-195 (styles.all first, then top/right/bottom/left)."
+    },
+    {
+        "id": "kb-border-style-double",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "color": "#f59e0b",
+                                        "style": "solid"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.style": "double"
+        },
+        "note": "Border style double over a 4px solid border (4px so a double line has room for two strokes). Border style values from the builder's own border-style field options in Divi 5.15.1 includes/builder-5/visual-builder/build/module.js (solid, dashed, dotted, double, groove, ridge, inset, outset, none); printed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-195 (styles.all first, then top/right/bottom/left)."
+    },
+    {
+        "id": "kb-border-width-1px",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "color": "#f59e0b",
+                                        "style": "solid"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.width": "1px"
+        },
+        "note": "Border width 1px over a 3px solid border (3px base so that 2px is not the theme's default 2px). Path export-proven (button.decoration.border.{bp}.value.styles.all.width); Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-130."
+    },
+    {
+        "id": "kb-border-width-2px",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "color": "#f59e0b",
+                                        "style": "solid"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.width": "2px"
+        },
+        "note": "Border width 2px over a 3px solid border (3px base so that 2px is not the theme's default 2px). Path export-proven (button.decoration.border.{bp}.value.styles.all.width); Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-130."
+    },
+    {
+        "id": "kb-border-width-4px",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "color": "#f59e0b",
+                                        "style": "solid"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.width": "4px"
+        },
+        "note": "Border width 4px over a 3px solid border (3px base so that 2px is not the theme's default 2px). Path export-proven (button.decoration.border.{bp}.value.styles.all.width); Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-130."
+    },
+    {
+        "id": "kb-border-bottom-only",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.width": "0px",
+            "button.decoration.border.desktop.value.styles.bottom.width": "3px",
+            "button.decoration.border.desktop.value.styles.bottom.style": "solid",
+            "button.decoration.border.desktop.value.styles.bottom.color": "#f59e0b"
+        },
+        "note": "Partial border: all sides 0px, then only the bottom 3px solid amber. Side keys top/right/bottom/left after `all`: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:103-124 (ordered_style_sides); the same side shape is export-proven on module borders (module.decoration.border.{bp}.value.styles.bottom.*, fixtures/valid/page-85-layout-4.json) and probe-proven on images (ty-i-border-bottom)."
+    },
+    {
+        "id": "kb-border-left-only",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.width": "0px",
+            "button.decoration.border.desktop.value.styles.left.width": "4px",
+            "button.decoration.border.desktop.value.styles.left.style": "solid",
+            "button.decoration.border.desktop.value.styles.left.color": "#f59e0b"
+        },
+        "note": "Partial border: all sides 0px, then only the left 4px solid amber. Same source as kb-border-bottom-only (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:103-124)."
+    },
+    {
+        "id": "kb-hover-outline-trio",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "rgba(255,255,255,0)"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#1e3a8a"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "color": "#1e3a8a",
+                                        "style": "solid"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.background.desktop.hover.color": "#1e3a8a",
+            "button.decoration.border.desktop.hover.styles.all.color": "#f59e0b",
+            "button.decoration.font.font.desktop.hover.color": "#ffffff"
+        },
+        "state": "hover",
+        "note": "Outline button (transparent fill, 2px navy border, navy label) hovered: background, border colour and label colour change together, WITHOUT background.hover.enableColor. Paths export-proven / probe-proven (button.decoration.background.{bp}.hover.color, button.decoration.border.{bp}.hover.styles.all.color: fixtures/valid/page-43-layout-1.json; mo-hv-button-font-color). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+    },
+    {
+        "id": "kb-hover-outline-trio-enable",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "rgba(255,255,255,0)"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#1e3a8a"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "color": "#1e3a8a",
+                                        "style": "solid"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.background.desktop.hover.color": "#1e3a8a",
+            "button.decoration.border.desktop.hover.styles.all.color": "#f59e0b",
+            "button.decoration.font.font.desktop.hover.color": "#ffffff",
+            "button.decoration.background.desktop.hover.enableColor": "on"
+        },
+        "state": "hover",
+        "note": "As kb-hover-outline-trio plus background.hover.enableColor on (the flag a real builder export writes beside a hover colour, fixtures/valid/page-86-layout-5.json): compared with kb-hover-outline-trio to see whether the flag changes anything. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+    },
+    {
+        "id": "kb-gradient-stops",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.background.desktop.value.gradient.enabled": "on",
+            "button.decoration.background.desktop.value.gradient.direction": "90deg",
+            "button.decoration.background.desktop.value.gradient.stops": [
+                {
+                    "position": "0",
+                    "color": "#1e3a8a"
+                },
+                {
+                    "position": "100",
+                    "color": "#f59e0b"
+                }
+            ]
+        },
+        "note": "Gradient fill on the button: enabled, 90deg, two stops (stops shape [{position, color}] as exported on module backgrounds, fixtures/valid/page-23-style-reference.json). Gradient keys and defaults (enabled off, stops 0 #2B87DA / 100 #29C4A9, type linear, direction 180deg, length 100%) from Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47, rendered by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852; the button background group is kept by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:760 (background is a declared, rendered button group in module.json)."
+    },
+    {
+        "id": "kb-gradient-enabled-direction",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.background.desktop.value.gradient.enabled": "on",
+            "button.decoration.background.desktop.value.gradient.direction": "90deg"
+        },
+        "note": "Gradient on the button with only enabled + direction, the exact pair a real builder export writes on a button (fixtures/valid/page-86-layout-5.json); the stops then come from the defaults. Gradient keys and defaults (enabled off, stops 0 #2B87DA / 100 #29C4A9, type linear, direction 180deg, length 100%) from Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47, rendered by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852; the button background group is kept by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:760 (background is a declared, rendered button group in module.json)."
+    },
+    {
+        "id": "kb-shadow-module-preset1",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset1"
+        },
+        "note": "Rest shadow preset1 on the button module. Box shadow: presets and the value composition (style picks a preset, horizontal/vertical/blur/spread/color/position layer over it) in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 and :111-146; module.json gives the button module boxShadow (printed on {{selector}}, the button element)."
+    },
+    {
+        "id": "kb-shadow-module-soft",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset1",
+            "module.decoration.boxShadow.desktop.value.vertical": "8px",
+            "module.decoration.boxShadow.desktop.value.blur": "24px",
+            "module.decoration.boxShadow.desktop.value.color": "rgba(0,0,0,0.18)"
+        },
+        "note": "Soft rest shadow: preset1 with vertical 8px, blur 24px, colour rgba(0,0,0,0.18). Box shadow: presets and the value composition (style picks a preset, horizontal/vertical/blur/spread/color/position layer over it) in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 and :111-146; module.json gives the button module boxShadow (printed on {{selector}}, the button element)."
+    },
+    {
+        "id": "kb-shadow-module-hard",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset4",
+            "module.decoration.boxShadow.desktop.value.horizontal": "6px",
+            "module.decoration.boxShadow.desktop.value.vertical": "6px",
+            "module.decoration.boxShadow.desktop.value.blur": "0px",
+            "module.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "note": "Hard (zero-blur) offset shadow: preset4 (BoxShadow.php:56-63, already blur 0px) with horizontal 6px, vertical 6px, blur 0px, colour #111827. Box shadow: presets and the value composition (style picks a preset, horizontal/vertical/blur/spread/color/position layer over it) in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 and :111-146; module.json gives the button module boxShadow (printed on {{selector}}, the button element)."
+    },
+    {
+        "id": "kb-shadow-element-hard",
+        "expect": "DEAD",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.boxShadow.desktop.value.style": "preset4",
+            "button.decoration.boxShadow.desktop.value.horizontal": "6px",
+            "button.decoration.boxShadow.desktop.value.vertical": "6px",
+            "button.decoration.boxShadow.desktop.value.blur": "0px",
+            "button.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "note": "The same hard shadow on the button ELEMENT's own boxShadow path (module.json lists boxShadow under button.decoration). Expected DEAD: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:664-712 and :760 (_sanitize_button_decoration_attrs keeps only the `button.decoration` groups module.json declares and drops each whose `<name>Group` field has render:false; module.json declares background, border, boxShadow, button, font, sizing, spacing and sets boxShadowGroup and spacingGroup to render:false). Box shadow: presets and the value composition (style picks a preset, horizontal/vertical/blur/spread/color/position layer over it) in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 and :111-146; module.json gives the button module boxShadow (printed on {{selector}}, the button element)."
+    },
+    {
+        "id": "kb-shadow-module-hover",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.hover.style": "preset1",
+            "module.decoration.boxShadow.desktop.hover.vertical": "12px",
+            "module.decoration.boxShadow.desktop.hover.blur": "24px",
+            "module.decoration.boxShadow.desktop.hover.color": "rgba(0,0,0,0.25)"
+        },
+        "state": "hover",
+        "note": "Hover shadow on the button module: preset1 with vertical 12px, blur 24px, colour rgba(0,0,0,0.25) (the group-proven hover shape mo-hv-group-shadow-custom). Box shadow: presets and the value composition (style picks a preset, horizontal/vertical/blur/spread/color/position layer over it) in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 and :111-146; module.json gives the button module boxShadow (printed on {{selector}}, the button element). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+    },
+    {
+        "id": "kb-lift-hover",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.transform.desktop.hover.translate.y": "-4px"
+        },
+        "state": "hover",
+        "note": "Lift on hover: translate y -4px on the button module. Transform values (translate.x/y, skew.x/y, ...) composed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:100-160; module.json prints the button module transform on {{wrapperSelector}} {{baseSelector}} (the button element). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+    },
+    {
+        "id": "kb-lift-hover-shadow",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.transform.desktop.hover.translate.y": "-4px",
+            "module.decoration.boxShadow.desktop.hover.style": "preset1",
+            "module.decoration.boxShadow.desktop.hover.vertical": "12px",
+            "module.decoration.boxShadow.desktop.hover.blur": "24px",
+            "module.decoration.boxShadow.desktop.hover.color": "rgba(0,0,0,0.25)"
+        },
+        "state": "hover",
+        "note": "Lift with a hover shadow together (the `lift` hover as a kit would write it). Transform values (translate.x/y, skew.x/y, ...) composed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:100-160; module.json prints the button module transform on {{wrapperSelector}} {{baseSelector}} (the button element). Box shadow: presets and the value composition (style picks a preset, horizontal/vertical/blur/spread/color/position layer over it) in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 and :111-146; module.json gives the button module boxShadow (printed on {{selector}}, the button element). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically."
+    },
+    {
+        "id": "kb-skew-x",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.transform.desktop.value.skew.x": "-10deg"
+        },
+        "note": "Rest skew x -10deg on the button module. Transform values (translate.x/y, skew.x/y, ...) composed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:100-160; module.json prints the button module transform on {{wrapperSelector}} {{baseSelector}} (the button element)."
+    },
+    {
+        "id": "kb-skew-x-element",
+        "expect": "DEAD",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.transform.desktop.value.skew.x": "-10deg"
+        },
+        "note": "Skew written on the button ELEMENT (module.json names button.decoration.transform among dynamicSubgroupLockedSubgroupIds). Expected DEAD: transform is not a declared button.decoration group, and Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:664-712 and :760 (_sanitize_button_decoration_attrs keeps only the `button.decoration` groups module.json declares and drops each whose `<name>Group` field has render:false; module.json declares background, border, boxShadow, button, font, sizing, spacing and sets boxShadowGroup and spacingGroup to render:false). Transform values (translate.x/y, skew.x/y, ...) composed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:100-160; module.json prints the button module transform on {{wrapperSelector}} {{baseSelector}} (the button element)."
+    },
+    {
+        "id": "kb-text-uppercase",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.font.font.desktop.value.capitalization": "uppercase"
+        },
+        "note": "Label capitalization uppercase. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-545."
+    },
+    {
+        "id": "kb-text-letterspacing",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.font.font.desktop.value.letterSpacing": "2px"
+        },
+        "note": "Label letterSpacing 2px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691."
+    },
+    {
+        "id": "kb-text-weight",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.font.font.desktop.value.weight": "700"
+        },
+        "note": "Label weight 700. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432. Measured PASS(css-only), a disagreement kept on purpose: the default button on this site already computes font-weight 700 (the control of ty-b-font-weight measured 700 -> 800), so writing 700 changes the stylesheet but no computed style; kb-text-weight-from-400 proves the same path and value over a 400 base."
+    },
+    {
+        "id": "kb-text-weight-from-400",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff",
+                                    "weight": "400"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.font.font.desktop.value.weight": "700"
+        },
+        "note": "Label weight 700 over a 400 base (added after kb-text-weight measured css-only: the default button already computes 700). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432."
+    },
+    {
+        "id": "kb-padding-module",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.spacing.desktop.value.padding.top": "14px",
+            "module.decoration.spacing.desktop.value.padding.bottom": "14px",
+            "module.decoration.spacing.desktop.value.padding.left": "28px",
+            "module.decoration.spacing.desktop.value.padding.right": "28px"
+        },
+        "note": "Padding 14px 28px on the button module spacing. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:762-800 (module spacing padding is printed on `{wrapper} {base}` and `{wrapper} {base}:hover`, i.e. the button element, important) and module.json (module styleProps spacing padding selector {{wrapperSelector}} {{baseSelector}})."
+    },
+    {
+        "id": "kb-padding-element",
+        "expect": "DEAD",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.spacing.desktop.value.padding.top": "14px",
+            "button.decoration.spacing.desktop.value.padding.bottom": "14px",
+            "button.decoration.spacing.desktop.value.padding.left": "28px",
+            "button.decoration.spacing.desktop.value.padding.right": "28px",
+            "button.decoration.spacing.desktop.value.padding.syncVertical": "on",
+            "button.decoration.spacing.desktop.value.padding.syncHorizontal": "on"
+        },
+        "note": "The same padding on the button ELEMENT's spacing (button.decoration.spacing, the shape KitAdapters writes today; the registry knows the path only from a SLIDER's button in fixtures/valid/page-23-style-reference.json). Expected DEAD: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:664-712 and :760 (_sanitize_button_decoration_attrs keeps only the `button.decoration` groups module.json declares and drops each whose `<name>Group` field has render:false; module.json declares background, border, boxShadow, button, font, sizing, spacing and sets boxShadowGroup and spacingGroup to render:false)."
+    }
+]

@@ -17169,3 +17169,648 @@ Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-r
 - Filterable portfolio module: not probed: it lists the site's own Divi Projects (post_type project, Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/FilterablePortfolio/FilterablePortfolioModule.php:104; categories from project_category, :117-126), so a recipe cannot hold its items, and its filter bar keeps Divi's stylesheet colours (for example `.et_pb_filterable_portfolio .et_pb_portfolio_filters li a.active{color:#2ea3f2}`, Divi/style-static.min.css); no filter bar setting was probed
 - Before/after module: the label and handle settings: not probed: the before-after-compare recipe keeps Divi's neutral handle and shows no labels
 - Contact form: spam protection (`module.advanced.spamProtection`) and visible labels (`showLabels`): not probed: the forms keep Divi's basic captcha (on by default) and hidden labels (the placeholders are the only labels; their colour is rc-cf-placeholder-color)
+
+## kb-fill-transparent-rgba
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.background.desktop.value.color` = `"rgba(255,255,255,0)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgba(255, 255, 255, 0)` |
+| 900 px | yes | 1 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgba(255, 255, 255, 0)` |
+| 400 px | yes | 1 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgba(255, 255, 255, 0)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Transparent fill as rgba(255,255,255,0) (the value KitAdapters::TRANSPARENT writes and the hero-image-scrim recipe ships) over a navy fill; the computed background-color must have alpha 0. Path export-proven (button.decoration.background.{bp}.value.color); a real builder export writes a transparent button fill as RGBA(0,0,0,0) (fixtures/valid/page-86-layout-5.json). Colour value printed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Background.php (background-color).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-fill-transparent-keyword
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.background.desktop.value.color` = `"transparent"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgba(0, 0, 0, 0)` |
+| 900 px | yes | 1 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgba(0, 0, 0, 0)` |
+| 400 px | yes | 1 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgba(0, 0, 0, 0)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Transparent fill as the CSS keyword `transparent` over a navy fill; the computed background-color must have alpha 0. Same path and source as kb-fill-transparent-rgba.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-fill-transparent-vs-default
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.background.desktop.value.color` = `"rgba(255,255,255,0)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:background-color: rgb(47, 93, 88) -> rgba(255, 255, 255, 0)` |
+| 900 px | yes | 1 | yes | `0:a:background-color: rgb(47, 93, 88) -> rgba(255, 255, 255, 0)` |
+| 400 px | yes | 1 | yes | `0:a:background-color: rgb(47, 93, 88) -> rgba(255, 255, 255, 0)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: rgba(255,255,255,0) against the site's DEFAULT button (no fill written): tells whether the default button already has no fill on this site (then DEAD) or whether the theme or customizer gives it one (then PASS). Recorded, not expected either way. Same path and source as kb-fill-transparent-rgba.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-border-style-solid
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:a:border-block-end-style: dashed -> solid` |
+| 900 px | yes | 8 | yes | `0:a:border-block-end-style: dashed -> solid` |
+| 400 px | yes | 8 | yes | `0:a:border-block-end-style: dashed -> solid` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Border style solid over a 4px dashed border. Border style values from the builder's own border-style field options in Divi 5.15.1 includes/builder-5/visual-builder/build/module.js (solid, dashed, dotted, double, groove, ridge, inset, outset, none); printed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-195 (styles.all first, then top/right/bottom/left).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-border-style-dashed
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:a:border-block-end-style: solid -> dashed` |
+| 900 px | yes | 8 | yes | `0:a:border-block-end-style: solid -> dashed` |
+| 400 px | yes | 8 | yes | `0:a:border-block-end-style: solid -> dashed` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Border style dashed over a 4px solid border (4px so a double line has room for two strokes). Border style values from the builder's own border-style field options in Divi 5.15.1 includes/builder-5/visual-builder/build/module.js (solid, dashed, dotted, double, groove, ridge, inset, outset, none); printed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-195 (styles.all first, then top/right/bottom/left).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-border-style-dotted
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:a:border-block-end-style: solid -> dotted` |
+| 900 px | yes | 8 | yes | `0:a:border-block-end-style: solid -> dotted` |
+| 400 px | yes | 8 | yes | `0:a:border-block-end-style: solid -> dotted` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Border style dotted over a 4px solid border (4px so a double line has room for two strokes). Border style values from the builder's own border-style field options in Divi 5.15.1 includes/builder-5/visual-builder/build/module.js (solid, dashed, dotted, double, groove, ridge, inset, outset, none); printed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-195 (styles.all first, then top/right/bottom/left).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-border-style-double
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.style` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:a:border-block-end-style: solid -> double` |
+| 900 px | yes | 8 | yes | `0:a:border-block-end-style: solid -> double` |
+| 400 px | yes | 8 | yes | `0:a:border-block-end-style: solid -> double` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Border style double over a 4px solid border (4px so a double line has room for two strokes). Border style values from the builder's own border-style field options in Divi 5.15.1 includes/builder-5/visual-builder/build/module.js (solid, dashed, dotted, double, groove, ridge, inset, outset, none); printed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-195 (styles.all first, then top/right/bottom/left).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-border-width-1px
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 14 | yes | `0:a:block-size: 65.7969px -> 61.7969px` |
+| 900 px | yes | 14 | yes | `0:a:block-size: 65.7969px -> 61.7969px` |
+| 400 px | yes | 14 | yes | `0:a:block-size: 65.7969px -> 61.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Border width 1px over a 3px solid border (3px base so that 2px is not the theme's default 2px). Path export-proven (button.decoration.border.{bp}.value.styles.all.width); Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-130.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-border-width-2px
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 14 | yes | `0:a:block-size: 65.7969px -> 63.7969px` |
+| 900 px | yes | 14 | yes | `0:a:block-size: 65.7969px -> 63.7969px` |
+| 400 px | yes | 14 | yes | `0:a:block-size: 65.7969px -> 63.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Border width 2px over a 3px solid border (3px base so that 2px is not the theme's default 2px). Path export-proven (button.decoration.border.{bp}.value.styles.all.width); Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-130.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-border-width-4px
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 14 | yes | `0:a:block-size: 65.7969px -> 67.7969px` |
+| 900 px | yes | 14 | yes | `0:a:block-size: 65.7969px -> 67.7969px` |
+| 400 px | yes | 14 | yes | `0:a:block-size: 65.7969px -> 67.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Border width 4px over a 3px solid border (3px base so that 2px is not the theme's default 2px). Path export-proven (button.decoration.border.{bp}.value.styles.all.width); Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:102-130.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-border-bottom-only
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `button.decoration.border.desktop.value.styles.bottom.width` = `"3px"`
+- `button.decoration.border.desktop.value.styles.bottom.style` = `"solid"`
+- `button.decoration.border.desktop.value.styles.bottom.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:a:block-size: 59.7969px -> 62.7969px` |
+| 900 px | yes | 8 | yes | `0:a:block-size: 59.7969px -> 62.7969px` |
+| 400 px | yes | 8 | yes | `0:a:block-size: 59.7969px -> 62.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-width`, `border-bottom-color`, `border-bottom-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Partial border: all sides 0px, then only the bottom 3px solid amber. Side keys top/right/bottom/left after `all`: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:103-124 (ordered_style_sides); the same side shape is export-proven on module borders (module.decoration.border.{bp}.value.styles.bottom.*, fixtures/valid/page-85-layout-4.json) and probe-proven on images (ty-i-border-bottom).
+
+Registered paths added:
+
+- `button.decoration.border.{bp}.value.styles.bottom.color`
+- `button.decoration.border.{bp}.value.styles.bottom.style`
+- `button.decoration.border.{bp}.value.styles.bottom.width`
+
+## kb-border-left-only
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `button.decoration.border.desktop.value.styles.left.width` = `"4px"`
+- `button.decoration.border.desktop.value.styles.left.style` = `"solid"`
+- `button.decoration.border.desktop.value.styles.left.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:a:border-inline-start-color: rgb(51, 51, 51) -> rgb(245, 158, 11)` |
+| 900 px | yes | 8 | yes | `0:a:border-inline-start-color: rgb(51, 51, 51) -> rgb(245, 158, 11)` |
+| 400 px | yes | 8 | yes | `0:a:border-inline-start-color: rgb(51, 51, 51) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `border-inline-start-color`, `border-inline-start-width`, `border-left-color`, `border-left-width`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Partial border: all sides 0px, then only the left 4px solid amber. Same source as kb-border-bottom-only (Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Border/Border.php:103-124).
+
+Registered paths added:
+
+- `button.decoration.border.{bp}.value.styles.left.color`
+- `button.decoration.border.{bp}.value.styles.left.style`
+- `button.decoration.border.{bp}.value.styles.left.width`
+
+## kb-hover-outline-trio
+
+Block: `button`, measured in the `hover` state. Set on top of the base block:
+
+- `button.decoration.background.desktop.hover.color` = `"#1e3a8a"`
+- `button.decoration.border.desktop.hover.styles.all.color` = `"#f59e0b"`
+- `button.decoration.font.font.desktop.hover.color` = `"#ffffff"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 19 | yes | `0:a:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+| 900 px | yes | 19 | yes | `0:a:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+| 400 px | yes | 19 | yes | `0:a:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `background-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Outline button (transparent fill, 2px navy border, navy label) hovered: background, border colour and label colour change together, WITHOUT background.hover.enableColor. Paths export-proven / probe-proven (button.decoration.background.{bp}.hover.color, button.decoration.border.{bp}.hover.styles.all.color: fixtures/valid/page-43-layout-1.json; mo-hv-button-font-color). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-hover-outline-trio-enable
+
+Block: `button`, measured in the `hover` state. Set on top of the base block:
+
+- `button.decoration.background.desktop.hover.color` = `"#1e3a8a"`
+- `button.decoration.border.desktop.hover.styles.all.color` = `"#f59e0b"`
+- `button.decoration.font.font.desktop.hover.color` = `"#ffffff"`
+- `button.decoration.background.desktop.hover.enableColor` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 19 | yes | `0:a:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+| 900 px | yes | 19 | yes | `0:a:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+| 400 px | yes | 19 | yes | `0:a:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `background-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: As kb-hover-outline-trio plus background.hover.enableColor on (the flag a real builder export writes beside a hover colour, fixtures/valid/page-86-layout-5.json): compared with kb-hover-outline-trio to see whether the flag changes anything. A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-gradient-stops
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.background.desktop.value.gradient.enabled` = `"on"`
+- `button.decoration.background.desktop.value.gradient.direction` = `"90deg"`
+- `button.decoration.background.desktop.value.gradient.stops` = `[{"position":"0","color":"#1e3a8a"},{"position":"100","color":"#f59e0b"}]`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:background-image: none -> linear-gradient(90deg, rgb(30, 58, 138) 0%, rgb(245, 158, 11) 100%)` |
+| 900 px | yes | 1 | yes | `0:a:background-image: none -> linear-gradient(90deg, rgb(30, 58, 138) 0%, rgb(245, 158, 11) 100%)` |
+| 400 px | yes | 1 | yes | `0:a:background-image: none -> linear-gradient(90deg, rgb(30, 58, 138) 0%, rgb(245, 158, 11) 100%)` |
+
+Properties that changed (any width): `background-image`.
+
+Phone overflow at 400 px: no.
+
+Note: Gradient fill on the button: enabled, 90deg, two stops (stops shape [{position, color}] as exported on module backgrounds, fixtures/valid/page-23-style-reference.json). Gradient keys and defaults (enabled off, stops 0 #2B87DA / 100 #29C4A9, type linear, direction 180deg, length 100%) from Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47, rendered by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852; the button background group is kept by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:760 (background is a declared, rendered button group in module.json).
+
+Registered paths added:
+
+- `button.decoration.background.{bp}.value.gradient.stops.{n}.color`
+- `button.decoration.background.{bp}.value.gradient.stops.{n}.position`
+
+## kb-gradient-enabled-direction
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.background.desktop.value.gradient.enabled` = `"on"`
+- `button.decoration.background.desktop.value.gradient.direction` = `"90deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:background-image: none -> linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 900 px | yes | 1 | yes | `0:a:background-image: none -> linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+| 400 px | yes | 1 | yes | `0:a:background-image: none -> linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)` |
+
+Properties that changed (any width): `background-image`.
+
+Phone overflow at 400 px: no.
+
+Note: Gradient on the button with only enabled + direction, the exact pair a real builder export writes on a button (fixtures/valid/page-86-layout-5.json); the stops then come from the defaults. Gradient keys and defaults (enabled off, stops 0 #2B87DA / 100 #29C4A9, type linear, direction 180deg, length 100%) from Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Background/Traits/ConstantsTrait.php:30-47, rendered by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Utils/GradientUtils.php:792-852; the button background group is kept by Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:760 (background is a declared, rendered button group in module.json).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-shadow-module-preset1
+
+Block: `button`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 2px 18px 0px` |
+| 900 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 2px 18px 0px` |
+| 400 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 2px 18px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Rest shadow preset1 on the button module. Box shadow: presets and the value composition (style picks a preset, horizontal/vertical/blur/spread/color/position layer over it) in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 and :111-146; module.json gives the button module boxShadow (printed on {{selector}}, the button element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-shadow-module-soft
+
+Block: `button`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"8px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"24px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(0,0,0,0.18)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 900 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 400 px | yes | 1 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Soft rest shadow: preset1 with vertical 8px, blur 24px, colour rgba(0,0,0,0.18). Box shadow: presets and the value composition (style picks a preset, horizontal/vertical/blur/spread/color/position layer over it) in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 and :111-146; module.json gives the button module boxShadow (printed on {{selector}}, the button element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-shadow-module-hard
+
+Block: `button`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 900 px | yes | 1 | yes | `0:a:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 400 px | yes | 1 | yes | `0:a:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Hard (zero-blur) offset shadow: preset4 (BoxShadow.php:56-63, already blur 0px) with horizontal 6px, vertical 6px, blur 0px, colour #111827. Box shadow: presets and the value composition (style picks a preset, horizontal/vertical/blur/spread/color/position layer over it) in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 and :111-146; module.json gives the button module boxShadow (printed on {{selector}}, the button element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-shadow-module-hover
+
+Block: `button`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.hover.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.hover.vertical` = `"12px"`
+- `module.decoration.boxShadow.desktop.hover.blur` = `"24px"`
+- `module.decoration.boxShadow.desktop.hover.color` = `"rgba(0,0,0,0.25)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+| 900 px | yes | 2 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+| 400 px | yes | 2 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Hover shadow on the button module: preset1 with vertical 12px, blur 24px, colour rgba(0,0,0,0.25) (the group-proven hover shape mo-hv-group-shadow-custom). Box shadow: presets and the value composition (style picks a preset, horizontal/vertical/blur/spread/color/position layer over it) in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 and :111-146; module.json gives the button module boxShadow (printed on {{selector}}, the button element). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-lift-hover
+
+Block: `button`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.transform.desktop.hover.translate.y` = `"-4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:a:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+| 900 px | yes | 2 | yes | `0:a:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+| 400 px | yes | 2 | yes | `0:a:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+
+Properties that changed (any width): `transform`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Lift on hover: translate y -4px on the button module. Transform values (translate.x/y, skew.x/y, ...) composed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:100-160; module.json prints the button module transform on {{wrapperSelector}} {{baseSelector}} (the button element). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-lift-hover-shadow
+
+Block: `button`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.transform.desktop.hover.translate.y` = `"-4px"`
+- `module.decoration.boxShadow.desktop.hover.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.hover.vertical` = `"12px"`
+- `module.decoration.boxShadow.desktop.hover.blur` = `"24px"`
+- `module.decoration.boxShadow.desktop.hover.color` = `"rgba(0,0,0,0.25)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+| 900 px | yes | 3 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+| 400 px | yes | 3 | yes | `0:a:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`, `transform`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Lift with a hover shadow together (the `lift` hover as a kit would write it). Transform values (translate.x/y, skew.x/y, ...) composed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:100-160; module.json prints the button module transform on {{wrapperSelector}} {{baseSelector}} (the button element). Box shadow: presets and the value composition (style picks a preset, horizontal/vertical/blur/spread/color/position layer over it) in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 and :111-146; module.json gives the button module boxShadow (printed on {{selector}}, the button element). A hover value sits next to the normal one under the key `hover` instead of `value` (the registry's export-proven hover paths use the same layout). Measured with the pointer on the element, the control page hovered identically.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-skew-x
+
+Block: `button`. Set on top of the base block:
+
+- `module.decoration.transform.desktop.value.skew.x` = `"-10deg"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:a:transform: none -> matrix(1, 0, -0.176327, 1, 0, 0)` |
+| 900 px | yes | 1 | yes | `0:a:transform: none -> matrix(1, 0, -0.176327, 1, 0, 0)` |
+| 400 px | yes | 1 | yes | `0:a:transform: none -> matrix(1, 0, -0.176327, 1, 0, 0)` |
+
+Properties that changed (any width): `transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Rest skew x -10deg on the button module. Transform values (translate.x/y, skew.x/y, ...) composed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:100-160; module.json prints the button module transform on {{wrapperSelector}} {{baseSelector}} (the button element).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-text-uppercase
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.font.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:a:inline-size: 119.359px -> 126.578px` |
+| 900 px | yes | 5 | yes | `0:a:inline-size: 119.359px -> 126.578px` |
+| 400 px | yes | 5 | yes | `0:a:inline-size: 119.359px -> 126.578px` |
+
+Properties that changed (any width): `inline-size`, `perspective-origin`, `text-transform`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Label capitalization uppercase. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:543-545.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-text-letterspacing
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.font.font.desktop.value.letterSpacing` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:a:inline-size: 119.359px -> 124.359px` |
+| 900 px | yes | 5 | yes | `0:a:inline-size: 119.359px -> 124.359px` |
+| 400 px | yes | 5 | yes | `0:a:inline-size: 119.359px -> 124.359px` |
+
+Properties that changed (any width): `inline-size`, `letter-spacing`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Label letterSpacing 2px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:689-691.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-text-weight-from-400
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.font.font.desktop.value.weight` = `"700"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | yes | `0:a:font-weight: 400 -> 700` |
+| 900 px | yes | 5 | yes | `0:a:font-weight: 400 -> 700` |
+| 400 px | yes | 5 | yes | `0:a:font-weight: 400 -> 700` |
+
+Properties that changed (any width): `font-weight`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Label weight 700 over a 400 base (added after kb-text-weight measured css-only: the default button already computes 700). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kb-padding-module
+
+Block: `button`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"14px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"14px"`
+- `module.decoration.spacing.desktop.value.padding.left` = `"28px"`
+- `module.decoration.spacing.desktop.value.padding.right` = `"28px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 14 | yes | `0:a:block-size: 59.7969px -> 51.7969px` |
+| 900 px | yes | 14 | yes | `0:a:block-size: 59.7969px -> 51.7969px` |
+| 400 px | yes | 14 | yes | `0:a:block-size: 59.7969px -> 51.7969px` |
+
+Properties that changed (any width): `block-size`, `height`, `inline-size`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-inline-end`, `padding-inline-start`, `padding-left`, `padding-right`, `padding-top`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Padding 14px 28px on the button module spacing. Source: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:762-800 (module spacing padding is printed on `{wrapper} {base}` and `{wrapper} {base}:hover`, i.e. the button element, important) and module.json (module styleProps spacing padding selector {{wrapperSelector}} {{baseSelector}}).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (kit-button)
+
+Candidates from `kit-button.json` that were measured and are not taught, with the reason:
+
+- `kb-shadow-element-hard`: no effect (dead). The same hard shadow on the button ELEMENT's own boxShadow path (module.json lists boxShadow under button.decoration). Expected DEAD: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:664-712 and :760 (_sanitize_button_decoration_attrs keeps only the `button.decoration` groups module.json declares and drops each whose `<name>Group` field has render:false; module.json declares background, border, boxShadow, button, font, sizing, spacing and sets boxShadowGroup and spacingGroup to render:false). Box shadow: presets and the value composition (style picks a preset, horizontal/vertical/blur/spread/color/position layer over it) in Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/BoxShadow/BoxShadow.php:31-80 and :111-146; module.json gives the button module boxShadow (printed on {{selector}}, the button element).
+- `kb-skew-x-element`: no effect (dead). Skew written on the button ELEMENT (module.json names button.decoration.transform among dynamicSubgroupLockedSubgroupIds). Expected DEAD: transform is not a declared button.decoration group, and Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:664-712 and :760 (_sanitize_button_decoration_attrs keeps only the `button.decoration` groups module.json declares and drops each whose `<name>Group` field has render:false; module.json declares background, border, boxShadow, button, font, sizing, spacing and sets boxShadowGroup and spacingGroup to render:false). Transform values (translate.x/y, skew.x/y, ...) composed by Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Transform/TransformTraits/ValueTrait.php:100-160; module.json prints the button module transform on {{wrapperSelector}} {{baseSelector}} (the button element).
+- `kb-text-weight`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Label weight 700. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Font/Font.php:431-432. Measured PASS(css-only), a disagreement kept on purpose: the default button on this site already computes font-weight 700 (the control of ty-b-font-weight measured 700 -> 800), so writing 700 changes the stylesheet but no computed style; kb-text-weight-from-400 proves the same path and value over a 400 base.
+- `kb-padding-element`: no effect (dead). The same padding on the button ELEMENT's spacing (button.decoration.spacing, the shape KitAdapters writes today; the registry knows the path only from a SLIDER's button in fixtures/valid/page-23-style-reference.json). Expected DEAD: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:664-712 and :760 (_sanitize_button_decoration_attrs keeps only the `button.decoration` groups module.json declares and drops each whose `<name>Group` field has render:false; module.json declares background, border, boxShadow, button, font, sizing, spacing and sets boxShadowGroup and spacingGroup to render:false).

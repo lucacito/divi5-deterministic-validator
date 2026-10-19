@@ -19,8 +19,11 @@ final class StyleKits
 {
     private const DATA = __DIR__ . '/../data/style-kits.json';
 
-    /** Border styles proven on the real Divi (extended only with probe-proven values). */
-    public const BORDER_STYLES = [ 'solid' ];
+    /**
+     * Border styles proven on the real Divi (extended only with probe-proven values): solid, dashed, dotted and double
+     * each changed the computed border style of a divi/button (docs/shape-evidence-5.15.1.md#kb-border-style-*).
+     */
+    public const BORDER_STYLES = [ 'solid', 'dashed', 'dotted', 'double' ];
 
     /** Hover behaviours a kit may choose (extended only with probe-proven values). */
     public const HOVERS = [ 'fill-swap', 'invert', 'none' ];

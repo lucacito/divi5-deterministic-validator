@@ -1,0 +1,2109 @@
+[
+  {
+    "id": "kb-fill-transparent-rgba",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-color: rgb(30, 58, 138) -> rgba(255, 255, 255, 0)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-color: rgb(30, 58, 138) -> rgba(255, 255, 255, 0)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-color: rgb(30, 58, 138) -> rgba(255, 255, 255, 0)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-fill-transparent-keyword",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-color: rgb(30, 58, 138) -> rgba(0, 0, 0, 0)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-color: rgb(30, 58, 138) -> rgba(0, 0, 0, 0)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-color: rgb(30, 58, 138) -> rgba(0, 0, 0, 0)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-fill-transparent-vs-default",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-color: rgb(47, 93, 88) -> rgba(255, 255, 255, 0)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-color: rgb(47, 93, 88) -> rgba(255, 255, 255, 0)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-color: rgb(47, 93, 88) -> rgba(255, 255, 255, 0)"
+        ],
+        "changedProps": [
+          "background-color"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-border-style-solid",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-block-end-style: dashed -> solid",
+          "0:a:border-block-start-style: dashed -> solid",
+          "0:a:border-bottom-style: dashed -> solid",
+          "0:a:border-inline-end-style: dashed -> solid",
+          "0:a:border-inline-start-style: dashed -> solid",
+          "0:a:border-left-style: dashed -> solid"
+        ],
+        "changedProps": [
+          "border-block-end-style",
+          "border-block-start-style",
+          "border-bottom-style",
+          "border-inline-end-style",
+          "border-inline-start-style",
+          "border-left-style",
+          "border-right-style",
+          "border-top-style"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-block-end-style: dashed -> solid",
+          "0:a:border-block-start-style: dashed -> solid",
+          "0:a:border-bottom-style: dashed -> solid",
+          "0:a:border-inline-end-style: dashed -> solid",
+          "0:a:border-inline-start-style: dashed -> solid",
+          "0:a:border-left-style: dashed -> solid"
+        ],
+        "changedProps": [
+          "border-block-end-style",
+          "border-block-start-style",
+          "border-bottom-style",
+          "border-inline-end-style",
+          "border-inline-start-style",
+          "border-left-style",
+          "border-right-style",
+          "border-top-style"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-block-end-style: dashed -> solid",
+          "0:a:border-block-start-style: dashed -> solid",
+          "0:a:border-bottom-style: dashed -> solid",
+          "0:a:border-inline-end-style: dashed -> solid",
+          "0:a:border-inline-start-style: dashed -> solid",
+          "0:a:border-left-style: dashed -> solid"
+        ],
+        "changedProps": [
+          "border-block-end-style",
+          "border-block-start-style",
+          "border-bottom-style",
+          "border-inline-end-style",
+          "border-inline-start-style",
+          "border-left-style",
+          "border-right-style",
+          "border-top-style"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-border-style-dashed",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-block-end-style: solid -> dashed",
+          "0:a:border-block-start-style: solid -> dashed",
+          "0:a:border-bottom-style: solid -> dashed",
+          "0:a:border-inline-end-style: solid -> dashed",
+          "0:a:border-inline-start-style: solid -> dashed",
+          "0:a:border-left-style: solid -> dashed"
+        ],
+        "changedProps": [
+          "border-block-end-style",
+          "border-block-start-style",
+          "border-bottom-style",
+          "border-inline-end-style",
+          "border-inline-start-style",
+          "border-left-style",
+          "border-right-style",
+          "border-top-style"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-block-end-style: solid -> dashed",
+          "0:a:border-block-start-style: solid -> dashed",
+          "0:a:border-bottom-style: solid -> dashed",
+          "0:a:border-inline-end-style: solid -> dashed",
+          "0:a:border-inline-start-style: solid -> dashed",
+          "0:a:border-left-style: solid -> dashed"
+        ],
+        "changedProps": [
+          "border-block-end-style",
+          "border-block-start-style",
+          "border-bottom-style",
+          "border-inline-end-style",
+          "border-inline-start-style",
+          "border-left-style",
+          "border-right-style",
+          "border-top-style"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-block-end-style: solid -> dashed",
+          "0:a:border-block-start-style: solid -> dashed",
+          "0:a:border-bottom-style: solid -> dashed",
+          "0:a:border-inline-end-style: solid -> dashed",
+          "0:a:border-inline-start-style: solid -> dashed",
+          "0:a:border-left-style: solid -> dashed"
+        ],
+        "changedProps": [
+          "border-block-end-style",
+          "border-block-start-style",
+          "border-bottom-style",
+          "border-inline-end-style",
+          "border-inline-start-style",
+          "border-left-style",
+          "border-right-style",
+          "border-top-style"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-border-style-dotted",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-block-end-style: solid -> dotted",
+          "0:a:border-block-start-style: solid -> dotted",
+          "0:a:border-bottom-style: solid -> dotted",
+          "0:a:border-inline-end-style: solid -> dotted",
+          "0:a:border-inline-start-style: solid -> dotted",
+          "0:a:border-left-style: solid -> dotted"
+        ],
+        "changedProps": [
+          "border-block-end-style",
+          "border-block-start-style",
+          "border-bottom-style",
+          "border-inline-end-style",
+          "border-inline-start-style",
+          "border-left-style",
+          "border-right-style",
+          "border-top-style"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-block-end-style: solid -> dotted",
+          "0:a:border-block-start-style: solid -> dotted",
+          "0:a:border-bottom-style: solid -> dotted",
+          "0:a:border-inline-end-style: solid -> dotted",
+          "0:a:border-inline-start-style: solid -> dotted",
+          "0:a:border-left-style: solid -> dotted"
+        ],
+        "changedProps": [
+          "border-block-end-style",
+          "border-block-start-style",
+          "border-bottom-style",
+          "border-inline-end-style",
+          "border-inline-start-style",
+          "border-left-style",
+          "border-right-style",
+          "border-top-style"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-block-end-style: solid -> dotted",
+          "0:a:border-block-start-style: solid -> dotted",
+          "0:a:border-bottom-style: solid -> dotted",
+          "0:a:border-inline-end-style: solid -> dotted",
+          "0:a:border-inline-start-style: solid -> dotted",
+          "0:a:border-left-style: solid -> dotted"
+        ],
+        "changedProps": [
+          "border-block-end-style",
+          "border-block-start-style",
+          "border-bottom-style",
+          "border-inline-end-style",
+          "border-inline-start-style",
+          "border-left-style",
+          "border-right-style",
+          "border-top-style"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-border-style-double",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-block-end-style: solid -> double",
+          "0:a:border-block-start-style: solid -> double",
+          "0:a:border-bottom-style: solid -> double",
+          "0:a:border-inline-end-style: solid -> double",
+          "0:a:border-inline-start-style: solid -> double",
+          "0:a:border-left-style: solid -> double"
+        ],
+        "changedProps": [
+          "border-block-end-style",
+          "border-block-start-style",
+          "border-bottom-style",
+          "border-inline-end-style",
+          "border-inline-start-style",
+          "border-left-style",
+          "border-right-style",
+          "border-top-style"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-block-end-style: solid -> double",
+          "0:a:border-block-start-style: solid -> double",
+          "0:a:border-bottom-style: solid -> double",
+          "0:a:border-inline-end-style: solid -> double",
+          "0:a:border-inline-start-style: solid -> double",
+          "0:a:border-left-style: solid -> double"
+        ],
+        "changedProps": [
+          "border-block-end-style",
+          "border-block-start-style",
+          "border-bottom-style",
+          "border-inline-end-style",
+          "border-inline-start-style",
+          "border-left-style",
+          "border-right-style",
+          "border-top-style"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-block-end-style: solid -> double",
+          "0:a:border-block-start-style: solid -> double",
+          "0:a:border-bottom-style: solid -> double",
+          "0:a:border-inline-end-style: solid -> double",
+          "0:a:border-inline-start-style: solid -> double",
+          "0:a:border-left-style: solid -> double"
+        ],
+        "changedProps": [
+          "border-block-end-style",
+          "border-block-start-style",
+          "border-bottom-style",
+          "border-inline-end-style",
+          "border-inline-start-style",
+          "border-left-style",
+          "border-right-style",
+          "border-top-style"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-border-width-1px",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 14,
+        "sample": [
+          "0:a:block-size: 65.7969px -> 61.7969px",
+          "0:a:border-block-end-width: 3px -> 1px",
+          "0:a:border-block-start-width: 3px -> 1px",
+          "0:a:border-bottom-width: 3px -> 1px",
+          "0:a:border-inline-end-width: 3px -> 1px",
+          "0:a:border-inline-start-width: 3px -> 1px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-width",
+          "border-block-start-width",
+          "border-bottom-width",
+          "border-inline-end-width",
+          "border-inline-start-width",
+          "border-left-width",
+          "border-right-width",
+          "border-top-width",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 14,
+        "sample": [
+          "0:a:block-size: 65.7969px -> 61.7969px",
+          "0:a:border-block-end-width: 3px -> 1px",
+          "0:a:border-block-start-width: 3px -> 1px",
+          "0:a:border-bottom-width: 3px -> 1px",
+          "0:a:border-inline-end-width: 3px -> 1px",
+          "0:a:border-inline-start-width: 3px -> 1px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-width",
+          "border-block-start-width",
+          "border-bottom-width",
+          "border-inline-end-width",
+          "border-inline-start-width",
+          "border-left-width",
+          "border-right-width",
+          "border-top-width",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 14,
+        "sample": [
+          "0:a:block-size: 65.7969px -> 61.7969px",
+          "0:a:border-block-end-width: 3px -> 1px",
+          "0:a:border-block-start-width: 3px -> 1px",
+          "0:a:border-bottom-width: 3px -> 1px",
+          "0:a:border-inline-end-width: 3px -> 1px",
+          "0:a:border-inline-start-width: 3px -> 1px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-width",
+          "border-block-start-width",
+          "border-bottom-width",
+          "border-inline-end-width",
+          "border-inline-start-width",
+          "border-left-width",
+          "border-right-width",
+          "border-top-width",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-border-width-2px",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 14,
+        "sample": [
+          "0:a:block-size: 65.7969px -> 63.7969px",
+          "0:a:border-block-end-width: 3px -> 2px",
+          "0:a:border-block-start-width: 3px -> 2px",
+          "0:a:border-bottom-width: 3px -> 2px",
+          "0:a:border-inline-end-width: 3px -> 2px",
+          "0:a:border-inline-start-width: 3px -> 2px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-width",
+          "border-block-start-width",
+          "border-bottom-width",
+          "border-inline-end-width",
+          "border-inline-start-width",
+          "border-left-width",
+          "border-right-width",
+          "border-top-width",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 14,
+        "sample": [
+          "0:a:block-size: 65.7969px -> 63.7969px",
+          "0:a:border-block-end-width: 3px -> 2px",
+          "0:a:border-block-start-width: 3px -> 2px",
+          "0:a:border-bottom-width: 3px -> 2px",
+          "0:a:border-inline-end-width: 3px -> 2px",
+          "0:a:border-inline-start-width: 3px -> 2px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-width",
+          "border-block-start-width",
+          "border-bottom-width",
+          "border-inline-end-width",
+          "border-inline-start-width",
+          "border-left-width",
+          "border-right-width",
+          "border-top-width",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 14,
+        "sample": [
+          "0:a:block-size: 65.7969px -> 63.7969px",
+          "0:a:border-block-end-width: 3px -> 2px",
+          "0:a:border-block-start-width: 3px -> 2px",
+          "0:a:border-bottom-width: 3px -> 2px",
+          "0:a:border-inline-end-width: 3px -> 2px",
+          "0:a:border-inline-start-width: 3px -> 2px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-width",
+          "border-block-start-width",
+          "border-bottom-width",
+          "border-inline-end-width",
+          "border-inline-start-width",
+          "border-left-width",
+          "border-right-width",
+          "border-top-width",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-border-width-4px",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 14,
+        "sample": [
+          "0:a:block-size: 65.7969px -> 67.7969px",
+          "0:a:border-block-end-width: 3px -> 4px",
+          "0:a:border-block-start-width: 3px -> 4px",
+          "0:a:border-bottom-width: 3px -> 4px",
+          "0:a:border-inline-end-width: 3px -> 4px",
+          "0:a:border-inline-start-width: 3px -> 4px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-width",
+          "border-block-start-width",
+          "border-bottom-width",
+          "border-inline-end-width",
+          "border-inline-start-width",
+          "border-left-width",
+          "border-right-width",
+          "border-top-width",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 14,
+        "sample": [
+          "0:a:block-size: 65.7969px -> 67.7969px",
+          "0:a:border-block-end-width: 3px -> 4px",
+          "0:a:border-block-start-width: 3px -> 4px",
+          "0:a:border-bottom-width: 3px -> 4px",
+          "0:a:border-inline-end-width: 3px -> 4px",
+          "0:a:border-inline-start-width: 3px -> 4px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-width",
+          "border-block-start-width",
+          "border-bottom-width",
+          "border-inline-end-width",
+          "border-inline-start-width",
+          "border-left-width",
+          "border-right-width",
+          "border-top-width",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 14,
+        "sample": [
+          "0:a:block-size: 65.7969px -> 67.7969px",
+          "0:a:border-block-end-width: 3px -> 4px",
+          "0:a:border-block-start-width: 3px -> 4px",
+          "0:a:border-bottom-width: 3px -> 4px",
+          "0:a:border-inline-end-width: 3px -> 4px",
+          "0:a:border-inline-start-width: 3px -> 4px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-width",
+          "border-block-start-width",
+          "border-bottom-width",
+          "border-inline-end-width",
+          "border-inline-start-width",
+          "border-left-width",
+          "border-right-width",
+          "border-top-width",
+          "height",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-border-bottom-only",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:block-size: 59.7969px -> 62.7969px",
+          "0:a:border-block-end-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-block-end-width: 0px -> 3px",
+          "0:a:border-bottom-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-width: 0px -> 3px",
+          "0:a:height: 59.7969px -> 62.7969px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-color",
+          "border-block-end-width",
+          "border-bottom-color",
+          "border-bottom-width",
+          "height",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:block-size: 59.7969px -> 62.7969px",
+          "0:a:border-block-end-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-block-end-width: 0px -> 3px",
+          "0:a:border-bottom-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-width: 0px -> 3px",
+          "0:a:height: 59.7969px -> 62.7969px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-color",
+          "border-block-end-width",
+          "border-bottom-color",
+          "border-bottom-width",
+          "height",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:block-size: 59.7969px -> 62.7969px",
+          "0:a:border-block-end-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-block-end-width: 0px -> 3px",
+          "0:a:border-bottom-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-width: 0px -> 3px",
+          "0:a:height: 59.7969px -> 62.7969px"
+        ],
+        "changedProps": [
+          "block-size",
+          "border-block-end-color",
+          "border-block-end-width",
+          "border-bottom-color",
+          "border-bottom-width",
+          "height",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-border-left-only",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-inline-start-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-inline-start-width: 0px -> 4px",
+          "0:a:border-left-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-left-width: 0px -> 4px",
+          "0:a:inline-size: 119.359px -> 123.359px",
+          "0:a:perspective-origin: 59.6719px 29.8906px -> 61.6719px 29.8906px"
+        ],
+        "changedProps": [
+          "border-inline-start-color",
+          "border-inline-start-width",
+          "border-left-color",
+          "border-left-width",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-inline-start-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-inline-start-width: 0px -> 4px",
+          "0:a:border-left-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-left-width: 0px -> 4px",
+          "0:a:inline-size: 119.359px -> 123.359px",
+          "0:a:perspective-origin: 59.6719px 29.8906px -> 61.6719px 29.8906px"
+        ],
+        "changedProps": [
+          "border-inline-start-color",
+          "border-inline-start-width",
+          "border-left-color",
+          "border-left-width",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:a:border-inline-start-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-inline-start-width: 0px -> 4px",
+          "0:a:border-left-color: rgb(51, 51, 51) -> rgb(245, 158, 11)",
+          "0:a:border-left-width: 0px -> 4px",
+          "0:a:inline-size: 119.359px -> 123.359px",
+          "0:a:perspective-origin: 59.6719px 29.8906px -> 61.6719px 29.8906px"
+        ],
+        "changedProps": [
+          "border-inline-start-color",
+          "border-inline-start-width",
+          "border-left-color",
+          "border-left-width",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-hover-outline-trio",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 19,
+        "sample": [
+          "0:a:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)",
+          "0:a:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-block-start-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-inline-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-inline-start-color: rgb(30, 58, 138) -> rgb(245, 158, 11)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "background-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 19,
+        "sample": [
+          "0:a:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)",
+          "0:a:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-block-start-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-inline-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-inline-start-color: rgb(30, 58, 138) -> rgb(245, 158, 11)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "background-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 19,
+        "sample": [
+          "0:a:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)",
+          "0:a:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-block-start-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-inline-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-inline-start-color: rgb(30, 58, 138) -> rgb(245, 158, 11)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "background-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-hover-outline-trio-enable",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 19,
+        "sample": [
+          "0:a:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)",
+          "0:a:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-block-start-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-inline-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-inline-start-color: rgb(30, 58, 138) -> rgb(245, 158, 11)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "background-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 19,
+        "sample": [
+          "0:a:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)",
+          "0:a:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-block-start-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-inline-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-inline-start-color: rgb(30, 58, 138) -> rgb(245, 158, 11)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "background-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 19,
+        "sample": [
+          "0:a:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)",
+          "0:a:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-block-start-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-bottom-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-inline-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)",
+          "0:a:border-inline-start-color: rgb(30, 58, 138) -> rgb(245, 158, 11)"
+        ],
+        "changedProps": [
+          "-webkit-text-fill-color",
+          "-webkit-text-stroke-color",
+          "background-color",
+          "border-block-end-color",
+          "border-block-start-color",
+          "border-bottom-color",
+          "border-inline-end-color",
+          "border-inline-start-color",
+          "border-left-color",
+          "border-right-color",
+          "border-top-color",
+          "caret-color",
+          "color",
+          "column-rule-color",
+          "outline-color",
+          "row-rule-color",
+          "text-decoration-color",
+          "text-emphasis-color",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-gradient-stops",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-image: none -> linear-gradient(90deg, rgb(30, 58, 138) 0%, rgb(245, 158, 11) 100%)"
+        ],
+        "changedProps": [
+          "background-image"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-image: none -> linear-gradient(90deg, rgb(30, 58, 138) 0%, rgb(245, 158, 11) 100%)"
+        ],
+        "changedProps": [
+          "background-image"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-image: none -> linear-gradient(90deg, rgb(30, 58, 138) 0%, rgb(245, 158, 11) 100%)"
+        ],
+        "changedProps": [
+          "background-image"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-gradient-enabled-direction",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-image: none -> linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "changedProps": [
+          "background-image"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-image: none -> linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "changedProps": [
+          "background-image"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:background-image: none -> linear-gradient(90deg, rgb(43, 135, 218) 0%, rgb(41, 196, 169) 100%)"
+        ],
+        "changedProps": [
+          "background-image"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-shadow-module-preset1",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 2px 18px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 2px 18px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.3) 0px 2px 18px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-shadow-module-soft",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-shadow-module-hard",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px"
+        ],
+        "changedProps": [
+          "box-shadow"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-shadow-element-hard",
+    "effect": false,
+    "widths": {
+      "400": false,
+      "900": false,
+      "1280": false
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-shadow-module-hover",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 2,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px",
+          "0:a:transition-duration: 0.2s -> 0.3s"
+        ],
+        "changedProps": [
+          "box-shadow",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 2,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px",
+          "0:a:transition-duration: 0.2s -> 0.3s"
+        ],
+        "changedProps": [
+          "box-shadow",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 2,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px",
+          "0:a:transition-duration: 0.2s -> 0.3s"
+        ],
+        "changedProps": [
+          "box-shadow",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-lift-hover",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 2,
+        "sample": [
+          "0:a:transform: none -> matrix(1, 0, 0, 1, 0, -4)",
+          "0:a:transition-duration: 0.2s -> 0.3s"
+        ],
+        "changedProps": [
+          "transform",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 2,
+        "sample": [
+          "0:a:transform: none -> matrix(1, 0, 0, 1, 0, -4)",
+          "0:a:transition-duration: 0.2s -> 0.3s"
+        ],
+        "changedProps": [
+          "transform",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 2,
+        "sample": [
+          "0:a:transform: none -> matrix(1, 0, 0, 1, 0, -4)",
+          "0:a:transition-duration: 0.2s -> 0.3s"
+        ],
+        "changedProps": [
+          "transform",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-lift-hover-shadow",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 3,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px",
+          "0:a:transform: none -> matrix(1, 0, 0, 1, 0, -4)",
+          "0:a:transition-duration: 0.2s -> 0.3s"
+        ],
+        "changedProps": [
+          "box-shadow",
+          "transform",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 3,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px",
+          "0:a:transform: none -> matrix(1, 0, 0, 1, 0, -4)",
+          "0:a:transition-duration: 0.2s -> 0.3s"
+        ],
+        "changedProps": [
+          "box-shadow",
+          "transform",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 3,
+        "sample": [
+          "0:a:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px",
+          "0:a:transform: none -> matrix(1, 0, 0, 1, 0, -4)",
+          "0:a:transition-duration: 0.2s -> 0.3s"
+        ],
+        "changedProps": [
+          "box-shadow",
+          "transform",
+          "transition-duration"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-skew-x",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:transform: none -> matrix(1, 0, -0.176327, 1, 0, 0)"
+        ],
+        "changedProps": [
+          "transform"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:transform: none -> matrix(1, 0, -0.176327, 1, 0, 0)"
+        ],
+        "changedProps": [
+          "transform"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 1,
+        "sample": [
+          "0:a:transform: none -> matrix(1, 0, -0.176327, 1, 0, 0)"
+        ],
+        "changedProps": [
+          "transform"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-skew-x-element",
+    "effect": false,
+    "widths": {
+      "400": false,
+      "900": false,
+      "1280": false
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-text-uppercase",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 5,
+        "sample": [
+          "0:a:inline-size: 119.359px -> 126.578px",
+          "0:a:perspective-origin: 59.6719px 29.8906px -> 63.2812px 29.8906px",
+          "0:a:text-transform: none -> uppercase",
+          "0:a:transform-origin: 59.6797px 29.8984px -> 63.2891px 29.8984px",
+          "0:a:width: 119.359px -> 126.578px"
+        ],
+        "changedProps": [
+          "inline-size",
+          "perspective-origin",
+          "text-transform",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 5,
+        "sample": [
+          "0:a:inline-size: 119.359px -> 126.578px",
+          "0:a:perspective-origin: 59.6719px 29.8906px -> 63.2812px 29.8906px",
+          "0:a:text-transform: none -> uppercase",
+          "0:a:transform-origin: 59.6797px 29.8984px -> 63.2891px 29.8984px",
+          "0:a:width: 119.359px -> 126.578px"
+        ],
+        "changedProps": [
+          "inline-size",
+          "perspective-origin",
+          "text-transform",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 5,
+        "sample": [
+          "0:a:inline-size: 119.359px -> 126.578px",
+          "0:a:perspective-origin: 59.6719px 29.8906px -> 63.2812px 29.8906px",
+          "0:a:text-transform: none -> uppercase",
+          "0:a:transform-origin: 59.6797px 29.8984px -> 63.2891px 29.8984px",
+          "0:a:width: 119.359px -> 126.578px"
+        ],
+        "changedProps": [
+          "inline-size",
+          "perspective-origin",
+          "text-transform",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-text-letterspacing",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 5,
+        "sample": [
+          "0:a:inline-size: 119.359px -> 124.359px",
+          "0:a:letter-spacing: 1px -> 2px",
+          "0:a:perspective-origin: 59.6719px 29.8906px -> 62.1719px 29.8906px",
+          "0:a:transform-origin: 59.6797px 29.8984px -> 62.1797px 29.8984px",
+          "0:a:width: 119.359px -> 124.359px"
+        ],
+        "changedProps": [
+          "inline-size",
+          "letter-spacing",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 5,
+        "sample": [
+          "0:a:inline-size: 119.359px -> 124.359px",
+          "0:a:letter-spacing: 1px -> 2px",
+          "0:a:perspective-origin: 59.6719px 29.8906px -> 62.1719px 29.8906px",
+          "0:a:transform-origin: 59.6797px 29.8984px -> 62.1797px 29.8984px",
+          "0:a:width: 119.359px -> 124.359px"
+        ],
+        "changedProps": [
+          "inline-size",
+          "letter-spacing",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 5,
+        "sample": [
+          "0:a:inline-size: 119.359px -> 124.359px",
+          "0:a:letter-spacing: 1px -> 2px",
+          "0:a:perspective-origin: 59.6719px 29.8906px -> 62.1719px 29.8906px",
+          "0:a:transform-origin: 59.6797px 29.8984px -> 62.1797px 29.8984px",
+          "0:a:width: 119.359px -> 124.359px"
+        ],
+        "changedProps": [
+          "inline-size",
+          "letter-spacing",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-text-weight",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    },
+    "cssOnly": true
+  },
+  {
+    "id": "kb-text-weight-from-400",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 5,
+        "sample": [
+          "0:a:font-weight: 400 -> 700",
+          "0:a:inline-size: 116.531px -> 119.359px",
+          "0:a:perspective-origin: 58.2656px 29.8906px -> 59.6719px 29.8906px",
+          "0:a:transform-origin: 58.2656px 29.8984px -> 59.6797px 29.8984px",
+          "0:a:width: 116.531px -> 119.359px"
+        ],
+        "changedProps": [
+          "font-weight",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 5,
+        "sample": [
+          "0:a:font-weight: 400 -> 700",
+          "0:a:inline-size: 116.531px -> 119.359px",
+          "0:a:perspective-origin: 58.2656px 29.8906px -> 59.6719px 29.8906px",
+          "0:a:transform-origin: 58.2656px 29.8984px -> 59.6797px 29.8984px",
+          "0:a:width: 116.531px -> 119.359px"
+        ],
+        "changedProps": [
+          "font-weight",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 5,
+        "sample": [
+          "0:a:font-weight: 400 -> 700",
+          "0:a:inline-size: 116.531px -> 119.359px",
+          "0:a:perspective-origin: 58.2656px 29.8906px -> 59.6719px 29.8906px",
+          "0:a:transform-origin: 58.2656px 29.8984px -> 59.6797px 29.8984px",
+          "0:a:width: 116.531px -> 119.359px"
+        ],
+        "changedProps": [
+          "font-weight",
+          "inline-size",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-padding-module",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 14,
+        "sample": [
+          "0:a:block-size: 59.7969px -> 51.7969px",
+          "0:a:height: 59.7969px -> 51.7969px",
+          "0:a:inline-size: 119.359px -> 95.3594px",
+          "0:a:padding-block-end: 18px -> 14px",
+          "0:a:padding-block-start: 18px -> 14px",
+          "0:a:padding-bottom: 18px -> 14px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "inline-size",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-inline-end",
+          "padding-inline-start",
+          "padding-left",
+          "padding-right",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 14,
+        "sample": [
+          "0:a:block-size: 59.7969px -> 51.7969px",
+          "0:a:height: 59.7969px -> 51.7969px",
+          "0:a:inline-size: 119.359px -> 95.3594px",
+          "0:a:padding-block-end: 18px -> 14px",
+          "0:a:padding-block-start: 18px -> 14px",
+          "0:a:padding-bottom: 18px -> 14px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "inline-size",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-inline-end",
+          "padding-inline-start",
+          "padding-left",
+          "padding-right",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 14,
+        "sample": [
+          "0:a:block-size: 59.7969px -> 51.7969px",
+          "0:a:height: 59.7969px -> 51.7969px",
+          "0:a:inline-size: 119.359px -> 95.3594px",
+          "0:a:padding-block-end: 18px -> 14px",
+          "0:a:padding-block-start: 18px -> 14px",
+          "0:a:padding-bottom: 18px -> 14px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "inline-size",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-inline-end",
+          "padding-inline-start",
+          "padding-left",
+          "padding-right",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin",
+          "width"
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "kb-padding-element",
+    "effect": false,
+    "widths": {
+      "400": false,
+      "900": false,
+      "1280": false
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  }
+]
