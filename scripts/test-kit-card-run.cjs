@@ -18,7 +18,10 @@ const { chromium } = require(PW);
 const php = spawnSync('php', [path.join(__dirname, 'lib', 'kit-sheet-offline.php'), '--kit', 'soft-lift', '--language', 'editorial'], { input: K.sheetMarkup(), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
 assert.strictEqual(php.status, 0, 'php failed: ' + (php.error ? php.error.message : php.stderr));
 const row = JSON.parse(php.stdout)[0];
-const expects = K.cardAttrs(row.markup).map((c) => K.expectCardFromAttrs(c.attrs));
+const sheet = K.cardAttrs(row.markup);
+const expects = sheet.map((c) => K.expectCardFromAttrs(c.attrs));
+const buttonExpects = sheet.map((c) => c.buttons.map(K.expectFromAttrs));
+const N = K.CARD_SLOTS.length;
 const HAIRLINE = '#e3dccf';
 const IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='9'><rect width='16' height='9' fill='%23336699'/></svg>";
 
@@ -39,13 +42,29 @@ function cssFor(slot, e) {
   return css;
 }
 
+/** The stylesheet that makes a synthetic button agree with its expectation (soft-lift under editorial, on the inverted panel). */
+function buttonCssFor(key, e) {
+  const sel = `[data-kb="${key}"]`;
+  const side = (k) => `${e.rest[k].width}px ${e.rest[k].style} ${e.rest[k].color}`;
+  const r = e.rest.radius.map((v) => v + 'px').join(' ');
+  let css = `${sel}{display:inline-block;box-sizing:border-box;background:${e.rest.fill};color:${e.rest.label};border-top:${side('top')};border-bottom:${side('bottom')};border-left:${side('top')};border-right:${side('top')};border-radius:${r};padding:${e.rest.padding.map((v) => v + 'px').join(' ')};text-transform:${e.rest.capitalization};letter-spacing:${e.rest.letterSpacing}px;font-weight:${e.rest.weight};box-shadow:${shadowCss(e.shadow.rest)};transition:none;text-decoration:none}`;
+  const hov = [`background:${e.hover.fill}`, `color:${e.hover.label}`, `border-color:${e.hover.border}`];
+  if (e.lift !== null) hov.push(`transform:translateY(${e.lift}px)`);
+  if (e.shadow.hover && e.shadow.hover !== e.shadow.rest) hov.push(`box-shadow:${shadowCss(e.shadow.hover)}`);
+  return css + `${sel}:hover{${hov.join(';')}}`;
+}
+
 /** The page: five bands as Divi nests them; `tweak(slot, html)` / `extraCss` apply a deliberate departure. */
-function pageHtml({ extraCss = '', tweak = (s, h) => h, drop = [], textColor = '#1c1a17', paraColor = '#6b645a' } = {}) {
+function pageHtml({ extraCss = '', tweak = (s, h) => h, drop = [], textColor = null, paraColor = null } = {}) {
   const card = (slot) => {
-    const e = expects[K.CARD_SLOTS.indexOf(slot)];
-    const body = `${slot.image ? `<div class="et_pb_module et_pb_image"><span class="et_pb_image_wrap"><img src="${IMG}" style="display:block;width:100%;aspect-ratio:16/9"></span></div>` : ''}<div class="et_pb_module et_pb_heading"><div class="et_pb_heading_container"><h3 style="margin:0;color:${textColor}">${slot.heading}</h3></div></div><div class="et_pb_module et_pb_text"><div class="et_pb_text_inner"><p style="margin:0;color:${paraColor}">Placeholder copy for a card.</p></div></div>`;
+    const idx = K.CARD_SLOTS.indexOf(slot);
+    const e = expects[idx];
+    const inks = sheet[idx].inks;
+    const heading = textColor || inks.heading; const para = paraColor || inks.paragraph;
+    const buttons = buttonExpects[idx].map((be, j) => `<div class="et_pb_module et_pb_button_module_wrapper"><a class="et_pb_button" data-kb="${slot.key}:${j}" href="#">Action ${j}</a></div>`).join('');
+    const body = `${slot.image ? `<div class="et_pb_module et_pb_image"><span class="et_pb_image_wrap"><img src="${IMG}" style="display:block;width:100%;aspect-ratio:16/9"></span></div>` : ''}<div class="et_pb_module et_pb_heading"><div class="et_pb_heading_container"><h3 style="margin:0;color:${heading}">${slot.heading}</h3></div></div><div class="et_pb_module et_pb_text"><div class="et_pb_text_inner"><p style="margin:0;color:${para}">Placeholder copy for a card.</p></div></div>${buttons}`;
     const cls = slot.carrier === 'column' ? 'et_pb_column' : 'et_pb_module et_pb_group';
-    return { css: cssFor(slot, e), html: tweak(slot, `<div class="${cls}" data-k="${slot.key}" style="display:block">${body}</div>`) };
+    return { css: cssFor(slot, e) + buttonExpects[idx].map((be, j) => buttonCssFor(`${slot.key}:${j}`, be)).join(''), html: tweak(slot, `<div class="${cls}" data-k="${slot.key}" style="display:block">${body}</div>`) };
   };
   const live = K.CARD_SLOTS.filter((s) => !drop.includes(s.key));
   const cards = live.map(card);
@@ -62,7 +81,7 @@ function pageHtml({ extraCss = '', tweak = (s, h) => h, drop = [], textColor = '
     const p = await browser.newPage({ viewport: { width, height: 900 } });
     await p.setContent(html);
     if (before) await before(p);
-    const r = await checkCards(p, { width, expects, hairline: HAIRLINE });
+    const r = await checkCards(p, { width, expects, buttonExpects, hairline: HAIRLINE });
     await p.close();
     return r;
   };
@@ -71,13 +90,17 @@ function pageHtml({ extraCss = '', tweak = (s, h) => h, drop = [], textColor = '
     // A page that agrees with the kit passes, at desktop (columns side by side) and at 400 px (stacked).
     const ok = await run(pageHtml());
     assert.deepStrictEqual(ok.problems, [], JSON.stringify(ok.problems));
-    assert.strictEqual(ok.cardsChecked, 12);
+    assert.strictEqual(ok.cardsChecked, N);
     assert.strictEqual(ok.layout, 'side-by-side');
-    assert.strictEqual(ok.observations.length, 12);
+    assert.strictEqual(ok.observations.length, N);
     const clip = ok.observations.find((o) => o.key === 'panel-clip');
     assert.strictEqual(clip.clip.flush, true);
     assert.strictEqual(clip.clip.clipped, true, 'the 16px radius cuts the flush image corner');
-    assert.ok(ok.observations.every((o) => o.fill === '#ffffff' || o.fill === '#faf7f2'), 'the painted fill was measured with the children hidden: ' + ok.observations.map((o) => o.fill).join());
+    assert.ok(ok.observations.every((o, i) => o.fill === K.hex(K.colour(expects[i].rest.fill))), 'the painted fill was measured with the children hidden and is the resolved fill: ' + ok.observations.map((o) => o.fill).join());
+    assert.strictEqual(ok.observations.filter((o) => o.ground).length, 9, 'eight grounds on the two light bands and the accent middle card are reported as grounds');
+    const feat = ok.observations.find((o) => o.key === 'column-2').featured;
+    assert.ok(feat && feat.featured > feat.neighbours[0] * 1.5 && feat.neighbours.length === 2 && feat.ratio >= 1.5, 'the featured middle card is measured against its neighbours: ' + JSON.stringify(feat));
+    assert.strictEqual(ok.observations.filter((o) => o.buttons).length, 2, 'the two button panels report their buttons');
     assert.ok(ok.observations.every((o) => o.band !== null), 'a strip of the band above every card was sampled');
     const phone = await run(pageHtml(), 400);
     assert.deepStrictEqual(phone.problems, [], JSON.stringify(phone.problems));
@@ -112,6 +135,26 @@ function pageHtml({ extraCss = '', tweak = (s, h) => h, drop = [], textColor = '
     assert.ok(codes(pale).length >= 12 && codes(pale).every((c) => c === 'card-contrast'), 'pale paragraph text on every card: ' + codes(pale).join());
     const unclipped = await run(pageHtml({ extraCss: '[data-k="panel-clip"]{overflow:visible}' }));
     assert.deepStrictEqual(codes(unclipped), ['card-clip']);
+
+    // Grounds, button panels and the featured card: each new code has its own departure.
+    const wrongGround = await run(pageHtml({ extraCss: '[data-k="inverted-card-bg"]{background:#8a8a8a}' }));
+    assert.ok(codes(wrongGround).includes('ground-fill') && codes(wrongGround).includes('card-fill'), 'a wrong ground fill (computed and painted): ' + codes(wrongGround).join());
+    assert.match(wrongGround.problems.find((x) => x[0] === 'ground-fill')[1], /^inverted-card-bg painted fill #8a8a8a differs from the resolved ground fill #1c1a17/);
+    // Something drawn over a correct ground (the computed style stays right): only the painted fill gives it away.
+    const overlaid = await run(pageHtml({ extraCss: '[data-k="accent-tile-surface"]{position:relative}[data-k="accent-tile-surface"]::after{content:"";position:absolute;inset:0;background:#f4f4f4}' }));
+    assert.ok(codes(overlaid).includes('ground-fill'), 'a ground covered by something else: ' + codes(overlaid).join());
+    assert.ok(!codes(overlaid).includes('card-fill'), 'the computed fill is still right, so only ground-fill fires');
+    const unreadable = await run(pageHtml({ extraCss: '[data-kb="panel-buttons-bg:0"]{color:#eeeeee}' }));
+    assert.ok(unreadable.problems.some(([c, d]) => c === 'panel-button' && /^panel-buttons-bg:0 .*label/.test(d)), 'a label that is unreadable on the inverted panel: ' + JSON.stringify(unreadable.problems));
+    const hoverColours = await run(pageHtml({ extraCss: '[data-kb="panel-buttons-surface:1"]:hover{background:#c00000}' }));
+    assert.ok(hoverColours.problems.some(([c, d]) => c === 'panel-button' && /hover: background-color/.test(d)), 'hover colours that are not the resolved ones: ' + JSON.stringify(hoverColours.problems));
+    const invisibleBorder = await run(pageHtml({ extraCss: '[data-kb="panel-buttons-bg:1"]{border-width:2px;border-color:#1c1a17}' }));
+    assert.ok(invisibleBorder.problems.some(([c, d]) => c === 'panel-button' && /^panel-buttons-bg:1 rest: border-top .* is 1:1, needs 3/.test(d)), 'a transparent button whose drawn border is the panel colour: ' + JSON.stringify(invisibleBorder.problems));
+    const flatFeatured = await run(pageHtml({ extraCss: '[data-k="column-2"]{background:#ffffff}' }));
+    assert.ok(codes(flatFeatured).includes('featured'), 'a featured card no more prominent than its neighbours: ' + codes(flatFeatured).join());
+    assert.match(flatFeatured.problems.find((x) => x[0] === 'featured')[1], /^column-2 prominence .*needs 1\.5x/);
+    const featuredPhone = await run(pageHtml({ extraCss: '[data-k="column-2"]{background:#ffffff}' }), 400);
+    assert.ok(codes(featuredPhone).includes('featured'), 'the featured check also runs at 400px');
     // A fixed bar (the logged-in preview's WordPress admin bar) scrolled over a card must not disturb the painted-fill sample.
     const bar = await run(pageHtml({ extraCss: '#bar{position:fixed;top:0;left:0;right:0;height:32px;background:#23282d;z-index:9}' }), 1280, (page) => page.evaluate(() => { const b = document.createElement('div'); b.id = 'bar'; document.body.appendChild(b); const h = [...document.querySelectorAll('.et_pb_heading')].find((n) => n.textContent.trim() === 'Card on accent'); window.scrollTo(0, h.closest('.et_pb_group').getBoundingClientRect().top + window.scrollY - 5); }));
     assert.deepStrictEqual(bar.problems, [], JSON.stringify(bar.problems));
@@ -121,7 +164,7 @@ function pageHtml({ extraCss = '', tweak = (s, h) => h, drop = [], textColor = '
       const pg = await browser.newPage({ viewport: { width: 1280, height: 900 } });
       await pg.setContent(pageHtml());
       await pg.evaluate((v) => { const c = document.querySelector('[data-aied-card="card-bg"]') || document.querySelector('[data-k="card-bg"]'); const f = document.createElement('div'); f.id = 'fx'; f.textContent = 'badge'; f.style.cssText = 'position:fixed;right:4px;bottom:4px;width:20px;height:20px;background:#c00'; if (v) f.style.visibility = v; c.appendChild(f); }, initial);
-      const r = await checkCards(pg, { width: 1280, expects, hairline: HAIRLINE });
+      const r = await checkCards(pg, { width: 1280, expects, buttonExpects, hairline: HAIRLINE });
       assert.deepStrictEqual(r.problems, [], JSON.stringify(r.problems));
       const after = await pg.evaluate(() => { const f = document.getElementById('fx'); return { vis: getComputedStyle(f).visibility, tagged: Object.keys(f.dataset) }; });
       assert.strictEqual(after.vis, expected, 'a fixed element inside a card is restored (was ' + JSON.stringify(initial) + ')');
@@ -130,13 +173,13 @@ function pageHtml({ extraCss = '', tweak = (s, h) => h, drop = [], textColor = '
     }
     const lost = await run(pageHtml({ drop: ['panel-surface'] }));
     assert.deepStrictEqual(codes(lost), ['cards']);
-    assert.match(lost.problems[0][1], /11 cards rendered, expected 12 \(missing: panel-surface\)/);
+    assert.match(lost.problems[0][1], /19 cards rendered, expected 20 \(missing: panel-surface\)/);
     assert.strictEqual(lost.cardsChecked, 0, 'a page with a card missing checks nothing else');
     const notStacked = await run(pageHtml({ extraCss: '@media (max-width:600px){.et-l--post .three{display:flex}}' }), 400);
     assert.ok(codes(notStacked).includes('overflow'), codes(notStacked).join());
     const wide = await run(pageHtml({ extraCss: '[data-k="card-bg"]{width:900px}' }), 400);
     assert.ok(codes(wide).includes('overflow'), 'a card wider than the phone: ' + codes(wide).join());
-    console.log('OK kit-card-run in a real Chromium on synthetic pages: a matching page passes at 1280 and 400, 15 departures are each caught (and a fixed bar over a card is not mistaken for one) with their code');
+    console.log('OK kit-card-run in a real Chromium on synthetic pages: a matching page passes at 1280 and 400, every departure is caught (and a fixed bar over a card is not mistaken for one) with their code');
   } finally {
     await browser.close();
   }

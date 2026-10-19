@@ -32,32 +32,58 @@ const blockOf = (name, attrs, children) => (children === null ? `<!-- wp:divi/${
 const capital = (w) => w.charAt(0).toUpperCase() + w.slice(1);
 
 /**
- * The cards of the sheet, in document order. Every one holds a heading (its UNIQUE text finds it again, in the markup and in the page)
- * and a paragraph; `image` puts a placeholder image first; `padding` is the panel's literal padding in px (a panel keeps its recipe
- * padding: no kit key), `flush` = a zero-padding panel whose image touches the card's corners (the clip is only exercised there);
- * `carrier` is the block that carries the marker: `group`, or `column` for the three cards of a 3-column row.
+ * The cards of the sheet. Every one holds a heading (its UNIQUE text finds it again, in the markup and in the page) and a paragraph;
+ * `image` puts a placeholder image first; `padding` is the panel's literal padding in px (a panel keeps its recipe padding: no kit key),
+ * `flush` = a zero-padding panel whose image touches the card's corners (the clip is only exercised there); `carrier` is the block that
+ * carries the marker: `group`, or `column` for the three cards of a 3-column row. `ground` is the marker's ground field (`inverted` |
+ * `accent`, light and surface bands only): the card is filled with `text` or `accent` and its children use the allowed inks (`inkHeading`,
+ * `inkPara`: `bg` on an inverted ground, `accent-text` on an accent one, `text`/`muted` on a plain card). `buttons` = how many kit buttons
+ * (a primary `control`, a secondary `control-secondary`, both `on:"panel"`) the slot holds. `featured` marks the card whose prominence
+ * against its two row neighbours is measured (the accent middle card of the three-column row).
  */
 const CARD_SLOTS = [];
+const GROUND_INK = { inverted: 'bg', accent: 'accent-text' };
+const addSlot = (o) => {
+  const ink = o.ground ? GROUND_INK[o.ground] : null;
+  CARD_SLOTS.push(Object.assign({ carrier: 'group', image: false, flush: false, padding: null, row: false, ground: null, buttons: 0, featured: false, inkHeading: ink || 'text', inkPara: ink || 'muted' }, o));
+};
 for (const s of SURFACES) {
   for (const role of ['card', 'panel']) {
-    CARD_SLOTS.push({ key: `${role}-${s.key}`, heading: `${capital(role)} on ${s.key}`, band: s.key, on: CARD_ON[s.key], role, carrier: 'group', image: role === 'card' && s.key === 'bg', flush: false, padding: role === 'panel' ? 40 : null, row: false });
+    addSlot({ key: `${role}-${s.key}`, heading: `${capital(role)} on ${s.key}`, band: s.key, on: CARD_ON[s.key], role, image: role === 'card' && s.key === 'bg', padding: role === 'panel' ? 40 : null });
   }
-  if (s.key === 'bg') CARD_SLOTS.push({ key: 'panel-clip', heading: 'Panel clip on bg', band: 'bg', on: 'light', role: 'panel', carrier: 'group', image: true, flush: true, padding: 0, row: false });
+  if (s.key === 'bg') addSlot({ key: 'panel-clip', heading: 'Panel clip on bg', band: 'bg', on: 'light', role: 'panel', image: true, flush: true, padding: 0 });
+  // Grounds (Task 2 of the kit-limits plan) exist on the two light bands only: an inverted card and panel, an accent tile, and an inverted
+  // panel that holds a primary and a secondary kit button on the panel surface.
+  if (s.key === 'bg' || s.key === 'surface') {
+    const base = { band: s.key, on: CARD_ON[s.key] };
+    addSlot(Object.assign({ key: `inverted-card-${s.key}`, heading: `Inverted card on ${s.key}`, role: 'card', ground: 'inverted' }, base));
+    addSlot(Object.assign({ key: `inverted-panel-${s.key}`, heading: `Inverted panel on ${s.key}`, role: 'panel', ground: 'inverted', padding: 40 }, base));
+    addSlot(Object.assign({ key: `accent-tile-${s.key}`, heading: `Accent tile on ${s.key}`, role: 'card', ground: 'accent' }, base));
+    addSlot(Object.assign({ key: `panel-buttons-${s.key}`, heading: `Button panel on ${s.key}`, role: 'panel', ground: 'inverted', padding: 40, buttons: 2 }, base));
+  }
 }
-for (const i of [1, 2, 3]) CARD_SLOTS.push({ key: `column-${i}`, heading: `Column card ${i}`, band: 'bg', on: 'light', role: 'card', carrier: 'column', image: false, flush: false, padding: null, row: true });
+// The three-column row: plain cards either side of an ACCENT-ground middle card (the featured plan).
+for (const i of [1, 2, 3]) addSlot({ key: `column-${i}`, heading: `Column card ${i}`, band: 'bg', on: 'light', role: 'card', carrier: 'column', row: true, ground: i === 2 ? 'accent' : null, featured: i === 2 });
+
+/** The kit buttons a button slot holds, in order: [{ role, text }]. */
+const PANEL_BUTTONS = [{ role: 'control', text: 'Primary action' }, { role: 'control-secondary', text: 'Secondary action' }];
+/** One button block of the sheet: the marker names the surface (`on`, omitted for light). */
+const buttonBlock = (role, text, on) => `<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"${text}"}}},"decoration":{"font":{"font":{"desktop":{"value":{"family":"{{aied:font:body}}"}}}}}},${V},"aied":${JSON.stringify(on === 'light' ? { kit: role } : { kit: role, on })}} /-->`;
 
 /** One card slot as markup: the marked carrier with an optional image, a heading and a paragraph (colours from the language, as recipes write them). */
 function cardMarkup(slot) {
   const marker = slot.on === 'light' ? { kit: slot.role } : { kit: slot.role, on: slot.on };
+  if (slot.ground) marker.ground = slot.ground;
   const px4 = (n) => ({ top: `${n}px`, right: `${n}px`, bottom: `${n}px`, left: `${n}px` });
   const inset = slot.flush ? { module: { decoration: { spacing: { desktop: { value: { padding: { top: '16px', right: '24px', bottom: '16px', left: '24px' } } } } } } } : {};
   const image = blockOf('image', { module: { advanced: { sizing: { desktop: { value: { width: '100%', aspectRatio: { width: '16', height: '9' } } } } } }, image: { innerContent: { desktop: { value: { src: '{{aied:image:card-blue-1}}', alt: 'Placeholder photograph: replace with your own' } } }, decoration: { fit: { desktop: { value: { objectFit: 'cover' } } } } }, builderVersion: '5.8.0' }, null);
-  const heading = blockOf('heading', Object.assign({ title: { innerContent: { desktop: { value: slot.heading } }, decoration: { font: { font: { desktop: { value: { headingLevel: 'h3', color: '{{aied:color:text}}', family: '{{aied:font:display}}', size: '24px' } } } } } }, builderVersion: '5.8.0' }, inset), null);
-  const para = blockOf('text', Object.assign({ content: { innerContent: { desktop: { value: '<p>Placeholder copy for a card: one short sentence that the surrounding colours must keep readable.</p>' } }, decoration: { bodyFont: { body: { font: { desktop: { value: { color: '{{aied:color:muted}}', family: '{{aied:font:body}}', size: '16px', lineHeight: '1.5em' } } } } } } }, builderVersion: '5.8.0' }, inset), null);
+  const heading = blockOf('heading', Object.assign({ title: { innerContent: { desktop: { value: slot.heading } }, decoration: { font: { font: { desktop: { value: { headingLevel: 'h3', color: `{{aied:color:${slot.inkHeading}}}`, family: '{{aied:font:display}}', size: '24px' } } } } } }, builderVersion: '5.8.0' }, inset), null);
+  const para = blockOf('text', Object.assign({ content: { innerContent: { desktop: { value: '<p>Placeholder copy for a card: one short sentence that the surrounding colours must keep readable.</p>' } }, decoration: { bodyFont: { body: { font: { desktop: { value: { color: `{{aied:color:${slot.inkPara}}}`, family: '{{aied:font:body}}', size: '16px', lineHeight: '1.5em' } } } } } } }, builderVersion: '5.8.0' }, inset), null);
   const layout = slot.carrier === 'column' ? { flexDirection: 'column', rowGap: '16px' } : { flexDirection: 'column', rowGap: '12px' };
   const decoration = { layout: { desktop: { value: layout } } };
   if (slot.padding !== null) decoration.spacing = { desktop: { value: { padding: px4(slot.padding) } } };
-  const body = [slot.image ? image : null, heading, para].filter(Boolean).join('\n');
+  const buttons = slot.buttons ? PANEL_BUTTONS.slice(0, slot.buttons).map((b) => buttonBlock(b.role, b.text, 'panel')).join('\n') : null;
+  const body = [slot.image ? image : null, heading, para, buttons].filter(Boolean).join('\n');
   if (slot.carrier === 'column') {
     decoration.sizing = { desktop: { value: { flexType: '8_24' } }, phone: { value: { flexType: '24_24' } } };
     return blockOf('column', { module: { advanced: { type: { desktop: { value: '1_3' } } }, decoration }, builderVersion: '5.8.0', aied: marker }, body);
@@ -65,12 +91,11 @@ function cardMarkup(slot) {
   return blockOf('group', { module: { decoration }, builderVersion: '5.8.0', aied: marker }, body);
 }
 
-/** The tokenised sheet markup: 8 buttons (SURFACES x ROLES) and 12 cards (CARD_SLOTS), in document order. */
+/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS) and, inside the two button panels, 4 more buttons. */
 function sheetMarkup() {
   const v = V;
   const sections = SURFACES.map((s) => {
-    const marker = (role) => (s.on === 'light' ? `{"kit":"${role}"}` : `{"kit":"${role}","on":"${s.on}"}`);
-    const buttons = ROLES.map((r) => `<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"${r.text}"}}},"decoration":{"font":{"font":{"desktop":{"value":{"family":"{{aied:font:body}}"}}}}}},${v},"aied":${marker(r.role)}} /-->`).join('\n');
+    const buttons = ROLES.map((r) => buttonBlock(r.role, r.text, s.on)).join('\n');
     const cards = CARD_SLOTS.filter((c) => c.band === s.key && !c.row).map(cardMarkup).join('\n');
     return `<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":${s.bg}}},"spacing":{"desktop":{"value":{"padding":{"top":"64px","bottom":"64px"}}}}}},${v}} -->
 <!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},${v}} -->
@@ -145,6 +170,13 @@ function buttonAttrs(markup) {
   const re = /<!--\s+wp:divi\/button\s+(\{(?:[^-}]|-(?!->)|\}(?!\s+\/?-->))*\})\s+\/?-->/g;
   let m;
   while ((m = re.exec(markup))) out.push(JSON.parse(m[1]));
+  return out;
+}
+/** The attribute objects of the PAGE-LEVEL buttons (the 8 of SLOTS): every button that is not inside a group (the button panels hold the others). */
+function pageButtonAttrs(markup) {
+  const out = [];
+  const walk = (nodes, inGroup) => { for (const n of nodes) { if (n.name === 'divi/button' && !inGroup) out.push(n.attrs); walk(n.children, inGroup || n.name === 'divi/group'); } };
+  walk(blockTree(markup), false);
   return out;
 }
 const dig = (o, ...keys) => keys.reduce((a, k) => (a && typeof a === 'object' ? a[k] : undefined), o);
@@ -425,9 +457,13 @@ function firstHeading(node) {
   }
   return null;
 }
+/** Every descendant of a node, depth first. */
+function descendants(node) { return node.children.flatMap((c) => [c, ...descendants(c)]); }
 /**
  * The attribute object of each sheet card in the RESOLVED markup (the marker is gone, so a card is found by the carrier block that holds
- * its unique heading text): [{ slot, attrs }] in CARD_SLOTS order; attrs is null when the card is not in the markup.
+ * its unique heading text): [{ slot, attrs, buttons, inks }] in CARD_SLOTS order; attrs is null when the card is not in the markup;
+ * `buttons` = the attribute objects of the divi/button blocks inside it (document order), `inks` = { heading, paragraph }: the colour the
+ * first heading and the first text inside it carry (a token in the sheet, a colour in the resolved markup).
  */
 function cardAttrs(markup, slots = CARD_SLOTS) {
   const found = new Map();
@@ -435,13 +471,22 @@ function cardAttrs(markup, slots = CARD_SLOTS) {
     for (const n of nodes) {
       if (n.name === 'divi/group' || n.name === 'divi/column') {
         const h = firstHeading(n);
-        if (h !== null && !found.has(n.name + '|' + h)) found.set(n.name + '|' + h, n.attrs);
+        if (h !== null && !found.has(n.name + '|' + h)) found.set(n.name + '|' + h, n);
       }
       walk(n.children);
     }
   };
   walk(blockTree(markup));
-  return slots.map((slot) => ({ slot, attrs: found.get(`divi/${slot.carrier}|${slot.heading}`) || null }));
+  return slots.map((slot) => {
+    const node = found.get(`divi/${slot.carrier}|${slot.heading}`) || null;
+    const all = node ? descendants(node) : [];
+    const heading = all.find((x) => x.name === 'divi/heading');
+    const text = all.find((x) => x.name === 'divi/text');
+    return {
+      slot, attrs: node ? node.attrs : null, buttons: all.filter((x) => x.name === 'divi/button').map((x) => x.attrs),
+      inks: { heading: heading ? dig(heading.attrs, 'title', 'decoration', 'font', 'font', 'desktop', 'value', 'color') || null : null, paragraph: text ? dig(text.attrs, 'content', 'decoration', 'bodyFont', 'body', 'font', 'desktop', 'value', 'color') || null : null },
+    };
+  });
 }
 
 /**
@@ -483,10 +528,11 @@ function expectCardFromAttrs(attrs) {
 /**
  * The expectation fields that are missing although KitAdapters::card() ALWAYS writes them (fill, the four radii, the frame width/style/colour
  * on every side, and for a CARD the padding; a panel's padding is the sheet's literal, so the sheet must give it too), plus a panel that
- * carries any hover key (a panel is static: that is an adapter fault, not an expectation). A non-empty list is a `gate` failure and
+ * carries any hover key (a panel is static: that is an adapter fault, not an expectation), and, for a `ground`, a fill that is not opaque, a
+ * frame side that is not the fill, or a hover fill or frame. A non-empty list is a `gate` failure and
  * compareCard refuses to compare: a null expectation must never silently skip a check.
  */
-function missingCardExpectations(exp, role) {
+function missingCardExpectations(exp, role, ground = null) {
   const out = [];
   const num = (v) => typeof v === 'number' && !Number.isNaN(v);
   const r = exp.rest;
@@ -499,6 +545,13 @@ function missingCardExpectations(exp, role) {
     if (!r[k].color) out.push(`rest.${k}.color`);
   }
   if (role === 'panel') for (const k of exp.hoverKeys) out.push('panel carries ' + k);
+  if (ground && r.fill) {
+    // The ground contract (KitAdapters::card): an opaque fill, every frame side the colour of the fill, no hover fill and no hover frame.
+    const f = colour(r.fill);
+    if (!f || f.a < 0.999) out.push(`ground fill is not opaque (${r.fill})`);
+    for (const [k] of SIDES) if (r[k].color && !sameColour(r[k].color, r.fill)) out.push(`ground frame ${k} is not the fill`);
+    for (const k of ['border.hover', 'background.hover']) if (exp.hoverKeys.includes(k)) out.push('ground carries ' + k);
+  }
   return out;
 }
 
@@ -591,9 +644,10 @@ function cardClipProblems(slot, exp, c) {
  * Contrast on the MEASURED card fill ({r,g,b}, the mean of a screenshot of the card's inner box with its children hidden): the heading and
  * the paragraph colours against it >= 4.5 (code card-contrast), and every drawn frame side >= 3.0 against it, except the decorative
  * `border` hairline (the colour of the language's `border` role, `hairline`), which is reported but not judged. An unreadable colour or a
- * missing text is a failure, never a skip. c = { el, heading: { color }|null, paragraph: { color }|null }.
+ * missing text is a failure, never a skip. A card with a `ground` also exempts a frame side that is the colour of its own fill (the frame
+ * only keeps the box the size of its neighbours). c = { el, heading: { color }|null, paragraph: { color }|null }.
  */
-function cardContrastProblems(c, fill, hairline = null) {
+function cardContrastProblems(c, fill, hairline = null, ground = null) {
   const out = []; const info = {};
   const base = { r: fill.r, g: fill.g, b: fill.b, a: 1 };
   for (const [name, t] of [['heading', c.heading], ['paragraph', c.paragraph]]) {
@@ -611,6 +665,7 @@ function cardContrastProblems(c, fill, hairline = null) {
     const r = round2(ratioOf(over(bc, base), base));
     info[side] = r;
     if (hairline && sameColour(hairline, raw)) { info.hairline = true; continue; }
+    if (ground && sameColour(raw, c.el.backgroundColor)) { info.fillFrame = true; continue; } // a ground's frame IS its fill: it gives the box its size, the fill gives the shape
     if (r < CONTRAST_SHAPE) out.push(['card-contrast', `frame ${side} ${hex(over(bc, base))} on the card fill ${hex(base)} is ${r}:1, needs ${CONTRAST_SHAPE}`]);
   }
   return { problems: out, info };
@@ -622,6 +677,87 @@ function paintedFillProblems(el, fill) {
   if (!c || c.a < 0.999) return [];
   const d = Math.max(Math.abs(c.r - fill.r), Math.abs(c.g - fill.g), Math.abs(c.b - fill.b));
   return d > 4 ? [['card-fill', `painted fill ${hex(fill)} differs from the computed ${el.backgroundColor} by ${Math.round(d)} (something is drawn over the card)`]] : [];
+}
+
+/**
+ * Ground fill: the PAINTED fill (screenshot mean of the card's inner box, children hidden) must be the fill the resolved markup says
+ * (`exp.rest.fill`, text or accent), within 4 per channel, whatever the computed style reports (something drawn over a ground shows here).
+ * Code ground-fill. A hole in the expectation, a translucent expectation or a missing sample fails; nothing is skipped.
+ */
+function groundFillProblems(exp, fill) {
+  const want = colour(exp && exp.rest ? exp.rest.fill : null);
+  if (!want) return [['ground-fill', 'no resolved ground fill in the expectation (an adapter attribute path drifted)']];
+  if (want.a < 0.999) return [['ground-fill', `the resolved ground fill ${exp.rest.fill} is not opaque: it cannot be judged against a screenshot`]];
+  if (!fill) return [['ground-fill', 'the painted fill was not sampled']];
+  const d = Math.max(Math.abs(want.r - fill.r), Math.abs(want.g - fill.g), Math.abs(want.b - fill.b));
+  return d > 4 ? [['ground-fill', `painted fill ${hex(fill)} differs from the resolved ground fill ${exp.rest.fill} by ${Math.round(d)}`]] : [];
+}
+
+// ---- the featured plan -----------------------------------------------------------------------------------------------
+/**
+ * How much more prominent the featured (accent middle) card must be than the LARGER of its two row neighbours: its prominence (the mean
+ * painted luminance difference between its box and the band behind it) at least FEATURED_RATIO times theirs. 1.5 is the spec's starting
+ * value. CONFIRMED ON THE FIRST LIVE SMOKE and then FROZEN: if a live cell fails, the fix is in the kit, the adapter or the recipe, never
+ * a lower number here.
+ */
+const FEATURED_RATIO = 1.5;
+const lin = (v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
+const relLum = (c) => 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+/**
+ * Prominence of a card: the mean, over every pixel of a screenshot of its box (children hidden, shadow off, so the fill and the frame are
+ * all that is drawn), of |relative luminance of the pixel - relative luminance of the band|. Per pixel, not the difference of the means, so
+ * a dark frame around a pale fill counts. img = decodePng(...), band = { r, g, b } (a strip of the band just above the card).
+ */
+function boxProminence(img, band) {
+  const n = img.data.length / 4;
+  if (!n) throw new Error('boxProminence: the box image is empty');
+  const lb = relLum(band);
+  let sum = 0;
+  for (let i = 0; i < img.data.length; i += 4) sum += Math.abs(relLum({ r: img.data[i], g: img.data[i + 1], b: img.data[i + 2] }) - lb);
+  return sum / n;
+}
+/**
+ * Code `featured`: v = { featured, neighbours: [a, b] } (prominences). The featured card must be visible at all (> 0) and at least `ratio`
+ * times the larger neighbour (the edge is inclusive; 1e-9 of float slack). Any missing or non-finite number fails: it is never skipped.
+ */
+function featuredProblems(v, ratio = FEATURED_RATIO) {
+  const ok = (x) => typeof x === 'number' && Number.isFinite(x) && x >= 0;
+  if (!v || !ok(v.featured) || !Array.isArray(v.neighbours) || v.neighbours.length !== 2 || !v.neighbours.every(ok)) {
+    return [['featured', `prominence could not be measured (${JSON.stringify(v)}): the featured card and both neighbours are required`]];
+  }
+  const larger = Math.max(...v.neighbours);
+  if (v.featured <= 0 || v.featured + 1e-9 < ratio * larger) {
+    const times = larger > 0 ? `${(v.featured / larger).toFixed(2)}x` : 'a card that does not stand out at all';
+    return [['featured', `prominence ${round3(v.featured)} is ${times} the larger neighbour's ${round3(larger)} (needs ${ratio}x)`]];
+  }
+  return [];
+}
+const round3 = (n) => Math.round(n * 1000) / 1000;
+
+// ---- a kit button on the inverted panel ------------------------------------------------------------------------------
+/**
+ * Everything wrong with ONE kit button (`on:"panel"`) inside an inverted panel: exp = expectFromAttrs of the resolved button, computed =
+ * { rest: { el, wrap }, hover: { el, wrap } } as for compareButton, panelFill = the painted panel ({r,g,b}, screenshot with the children
+ * hidden). Code panel-button covers what the panel changes: the label against the fill as painted over the panel >= 4.5 and a transparent
+ * button's border >= 3.0 against the panel (rest and hover: contrastProblems), and the hover colours (fill, label, border) as resolved.
+ * Every other disagreement with the markup keeps its own button code (border, radius, fill, label, text, padding, shadow, lift). The hover
+ * state is required; an expectation with a hole is refused, never skipped. Returns { problems, info: { rest, hover } }.
+ */
+function panelButtonProblems(exp, computed, panelFill) {
+  const miss = missingExpectations(exp);
+  if (miss.length) return { problems: [['panel-button', 'expectation missing (an adapter attribute path drifted): ' + miss.join(', ')]], info: {} };
+  if (!panelFill) return { problems: [['panel-button', 'the painted panel under the button was not sampled']], info: {} };
+  const out = [];
+  const cmp = compareButton(exp, computed);
+  for (const [code, d] of cmp.problems) out.push([code === 'hover' ? 'panel-button' : code, d]);
+  const cr = contrastProblems(computed.rest.el, panelFill, 'rest');
+  for (const [, d] of cr.problems) out.push(['panel-button', d]);
+  let ch = { problems: [], info: {} };
+  if (computed.hover && computed.hover.el) {
+    ch = contrastProblems(computed.hover.el, panelFill, 'hover');
+    for (const [, d] of ch.problems) out.push(['panel-button', d]);
+  } else out.push(['panel-button', 'the hover state was not measured']);
+  return { problems: out, info: { rest: cr.info, hover: ch.info } };
 }
 
 /** Overflow of one measured card: beyond its container (1px) or the window, or the page wider than the window. */
@@ -728,7 +864,9 @@ function measureButtons() {
   const F = ['borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius', 'backgroundColor', 'color', 'textTransform', 'letterSpacing', 'fontWeight', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'boxShadow', 'transform', 'transitionDuration', 'transitionDelay'];
   const pick = (node) => { const cs = getComputedStyle(node); const o = {}; for (const k of F) o[k] = cs[k]; return o; };
   const box = (n) => { const r = n.getBoundingClientRect(); return { left: r.left + window.scrollX, right: r.right + window.scrollX, top: r.top + window.scrollY, bottom: r.bottom + window.scrollY, width: r.width, height: r.height }; };
-  const buttons = root ? [...root.querySelectorAll('a.et_pb_button')] : [];
+  // The page-level buttons only: the kit buttons inside a button panel (a group) are measured with their card (measureCards).
+  const buttons = root ? [...root.querySelectorAll('a.et_pb_button')].filter((a) => !a.closest('.et_pb_group')) : [];
+  buttons.forEach((a, i) => a.setAttribute('data-aied-btn', String(i)));
   return {
     hasRoot: !!root,
     scrollWidth: document.documentElement.scrollWidth,
@@ -745,13 +883,16 @@ function measureButtons() {
  * Runs IN THE PAGE (self-contained). For each slot ({ key, heading, carrier }) the rendered card: the carrier element (`.et_pb_group`, or
  * `.et_pb_column` for a column card) that holds the heading with that exact text, tagged `data-aied-card="<key>"` so the script can hover
  * it, with the computed fields compareCard/cardContrastProblems read, its rect and its container's, the heading and paragraph colours and
- * the rect of its first image. A card that is not in the page is { key, found: false }.
+ * the rect of its first image, and `buttons` (the kit buttons inside it: computed fields of the button and its wrapper, its rect, the
+ * card's rect). A card that is not in the page is { key, found: false }.
  */
 function measureCards(slots) {
   const root = document.querySelector('.et-l--post');
   const F = ['borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderRightWidth', 'borderRightStyle', 'borderRightColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderLeftWidth', 'borderLeftStyle', 'borderLeftColor', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius', 'backgroundColor', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'boxShadow', 'transform', 'overflowX', 'overflowY', 'transitionDuration', 'transitionDelay'];
   const pick = (node) => { const cs = getComputedStyle(node); const o = {}; for (const k of F) o[k] = cs[k]; return o; };
   const box = (n) => { const r = n.getBoundingClientRect(); return { left: r.left + window.scrollX, right: r.right + window.scrollX, top: r.top + window.scrollY, bottom: r.bottom + window.scrollY, width: r.width, height: r.height }; };
+  const BF = ['borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius', 'backgroundColor', 'color', 'textTransform', 'letterSpacing', 'fontWeight', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'boxShadow', 'transform', 'transitionDuration', 'transitionDelay'];
+  const pickB = (node) => { const cs = getComputedStyle(node); const o = {}; for (const k of BF) o[k] = cs[k]; return o; };
   const headings = root ? [...root.querySelectorAll('.et_pb_heading')] : [];
   return {
     hasRoot: !!root,
@@ -771,6 +912,12 @@ function measureCards(slots) {
         heading: tag ? { color: getComputedStyle(tag).color } : null,
         paragraph: p ? { color: getComputedStyle(p).color } : null,
         image: img ? { rect: box(img) } : null,
+        // The kit buttons inside the card (a button panel), tagged data-aied-pb="<key>:<n>" so the script can hover each one.
+        buttons: [...card.querySelectorAll('a.et_pb_button')].map((a, j) => {
+          a.setAttribute('data-aied-pb', s.key + ':' + j);
+          const wrap = a.closest('.et_pb_button_module_wrapper') || a.parentElement;
+          return { el: pickB(a), wrap: pickB(wrap), rect: box(a), parentRect: box(card) };
+        }),
       };
     }),
   };
@@ -782,4 +929,5 @@ module.exports = {
   CONTRAST_LABEL, CONTRAST_SHAPE, decodePng, pixelStats, measureButtons, hex, round2,
   CARD_ON, CARD_SLOTS, cardMarkup, blockTree, cardAttrs, expectCardFromAttrs, missingCardExpectations, compareCard, cardClipProblems, cardContrastProblems,
   paintedFillProblems, cardOverflowProblems, columnRowProblems, cardCountProblems, cardSampleClip, emptyRunProblems, measureCards,
+  pageButtonAttrs, groundFillProblems, FEATURED_RATIO, boxProminence, featuredProblems, panelButtonProblems, PANEL_BUTTONS,
 };

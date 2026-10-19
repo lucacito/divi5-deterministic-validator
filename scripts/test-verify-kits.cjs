@@ -4,7 +4,8 @@
  * resolved markup (samples are real KitResolver + RecipeTokens output for editorial), the expected-vs-computed comparison (rest and hover),
  * shadows, lift, contrast on the painted surface, overflow and the PNG decoder, and for the CARDS (card/panel on a group and on a column) the
  * same set: the sheet, expectations read from the resolved block tree, the rest/hover comparison (a panel must not change), the clip, the
- * contrast on the measured card fill, overflow, the three-column row, the zero-card rule and an OFFLINE run of the whole sheet through the
+ * contrast on the measured card fill, overflow, the three-column row, the zero-card rule, the grounds (the painted fill against the resolved
+ * one), the kit buttons on the inverted panel, the featured card's prominence and an OFFLINE run of the whole sheet through the
  * real PHP pipeline (scripts/lib/kit-sheet-offline.php: every kit x every language, zero leftovers, LayoutGate valid). Run first by
  * `make verify-kits`. */
 const assert = require('assert');
@@ -50,9 +51,10 @@ t('flags narrow the selection', () => {
 });
 
 // ---- the sheet ----
-t('the sheet carries 8 marked buttons, surfaces in order', () => {
+t('the sheet carries 8 marked page-level buttons, surfaces in order (and 4 more inside the button panels)', () => {
   const m = K.sheetMarkup();
-  const attrs = K.buttonAttrs(m);
+  const attrs = K.pageButtonAttrs(m);
+  assert.strictEqual(K.buttonAttrs(m).length, 12, '8 page-level buttons and 2 in each of the 2 button panels');
   assert.strictEqual(attrs.length, 8);
   assert.strictEqual(K.SLOTS.length, 8);
   attrs.forEach((a, i) => {
@@ -62,9 +64,10 @@ t('the sheet carries 8 marked buttons, surfaces in order', () => {
   assert.strictEqual((m.match(/<!-- wp:divi\/section /g) || []).length, 5, 'four bands and the three-column row');
   assert.ok(m.includes('{{aied:image:section-bg-slate-1}}') && m.includes('"overlaysImage":"on"'), 'the photo band has an image under a scrim');
 });
-t('the sheet carries 12 marked cards: a card and a panel on each band, an image-first panel, and a row of three column cards', () => {
+t('the sheet carries 20 marked cards: a card and a panel on each band, an image-first panel, the grounds and the button panels on the two light bands, and a row of three column cards with an accent middle one', () => {
   const m = K.sheetMarkup();
-  assert.deepStrictEqual(K.CARD_SLOTS.map((c) => c.key), ['card-bg', 'panel-bg', 'panel-clip', 'card-surface', 'panel-surface', 'card-accent', 'panel-accent', 'card-dark', 'panel-dark', 'column-1', 'column-2', 'column-3']);
+  assert.deepStrictEqual(K.CARD_SLOTS.map((c) => c.key), ['card-bg', 'panel-bg', 'panel-clip', 'inverted-card-bg', 'inverted-panel-bg', 'accent-tile-bg', 'panel-buttons-bg', 'card-surface', 'panel-surface', 'inverted-card-surface', 'inverted-panel-surface', 'accent-tile-surface', 'panel-buttons-surface', 'card-accent', 'panel-accent', 'card-dark', 'panel-dark', 'column-1', 'column-2', 'column-3']);
+  assert.strictEqual(K.CARD_SLOTS.length, 20);
   assert.strictEqual(new Set(K.CARD_SLOTS.map((c) => c.heading)).size, K.CARD_SLOTS.length, 'every card is found by a unique heading');
   const markers = [];
   const walk = (nodes) => {
@@ -77,23 +80,49 @@ t('the sheet carries 12 marked cards: a card and a panel on each band, an image-
     }
   };
   walk(K.blockTree(m));
-  assert.strictEqual(markers.length, 12);
+  assert.strictEqual(markers.length, 20);
   markers.forEach(([name, marker, slot]) => {
     assert.ok(slot, 'a marked block holds the heading of a slot');
     assert.strictEqual(name, 'divi/' + slot.carrier);
-    assert.deepStrictEqual(marker, slot.on === 'light' ? { kit: slot.role } : { kit: slot.role, on: slot.on }, slot.key);
+    const want = { kit: slot.role };
+    if (slot.on !== 'light') want.on = slot.on;
+    if (slot.ground) want.ground = slot.ground;
+    assert.deepStrictEqual(marker, want, slot.key);
   });
-  assert.deepStrictEqual(K.CARD_SLOTS.map((c) => c.on), ['light', 'light', 'light', 'surface', 'surface', 'accent', 'accent', 'dark', 'dark', 'light', 'light', 'light']);
+  assert.deepStrictEqual(K.CARD_SLOTS.map((c) => c.on), ['light', 'light', 'light', 'light', 'light', 'light', 'light', 'surface', 'surface', 'surface', 'surface', 'surface', 'surface', 'accent', 'accent', 'dark', 'dark', 'light', 'light', 'light']);
+  assert.deepStrictEqual(K.CARD_SLOTS.map((c) => c.ground), [null, null, null, 'inverted', 'inverted', 'accent', 'inverted', null, null, 'inverted', 'inverted', 'accent', 'inverted', null, null, null, null, null, 'accent', null]);
+  assert.deepStrictEqual(K.CARD_SLOTS.filter((c) => c.buttons).map((c) => [c.key, c.buttons, c.role]), [['panel-buttons-bg', 2, 'panel'], ['panel-buttons-surface', 2, 'panel']]);
+  assert.deepStrictEqual(K.CARD_SLOTS.filter((c) => c.featured).map((c) => c.key), ['column-2'], 'the accent middle card is the featured one');
+  assert.ok(K.CARD_SLOTS.filter((c) => c.ground).every((c) => (c.ground === 'inverted' ? c.inkHeading === 'bg' && c.inkPara === 'bg' : c.inkHeading === 'accent-text' && c.inkPara === 'accent-text')), 'inks: bg on an inverted ground, accent-text on an accent one');
+  assert.ok(K.CARD_SLOTS.filter((c) => !c.ground).every((c) => c.inkHeading === 'text' && c.inkPara === 'muted'));
   // A panel keeps its own padding (no kit key); the clip panel has none, so its image touches the corners; a card has no padding literal.
   const bySlot = Object.fromEntries(K.cardAttrs(m).map((c) => [c.slot.key, c.attrs]));
   assert.deepStrictEqual(bySlot['panel-dark'].module.decoration.spacing.desktop.value.padding, { top: '40px', right: '40px', bottom: '40px', left: '40px' });
+  assert.deepStrictEqual(bySlot['inverted-panel-bg'].module.decoration.spacing.desktop.value.padding, { top: '40px', right: '40px', bottom: '40px', left: '40px' });
   assert.deepStrictEqual(bySlot['panel-clip'].module.decoration.spacing.desktop.value.padding, { top: '0px', right: '0px', bottom: '0px', left: '0px' });
   assert.strictEqual(bySlot['card-bg'].module.decoration.spacing, undefined, 'the kit gives a card its padding');
+  assert.strictEqual(bySlot['accent-tile-surface'].module.decoration.spacing, undefined, 'an accent tile is a card: the kit gives it its padding');
   assert.strictEqual(K.CARD_SLOTS.filter((c) => c.image).map((c) => c.key).join(), 'card-bg,panel-clip', 'the bg-band card and the clip panel hold an image');
   assert.strictEqual((m.match(/wp:divi\/image /g) || []).length, 2);
   assert.ok(m.includes('"columnStructure":{"desktop":{"value":"1_3,1_3,1_3"}}') && m.includes('equal-columns_3'), 'the three-column row is the real proof-press-quotes shape');
-  assert.strictEqual(K.cardAttrs(m).filter((c) => c.attrs).length, 12, 'every card is found again by its heading');
+  assert.strictEqual(K.cardAttrs(m).filter((c) => c.attrs).length, 20, 'every card is found again by its heading');
   assert.strictEqual(K.cardAttrs(m).find((c) => c.slot.key === 'column-2').attrs.module.advanced.type.desktop.value, '1_3');
+  // The ink tokens of the children: heading and paragraph of an inverted ground are bg, of an accent ground accent-text; plain ones text / muted.
+  const inks = (key) => { const hit = K.cardAttrs(m, K.CARD_SLOTS).find((c) => c.slot.key === key); return hit.inks; };
+  assert.deepStrictEqual(inks('inverted-card-bg'), { heading: '{{aied:color:bg}}', paragraph: '{{aied:color:bg}}' });
+  assert.deepStrictEqual(inks('accent-tile-surface'), { heading: '{{aied:color:accent-text}}', paragraph: '{{aied:color:accent-text}}' });
+  assert.deepStrictEqual(inks('column-2'), { heading: '{{aied:color:accent-text}}', paragraph: '{{aied:color:accent-text}}' });
+  assert.deepStrictEqual(inks('column-1'), { heading: '{{aied:color:text}}', paragraph: '{{aied:color:muted}}' });
+});
+t('the button panels hold a primary and a secondary button marked on:"panel"; the page-level buttons are not counted with them', () => {
+  const m = K.sheetMarkup();
+  const hits = K.cardAttrs(m).filter((c) => c.slot.buttons);
+  assert.strictEqual(hits.length, 2);
+  for (const h of hits) {
+    assert.deepStrictEqual(h.buttons.map((b) => b.aied), [{ kit: 'control', on: 'panel' }, { kit: 'control-secondary', on: 'panel' }], h.slot.key);
+  }
+  assert.ok(K.cardAttrs(m).filter((c) => !c.slot.buttons).every((c) => c.buttons.length === 0), 'no other card holds a button');
+  assert.deepStrictEqual(K.pageButtonAttrs(m).map((b) => b.aied.on || 'light'), ['light', 'light', 'light', 'light', 'accent', 'accent', 'dark', 'dark']);
 });
 
 // ---- expectations from resolved markup (real adapter output, editorial) ----
@@ -493,6 +522,129 @@ t('the painted fill must match the computed one', () => {
   assert.deepStrictEqual(K.paintedFillProblems(cstyle({ backgroundColor: 'rgba(255, 255, 255, 0.5)' }), { r: 0, g: 0, b: 0 }), [], 'a translucent computed fill is not judged against the screenshot');
 });
 
+// ---- grounds: an inverted or accent fill, the painted fill against the RESOLVED one ----
+const GROUND_INVERTED = "<!-- wp:divi/group {\"module\":{\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexDirection\":\"column\",\"rowGap\":\"12px\"}}},\"background\":{\"desktop\":{\"value\":{\"color\":\"#1c1a17\"}}},\"border\":{\"desktop\":{\"value\":{\"radius\":{\"topLeft\":\"16px\",\"topRight\":\"16px\",\"bottomRight\":\"16px\",\"bottomLeft\":\"16px\"},\"styles\":{\"all\":{\"width\":\"1px\",\"style\":\"solid\",\"color\":\"#1c1a17\"}}}}},\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"top\":\"28px\",\"right\":\"28px\",\"bottom\":\"28px\",\"left\":\"28px\"}}}},\"boxShadow\":{\"desktop\":{\"hover\":{\"style\":\"preset1\",\"vertical\":\"12px\",\"blur\":\"24px\",\"color\":\"rgba(28,22,16,0.25)\"}}},\"transform\":{\"desktop\":{\"hover\":{\"translate\":{\"y\":\"-4px\"}}}}}},\"builderVersion\":\"5.8.0\"} -->";
+const exGround = K.expectCardFromAttrs(attrsOf(GROUND_INVERTED));
+t('ground expectations: read from the resolved markup; the ground contract (opaque fill, frame = fill, no hover fill or frame) is part of the missing-field rule', () => {
+  assert.strictEqual(exGround.rest.fill, '#1c1a17');
+  assert.deepStrictEqual(K.missingCardExpectations(exGround, 'card', 'inverted'), []);
+  assert.deepStrictEqual(K.missingCardExpectations(exGround, 'card'), [], 'without a ground nothing more is demanded');
+  const f = (fn) => { const e = JSON.parse(JSON.stringify(exGround)); fn(e); return K.missingCardExpectations(e, 'card', 'inverted'); };
+  assert.deepStrictEqual(f((e) => { e.rest.fill = 'rgba(28,26,23,0.5)'; }), ['ground fill is not opaque (rgba(28,26,23,0.5))', 'ground frame top is not the fill', 'ground frame right is not the fill', 'ground frame bottom is not the fill', 'ground frame left is not the fill']);
+  assert.deepStrictEqual(f((e) => { e.rest.left.color = '#e3dccf'; }), ['ground frame left is not the fill']);
+  assert.deepStrictEqual(f((e) => { e.hoverKeys.push('border.hover', 'background.hover'); }), ['ground carries border.hover', 'ground carries background.hover']);
+  assert.deepStrictEqual(f((e) => { e.rest.fill = null; }), ['rest.fill']);
+  assert.deepStrictEqual(f((e) => { e.rest.top.width = null; }), ['rest.top.width']);
+});
+t('ground-fill: the painted fill must be the resolved ground fill (4 per channel), whatever the computed style says; a hole in the expectation or the sample fails', () => {
+  const sample = { r: 28, g: 26, b: 23 };
+  assert.deepStrictEqual(K.groundFillProblems(exGround, sample), []);
+  assert.deepStrictEqual(K.groundFillProblems(exGround, { r: 31, g: 29, b: 27 }), [], 'within 4 per channel');
+  const off = K.groundFillProblems(exGround, { r: 36, g: 26, b: 23 });
+  assert.deepStrictEqual(off.map((x) => x[0]), ['ground-fill']);
+  assert.match(off[0][1], /painted fill #241a17 differs from the resolved ground fill #1c1a17 by 8/);
+  assert.deepStrictEqual(K.groundFillProblems(exGround, { r: 250, g: 247, b: 242 }).map((x) => x[0]), ['ground-fill'], 'an inverted card painted as the band');
+  const hole = JSON.parse(JSON.stringify(exGround)); hole.rest.fill = null;
+  assert.deepStrictEqual(K.groundFillProblems(hole, sample).map((x) => x[0]), ['ground-fill'], 'a null expectation never silently passes');
+  assert.match(K.groundFillProblems(hole, sample)[0][1], /expectation/);
+  const translucent = JSON.parse(JSON.stringify(exGround)); translucent.rest.fill = 'rgba(28,26,23,0.5)';
+  assert.deepStrictEqual(K.groundFillProblems(translucent, sample).map((x) => x[0]), ['ground-fill'], 'a translucent ground fill cannot be judged against a screenshot');
+  assert.deepStrictEqual(K.groundFillProblems(exGround, null).map((x) => x[0]), ['ground-fill'], 'no sample at all fails');
+});
+t('card contrast on a ground: a frame equal to the fill is exempt ONLY for a ground; the inks are judged on the measured fill', () => {
+  const dark = { r: 28, g: 26, b: 23 };
+  const el = cstyle({ backgroundColor: 'rgb(28, 26, 23)', borderTopColor: 'rgb(28, 26, 23)', borderRightColor: 'rgb(28, 26, 23)', borderBottomColor: 'rgb(28, 26, 23)', borderLeftColor: 'rgb(28, 26, 23)' });
+  const c = (o) => Object.assign({ el, heading: { color: 'rgb(250, 247, 242)' }, paragraph: { color: 'rgb(250, 247, 242)' } }, o);
+  assert.deepStrictEqual(K.cardContrastProblems(c({}), dark, '#e3dccf', 'inverted').problems, []);
+  assert.strictEqual(K.cardContrastProblems(c({}), dark, '#e3dccf', 'inverted').info.fillFrame, true);
+  assert.deepStrictEqual(K.cardContrastProblems(c({}), dark, '#e3dccf').problems.map((x) => x[0]), ['card-contrast', 'card-contrast', 'card-contrast', 'card-contrast'], 'the same frame on a plain card is a failure');
+  assert.deepStrictEqual(K.cardContrastProblems(c({ paragraph: { color: 'rgb(107, 100, 90)' } }), dark, '#e3dccf', 'inverted').problems.map((x) => x[1].split(' ')[0]), ['paragraph'], 'muted ink on an inverted ground fails');
+  const pale = cstyle({ backgroundColor: 'rgb(28, 26, 23)', borderTopColor: 'rgb(60, 58, 55)', borderRightColor: 'rgb(28, 26, 23)', borderBottomColor: 'rgb(28, 26, 23)', borderLeftColor: 'rgb(28, 26, 23)' });
+  assert.deepStrictEqual(K.cardContrastProblems(c({ el: pale }), dark, '#e3dccf', 'inverted').problems.map((x) => x[0]), ['card-contrast'], 'a frame that is NOT the fill is still judged');
+});
+
+// ---- the featured plan: prominence of a card against its band ----
+const flat = (c, n = 16) => { const data = Buffer.alloc(n * 4); for (let i = 0; i < n; i++) data.set([c.r, c.g, c.b, 255], i * 4); return { width: n, height: 1, data }; };
+t('prominence: the mean painted luminance difference between a card\'s box and its band (per pixel, so a dark frame counts)', () => {
+  const band = { r: 250, g: 247, b: 242 };
+  assert.strictEqual(K.boxProminence(flat(band), band), 0, 'a box the colour of the band has none');
+  const white = K.boxProminence(flat({ r: 255, g: 255, b: 255 }), band);
+  const accent = K.boxProminence(flat({ r: 20, g: 60, b: 160 }), band);
+  assert.ok(white > 0 && white < 0.1, 'a white card on a warm band is faint: ' + white);
+  assert.ok(accent > 0.5, 'a dark accent block is strong: ' + accent);
+  // half the pixels are a dark frame, half white: the mean difference is the average of the two, not the difference of the means
+  const mixed = { width: 2, height: 1, data: Buffer.from([255, 255, 255, 255, 0, 0, 0, 255]) };
+  assert.ok(Math.abs(K.boxProminence(mixed, band) - (K.boxProminence(flat({ r: 255, g: 255, b: 255 }), band) + K.boxProminence(flat({ r: 0, g: 0, b: 0 }), band)) / 2) < 1e-9);
+  assert.throws(() => K.boxProminence({ width: 0, height: 0, data: Buffer.alloc(0) }, band), /empty/);
+});
+t('featured: the featured card must be at least 1.5x the LARGER neighbour; stronger passes, equal and weaker fail, the ratio edge is inclusive; a hole fails closed', () => {
+  assert.strictEqual(K.FEATURED_RATIO, 1.5, 'confirmed on the first live smoke, then frozen; never lowered after a failure');
+  assert.deepStrictEqual(K.featuredProblems({ featured: 0.6, neighbours: [0.1, 0.2] }), []);
+  assert.deepStrictEqual(K.featuredProblems({ featured: 0.3, neighbours: [0.1, 0.2] }), [], 'exactly 1.5x the larger passes');
+  const weak = K.featuredProblems({ featured: 0.299, neighbours: [0.1, 0.2] });
+  assert.deepStrictEqual(weak.map((x) => x[0]), ['featured']);
+  assert.match(weak[0][1], /prominence 0\.299 .*needs 1\.5x/);
+  assert.deepStrictEqual(K.featuredProblems({ featured: 0.2, neighbours: [0.2, 0.1] }).map((x) => x[0]), ['featured'], 'equal to a neighbour');
+  assert.deepStrictEqual(K.featuredProblems({ featured: 0.1, neighbours: [0.1, 0.4] }).map((x) => x[0]), ['featured'], 'weaker than a neighbour');
+  assert.deepStrictEqual(K.featuredProblems({ featured: 0.5, neighbours: [0.1, 0.4] }).map((x) => x[0]), ['featured'], 'the LARGER neighbour counts, not the smaller');
+  assert.deepStrictEqual(K.featuredProblems({ featured: 0, neighbours: [0, 0] }).map((x) => x[0]), ['featured'], 'nothing at all is not featured');
+  assert.deepStrictEqual(K.featuredProblems({ featured: 0.05, neighbours: [0, 0] }), [], 'plain neighbours that do not stand out at all: any visible featured card wins');
+  assert.deepStrictEqual(K.featuredProblems({ featured: null, neighbours: [0.1, 0.2] }).map((x) => x[0]), ['featured']);
+  assert.deepStrictEqual(K.featuredProblems({ featured: 0.5, neighbours: [0.1, NaN] }).map((x) => x[0]), ['featured']);
+  assert.deepStrictEqual(K.featuredProblems({ featured: 0.5, neighbours: [0.1] }).map((x) => x[0]), ['featured'], 'two neighbours are required');
+  assert.deepStrictEqual(K.featuredProblems(null).map((x) => x[0]), ['featured']);
+  assert.deepStrictEqual(K.featuredProblems({ featured: 0.299, neighbours: [0.1, 0.2] }, 1.4), [], 'the ratio is a parameter (the constant is what the gate uses)');
+});
+
+// ---- a button on the inverted panel ----
+const PANEL_PRIMARY = '<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"P"}}},"decoration":{"background":{"desktop":{"value":{"color":"#faf7f2"},"hover":{"color":"rgba(250,247,242,0)"}}},"border":{"desktop":{"value":{"radius":{"topLeft":"12px","topRight":"12px","bottomRight":"12px","bottomLeft":"12px"},"styles":{"all":{"width":"0px","style":"solid","color":"#faf7f2"}}},"hover":{"styles":{"all":{"color":"#faf7f2"}}}}},"font":{"font":{"desktop":{"value":{"color":"#1c1a17","capitalization":"none","letterSpacing":"0px","weight":"600"},"hover":{"color":"#faf7f2"}}}}}},"builderVersion":"5.8.0","module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"14px","right":"28px","bottom":"14px","left":"28px"}}}}}}} /-->';
+const PANEL_OUTLINE = '<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"S"}}},"decoration":{"background":{"desktop":{"value":{"color":"rgba(250,247,242,0)"},"hover":{"color":"#faf7f2"}}},"border":{"desktop":{"value":{"radius":{"topLeft":"0px","topRight":"0px","bottomRight":"0px","bottomLeft":"0px"},"styles":{"all":{"width":"2px","style":"solid","color":"#faf7f2"}}},"hover":{"styles":{"all":{"color":"#faf7f2"}}}}},"font":{"font":{"desktop":{"value":{"color":"#faf7f2","capitalization":"none","letterSpacing":"0px","weight":"600"},"hover":{"color":"#1c1a17"}}}}}},"builderVersion":"5.8.0","module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"14px","right":"28px","bottom":"14px","left":"28px"}}}}}}} /-->';
+const exPrimary = K.expectFromAttrs(K.buttonAttrs(PANEL_PRIMARY)[0]);
+const exOutline = K.expectFromAttrs(K.buttonAttrs(PANEL_OUTLINE)[0]);
+const PANEL = { r: 28, g: 26, b: 23 };
+const bstyle = (o) => style(Object.assign({ borderTopWidth: '0px', borderBottomWidth: '0px', borderTopStyle: 'solid', borderBottomStyle: 'solid', borderTopColor: 'rgb(250, 247, 242)', borderBottomColor: 'rgb(250, 247, 242)', borderTopLeftRadius: '12px', borderTopRightRadius: '12px', borderBottomRightRadius: '12px', borderBottomLeftRadius: '12px', backgroundColor: 'rgb(250, 247, 242)', color: 'rgb(28, 26, 23)', textTransform: 'none', letterSpacing: '0px', paddingTop: '14px', paddingRight: '28px', paddingBottom: '14px', paddingLeft: '28px' }, o));
+const outlineRest = (o) => bstyle(Object.assign({ borderTopWidth: '2px', borderBottomWidth: '2px', borderTopLeftRadius: '0px', borderTopRightRadius: '0px', borderBottomRightRadius: '0px', borderBottomLeftRadius: '0px', backgroundColor: 'rgba(250, 247, 242, 0)', color: 'rgb(250, 247, 242)' }, o));
+const panelHoverPrimary = (o) => bstyle(Object.assign({ backgroundColor: 'rgba(250, 247, 242, 0)', color: 'rgb(250, 247, 242)' }, o));
+const outlineHover = (o) => outlineRest(Object.assign({ backgroundColor: 'rgb(250, 247, 242)', color: 'rgb(28, 26, 23)' }, o));
+const pb = (exp, rest, hover) => K.panelButtonProblems(exp, { rest: { el: rest, wrap: plain }, hover: hover === null ? null : { el: hover, wrap: plain } }, PANEL);
+t('panel-button: a filled button on the inverted panel passes with readable label and the resolved hover colours', () => {
+  const ok = pb(exPrimary, bstyle({}), panelHoverPrimary({}));
+  assert.deepStrictEqual(ok.problems, []);
+  assert.ok(ok.info.rest.label >= 11, 'the label contrast on its own fill is reported: ' + ok.info.rest.label);
+  assert.deepStrictEqual(pb(exOutline, outlineRest({}), outlineHover({})).problems, [], 'a transparent button whose border and label are bg on the text panel passes');
+});
+t('panel-button: an unreadable label or a weak border on the painted panel fails, rest and hover', () => {
+  const dark = pb(exPrimary, bstyle({ color: 'rgb(230, 225, 215)' }), panelHoverPrimary({}));
+  assert.ok(dark.problems.some(([c, d]) => c === 'panel-button' && /rest: label/.test(d)), JSON.stringify(dark.problems));
+  assert.ok(dark.problems.some(([c]) => c === 'label'), 'the label also disagrees with the markup');
+  const hoverBad = pb(exPrimary, bstyle({}), panelHoverPrimary({ color: 'rgb(40, 38, 35)' }));
+  assert.ok(hoverBad.problems.some(([c, d]) => c === 'panel-button' && /hover: label/.test(d)), JSON.stringify(hoverBad.problems));
+  // a transparent button whose border is the panel colour is invisible
+  const invisible = pb(exOutline, outlineRest({ borderTopColor: 'rgb(28, 26, 23)', borderBottomColor: 'rgb(28, 26, 23)' }), outlineHover({}));
+  assert.ok(invisible.problems.some(([c, d]) => c === 'panel-button' && /border-top .* is 1:1, needs 3/.test(d)), JSON.stringify(invisible.problems));
+  // a filled button is not judged by its border (the fill is the shape), but its fill must stand out of the panel is NOT demanded here either
+  assert.deepStrictEqual(pb(exPrimary, bstyle({ borderTopWidth: '2px', borderTopColor: 'rgb(28, 26, 23)' }), panelHoverPrimary({})).problems.filter(([c]) => c === 'panel-button'), []);
+});
+t('panel-button: hover colours must be the resolved ones (code panel-button, not hover); everything else keeps its own code', () => {
+  const noSwap = pb(exPrimary, bstyle({}), bstyle({}));
+  assert.deepStrictEqual([...new Set(noSwap.problems.map((x) => x[0]))], ['panel-button'], JSON.stringify(noSwap.problems));
+  assert.ok(noSwap.problems.some(([, d]) => /hover: background-color/.test(d)) && noSwap.problems.some(([, d]) => /hover: color/.test(d)));
+  assert.deepStrictEqual(pb(exPrimary, bstyle({ borderTopLeftRadius: '3px' }), panelHoverPrimary({})).problems.map((x) => x[0]), ['radius']);
+  assert.deepStrictEqual(pb(exPrimary, bstyle({ paddingLeft: '20px' }), panelHoverPrimary({})).problems.map((x) => x[0]), ['padding']);
+  assert.deepStrictEqual(pb(exOutline, outlineRest({ borderTopWidth: '1px' }), outlineHover({})).problems.map((x) => x[0]), ['border']);
+});
+t('panel-button: the hover state is required, and an expectation with a hole is refused, never skipped', () => {
+  const none = pb(exPrimary, bstyle({}), null);
+  assert.deepStrictEqual(none.problems.map((x) => x[0]), ['panel-button']);
+  assert.match(none.problems[0][1], /hover state was not measured/);
+  const hole = JSON.parse(JSON.stringify(exPrimary)); hole.hover.label = null;
+  const r = pb(hole, bstyle({}), panelHoverPrimary({}));
+  assert.deepStrictEqual(r.problems.map((x) => x[0]), ['panel-button']);
+  assert.match(r.problems[0][1], /expectation missing .*hover\.label/);
+  assert.deepStrictEqual(pb(exPrimary, bstyle({}), panelHoverPrimary({})).problems, [], 'the unbroken expectation passes');
+  assert.deepStrictEqual(K.panelButtonProblems(exPrimary, { rest: { el: bstyle({}), wrap: plain }, hover: { el: panelHoverPrimary({}), wrap: plain } }, null).problems.map((x) => x[0]), ['panel-button'], 'no panel sample fails');
+});
+
 // ---- cards: overflow, the column row, counts, the empty run ----
 t('card overflow: beyond the container or the window, or a page wider than the window', () => {
   const page = { innerWidth: 400, scrollWidth: 400 };
@@ -526,9 +678,9 @@ t('the card count: every sheet card must be rendered (code cards), and no card s
   const lost = found.map((c, i) => (i === 2 ? { key: c.key, found: false } : c));
   const p = K.cardCountProblems(lost);
   assert.deepStrictEqual(p.map((x) => x[0]), ['cards']);
-  assert.match(p[0][1], /11 cards rendered, expected 12 \(missing: panel-clip\)/);
+  assert.match(p[0][1], /19 cards rendered, expected 20 \(missing: panel-clip\)/);
   assert.deepStrictEqual(K.cardCountProblems([]).map((x) => x[0]), ['cards'], 'a page with no card fails');
-  assert.deepStrictEqual(K.cardCountProblems(found.slice(0, 11)).map((x) => x[0]), ['cards']);
+  assert.deepStrictEqual(K.cardCountProblems(found.slice(0, 19)).map((x) => x[0]), ['cards']);
   assert.throws(() => K.cardCountProblems([], []), /no card slots/, 'an empty slot list can never pass');
 });
 t('an empty card selection fails the run, whatever else passed', () => {
@@ -555,36 +707,65 @@ t('every kit x every language: the sheet resolves with zero leftovers, passes La
   assert.strictEqual(rows.length, kitIds.length * languages.length, 'one row per kit and language');
   assert.ok(rows.length >= 400);
   let cards = 0;
+  const featuredFillOnly = [];
   for (const row of rows) {
     const cell = row.kit + '/' + row.language;
     assert.deepStrictEqual(row.leftovers, [], cell + ' leftovers');
     assert.strictEqual(row.tokenLeft, false, cell + ' unresolved token');
     assert.ok(row.valid, cell + ' LayoutGate: ' + row.violations.join(','));
     assert.ok(!/"aied"/.test(row.markup), cell + ' a marker is left');
-    assert.strictEqual(K.buttonAttrs(row.markup).length, 8, cell + ' buttons');
-    K.buttonAttrs(row.markup).forEach((a, i) => assert.deepStrictEqual(K.missingExpectations(K.expectFromAttrs(a)), [], cell + ' button ' + i));
+    assert.strictEqual(K.pageButtonAttrs(row.markup).length, 8, cell + ' buttons');
+    K.pageButtonAttrs(row.markup).forEach((a, i) => assert.deepStrictEqual(K.missingExpectations(K.expectFromAttrs(a)), [], cell + ' button ' + i));
     const found = K.cardAttrs(row.markup);
     assert.strictEqual(found.length, K.CARD_SLOTS.length);
-    for (const { slot, attrs } of found) {
+    const pal = colours[row.language];
+    const ratio = (x, y) => require('./lib/recipe-checks.cjs').ratioOf(K.colour(x), y);
+    const solid = (c) => ({ r: c.r, g: c.g, b: c.b, a: 1 });
+    const fillOf = {};
+    for (const { slot, attrs, buttons, inks } of found) {
       const where = `${cell} ${slot.key}`;
       assert.ok(attrs, where + ' not in the resolved markup');
       cards++;
       const exp = K.expectCardFromAttrs(attrs);
-      assert.deepStrictEqual(K.missingCardExpectations(exp, slot.role), [], where);
+      assert.deepStrictEqual(K.missingCardExpectations(exp, slot.role, slot.ground), [], where);
       assert.strictEqual(slot.role === 'panel' ? exp.rest.padding.join() : 'x', slot.role === 'panel' ? [slot.padding, slot.padding, slot.padding, slot.padding].join() : 'x', where + ' panel padding is the sheet\'s literal');
-      const pal = colours[row.language];
       const fill = K.colour(exp.rest.fill);
       assert.strictEqual(fill.a, 1, where + ' the fill is opaque');
-      const ratio = (a, b) => require('./lib/recipe-checks.cjs').ratioOf(K.colour(a), b);
-      assert.ok(ratio(pal.text, fill) >= 4.5, where + ' heading ' + ratio(pal.text, fill));
-      assert.ok(ratio(pal.muted, fill) >= 4.5, where + ' paragraph ' + ratio(pal.muted, fill));
-      for (const side of ['top', 'right', 'bottom', 'left']) {
-        const e = exp.rest[side];
-        if (e.width > 0 && !K.sameColour(e.color, pal.border)) assert.ok(ratio(e.color, fill) >= 3, `${where} ${side} frame ${ratio(e.color, fill)}`);
+      fillOf[slot.key] = fill;
+      // The inks the children carry resolve to the slot's role colours, and are readable on the resolved fill.
+      assert.ok(K.sameColour(inks.heading, pal[slot.inkHeading.replace('-', '_')]), `${where} heading ink ${inks.heading} is not ${slot.inkHeading}`);
+      assert.ok(K.sameColour(inks.paragraph, pal[slot.inkPara.replace('-', '_')]), `${where} paragraph ink ${inks.paragraph} is not ${slot.inkPara}`);
+      assert.ok(ratio(inks.heading, fill) >= 4.5, where + ' heading ' + ratio(inks.heading, fill));
+      assert.ok(ratio(inks.paragraph, fill) >= 4.5, where + ' paragraph ' + ratio(inks.paragraph, fill));
+      if (slot.ground) {
+        // A ground fills with text (inverted) or accent (accent), the frame is the fill, and nothing is demanded of a hover fill or frame.
+        assert.ok(K.sameColour(exp.rest.fill, pal[slot.ground === 'inverted' ? 'text' : 'accent']), `${where} ground fill ${exp.rest.fill}`);
+        for (const side of ['top', 'right', 'bottom', 'left']) assert.ok(K.sameColour(exp.rest[side].color, exp.rest.fill), `${where} ${side} frame is the fill`);
+        assert.deepStrictEqual(exp.hoverKeys.filter((k) => k === 'border.hover' || k === 'background.hover'), [], where);
+      } else {
+        for (const side of ['top', 'right', 'bottom', 'left']) {
+          const e = exp.rest[side];
+          if (e.width > 0 && !K.sameColour(e.color, pal.border)) assert.ok(ratio(e.color, fill) >= 3, `${where} ${side} frame ${ratio(e.color, fill)}`);
+        }
       }
+      // The buttons of a button panel: complete expectations, readable on the panel exactly as the live gate judges them (rest and hover).
+      assert.strictEqual(buttons.length, slot.buttons || 0, where + ' buttons');
+      buttons.forEach((b, j) => {
+        const be = K.expectFromAttrs(b);
+        assert.deepStrictEqual(K.missingExpectations(be), [], `${where} button ${j}`);
+        const elOf = (state) => { const h = state === 'hover'; const col = h ? be.hover.fill : be.rest.fill; return { backgroundColor: col, color: h ? be.hover.label : be.rest.label, borderTopWidth: be.rest.top.width + 'px', borderBottomWidth: be.rest.bottom.width + 'px', borderTopColor: h ? be.hover.border : be.rest.top.color, borderBottomColor: h ? be.hover.border : be.rest.bottom.color }; };
+        for (const state of ['rest', 'hover']) assert.deepStrictEqual(K.contrastProblems(elOf(state), solid(fill), state).problems, [], `${where} button ${j} ${state}`);
+      });
     }
+    // The featured middle card against the plain ones on the bg band, by FILL alone (frames, which only make a plain card stronger, are the live check).
+    const band = K.colour(pal.bg);
+    const prom = (key) => K.boxProminence(flat({ r: fillOf[key].r, g: fillOf[key].g, b: fillOf[key].b }), solid(band));
+    featuredFillOnly.push([cell, prom('column-2'), Math.max(prom('column-1'), prom('column-3'))]);
   }
   assert.strictEqual(cards, rows.length * K.CARD_SLOTS.length);
+  // On fills alone the accent middle card is at least FEATURED_RATIO x the larger plain neighbour in every kit x language (kits do not change the fill).
+  const weakest = featuredFillOnly.filter(([, f, n]) => K.featuredProblems({ featured: f, neighbours: [n, n] }).length);
+  assert.deepStrictEqual(weakest.map(([c, f, n]) => `${c} featured ${f.toFixed(3)} vs ${n.toFixed(3)}`), [], 'by fill alone the featured card is not featured in these cells');
 });
 
 // ---- parsing helpers ----
@@ -655,4 +836,4 @@ t('the PNG decoder reads every filter type', () => {
   assert.deepStrictEqual(st.mean, { r: 10, g: 20, b: 30 });
 });
 
-console.log(`OK verify-kits pure parts: ${n} tests (run titles, selection, sheet, expectations from resolved markup, rest and hover comparison, shadows, lift, contrast, overflow, PNG; cards: sheet, expectations, comparison, panel static on hover, clip, contrast, overflow, column row, counts, empty run, offline sheet through PHP for every kit x language)`);
+console.log(`OK verify-kits pure parts: ${n} tests (run titles, selection, sheet, expectations from resolved markup, rest and hover comparison, shadows, lift, contrast, overflow, PNG; cards: sheet, expectations, comparison, panel static on hover, clip, contrast, overflow, column row, counts, empty run; grounds, panel buttons, the featured card; offline sheet through PHP for every kit x language)`);
