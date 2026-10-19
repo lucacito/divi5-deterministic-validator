@@ -6,7 +6,10 @@
  *  - reading the EXPECTED button values from the resolved markup (the adapter output the page was built from),
  *  - comparing them with the computed style the browser measured (rest and hover), contrast on the painted surface,
  *  - a small PNG decoder (the surface under each button is read from a real screenshot, so a photo band is measured, not guessed),
- *  - the in-page measurement (runs in the browser; it must stay self-contained: Playwright serialises it).
+ *  - the in-page measurement (runs in the browser; it must stay self-contained: Playwright serialises it),
+ *  - the same for cards: the card/panel part of the sheet (CARD_SLOTS), expectations read from the resolved block tree (a card is found by
+ *    the heading it holds, because the resolver strips the marker), the comparison with the computed style at rest and on a real hover,
+ *    the clip, the contrast on the measured card fill, overflow and the three-column row.
  */
 const zlib = require('zlib');
 const { parseColor, over, ratioOf } = require('./recipe-checks.cjs');
@@ -20,13 +23,55 @@ const SURFACES = [
   { key: 'dark', on: 'dark', label: 'Photo band', bg: '{"gradient":{"enabled":"on","stops":[{"position":0,"color":"{{aied:color:overlay}}"},{"position":100,"color":"{{aied:color:overlay}}"}],"length":"100%","overlaysImage":"on"},"image":{"url":"{{aied:image:section-bg-slate-1}}"},"color":"{{aied:color:bg}}"}', ink: 'inverse' },
 ];
 const ROLES = [{ role: 'control', text: 'Primary action' }, { role: 'control-secondary', text: 'Secondary action' }];
+/** The band a card marker names for each sheet section (`on`): a surface section is a card band of its own (the card turns `bg`). */
+const CARD_ON = { bg: 'light', surface: 'surface', accent: 'accent', dark: 'dark' };
 
-/** The tokenised sheet markup (8 buttons: SURFACES x ROLES, in document order). */
+const V = '"builderVersion":"5.8.0"';
+const jsonAttrs = (o) => JSON.stringify(o);
+const blockOf = (name, attrs, children) => (children === null ? `<!-- wp:divi/${name} ${jsonAttrs(attrs)} /-->` : `<!-- wp:divi/${name} ${jsonAttrs(attrs)} -->\n${children}\n<!-- /wp:divi/${name} -->`);
+const capital = (w) => w.charAt(0).toUpperCase() + w.slice(1);
+
+/**
+ * The cards of the sheet, in document order. Every one holds a heading (its UNIQUE text finds it again, in the markup and in the page)
+ * and a paragraph; `image` puts a placeholder image first; `padding` is the panel's literal padding in px (a panel keeps its recipe
+ * padding: no kit key), `flush` = a zero-padding panel whose image touches the card's corners (the clip is only exercised there);
+ * `carrier` is the block that carries the marker: `group`, or `column` for the three cards of a 3-column row.
+ */
+const CARD_SLOTS = [];
+for (const s of SURFACES) {
+  for (const role of ['card', 'panel']) {
+    CARD_SLOTS.push({ key: `${role}-${s.key}`, heading: `${capital(role)} on ${s.key}`, band: s.key, on: CARD_ON[s.key], role, carrier: 'group', image: role === 'card' && s.key === 'bg', flush: false, padding: role === 'panel' ? 40 : null, row: false });
+  }
+  if (s.key === 'bg') CARD_SLOTS.push({ key: 'panel-clip', heading: 'Panel clip on bg', band: 'bg', on: 'light', role: 'panel', carrier: 'group', image: true, flush: true, padding: 0, row: false });
+}
+for (const i of [1, 2, 3]) CARD_SLOTS.push({ key: `column-${i}`, heading: `Column card ${i}`, band: 'bg', on: 'light', role: 'card', carrier: 'column', image: false, flush: false, padding: null, row: true });
+
+/** One card slot as markup: the marked carrier with an optional image, a heading and a paragraph (colours from the language, as recipes write them). */
+function cardMarkup(slot) {
+  const marker = slot.on === 'light' ? { kit: slot.role } : { kit: slot.role, on: slot.on };
+  const px4 = (n) => ({ top: `${n}px`, right: `${n}px`, bottom: `${n}px`, left: `${n}px` });
+  const inset = slot.flush ? { module: { decoration: { spacing: { desktop: { value: { padding: { top: '16px', right: '24px', bottom: '16px', left: '24px' } } } } } } } : {};
+  const image = blockOf('image', { module: { advanced: { sizing: { desktop: { value: { width: '100%', aspectRatio: { width: '16', height: '9' } } } } } }, image: { innerContent: { desktop: { value: { src: '{{aied:image:card-blue-1}}', alt: 'Placeholder photograph: replace with your own' } } }, decoration: { fit: { desktop: { value: { objectFit: 'cover' } } } } }, builderVersion: '5.8.0' }, null);
+  const heading = blockOf('heading', Object.assign({ title: { innerContent: { desktop: { value: slot.heading } }, decoration: { font: { font: { desktop: { value: { headingLevel: 'h3', color: '{{aied:color:text}}', family: '{{aied:font:display}}', size: '24px' } } } } } }, builderVersion: '5.8.0' }, inset), null);
+  const para = blockOf('text', Object.assign({ content: { innerContent: { desktop: { value: '<p>Placeholder copy for a card: one short sentence that the surrounding colours must keep readable.</p>' } }, decoration: { bodyFont: { body: { font: { desktop: { value: { color: '{{aied:color:muted}}', family: '{{aied:font:body}}', size: '16px', lineHeight: '1.5em' } } } } } } }, builderVersion: '5.8.0' }, inset), null);
+  const layout = slot.carrier === 'column' ? { flexDirection: 'column', rowGap: '16px' } : { flexDirection: 'column', rowGap: '12px' };
+  const decoration = { layout: { desktop: { value: layout } } };
+  if (slot.padding !== null) decoration.spacing = { desktop: { value: { padding: px4(slot.padding) } } };
+  const body = [slot.image ? image : null, heading, para].filter(Boolean).join('\n');
+  if (slot.carrier === 'column') {
+    decoration.sizing = { desktop: { value: { flexType: '8_24' } }, phone: { value: { flexType: '24_24' } } };
+    return blockOf('column', { module: { advanced: { type: { desktop: { value: '1_3' } } }, decoration }, builderVersion: '5.8.0', aied: marker }, body);
+  }
+  return blockOf('group', { module: { decoration }, builderVersion: '5.8.0', aied: marker }, body);
+}
+
+/** The tokenised sheet markup: 8 buttons (SURFACES x ROLES) and 12 cards (CARD_SLOTS), in document order. */
 function sheetMarkup() {
-  const v = '"builderVersion":"5.8.0"';
-  return SURFACES.map((s) => {
+  const v = V;
+  const sections = SURFACES.map((s) => {
     const marker = (role) => (s.on === 'light' ? `{"kit":"${role}"}` : `{"kit":"${role}","on":"${s.on}"}`);
     const buttons = ROLES.map((r) => `<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"${r.text}"}}},"decoration":{"font":{"font":{"desktop":{"value":{"family":"{{aied:font:body}}"}}}}}},${v},"aied":${marker(r.role)}} /-->`).join('\n');
+    const cards = CARD_SLOTS.filter((c) => c.band === s.key && !c.row).map(cardMarkup).join('\n');
     return `<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":${s.bg}}},"spacing":{"desktop":{"value":{"padding":{"top":"64px","bottom":"64px"}}}}}},${v}} -->
 <!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},${v}} -->
 <!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},${v}} -->
@@ -34,8 +79,21 @@ function sheetMarkup() {
 ${buttons}
 <!-- /wp:divi/column -->
 <!-- /wp:divi/row -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},${v}} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"layout":{"desktop":{"value":{"flexDirection":"column","rowGap":"24px"}}}}},${v}} -->
+${cards}
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
 <!-- /wp:divi/section -->`;
-  }).join('\n');
+  });
+  // The multi-column check: a row of three columns that ARE the cards (the real proof-press-quotes row shape), on the bg band.
+  const bg = SURFACES.find((s) => s.key === 'bg');
+  sections.push(`<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":${bg.bg}}},"spacing":{"desktop":{"value":{"padding":{"top":"64px","bottom":"64px"}}}}}},${v}} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"1_3,1_3,1_3"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_3"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap","columnGap":"24px"}},"phone":{"value":{"flexWrap":"wrap"}}}}},${v}} -->
+${CARD_SLOTS.filter((c) => c.row).map(cardMarkup).join('\n')}
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->`);
+  return sections.join('\n');
 }
 
 /** The slots of the sheet in document order: [{ surface, on, role }]. */
@@ -207,13 +265,13 @@ const near = (a, b, tol = 0.6) => Math.abs(a - b) <= tol;
 const BORDER_TOLERANCE = 0.25;
 
 /** Problems ([code, detail]) of one computed shadow state against the expectation; also says where the shadow landed. */
-function shadowProblems(exp, el, wrap, state) {
+function shadowProblems(exp, el, wrap, state, names = ['button', 'wrapper']) {
   const onEl = parseShadows(el.boxShadow).filter((s) => !s.inset);
   const onWrap = parseShadows(wrap.boxShadow).filter((s) => !s.inset);
-  const where = onEl.length ? 'button' : onWrap.length ? 'wrapper' : null;
+  const where = onEl.length ? names[0] : onWrap.length ? names[1] : null;
   const got = onEl[0] || onWrap[0] || null;
   if (!exp) return { where, problems: got ? [['shadow', `${state}: expected no shadow, got "${onEl.length ? el.boxShadow : wrap.boxShadow}" on the ${where}`]] : [] };
-  if (!got) return { where, problems: [['shadow', `${state}: expected a shadow (blur ${exp.blur}px), got none on the button or its wrapper`]] };
+  if (!got) return { where, problems: [['shadow', `${state}: expected a shadow (blur ${exp.blur}px), got none on the ${names[0]} or its ${names[1]}`]] };
   const p = [];
   if (exp.blur === 0 && got.blur !== 0) p.push(['shadow', `${state}: expected a hard shadow (0 blur), got blur ${got.blur}px on the ${where}`]);
   if (exp.blur > 0 && got.blur === 0) p.push(['shadow', `${state}: expected a blurred shadow (${exp.blur}px), got 0 blur on the ${where}`]);
@@ -322,6 +380,286 @@ function overflowProblems(b, state, page) {
   return out;
 }
 
+// ---- cards -----------------------------------------------------------------------------------------------------------
+const SIDES = [['top', 'Top'], ['right', 'Right'], ['bottom', 'Bottom'], ['left', 'Left']];
+const CORNERS = ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'];
+const CORNER_PROPS = ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius'];
+
+/** The block tree of a markup: [{ name, attrs, children }] (closing comments pair up; a self-closing block has no children). */
+function blockTree(markup) {
+  const re = /<!--\s+(\/)?wp:(divi\/[a-z0-9-]+)(?:\s+(\{(?:[^-}]|-(?!->)|\}(?!\s+\/?-->))*\}))?\s+(\/)?-->/g;
+  const root = { name: '', attrs: {}, children: [] };
+  const stack = [root];
+  let m;
+  while ((m = re.exec(markup))) {
+    const top = stack[stack.length - 1];
+    if (m[1]) { if (stack.length > 1) stack.pop(); continue; }
+    const node = { name: m[2], attrs: m[3] ? JSON.parse(m[3]) : {}, children: [] };
+    top.children.push(node);
+    if (!m[4]) stack.push(node);
+  }
+  return root.children;
+}
+const headingText = (node) => dig(node.attrs, 'title', 'innerContent', 'desktop', 'value');
+/** The first heading text below a node, depth first, or null. */
+function firstHeading(node) {
+  for (const c of node.children) {
+    if (c.name === 'divi/heading' && typeof headingText(c) === 'string') return headingText(c);
+    const h = firstHeading(c);
+    if (h !== null) return h;
+  }
+  return null;
+}
+/**
+ * The attribute object of each sheet card in the RESOLVED markup (the marker is gone, so a card is found by the carrier block that holds
+ * its unique heading text): [{ slot, attrs }] in CARD_SLOTS order; attrs is null when the card is not in the markup.
+ */
+function cardAttrs(markup, slots = CARD_SLOTS) {
+  const found = new Map();
+  const walk = (nodes) => {
+    for (const n of nodes) {
+      if (n.name === 'divi/group' || n.name === 'divi/column') {
+        const h = firstHeading(n);
+        if (h !== null && !found.has(n.name + '|' + h)) found.set(n.name + '|' + h, n.attrs);
+      }
+      walk(n.children);
+    }
+  };
+  walk(blockTree(markup));
+  return slots.map((slot) => ({ slot, attrs: found.get(`divi/${slot.carrier}|${slot.heading}`) || null }));
+}
+
+/**
+ * What the kit says about one card, read ONLY from its resolved attributes (`module.decoration`): { rest: { fill, top|right|bottom|left:
+ * {width, style, color}, radius:[4], padding:[4]|null }, shadow: {rest, hover}, hoverBorder: colour|null, lift: -4|null, hoverKeys: [..] }.
+ * `hoverKeys` lists the hover keys the markup carries (a panel must have none).
+ */
+function expectCardFromAttrs(attrs) {
+  const md = dig(attrs, 'module', 'decoration') || {};
+  const border = dig(md, 'border', 'desktop', 'value') || {};
+  const styles = border.styles || {};
+  const all = styles.all || {};
+  const side = (k) => { const e = Object.assign({}, all, styles[k] || {}); return { width: e.width !== undefined && e.width !== '' ? parseFloat(e.width) : null, style: e.style || null, color: e.color || null }; };
+  const radius = border.radius || {};
+  const pad = dig(md, 'spacing', 'desktop', 'value', 'padding') || null;
+  const shadowRest = shadowExpect(dig(md, 'boxShadow', 'desktop', 'value'));
+  const shadowHoverOnly = shadowExpect(dig(md, 'boxShadow', 'desktop', 'hover'));
+  const ty = dig(md, 'transform', 'desktop', 'hover', 'translate', 'y');
+  const hoverBorder = dig(md, 'border', 'desktop', 'hover', 'styles', 'all', 'color') || null;
+  const hoverKeys = [];
+  if (hoverBorder !== null || dig(md, 'border', 'desktop', 'hover') !== undefined) hoverKeys.push('border.hover');
+  if (shadowHoverOnly) hoverKeys.push('boxShadow.hover');
+  if (ty !== undefined || dig(md, 'transform') !== undefined) hoverKeys.push('transform');
+  if (dig(md, 'background', 'desktop', 'hover') !== undefined) hoverKeys.push('background.hover');
+  return {
+    rest: {
+      fill: dig(md, 'background', 'desktop', 'value', 'color') || null,
+      top: side('top'), right: side('right'), bottom: side('bottom'), left: side('left'),
+      radius: CORNERS.map((k) => (radius[k] !== undefined ? parseFloat(radius[k]) : null)),
+      padding: pad ? ['top', 'right', 'bottom', 'left'].map((k) => (pad[k] !== undefined && pad[k] !== '' ? parseFloat(pad[k]) : null)) : null,
+    },
+    shadow: { rest: shadowRest, hover: shadowHoverOnly || shadowRest },
+    hoverBorder,
+    lift: ty !== undefined ? parseFloat(ty) : null,
+    hoverKeys,
+  };
+}
+
+/**
+ * The expectation fields that are missing although KitAdapters::card() ALWAYS writes them (fill, the four radii, the frame width/style/colour
+ * on every side, and for a CARD the padding; a panel's padding is the sheet's literal, so the sheet must give it too), plus a panel that
+ * carries any hover key (a panel is static: that is an adapter fault, not an expectation). A non-empty list is a `gate` failure and
+ * compareCard refuses to compare: a null expectation must never silently skip a check.
+ */
+function missingCardExpectations(exp, role) {
+  const out = [];
+  const num = (v) => typeof v === 'number' && !Number.isNaN(v);
+  const r = exp.rest;
+  if (!r.fill) out.push('rest.fill');
+  if (!Array.isArray(r.radius) || r.radius.length !== 4 || !r.radius.every(num)) out.push('rest.radius');
+  if (!Array.isArray(r.padding) || r.padding.length !== 4 || !r.padding.every(num)) out.push('rest.padding');
+  for (const [k] of SIDES) {
+    if (!num(r[k].width)) out.push(`rest.${k}.width`);
+    if (!r[k].style) out.push(`rest.${k}.style`);
+    if (!r[k].color) out.push(`rest.${k}.color`);
+  }
+  if (role === 'panel') for (const k of exp.hoverKeys) out.push('panel carries ' + k);
+  return out;
+}
+
+/**
+ * Every disagreement ([code, detail]) between a card's expectation and what the browser computed: codes card-border (the four sides' width,
+ * style, colour), card-radius, card-fill, card-padding, card-shadow (it must sit on the card element itself) and card-hover (hover frame
+ * colour only when the markup has one, the hover shadow, translateY of the lift, and that nothing else moved or changed; a PANEL must show
+ * no change at all). `computed` = { rest: { el }, hover: { el } } with the fields measureCards collects; the hover state is REQUIRED.
+ */
+function compareCard(exp, role, computed) {
+  const miss = missingCardExpectations(exp, role);
+  if (miss.length) return { problems: [['card-expectation', 'expectation missing (an adapter attribute path drifted): ' + miss.join(', ')]], shadowWhere: null };
+  const out = [];
+  const el = computed.rest.el;
+  const r = exp.rest;
+  for (const [side, cap] of SIDES) {
+    const e = r[side];
+    if (!near(px(el[`border${cap}Width`]), e.width, BORDER_TOLERANCE)) out.push(['card-border', `rest: border-${side}-width ${el[`border${cap}Width`]}, expected ${e.width}px`]);
+    if (e.width > 0) {
+      if (el[`border${cap}Style`] !== e.style) out.push(['card-border', `rest: border-${side}-style ${el[`border${cap}Style`]}, expected ${e.style}`]);
+      if (!sameColour(e.color, el[`border${cap}Color`])) out.push(['card-border', `rest: border-${side}-color ${el[`border${cap}Color`]}, expected ${e.color}`]);
+    }
+  }
+  CORNER_PROPS.forEach((k, i) => { if (!near(px(el[k]), r.radius[i])) out.push(['card-radius', `rest: ${k} ${el[k]}, expected ${r.radius[i]}px`]); });
+  if (!sameColour(r.fill, el.backgroundColor)) out.push(['card-fill', `rest: background-color ${el.backgroundColor}, expected ${r.fill}`]);
+  ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'].forEach((k, i) => { if (!near(px(el[k]), r.padding[i])) out.push(['card-padding', `rest: ${k} ${el[k]}, expected ${r.padding[i]}px`]); });
+  const none = { boxShadow: 'none' };
+  const restShadow = shadowProblems(exp.shadow.rest, el, none, 'rest', ['card', 'card']);
+  for (const [, d] of restShadow.problems) out.push(['card-shadow', d]);
+  if (Math.abs(translateY(el.transform)) > 0.1) out.push(['card-hover', `rest: transform ${el.transform}, expected none (a card does not move at rest)`]);
+
+  const h = computed.hover;
+  if (!h || !h.el) { out.push(['card-hover', 'the hover state was not measured']); return { problems: out, shadowWhere: { rest: restShadow.where, hover: null } }; }
+  const he = h.el;
+  if (!sameColour(el.backgroundColor, he.backgroundColor)) out.push(['card-hover', `hover: background-color ${he.backgroundColor}, rest ${el.backgroundColor}: a card never changes its fill`]);
+  for (const [side, cap] of SIDES) {
+    const restColour = el[`border${cap}Color`]; const hovColour = he[`border${cap}Color`];
+    if (!near(px(el[`border${cap}Width`]), px(he[`border${cap}Width`]), 0.01)) out.push(['card-hover', `hover: border-${side}-width ${he[`border${cap}Width`]}, rest ${el[`border${cap}Width`]}`]);
+    if (r[side].width > 0) {
+      const want = role === 'card' && exp.hoverBorder ? exp.hoverBorder : restColour;
+      if (!sameColour(want, hovColour)) out.push(['card-hover', `hover: border-${side}-color ${hovColour}, expected ${role === 'card' && exp.hoverBorder ? exp.hoverBorder : 'the rest colour ' + restColour}`]);
+    }
+  }
+  const hoverShadow = shadowProblems(role === 'card' ? exp.shadow.hover : exp.shadow.rest, he, none, 'hover', ['card', 'card']);
+  for (const [, d] of hoverShadow.problems) out.push(['card-hover', d]);
+  const ty = translateY(he.transform);
+  if (role === 'card' && exp.lift !== null) {
+    if (!near(ty, exp.lift, 0.3)) out.push(['card-hover', `hover: translateY ${ty}px, expected ${exp.lift}px`]);
+  } else if (!(Math.abs(ty) <= 0.1)) {
+    out.push(['card-hover', `hover: the ${role} moved (transform ${he.transform})${role === 'panel' ? ': a panel is static' : ' but the kit has no lift'}`]);
+  }
+  return { problems: out, shadowWhere: { rest: restShadow.where, hover: hoverShadow.where } };
+}
+
+/**
+ * The clip of a card with an image child. A radius makes Divi print overflow:hidden on the card (kit-card-vocabulary.md), so the image is
+ * cut to the rounded corner: this is a computed-style + geometry check, not a pixel one. Fails (card-clip) when a radius is set and the
+ * card does not clip (overflow not hidden/clip), when the image spills outside the card's box (1px), and, for a `flush` slot (a
+ * zero-padding card whose image touches its corners), when the image does NOT touch them (the clip would not be exercised at all).
+ * c = { el, rect, image: { rect } | null }; returns { problems, info: { flush, clipped } } (clipped = the image's corners lie outside the
+ * rounded shape, i.e. the radius really cuts them).
+ */
+function cardClipProblems(slot, exp, c) {
+  const out = [];
+  const radius = Math.max(...exp.rest.radius);
+  const clips = (v) => v === 'hidden' || v === 'clip';
+  const info = { flush: false, clipped: false };
+  if (radius > 0 && !(clips(c.el.overflowX) && clips(c.el.overflowY))) out.push(['card-clip', `radius ${radius}px but overflow is ${c.el.overflowX}/${c.el.overflowY}: a child image would not be clipped to the corner`]);
+  if (!c.image) {
+    if (slot.image) out.push(['card-clip', 'the card should hold an image child and none was found in the page']);
+    return { problems: out, info };
+  }
+  const a = c.rect; const i = c.image.rect;
+  if (i.left < a.left - 1 || i.right > a.right + 1 || i.top < a.top - 1 || i.bottom > a.bottom + 1) out.push(['card-clip', `the image (${Math.round(i.left)},${Math.round(i.top)}..${Math.round(i.right)},${Math.round(i.bottom)}) spills outside the card (${Math.round(a.left)},${Math.round(a.top)}..${Math.round(a.right)},${Math.round(a.bottom)})`]);
+  const bw = Math.max(0, px(c.el.borderTopWidth) || 0, px(c.el.borderLeftWidth) || 0);
+  info.flush = Math.abs(i.left - a.left) <= bw + 1.5 && Math.abs(i.top - a.top) <= bw + 1.5 && Math.abs(i.right - a.right) <= bw + 1.5;
+  if (slot.flush && !info.flush) out.push(['card-clip', 'the image of the zero-padding panel does not touch its corners: the radius clip is not exercised (image vs card box differs by more than the frame)']);
+  if (info.flush && radius > 0) {
+    // The image's top-left corner, measured from the card's: outside the quarter circle of radius r means the radius cuts it.
+    const dx = i.left - a.left; const dy = i.top - a.top;
+    const cx = radius - dx; const cy = radius - dy;
+    info.clipped = cx > 0 && cy > 0 && Math.hypot(cx, cy) > radius;
+  }
+  return { problems: out, info };
+}
+
+/**
+ * Contrast on the MEASURED card fill ({r,g,b}, the mean of a screenshot of the card's inner box with its children hidden): the heading and
+ * the paragraph colours against it >= 4.5 (code card-contrast), and every drawn frame side >= 3.0 against it, except the decorative
+ * `border` hairline (the colour of the language's `border` role, `hairline`), which is reported but not judged. An unreadable colour or a
+ * missing text is a failure, never a skip. c = { el, heading: { color }|null, paragraph: { color }|null }.
+ */
+function cardContrastProblems(c, fill, hairline = null) {
+  const out = []; const info = {};
+  const base = { r: fill.r, g: fill.g, b: fill.b, a: 1 };
+  for (const [name, t] of [['heading', c.heading], ['paragraph', c.paragraph]]) {
+    const col = t ? colour(t.color) : null;
+    if (!col) { out.push(['card-contrast', `${name}: no readable text colour found (${t ? t.color : 'no ' + name + ' in the card'})`]); continue; }
+    const r = round2(ratioOf(over(col, base), base));
+    info[name] = r;
+    if (r < CONTRAST_LABEL) out.push(['card-contrast', `${name} colour ${hex(over(col, base))} on the card fill ${hex(base)} is ${r}:1, needs ${CONTRAST_LABEL}`]);
+  }
+  for (const [side, cap] of SIDES) {
+    if (!(px(c.el[`border${cap}Width`]) > 0)) continue;
+    const raw = c.el[`border${cap}Color`];
+    const bc = colour(raw);
+    if (!bc) { out.push(['card-contrast', `border-${side}: unreadable colour ${raw}`]); continue; }
+    const r = round2(ratioOf(over(bc, base), base));
+    info[side] = r;
+    if (hairline && sameColour(hairline, raw)) { info.hairline = true; continue; }
+    if (r < CONTRAST_SHAPE) out.push(['card-contrast', `frame ${side} ${hex(over(bc, base))} on the card fill ${hex(base)} is ${r}:1, needs ${CONTRAST_SHAPE}`]);
+  }
+  return { problems: out, info };
+}
+
+/** The painted fill (screenshot mean) against the computed one: card-fill when an opaque computed fill differs by more than 4 per channel. */
+function paintedFillProblems(el, fill) {
+  const c = colour(el.backgroundColor);
+  if (!c || c.a < 0.999) return [];
+  const d = Math.max(Math.abs(c.r - fill.r), Math.abs(c.g - fill.g), Math.abs(c.b - fill.b));
+  return d > 4 ? [['card-fill', `painted fill ${hex(fill)} differs from the computed ${el.backgroundColor} by ${Math.round(d)} (something is drawn over the card)`]] : [];
+}
+
+/** Overflow of one measured card: beyond its container (1px) or the window, or the page wider than the window. */
+function cardOverflowProblems(c, state, page) {
+  const out = [];
+  const r = c.rect; const p = c.parentRect;
+  if (r.left < p.left - 1 || r.right > p.right + 1) out.push(['overflow', `${state}: card ${Math.round(r.left)}..${Math.round(r.right)} outside its container ${Math.round(p.left)}..${Math.round(p.right)}`]);
+  if (r.right > page.innerWidth + 1 || r.left < -1) out.push(['overflow', `${state}: card ${Math.round(r.left)}..${Math.round(r.right)} outside the window (${page.innerWidth})`]);
+  if (page.scrollWidth > page.innerWidth) out.push(['overflow', `${state}: scrollWidth ${page.scrollWidth} > innerWidth ${page.innerWidth}`]);
+  return out;
+}
+
+/**
+ * The three column cards: side by side from 1000 px up (equal widths within 3px, tops within 4px), stacked at 480 px and below (each below
+ * the previous, same left within 2px); in between nothing is demanded (the answer is reported). rects = the three cards' rects, in order.
+ */
+function columnRowProblems(rects, width) {
+  const out = [];
+  if (rects.length !== 3) return { problems: [['cards', `the column row has ${rects.length} cards, expected 3`]], layout: null };
+  const side = rects.every((r, i) => i === 0 || (r.left > rects[i - 1].right - 1 && Math.abs(r.top - rects[0].top) <= 4));
+  const stacked = rects.every((r, i) => i === 0 || (r.top >= rects[i - 1].bottom - 1 && Math.abs(r.left - rects[0].left) <= 2));
+  const layout = side ? 'side-by-side' : stacked ? 'stacked' : 'mixed';
+  if (width >= 1000) {
+    if (!side) out.push(['overflow', `the three column cards are not side by side at ${width}px (${layout})`]);
+    else if (Math.max(...rects.map((r) => r.right - r.left)) - Math.min(...rects.map((r) => r.right - r.left)) > 3) out.push(['overflow', `the three column cards differ in width by more than 3px at ${width}px`]);
+  } else if (width <= 480 && !stacked) out.push(['overflow', `the three column cards do not stack at ${width}px (${layout})`]);
+  return { problems: out, layout };
+}
+
+/** Problems of the card count: every sheet card must be in the page (code `cards`), and an empty selection is an error. */
+function cardCountProblems(measured, slots = CARD_SLOTS) {
+  if (!slots.length) throw new Error('no card slots: nothing would be checked');
+  const rendered = measured.filter((c) => c && c.found);
+  if (rendered.length === slots.length && measured.length === slots.length) return [];
+  const missing = slots.filter((s, i) => !(measured[i] && measured[i].found)).map((s) => s.key);
+  return [['cards', `${rendered.length} cards rendered, expected ${slots.length}${missing.length ? ' (missing: ' + missing.join(', ') + ')' : ''}`]];
+}
+
+/** The central box of a card to sample for its fill: inside the frame, the corners and (a little) the padding. */
+function cardSampleClip(rect, el) {
+  const w = rect.width; const h = rect.height;
+  const bw = Math.max(...SIDES.map(([, cap]) => px(el[`border${cap}Width`]) || 0));
+  const rad = Math.max(...CORNER_PROPS.map((k) => px(el[k]) || 0));
+  const inset = Math.max(1, Math.min(bw + Math.min(rad, Math.min(w, h) / 4) + 2, Math.min(w, h) / 2 - 2));
+  return { x: Math.max(0, Math.round(rect.left + inset)), y: Math.max(0, Math.round(rect.top + inset)), width: Math.max(1, Math.round(w - 2 * inset)), height: Math.max(1, Math.round(h - 2 * inset)) };
+}
+
+/** What a finished run must have checked: at least one cell/width and at least one card (an empty card selection fails the run). */
+function emptyRunProblems({ checked, cardsChecked }) {
+  const out = [];
+  if (!checked) out.push('no cell/width was checked: nothing was measured');
+  if (!cardsChecked) out.push('no card was checked: the card selection was empty');
+  return out;
+}
+
 // ---- PNG (screenshots) ---------------------------------------------------------------------------------------------
 /** Decodes an 8-bit, non-interlaced RGB or RGBA PNG (what Chromium writes) to { width, height, data: RGBA bytes }. */
 function decodePng(buf) {
@@ -386,8 +724,45 @@ function measureButtons() {
   };
 }
 
+/**
+ * Runs IN THE PAGE (self-contained). For each slot ({ key, heading, carrier }) the rendered card: the carrier element (`.et_pb_group`, or
+ * `.et_pb_column` for a column card) that holds the heading with that exact text, tagged `data-aied-card="<key>"` so the script can hover
+ * it, with the computed fields compareCard/cardContrastProblems read, its rect and its container's, the heading and paragraph colours and
+ * the rect of its first image. A card that is not in the page is { key, found: false }.
+ */
+function measureCards(slots) {
+  const root = document.querySelector('.et-l--post');
+  const F = ['borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderRightWidth', 'borderRightStyle', 'borderRightColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderLeftWidth', 'borderLeftStyle', 'borderLeftColor', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius', 'backgroundColor', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'boxShadow', 'transform', 'overflowX', 'overflowY', 'transitionDuration', 'transitionDelay'];
+  const pick = (node) => { const cs = getComputedStyle(node); const o = {}; for (const k of F) o[k] = cs[k]; return o; };
+  const box = (n) => { const r = n.getBoundingClientRect(); return { left: r.left + window.scrollX, right: r.right + window.scrollX, top: r.top + window.scrollY, bottom: r.bottom + window.scrollY, width: r.width, height: r.height }; };
+  const headings = root ? [...root.querySelectorAll('.et_pb_heading')] : [];
+  return {
+    hasRoot: !!root,
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth: window.innerWidth,
+    cards: slots.map((s) => {
+      const h = headings.find((n) => (n.textContent || '').trim() === s.heading);
+      const card = h ? h.closest(s.carrier === 'column' ? '.et_pb_column' : '.et_pb_group') : null;
+      if (!card) return { key: s.key, found: false };
+      card.setAttribute('data-aied-card', s.key);
+      const tag = h.querySelector('h1,h2,h3,h4,h5,h6');
+      const p = card.querySelector('.et_pb_text p');
+      const img = card.querySelector('.et_pb_image img');
+      const container = card.closest(s.carrier === 'column' ? '.et_pb_row' : '.et_pb_column') || card.parentElement;
+      return {
+        key: s.key, found: true, el: pick(card), parentShadow: getComputedStyle(card.parentElement).boxShadow, rect: box(card), parentRect: box(container),
+        heading: tag ? { color: getComputedStyle(tag).color } : null,
+        paragraph: p ? { color: getComputedStyle(p).color } : null,
+        image: img ? { rect: box(img) } : null,
+      };
+    }),
+  };
+}
+
 module.exports = {
   SURFACES, ROLES, SLOTS, sheetMarkup, TITLE_PREFIX, runTitle, parseRunTitle, selectCells, buttonAttrs, expectFromAttrs, missingExpectations, BORDER_TOLERANCE,
   colour, sameColour, parseShadows, translateY, shadowProblems, compareButton, contrastProblems, overflowProblems,
   CONTRAST_LABEL, CONTRAST_SHAPE, decodePng, pixelStats, measureButtons, hex, round2,
+  CARD_ON, CARD_SLOTS, cardMarkup, blockTree, cardAttrs, expectCardFromAttrs, missingCardExpectations, compareCard, cardClipProblems, cardContrastProblems,
+  paintedFillProblems, cardOverflowProblems, columnRowProblems, cardCountProblems, cardSampleClip, emptyRunProblems, measureCards,
 };

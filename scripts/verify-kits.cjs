@@ -2,9 +2,11 @@
 /*
  * Dev-only: the style-kit render gate. For each (kit, language) cell it builds ONE "kit sheet" through the REAL pipeline (the sheet template
  * of scripts/lib/kit-checks.cjs: a primary `control` and a secondary `control-secondary` button on each surface: light on a bg section, light
- * on a surface section, an accent band ("on":"accent") and a photo band with the overlay scrim ("on":"dark"); resolved in PHP exactly as
- * SectionRecipes::recipe serves a recipe: ImageTokens with the plugin's pack, KitResolver with the kit, RecipeTokens with the language),
- * gates it through LayoutGate::check, saves it as a throwaway DRAFT and opens it with the real Divi in Chromium at 1280, 900 and 400 px.
+ * on a surface section, an accent band ("on":"accent") and a photo band with the overlay scrim ("on":"dark"); on the same four bands a `card`
+ * and a `panel` (divi/group, each with a heading and a paragraph; the bg-band card and one zero-padding "clip" panel also hold an image),
+ * plus a row of three `divi/column` cards on the bg band; resolved in PHP exactly as SectionRecipes::recipe serves a recipe: ImageTokens with
+ * the plugin's pack, KitResolver with the kit, RecipeTokens with the language), gates it through LayoutGate::check, saves it as a throwaway
+ * DRAFT and opens it with the real Divi in Chromium at 1280, 900 and 400 px.
  *
  *   node scripts/verify-kits.cjs [--kits a,b] [--languages x,y] [--clean-orphans]    (needs `make up`; Playwright from ../layoutlab)
  *
@@ -21,13 +23,29 @@
  * (hover), the shadow (shadow) and translateY -4px for a lift kit, none otherwise (lift); contrast (contrast): the label against the fill as
  * painted over the surface >= 4.5 and, where the fill is not opaque, each drawn border side against the surface >= 3.0, rest and hover. The
  * surface is MEASURED: the mean colour of a screenshot of the button's box with every button hidden (so the photo band is the real photo
- * under the real scrim). A sheet the gate or the resolver refuses FAILs once as `<kit>/<language>/gate`. Problems in the script's own page
- * handling are `render-error`. A preview that comes back as a 404 or without the page content is retried once with a fresh login.
+ * under the real scrim).
+ *
+ * The 12 CARDS (scripts/lib/kit-card-run.cjs, judged by the pure comparisons of kit-checks.cjs) are found by the unique heading each holds and
+ * their expectations are read from the resolved block tree, never a table here. Codes, each `<slot> <detail>`: cards (not all 12 rendered,
+ * nothing else is then checked); card-border (width, style and colour of each of the four sides: an underline kit draws only its bottom
+ * edge); card-radius (the four corners); card-fill (computed background, and the painted fill under the card); card-padding (a card: the
+ * kit's, a panel: its own literal); card-shadow (presence, blur, offsets, colour, on the card element itself); card-hover, after a real
+ * Playwright hover(): the frame colour changes only where the markup has a hover border colour, the hover shadow, translateY -4px for a
+ * lift and no movement otherwise, the fill never changes, and a PANEL must show NO change at all (fill, frame, shadow, transform);
+ * card-clip (a radius needs overflow hidden/clip on the card, an image must stay inside the card, and the zero-padding panel's image must
+ * really touch the corners so the radius clip is exercised: a computed-style and geometry check, not a pixel one); card-contrast (the
+ * heading and the paragraph against the MEASURED card fill >= 4.5, every drawn frame side >= 3.0 unless it is the language's decorative
+ * `border` hairline); overflow also covers every card (inside its container and the window, rest and hover) and the row of three column
+ * cards (side by side at 1280, stacked at 400, no demand at 900). A run whose card selection is empty fails. A sheet the gate or the
+ * resolver refuses FAILs once as `<kit>/<language>/gate`. Problems in the script's own page handling are `render-error`. A preview that
+ * comes back as a 404 or without the page content is retried once with a fresh login.
  *
  * Output: PASS/FAIL lines and a summary; NOTE lines with measurements worth a look (an underline's contrast against its own fill, how much
- * a shadow stands out from the surface, which element carries the shadow and its corners); dist/kit-sheet/<kit>-<language>-<width>.png,
- * dist/kit-sheet/observations.json and dist/kit-sheet/index.html (one row per kit: editorial and glass-dark at 1280 and 400). dist/ is
- * git-ignored; writing the sheet never fails the run.
+ * a shadow stands out from the surface, which element carries the shadow and its corners; for cards how many carry a shadow and on which
+ * element, how far the card stands out from its band, whether the flush image corner is cut by the radius, the column row's layout at 900);
+ * dist/kit-sheet/<kit>-<language>-<width>.png (the full page, cards included), dist/kit-sheet/observations.json,
+ * dist/kit-sheet/card-observations.json and dist/kit-sheet/index.html (one row per kit: editorial and glass-dark at 1280 and 400). dist/
+ * is git-ignored; writing the sheet never fails the run.
  *
  * Dev site only (localhost). RUN ONE RUN AT A TIME. Every throwaway page is titled `aied kit <runToken> <kit> <language>`; the run deletes
  * ONLY pages whose title starts with `aied kit <runToken> ` (after every cell, at the end, and on SIGINT/SIGTERM/SIGHUP).
@@ -71,6 +89,7 @@ let cleanOrphans = false;
 
 const K = require('./lib/kit-checks.cjs');
 const { measureInPage, PHP_ERROR, over, ratioOf } = require('./lib/recipe-checks.cjs');
+const { checkCards } = require('./lib/kit-card-run.cjs');
 
 const wp = makeWp(ROOT);
 const pages = throwawayPages(wp, K.TITLE_PREFIX, 'kit');
@@ -99,7 +118,10 @@ function makePage(kit, language) {
 
 // ---- data ------------------------------------------------------------------------------------------------------------
 const kitIds = JSON.parse(fs.readFileSync(KITS_FILE, 'utf8')).map((k) => k.id);
-const languages = JSON.parse(fs.readFileSync(LANGUAGES_FILE, 'utf8')).map((l) => ({ id: l.id, kit: l.kit }));
+const languageData = JSON.parse(fs.readFileSync(LANGUAGES_FILE, 'utf8'));
+const languages = languageData.map((l) => ({ id: l.id, kit: l.kit }));
+/** The decorative frame colour of each design language (its `border` role): a hairline frame is not judged for contrast. */
+const hairlines = Object.fromEntries(languageData.map((l) => [l.id, (l.colors || {}).border || null]));
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -135,7 +157,7 @@ td.w1280{width:420px;min-width:420px}td.w400{width:150px;min-width:150px}
 .b.pass{background:#1a7f37}.b.fail{background:#b3261e}
 </style></head><body>
 <h1>Kit sheet</h1>
-<p>Generated by <code>make verify-kits</code> (${esc(new Date().toISOString())}). Each sheet is a primary and a secondary button on a bg section, a surface section, an accent band and a photo band, rendered on the real Divi at desktop (1280 px) and phone (400 px); a 900 px screenshot of each is in the same folder, and <code>observations.json</code> has the measurements. A cell says &quot;not rendered&quot; when this folder has no image for it.</p>
+<p>Generated by <code>make verify-kits</code> (${esc(new Date().toISOString())}). Each sheet is a primary and a secondary button, a card and a panel on a bg section, a surface section, an accent band and a photo band, plus a row of three column cards, rendered on the real Divi at desktop (1280 px) and phone (400 px); a 900 px screenshot of each is in the same folder, and <code>observations.json</code> has the measurements. A cell says &quot;not rendered&quot; when this folder has no image for it.</p>
 <div class="wrap"><table>
 <thead><tr><th>Kit</th><th colspan="2">editorial</th><th colspan="2">glass-dark</th></tr></thead>
 <tbody>
@@ -194,6 +216,8 @@ async function openPreview(ctx, id, state) {
   let passes = 0;
   const status = new Map();
   const observations = [];
+  const cardObservations = [];
+  let cardsChecked = 0;
   const state = { cookies: null, token: null };
   cleanupOnSignals(run, sweep, pages.runPrefix);
   let cells = [];
@@ -230,6 +254,12 @@ async function openPreview(ctx, id, state) {
         if (expects.length !== K.SLOTS.length) { report(kit, lang, 'gate', [['gate', `the resolved sheet has ${expects.length} buttons, expected ${K.SLOTS.length}`]]); continue; }
         const missing = expects.flatMap((e, i) => K.missingExpectations(e).map((f) => `${K.SLOTS[i].surface}/${K.SLOTS[i].role} ${f}`));
         if (missing.length) { report(kit, lang, 'gate', [['gate', 'expectation missing (an adapter attribute path drifted): ' + missing.slice(0, 6).join(', ') + (missing.length > 6 ? ` and ${missing.length - 6} more` : '')]]); continue; }
+        const cardBlocks = K.cardAttrs(page.markup);
+        const absent = cardBlocks.filter((c) => !c.attrs).map((c) => c.slot.key);
+        if (absent.length) { report(kit, lang, 'gate', [['gate', 'cards not found in the resolved sheet (by their heading): ' + absent.join(', ')]]); continue; }
+        const cardExpects = cardBlocks.map((c) => K.expectCardFromAttrs(c.attrs));
+        const cardMissing = cardExpects.flatMap((e, i) => K.missingCardExpectations(e, cardBlocks[i].slot.role).map((f) => `${cardBlocks[i].slot.key} ${f}`));
+        if (cardMissing.length) { report(kit, lang, 'gate', [['gate', 'card expectation missing (an adapter attribute path drifted): ' + cardMissing.slice(0, 6).join(', ') + (cardMissing.length > 6 ? ` and ${cardMissing.length - 6} more` : '')]]); continue; }
         for (const width of WIDTHS) {
           const ctx = await browser.newContext({ viewport: { width, height: 900 } });
           const problems = [];
@@ -291,6 +321,12 @@ async function openPreview(ctx, id, state) {
                   lift: expects[i].lift !== null ? { button: K.translateY(hov.el.transform), wrapper: K.translateY(hov.wrap.transform) } : null });
               }
             }
+            if (m.hasRoot) {
+              const cr = await checkCards(p, { width, expects: cardExpects, hairline: hairlines[lang] });
+              cardsChecked += cr.cardsChecked;
+              for (const pr of cr.problems) problems.push(pr);
+              for (const o of cr.observations) cardObservations.push({ kit, language: lang, columns: cr.layout, ...o });
+            }
             if (consoleErrors.length) problems.push(['console-error', [...new Set(consoleErrors)].slice(0, 3).join(' | ')]);
             await p.close();
           } catch (e) {
@@ -308,7 +344,9 @@ async function openPreview(ctx, id, state) {
     }
     if (run.cleaning) return;
     try { fs.writeFileSync(path.join(OUT_DIR, 'observations.json'), JSON.stringify(observations, null, 1)); } catch (e) { console.log('WARNING could not write observations.json'); }
+    try { fs.writeFileSync(path.join(OUT_DIR, 'card-observations.json'), JSON.stringify(cardObservations, null, 1)); } catch (e) { console.log('WARNING could not write card-observations.json'); }
     printNotes(observations);
+    printCardNotes(cardObservations);
     writeSheet(status, cells);
   } catch (e) {
     console.log('ERROR script: ' + (e && e.message ? e.message : e));
@@ -321,7 +359,7 @@ async function openPreview(ctx, id, state) {
     }
   }
   if (run.cleaning) return;
-  if (passes + failures === 0) { failures++; console.log('FAIL no cell/width was checked: nothing was measured'); }
+  for (const why of K.emptyRunProblems({ checked: passes + failures, cardsChecked })) { failures++; console.log('FAIL ' + why); }
   console.log(`\n${passes} PASS, ${failures} FAIL (cell/width lines) over ${cells.length} kit/language cell(s)`);
   console.log(failures ? 'FAILED' : 'Every selected kit renders as it says on the real Divi.');
   process.exit(failures ? 1 : 0);
@@ -337,5 +375,23 @@ function printNotes(obs) {
     if (ul.length) console.log(`NOTE underline ${k}: bottom edge vs its own fill ${range(ul.map((o) => o.underline.bottomOnFill))}:1 (weakest ${ul.reduce((a, o) => (o.underline.bottomOnFill < a.underline.bottomOnFill ? o : a)).slot})`);
     const sh = list.filter((o) => o.shadow);
     if (sh.length) console.log(`NOTE shadow ${k}: ${[...new Set(sh.map((o) => o.shadow.state + ' on the ' + o.shadow.on + ' (radius ' + o.shadow.radius + ')'))].join(', ')}; shadow colour vs surface ${range(sh.map((o) => o.shadow.shadowVsSurface))}:1; e.g. "${sh[0].shadow.value}"`);
+  }
+}
+
+/** NOTE lines for the cards, one set per kit/language: shadow carriers, how far a card stands out from its band, the flush-image clip, and the column row's layout at 900 px. */
+function printCardNotes(obs) {
+  const groups = new Map();
+  for (const o of obs) { const k = o.kit + '/' + o.language; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(o); }
+  const range = (v) => { const n = v.filter((x) => typeof x === 'number'); return n.length ? `${Math.min(...n)}..${Math.max(...n)}` : 'n/a'; };
+  for (const [k, list] of groups) {
+    const wide = list.filter((o) => o.width === 1280);
+    const sh = wide.filter((o) => o.shadow);
+    if (sh.length) console.log(`NOTE card-shadow ${k}: ${sh.length} of ${wide.length} cards carry a shadow, on the card element itself (${[...new Set(sh.map((o) => o.shadow.state))].join(' and ')}); e.g. "${sh[0].shadow.value}"${wide.some((o) => o.parentShadow) ? '; a parent also carries one: ' + wide.find((o) => o.parentShadow).parentShadow : ''}`);
+    const so = wide.filter((o) => typeof o.standOut === 'number');
+    if (so.length) console.log(`NOTE card-standout ${k}: the card fill vs the band just above it ${range(so.map((o) => o.standOut))}:1 (weakest ${so.reduce((a, o) => (o.standOut < a.standOut ? o : a)).key})`);
+    const clip = wide.find((o) => o.key === 'panel-clip');
+    if (clip) console.log(`NOTE card-clip ${k}: the flush image corner ${clip.clip.flush ? (clip.clip.clipped ? 'is cut by the radius' : 'touches the card but the radius does not cut it') : 'does NOT touch the card corner'} (radius ${clip.radius})`);
+    const cols = list.find((o) => o.width === 900 && o.columns);
+    if (cols) console.log(`NOTE card-columns ${k}: the three column cards are ${cols.columns} at 900px`);
   }
 }
