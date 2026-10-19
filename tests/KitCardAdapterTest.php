@@ -742,6 +742,136 @@ class KitCardAdapterTest extends TestCase
         $this->assertSame( [], array_values( $problems ), "unreadable or misshapen grounds (fix the ground rules in KitAdapters::card(), never the bound; no exceptions):\n" . implode( "\n", $problems ) );
     }
 
+    /**
+     * The featured plan's prominence proof (kit-limits Task 6, spec section 3): problems of the accent-ground card $featured
+     * against the plain card $plain of the same kit on the LIGHT band, in one language ([] = fine), keyed "$where|<check>".
+     * The featured plan must read as the neighbour plus a filled body, never as less:
+     * - prominence: the featured fill's contrast against the band is STRICTLY greater than the plain card's fill, and at least
+     *   2.0:1 (so the accent body is visible against the page on its own);
+     * - one family: frame sides, widths and styles, radius, padding and rest shadow are the plain card's, and so are the
+     *   hover lift and the hover shadow (a smaller frame, a different corner or a missing shadow would make it less visible).
+     *
+     * @param array<string,mixed> $featured
+     * @param array<string,mixed> $plain
+     * @param array<string,mixed> $lang
+     * @return array<string,string>
+     */
+    public static function featuredProblems( array $featured, array $plain, array $lang, string $where ): array
+    {
+        $out    = [];
+        $colors = (array) $lang['colors'];
+        $band   = (string) Colour::opaque( (string) $colors['bg'], (string) $colors['bg'] );
+        $deco   = (array) ( $featured['module']['decoration'] ?? [] );
+        $pdeco  = (array) ( $plain['module']['decoration'] ?? [] );
+        $fillOf = static fn ( array $d ): ?string => is_string( $d['background']['desktop']['value']['color'] ?? null )
+            ? self::opaqueOn( $d['background']['desktop']['value']['color'], $lang, $band )
+            : null;
+        $fF = $fillOf( $deco );
+        $fP = $fillOf( $pdeco );
+        if ( null === $fF || null === $fP ) {
+            return [ "$where|fill" => "$where: the featured card or the plain card has no resolvable fill" ];
+        }
+        $rF = Colour::contrast( $fF, $band );
+        $rP = Colour::contrast( $fP, $band );
+        if ( $rF <= $rP ) {
+            $out[ "$where|prominence" ] = sprintf( '%s: the featured fill %s is %.3f:1 on the band, not above the plain card fill %s at %.3f:1', $where, $fF, $rF, $fP, $rP );
+        }
+        if ( $rF < 2.0 ) {
+            $out[ "$where|floor" ] = sprintf( '%s: the featured fill %s is %.3f:1 on the band, needs 2.0', $where, $fF, $rF );
+        }
+        $shape = static fn ( array $d ): array => array_map( static fn ( $s ) => [ $s['width'] ?? null, $s['style'] ?? null ], (array) ( $d['border']['desktop']['value']['styles'] ?? [] ) );
+        if ( $shape( $deco ) !== $shape( $pdeco ) ) {
+            $out[ "$where|frame-size" ] = "$where: the featured frame's sides, width or style differ from the plain card";
+        }
+        $same = [
+            'radius'      => static fn ( array $d ) => $d['border']['desktop']['value']['radius'] ?? null,
+            'spacing'     => static fn ( array $d ) => $d['spacing'] ?? null,
+            'boxShadow'   => static fn ( array $d ) => $d['boxShadow']['desktop']['value'] ?? null,
+            'hover-lift'  => static fn ( array $d ) => $d['transform']['desktop']['hover'] ?? null,
+            'hover-shadow' => static fn ( array $d ) => $d['boxShadow']['desktop']['hover'] ?? null,
+        ];
+        foreach ( $same as $name => $read ) {
+            if ( $read( $deco ) !== $read( $pdeco ) ) {
+                $out[ "$where|$name" ] = "$where: the featured card's $name differs from the plain card";
+            }
+        }
+        return $out;
+    }
+
+    public function testTheFeaturedPlanIsMoreProminentThanItsNeighbourInEveryKitAndLanguage(): void
+    {
+        $problems = [];
+        $checked  = 0;
+        $weakest  = [ INF, '' ];
+        foreach ( $this->shippedKits() as $id => $kit ) {
+            // The featured plan is a `divi/column` carrying {"kit":"card","on":"light","ground":"accent"}; its neighbours carry the
+            // same marker without a ground.
+            $featured = $this->patch( $kit, 'card', 'light', 'divi/column', 'accent' );
+            $plain    = $this->patch( $kit, 'card', 'light', 'divi/column' );
+            foreach ( DesignLanguages::ids() as $langId ) {
+                $lang = (array) DesignLanguages::get( $langId );
+                ++$checked;
+                $problems = array_merge( $problems, self::featuredProblems( $featured, $plain, $lang, "$id|$langId" ) );
+                $colors   = (array) $lang['colors'];
+                $band     = (string) Colour::opaque( (string) $colors['bg'], (string) $colors['bg'] );
+                $margin   = Colour::contrast( (string) self::opaqueOn( '{{aied:color:accent}}', $lang, $band ), $band )
+                    - Colour::contrast( (string) self::opaqueOn( '{{aied:color:surface}}', $lang, $band ), $band );
+                if ( $margin < $weakest[0] ) {
+                    $weakest = [ $margin, "$id|$langId" ];
+                }
+            }
+        }
+        // 40 kits x 10 languages (the light band, the card role, the column carrier).
+        $this->assertSame( 400, $checked );
+        $this->assertSame( [], array_values( $problems ), "the featured plan must read as the neighbour plus a filled body (fix the ground rules in KitAdapters::card(), never the bound; no exceptions):\n" . implode( "\n", $problems ) );
+        $this->assertGreaterThan( 0.0, $weakest[0], 'the weakest cell still has the featured fill above the plain fill: ' . $weakest[1] );
+    }
+
+    public function testTheFeaturedCheckCatchesWhatItShould(): void
+    {
+        $kits  = $this->shippedKits();
+        $kit   = $kits['soft-solid'];
+        $lang  = (array) DesignLanguages::get( 'editorial' );
+        $plain = $this->patch( $kit, 'card', 'light', 'divi/column' );
+        $good  = $this->patch( $kit, 'card', 'light', 'divi/column', 'accent' );
+        $this->assertSame( [], self::featuredProblems( $good, $plain, $lang, 'x' ) );
+        // No fill of its own (the plain card as the featured one): not more prominent than itself.
+        $this->assertArrayHasKey( 'x|prominence', self::featuredProblems( $plain, $plain, $lang, 'x' ) );
+        // A featured fill that is no stronger than the plain card's: the inverted ground is fine, a surface fill is not.
+        $surface = $good;
+        $surface['module']['decoration']['background']['desktop']['value']['color'] = '{{aied:color:surface}}';
+        $this->assertArrayHasKey( 'x|prominence', self::featuredProblems( $surface, $plain, $lang, 'x' ) );
+        // A fill below 2.0:1 on the band (bg on bg) fails the floor.
+        $faint = $good;
+        $faint['module']['decoration']['background']['desktop']['value']['color'] = '{{aied:color:bg}}';
+        $this->assertArrayHasKey( 'x|floor', self::featuredProblems( $faint, $plain, $lang, 'x' ) );
+        // A smaller frame, another corner, other padding, a missing shadow or a missing lift make it less visible than its neighbour.
+        $thin = $good;
+        foreach ( (array) $thin['module']['decoration']['border']['desktop']['value']['styles'] as $side => $_ ) {
+            $thin['module']['decoration']['border']['desktop']['value']['styles'][ $side ]['width'] = '0px';
+        }
+        $this->assertArrayHasKey( 'x|frame-size', self::featuredProblems( $thin, $plain, $lang, 'x' ) );
+        $round = $good;
+        $round['module']['decoration']['border']['desktop']['value']['radius'] = '0px';
+        $this->assertArrayHasKey( 'x|radius', self::featuredProblems( $round, $plain, $lang, 'x' ) );
+        $padded = $good;
+        $padded['module']['decoration']['spacing']['desktop']['value']['padding'] = [ 'top' => '1px' ];
+        $this->assertArrayHasKey( 'x|spacing', self::featuredProblems( $padded, $plain, $lang, 'x' ) );
+        $lifted = $this->patch( $kits['soft-lift'], 'card', 'light', 'divi/column' );
+        $flat   = $this->patch( $kits['soft-lift'], 'card', 'light', 'divi/column', 'accent' );
+        $this->assertSame( [], self::featuredProblems( $flat, $lifted, $lang, 'x' ), 'a lift kit: the featured card lifts like its neighbour' );
+        unset( $flat['module']['decoration']['transform'] );
+        $this->assertArrayHasKey( 'x|hover-lift', self::featuredProblems( $flat, $lifted, $lang, 'x' ) );
+        // A kit with a rest shadow (neo-brutal: hard shadow and a lift): a featured card without it is less visible.
+        $hard     = $this->patch( $kits['neo-brutal'], 'card', 'light', 'divi/column' );
+        $shadowed = $this->patch( $kits['neo-brutal'], 'card', 'light', 'divi/column', 'accent' );
+        $this->assertSame( [], self::featuredProblems( $shadowed, $hard, $lang, 'x' ) );
+        unset( $shadowed['module']['decoration']['boxShadow'] );
+        $this->assertArrayHasKey( 'x|boxShadow', self::featuredProblems( $shadowed, $hard, $lang, 'x' ) );
+        // A card with no resolvable fill is reported, never passed.
+        $this->assertArrayHasKey( 'x|fill', self::featuredProblems( [], $plain, $lang, 'x' ) );
+    }
+
     public function testTheGroundCheckCatchesWhatItShould(): void
     {
         $kits   = $this->shippedKits();

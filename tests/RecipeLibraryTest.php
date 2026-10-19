@@ -102,6 +102,9 @@ class RecipeLibraryTest extends TestCase
     /** The file size before the column cards were migrated (card adapter plan, Task 9; the end of Task 8). */
     private const SIZE_BEFORE_COLUMNS = 688186;
 
+    /** The file size before the featured plan became an accent ground (kit-limits plan, Task 6): the file must end below it. */
+    private const SIZE_BEFORE_FEATURED = 681727;
+
     /**
      * Card surfaces deliberately NOT driven by a style kit (card adapter, plan 2026-10-19): every block that
      * scripts/card-migration-report.php classes `card`, `panel` or `inverted` and that carries no card/panel marker.
@@ -111,17 +114,16 @@ class RecipeLibraryTest extends TestCase
      * SHRINK-ONLY (testBespokeCardsAreListedAndShrinkOnly): it can never hold more than BESPOKE_CARDS_MAX entries, a listed
      * block that gets a marker fails until its entry is removed, and the migration tasks lower BESPOKE_CARDS_MAX as they
      * remove entries. Tasks 7-9 migrated every group and column card; kit-limits Task 5 migrated the four inverted/accent
-     * grounds (marker field `ground`). What is left is the FEATURED plan column of pricing-three-tier (kit-limits Task 6).
+     * grounds (marker field `ground`) and Task 6 the FEATURED plan column of pricing-three-tier (an accent ground), so the
+     * list is EMPTY: it stays as an empty constant so nothing can be added back (cap 0).
      * A bespoke group or column that sits beside a kit card takes the kit's corner radius through the whole-value token
      * `{{aied:kit:radius-card}}` (testBespokeCornersFollowTheKit), so the pair never has mismatched corners; its fill,
      * frame and padding stay.
      */
-    private const BESPOKE_CARDS = [
-        'divi/column|pricing-three-tier|2'         => 'the featured plan: it keeps its own 2px accent frame, fill and shadow to stand out from its two neighbours (a kit would give all three plans the same frame and erase the highlight); its corners follow the kit through the radius token',
-    ];
+    private const BESPOKE_CARDS = [];
 
     /** The most entries BESPOKE_CARDS may hold. It may only be LOWERED (in the commit that removes entries), never raised. */
-    private const BESPOKE_CARDS_MAX = 1;
+    private const BESPOKE_CARDS_MAX = 0;
 
     /** Every card surface the report found when the card adapter started (Task 2): each one is either marked or listed. */
     private const CARD_SURFACES_KNOWN = 32;
@@ -953,6 +955,7 @@ class RecipeLibraryTest extends TestCase
         $this->assertSame( [], $decorated, 'marked blocks that still carry their own card decoration (the deep merge keeps it): remove it' );
         $this->assertLessThanOrEqual( self::BESPOKE_CARDS_MAX, count( self::BESPOKE_CARDS ), 'shrink-only: BESPOKE_CARDS can never grow' );
         $this->assertSame( self::BESPOKE_CARDS_MAX, count( self::BESPOKE_CARDS ), 'lower BESPOKE_CARDS_MAX to the list\'s size when you remove entries' );
+        $this->assertSame( [], self::BESPOKE_CARDS, 'kit-limits Task 6: no card surface is bespoke any more (the list ends empty and never grows)' );
         $this->assertSame( self::CARD_SURFACES_KNOWN, count( self::BESPOKE_CARDS ) + $marked, 'every card surface the report knows is either kit-driven or listed' );
     }
 
@@ -984,11 +987,11 @@ class RecipeLibraryTest extends TestCase
         foreach ( StyleKits::ids() as $kitId ) {
             [ $p, $t ] = self::bespokeCornerProblems( $markups, self::BESPOKE_CARDS, (array) StyleKits::get( $kitId ) );
             $problems  = array_merge( $problems, array_map( static fn ( string $x ): string => "$kitId: $x", $p ) );
-            $this->assertSame( 1, $t, "$kitId: the featured plan column carries the token (the grounds are marked: the marker writes their radius)" );
+            $this->assertSame( 0, $t, "$kitId: no bespoke card is left to carry the token (every card and ground is marked: the marker writes its radius)" );
             $tokened   = $t;
         }
         $this->assertSame( [], $problems, 'a bespoke group or column beside a kit card takes the kit\'s corners ({{aied:kit:radius-card}}), or the pair has mismatched corners' );
-        $this->assertSame( 1, $tokened, 'only the featured column (pricing-three-tier#2) is still bespoke' );
+        $this->assertSame( 0, $tokened, 'no bespoke card is left (the featured plan became an accent ground)' );
     }
 
     /**
@@ -1160,6 +1163,13 @@ class RecipeLibraryTest extends TestCase
         $this->assertLessThan( self::SIZE_BEFORE_GROUNDS, filesize( $file ), 'the recipe file ends smaller than before the grounds and panel buttons (kit-limits spec section 4)' );
     }
 
+    public function testRecipesFileIsSmallerThanBeforeTheFeaturedPlanGround(): void
+    {
+        $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
+        clearstatcache();
+        $this->assertLessThan( self::SIZE_BEFORE_FEATURED, filesize( $file ), 'the featured plan\'s own fill, frame, shadow and padding moved to the kit (kit-limits spec section 4)' );
+    }
+
     public function testRecipesFileIsSmallerThanBeforeTheColumnCards(): void
     {
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
@@ -1182,6 +1192,8 @@ class RecipeLibraryTest extends TestCase
         'testimonials-avatar-grid|3' => [ 'card', 'light', self::TESTIMONIAL_COLUMN ],
         'pricing-three-tier|1' => [ 'card', 'light', self::PRICING_COLUMN ],
         'pricing-three-tier|3' => [ 'card', 'light', self::PRICING_COLUMN ],
+        // The featured plan (kit-limits Task 6): the same carrier attributes as its neighbours, on an accent ground.
+        'pricing-three-tier|2' => [ 'card', 'light', self::FEATURED_PLAN_COLUMN, 'accent' ],
     ];
 
     private const ICON_VALUES_COLUMN = '{"module":{"decoration":{"layout":{"desktop":{"value":{"rowGap":"20px"}}},"sizing":{"desktop":{"value":{"flexType":"8_24"}},"tablet":{"value":{"flexType":"12_24"}},"phone":{"value":{"flexType":"24_24"}},"tabletWide":{"value":{"flexType":"12_24"}},"phoneWide":{"value":{"flexType":"24_24"}}}},"advanced":{"type":{"desktop":{"value":"1_3"}}}},"builderVersion":"5.2.1"}';
@@ -1190,8 +1202,12 @@ class RecipeLibraryTest extends TestCase
 
     private const PRICING_COLUMN = '{"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"8_24"}},"tablet":{"value":{"flexType":"24_24"}},"phone":{"value":{"flexType":"24_24"}}},"layout":{"desktop":{"value":{"flexDirection":"column","rowGap":"20px"}}}}},"builderVersion":"5.8.0"}';
 
-    /** The featured plan stays bespoke: its fill, 2px accent frame, shadow and padding are the highlight; only the corners are the kit's. */
-    private const FEATURED_PLAN_COLUMN = '{"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"8_24"}},"tablet":{"value":{"flexType":"24_24"}},"phone":{"value":{"flexType":"24_24"}}},"background":{"desktop":{"value":{"color":"{{aied:color:surface}}"}}},"border":{"desktop":{"value":{"radius":"{{aied:kit:radius-card}}","styles":{"all":{"width":"2px","color":"{{aied:color:accent}}","style":"solid"}}}}},"spacing":{"desktop":{"value":{"padding":{"top":"40px","bottom":"40px","left":"32px","right":"32px"}}},"phone":{"value":{"padding":{"top":"32px","bottom":"32px","left":"24px","right":"24px"}}}},"layout":{"desktop":{"value":{"flexDirection":"column","rowGap":"20px"}}},"boxShadow":{"desktop":{"value":{"style":"preset1","color":"rgba(0,0,0,0.18)","blur":"40px","vertical":"16px"}}}}},"builderVersion":"5.8.0"}';
+    /**
+     * The featured plan (kit-limits Task 6, updated DELIBERATELY from the bespoke column it pinned before: surface fill, 2px accent
+     * frame, preset shadow, 40/32px padding and the radius token): it keeps only the width structure and the inner layout of
+     * its neighbours and takes everything else from the kit through `{"kit":"card","on":"light","ground":"accent"}`.
+     */
+    private const FEATURED_PLAN_COLUMN = self::PRICING_COLUMN;
 
     /** Recursive key sort, so a pinned structure compares by content and not by key order. */
     private static function sortedKeys( mixed $node ): mixed
@@ -1212,13 +1228,15 @@ class RecipeLibraryTest extends TestCase
      * and nothing of the card decoration; the featured plan keeps its own).
      *
      * @param array<string,string>                    $markups recipe => raw markup
-     * @param array<string,array{0:?string,1:string,2:string}> $pins    "<recipe>|<index>" => [role (null: no marker), on, json]
+     * @param array<string,array{0:?string,1:string,2:string,3?:string}> $pins    "<recipe>|<index>" => [role (null: no marker), on, json, ground (optional)]
      * @return list<string>
      */
     private static function columnPinProblems( array $markups, array $pins ): array
     {
         $out = [];
-        foreach ( $pins as $key => [ $role, $on, $json ] ) {
+        foreach ( $pins as $key => $pin ) {
+            [ $role, $on, $json ] = $pin;
+            $ground               = $pin[3] ?? null;
             [ $recipe, $index ] = explode( '|', $key );
             $attrs = null;
             foreach ( self::blocks( $markups[ $recipe ] ?? '' ) as [ $name, $a, $i ] ) {
@@ -1232,7 +1250,7 @@ class RecipeLibraryTest extends TestCase
             }
             $marker = $attrs['aied'] ?? null;
             unset( $attrs['aied'] );
-            $want = null === $role ? null : [ 'kit' => $role, 'on' => $on ];
+            $want = null === $role ? null : [ 'kit' => $role, 'on' => $on ] + ( null === $ground ? [] : [ 'ground' => $ground ] );
             if ( $marker !== $want ) {
                 $out[] = "$key: marker is " . json_encode( $marker ) . ', want ' . json_encode( $want );
             }
@@ -1249,16 +1267,80 @@ class RecipeLibraryTest extends TestCase
         foreach ( SectionRecipes::names() as $name ) {
             $markups[ $name ] = (string) SectionRecipes::rawMarkup( $name );
         }
-        $this->assertCount( 8, self::MIGRATED_COLUMNS );
+        $this->assertCount( 9, self::MIGRATED_COLUMNS );
         $this->assertSame( [], self::columnPinProblems( $markups, self::MIGRATED_COLUMNS ) );
-        // The featured plan is the one column left on its own decoration: marker-free, its corners the kit's.
-        $this->assertSame( [], self::columnPinProblems( $markups, [ 'pricing-three-tier|2' => [ null, '', self::FEATURED_PLAN_COLUMN ] ] ) );
+        // The featured plan carries the accent ground marker, and a plain `card` marker (no ground) is a different pin.
+        $this->assertSame( [ 'pricing-three-tier|2: marker is {"kit":"card","on":"light","ground":"accent"}, want {"kit":"card","on":"light"}' ], self::columnPinProblems( $markups, [ 'pricing-three-tier|2' => [ 'card', 'light', self::FEATURED_PLAN_COLUMN ] ] ) );
         // Guards the pin constants themselves: the pinned JSON of a migrated column must not list a card decoration key (the
         // check above already compares the real markup with it, so this loop only catches a mistake in MIGRATED_COLUMNS).
-        foreach ( self::MIGRATED_COLUMNS as [ , , $json ] ) {
+        foreach ( self::MIGRATED_COLUMNS as $pin ) {
+            $json = $pin[2];
             $dec = array_keys( (array) ( json_decode( $json, true )['module']['decoration'] ?? [] ) );
             $this->assertSame( [], array_values( array_intersect( $dec, [ 'background', 'border', 'boxShadow', 'transform', 'spacing' ] ) ) );
         }
+    }
+
+    /**
+     * The featured plan column's markup of pricing-three-tier (the third `divi/column`, index 2; columns do not nest here).
+     */
+    private static function featuredPlanMarkup(): string
+    {
+        $markup = (string) SectionRecipes::rawMarkup( 'pricing-three-tier' );
+        preg_match_all( '/<!-- wp:divi\/column /', $markup, $all, PREG_OFFSET_CAPTURE );
+        $start = $all[0][2][1] ?? null;
+        $end   = strpos( $markup, '<!-- /wp:divi/column -->', (int) $start );
+        return null === $start || false === $end ? '' : substr( $markup, $start, $end + strlen( '<!-- /wp:divi/column -->' ) - $start );
+    }
+
+    /**
+     * What is wrong with an accent-ground plan column ([] = fine): it carries the accent ground marker; the only ink it
+     * holds is `accent-text` (headings, texts, ticks) except the label of the badge chip, which sits on a `surface` fill and
+     * is `text`; it has no accent fill of its own; its button is a kit `control` on the accent ground.
+     *
+     * @return list<string>
+     */
+    private static function featuredPlanProblems( string $column ): array
+    {
+        $out = [];
+        $m   = self::blocks( $column )[0] ?? [ '', [], 0 ];
+        if ( 'divi/column' !== $m[0] || [ 'card', 'light', 'accent' ] !== self::cardMarker( $m[1] ) ) {
+            $out[] = 'the column does not carry {"kit":"card","on":"light","ground":"accent"}';
+        }
+        $chips = preg_match_all( '/<!-- wp:divi\/group \{[^\n]*?"background":\{"desktop":\{"value":\{"color":"\{\{aied:color:surface\}\}"\}\}\}[^\n]*? -->(.*?)<!-- \/wp:divi\/group -->/s', $column, $chip );
+        if ( 1 !== $chips ) {
+            $out[] = "the badge must be one surface-filled chip, found $chips";
+            return $out;
+        }
+        if ( [ 'text' ] !== self::textColourRoles( $chip[1][0] ) ) {
+            $out[] = 'the badge label must be the `text` ink on its surface fill, found ' . implode( ',', self::textColourRoles( $chip[1][0] ) );
+        }
+        $rest = str_replace( $chip[0][0], '', $column );
+        if ( [ 'accent-text' ] !== self::textColourRoles( $rest ) ) {
+            $out[] = 'everything but the badge must be ink `accent-text`, found ' . implode( ',', self::textColourRoles( $rest ) );
+        }
+        if ( str_contains( $column, '{{aied:color:accent}}' ) ) {
+            $out[] = 'the plan holds an accent colour of its own: the kit writes the accent body';
+        }
+        if ( 1 !== substr_count( $column, '"aied":{"kit":"control","on":"accent"}' ) || str_contains( $column, 'control-secondary' ) ) {
+            $out[] = 'the plan\'s button must be one kit primary on the accent ground';
+        }
+        return $out;
+    }
+
+    public function testTheFeaturedPlanIsAnAccentGroundCardWithAccentTextInk(): void
+    {
+        $column = self::featuredPlanMarkup();
+        $this->assertNotSame( '', $column );
+        $this->assertSame( [], self::featuredPlanProblems( $column ) );
+        // Planted: a `text` heading, a `muted` line, an accent chip, a secondary button and a lost marker all fail.
+        $heading = '"color":"{{aied:color:accent-text}}","family":"{{aied:font:display}}","size":"22px"';
+        $this->assertStringContainsString( $heading, $column );
+        $this->assertCount( 1, self::featuredPlanProblems( str_replace( $heading, str_replace( 'accent-text', 'text', $heading ), $column ) ), 'a text heading on the accent ground' );
+        $this->assertCount( 1, self::featuredPlanProblems( preg_replace( '/\{\{aied:color:accent-text\}\}/', '{{aied:color:muted}}', $column, 1 ) ), 'a muted line' );
+        $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '{{aied:color:surface}}"}}},"border"', '{{aied:color:accent}}"}}},"border"', $column ) ), 'an accent chip' );
+        $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '"kit":"control"', '"kit":"control-secondary"', $column ) ), 'a secondary button' );
+        $this->assertNotSame( [], self::featuredPlanProblems( str_replace( ',"ground":"accent"', '', $column ) ), 'no ground' );
+        $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '"on":"accent"}', '"on":"light"}', $column ) ), 'a button on the wrong band' );
     }
 
     public function testTheColumnPinCheckCatchesWhatItShould(): void

@@ -45,6 +45,13 @@ final class CardReport
         'hero-bordered-cells' => [ 'divi/group' => [ 0 => 'panel' ] ],
     ];
 
+    /** Recipe => [block name => [index => true]]: blocks the fill rules read as card-like that are small marks (chips). */
+    private const CHIP_OVERRIDES = [
+        // The "[Most popular]" badge on the accent-ground featured plan: a pill filled with `surface` (an accent pill would vanish
+        // on the accent body), 12px corners and 6/12px padding. A surface fill with a radius reads as a card to the rules above.
+        'pricing-three-tier' => [ 'divi/group' => [ 10 => true ] ],
+    ];
+
     private const FILL_FLAT   = [ 'bg', 'surface', 'inverse' ];
     private const BLOCK_REGEX = '/<!--\s+(\/?)wp:(divi\/[a-z0-9-]+)(?:\s+(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\}))?\s+(\/?)-->/s';
 
@@ -62,6 +69,12 @@ final class CardReport
             foreach ( self::walk( $name, (string) $recipe['markup'] ) as $row ) {
                 $own[] = $row;
             }
+            foreach ( $own as &$row ) {
+                if ( 'card-like' === $row['class'] && isset( self::CHIP_OVERRIDES[ $name ][ $row['block'] ][ $row['index'] ] ) ) {
+                    $row['class'] = 'chip';
+                }
+            }
+            unset( $row );
             // card or panel: several card-like blocks of one block name in a recipe are cards, a single one is a panel.
             $cardLike = [];
             foreach ( $own as $row ) {

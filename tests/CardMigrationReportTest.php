@@ -213,7 +213,7 @@ class CardMigrationReportTest extends TestCase
         $this->assertSame(
             [
                 'icon-values'              => [ 'wrapper', 'wrapper', 'wrapper' ], // marked (Task 9): classified by the decoration they have left
-                'pricing-three-tier'       => [ 'wrapper', 'panel', 'wrapper' ], // #2 is the featured plan: its frame and shadow stay, its radius is the kit's token; it is `panel` because it is now the recipe's only card-like column left (the report calls several card-like blocks of one name `card` and a single one `panel`), see scripts/card-migration-report.php
+                'pricing-three-tier'       => [ 'wrapper', 'wrapper', 'wrapper' ], // marked: #2 is the featured plan, an accent ground (kit-limits Task 6)
                 'proof-press-quotes'       => [ 'rule', 'rule', 'rule' ], // a 2px top rule, no fill: a divider, like the group rules
                 'testimonials-avatar-grid' => [ 'wrapper', 'wrapper', 'wrapper' ],
             ],
@@ -224,8 +224,8 @@ class CardMigrationReportTest extends TestCase
     public function test_the_marked_blocks_are_counted_and_fill_only_columns_are_unlisted(): void
     {
         $rows = $this->shipped();
-        $this->assertSame( 31, count( array_filter( $rows, fn ( $r ) => null !== $r['marked'] ) ), 'the blocks migrated so far (card plan Tasks 7, 8 and 9, kit-limits Task 5)' );
-        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 31 blocks', \CardReport::render( $rows, false ) );
+        $this->assertSame( 32, count( array_filter( $rows, fn ( $r ) => null !== $r['marked'] ) ), 'the blocks migrated so far (card plan Tasks 7, 8 and 9, kit-limits Tasks 5 and 6)' );
+        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 32 blocks', \CardReport::render( $rows, false ) );
         $listed = array_map( fn ( $r ) => $r['recipe'] . ' ' . $r['block'] . '#' . $r['index'], $rows );
         $this->assertNotContains( 'hero-cta divi/column#0', $listed, 'a surface fill with padding and no frame: nothing for a kit to restyle' );
         $this->assertNotContains( 'split-image-text divi/column#0', $listed );
@@ -267,7 +267,7 @@ class CardMigrationReportTest extends TestCase
             'icon-values divi/column#2 marked card',
             'icon-values divi/column#3 marked card',
             'pricing-three-tier divi/column#1 marked card',
-            'pricing-three-tier divi/column#2 panel',
+            'pricing-three-tier divi/column#2 marked card',
             'pricing-three-tier divi/column#3 marked card',
             'pricing-two-plan-highlight divi/group#1 marked panel',
             'pricing-two-plan-highlight divi/group#8 marked panel',
@@ -282,6 +282,8 @@ class CardMigrationReportTest extends TestCase
 
     public function test_pricing_badge_is_a_chip_not_a_card(): void
     {
+        // The badge is filled with `surface` (kit-limits Task 6: an accent pill would vanish on the accent-ground featured plan), which the
+        // fill rules read as card-like; scripts/card-migration-report.php names it in CHIP_OVERRIDES, like PANEL_OVERRIDES names a panel.
         $rows = $this->byKey( array_values( array_filter( $this->shipped(), fn ( $r ) => 'pricing-three-tier' === $r['recipe'] ) ) );
         $this->assertSame( 'chip', $rows['divi/group#10']['class'] );
     }
