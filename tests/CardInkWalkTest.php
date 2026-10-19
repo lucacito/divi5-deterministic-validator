@@ -44,8 +44,9 @@ require_once __DIR__ . '/Support/Colour.php';
  *   judged, not only the ones on that element.
  * - Only `{{aied:color:*}}` tokens are judged. A literal hex or rgba colour is never seen (another test bans literal colours
  *   in tokenised recipes, but the walk itself would pass it).
- * - A colour a text inherits from OUTSIDE the card (a section's or row's font colour) is not modelled: only colours written
- *   on a descendant are judged.
+ * - A colour a text inherits from OUTSIDE the card is not MODELLED, but the hole is guarded: walkRecipe fails when any
+ *   ancestor of a marked card (section, row, column, group above it) carries a font colour token, saying the walk cannot
+ *   model inherited colour. Only colours written on a descendant are judged.
  * - The marked block's own non-marker attributes (a card that carries a font colour or an icon of its own) are not walked;
  *   only its descendants are.
  * - An unresolvable background token becomes an empty ground instead of "cannot judge" (known, deferred).
@@ -229,12 +230,21 @@ class CardInkWalkTest extends TestCase
     {
         $problems = [];
         $cards    = 0;
-        $visit    = static function ( array $nodes ) use ( &$visit, &$problems, &$cards, $recipe ): void {
+        $visit    = static function ( array $nodes, array $ancestors ) use ( &$visit, &$problems, &$cards, $recipe ): void {
             foreach ( $nodes as $node ) {
                 $marker = self::marker( $node );
                 if ( null !== $marker ) {
                     [ $role, $on ] = $marker;
                     $index         = $cards++;
+                    // Guard (not a model): a font colour on an ancestor is inherited by a card child that sets none, on a ground
+                    // this walk does not pair it with.
+                    foreach ( $ancestors as $ancestor ) {
+                        foreach ( self::tokenLeaves( $ancestor['attrs'] ) as [ $path, $value ] ) {
+                            if ( 'text' === self::kind( (string) $ancestor['name'], $path ) ) {
+                                $problems[] = "$recipe card#$index ({$node['name']} $role on $on): ancestor {$ancestor['name']} carries the font colour $value at $path; the walk cannot model inherited colour, so give the card children their own colours or move the colour off the ancestor";
+                            }
+                        }
+                    }
                     foreach ( DesignLanguages::ids() as $langId ) {
                         $lang   = (array) DesignLanguages::get( $langId );
                         $colors = (array) $lang['colors'];
@@ -244,10 +254,10 @@ class CardInkWalkTest extends TestCase
                         }
                     }
                 }
-                $visit( $node['children'] );
+                $visit( $node['children'], array_merge( $ancestors, [ $node ] ) );
             }
         };
-        $visit( self::tree( $markup ) );
+        $visit( self::tree( $markup ), [] );
         return [ $problems, $cards ];
     }
 
@@ -335,6 +345,28 @@ class CardInkWalkTest extends TestCase
         $this->assertSame( 2, $n );
         $this->assertStringContainsString( 'card#1 (divi/group panel on surface) editorial', implode( "\n", $p ) );
         $this->assertStringNotContainsString( 'card#0', implode( "\n", $p ), 'the nested card is not judged on its parent\'s fill' );
+    }
+
+    public function testAnInheritedFontColourAboveACardFailsTheWalk(): void
+    {
+        // A dark band whose body font is `inverse`, above a card whose child sets no colour of its own: the child would
+        // inherit light ink onto the card's light fill. The walk cannot model that, so it refuses the recipe.
+        $dark = '<!-- wp:divi/placeholder --><!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"{{aied:color:text}}"}}}}},"content":{"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"{{aied:color:inverse}}"}}}}}}},"builderVersion":"5.15.1"} -->'
+            . '<!-- wp:divi/row {"builderVersion":"5.15.1"} --><!-- wp:divi/column {"builderVersion":"5.15.1"} -->'
+            . '<!-- wp:divi/group {"builderVersion":"5.15.1","aied":{"kit":"card","on":"dark"}} --><!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>x</p>"}}},"builderVersion":"5.15.1"} /--><!-- /wp:divi/group -->'
+            . '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->';
+        [ $problems, $cards ] = self::walkRecipe( 'planted-dark', $dark );
+        $this->assertSame( 1, $cards );
+        $joined = implode( "\n", $problems );
+        $this->assertStringContainsString( 'planted-dark card#0', $joined );
+        $this->assertStringContainsString( 'ancestor divi/section carries the font colour {{aied:color:inverse}}', $joined );
+        $this->assertStringContainsString( 'cannot model inherited colour', $joined );
+
+        // A section colour that is only a background is not a font colour: the existing planted recipes stay clean.
+        $this->assertSame( [], self::walkRecipe( 'planted', self::planted( 'light', self::heading( 'text' ) ) )[0] );
+        // An ancestor group (not only the section) is checked too.
+        $inner = '<!-- wp:divi/group {"content":{"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"{{aied:color:accent}}"}}}}}}},"builderVersion":"5.15.1"} --><!-- wp:divi/group {"builderVersion":"5.15.1","aied":{"kit":"panel","on":"light"}} --><!-- /wp:divi/group --><!-- /wp:divi/group -->';
+        $this->assertStringContainsString( 'ancestor divi/group carries the font colour', implode( "\n", self::walkRecipe( 'planted', self::planted( 'light', $inner ) )[0] ) );
     }
 
     public function testTheMarkerCountSeesEscapedMarkers(): void

@@ -2109,7 +2109,7 @@
     },
     {
         "name": "cta-card-over-image",
-        "title": "Call to action / a card floating on a photo",
+        "title": "Call to action / a card on a photo",
         "description": "A full-bleed photo band with no scrim: a card on the surface colour sits on the left of the photo and holds an eyebrow, a heading, one line, a hairline and a button; the card takes the full width on phones.",
         "when": "A closing call to action with a mood photo (a place, a product, a team at work): bookings, visits, enquiries; flat and upscale brands. The pack picture is an illustration: swap it for a real photo of the owner's place, product or team. The copy and button label are placeholders.",
         "stage": "Call to action",

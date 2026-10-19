@@ -280,12 +280,14 @@ and the task reports of the build; the full 88-cell `make verify-kits` run is no
 - Under heavy-frame kits (hard/glow/edge shadow, thick frames) the two kit-driven pricing neighbours can look as prominent as
   the bespoke featured plan, or more so (seen under playful-pastel); the highlight no longer wins everywhere.
 - hero-gradient-stats still has the title "floating figures" although its deep literal shadow was removed (the depth that title
-  described came from that shadow; the cards still overlap and tilt).
+  described came from that shadow; the cards still overlap and tilt). cta-card-over-image's title was "a card floating on a
+  photo", which a kit without a shadow does not give: it now reads "a card on a photo" (the final review).
 - Hover on a TILTED card (hero-gradient-stats under a lift kit: does Divi keep the rest rotate when the hover translate
   applies?) was NOT verified live; the markup keeps both, the gate has no such cell.
 - Card media radius and the images' radius are still not applied; text decisions (capitalization, weight, letter spacing) stay
   button-only; accordion, forms, blurb and testimonial modules keep the recipe's own styling.
-- `verify-kits`: a fixed/sticky element INSIDE a card would stay hidden after the fill sample (none in the sheet); the button
+- `verify-kits`: a fixed/sticky element INSIDE a card used to stay hidden after the fill sample (fixed in the final review:
+  hidden first, never tagged twice, with a case in `scripts/test-kit-card-run.cjs`); the button
   path still parks the pointer at (0,0) and does not hide fixed elements (it passed 264 of 264); `kit-checks.cjs` is about 770
   lines doing two jobs; the offline PHP re-implements the sheet pipeline.
 - Columns were probed in a single-column row only; the multi-column case is covered by the sheet's three-column row and by

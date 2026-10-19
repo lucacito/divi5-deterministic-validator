@@ -254,8 +254,8 @@ final class StyleGuide
             $lines[] = '## Buttons in this kit';
             $lines[] = '';
             $lines[] = 'Real blocks, resolved for the `editorial` language on a light section, with placeholder text. Put them inside a column. The hex colours are editorial\'s: '
-                . 'with another design language keep the structure and swap each colour for the same role of that language, listed here as role and value ('
-                . self::kitRoleLegend( $kit, $language ) . '), and the font family for your language\'s body font.';
+                . 'with another design language keep the structure and swap each colour for the same role of that language, listed here as value = role(s) ('
+                . self::kitColourLegend( array_values( array_filter( [ KitAdapters::patch( 'divi/button', 'control', 'light', $kit ), KitAdapters::patch( 'divi/button', 'control-secondary', 'light', $kit ) ] ) ), $language ) . '), and the font family for your language\'s body font.';
             $lines[] = '';
             $lines[] = 'Primary:';
             $lines[] = '';
@@ -310,7 +310,14 @@ final class StyleGuide
         $border = (array) $deco['border']['desktop']['value']['styles'];
         $bottom = isset( $border['bottom'] );
         $edge   = (array) ( $bottom ? $border['bottom'] : $border['all'] );
-        $role   = 1 === preg_match( '/^\{\{aied:color:([a-z-]+)\}\}$/', (string) $edge['color'], $m ) ? $m[1] : 'text';
+        if ( 1 !== preg_match( '/^\{\{aied:color:([a-z-]+)\}\}$/', (string) $edge['color'], $m ) ) {
+            return ''; // fail closed: a frame colour that is not a role token is never guessed
+        }
+        $role   = $m[1];
+        $legend = self::kitColourLegend( array_values( array_filter( [ $patch, KitAdapters::patch( 'divi/group', 'panel', 'light', $kit ) ] ) ), $language );
+        if ( '' === $legend ) {
+            return '';
+        }
         $frame  = $bottom
             ? sprintf( 'A card has only a bottom edge (an underline): %s %s in the %s colour.', $edge['width'], $edge['style'], $role )
             : sprintf( 'A card has a %s %s frame in the %s colour.', $edge['width'], $edge['style'], $role );
@@ -330,13 +337,15 @@ final class StyleGuide
         $lines[] = '';
         $lines[] = 'A `card` is a grid tile and a `panel` is a static surface; both go on a `divi/group` (or a `divi/column`). '
             . sprintf( 'Corner radius %s, padding %s (a card only). ', (string) $radius['card'], (string) $space['card'] )
-            . 'The fill is always the language\'s surface colour (its bg colour on a surface-coloured band), never transparent, so an outline kit shows its character in the frame. '
-            . 'The kit\'s border width and style are used, but at least 1px; the frame colour is the text colour (an accent frame is drawn in the text colour: an accent frame is not readable enough in every language) or the border hairline when the kit\'s border colour is `same`. '
+            . 'The fill is always the language\'s surface colour (the `surface` role; the `bg` role on a surface-coloured band), never transparent, so an outline kit shows its character in the frame. '
+            . 'The kit\'s border width and style are used, but at least 1px; the frame colour is the text colour (an accent frame is drawn in the text colour: an accent frame is not readable enough in every language) or the border hairline (the `border` role) when the kit\'s border colour is `same` or `border`. '
             . $frame . ' ' . $hover
             . sprintf( ' Shadow: rest %s, hover %s.', (string) $shadow['rest'], (string) $shadow['hover'] )
             . ' A panel is a static surface: the same radius, frame and shadow, no hover, and the recipe keeps its own padding. A panel takes the rest shadow only.';
         $lines[] = '';
-        $lines[] = 'Real blocks, resolved for the `editorial` language on a light section; a child text block holds the placeholder text. Put them inside a column and swap each colour for the same role of your language.';
+        $lines[] = 'Real blocks, resolved for the `editorial` language on a light section; a child text block holds the placeholder text. Put them inside a column and swap each colour for the role named in the text above, not by its value: two roles can share one value (listed together below).';
+        $lines[] = '';
+        $lines[] = 'Colours in these blocks, as value = role(s): ' . $legend . '.';
         $lines[] = '';
         $lines[] = 'Card:';
         $lines[] = '';
@@ -478,31 +487,47 @@ final class StyleGuide
     }
 
     /**
-     * "accent #9a3b1f, accent-text #ffffff": the roles the kit's buttons use on a light surface (read from the adapter's
-     * own patches), with the language's value for each, in order of first use.
+     * The colour legend of some adapter patches: "#9a3b1f = accent; #ffffff = surface and accent-text; rgba(28,22,16,0.18) =
+     * overlay at 18%". Every colour token the patches use, with the language's value, in order of first use. A plain value
+     * names EVERY role of the language that has it: in editorial `surface` and `accent-text` are both #ffffff, and a legend
+     * that named only one would let an AI read a card fill as a button label. '' when a token does not resolve.
      *
-     * @param array<string,mixed> $kit
-     * @param array<string,mixed> $language
+     * @param list<array<string,mixed>> $patches
+     * @param array<string,mixed>       $language
      */
-    private static function kitRoleLegend( array $kit, array $language ): string
+    private static function kitColourLegend( array $patches, array $language ): string
     {
-        $roles = [];
-        foreach ( [ 'control', 'control-secondary' ] as $role ) {
-            $patch = KitAdapters::patch( 'divi/button', $role, 'light', $kit );
-            if ( null !== $patch && false !== preg_match_all( '/\{\{aied:color:[a-z-]+(?::[0-9]+)?\}\}/', (string) json_encode( $patch ), $m ) ) {
-                $roles = array_merge( $roles, $m[0] );
+        $tokens = [];
+        foreach ( $patches as $patch ) {
+            if ( false !== preg_match_all( '/\{\{aied:color:[a-z-]+(?::[0-9]+)?\}\}/', (string) json_encode( $patch ), $m ) ) {
+                $tokens = array_merge( $tokens, $m[0] );
             }
         }
         $parts = [];
-        foreach ( array_values( array_unique( $roles ) ) as $token ) {
+        foreach ( array_values( array_unique( $tokens ) ) as $token ) {
             $value = RecipeTokens::resolve( $token, $language );
             if ( $value === $token || 1 !== preg_match( '/^\{\{aied:color:([a-z-]+)(?::([0-9]+))?\}\}$/', $token, $t ) ) {
+                return '';
+            }
+            if ( isset( $t[2] ) ) {
+                $parts[ $value ] = $t[1] . ' at ' . $t[2] . '%';
                 continue;
             }
-            $parts[] = $t[1] . ( isset( $t[2] ) ? ' at ' . $t[2] . '%' : '' ) . ' ' . $value;
+            $roles = [];
+            foreach ( (array) ( $language['colors'] ?? [] ) as $key => $hex ) {
+                if ( is_string( $hex ) && strtolower( $hex ) === strtolower( $value ) ) {
+                    $roles[] = str_replace( '_', '-', (string) $key );
+                }
+            }
+            $roles           = [] === $roles ? [ $t[1] ] : $roles;
+            $parts[ $value ] = count( $roles ) > 1 ? implode( ', ', array_slice( $roles, 0, -1 ) ) . ' and ' . end( $roles ) : $roles[0];
+        }
+        $out = [];
+        foreach ( $parts as $value => $roles ) {
+            $out[] = $value . ' = ' . $roles;
         }
 
-        return implode( ', ', $parts );
+        return implode( '; ', $out );
     }
 
     /**

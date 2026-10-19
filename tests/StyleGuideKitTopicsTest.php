@@ -210,6 +210,85 @@ class StyleGuideKitTopicsTest extends TestCase
         $this->assertGreaterThan( 0, $frames + $none );
     }
 
+    /**
+     * Problems with the colour legends of one kit topic: every colour literal in a fenced snippet (a button, a card, a panel)
+     * must be listed in the prose as `<value> = <role(s)>`, and a hex that several roles of the language share must name ALL of
+     * them (editorial's accent-text and surface are both #ffffff: a legend that names only one makes an AI read the card fill
+     * as accent-text). Transparent is the one literal the prose says in words.
+     *
+     * @param array<string,mixed> $language
+     * @return list<string>
+     */
+    private static function legendProblems( string $topicText, array $language ): array
+    {
+        $prose = (string) preg_replace( '/```.*?```/s', '', $topicText );
+        preg_match_all( '/```\n(.*?)\n```/s', $topicText, $blocks );
+        $problems = [];
+        foreach ( $blocks[1] as $block ) {
+            preg_match_all( '/#[0-9a-f]{6}\b|rgba\([^)]*\)/i', $block, $lits );
+            foreach ( array_unique( $lits[0] ) as $lit ) {
+                if ( KitAdapters::TRANSPARENT === $lit ) {
+                    continue;
+                }
+                if ( 1 !== preg_match( '/' . preg_quote( $lit, '/' ) . ' = ([^;.)]+)/', $prose, $entry ) ) {
+                    $problems[] = $lit . ' is not in a legend';
+                    continue;
+                }
+                if ( str_starts_with( $lit, '#' ) ) {
+                    foreach ( (array) $language['colors'] as $key => $value ) {
+                        $role = str_replace( '_', '-', (string) $key );
+                        if ( strtolower( (string) $value ) === strtolower( $lit ) && 1 !== preg_match( '/(?<![a-z-])' . preg_quote( $role, '/' ) . '(?![a-z-])/', $entry[1] ) ) {
+                            $problems[] = $lit . ' is also the ' . $role . ' role, which its legend entry does not name';
+                        }
+                    }
+                }
+            }
+        }
+
+        return $problems;
+    }
+
+    public function testEveryColourInAKitTopicSnippetIsInALegendWithAllItsRoles(): void
+    {
+        $editorial = (array) \AiEditorDivi5\WP\DesignLanguages::get( 'editorial' );
+        $shared    = 0;
+        foreach ( StyleKits::ids() as $id ) {
+            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            $this->assertSame( [], self::legendProblems( $text, $editorial ), $id );
+            if ( str_contains( $text, '#ffffff = surface and accent-text' ) ) {
+                ++$shared;
+            }
+        }
+        $this->assertGreaterThan( 0, $shared, 'editorial\'s surface and accent-text share #ffffff and the legend says so' );
+    }
+
+    public function testTheLegendCheckFailsWhenARoleOrAnEntryIsMissing(): void
+    {
+        $editorial = (array) \AiEditorDivi5\WP\DesignLanguages::get( 'editorial' );
+        $id        = (string) StyleKits::ids()[0];
+        $text      = StyleGuide::markdown( 'style-kit:' . $id );
+        $this->assertSame( [], self::legendProblems( $text, $editorial ) );
+
+        $dropped = str_replace( '#ffffff = surface and accent-text', '#ffffff = accent-text', $text );
+        $this->assertNotSame( $text, $dropped, 'the fixture has the shared entry' );
+        $this->assertNotSame( [], self::legendProblems( $dropped, $editorial ), 'a missing role is caught' );
+
+        $gone = (string) preg_replace( '/#e3dccf = [^;.)]+/', '#e3dccf is', $text );
+        $this->assertNotSame( $text, $gone, 'the fixture lists the border hairline' );
+        $this->assertNotSame( [], self::legendProblems( $gone, $editorial ), 'a missing entry is caught' );
+    }
+
+    public function testTheCardSectionNamesTheRolesOfTheFillAndTheHairline(): void
+    {
+        foreach ( StyleKits::ids() as $id ) {
+            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            $this->assertStringContainsString( 'the `surface` role', $text, $id );
+            $this->assertStringContainsString( 'the `bg` role', $text, $id );
+            $this->assertStringContainsString( 'the `border` role', $text, $id );
+            $this->assertStringContainsString( 'border colour is `same` or `border`', $text, $id );
+        }
+    }
+
     public function testNoKitTopicClaimsAHoverTheAdapterDoesNotWrite(): void
     {
         foreach ( StyleKits::ids() as $id ) {

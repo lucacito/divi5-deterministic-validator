@@ -115,6 +115,19 @@ function pageHtml({ extraCss = '', tweak = (s, h) => h, drop = [], textColor = '
     // A fixed bar (the logged-in preview's WordPress admin bar) scrolled over a card must not disturb the painted-fill sample.
     const bar = await run(pageHtml({ extraCss: '#bar{position:fixed;top:0;left:0;right:0;height:32px;background:#23282d;z-index:9}' }), 1280, (page) => page.evaluate(() => { const b = document.createElement('div'); b.id = 'bar'; document.body.appendChild(b); const h = [...document.querySelectorAll('.et_pb_heading')].find((n) => n.textContent.trim() === 'Card on accent'); window.scrollTo(0, h.closest('.et_pb_group').getBoundingClientRect().top + window.scrollY - 5); }));
     assert.deepStrictEqual(bar.problems, [], JSON.stringify(bar.problems));
+    // A fixed element INSIDE a card (a sticky badge, an admin-bar widget) is hidden once for the fill sample and restored to what it was:
+    // it is not tagged twice, so it never stays hidden (and one that was hidden before stays hidden).
+    for (const [initial, expected] of [['', 'visible'], ['hidden', 'hidden']]) {
+      const pg = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+      await pg.setContent(pageHtml());
+      await pg.evaluate((v) => { const c = document.querySelector('[data-aied-card="card-bg"]') || document.querySelector('[data-k="card-bg"]'); const f = document.createElement('div'); f.id = 'fx'; f.textContent = 'badge'; f.style.cssText = 'position:fixed;right:4px;bottom:4px;width:20px;height:20px;background:#c00'; if (v) f.style.visibility = v; c.appendChild(f); }, initial);
+      const r = await checkCards(pg, { width: 1280, expects, hairline: HAIRLINE });
+      assert.deepStrictEqual(r.problems, [], JSON.stringify(r.problems));
+      const after = await pg.evaluate(() => { const f = document.getElementById('fx'); return { vis: getComputedStyle(f).visibility, tagged: Object.keys(f.dataset) }; });
+      assert.strictEqual(after.vis, expected, 'a fixed element inside a card is restored (was ' + JSON.stringify(initial) + ')');
+      assert.deepStrictEqual(after.tagged, [], 'no leftover data attributes');
+      await pg.close();
+    }
     const lost = await run(pageHtml({ drop: ['panel-surface'] }));
     assert.deepStrictEqual(codes(lost), ['cards']);
     assert.match(lost.problems[0][1], /11 cards rendered, expected 12 \(missing: panel-surface\)/);

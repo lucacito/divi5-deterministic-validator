@@ -34,15 +34,17 @@ async function checkCards(p, { width, expects, hairline }) {
   // The painted fill under each card (and a strip of the band just above it): children hidden, shadow off, no transition (so it applies at once).
   // Fixed and sticky elements (the logged-in preview's WordPress admin bar and the menu it opens under the pointer) are painted over the
   // page wherever it is scrolled, so they would land inside a card's box in the screenshot: they are hidden too (found by the live smoke).
+  // Fixed and sticky first (each remembers its own visibility once), then the card children that are not already tagged: an element that is
+  // both inside a card and fixed/sticky must be restored from ONE saved value, not from the "hidden" the other pass left behind.
   await p.evaluate(() => {
-    document.querySelectorAll('[data-aied-card]').forEach((card) => {
-      card.dataset.aiedTr = card.style.transition; card.dataset.aiedSh = card.style.boxShadow;
-      card.style.transition = 'none'; card.style.boxShadow = 'none';
-      card.querySelectorAll('*').forEach((n) => { n.dataset.aiedV = n.style.visibility; n.style.visibility = 'hidden'; });
-    });
     document.querySelectorAll('body *').forEach((n) => {
       const pos = getComputedStyle(n).position;
       if (pos === 'fixed' || pos === 'sticky') { n.dataset.aiedF = n.style.visibility; n.style.visibility = 'hidden'; }
+    });
+    document.querySelectorAll('[data-aied-card]').forEach((card) => {
+      card.dataset.aiedTr = card.style.transition; card.dataset.aiedSh = card.style.boxShadow;
+      card.style.transition = 'none'; card.style.boxShadow = 'none';
+      card.querySelectorAll('*').forEach((n) => { if (n.dataset.aiedF !== undefined) return; n.dataset.aiedV = n.style.visibility; n.style.visibility = 'hidden'; });
     });
   });
   await p.waitForTimeout(50);
