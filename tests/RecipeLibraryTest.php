@@ -134,9 +134,10 @@ class RecipeLibraryTest extends TestCase
     /**
      * Keys a marked card's `module.decoration` may keep besides the ones the kit's patch writes: structure, never card
      * decoration (background, border, boxShadow, any HOVER transform and, for a `card`, padding belong to the kit; a recipe
-     * literal there survives the deep merge and fights the kit). `spacing` stays for margins (and a panel's own padding). A
-     * REST transform (`transform.<breakpoint>.value`, e.g. a tilt) is the recipe's composition and also stays
-     * (controller amendment to Ruling 2); markedCardProblems() checks that one apart.
+     * literal there survives the deep merge and fights the kit). `spacing` stays for margins (and a panel's own padding).
+     * `transform` is NOT a structure key of a marked block: a marked block carries no transform of any kind, rest or hover,
+     * except the kit's exact hover (a tilt sits on an unmarked wrapper group around the card, because Divi's hover
+     * transform REPLACES the rest transform and the tilt would vanish on hover); markedCardProblems() checks it apart.
      */
     private const CARD_KEEPS = [ 'layout', 'sizing', 'position', 'zIndex', 'overflow', 'animation', 'spacing' ];
 
@@ -1218,11 +1219,12 @@ class RecipeLibraryTest extends TestCase
      * $raw, the same block (name and index) in $resolved, after the kit $kit, must hold only the kit's card decoration.
      * - Structure (any language): a `panel` has no `hover` key at all; border `styles` has no side key (top/right/bottom/
      *   left) at any breakpoint or state, except an underline kit's `styles.bottom` at desktop rest; `module.decoration` holds
-     *   only the keys the patch writes plus CARD_KEEPS plus `transform`, whose only non-rest state is the kit's own desktop
-     *   hover; a `card` has no padding outside the kit's desktop padding.
+     *   only the keys the patch writes plus CARD_KEEPS plus `transform`, whose ONLY content is the kit's own desktop hover
+     *   (no rest transform at any breakpoint: a tilt belongs on an unmarked wrapper); a `card` has no padding outside the
+     *   kit's desktop padding.
      * - $exact (markup resolved by the kit only, colour tokens left): background, border and boxShadow equal the patch
-     *   exactly (absent where the patch writes none), the transform minus its rest states equals the patch's hover
-     *   transform, and a card's spacing minus its margins equals the patch's.
+     *   exactly (absent where the patch writes none), the transform equals the patch's hover transform (or is absent), and
+     *   a card's spacing minus its margins equals the patch's.
      *
      * @param array<string,mixed> $kit
      * @return list<string>
@@ -1263,13 +1265,15 @@ class RecipeLibraryTest extends TestCase
                     }
                 }
             }
-            // A REST transform (a tilt: any breakpoint's `value`) is the recipe's composition and stays; the kit writes only
-            // the desktop HOVER transform (lift), so any other transform state is a stray the merge would keep.
+            // The kit writes only the desktop HOVER transform (lift). Any other transform state, REST included (a tilt, a phone
+            // reset), is a stray the merge keeps: under a lift kit the hover replaces the rest transform and the card straightens.
             $kitTransform = $patch['module']['decoration']['transform'] ?? [];
             foreach ( (array) ( $dec['transform'] ?? [] ) as $bp => $states ) {
                 foreach ( (array) $states as $state => $value ) {
-                    if ( 'value' !== $state && $value !== ( $kitTransform[ $bp ][ $state ] ?? null ) ) {
-                        $out[] = "$where: transform.$bp.$state is a hover transform the kit does not write";
+                    if ( $value !== ( $kitTransform[ $bp ][ $state ] ?? null ) ) {
+                        $out[] = 'value' === $state
+                            ? "$where: transform.$bp.value is a rest transform on a marked block (put the tilt on an unmarked wrapper group)"
+                            : "$where: transform.$bp.$state is a hover transform the kit does not write";
                     }
                 }
             }
@@ -1295,14 +1299,8 @@ class RecipeLibraryTest extends TestCase
                     $out[] = "$where: $key is not exactly the kit's (" . json_encode( $dec[ $key ] ?? null, JSON_UNESCAPED_SLASHES ) . ')';
                 }
             }
-            // The transform minus its rest states is exactly the kit's hover transform (or nothing).
+            // The whole transform is exactly the kit's hover transform (or nothing): no rest state survives on a marked block.
             $hoverPart = (array) ( $dec['transform'] ?? [] );
-            foreach ( $hoverPart as $bp => $states ) {
-                unset( $hoverPart[ $bp ]['value'] );
-                if ( [] === $hoverPart[ $bp ] ) {
-                    unset( $hoverPart[ $bp ] );
-                }
-            }
             if ( $hoverPart !== ( $expect['transform'] ?? [] ) ) {
                 $out[] = "$where: the hover transform is not exactly the kit's (" . json_encode( $hoverPart, JSON_UNESCAPED_SLASHES ) . ')';
             }
@@ -1357,17 +1355,60 @@ class RecipeLibraryTest extends TestCase
         $this->assertSame( $walked, $blocks, 'the merge trap checks exactly the markers the band test walks' );
         $this->assertSame( [], array_slice( array_values( array_unique( $problems ) ), 0, 40 ), 'a marked card keeps only structure: its own card decoration survives the kit\'s deep merge' );
 
-        // Under a lift kit, hero-gradient-stats' cards keep their rest tilt AND get the kit's hover lift.
-        $tilts = [];
+        // Under a lift kit the marked cards of hero-gradient-stats carry ONLY the kit's hover lift and no rest transform: the
+        // tilt sits on their unmarked wrappers (testTiltedCardsSitInAWrapper).
+        $cards = 0;
         foreach ( self::blocks( KitResolver::resolve( (string) SectionRecipes::rawMarkup( 'hero-gradient-stats' ), (array) StyleKits::get( 'soft-lift' ) ) ) as [ $name, $attrs, $i ] ) {
-            if ( 'divi/group' === $name && in_array( $i, [ 1, 2, 3 ], true ) ) {
-                $t = (array) ( $attrs['module']['decoration']['transform'] ?? [] );
-                $this->assertSame( [ 'y' => '-4px' ], $t['desktop']['hover']['translate'] ?? null, "hero-gradient-stats group#$i: the kit's hover lift" );
-                $this->assertSame( [ 'z' => '0deg' ], $t['phone']['value']['rotate'] ?? null, "hero-gradient-stats group#$i: the phone reset of the tilt stays" );
-                $tilts[] = $t['desktop']['value']['rotate']['z'] ?? null;
+            if ( 'divi/group' === $name && in_array( $i, [ 2, 4, 6 ], true ) ) {
+                ++$cards;
+                $this->assertSame( [ 'desktop' => [ 'hover' => [ 'translate' => [ 'y' => '-4px' ] ] ] ], (array) ( $attrs['module']['decoration']['transform'] ?? [] ), "hero-gradient-stats group#$i: only the kit's hover lift" );
             }
         }
-        $this->assertSame( [ '-3deg', '2deg', '-1deg' ], $tilts, 'the recipe\'s rest tilt survives the kit' );
+        $this->assertSame( 3, $cards );
+    }
+
+    /**
+     * The three stat cards of hero-gradient-stats tilt (-3, 2, -1 deg), overlap and stack. Divi's hover transform replaces the
+     * rest transform, so the tilt sits on an UNMARKED wrapper group and the marked card lifts inside it. The wrapper carries
+     * the card's outer box (zIndex, sizing within the column, margins) and the phone reset of the tilt.
+     */
+    public function testTiltedCardsSitInAWrapper(): void
+    {
+        $root  = ( new \Divi5Validator\BlockParser() )->parse( '<!-- wp:divi/placeholder -->' . SectionRecipes::rawMarkup( 'hero-gradient-stats' ) . '<!-- /wp:divi/placeholder -->' )->root();
+        $pairs = [];
+        $walk  = static function ( \Divi5Validator\Block $b, ?\Divi5Validator\Block $parent ) use ( &$walk, &$pairs ): void {
+            if ( null !== self::cardMarker( $b->attrs() ) ) {
+                $pairs[] = [ $b, $parent ];
+            }
+            foreach ( $b->children() as $child ) {
+                $walk( $child, $b );
+            }
+        };
+        $walk( $root, null );
+        $this->assertCount( 3, $pairs, 'three marked stat cards' );
+        $tilts = [];
+        foreach ( $pairs as $n => [ $card, $wrapper ] ) {
+            $this->assertNotNull( $wrapper );
+            $this->assertSame( 'divi/group', $wrapper->name() );
+            $this->assertNull( self::cardMarker( $wrapper->attrs() ), "card $n: the wrapper is unmarked" );
+            $this->assertNull( $wrapper->attrs()['aied'] ?? null, "card $n: the wrapper carries no marker of any kind" );
+            $this->assertCount( 1, $wrapper->children(), "card $n: the wrapper holds exactly its card" );
+            $t = (array) ( $wrapper->attrs()['module']['decoration']['transform'] ?? [] );
+            $tilts[] = $t['desktop']['value']['rotate']['z'] ?? null;
+            $this->assertSame( [ 'rotate' => [ 'z' => '0deg' ], 'translate' => [ 'y' => '0px' ] ], $t['phone']['value'] ?? null, "card $n: the wrapper resets the tilt on phones" );
+            $this->assertSame( [], array_values( array_diff( array_keys( $t ), [ 'desktop', 'phone' ] ) ) );
+            $this->assertArrayNotHasKey( 'hover', $t['desktop'], "card $n: no hover on the wrapper" );
+            $this->assertArrayNotHasKey( 'transform', (array) ( $card->attrs()['module']['decoration'] ?? [] ), "card $n: no transform of its own" );
+            // The grid position (overlap and stacking) sits on the wrapper, the card only fills it.
+            $wd = (array) ( $wrapper->attrs()['module']['decoration'] ?? [] );
+            $cd = (array) ( $card->attrs()['module']['decoration'] ?? [] );
+            $this->assertArrayHasKey( 'zIndex', $wd );
+            $this->assertArrayNotHasKey( 'zIndex', $cd );
+            $this->assertArrayHasKey( 'margin', (array) ( $wd['spacing']['desktop']['value'] ?? [] ) );
+            $this->assertArrayNotHasKey( 'margin', (array) ( $cd['spacing']['desktop']['value'] ?? [] ) );
+            $this->assertSame( '100%', $cd['sizing']['desktop']['value']['width'] ?? null, "card $n: fills its wrapper" );
+        }
+        $this->assertSame( [ '-3deg', '2deg', '-1deg' ], $tilts );
     }
 
     public function testTheMarkedCardCheckCatchesStrayDecoration(): void
@@ -1391,23 +1432,34 @@ class RecipeLibraryTest extends TestCase
         $this->assertStringContainsString( 'a panel keeps a hover key', $stray );
         $this->assertStringContainsString( 'border.desktop.value.styles has side keys [top]', $stray );
         $this->assertStringContainsString( 'border is not exactly the kit\'s', $stray );
-        // A rest shadow and a rest transform the kit does not write, and a phone padding on a card.
+        // A rest shadow and a rest transform (a tilt) the kit does not write, and a phone padding on a card.
         $stray = $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'boxShadow' => [ 'desktop' => [ 'value' => [ 'blur' => '40px' ] ] ], 'transform' => [ 'desktop' => [ 'value' => [ 'rotate' => [ 'z' => '-3deg' ] ] ] ], 'spacing' => [ 'phone' => [ 'value' => [ 'padding' => [ 'top' => '8px' ] ] ] ] ] ], 'aied' => $card ] ) ), $kit );
         $this->assertStringContainsString( 'module.decoration keeps boxShadow that the kit does not write', $stray );
-        $this->assertStringNotContainsString( 'transform', $stray, 'a rest tilt is the recipe\'s composition and stays' );
+        $this->assertStringContainsString( 'transform.desktop.value is a rest transform on a marked block', $stray, 'a rest tilt on a marked card is refused' );
         $this->assertStringContainsString( 'spacing.phone.value.padding overrides the kit\'s card padding', $stray );
         $this->assertStringContainsString( 'the padding is not exactly the kit\'s', $stray );
-        // Rest tilt both ways (controller amendment to Ruling 2): a rest rotate (desktop and a phone reset) is allowed under
-        // a kit without lift and under a lift kit; a recipe hover transform is rejected under both.
+        // No rest transform on a marked block under any kit (a tilt belongs on an unmarked wrapper), and a recipe hover
+        // transform is rejected too; the same rule holds for a column and a panel.
         $lift = (array) StyleKits::get( 'soft-lift' );
         $this->assertSame( 'lift', $lift['hover'] );
         $tilt = [ 'desktop' => [ 'value' => [ 'rotate' => [ 'z' => '-3deg' ] ] ], 'phone' => [ 'value' => [ 'rotate' => [ 'z' => '0deg' ] ] ] ];
+        $col  = static fn ( array $attrs, string $inner = '' ): string => '<!-- wp:divi/column ' . json_encode( $attrs, JSON_UNESCAPED_SLASHES ) . ' -->' . $inner . '<!-- /wp:divi/column -->';
         foreach ( [ $kit, $lift ] as $k ) {
-            $this->assertSame( '', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'transform' => $tilt ] ], 'aied' => $card ] ) ), $k ) );
+            $tilted = $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'transform' => $tilt ] ], 'aied' => $card ] ) ), $k );
+            $this->assertStringContainsString( 'transform.desktop.value is a rest transform on a marked block', $tilted );
+            $this->assertStringContainsString( 'transform.phone.value is a rest transform on a marked block', $tilted );
+            $this->assertStringContainsString( 'the hover transform is not exactly the kit\'s', $tilted );
+            $this->assertStringContainsString( 'transform.desktop.value is a rest transform', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'transform' => $tilt ] ], 'aied' => $panel ] ) ), $k ), 'a panel too' );
+            $this->assertStringContainsString( 'transform.desktop.value is a rest transform', $run( $sec( $col( [ 'module' => [ 'decoration' => [ 'transform' => $tilt ] ], 'aied' => $card ] ) ), $k ), 'a marked column too' );
+            // A marked card with no transform inside a tilted UNMARKED wrapper is the clean shape.
+            $wrapped = $grp( [ 'module' => [ 'decoration' => [ 'transform' => $tilt ] ] ] );
+            $this->assertSame( '', $run( $sec( str_replace( '<!-- /wp:divi/group -->', $grp( [ 'aied' => $card ] ) . '<!-- /wp:divi/group -->', $wrapped ) ), $k ), 'a tilted unmarked wrapper around a marked card passes' );
             $tiltAndHover = array_replace_recursive( $tilt, [ 'desktop' => [ 'hover' => [ 'scale' => [ 'x' => '105%' ] ] ] ] );
             $hovered      = $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'transform' => $tiltAndHover ] ], 'aied' => $card ] ) ), $k );
             $this->assertStringContainsString( 'transform.desktop.hover is a hover transform the kit does not write', $hovered );
             $this->assertStringContainsString( 'the hover transform is not exactly the kit\'s', $hovered );
+            $onlyHover = $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'transform' => [ 'desktop' => [ 'hover' => [ 'scale' => [ 'x' => '105%' ] ] ] ] ] ], 'aied' => $card ] ) ), $k );
+            $this->assertStringContainsString( 'transform.desktop.hover is a hover transform the kit does not write', $onlyHover );
         }
         $this->assertStringContainsString( 'transform.phone.hover is a hover transform', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'transform' => [ 'phone' => [ 'hover' => [ 'translate' => [ 'y' => '-2px' ] ] ] ] ] ], 'aied' => $panel ] ) ), $kit ) );
         // A key outside the structure list.

@@ -188,11 +188,13 @@ class CardMigrationReportTest extends TestCase
     public function test_the_shipped_recipes_have_these_group_classes(): void
     {
         $groups = $this->counts( $this->shipped(), 'divi/group' );
-        $this->assertSame( 356, array_sum( $groups ), 'divi/group blocks in the shipped recipes' );
+        $this->assertSame( 359, array_sum( $groups ), 'divi/group blocks in the shipped recipes' );
         $this->assertSame(
             // Tasks 7 and 8 marked every group card (9, now plain wrappers: the kit owns their padding) and panel (10, padded
-            // wrappers: a panel keeps its own padding); a marked block is classified by the decoration it has left.
-            [ 'chip' => 14, 'grid-cell' => 40, 'inverted' => 4, 'padded-wrapper' => 51, 'rule' => 26, 'wrapper' => 221 ],
+            // wrappers: a panel keeps its own padding); a marked block is classified by the decoration it has left. Kit-limits
+            // Task 1 added 3 unmarked wrapper groups (the tilt of hero-gradient-stats' three stat cards): 356 -> 359 groups,
+            // 221 -> 224 wrappers, nothing else changed.
+            [ 'chip' => 14, 'grid-cell' => 40, 'inverted' => 4, 'padded-wrapper' => 51, 'rule' => 26, 'wrapper' => 224 ],
             $groups
         );
     }
@@ -254,9 +256,9 @@ class CardMigrationReportTest extends TestCase
             'hero-bordered-cells divi/group#2 marked card',
             'hero-bordered-cells divi/group#3 marked card',
             'hero-bordered-cells divi/group#4 marked card',
-            'hero-gradient-stats divi/group#1 marked card',
             'hero-gradient-stats divi/group#2 marked card',
-            'hero-gradient-stats divi/group#3 marked card',
+            'hero-gradient-stats divi/group#4 marked card',
+            'hero-gradient-stats divi/group#6 marked card',
             'hero-spec-card divi/group#1 marked panel',
             'hero-split-left-overlap divi/group#0 marked panel',
             'icon-values divi/column#1 marked card',
