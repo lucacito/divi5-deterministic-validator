@@ -841,17 +841,30 @@ class RecipeLibraryTest extends TestCase
      */
     private static function cardBands( string $markup ): array
     {
+        return self::markerBands( $markup, static fn ( array $attrs ): ?array => self::cardMarker( $attrs ) );
+    }
+
+    /**
+     * The band walk of cardBands() for any marker kind: every block for which $marker (attrs => the marker as a list whose
+     * second element is `on`, or null) answers, with the band of its NEAREST ancestor that paints a ground (cardBandOf),
+     * or `none`. Keyed "<block>#<index>" as cardBands(). Shared with ItemMigrationTest (item and item-rule markers).
+     *
+     * @param callable(array<string,mixed>):?array $marker
+     * @return array<string,array{0:array,1:string}>
+     */
+    public static function markerBands( string $markup, callable $marker ): array
+    {
         $root  = ( new \Divi5Validator\BlockParser() )->parse( '<!-- wp:divi/placeholder -->' . $markup . '<!-- /wp:divi/placeholder -->' )->root();
         $out   = [];
         $seen  = [];
-        $walk  = static function ( \Divi5Validator\Block $b, array $bands ) use ( &$walk, &$out, &$seen ): void {
+        $walk  = static function ( \Divi5Validator\Block $b, array $bands ) use ( &$walk, &$out, &$seen, $marker ): void {
             $name = $b->name();
             if ( 'divi/placeholder' !== $name ) {
                 $seen[ $name ] = ( $seen[ $name ] ?? -1 ) + 1;
             }
-            $marker = self::cardMarker( $b->attrs() );
-            if ( null !== $marker ) {
-                $out[ $name . '#' . $seen[ $name ] ] = [ $marker, [] === $bands ? 'none' : (string) end( $bands ) ];
+            $found = $marker( $b->attrs() );
+            if ( null !== $found ) {
+                $out[ $name . '#' . $seen[ $name ] ] = [ $found, [] === $bands ? 'none' : (string) end( $bands ) ];
             }
             $own = self::cardBandOf( $b->attrs() );
             if ( null !== $own ) {
