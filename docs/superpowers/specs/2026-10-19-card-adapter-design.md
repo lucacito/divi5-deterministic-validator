@@ -192,7 +192,11 @@ how verify-kits lays out a card on each band.
 
 Built on branch `feat/card-adapter` (base 71540da; nothing released, pushed or version-bumped; the tracked zip is still the
 published 4.12.0 build; the validator copies are untouched). Numbers below come from `make card-report`, `wc -c`, `make test`
-and the task reports of the build; the full 88-cell `make verify-kits` run is not done yet (the controller's last task).
+and the task reports of the build. Live gates on the real Divi 5.15.1 (2026-10-19): the full `make verify-kits` 264 PASS, 0 FAIL over 88
+kit/language cells (cards, panels and a three-column row included; run on the code before the final-review fix wave, then the 18-cell
+smoke again on the final code: 18 PASS); the default `verify-recipes` over all 71 recipes (default look and glass-dark) 426 PASS, 0 FAIL;
+the 15 migrated recipes were also rendered under eight looks (default plus seven design languages), 360 PASS, 0 FAIL; `make
+verify-shapes` agrees with every expectation. Three advisory low-contrast lines for shop-grid (unchanged by this branch) are not new.
 
 **Built against the phasing.**
 - Phase 0, probes (Task 1): 21 decisions on each carrier, 42 candidates (`fixtures/shapes/candidates/kit-card.json`), all PASS
@@ -282,8 +286,11 @@ and the task reports of the build; the full 88-cell `make verify-kits` run is no
 - hero-gradient-stats still has the title "floating figures" although its deep literal shadow was removed (the depth that title
   described came from that shadow; the cards still overlap and tilt). cta-card-over-image's title was "a card floating on a
   photo", which a kit without a shadow does not give: it now reads "a card on a photo" (the final review).
-- Hover on a TILTED card (hero-gradient-stats under a lift kit: does Divi keep the rest rotate when the hover translate
-  applies?) was NOT verified live; the markup keeps both, the gate has no such cell.
+- Hover on a TILTED card, measured live (hero-gradient-stats, editorial, kit soft-lift): the hover transform REPLACES the rest
+  transform, so each card goes from its tilt (-3, +2, -1 deg) to `matrix(1,0,0,1,0,-4)` (no rotation, 4px up) and tilts back when the
+  pointer leaves; under quiet-solid (no lift) rest and hover are identical. Under a lift kit the tilted cards therefore straighten on
+  hover. It reads as a settle, not a break, but it is not what the markup spells out (rest rotate + hover translate). If the tilt
+  should survive, the hover state would have to carry the rotation too (`rotate.z` next to `translate.y`, not probed).
 - Card media radius and the images' radius are still not applied; text decisions (capitalization, weight, letter spacing) stay
   button-only; accordion, forms, blurb and testimonial modules keep the recipe's own styling.
 - `verify-kits`: a fixed/sticky element INSIDE a card used to stay hidden after the fill sample (fixed in the final review:
