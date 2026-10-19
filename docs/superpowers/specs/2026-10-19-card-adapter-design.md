@@ -62,7 +62,7 @@ button roles keep light|accent|dark), `accent`, `dark` (photo/overlay).
 
 Classification of the 19 is generated (`make card-report`, plan task 2) and was reviewed; my reading: cards = hero-gradient-stats (3),
 features-bento surface tiles (3), hero-bordered-cells inner cells (3); panels = hero-split-left-overlap,
-hero-spec-card, hero-bordered-cells outer, compare-two-panels#0, pricing-two-plan-highlight#0, cta-split-form,
+hero-spec-card, hero-bordered-cells outer, compare-two-panels (group #2), pricing-two-plan-highlight (group #1), cta-split-form,
 cta-card-over-image, contact-location-form, contact-details-form, transition-overlap-panel.
 
 ### 2. How kit fields map to a card (no shipped kit changes meaning)
@@ -96,7 +96,7 @@ Because the fill is always `surface` or `bg`, card text readability reduces to p
 2. A **descendant ink walk** on the resolved markup of every marked card: each colour token on a descendant (heading,
    text, icon, button label) must be a role proven AA on the card's resolved fill. This is what catches a recipe whose
    children assume the wrong ground.
-3. The frame colour, when it carries meaning (`accent`, `text`), is >= 3:1 against the card fill (the button outline's
+3. The frame colour, when it carries meaning (as built: `text`; an `accent` frame is drawn as `text`, see the Outcome), is >= 3:1 against the card fill (the button outline's
    bound); the `border` hairline is decorative and exempt, as today. Hover frame colour (`text`, see section 2) the same.
 
 Rule changes are made by fixing the role table, never by a frozen exceptions file (lesson from the button table: the
@@ -130,7 +130,8 @@ on groups (hero-gradient-stats carries all of them), but I will not rely on that
 - the button lesson: expect any of border/shadow/spacing on **column** may be dead or behave differently; a dead path is
   added to `fixtures/shapes/dead-on-module.txt` (module-aware guard exists) and the adapter does not write it there.
 
-Each probe PASS goes into the registry and `fixtures/shapes/kit-card-vocabulary.md`; DEAD/css-only is not taught.
+Each probe PASS goes into the registry and `fixtures/shapes/kit-card-vocabulary.md`; DEAD/css-only is not taught. The hover half of the
+underline form was not probed, by ruling during the build (see the Outcome): the adapter writes no hover frame colour on an underline card.
 
 ### 6. Migration in phases (each ends with its render gate and a size check)
 
@@ -278,6 +279,8 @@ and the task reports of the build; the full 88-cell `make verify-kits` run is no
   border" character depends on the kit.
 - Under heavy-frame kits (hard/glow/edge shadow, thick frames) the two kit-driven pricing neighbours can look as prominent as
   the bespoke featured plan, or more so (seen under playful-pastel); the highlight no longer wins everywhere.
+- hero-gradient-stats still has the title "floating figures" although its deep literal shadow was removed (the depth that title
+  described came from that shadow; the cards still overlap and tilt).
 - Hover on a TILTED card (hero-gradient-stats under a lift kit: does Divi keep the rest rotate when the hover translate
   applies?) was NOT verified live; the markup keeps both, the gate has no such cell.
 - Card media radius and the images' radius are still not applied; text decisions (capitalization, weight, letter spacing) stay
