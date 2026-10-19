@@ -8,6 +8,7 @@ use AiEditorDivi5\WP\McpHandler;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/WpRestShims.php';
+require_once __DIR__ . '/McpRouteShim.php';
 require_once __DIR__ . '/../wp-plugin/src/McpHandler.php';
 
 /** Two spec points a strict MCP client checks: ping answers {} and a notification is accepted with 202. */
@@ -58,9 +59,9 @@ class McpProtocolTest extends TestCase
      */
     public function testGetAndDeleteOnTheEndpointAre405WithAnAllowHeader(): void
     {
-        $GLOBALS['__wp_rest_routes'] = [];
+        $GLOBALS['__mcp_test_routes'] = [];
         ( new McpHandler() )->register_routes();
-        $endpoints = $GLOBALS['__wp_rest_routes']['/ai-editor-divi5/v1/mcp'][0] ?? [];
+        $endpoints = $GLOBALS['__mcp_test_routes']['/ai-editor-divi5/v1/mcp'][0] ?? [];
 
         $byMethod = [];
         foreach ( $endpoints as $endpoint ) {

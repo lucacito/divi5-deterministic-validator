@@ -45,13 +45,6 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
         public function get_headers(): array { return $this->headers; }
     }
 }
-if ( ! function_exists( 'register_rest_route' ) ) {
-    /** Records every route a class registers, so a test can read the methods back. */
-    function register_rest_route( $namespace, $route, $args = [] ) {
-        $GLOBALS['__wp_rest_routes'][ '/' . $namespace . $route ][] = $args;
-        return true;
-    }
-}
 if ( ! function_exists( 'current_user_can' ) ) {
     function current_user_can( $cap, ...$args ) {
         if ( isset( $GLOBALS['__wp_caps'] ) && is_array( $GLOBALS['__wp_caps'] ) ) {
