@@ -96,6 +96,12 @@ class StyleGuideKitTopicsTest extends TestCase
         $this->assertMatchesRegularExpression( '/only (the )?buttons?/i', $text, 'the scope today is said honestly' );
         $this->assertMatchesRegularExpression( '/do(n\'t| not) mix/i', $text, 'one kit per page' );
         $this->assertSame( 1, preg_match_all( '/^# /m', $text ), 'one H1' );
+        // Each language's default kit is named with the language; the other kits are covered by one line.
+        foreach ( \AiEditorDivi5\WP\DesignLanguages::ids() as $languageId ) {
+            $kitId = (string) \AiEditorDivi5\WP\DesignLanguages::get( $languageId )['kit'];
+            $this->assertMatchesRegularExpression( '/^- `' . preg_quote( $kitId, '/' ) . '`: [a-z, -]*\b' . preg_quote( $languageId, '/' ) . '\b/m', $text, $languageId );
+        }
+        $this->assertStringContainsString( 'Every other kit: no design language starts with it', $text );
     }
 
     public function testEachKitTopicStatesTheKitsDecisions(): void
@@ -140,6 +146,8 @@ class StyleGuideKitTopicsTest extends TestCase
             $expect = [
                 'A soft shadow sits under the button'                => 'soft/soft' === $pair,
                 'A hard offset shadow sits under the button'         => 'hard/hard' === $pair,
+                'A hard edge sits straight under the button'         => 'edge/edge' === $pair,
+                'A soft glow surrounds the button'                   => 'glow/glow' === $pair,
                 'A soft shadow appears under the button on hover'    => 'none/soft' === $pair,
                 'On hover the button lifts 4px'                      => $lift,
                 'Only the bottom border is drawn: an underline'      => $bottom,
@@ -155,7 +163,7 @@ class StyleGuideKitTopicsTest extends TestCase
             $effects = 'none/none' !== $pair || $lift || $bottom;
             $this->assertSame( $effects, str_contains( $text, '## Shadow, lift and underline' ), $id );
         }
-        $this->assertCount( 5, $seen, 'the shipped kits use every effect' );
+        $this->assertCount( 7, $seen, 'the shipped kits use every effect' );
     }
 
     public function testATextOnlyButtonIsNamedExactlyWhenTheKitDrawsOne(): void

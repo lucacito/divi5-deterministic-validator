@@ -177,6 +177,9 @@ final class KitAdapters
      * deep tint of its own hue in every language, so a soft shadow reads as a shadow (never a glow) on every surface.
      * `hard` (kb-shadow-module-hard): preset4, 6px right and down, no blur, opaque, in the surface's ink (`text` on a light
      * surface, `accent-text` on an accent band, `inverse` on a photo): the colour that contrasts with what is under it.
+     * `edge` (kb-shadow-edge-down): preset4, 0px across, 4px down, no blur, opaque, in the same ink as `hard`: a hard edge
+     * straight below. `glow` (kb-shadow-glow): preset1, 0px down, 16px blur, the language's `accent` at 45% (`accent-text`
+     * at 45% on an accent band, where the accent would vanish): a halo around the button.
      * A rest shadow is written once (value) and the hover keeps it. A shadow never changes a label or border colour, so the
      * contrast bounds are unaffected.
      *
@@ -194,6 +197,12 @@ final class KitAdapters
         }
         if ( 'soft' === $rest ) {
             return [ 'desktop' => [ 'value' => [ 'style' => 'preset1', 'vertical' => '8px', 'blur' => '24px', 'color' => '{{aied:color:overlay:18}}' ] ] ];
+        }
+        if ( 'glow' === $rest ) {
+            return [ 'desktop' => [ 'value' => [ 'style' => 'preset1', 'vertical' => '0px', 'blur' => '16px', 'color' => '{{aied:color:' . ( 'accent' === $on ? 'accent-text' : 'accent' ) . ':45}}' ] ] ];
+        }
+        if ( 'edge' === $rest ) {
+            return [ 'desktop' => [ 'value' => [ 'style' => 'preset4', 'horizontal' => '0px', 'vertical' => '4px', 'blur' => '0px', 'color' => self::colour( self::ink( 'text', $on ) ) ] ] ];
         }
         return [ 'desktop' => [ 'value' => [ 'style' => 'preset4', 'horizontal' => '6px', 'vertical' => '6px', 'blur' => '0px', 'color' => self::colour( self::ink( 'text', $on ) ) ] ] ];
     }

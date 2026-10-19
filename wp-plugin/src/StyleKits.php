@@ -34,13 +34,16 @@ final class StyleKits
     /**
      * Shadow values a kit may choose for rest and hover (extended only with probe-proven values): `soft` (box shadow preset1,
      * kb-shadow-module-soft / kb-shadow-module-hover) and `hard` (preset4, an offset solid shadow, kb-shadow-module-hard), both
-     * on the button MODULE (the button element's own shadow is dead, kb-shadow-element-hard). Proven pairs only: the hover
-     * equals the rest (written once, the hover keeps it), or a soft hover over no rest shadow (SHADOW_PAIRS).
+     * on the button MODULE (the button element's own shadow is dead, kb-shadow-element-hard), `edge` (preset4 with 0px
+     * across and 4px down: a hard edge straight below, kb-shadow-edge-down) and `glow` (preset1 with 0px down and a 16px
+     * blur: a halo, kb-shadow-glow). The shadow is printed on the button element itself, so it follows its corners
+     * (kb-shadow-soft-on-pill) and sits behind a transparent button too (kb-shadow-hard-on-outline). Proven pairs only:
+     * the hover equals the rest (written once, the hover keeps it), or a soft hover over no rest shadow (SHADOW_PAIRS).
      */
-    public const SHADOWS = [ 'none', 'soft', 'hard' ];
+    public const SHADOWS = [ 'none', 'soft', 'hard', 'edge', 'glow' ];
 
     /** The shadow pairs a kit may choose, "rest/hover" (see SHADOWS). */
-    public const SHADOW_PAIRS = [ 'none/none', 'soft/soft', 'hard/hard', 'none/soft' ];
+    public const SHADOW_PAIRS = [ 'none/none', 'soft/soft', 'hard/hard', 'none/soft', 'edge/edge', 'glow/glow' ];
 
     /**
      * Which border sides are drawn (optional `border.sides`, default `all`): `bottom` is an underline (`styles.all.width` 0px

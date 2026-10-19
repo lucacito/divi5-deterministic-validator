@@ -97,7 +97,12 @@ final class StyleKitsTest extends TestCase
             'border style none'          => [ static function (array $k): array { $k['border']['style'] = 'none'; return $k; } ],
             'border colour unknown'      => [ static function (array $k): array { $k['border']['color'] = 'red'; return $k; } ],
             'shadow not a value'         => [ static function (array $k): array { $k['shadow']['rest'] = '0 4px 8px'; return $k; } ],
-            'shadow glow'                => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'glow', 'hover' => 'glow' ]; return $k; } ],
+            'shadow neon'                => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'neon', 'hover' => 'neon' ]; return $k; } ],
+            'edge rest, soft hover'      => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'edge', 'hover' => 'soft' ]; return $k; } ],
+            'glow rest, hover none'      => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'glow', 'hover' => 'none' ]; return $k; } ],
+            'glow on hover only'         => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'none', 'hover' => 'glow' ]; return $k; } ],
+            'edge on hover only'         => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'none', 'hover' => 'edge' ]; return $k; } ],
+            'edge rest, glow hover'      => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'edge', 'hover' => 'glow' ]; return $k; } ],
             'hover shadow hard over none' => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'none', 'hover' => 'hard' ]; return $k; } ],
             'rest soft, hover none'      => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'soft', 'hover' => 'none' ]; return $k; } ],
             'rest hard, hover soft'      => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'hard', 'hover' => 'soft' ]; return $k; } ],
@@ -173,6 +178,9 @@ final class StyleKitsTest extends TestCase
             'lift'                         => [ static function (array $k): array { $k['hover'] = 'lift'; return $k; } ],
             'lift with a hover shadow'     => [ static function (array $k): array { $k['hover'] = 'lift'; $k['shadow'] = [ 'rest' => 'none', 'hover' => 'soft' ]; return $k; } ],
             'lift with a hard shadow'      => [ static function (array $k): array { $k['hover'] = 'lift'; $k['shadow'] = [ 'rest' => 'hard', 'hover' => 'hard' ]; return $k; } ],
+            'edge rest and hover'          => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'edge', 'hover' => 'edge' ]; return $k; } ],
+            'lift with an edge'            => [ static function (array $k): array { $k['hover'] = 'lift'; $k['shadow'] = [ 'rest' => 'edge', 'hover' => 'edge' ]; return $k; } ],
+            'glow rest and hover'          => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'glow', 'hover' => 'glow' ]; $k['fill'] = 'outline'; return $k; } ],
             'sides all'                    => [ static function (array $k): array { $k['border']['sides'] = 'all'; return $k; } ],
             'underline, hover none'        => [ static function (array $k): array { $k['border']['sides'] = 'bottom'; $k['hover'] = 'none'; $k['fill'] = 'outline'; return $k; } ],
             'underline, lift'              => [ static function (array $k): array { $k['border']['sides'] = 'bottom'; $k['hover'] = 'lift'; return $k; } ],
@@ -214,7 +222,8 @@ final class StyleKitsTest extends TestCase
     {
         $this->assertSame([ 'solid', 'dashed', 'dotted', 'double' ], StyleKits::BORDER_STYLES);
         $this->assertSame([ 'fill-swap', 'invert', 'none', 'lift' ], StyleKits::HOVERS);
-        $this->assertSame([ 'none', 'soft', 'hard' ], StyleKits::SHADOWS);
+        $this->assertSame([ 'none', 'soft', 'hard', 'edge', 'glow' ], StyleKits::SHADOWS);
+        $this->assertSame([ 'none/none', 'soft/soft', 'hard/hard', 'none/soft', 'edge/edge', 'glow/glow' ], StyleKits::SHADOW_PAIRS);
         $this->assertSame([ 'all', 'bottom' ], StyleKits::BORDER_SIDES);
         $this->assertSame([ 'solid', 'outline', 'ghost' ], StyleKits::FILLS, 'no gradient fill: no role pair reads in every language');
     }
@@ -244,6 +253,148 @@ final class StyleKitsTest extends TestCase
             }
         }
         $this->assertMatchesRegularExpression($pattern, 'Neon-filled buttons', 'the check catches a colour word');
+    }
+
+    /**
+     * The kits built from the owner's button sheet (Task 9, docs/button-sheet-classification.md "What was built"). The
+     * ids are pinned so a later edit cannot silently drop one.
+     */
+    private const SHEET_KITS = [
+        'hairline-frame-caps', 'offset-frame', 'soft-hairline-caps', 'thick-frame-caps', 'thick-rounded-caps', 'rimmed-solid',
+        'flat-square', 'block-caps', 'pill-caps', 'outline-pill', 'outline-soft', 'thick-frame', 'raised-square',
+        'offset-block-caps', 'text-link', 'text-link-caps', 'underlined-label', 'pressable', 'hairline-halo',
+    ];
+
+    /** The owner's cap on the number of kits (the sheet kits included). */
+    private const MAX_KITS = 50;
+
+    public function testTheSheetKitsShipAndTheCatalogStaysWithinTheCap(): void
+    {
+        $ids = StyleKits::ids();
+        foreach (self::SHEET_KITS as $id) {
+            $this->assertContains($id, $ids, $id);
+        }
+        $this->assertLessThanOrEqual(self::MAX_KITS, count($ids));
+    }
+
+    /**
+     * What a kit looks like, colour left out (the design language supplies colour): fill, border width, style and sides,
+     * control radius, shadow rest/hover, hover, capitalization, weight, letter spacing and control padding.
+     *
+     * @param array<string,mixed> $kit
+     */
+    private static function decisionSet(array $kit): string
+    {
+        return implode('|', [
+            $kit['fill'], $kit['border']['width'], $kit['border']['style'], $kit['border']['sides'] ?? 'all', $kit['radius']['control'],
+            $kit['shadow']['rest'] . '/' . $kit['shadow']['hover'], $kit['hover'], $kit['text']['capitalization'], $kit['text']['weight'],
+            $kit['text']['letterSpacing'], $kit['space']['control']['vertical'] . '/' . $kit['space']['control']['horizontal'],
+        ]);
+    }
+
+    public function testNoTwoShippedKitsShareADecisionSet(): void
+    {
+        $seen = [];
+        foreach (StyleKits::ids() as $id) {
+            $set = self::decisionSet((array) StyleKits::get($id));
+            $this->assertArrayNotHasKey($set, $seen, "$id repeats " . ($seen[$set] ?? '') . ' with only the colours changed');
+            $seen[$set] = $id;
+        }
+    }
+
+    /** Radius family of a control radius: square 0-4px, soft 6-16px, round 20-48px, pill 999px (5px and 17-19px count with their nearer family). */
+    private static function radiusFamily(string $radius): string
+    {
+        $px = (int) $radius;
+        if (999 === $px) {
+            return 'pill';
+        }
+        return $px <= 5 ? 'square' : ($px <= 18 ? 'soft' : 'round');
+    }
+
+    /**
+     * Two kits differ VISIBLY when at least one of these differs: fill; border style; border sides; border width by 2px or
+     * more; radius family; shadow rest/hover; hover kind; capitalization. A transparent button (outline or ghost) has no
+     * fill colour to swap, so its `invert` fills it exactly as `fill-swap` does (KitAdapters) and counts as `fill-swap`.
+     * Weight, letter spacing, padding and a 1px border step are NOT enough on their own: that is a near-duplicate.
+     *
+     * @param array<string,mixed> $a
+     * @param array<string,mixed> $b
+     */
+    private static function differVisibly(array $a, array $b): bool
+    {
+        $hover = static fn (array $k): string => ('invert' === $k['hover'] && 'solid' !== $k['fill']) ? 'fill-swap' : (string) $k['hover'];
+        return $a['fill'] !== $b['fill']
+            || $a['border']['style'] !== $b['border']['style']
+            || ($a['border']['sides'] ?? 'all') !== ($b['border']['sides'] ?? 'all')
+            || abs((int) $a['border']['width'] - (int) $b['border']['width']) >= 2
+            || self::radiusFamily((string) $a['radius']['control']) !== self::radiusFamily((string) $b['radius']['control'])
+            || $a['shadow']['rest'] . '/' . $a['shadow']['hover'] !== $b['shadow']['rest'] . '/' . $b['shadow']['hover']
+            || $hover($a) !== $hover($b)
+            || $a['text']['capitalization'] !== $b['text']['capitalization'];
+    }
+
+    /**
+     * Pairs of kits shipped BEFORE Task 9 that are near-duplicates by differVisibly() (kits are never changed to pass this
+     * test: language default kits and the golden file pin them). Shrink-only: a pair that stops being a near-duplicate must
+     * be removed, and no new pair may be added.
+     */
+    private const NEAR_DUPLICATE_EXEMPTIONS = [
+        'quiet-solid|hairline-mono'  => 'Task 1 and Task 4 kits (editorial and tech-mono defaults before 9a): solid square-cornered buttons, 0px vs 1px same-colour border, 4px vs 2px corners.',
+        'steady-solid|soft-rounded'  => 'Task 4 kits (corporate-trust and soft-saas defaults): solid soft-cornered buttons, 0px vs 1px same-colour border, 6px vs 12px corners.',
+        'soft-rounded|soft-solid'    => 'soft-solid (Task 1 fixture kit) and soft-rounded (soft-saas default): 1px same-colour border vs none, 12px vs 8px corners.',
+        'steady-solid|soft-solid'    => 'steady-solid (corporate-trust default) and soft-solid (Task 1 fixture kit): 6px vs 8px corners, otherwise the same.',
+    ];
+
+    public function testAnyTwoShippedKitsDifferVisibly(): void
+    {
+        $kits  = [];
+        foreach (StyleKits::ids() as $id) {
+            $kits[$id] = (array) StyleKits::get($id);
+        }
+        $ids   = array_keys($kits);
+        $found = [];
+        for ($i = 0; $i < count($ids); $i++) {
+            for ($j = $i + 1; $j < count($ids); $j++) {
+                if (! self::differVisibly($kits[$ids[$i]], $kits[$ids[$j]])) {
+                    $found[] = $ids[$i] . '|' . $ids[$j];
+                }
+            }
+        }
+        $this->assertSame([], array_values(array_diff($found, array_keys(self::NEAR_DUPLICATE_EXEMPTIONS))), 'near-duplicate kits (change the new kit, never the bound)');
+        $this->assertSame([], array_values(array_diff(array_keys(self::NEAR_DUPLICATE_EXEMPTIONS), $found)), 'shrink-only: an exemption that no longer applies must be removed');
+        foreach (self::SHEET_KITS as $id) {
+            foreach (array_keys(self::NEAR_DUPLICATE_EXEMPTIONS) as $pair) {
+                $this->assertNotContains($id, explode('|', $pair), 'no exemption for a sheet kit');
+            }
+        }
+    }
+
+    public function testTheVisibleDifferenceRuleCatchesWhatItShould(): void
+    {
+        $a = self::good();
+        $b = $a;
+        $b['border']['width'] = '3px';      // 1px step from 2px
+        $b['radius']['control'] = '12px';   // same soft family as 8px
+        $b['text']['weight'] = '800';
+        $b['space']['control']['vertical'] = '20px';
+        $this->assertFalse(self::differVisibly($a, $b), 'a 1px border step, a radius in the same family, weight and padding are near-duplicates');
+        $b['border']['width'] = '4px';
+        $this->assertTrue(self::differVisibly($a, $b), 'a 2px border step is visible');
+        $c = $a;
+        $c['radius']['control'] = '999px';
+        $this->assertTrue(self::differVisibly($a, $c));
+        $o = $a;
+        $o['fill'] = 'outline';
+        $o['hover'] = 'invert';
+        $p = $o;
+        $p['hover'] = 'fill-swap';
+        $this->assertFalse(self::differVisibly($o, $p), 'invert on a transparent button is a fill-swap');
+        $this->assertSame('square', self::radiusFamily('4px'));
+        $this->assertSame('soft', self::radiusFamily('6px'));
+        $this->assertSame('soft', self::radiusFamily('16px'));
+        $this->assertSame('round', self::radiusFamily('20px'));
+        $this->assertSame('pill', self::radiusFamily('999px'));
     }
 
     public function testParseOfCorruptTextIsEmpty(): void

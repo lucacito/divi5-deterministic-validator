@@ -166,10 +166,14 @@ final class StyleGuide
                 $byKit[ (string) ( $language['kit'] ?? '' ) ][] = $languageId;
             }
         }
+        // Only the kits a language starts with are listed (one line each), so the catalog stays within its budget as kits are added.
         $defaults = [];
         foreach ( StyleKits::ids() as $id ) {
-            $defaults[] = sprintf( '- `%s`: %s', $id, [] === ( $byKit[ $id ] ?? [] ) ? 'no design language starts with it' : implode( ', ', $byKit[ $id ] ) );
+            if ( [] !== ( $byKit[ $id ] ?? [] ) ) {
+                $defaults[] = sprintf( '- `%s`: %s', $id, implode( ', ', $byKit[ $id ] ) );
+            }
         }
+        $defaults[] = '- Every other kit: no design language starts with it; ask for it with `style_kit`.';
         $topics = implode( ', ', array_map( static fn ( string $id ): string => '`style-kit:' . $id . '`', StyleKits::ids() ) );
 
         return "# Style kits: one shape for every control\n\n"
@@ -258,7 +262,13 @@ final class StyleGuide
         $module = (array) $patch['module']['decoration'];
         $out    = [];
         $rest   = $module['boxShadow']['desktop']['value']['style'] ?? null;
-        if ( 'preset1' === $rest ) {
+        $across = $module['boxShadow']['desktop']['value']['horizontal'] ?? null;
+        $down   = $module['boxShadow']['desktop']['value']['vertical'] ?? null;
+        if ( 'preset1' === $rest && '0px' === $down ) {
+            $out[] = 'A soft glow surrounds the button: box shadow preset1 on the button module, 0px down, 16px blur, in the accent colour at 45% opacity (accent-text on an accent band); it stays on hover.';
+        } elseif ( 'preset4' === $rest && '0px' === $across ) {
+            $out[] = 'A hard edge sits straight under the button: box shadow preset4 on the button module, 0px across and 4px down, no blur, opaque, in the ink of the surface (the text colour on a light section, accent-text on an accent band, inverse on a photo); it stays on hover.';
+        } elseif ( 'preset1' === $rest ) {
             $out[] = 'A soft shadow sits under the button: box shadow preset1 on the button module, 8px down, 24px blur, in the design language\'s overlay colour at 18% opacity; it stays on hover.';
         } elseif ( 'preset4' === $rest ) {
             $out[] = 'A hard offset shadow sits under the button: box shadow preset4 on the button module, 6px right and 6px down, no blur, opaque, in the ink of the surface (the text colour on a light section, accent-text on an accent band, inverse on a photo); it stays on hover.';

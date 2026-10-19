@@ -235,9 +235,10 @@ class KitAdaptersTest extends TestCase
                     }
                     preg_match_all( '/\{\{[^}]*\}\}/', $json, $t );
                     foreach ( $t[0] as $token ) {
-                        // A colour role, the soft shadow's overlay at the two proven opacities, or a kit token.
+                        // A colour role, the soft shadow's overlay at the two proven opacities, the glow's accent (accent-text on
+                        // an accent band) at 45%, or a kit token.
                         $this->assertMatchesRegularExpression(
-                            '/^\{\{aied:(?:color:(?:' . implode( '|', array_map( 'preg_quote', array_keys( self::ROLE_KEYS ) ) ) . ')|color:overlay:(?:18|25)|kit:(?:radius-control|space-control))\}\}$/',
+                            '/^\{\{aied:(?:color:(?:' . implode( '|', array_map( 'preg_quote', array_keys( self::ROLE_KEYS ) ) ) . ')|color:overlay:(?:18|25)|color:(?:accent|accent-text):45|kit:(?:radius-control|space-control))\}\}$/',
                             $token,
                             "$label $role on $on"
                         );
@@ -289,8 +290,31 @@ class KitAdaptersTest extends TestCase
             );
         }
 
+        // kb-shadow-edge-down: a hard edge straight down (preset4, 0px across, 4px down, no blur), opaque, in the surface's ink.
+        $edge = $this->kitWith( 'soft-solid', [ 'shadow' => [ 'rest' => 'edge', 'hover' => 'edge' ] ] );
+        foreach ( [ 'light' => 'text', 'accent' => 'accent-text', 'dark' => 'inverse' ] as $on => $ink ) {
+            foreach ( self::ROLES as $role ) {
+                $this->assertSame(
+                    [ 'desktop' => [ 'value' => [ 'style' => 'preset4', 'horizontal' => '0px', 'vertical' => '4px', 'blur' => '0px', 'color' => '{{aied:color:' . $ink . '}}' ] ] ],
+                    $this->patch( $edge, $role, $on )['module']['decoration']['boxShadow'],
+                    "edge $role on $on"
+                );
+            }
+        }
+
+        // kb-shadow-glow: a glow with no offset (preset1, 0px down, 16px blur) in the accent at 45%; on an accent band the
+        // accent would vanish, so accent-text at 45% there.
+        $glow = $this->kitWith( 'outline-2', [ 'shadow' => [ 'rest' => 'glow', 'hover' => 'glow' ] ] );
+        foreach ( [ 'light' => 'accent', 'accent' => 'accent-text', 'dark' => 'accent' ] as $on => $role ) {
+            $this->assertSame(
+                [ 'desktop' => [ 'value' => [ 'style' => 'preset1', 'vertical' => '0px', 'blur' => '16px', 'color' => '{{aied:color:' . $role . ':45}}' ] ] ],
+                $this->patch( $glow, 'control', $on )['module']['decoration']['boxShadow'],
+                "glow on $on"
+            );
+        }
+
         // Never on the button element (dead there), and no shadow at all for a kit without one.
-        foreach ( [ $soft, $hoverOnly, $hard ] as $kit ) {
+        foreach ( [ $soft, $hoverOnly, $hard, $edge, $glow ] as $kit ) {
             $this->assertArrayNotHasKey( 'boxShadow', $this->patch( $kit, 'control', 'light' )['button']['decoration'] );
         }
         $this->assertArrayNotHasKey( 'boxShadow', $this->patch( (array) StyleKits::get( 'soft-solid' ), 'control', 'light' )['module']['decoration'] );

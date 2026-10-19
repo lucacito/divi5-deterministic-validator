@@ -87,12 +87,13 @@ class RecipeLibraryTest extends TestCase
      * (the first element) when it appears ONLY in the kit-resolved markup, never in the recipe's own markup. It does not
      * read the fill, so the exemption is by label role, not by exact pair. That is safe because every colour a kit button
      * paints (each label on its real fill, every shipped kit x language x role x surface x rest/hover) is proven >= 4.5:1
-     * by KitAdaptersTest::testNoInvisibleButtonInAnyKitLanguageRoleSurface; these two pairs are additionally proven AA in
-     * every language by testTheKitLabelPairsAreReadableInEveryLanguage. A recipe's OWN text colours still need a declared
+     * by KitAdaptersTest::testNoInvisibleButtonInAnyKitLanguageRoleSurface; these three pairs are additionally proven AA in
+     * every language by testTheKitLabelPairsAreReadableInEveryLanguage. The third, bg on a text fill, is the role table's
+     * on(text) (Task 9: rimmed-solid, a text-filled button, on a photo). A recipe's OWN text colours still need a declared
      * pair. Declaring the pairs in every kit-driven recipe instead would grow the recipe file, which the spec's byte rule
      * forbids.
      */
-    private const KIT_LABEL_PAIRS = [ [ 'accent', 'accent-text' ], [ 'surface', 'text' ] ];
+    private const KIT_LABEL_PAIRS = [ [ 'accent', 'accent-text' ], [ 'surface', 'text' ], [ 'bg', 'text' ] ];
 
     /** A `divi/button` block comment: (json). Same possessive scan as KitResolver::BLOCK. */
     private const BUTTON = '/<!--\s+wp:divi\/button\s+(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\})\s+\/?-->/s';
