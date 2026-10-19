@@ -514,6 +514,7 @@ class KitResolverTest extends TestCase
         }
         $this->assertNotNull( KitAdapters::patch( 'divi/group', 'card', 'surface', $kit ) );
     }
+
     public function testAGroundMarkerResolvesOnAGroupAndAColumnInAnyKeyOrder(): void
     {
         $kit = $this->shipped( 'soft-solid' );

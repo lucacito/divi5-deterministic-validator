@@ -48,9 +48,12 @@ class KitCardAdapterTest extends TestCase
     private const GROUNDS      = [ 'inverted', 'accent' ];
     private const GROUND_BANDS = [ 'light', 'surface' ];
 
+    /** The least contrast of text against the light and surface bands over the ten languages (organic-warm's bg, 11.978:1). */
+    private const INVERTED_LEAST = 11.978;
+
     /** Ground => [the fill token, the child inks the recipe may use on it, the least contrast of the fill against the band]. */
     private const GROUND_RULES = [
-        'inverted' => [ '{{aied:color:text}}', [ 'bg', 'surface' ], 11.98 ],
+        'inverted' => [ '{{aied:color:text}}', [ 'bg', 'surface' ], self::INVERTED_LEAST ],
         'accent'   => [ '{{aied:color:accent}}', [ 'accent-text' ], 2.0 ],
     ];
 
@@ -594,12 +597,14 @@ class KitCardAdapterTest extends TestCase
     }
 
     /**
-     * Problems of one ground patch ([] = fine), keyed "$where|<check>", against the plain card patch of the same kit, role
-     * and band: the fill is the ground's token; each child ink the recipe may use on it (bg and surface on inverted,
-     * accent-text on accent) at least 4.5 on the fill; the fill distinct from the band (inverted at least 11.98:1, the
-     * measured least; accent at least 2.0:1, decorative); every frame side's colour is the fill token; no hover frame colour;
-     * a panel writes no hover key at all and a card none but the plain card's (lift and a hover shadow); radius, padding,
-     * shadow and transform are the plain card's.
+     * Problems of one ground patch in one state ([] = fine), keyed "$where|<check>", against the plain card patch of the same
+     * kit, role and band. Each state checks its own facts, so every cell is a distinct check:
+     * - rest: the fill is the ground's token; each child ink the recipe may use on it (bg and surface on inverted,
+     *   accent-text on accent) at least 4.5 on the fill; the fill distinct from the band (inverted at least INVERTED_LEAST,
+     *   the measured least; accent at least 2.0:1, decorative); every frame side's colour is the fill token; the frame's
+     *   sides, widths and styles, the radius, the padding and the rest shadow are the plain card's.
+     * - hover: no hover fill; no hover frame colour (it would be the fill); the hover transform (lift) and the hover shadow
+     *   are the plain card's; a panel writes no hover key at all.
      *
      * @param array<string,mixed> $patch
      * @param array<string,mixed> $plain
@@ -615,11 +620,31 @@ class KitCardAdapterTest extends TestCase
             return [ "$where|ground" => "$where: unknown ground '$ground'" ];
         }
         [ $token, $inks, $least ] = $rule;
-        $deco  = (array) ( $patch['module']['decoration'] ?? [] );
+        $deco      = (array) ( $patch['module']['decoration'] ?? [] );
         $plainDeco = (array) ( $plain['module']['decoration'] ?? [] );
+        $border    = (array) ( $deco['border']['desktop'] ?? [] );
+
+        if ( 'hover' === $state ) {
+            if ( array_key_exists( 'hover', (array) ( $deco['background']['desktop'] ?? [] ) ) ) {
+                $out[ "$where|hover-fill" ] = "$where: a hover fill on a ground";
+            }
+            if ( array_key_exists( 'hover', $border ) ) {
+                $out[ "$where|hover-frame" ] = "$where: a hover frame colour on a ground (it would be the fill)";
+            }
+            foreach ( [ 'transform', 'boxShadow' ] as $group ) {
+                if ( ( $deco[ $group ]['desktop']['hover'] ?? null ) !== ( $plainDeco[ $group ]['desktop']['hover'] ?? null ) ) {
+                    $out[ "$where|hover-$group" ] = "$where: the hover $group differs from the plain card on the $on band";
+                }
+            }
+            if ( 'panel' === $role && str_contains( (string) json_encode( $deco ), '"hover"' ) ) {
+                $out[ "$where|panel-hover" ] = "$where: a panel writes a hover key";
+            }
+            return $out;
+        }
+
         $found = (string) ( $deco['background']['desktop']['value']['color'] ?? '' );
-        if ( $token !== $found || [ 'desktop' ] !== array_keys( (array) ( $deco['background'] ?? [] ) ) || [ 'value' ] !== array_keys( (array) $deco['background']['desktop'] ) ) {
-            return [ "$where|fill" => "$where: the $ground fill is '$found', not $token (and no hover fill)" ];
+        if ( $token !== $found ) {
+            return [ "$where|fill" => "$where: the $ground fill is '$found', not $token" ];
         }
         $band = (string) Colour::opaque( (string) $colors[ 'surface' === $on ? 'surface' : 'bg' ], (string) $colors['bg'] );
         $fill = self::opaqueOn( $token, $lang, $band );
@@ -633,46 +658,60 @@ class KitCardAdapterTest extends TestCase
                 $out[ "$where|ink-$ink" ] = sprintf( '%s: child ink %s on the %s fill %s is %.2f:1, needs 4.5', $where, $ink, $ground, $fill, $r );
             }
         }
-        // Compared at the two decimals the bound was measured and stated in (spec section 1: 11.98 is organic-warm's
-        // 11.976...:1 rounded).
         $r = Colour::contrast( $fill, $band );
-        if ( round( $r, 2 ) < $least ) {
-            $out[ "$where|band" ] = sprintf( '%s: the %s fill %s on the %s band %s is %.2f:1, needs %.2f', $where, $ground, $fill, $on, $band, $r, $least );
+        if ( $r < $least ) {
+            $out[ "$where|band" ] = sprintf( '%s: the %s fill %s on the %s band %s is %.3f:1, needs %.3f', $where, $ground, $fill, $on, $band, $r, $least );
         }
-        $border = (array) ( $deco['border']['desktop'] ?? [] );
-        foreach ( (array) ( $border['value']['styles'] ?? [] ) as $side => $s ) {
+        $styles = (array) ( $border['value']['styles'] ?? [] );
+        if ( [] === $styles ) {
+            $out[ "$where|frame" ] = "$where: no frame";
+        }
+        foreach ( $styles as $side => $s ) {
             if ( $token !== (string) ( $s['color'] ?? '' ) ) {
                 $out[ "$where|frame-$side" ] = "$where: the $side frame colour is '" . (string) ( $s['color'] ?? '' ) . "', not the fill $token";
             }
         }
-        if ( [] === (array) ( $border['value']['styles'] ?? [] ) ) {
-            $out[ "$where|frame" ] = "$where: no frame";
-        }
-        if ( array_key_exists( 'hover', $border ) && 'hover' === $state ) {
-            $out[ "$where|hover-frame" ] = "$where: a hover frame colour on a ground (it would be the fill)";
-        }
-        if ( array_key_exists( 'hover', $border ) && 'rest' === $state ) {
-            $out[ "$where|hover-frame" ] = "$where: a hover frame key on a ground";
-        }
-        if ( 'panel' === $role && str_contains( (string) json_encode( $deco ), '"hover"' ) ) {
-            $out[ "$where|panel-hover" ] = "$where: a panel writes a hover key";
-        }
-        foreach ( [ 'spacing', 'boxShadow', 'transform' ] as $group ) {
-            if ( ( $deco[ $group ] ?? null ) !== ( $plainDeco[ $group ] ?? null ) ) {
-                $out[ "$where|$group" ] = "$where: $group differs from the plain card on the $on band";
-            }
+        $shape      = static fn ( array $d ): array => array_map( static fn ( $s ) => [ $s['width'] ?? null, $s['style'] ?? null ], (array) ( $d['border']['desktop']['value']['styles'] ?? [] ) );
+        if ( $shape( $plainDeco ) !== $shape( $deco ) ) {
+            $out[ "$where|frame-size" ] = "$where: the frame's sides, width or style differ from the plain card (the box would change size)";
         }
         if ( ( $deco['border']['desktop']['value']['radius'] ?? null ) !== ( $plainDeco['border']['desktop']['value']['radius'] ?? null ) ) {
             $out[ "$where|radius" ] = "$where: the radius differs from the plain card";
         }
-        $plainWidths = array_map( static fn ( $s ) => $s['width'] ?? null, (array) ( $plainDeco['border']['desktop']['value']['styles'] ?? [] ) );
-        $widths      = array_map( static fn ( $s ) => $s['width'] ?? null, (array) ( $deco['border']['desktop']['value']['styles'] ?? [] ) );
-        $plainStyles = array_map( static fn ( $s ) => $s['style'] ?? null, (array) ( $plainDeco['border']['desktop']['value']['styles'] ?? [] ) );
-        $styles      = array_map( static fn ( $s ) => $s['style'] ?? null, (array) ( $deco['border']['desktop']['value']['styles'] ?? [] ) );
-        if ( $plainWidths !== $widths || $plainStyles !== $styles ) {
-            $out[ "$where|frame-size" ] = "$where: the frame's sides, width or style differ from the plain card (the box would change size)";
+        if ( ( $deco['spacing'] ?? null ) !== ( $plainDeco['spacing'] ?? null ) ) {
+            $out[ "$where|spacing" ] = "$where: the padding differs from the plain card on the $on band";
+        }
+        if ( ( $deco['boxShadow']['desktop']['value'] ?? null ) !== ( $plainDeco['boxShadow']['desktop']['value'] ?? null ) ) {
+            $out[ "$where|boxShadow" ] = "$where: the rest shadow differs from the plain card on the $on band";
         }
         return $out;
+    }
+
+    public function testTheStatedGroundBoundsAreTheMeasuredLeast(): void
+    {
+        // The least contrast of each ground's fill against the light and surface bands over the ten languages: the stated
+        // fact the proof uses, so a palette change shows here as a change of the fact (never a silent new bound).
+        $least = [ 'inverted' => INF, 'accent' => INF ];
+        $where = [];
+        foreach ( DesignLanguages::ids() as $langId ) {
+            $lang   = (array) DesignLanguages::get( $langId );
+            $colors = (array) $lang['colors'];
+            foreach ( self::GROUND_BANDS as $on ) {
+                $band = (string) Colour::opaque( (string) $colors[ 'surface' === $on ? 'surface' : 'bg' ], (string) $colors['bg'] );
+                foreach ( self::GROUND_RULES as $ground => [ $token ] ) {
+                    $r = Colour::contrast( (string) self::opaqueOn( $token, $lang, $band ), $band );
+                    if ( $r < $least[ $ground ] ) {
+                        $least[ $ground ] = $r;
+                        $where[ $ground ] = "$langId $on";
+                    }
+                }
+            }
+        }
+        $this->assertSame( self::INVERTED_LEAST, round( $least['inverted'], 3 ), 'the inverted bound is the measured least' );
+        $this->assertSame( 'organic-warm light', $where['inverted'] );
+        $this->assertGreaterThanOrEqual( self::INVERTED_LEAST, $least['inverted'] );
+        $this->assertSame( 2.30, round( $least['accent'], 2 ), 'the accent ground\'s measured least (the bound is 2.0, decorative)' );
+        $this->assertSame( 'playful-pastel light', $where['accent'] );
     }
 
     public function testNoUnreadableGroundInAnyKitLanguageRoleGroundBand(): void
@@ -697,7 +736,7 @@ class KitCardAdapterTest extends TestCase
                 }
             }
         }
-        // 40 kits x 10 languages x 2 roles x 2 grounds x 2 bands x 2 states (the brief's "3,200" counted one factor of 2 short).
+        // 40 kits x 10 languages x 2 roles x 2 grounds x 2 bands x 2 states (rest facts and hover facts).
         $this->assertSame( 6400, $checked );
         $this->assertSame( 40 * 10 * 2 * 2 * 2 * 2, $checked );
         $this->assertSame( [], array_values( $problems ), "unreadable or misshapen grounds (fix the ground rules in KitAdapters::card(), never the bound; no exceptions):\n" . implode( "\n", $problems ) );
@@ -719,7 +758,8 @@ class KitCardAdapterTest extends TestCase
         // A hover fill is refused.
         $hoverFill = $good;
         $hoverFill['module']['decoration']['background']['desktop']['hover'] = [ 'color' => '{{aied:color:bg}}' ];
-        $this->assertArrayHasKey( 'x|fill', self::groundProblems( $hoverFill, $plain, $mono, 'card', 'light', 'inverted', 'rest', 'x' ) );
+        $this->assertArrayHasKey( 'x|hover-fill', self::groundProblems( $hoverFill, $plain, $mono, 'card', 'light', 'inverted', 'hover', 'x' ) );
+        $this->assertSame( [], self::groundProblems( $hoverFill, $plain, $mono, 'card', 'light', 'inverted', 'rest', 'x' ), 'a hover fact is checked in the hover state only' );
         // A frame in another colour than the fill, and a hover frame colour (the plain card of glass-edge has one).
         $frame = $good;
         $frame['module']['decoration']['border']['desktop']['value']['styles']['all']['color'] = '{{aied:color:border}}';
@@ -734,7 +774,18 @@ class KitCardAdapterTest extends TestCase
         $this->assertSame( [], self::groundProblems( $panel, $panelPlain, $pastel, 'panel', 'light', 'accent', 'hover', 'x' ) );
         $lifted = $panel;
         $lifted['module']['decoration']['transform'] = [ 'desktop' => [ 'hover' => [ 'translate' => [ 'y' => '-4px' ] ] ] ];
-        $this->assertArrayHasKey( 'x|panel-hover', self::groundProblems( $lifted, $panelPlain, $pastel, 'panel', 'light', 'accent', 'rest', 'x' ) );
+        $out = self::groundProblems( $lifted, $panelPlain, $pastel, 'panel', 'light', 'accent', 'hover', 'x' );
+        $this->assertArrayHasKey( 'x|panel-hover', $out );
+        $this->assertArrayHasKey( 'x|hover-transform', $out );
+        // A card whose lift or hover shadow is not the plain card's is caught in the hover state.
+        $liftPlain = $this->patch( $kits['neo-brutal'], 'card', 'light' );
+        $noLift    = $this->patch( $kits['neo-brutal'], 'card', 'light', 'divi/group', 'inverted' );
+        $this->assertSame( [], self::groundProblems( $noLift, $liftPlain, $mono, 'card', 'light', 'inverted', 'hover', 'x' ) );
+        unset( $noLift['module']['decoration']['transform'] );
+        $this->assertArrayHasKey( 'x|hover-transform', self::groundProblems( $noLift, $liftPlain, $mono, 'card', 'light', 'inverted', 'hover', 'x' ) );
+        $hoverShadow = $this->patch( $kits['soft-lift'], 'card', 'light', 'divi/group', 'accent' );
+        $hoverShadow['module']['decoration']['boxShadow'] = [ 'desktop' => [ 'hover' => [ 'style' => 'preset1' ] ] ];
+        $this->assertArrayHasKey( 'x|hover-boxShadow', self::groundProblems( $hoverShadow, $this->patch( $kits['soft-lift'], 'card', 'light' ), $pastel, 'card', 'light', 'accent', 'hover', 'x' ) );
         $padded = $good;
         unset( $padded['module']['decoration']['spacing'] );
         $this->assertArrayHasKey( 'x|spacing', self::groundProblems( $padded, $plain, $mono, 'card', 'light', 'inverted', 'rest', 'x' ) );

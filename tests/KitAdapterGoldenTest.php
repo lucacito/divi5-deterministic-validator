@@ -29,6 +29,12 @@ class KitAdapterGoldenTest extends TestCase
 {
     private const GOLDEN = __DIR__ . '/golden/kit-adapter-patches.json';
 
+    /** The twelve kits captured before the new decisions (Task 9a): each holds the six band patches. */
+    private const OLD_KITS = [
+        'quiet-solid', 'glass-edge', 'warm-pill', 'hairline-mono', 'chunky-pill', 'steady-solid',
+        'soft-rounded', 'heavy-block', 'raw-frame', 'gilt-hairline', 'soft-solid', 'outline-2',
+    ];
+
     public function testEveryKitShippedBeforeTheNewDecisionsIsUnchangedAndResolvesByteIdentically(): void
     {
         $golden = json_decode( (string) file_get_contents( self::GOLDEN ), true );
@@ -47,7 +53,7 @@ class KitAdapterGoldenTest extends TestCase
             $this->assertSame( json_encode( $entry['kit'] ), json_encode( $kit ), "$id: its decisions are unchanged" );
             $keys     = array_keys( $entry['patches'] );
             $expected = array_merge(
-                array_values( array_intersect( $keys, $old ) ) === $old ? $old : [],
+                in_array( (string) $id, self::OLD_KITS, true ) ? $old : [],
                 in_array( (string) $id, $defaults, true ) ? $panel : []
             );
             $this->assertSame( $expected, $keys, "$id: the band patches as captured, then the panel patches of a language default" );
@@ -63,6 +69,7 @@ class KitAdapterGoldenTest extends TestCase
             }
         }
         $this->assertSame( [ 'old' => 72, 'panel' => 20, 'oldEntries' => 12 ], $counts );
+        $this->assertSame( self::OLD_KITS, array_slice( array_keys( $golden ), 0, 12 ), 'the twelve old entries come first, as captured' );
         foreach ( $defaults as $id ) {
             $this->assertArrayHasKey( $id, $golden, "the language default $id has its panel patches pinned" );
         }

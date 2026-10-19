@@ -676,6 +676,35 @@ class KitAdaptersTest extends TestCase
         return $out;
     }
 
+    /**
+     * Box problems of one button on a `panel` ([] = fine; Ruling 2): a border wider than 0 is never painted in the panel's
+     * own colour (it would melt into the panel and the box would look smaller), the hover writes no other width than the
+     * rest (the painted box keeps its size), and a filled button's border is its fill colour role at rest and on hover.
+     * Arguments are colour tokens or literals as the patch writes them; $colors resolves them.
+     *
+     * @param array<string,mixed> $colors
+     * @return array<string,string>
+     */
+    private static function panelBoxProblems( string $restFill, string $restBorder, string $hoverFill, string $hoverBorder, string $width, ?string $hoverWidth, array $colors, string $panel, string $where ): array
+    {
+        $out = [];
+        if ( null !== $hoverWidth && $hoverWidth !== $width ) {
+            $out[ "$where|hover-width" ] = "$where: the hover border width $hoverWidth is not the rest width $width";
+        }
+        foreach ( [ 'rest' => [ $restFill, $restBorder ], 'hover' => [ $hoverFill, $hoverBorder ] ] as $state => [ $fill, $border ] ) {
+            if ( '0px' !== $width ) {
+                $edge = Colour::opaque( self::colourOf( $border, $colors ), $panel );
+                if ( null === $edge || strtolower( $edge ) === strtolower( $panel ) ) {
+                    $out[ "$where|$state|border-melts" ] = "$where: the $state border $border is the panel's own colour";
+                }
+            }
+            if ( KitAdapters::TRANSPARENT !== $fill && $border !== $fill ) {
+                $out[ "$where|$state|border-not-fill" ] = "$where: the $state border $border of a filled button is not its fill $fill";
+            }
+        }
+        return $out;
+    }
+
     public function testNoInvisibleButtonOnAPanelInAnyKitLanguageRole(): void
     {
         $problems = [];
@@ -693,6 +722,17 @@ class KitAdaptersTest extends TestCase
                         'rest'  => [ $d['background']['desktop']['value']['color'], $d['font']['font']['desktop']['value']['color'], $side['color'] ],
                         'hover' => [ $d['background']['desktop']['hover']['color'], $d['font']['font']['desktop']['hover']['color'], $d['border']['desktop']['hover']['styles']['all']['color'] ],
                     ];
+                    $problems = array_merge( $problems, self::panelBoxProblems(
+                        (string) $states['rest'][0],
+                        (string) $states['rest'][2],
+                        (string) $states['hover'][0],
+                        (string) $states['hover'][2],
+                        (string) $side['width'],
+                        isset( $d['border']['desktop']['hover']['styles']['all']['width'] ) ? (string) $d['border']['desktop']['hover']['styles']['all']['width'] : null,
+                        $colors,
+                        $panel,
+                        "{$kit['id']}|$langId|$role|panel"
+                    ) );
                     foreach ( $states as $state => [ $fill, $label, $border ] ) {
                         ++$checked;
                         $where = "{$kit['id']}|$langId|$role|panel|$state";
@@ -728,6 +768,16 @@ class KitAdaptersTest extends TestCase
         $out = self::panelProblems( KitAdapters::TRANSPARENT, (string) $mono['text'], (string) $mono['text'], '2px', $panel, 'x' );
         $this->assertArrayHasKey( 'x|label', $out );
         $this->assertArrayHasKey( 'x|outline', $out );
+        // Ruling 2: a `text` border on a filled button on a text panel melts into the panel and is not the fill.
+        $mc  = (array) $mono;
+        $box = self::panelBoxProblems( '{{aied:color:bg}}', '{{aied:color:text}}', '{{aied:color:bg}}', '{{aied:color:text}}', '4px', null, $mc, $panel, 'x' );
+        $this->assertArrayHasKey( 'x|rest|border-melts', $box );
+        $this->assertArrayHasKey( 'x|rest|border-not-fill', $box );
+        // A border that only appears on hover, and a hover width change, are caught; the panel row is fine.
+        $this->assertArrayHasKey( 'x|rest|border-not-fill', self::panelBoxProblems( '{{aied:color:bg}}', '{{aied:color:text}}', KitAdapters::TRANSPARENT, '{{aied:color:bg}}', '2px', null, $mc, $panel, 'x' ) );
+        $this->assertArrayHasKey( 'x|hover-width', self::panelBoxProblems( '{{aied:color:bg}}', '{{aied:color:bg}}', '{{aied:color:bg}}', '{{aied:color:bg}}', '2px', '4px', $mc, $panel, 'x' ) );
+        $this->assertSame( [], self::panelBoxProblems( '{{aied:color:bg}}', '{{aied:color:bg}}', KitAdapters::TRANSPARENT, '{{aied:color:bg}}', '2px', null, $mc, $panel, 'x' ) );
+        $this->assertSame( [], self::panelBoxProblems( KitAdapters::TRANSPARENT, '{{aied:color:bg}}', '{{aied:color:bg}}', '{{aied:color:bg}}', '0px', null, $mc, $panel, 'x' ) );
         // The panel row is fine: bg fill with a text label, and a transparent bg-ink button.
         $this->assertSame( [], self::panelProblems( (string) $mono['bg'], (string) $mono['text'], (string) $mono['bg'], '2px', $panel, 'x' ) );
         $this->assertSame( [], self::panelProblems( KitAdapters::TRANSPARENT, (string) $mono['bg'], (string) $mono['bg'], '2px', $panel, 'x' ) );
@@ -751,6 +801,13 @@ class KitAdaptersTest extends TestCase
             $this->assertSame( '{{aied:color:bg}}', $s['font']['font']['desktop']['value']['color'], $id );
             $this->assertSame( '{{aied:color:bg}}', $s['border']['desktop']['value']['styles']['all']['color'], $id );
         }
+        // Ruling 2: a filled button's border on a panel is its fill, whatever the kit's border colour (raw-frame: text).
+        $raw = (array) StyleKits::get( 'raw-frame' );
+        $this->assertSame( 'text', $raw['border']['color'] );
+        $d = $this->patch( $raw, 'control', 'panel' )['button']['decoration'];
+        $this->assertSame( '{{aied:color:bg}}', $d['border']['desktop']['value']['styles']['all']['color'] );
+        $this->assertSame( '{{aied:color:bg}}', $d['border']['desktop']['hover']['styles']['all']['color'] );
+        $this->assertSame( '{{aied:color:text}}', $this->patch( $raw, 'control', 'light' )['button']['decoration']['border']['desktop']['value']['styles']['all']['color'], 'no change on light' );
         // An inverse kit colour is never a fill on a panel either.
         $inv = $this->kitWith( 'soft-solid', [ 'color' => 'inverse' ] );
         $this->assertSame( '{{aied:color:bg}}', $this->patch( $inv, 'control', 'panel' )['button']['decoration']['background']['desktop']['value']['color'] );

@@ -4401,7 +4401,7 @@
                                         "all": {
                                             "width": "4px",
                                             "style": "solid",
-                                            "color": "{{aied:color:text}}"
+                                            "color": "{{aied:color:bg}}"
                                         }
                                     }
                                 },
@@ -6273,7 +6273,7 @@
                                         "all": {
                                             "width": "2px",
                                             "style": "solid",
-                                            "color": "{{aied:color:text}}"
+                                            "color": "{{aied:color:bg}}"
                                         }
                                     }
                                 },

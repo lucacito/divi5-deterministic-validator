@@ -40,7 +40,7 @@ require_once __DIR__ . '/StyleKits.php';
  * - Colour c: the kit's `color` role, except that `control-secondary` on a `light` surface always uses `text` (the
  *   neutral secondary today's recipes ship: text ink and border on bg/surface), whatever the kit's colour.
  * - Ink of a transparent button (its label and border): light -> c (`text` when c is `inverse`), accent band -> `accent-text` (the language's
- *   guaranteed pair on accent), dark (photo or overlay) -> `inverse`, panel -> `bg` (bg on text is 11.98:1 or more in
+ *   guaranteed pair on accent), dark (photo or overlay) -> `inverse`, panel -> `bg` (bg on text is 11.978:1 or more in
  *   every language; muted and inverse fail on a text panel in glass-dark, tech-mono and luxe).
  * - Filled treatment: light and dark -> fill c, label on(c) (on(accent)=accent-text, on(text)=bg); accent band ->
  *   fill `surface`, label `text`; panel -> fill `bg`, label `text`, for every kit colour (an accent fill on a text panel
@@ -48,7 +48,10 @@ require_once __DIR__ . '/StyleKits.php';
  *   fill: a filled `inverse` button (a kit whose colour is inverse) is `surface` with a `text` label (`bg` with a `text`
  *   label on a panel), because no role is readable on inverse in every language (text and inverse are both light in the
  *   dark languages).
- * - solid: the filled treatment, border the kit's (`same` = the fill colour) at the kit width.
+ * - solid: the filled treatment, border the kit's (`same` = the fill colour) at the kit width. On a `panel` the border of a
+ *   filled button is ALWAYS the fill colour (`bg`), at rest and on hover, whatever the kit's border colour (controller
+ *   Ruling 2 of the kit-limits plan): a `text` or `accent` border would melt into the `text` panel at rest and reappear
+ *   on hover, so the box would shrink beside its secondary and jump on hover; the box keeps its size, as a ground frame.
  * - outline: transparent, label and border in the ink at the kit width.
  * - ghost: as outline with a zero border.
  * - The secondary role uses the outline treatment for solid and ghost kits, and the solid one for outline kits.
@@ -97,11 +100,11 @@ require_once __DIR__ . '/StyleKits.php';
  * - Not used by cards: the kit's `fill`, `color` and `text` decisions (button only).
  *
  * Ground table (marker field `ground`, roles `card` and `panel`, bands `light` and `surface` only; spec
- * 2026-10-19-kit-limits-design.md section 2; proven by KitCardAdapterTest's ground proof, 3,200 cells, no exception):
+ * 2026-10-19-kit-limits-design.md section 2; proven by KitCardAdapterTest's ground proof, 6,400 cells, no exception):
  * - Fill: `text` (`inverted`) or `accent` (`accent`), whatever the band; no hover fill. The children are NOT re-inked: the
- *   recipe gives them `bg` or `surface` on an inverted ground (11.98:1 or more in every language; muted and inverse fail
+ *   recipe gives them `bg` or `surface` on an inverted ground (11.978:1 or more in every language, the measured least, organic-warm; muted and inverse fail
  *   in glass-dark, tech-mono and luxe) and `accent-text` on an accent ground (5.75:1 or more; text on accent fails in 8
- *   languages). The fill against the band: inverted 11.98:1 or more; accent 2.30:1 or more, judged decorative (>= 2.0).
+ *   languages). The fill against the band: inverted 11.978:1 or more (measured least); accent 2.30:1 or more, judged decorative (>= 2.0).
  * - Frame: the plain card's sides, width and style (the 1px floor and the underline form included), in the FILL colour,
  *   so a ground card keeps the size of its kit neighbours and its shape comes from the fill.
  * - Radius, padding (`card`), shadow (the band's ink, a `surface` band treated as light) and lift: exactly the plain
@@ -329,7 +332,7 @@ final class KitAdapters
      * `edge` (kb-shadow-edge-down): preset4, 0px across, 4px down, no blur, opaque, in the same ink as `hard`: a hard edge
      * straight below. `glow` (kb-shadow-glow): preset1, 0px down, 16px blur, the language's `accent` at 45% (`accent-text`
      * at 45% on an accent band, where the accent would vanish): a halo around the button.
-     * On a `panel` (a button inside a `text`-filled panel): `hard` and `edge` in `bg` (the panel's ink, 11.98:1 or more on
+     * On a `panel` (a button inside a `text`-filled panel): `hard` and `edge` in `bg` (the panel's ink, 11.978:1 or more on
      * text in every language), `glow` in `bg` at 45% (2.91 to 4.27:1 against the panel; the accent at 45% is 1.08:1 in
      * tech-mono) and NO soft shadow, rest or hover: the soft shadow is a darker tint and nothing is darker than a text
      * panel in every language (the overlay at 25% is 1.00 to 1.05:1 on the light languages' text), so it is not written.
@@ -376,7 +379,8 @@ final class KitAdapters
 
         if ( 'solid' === $fill ) {
             [ $bg, $label ] = self::filled( $c, $on );
-            return [ 'fill' => $bg, 'label' => $label, 'border' => 'same' === $borderColor ? $bg : $borderColor, 'width' => $width ];
+            // On a panel the frame of a filled button is its fill (Ruling 2): the box keeps its size.
+            return [ 'fill' => $bg, 'label' => $label, 'border' => 'same' === $borderColor || 'panel' === $on ? $bg : $borderColor, 'width' => $width ];
         }
 
         $ink = self::ink( $c, $on );
