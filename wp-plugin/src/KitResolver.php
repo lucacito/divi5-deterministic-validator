@@ -184,6 +184,7 @@ final class KitResolver
         }
         $vars = get_object_vars( $marker );
         $keys = array_keys( $vars );
+        sort( $keys );
         if ( [ 'kit' ] !== $keys && [ 'kit', 'on' ] !== $keys ) {
             return null;
         }

@@ -65,6 +65,11 @@ class GuideRecipePointersTest extends TestCase
     /** Backticked kebab-case words in the guides that are not recipe names (topics, ids, settings). */
     private const NOT_RECIPES = [ 'gcid-primary-color', 'gcid-secondary-color', 'gcid-heading-color', 'gcid-body-color', 'gcid-link-color', 'overflow-y' ];
 
+    public function testNoStyleKitIdIsAlsoARecipeName(): void
+    {
+        $this->assertSame( [], array_values( array_intersect( StyleKits::ids(), SectionRecipes::names() ) ), 'kit ids are skipped when scanning for recipe mentions, so one must never hide a recipe name' );
+    }
+
     /**
      * Recipe mentions in a text: (1) every backticked kebab-case word that is not a topic, a design language id or a listed
      * non-recipe (so a backticked typo is reported as "not a recipe"); (2) a backticked single word that is a recipe name

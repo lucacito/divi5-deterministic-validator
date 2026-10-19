@@ -272,6 +272,49 @@ class StyleGuideKitTopicsTest extends TestCase
         }
     }
 
+    /** An outline kit's secondary button is a filled block (KitAdapters' role table); the AI must read that where it chooses and where it copies. */
+    public function testTheSecondaryOfAnOutlineKitIsStatedInTheCatalogAndInTheKitTopic(): void
+    {
+        $catalog = StyleGuide::markdown( 'style-kits' );
+        $seen    = 0;
+        foreach ( StyleKits::ids() as $id ) {
+            $kit = (array) StyleKits::get( $id );
+            // Derived from the adapter, never a literal: a kit whose secondary fill differs from its own is "outline" -> "solid".
+            $secondaryFill = KitAdapters::secondaryFill( (string) $kit['fill'] );
+            $line          = $this->catalogLine( $catalog, $id );
+            $topic         = StyleGuide::markdown( 'style-kit:' . $id );
+            if ( 'solid' === $secondaryFill && 'solid' !== $kit['fill'] ) {
+                $seen++;
+                $this->assertMatchesRegularExpression( '/secondary is a filled block/i', $line, $id . ': the catalog line states the secondary' );
+            }
+            // Every kit topic states primary AND secondary on a light section, from the adapter's own patch.
+            $this->assertStringContainsString( 'The primary button on a light section has', $topic, $id );
+            $this->assertStringContainsString( 'The secondary button on a light section has', $topic, $id );
+        }
+        $this->assertGreaterThan( 5, $seen, 'the shipped kits include outline kits' );
+    }
+
+    private function catalogLine( string $catalog, string $id ): string
+    {
+        $this->assertSame( 1, preg_match( '/^- \*\*[^\n]*\(`' . preg_quote( $id, '/' ) . '`\): [^\n]*$/m', $catalog, $m ), $id . ' has one catalog line' );
+        return $m[0];
+    }
+
+    /** StyleKits uses SectionRecipes (the layouts an `avoids` may name, the plain quote of an unknown id): loaded alone it must not fatal. */
+    public function testStyleKitsAloneNeedsNoOtherFileLoadedFirst(): void
+    {
+        $file = realpath( __DIR__ . '/../wp-plugin/src/StyleKits.php' );
+        $code = 'define("ABSPATH","/"); require ' . var_export( $file, true ) . ';'
+            . '$kit = \\AiEditorDivi5\\WP\\StyleKits::get( \\AiEditorDivi5\\WP\\StyleKits::ids()[0] ); $kit["avoids"] = ["hero"];'
+            . 'echo json_encode( [ \\AiEditorDivi5\\WP\\StyleKits::problems( $kit ) !== null, strlen( \\AiEditorDivi5\\WP\\StyleKits::markdown( "unknown" ) ) > 0 ] );';
+        $proc = proc_open( [ PHP_BINARY, '-r', $code ], [ 1 => [ 'pipe', 'w' ], 2 => [ 'pipe', 'w' ] ], $pipes );
+        $this->assertIsResource( $proc );
+        $out = stream_get_contents( $pipes[1] );
+        $err = stream_get_contents( $pipes[2] );
+        $this->assertSame( 0, proc_close( $proc ), 'a fresh process that loads only StyleKits.php runs: ' . $err );
+        $this->assertSame( '[true,true]', $out );
+    }
+
     /** The catalog lists every kit once (id + summary), so its size is linear in the kits; with 50 kits (the owner's cap) it must still fit. */
     public function testTheCatalogTopicStaysWithinItsBudgetWithFiftyKits(): void
     {

@@ -6,6 +6,9 @@ namespace AiEditorDivi5\WP;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+require_once __DIR__ . '/SectionRecipes.php';
+require_once __DIR__ . '/KitAdapters.php';
+
 /**
  * Style kits: small decision tables (fill, border, radius, shadow, hover, text, space) that say
  * how a family of controls and cards looks. A kit is DECISIONS ONLY: no markup, no colour value
@@ -290,7 +293,7 @@ final class StyleKits
         if ( null === $id ) {
             $lines = [ '# Style kits', '' ];
             foreach ( self::all() as $kit ) {
-                $lines[] = sprintf( '- **%s** (`%s`): %s', (string) ( $kit['title'] ?? '' ), (string) $kit['id'], (string) ( $kit['summary'] ?? '' ) );
+                $lines[] = sprintf( '- **%s** (`%s`): %s', (string) ( $kit['title'] ?? '' ), (string) $kit['id'], self::describe( $kit ) );
             }
             $lines[] = '';
             $lines[] = 'Ask for one kit in full with its id.';
@@ -311,7 +314,7 @@ final class StyleKits
         $lines = [
             sprintf( '# Style kit: %s (`%s`)', (string) ( $kit['title'] ?? '' ), (string) $kit['id'] ),
             '',
-            (string) ( $kit['summary'] ?? '' ),
+            self::describe( $kit ),
             '',
             sprintf( '- Fill: %s, carried by the %s colour role', (string) ( $kit['fill'] ?? '' ), (string) ( $kit['color'] ?? '' ) ),
             sprintf( '- Border: %s %s, colour %s%s', (string) ( $b['width'] ?? '' ), (string) ( $b['style'] ?? '' ), (string) ( $b['color'] ?? '' ), 'bottom' === ( $b['sides'] ?? 'all' ) ? ', bottom side only (an underline)' : '' ),
@@ -326,6 +329,23 @@ final class StyleKits
             $lines[] = '- Avoid with recipe layouts: ' . implode( ', ', array_map( 'strval', $avoids ) );
         }
         return implode( "\n", $lines ) . "\n";
+    }
+
+    /**
+     * The kit's one-line summary, plus (derived from the adapter's role table, never typed by hand) what the SECONDARY button
+     * is when it is a filled block: the secondary of an outline kit is solid, and the AI must read that where it chooses.
+     * A summary that already says something about the secondary is left alone.
+     *
+     * @param array<string,mixed> $kit
+     */
+    private static function describe( array $kit ): string
+    {
+        $summary = (string) ( $kit['summary'] ?? '' );
+        $fill    = (string) ( $kit['fill'] ?? '' );
+        if ( 'solid' !== $fill && 'solid' === KitAdapters::secondaryFill( $fill ) && false === stripos( $summary, 'secondary' ) ) {
+            $summary .= ' The secondary is a filled block.';
+        }
+        return $summary;
     }
 
     /**

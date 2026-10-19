@@ -231,9 +231,9 @@ final class StyleGuide
             $lines[] = $secondary;
             $lines[] = '```';
             $lines[] = '';
-            $lines[] = '## On an accent band and on a photo';
+            $lines[] = '## On a light section, an accent band and a photo';
             $lines[] = '';
-            $lines[] = 'Same shape, only the colour rules change. ' . self::kitSurfaceSentence( $kit, 'accent', 'on an accent band' ) . ' ' . self::kitSurfaceSentence( $kit, 'dark', 'on a photo or a dark overlay' );
+            $lines[] = 'Same shape, only the colour rules change. ' . self::kitSurfaceSentence( $kit, 'light', 'on a light section' ) . ' ' . self::kitSurfaceSentence( $kit, 'accent', 'on an accent band' ) . ' ' . self::kitSurfaceSentence( $kit, 'dark', 'on a photo or a dark overlay' );
             $effects = self::kitEffectsSentence( $kit );
             if ( '' !== $effects ) {
                 $lines[] = '';

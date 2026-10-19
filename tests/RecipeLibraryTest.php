@@ -482,6 +482,7 @@ class RecipeLibraryTest extends TestCase
                 $this->assertArrayNotHasKey( 'hover', $font['desktop'] ?? [], "$key: the kit writes the hover label" );
             }
         }
+        $this->assertLessThanOrEqual( 2, count( self::BESPOKE_BUTTONS ), 'shrink-only by test: the bespoke list can never grow past today\'s 2' );
         $this->assertSame( 28, $total, 'the recipes hold 28 buttons (update this count with the recipes)' );
         $this->assertSame( array_keys( self::BESPOKE_BUTTONS ), $bespoke, 'every bespoke entry names a real button that is still bespoke' );
         $this->assertSame( $total - count( self::BESPOKE_BUTTONS ), $migrated );

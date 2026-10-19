@@ -81,6 +81,15 @@ class KitResolverTest extends TestCase
         }
     }
 
+    public function testTheMarkersKeyOrderDoesNotMatter(): void
+    {
+        $inOrder  = KitResolver::resolve( $this->button( ',"aied":{"kit":"control","on":"dark"}' ), $this->kit(), $this->adapter() );
+        $reversed = KitResolver::resolve( $this->button( ',"aied":{"on":"dark","kit":"control"}' ), $this->kit(), $this->adapter() );
+        $this->assertSame( $inOrder, $reversed );
+        $this->assertSame( [], KitResolver::leftovers( $reversed ), 'a reversed marker is resolved, not left' );
+        $this->assertStringNotContainsString( '"aied"', $reversed );
+    }
+
     public function testMarkedButtonGetsAdapterPatchAndLosesMarker(): void
     {
         $out   = KitResolver::resolve( $this->button(), $this->kit(), $this->adapter() );

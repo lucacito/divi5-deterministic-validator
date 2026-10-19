@@ -82,6 +82,12 @@ final class KitAdapters
     /** The secondary treatment of each primary fill. */
     private const SECONDARY = [ 'solid' => 'outline', 'outline' => 'solid', 'ghost' => 'outline' ];
 
+    /** The fill of the secondary button of a kit whose primary has $fill (`solid`, `outline` or `ghost`): the role table's one source. */
+    public static function secondaryFill( string $fill ): string
+    {
+        return self::SECONDARY[ $fill ] ?? $fill;
+    }
+
     /**
      * The attribute subtree to merge into $blockName for a marker of $role on surface $on, or null when this
      * adapter does not know the combination (any other block, role or surface, or an invalid kit).
