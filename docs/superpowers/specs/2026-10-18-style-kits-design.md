@@ -197,3 +197,40 @@ classification (buildable now / needs a probe / needs custom CSS and skipped) is
 
 Exact kit ids and names; the kit decision values (within the proven vocabulary); the marker spelling; the file
 schema; the byte bounds beyond those proposed; how the kit sheet is laid out; the order of probe batches.
+
+## Outcome (2026-10-19)
+
+Built on branch `feat/style-kits` (nothing released, pushed or version-bumped; the tracked zip is still the published
+4.12.0 build; the validator copies are untouched).
+
+**Built against the phasing.** Phase 2 (foundation): `data/style-kits.json` with its strict schema and loader
+(`StyleKits`), whole-value kit tokens, the stripped module marker and its resolver (`KitResolver`), the alpha colour
+token, tests. Phase 3 (probes): 31 button candidates plus 5 later ones, rendered on the real Divi 5.15.1
+(`fixtures/shapes/kit-button-vocabulary.md`). Phase 4 (buttons pilot): the `divi/button` adapter (`KitAdapters`), 26 of
+the 28 recipe buttons migrated to markers, the guide topics `style-kits` and `style-kit:<id>`, the optional `style_kit`
+parameter of `get_section_recipes` (MCP, REST, OpenAPI; no new tool, route or operation), 40 kits, and `make
+verify-kits` (88 kit/language cells, 264 PASS at three widths). The classification of the owner's 125-button sheet is
+in `docs/button-sheet-classification.md`.
+
+**Deviations from the spec.**
+- Padding, shadow and lift are written on `module.decoration.*`, not on the button: the probe showed the button's own
+  spacing, box shadow and transform are DEAD on `divi/button`. The plan's "the adapter never touches `module`" was the
+  plan's rule, not the spec's; a dead-on-module guard now stops a path proven on one module from being written on another.
+- The role table (which colour a button takes on a light surface, an accent band or a photo) was amended after the
+  contrast proof over every kit x language x role x surface x state found 58 failing cells; the proof now passes with
+  zero exceptions and no baseline file.
+- Whole-value tokens and the marker are as specced; the marker is `{"aied":{"kit":"control|control-secondary","on":...}}`.
+- Gradient fill was NOT built: no pair of the allowed colour roles gives a readable label on both stops in all ten
+  languages (best case about 2.45:1).
+- Two shadow values were added to the specced soft/hard pair, `edge` and `glow`, and `border.sides: bottom` (an underline)
+  and the lift hover, all after probes.
+- 40 kits, not the estimated 25 to 35: the 19 sheet kits were added on top of the 21 language and extra kits. The owner's
+  cap of 50 holds; the `style-kits` topic stays under 10,000 bytes at 50 kits (tested), and the near-duplicate rule
+  (a visible-difference test with a shrink-only exemption list of 4 pairs) kept the sheet from adding look-alikes.
+
+**Deferred.** The card adapter (`divi/group`) is next, then accordion/toggle, blurb and form fields; card and media
+radius and card padding are recorded in the kits but not applied; image-to-layout later. Known limits: every outline
+kit's secondary button is a solid block (the role table); the underline kit's edge is faint against the accent fill
+(about 2.4:1); the soft shadow is faint on dark languages because its colour is the language overlay; a shadow is not
+written for languages whose prose says none. Owner decisions left: merge and release, and the `docs/inspitarion`
+folder name.
