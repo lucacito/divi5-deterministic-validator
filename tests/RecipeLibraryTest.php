@@ -6,6 +6,7 @@ namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\DesignVariety;
+use AiEditorDivi5\WP\KitAdapters;
 use AiEditorDivi5\WP\KitResolver;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\RecipeTokens;
@@ -27,6 +28,7 @@ require_once __DIR__ . '/../wp-plugin/src/KitResolver.php';
 require_once __DIR__ . '/../wp-plugin/src/CodePolicy.php';
 require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
 require_once __DIR__ . '/Support/Colour.php';
+require_once __DIR__ . '/../scripts/card-migration-report.php';
 
 /**
  * Library-wide invariants of the recipe set that need no Docker (the live half is `make verify-recipes`): unique names,
@@ -94,6 +96,73 @@ class RecipeLibraryTest extends TestCase
      * forbids.
      */
     private const KIT_LABEL_PAIRS = [ [ 'accent', 'accent-text' ], [ 'surface', 'text' ], [ 'bg', 'text' ] ];
+
+    /** The file size before the card migration (card adapter plan, Task 7): the recipe file must end below it (spec section 4). */
+    private const SIZE_BEFORE_CARDS = 695877;
+
+    /**
+     * Card surfaces deliberately NOT driven by a style kit (card adapter, plan 2026-10-19): every block that
+     * scripts/card-migration-report.php classes `card`, `panel` or `inverted` and that carries no card/panel marker.
+     * Key "<block>|<recipe>|<index>", where index is the report's: the block's order among ALL blocks of that name in the
+     * recipe (document order), so `divi/group|compare-two-panels|2` is the recipe's third group. Value: why.
+     *
+     * SHRINK-ONLY (testBespokeCardsAreListedAndShrinkOnly): it can never hold more than BESPOKE_CARDS_MAX entries, a listed
+     * block that gets a marker fails until its entry is removed, and the migration tasks lower BESPOKE_CARDS_MAX as they
+     * remove entries. The inverted surfaces stay (spec "Inverted surfaces": no adapter role for a text-coloured or accent
+     * ground in v1); the rest are the cards and panels the later tasks migrate (Task 8 groups, Task 9 columns).
+     */
+    private const BESPOKE_CARDS = [
+        'divi/group|compare-two-panels|2'          => 'panel, not migrated yet (plan Task 8)',
+        'divi/group|compare-two-panels|7'          => 'inverted text-coloured "after" panel: no adapter role for an inverted ground',
+        'divi/group|contact-details-form|13'       => 'panel, not migrated yet (plan Task 8)',
+        'divi/group|contact-location-form|6'       => 'panel, not migrated yet (plan Task 8)',
+        'divi/group|cta-card-over-image|1'         => 'panel, not migrated yet (plan Task 8)',
+        'divi/group|features-bento|0'              => 'card, not migrated yet (plan Task 8)',
+        'divi/group|features-bento|1'              => 'inverted bento tile: no adapter role for an inverted ground',
+        'divi/group|features-bento|2'              => 'card, not migrated yet (plan Task 8)',
+        'divi/group|features-bento|3'              => 'accent bento tile: no adapter role for an inverted ground',
+        'divi/group|features-bento|4'              => 'card, not migrated yet (plan Task 8)',
+        'divi/group|hero-bordered-cells|0'         => 'panel, not migrated yet (plan Task 8)',
+        'divi/group|hero-bordered-cells|2'         => 'card, not migrated yet (plan Task 8)',
+        'divi/group|hero-bordered-cells|3'         => 'card, not migrated yet (plan Task 8)',
+        'divi/group|hero-bordered-cells|4'         => 'card, not migrated yet (plan Task 8)',
+        'divi/group|hero-split-left-overlap|0'     => 'panel, not migrated yet (plan Task 8)',
+        'divi/group|pricing-two-plan-highlight|1'  => 'panel, not migrated yet (plan Task 8)',
+        'divi/group|pricing-two-plan-highlight|8'  => 'inverted text-coloured highlighted plan: no adapter role for an inverted ground',
+        'divi/group|transition-overlap-panel|2'    => 'panel, not migrated yet (plan Task 8)',
+        'divi/column|icon-values|1'                => 'column card, not migrated yet (plan Task 9)',
+        'divi/column|icon-values|2'                => 'column card, not migrated yet (plan Task 9)',
+        'divi/column|icon-values|3'                => 'column card, not migrated yet (plan Task 9)',
+        'divi/column|pricing-three-tier|1'         => 'column card, not migrated yet (plan Task 9)',
+        'divi/column|pricing-three-tier|2'         => 'column card, not migrated yet (plan Task 9)',
+        'divi/column|pricing-three-tier|3'         => 'column card, not migrated yet (plan Task 9)',
+        'divi/column|testimonials-avatar-grid|1'   => 'column card, not migrated yet (plan Task 9)',
+        'divi/column|testimonials-avatar-grid|2'   => 'column card, not migrated yet (plan Task 9)',
+        'divi/column|testimonials-avatar-grid|3'   => 'column card, not migrated yet (plan Task 9)',
+    ];
+
+    /** The most entries BESPOKE_CARDS may hold. It may only be LOWERED (in the commit that removes entries), never raised. */
+    private const BESPOKE_CARDS_MAX = 27;
+
+    /** Every card surface the report found when the card adapter started (Task 2): each one is either marked or listed. */
+    private const CARD_SURFACES_KNOWN = 32;
+
+    /**
+     * Keys a marked card's `module.decoration` may keep besides the ones the kit's patch writes: structure, never card
+     * decoration (background, border, boxShadow, transform and, for a `card`, padding belong to the kit; a recipe literal
+     * there survives the deep merge and fights the kit). `spacing` stays for margins (and a panel's own padding).
+     */
+    private const CARD_KEEPS = [ 'layout', 'sizing', 'position', 'zIndex', 'overflow', 'animation', 'spacing' ];
+
+    /**
+     * Phrases that describe a card look a style kit now decides (corners, frame, shadow), banned from the description and
+     * `when` of a recipe with a card or panel marker: the prose must be true under every kit.
+     */
+    private const CARD_DECIDED_PHRASES = [
+        '/\b(rounded|hairline[- ]bordered|bordered|framed|outlined|shadowed|square[- ]cornered)\s+(\w+\s+)?(card|panel|box|tile)s?\b/i',
+        '/\brounded (and|or) |, rounded\b/i',
+        '/\b(soft|drop|deep|long) shadows?\b/i',
+    ];
 
     /** A `divi/button` block comment: (json). Same possessive scan as KitResolver::BLOCK. */
     private const BUTTON = '/<!--\s+wp:divi\/button\s+(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\})\s+\/?-->/s';
@@ -550,7 +619,8 @@ class RecipeLibraryTest extends TestCase
                 $marker = $b->attrs()['aied'] ?? null;
                 $out[ '#' . count( $out ) ] = [ is_array( $marker ) ? $marker : null, [] === $surfaces ? 'light' : (string) end( $surfaces ) ];
             }
-            $own = self::surfaceOf( $b->attrs() );
+            // A card/panel marker's block is filled by the kit with `surface` (or `bg` on a surface band): light for a button.
+            $own = null === self::cardMarker( $b->attrs() ) ? self::surfaceOf( $b->attrs() ) : 'light';
             if ( null !== $own ) {
                 $surfaces[] = $own;
             }
@@ -605,6 +675,422 @@ class RecipeLibraryTest extends TestCase
         $this->assertSame( 'other:text', self::buttonSurfaces( $sec( $bg( '{"color":"{{aied:color:text}}"}' ), $btn( $m ) ) )['#0'][1] );
         // A sibling's background never leaks into the next block.
         $this->assertSame( 'light', self::buttonSurfaces( $col( $bg( '{"color":"{{aied:color:accent}}"}' ), '' ) . $btn( $m ) )['#0'][1] );
+        // A kit-filled card (its literal background moved to the kit) is light ground for the button inside it.
+        $panel = '<!-- wp:divi/group {"aied":{"kit":"panel","on":"accent"}} -->' . $btn( $m ) . '<!-- /wp:divi/group -->';
+        $this->assertSame( 'light', self::buttonSurfaces( $sec( $bg( '{"color":"{{aied:color:accent}}"}' ), $panel ) )['#0'][1] );
+    }
+
+    /** [role, on] of a card/panel marker in $attrs, or null (a button role is no card marker). @return array{0:string,1:string}|null */
+    private static function cardMarker( array $attrs ): ?array
+    {
+        $m = $attrs['aied'] ?? null;
+        if ( ! is_array( $m ) || ! in_array( $m['kit'] ?? null, [ 'card', 'panel' ], true ) ) {
+            return null;
+        }
+        return [ (string) $m['kit'], (string) ( $m['on'] ?? 'light' ) ];
+    }
+
+    /**
+     * The card band a block's own ground makes, or null when it paints none: a marked card is the kit's fill (`surface`,
+     * so a `surface` band; `bg` when it sits on a surface band, so a `light` band); a background image or a gradient with an
+     * overlay stop is `dark`; an enabled gradient with an accent stop is `accent`, one whose stops are all `surface` is
+     * `surface`, one whose stops are all `bg`/`surface` is `light` (the page colour dominates); a colour `bg` is `light`,
+     * `surface` is `surface`, `accent` is `accent`, `overlay` or `inverse` is `dark`; anything else is `other:<what>` (an
+     * inverted `text` panel, glass, a literal), which no card band fits.
+     *
+     * @param array<string,mixed> $attrs
+     */
+    private static function cardBandOf( array $attrs ): ?string
+    {
+        $marker = self::cardMarker( $attrs );
+        if ( null !== $marker ) {
+            return 'surface' === $marker[1] ? 'light' : 'surface';
+        }
+        $v = $attrs['module']['decoration']['background']['desktop']['value'] ?? null;
+        if ( ! is_array( $v ) ) {
+            return null;
+        }
+        $roleOf = static fn ( $c ): string => is_string( $c ) && 1 === preg_match( '/^\{\{aied:color:([a-z-]+)\}\}$/', $c, $m ) ? $m[1] : 'literal';
+        $image  = $v['image']['url'] ?? '';
+        $grad   = is_array( $v['gradient'] ?? null ) && 'on' === ( $v['gradient']['enabled'] ?? null ) ? $v['gradient'] : null;
+        $stops  = null === $grad ? [] : array_map( static fn ( $s ) => $roleOf( is_array( $s ) ? ( $s['color'] ?? null ) : null ), (array) ( $grad['stops'] ?? [] ) );
+        if ( ( is_string( $image ) && '' !== $image ) || in_array( 'overlay', $stops, true ) ) {
+            return 'dark';
+        }
+        if ( [] !== $stops ) {
+            if ( in_array( 'accent', $stops, true ) ) {
+                return 'accent';
+            }
+            if ( [] === array_diff( $stops, [ 'surface' ] ) ) {
+                return 'surface';
+            }
+            return [] === array_diff( $stops, [ 'bg', 'surface' ] ) ? 'light' : 'other:gradient ' . implode( '/', $stops );
+        }
+        $colour = $v['color'] ?? '';
+        if ( ! is_string( $colour ) || '' === $colour ) {
+            return null;
+        }
+        $role = $roleOf( $colour );
+        $map  = [ 'bg' => 'light', 'surface' => 'surface', 'accent' => 'accent', 'overlay' => 'dark', 'inverse' => 'dark' ];
+        return $map[ $role ] ?? 'other:' . $role;
+    }
+
+    /**
+     * Every card/panel marker of a markup with the band it really sits on: the band of its NEAREST ancestor that paints a
+     * ground (cardBandOf), or `none` when no ancestor does (never defaulted: a recipe card must say where it sits).
+     * Keyed "<block>#<index>", index = the block's order among all blocks of that name (CardReport's numbering).
+     *
+     * @return array<string,array{0:array{0:string,1:string},1:string}>
+     */
+    private static function cardBands( string $markup ): array
+    {
+        $root  = ( new \Divi5Validator\BlockParser() )->parse( '<!-- wp:divi/placeholder -->' . $markup . '<!-- /wp:divi/placeholder -->' )->root();
+        $out   = [];
+        $seen  = [];
+        $walk  = static function ( \Divi5Validator\Block $b, array $bands ) use ( &$walk, &$out, &$seen ): void {
+            $name = $b->name();
+            if ( 'divi/placeholder' !== $name ) {
+                $seen[ $name ] = ( $seen[ $name ] ?? -1 ) + 1;
+            }
+            $marker = self::cardMarker( $b->attrs() );
+            if ( null !== $marker ) {
+                $out[ $name . '#' . $seen[ $name ] ] = [ $marker, [] === $bands ? 'none' : (string) end( $bands ) ];
+            }
+            $own = self::cardBandOf( $b->attrs() );
+            if ( null !== $own ) {
+                $bands[] = $own;
+            }
+            foreach ( $b->children() as $child ) {
+                $walk( $child, $bands );
+            }
+        };
+        $walk( $root, [] );
+        return $out;
+    }
+
+    public function testCardMarkersMatchTheirBand(): void
+    {
+        $checked  = 0;
+        $problems = [];
+        foreach ( SectionRecipes::names() as $name ) {
+            foreach ( self::cardBands( (string) SectionRecipes::rawMarkup( $name ) ) as $key => [ [ , $on ], $band ] ) {
+                ++$checked;
+                if ( $on !== $band ) {
+                    $problems[] = "$name $key: marker on=$on, but the nearest ground makes it $band";
+                }
+            }
+        }
+        $inFile = preg_match_all( '/\\\\?"aied\\\\?":\{\\\\?"kit\\\\?":\\\\?"(?:card|panel)\\\\?"/', (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ) );
+        $this->assertSame( $inFile, $checked, 'every card marker in the file is checked' );
+        $this->assertGreaterThan( 0, $checked, 'the recipes carry card markers' );
+        $this->assertSame( [], $problems, 'a card\'s "on" must name the band it really sits on, or the kit picks the wrong fill and shadow' );
+    }
+
+    public function testTheCardBandWalkCatchesWhatItShould(): void
+    {
+        $card = static fn ( string $on ): string => '<!-- wp:divi/group {"aied":{"kit":"card","on":"' . $on . '"}} --><!-- /wp:divi/group -->';
+        $bg   = static fn ( string $value ): string => '{"module":{"decoration":{"background":{"desktop":{"value":' . $value . '}}}}}';
+        $sec  = static fn ( string $attrs, string $inner ): string => '<!-- wp:divi/section ' . $attrs . ' -->' . $inner . '<!-- /wp:divi/section -->';
+        $col  = static fn ( string $attrs, string $inner ): string => '<!-- wp:divi/column ' . $attrs . ' -->' . $inner . '<!-- /wp:divi/column -->';
+        $band = static fn ( string $markup, string $key = 'divi/group#0' ): string => self::cardBands( $markup )[ $key ][1];
+
+        $this->assertSame( 'none', $band( $card( 'light' ) ), 'no ground anywhere fails loudly, never defaults to light' );
+        $this->assertSame( 'light', $band( $sec( $bg( '{"color":"{{aied:color:bg}}"}' ), $card( 'light' ) ) ) );
+        $this->assertSame( 'surface', $band( $sec( $bg( '{"color":"{{aied:color:surface}}"}' ), $card( 'surface' ) ) ) );
+        $this->assertSame( 'accent', $band( $sec( $bg( '{"color":"{{aied:color:accent}}"}' ), $card( 'accent' ) ) ) );
+        $this->assertSame( 'dark', $band( $sec( $bg( '{"image":{"url":"x.jpg"}}' ), $card( 'dark' ) ) ) );
+        $this->assertSame( 'dark', $band( $sec( $bg( '{"color":"{{aied:color:overlay}}"}' ), $card( 'dark' ) ) ) );
+        $this->assertSame( 'light', $band( $sec( $bg( '{"color":"{{aied:color:bg}}","gradient":{"enabled":"on","stops":[{"color":"{{aied:color:bg}}"},{"color":"{{aied:color:surface}}"}]}}' ), $card( 'light' ) ) ) );
+        $this->assertSame( 'other:text', $band( $sec( $bg( '{"color":"{{aied:color:text}}"}' ), $card( 'light' ) ) ), 'an inverted ground is no card band' );
+        // The nearest ground wins, a transparent column lets the section through, a sibling never leaks.
+        $this->assertSame( 'surface', $band( $sec( $bg( '{"color":"{{aied:color:bg}}"}' ), $col( $bg( '{"color":"{{aied:color:surface}}"}' ), $card( 'surface' ) ) ) ) );
+        $this->assertSame( 'accent', $band( $sec( $bg( '{"color":"{{aied:color:accent}}"}' ), $col( '{}', $card( 'accent' ) ) ) ) );
+        $this->assertSame( 'none', $band( $col( $bg( '{"color":"{{aied:color:accent}}"}' ), '' ) . $card( 'accent' ) ) );
+        // A card inside a marked card sits on the kit's fill: surface, or bg (a light band) when the outer one is on surface.
+        $nested = static fn ( string $outerOn ): string => '<!-- wp:divi/group {"aied":{"kit":"panel","on":"' . $outerOn . '"}} -->' . $card( 'x' ) . '<!-- /wp:divi/group -->';
+        $this->assertSame( 'surface', $band( $sec( $bg( '{"color":"{{aied:color:bg}}"}' ), $nested( 'light' ) ), 'divi/group#1' ) );
+        $this->assertSame( 'light', $band( $sec( $bg( '{"color":"{{aied:color:surface}}"}' ), $nested( 'surface' ) ), 'divi/group#1' ) );
+        // A column carrier is keyed by its own count.
+        $this->assertSame( 'surface', self::cardBands( $sec( $bg( '{"color":"{{aied:color:surface}}"}' ), $col( '{}', '' ) . '<!-- wp:divi/column {"aied":{"kit":"card","on":"surface"}} --><!-- /wp:divi/column -->' ) )['divi/column#1'][1] );
+    }
+
+    public function testBespokeCardsAreListedAndShrinkOnly(): void
+    {
+        $recipes = json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true );
+        $this->assertIsArray( $recipes );
+        $rows = [];
+        foreach ( \CardReport::classify( $recipes ) as $r ) {
+            $rows[ $r['block'] . '|' . $r['recipe'] . '|' . $r['index'] ] = $r;
+        }
+        [ $missing, $stale, $decorated, $marked ] = self::bespokeCardProblems( $rows, self::BESPOKE_CARDS );
+        $this->assertSame( [], $missing, 'card surfaces with no kit marker that BESPOKE_CARDS does not list: give them a marker (the list never grows)' );
+        $this->assertSame( [], $stale, 'BESPOKE_CARDS entries that are no longer bespoke: remove them from BESPOKE_CARDS (and lower BESPOKE_CARDS_MAX)' );
+        $this->assertSame( [], $decorated, 'marked blocks that still carry their own card decoration (the deep merge keeps it): remove it' );
+        $this->assertLessThanOrEqual( self::BESPOKE_CARDS_MAX, count( self::BESPOKE_CARDS ), 'shrink-only: BESPOKE_CARDS can never grow' );
+        $this->assertSame( self::BESPOKE_CARDS_MAX, count( self::BESPOKE_CARDS ), 'lower BESPOKE_CARDS_MAX to the list\'s size when you remove entries' );
+        $this->assertSame( self::CARD_SURFACES_KNOWN, count( self::BESPOKE_CARDS ) + $marked, 'every card surface the report knows is either kit-driven or listed' );
+    }
+
+    public function testTheBespokeCardCheckCatchesWhatItShould(): void
+    {
+        $row = static fn ( string $class, ?string $marked ): array => [ 'class' => $class, 'marked' => $marked ];
+        $rows = [
+            'divi/group|r|0'  => $row( 'card', null ),
+            'divi/group|r|1'  => $row( 'wrapper', 'card' ),
+            'divi/group|r|2'  => $row( 'panel', 'panel' ),
+            'divi/column|r|0' => $row( 'inverted', null ),
+            'divi/group|r|3'  => $row( 'rule', null ),
+        ];
+        [ $missing, $stale, $decorated, $marked ] = self::bespokeCardProblems( $rows, [ 'divi/group|r|1' => 'x', 'divi/group|r|9' => 'y', 'divi/group|r|3' => 'z' ] );
+        $this->assertSame( [ 'divi/group|r|0 (card)', 'divi/column|r|0 (inverted)' ], $missing );
+        $this->assertSame( [ 'divi/group|r|1 carries a card marker', 'divi/group|r|9 is not a block of the recipes', 'divi/group|r|3 is a rule, not a card surface' ], $stale );
+        $this->assertSame( [ 'divi/group|r|2 (panel)' ], $decorated );
+        $this->assertSame( 2, $marked );
+    }
+
+    /**
+     * @param array<string,array<string,mixed>> $rows   CardReport rows by "<block>|<recipe>|<index>"
+     * @param array<string,string>              $listed the bespoke list
+     * @return array{0:list<string>,1:list<string>,2:list<string>,3:int} [missing, stale, marked but decorated, marked count]
+     */
+    private static function bespokeCardProblems( array $rows, array $listed ): array
+    {
+        $surface   = [ 'card', 'panel', 'inverted' ];
+        $missing   = [];
+        $decorated = [];
+        $marked    = 0;
+        foreach ( $rows as $key => $r ) {
+            if ( null !== $r['marked'] ) {
+                ++$marked;
+                if ( in_array( $r['class'], $surface, true ) ) {
+                    $decorated[] = "$key ({$r['class']})";
+                }
+                continue;
+            }
+            if ( in_array( $r['class'], $surface, true ) && ! isset( $listed[ $key ] ) ) {
+                $missing[] = "$key ({$r['class']})";
+            }
+        }
+        $stale = [];
+        foreach ( array_keys( $listed ) as $key ) {
+            if ( ! isset( $rows[ $key ] ) ) {
+                $stale[] = "$key is not a block of the recipes";
+            } elseif ( null !== $rows[ $key ]['marked'] ) {
+                $stale[] = "$key carries a card marker";
+            } elseif ( ! in_array( $rows[ $key ]['class'], $surface, true ) ) {
+                $stale[] = "$key is a {$rows[ $key ]['class']}, not a card surface";
+            }
+        }
+        return [ $missing, $stale, $decorated, $marked ];
+    }
+
+    public function testRecipesFileIsSmallerThanBeforeTheCardAdapter(): void
+    {
+        $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
+        clearstatcache();
+        $this->assertLessThan( self::SIZE_BEFORE_CARDS, filesize( $file ), 'the recipe file ends smaller than before the card adapter (spec section 4)' );
+    }
+
+    /**
+     * The opening block comments of $markup in document order: list of [name, attrs, index among that name].
+     *
+     * @return list<array{0:string,1:array<string,mixed>,2:int}>
+     */
+    private static function blocks( string $markup ): array
+    {
+        preg_match_all( '/<!--\s+wp:(divi\/[a-z0-9-]+)(?:\s+(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\}))?\s+\/?-->/s', $markup, $all, PREG_SET_ORDER );
+        $out  = [];
+        $seen = [];
+        foreach ( $all as $m ) {
+            $seen[ $m[1] ] = ( $seen[ $m[1] ] ?? -1 ) + 1;
+            $attrs         = isset( $m[2] ) && '' !== $m[2] ? json_decode( $m[2], true ) : [];
+            $out[]         = [ $m[1], is_array( $attrs ) ? $attrs : [], $seen[ $m[1] ] ];
+        }
+        return $out;
+    }
+
+    /** True when $node holds a `hover` key at any depth. */
+    private static function hasHover( mixed $node ): bool
+    {
+        if ( ! is_array( $node ) ) {
+            return false;
+        }
+        foreach ( $node as $k => $v ) {
+            if ( 'hover' === $k || self::hasHover( $v ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * What is wrong with the card blocks of one resolved markup ([] = fine): for every block that carries a card marker in
+     * $raw, the same block (name and index) in $resolved, after the kit $kit, must hold only the kit's card decoration.
+     * - Structure (any language): a `panel` has no `hover` key at all; border `styles` has no side key (top/right/bottom/
+     *   left) at any breakpoint or state, except an underline kit's `styles.bottom` at desktop rest; `module.decoration` holds
+     *   only the keys the patch writes plus CARD_KEEPS; a `card` has no padding outside the kit's desktop padding.
+     * - $exact (markup resolved by the kit only, colour tokens left): background, border, boxShadow and transform equal the
+     *   patch exactly (absent where the patch writes none), and a card's spacing minus its margins equals the patch's.
+     *
+     * @param array<string,mixed> $kit
+     * @return list<string>
+     */
+    private static function markedCardProblems( string $label, string $raw, string $resolved, array $kit, bool $exact ): array
+    {
+        $out    = [];
+        $after  = [];
+        foreach ( self::blocks( $resolved ) as [ $name, $attrs, $i ] ) {
+            $after[ "$name#$i" ] = $attrs;
+        }
+        $underline = 'bottom' === ( $kit['border']['sides'] ?? 'all' );
+        foreach ( self::blocks( $raw ) as [ $name, $attrs, $i ] ) {
+            $marker = self::cardMarker( $attrs );
+            if ( null === $marker ) {
+                continue;
+            }
+            [ $role, $on ] = $marker;
+            $where = "$label $name#$i ($role on $on)";
+            $got   = $after[ "$name#$i" ] ?? null;
+            $patch = KitAdapters::patch( $name, $role, $on, $kit );
+            if ( ! is_array( $got ) || ! is_array( $patch ) ) {
+                $out[] = "$where: not resolved";
+                continue;
+            }
+            $dec  = (array) ( $got['module']['decoration'] ?? [] );
+            $keys = array_keys( (array) $patch['module']['decoration'] );
+            if ( 'panel' === $role && self::hasHover( $got ) ) {
+                $out[] = "$where: a panel keeps a hover key (a panel is static)";
+            }
+            foreach ( (array) ( $dec['border'] ?? [] ) as $bp => $states ) {
+                foreach ( (array) $states as $state => $value ) {
+                    $sides = array_values( array_intersect( array_keys( (array) ( $value['styles'] ?? [] ) ), [ 'top', 'right', 'bottom', 'left' ] ) );
+                    $want  = $underline && 'desktop' === $bp && 'value' === $state ? [ 'bottom' ] : [];
+                    if ( $sides !== $want ) {
+                        $out[] = "$where: border.$bp.$state.styles has side keys [" . implode( ',', $sides ) . '] (a side style beats the kit\'s `all`)';
+                    }
+                }
+            }
+            $stray = array_diff( array_keys( $dec ), $keys, self::CARD_KEEPS );
+            if ( [] !== $stray ) {
+                $out[] = "$where: module.decoration keeps " . implode( ', ', $stray ) . ' that the kit does not write';
+            }
+            if ( 'card' === $role ) {
+                foreach ( (array) ( $dec['spacing'] ?? [] ) as $bp => $states ) {
+                    foreach ( (array) $states as $state => $value ) {
+                        if ( isset( $value['padding'] ) && ! ( 'desktop' === $bp && 'value' === $state ) ) {
+                            $out[] = "$where: spacing.$bp.$state.padding overrides the kit's card padding";
+                        }
+                    }
+                }
+            }
+            if ( ! $exact ) {
+                continue;
+            }
+            $expect = self::blocks( KitResolver::resolve( '<!-- wp:' . $name . ' ' . json_encode( [ 'aied' => [ 'kit' => $role, 'on' => $on ] ] ) . ' /-->', $kit ) )[0][1]['module']['decoration'] ?? [];
+            foreach ( [ 'background', 'border', 'boxShadow', 'transform' ] as $key ) {
+                if ( ( $dec[ $key ] ?? null ) !== ( $expect[ $key ] ?? null ) ) {
+                    $out[] = "$where: $key is not exactly the kit's (" . json_encode( $dec[ $key ] ?? null, JSON_UNESCAPED_SLASHES ) . ')';
+                }
+            }
+            if ( 'card' === $role ) {
+                $spacing = (array) ( $dec['spacing'] ?? [] );
+                foreach ( $spacing as $bp => $states ) {
+                    foreach ( (array) $states as $state => $value ) {
+                        unset( $spacing[ $bp ][ $state ]['margin'] );
+                        if ( [] === $spacing[ $bp ][ $state ] ) {
+                            unset( $spacing[ $bp ][ $state ] );
+                        }
+                    }
+                    if ( [] === $spacing[ $bp ] ) {
+                        unset( $spacing[ $bp ] );
+                    }
+                }
+                if ( $spacing !== ( $expect['spacing'] ?? [] ) ) {
+                    $out[] = "$where: the padding is not exactly the kit's (" . json_encode( $spacing, JSON_UNESCAPED_SLASHES ) . ')';
+                }
+            }
+        }
+        return $out;
+    }
+
+    public function testMarkedCardsKeepNoCardDecorationOfTheirOwn(): void
+    {
+        $problems = [];
+        $recipes  = 0;
+        foreach ( SectionRecipes::names() as $name ) {
+            $raw = (string) SectionRecipes::rawMarkup( $name );
+            if ( 1 !== preg_match( '/"aied":\{"kit":"(?:card|panel)"/', $raw ) ) {
+                continue;
+            }
+            ++$recipes;
+            foreach ( StyleKits::ids() as $kitId ) {
+                $kit      = (array) StyleKits::get( $kitId );
+                $problems = array_merge( $problems, self::markedCardProblems( "$name/$kitId", $raw, KitResolver::resolve( $raw, $kit ), $kit, true ) );
+                foreach ( DesignLanguages::ids() as $lang ) {
+                    $problems = array_merge( $problems, self::markedCardProblems( "$name/$kitId/$lang", $raw, (string) SectionRecipes::recipe( $name, $lang, $kitId ), $kit, false ) );
+                }
+            }
+        }
+        $this->assertGreaterThan( 0, $recipes, 'the recipes carry card markers' );
+        $this->assertSame( [], array_slice( array_values( array_unique( $problems ) ), 0, 40 ), 'a marked card keeps only structure: its own card decoration survives the kit\'s deep merge' );
+    }
+
+    public function testTheMarkedCardCheckCatchesStrayDecoration(): void
+    {
+        $sec  = static fn ( string $inner ): string => '<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"{{aied:color:bg}}"}}}}}} -->' . $inner . '<!-- /wp:divi/section -->';
+        $grp  = static fn ( array $attrs ): string => '<!-- wp:divi/group ' . json_encode( $attrs, JSON_UNESCAPED_SLASHES ) . ' --><!-- /wp:divi/group -->';
+        $kit  = (array) StyleKits::get( 'quiet-solid' );
+        $run  = static function ( string $raw, array $kit ): string {
+            $p = self::markedCardProblems( 'planted', $raw, KitResolver::resolve( $raw, $kit ), $kit, true );
+            return implode( "\n", $p );
+        };
+        $panel = [ 'kit' => 'panel', 'on' => 'light' ];
+        $card  = [ 'kit' => 'card', 'on' => 'light' ];
+
+        // Clean: a marker with only structure and margins left.
+        $this->assertSame( '', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'sizing' => [ 'desktop' => [ 'value' => [ 'maxWidth' => '320px' ] ] ], 'spacing' => [ 'desktop' => [ 'value' => [ 'margin' => [ 'top' => '-40px' ] ] ] ] ] ], 'aied' => $card ] ) ), $kit ) );
+        $this->assertSame( '', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'spacing' => [ 'desktop' => [ 'value' => [ 'padding' => [ 'top' => '56px' ] ] ], 'phone' => [ 'value' => [ 'padding' => [ 'top' => '24px' ] ] ] ] ] ], 'aied' => $panel ] ) ), $kit ), 'a panel keeps its own padding' );
+
+        // A stray hover border and a side style on a panel.
+        $stray = $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'border' => [ 'desktop' => [ 'value' => [ 'styles' => [ 'top' => [ 'width' => '2px' ] ] ], 'hover' => [ 'styles' => [ 'all' => [ 'color' => '{{aied:color:accent}}' ] ] ] ] ] ] ], 'aied' => $panel ] ) ), $kit );
+        $this->assertStringContainsString( 'a panel keeps a hover key', $stray );
+        $this->assertStringContainsString( 'border.desktop.value.styles has side keys [top]', $stray );
+        $this->assertStringContainsString( 'border is not exactly the kit\'s', $stray );
+        // A rest shadow and a rest transform the kit does not write, and a phone padding on a card.
+        $stray = $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'boxShadow' => [ 'desktop' => [ 'value' => [ 'blur' => '40px' ] ] ], 'transform' => [ 'desktop' => [ 'value' => [ 'rotate' => [ 'z' => '-3deg' ] ] ] ], 'spacing' => [ 'phone' => [ 'value' => [ 'padding' => [ 'top' => '8px' ] ] ] ] ] ], 'aied' => $card ] ) ), $kit );
+        $this->assertStringContainsString( 'module.decoration keeps boxShadow, transform that the kit does not write', $stray );
+        $this->assertStringContainsString( 'spacing.phone.value.padding overrides the kit\'s card padding', $stray );
+        $this->assertStringContainsString( 'the padding is not exactly the kit\'s', $stray );
+        // A key outside the structure list.
+        $this->assertStringContainsString( 'keeps filters', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'filters' => [ 'desktop' => [ 'value' => [ 'blur' => '2px' ] ] ] ] ], 'aied' => $card ] ) ), $kit ) );
+        // An underline kit's bottom side is the kit's own and passes; a recipe's extra top side does not.
+        $under = (array) StyleKits::get( 'underline-link' );
+        $this->assertSame( 'bottom', $under['border']['sides'] );
+        $this->assertSame( '', $run( $sec( $grp( [ 'aied' => $card ] ) ), $under ) );
+        $this->assertStringContainsString( 'side keys [top,bottom]', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'border' => [ 'desktop' => [ 'value' => [ 'styles' => [ 'top' => [ 'width' => '1px' ] ] ] ] ] ] ], 'aied' => $card ] ) ), $under ) );
+    }
+
+    public function testCardMarkedRecipeProseDoesNotDescribeTheCardLook(): void
+    {
+        $problems = [];
+        foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $recipe ) {
+            if ( 1 !== preg_match( '/"aied":\{"kit":"(?:card|panel)"/', (string) $recipe['markup'] ) ) {
+                continue;
+            }
+            foreach ( [ 'title', 'description', 'when' ] as $field ) {
+                foreach ( self::CARD_DECIDED_PHRASES as $phrase ) {
+                    if ( 1 === preg_match( $phrase, (string) ( $recipe[ $field ] ?? '' ) ) ) {
+                        $problems[] = $recipe['name'] . ".$field matches $phrase";
+                    }
+                }
+            }
+        }
+        $this->assertSame( [], $problems, 'the style kit decides a card\'s corners, frame and shadow: describe its role, not its look' );
+        // The phrases catch the shipped wording they were written for.
+        $this->assertSame( 1, preg_match( self::CARD_DECIDED_PHRASES[0], 'a hairline-bordered card of ruled lines' ) );
+        $this->assertSame( 1, preg_match( self::CARD_DECIDED_PHRASES[0], 'a rounded card on the page colour' ) );
+        $this->assertSame( 1, preg_match( self::CARD_DECIDED_PHRASES[1], 'modern, rounded and dark-glass brands' ) );
+        $this->assertSame( 0, preg_match( self::CARD_DECIDED_PHRASES[0], 'a card of ruled label/value lines' ) );
     }
 
     /**
@@ -666,8 +1152,9 @@ class RecipeLibraryTest extends TestCase
                 }
             }
         }
-        // 22 recipes have a button; compare-two-panels has only a bespoke one (BESPOKE_BUTTONS).
-        $this->assertSame( 21, $checked, 'the recipes with a kit-driven button' );
+        // 22 recipes have a button; compare-two-panels has only a bespoke one (BESPOKE_BUTTONS): 21 with a kit-driven button,
+        // plus cta-split-form, whose only kit marker is its card panel (card adapter Task 7).
+        $this->assertSame( 22, $checked, 'the recipes with a kit marker (button or card)' );
     }
 
     public function testRecipesWithoutPairsAreOnlyTheFrozenBaselineAndItOnlyShrinks(): void

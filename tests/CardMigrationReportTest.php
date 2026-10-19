@@ -190,7 +190,9 @@ class CardMigrationReportTest extends TestCase
         $groups = $this->counts( $this->shipped(), 'divi/group' );
         $this->assertSame( 356, array_sum( $groups ), 'divi/group blocks in the shipped recipes' );
         $this->assertSame(
-            [ 'card' => 9, 'chip' => 14, 'grid-cell' => 40, 'inverted' => 4, 'padded-wrapper' => 41, 'panel' => 10, 'rule' => 26, 'wrapper' => 212 ],
+            // Task 7 marked 3 cards (now plain wrappers: the kit owns their padding) and 2 panels (padded wrappers: a panel
+            // keeps its own padding); a marked block is classified by the decoration it has left.
+            [ 'card' => 6, 'chip' => 14, 'grid-cell' => 40, 'inverted' => 4, 'padded-wrapper' => 43, 'panel' => 8, 'rule' => 26, 'wrapper' => 215 ],
             $groups
         );
     }
@@ -215,11 +217,11 @@ class CardMigrationReportTest extends TestCase
         );
     }
 
-    public function test_nothing_in_the_shipped_recipes_is_marked_yet_and_fill_only_columns_are_unlisted(): void
+    public function test_the_marked_blocks_are_counted_and_fill_only_columns_are_unlisted(): void
     {
         $rows = $this->shipped();
-        $this->assertSame( 0, count( array_filter( $rows, fn ( $r ) => null !== $r['marked'] ) ) );
-        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 0 blocks', \CardReport::render( $rows, false ) );
+        $this->assertSame( 5, count( array_filter( $rows, fn ( $r ) => null !== $r['marked'] ) ), 'the blocks migrated so far (plan Task 7)' );
+        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 5 blocks', \CardReport::render( $rows, false ) );
         $listed = array_map( fn ( $r ) => $r['recipe'] . ' ' . $r['block'] . '#' . $r['index'], $rows );
         $this->assertNotContains( 'hero-cta divi/column#0', $listed, 'a surface fill with padding and no frame: nothing for a kit to restyle' );
         $this->assertNotContains( 'split-image-text divi/column#0', $listed );
@@ -229,7 +231,9 @@ class CardMigrationReportTest extends TestCase
     {
         $got = [];
         foreach ( $this->shipped() as $r ) {
-            if ( in_array( $r['class'], [ 'card', 'panel', 'inverted' ], true ) ) {
+            if ( null !== $r['marked'] ) {
+                $got[] = $r['recipe'] . ' ' . $r['block'] . '#' . $r['index'] . ' marked ' . $r['marked'];
+            } elseif ( in_array( $r['class'], [ 'card', 'panel', 'inverted' ], true ) ) {
                 $got[] = $r['recipe'] . ' ' . $r['block'] . '#' . $r['index'] . ' ' . $r['class'];
             }
         }
@@ -240,7 +244,7 @@ class CardMigrationReportTest extends TestCase
             'contact-details-form divi/group#13 panel',
             'contact-location-form divi/group#6 panel',
             'cta-card-over-image divi/group#1 panel',
-            'cta-split-form divi/group#4 panel',
+            'cta-split-form divi/group#4 marked panel',
             'features-bento divi/group#0 card',
             'features-bento divi/group#1 inverted',
             'features-bento divi/group#2 card',
@@ -250,10 +254,10 @@ class CardMigrationReportTest extends TestCase
             'hero-bordered-cells divi/group#2 card',
             'hero-bordered-cells divi/group#3 card',
             'hero-bordered-cells divi/group#4 card',
-            'hero-gradient-stats divi/group#1 card',
-            'hero-gradient-stats divi/group#2 card',
-            'hero-gradient-stats divi/group#3 card',
-            'hero-spec-card divi/group#1 panel',
+            'hero-gradient-stats divi/group#1 marked card',
+            'hero-gradient-stats divi/group#2 marked card',
+            'hero-gradient-stats divi/group#3 marked card',
+            'hero-spec-card divi/group#1 marked panel',
             'hero-split-left-overlap divi/group#0 panel',
             'icon-values divi/column#1 card',
             'icon-values divi/column#2 card',
