@@ -25,11 +25,29 @@ final class StyleKits
      */
     public const BORDER_STYLES = [ 'solid', 'dashed', 'dotted', 'double' ];
 
-    /** Hover behaviours a kit may choose (extended only with probe-proven values). */
-    public const HOVERS = [ 'fill-swap', 'invert', 'none' ];
+    /**
+     * Hover behaviours a kit may choose (extended only with probe-proven values). `lift` keeps the rest colours and moves
+     * the button up 4px (module transform, kb-lift-hover; with a hover shadow kb-lift-hover-shadow).
+     */
+    public const HOVERS = [ 'fill-swap', 'invert', 'none', 'lift' ];
 
-    /** Shadow values a kit may choose for rest and hover (extended only with probe-proven values). */
-    public const SHADOWS = [ 'none' ];
+    /**
+     * Shadow values a kit may choose for rest and hover (extended only with probe-proven values): `soft` (box shadow preset1,
+     * kb-shadow-module-soft / kb-shadow-module-hover) and `hard` (preset4, an offset solid shadow, kb-shadow-module-hard), both
+     * on the button MODULE (the button element's own shadow is dead, kb-shadow-element-hard). Proven pairs only: the hover
+     * equals the rest (written once, the hover keeps it), or a soft hover over no rest shadow (SHADOW_PAIRS).
+     */
+    public const SHADOWS = [ 'none', 'soft', 'hard' ];
+
+    /** The shadow pairs a kit may choose, "rest/hover" (see SHADOWS). */
+    public const SHADOW_PAIRS = [ 'none/none', 'soft/soft', 'hard/hard', 'none/soft' ];
+
+    /**
+     * Which border sides are drawn (optional `border.sides`, default `all`): `bottom` is an underline (`styles.all.width` 0px
+     * plus `styles.bottom`, kb-border-bottom-only). A per-side hover colour is not proven, so an underline kit's hover is
+     * `none` or `lift` (its colours never change), and it needs a width of at least 1px and a fill that is not `ghost`.
+     */
+    public const BORDER_SIDES = [ 'all', 'bottom' ];
 
     public const FILLS         = [ 'solid', 'outline', 'ghost' ];
     public const COLOR_ROLES   = [ 'accent', 'text', 'inverse' ];
@@ -152,13 +170,27 @@ final class StyleKits
         self::oneOf( $p, 'color', $kit['color'] ?? null, self::COLOR_ROLES );
         self::oneOf( $p, 'hover', $kit['hover'] ?? null, self::HOVERS );
 
-        $border = self::group( $p, 'border', $kit['border'] ?? null, [ 'width', 'style', 'color' ] );
+        $border = self::group( $p, 'border', $kit['border'] ?? null, [ 'width', 'style', 'color', 'sides' ] );
         if ( null !== $border ) {
             if ( ! is_string( $border['width'] ?? null ) || 1 !== preg_match( '/^[0-4]px\z/', $border['width'] ) ) {
                 $p[] = 'border.width must be 0px to 4px';
             }
             self::oneOf( $p, 'border.style', $border['style'] ?? null, self::BORDER_STYLES );
             self::oneOf( $p, 'border.color', $border['color'] ?? null, self::BORDER_COLORS );
+            if ( array_key_exists( 'sides', $border ) ) {
+                self::oneOf( $p, 'border.sides', $border['sides'], self::BORDER_SIDES );
+                if ( 'bottom' === $border['sides'] ) {
+                    if ( ! in_array( $kit['hover'] ?? null, [ 'none', 'lift' ], true ) ) {
+                        $p[] = 'border.sides bottom needs hover none or lift (a per-side hover colour is not proven)';
+                    }
+                    if ( '0px' === ( $border['width'] ?? null ) ) {
+                        $p[] = 'border.sides bottom needs a border width of 1px or more';
+                    }
+                    if ( 'ghost' === ( $kit['fill'] ?? null ) ) {
+                        $p[] = 'border.sides bottom cannot be used with a ghost fill (a ghost has no border)';
+                    }
+                }
+            }
         }
 
         $radius = self::group( $p, 'radius', $kit['radius'] ?? null, [ 'control', 'card', 'media' ] );
@@ -172,8 +204,14 @@ final class StyleKits
 
         $shadow = self::group( $p, 'shadow', $kit['shadow'] ?? null, [ 'rest', 'hover' ] );
         if ( null !== $shadow ) {
-            self::oneOf( $p, 'shadow.rest', $shadow['rest'] ?? null, self::SHADOWS );
-            self::oneOf( $p, 'shadow.hover', $shadow['hover'] ?? null, self::SHADOWS );
+            $rest  = $shadow['rest'] ?? null;
+            $hover = $shadow['hover'] ?? null;
+            self::oneOf( $p, 'shadow.rest', $rest, self::SHADOWS );
+            self::oneOf( $p, 'shadow.hover', $hover, self::SHADOWS );
+            if ( is_string( $rest ) && is_string( $hover ) && in_array( $rest, self::SHADOWS, true ) && in_array( $hover, self::SHADOWS, true )
+                && ! in_array( $rest . '/' . $hover, self::SHADOW_PAIRS, true ) ) {
+                $p[] = 'shadow rest/hover must be one of: ' . implode( ', ', self::SHADOW_PAIRS );
+            }
         }
 
         $text = self::group( $p, 'text', $kit['text'] ?? null, [ 'capitalization', 'letterSpacing', 'weight' ] );
@@ -273,7 +311,7 @@ final class StyleKits
             (string) ( $kit['summary'] ?? '' ),
             '',
             sprintf( '- Fill: %s, carried by the %s colour role', (string) ( $kit['fill'] ?? '' ), (string) ( $kit['color'] ?? '' ) ),
-            sprintf( '- Border: %s %s, colour %s', (string) ( $b['width'] ?? '' ), (string) ( $b['style'] ?? '' ), (string) ( $b['color'] ?? '' ) ),
+            sprintf( '- Border: %s %s, colour %s%s', (string) ( $b['width'] ?? '' ), (string) ( $b['style'] ?? '' ), (string) ( $b['color'] ?? '' ), 'bottom' === ( $b['sides'] ?? 'all' ) ? ', bottom side only (an underline)' : '' ),
             sprintf( '- Radius: controls %s, cards %s, media %s', (string) ( $r['control'] ?? '' ), (string) ( $r['card'] ?? '' ), (string) ( $r['media'] ?? '' ) ),
             sprintf( '- Shadow: rest %s, hover %s', (string) ( $s['rest'] ?? '' ), (string) ( $s['hover'] ?? '' ) ),
             '- Hover: ' . (string) ( $kit['hover'] ?? '' ),

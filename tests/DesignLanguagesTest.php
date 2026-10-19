@@ -869,6 +869,86 @@ class DesignLanguagesTest extends TestCase
         $this->assertNull(self::radiusFamily(18));
     }
 
+    /**
+     * Why a language's kit may use an effect: the passage of its own prose (shadow, rhythm, hero and cta) that asks for it,
+     * or null when the prose does not ask (or forbids it). soft shadow: the prose asks for a soft shadow and does not say
+     * "no shadows"; hard shadow: it asks for an offset shadow; lift: a button that lifts; underline: an underlined button;
+     * a dashed, dotted or double border: hairline or ruled structure, or the style itself.
+     *
+     * @param array<string,mixed> $lang
+     */
+    private static function effectAsk(array $lang, string $effect): ?string
+    {
+        $prose  = strtolower($lang['shadow'] . ' ' . $lang['rhythm'] . ' ' . $lang['hero'] . ' ' . $lang['cta']);
+        $forbid = 1 === preg_match('/\bno (drop )?shadows\b|buttons get no shadow/', $prose);
+        $asks   = match ($effect) {
+            'soft'   => !$forbid && 1 === preg_match('/\bsoft and (warm|cool)\b|\bsoft shadow\b/', $prose),
+            'hard'   => !$forbid && str_contains($prose, 'offset shadow'),
+            'lift'   => 1 === preg_match('/\bbuttons? (lifts?|rises?)\b/', $prose),
+            'bottom' => 1 === preg_match('/\bunderlined? buttons?\b/', $prose),
+            'dashed', 'dotted', 'double' => 1 === preg_match('/\bhairline\b|\bruled\b|\b' . $effect . '\b/', $prose),
+            default  => false,
+        };
+        return $asks ? $effect : null;
+    }
+
+    public function testEachLanguagesKitUsesAnEffectOnlyWhereItsProseAsksForIt(): void
+    {
+        $problems = [];
+        foreach (DesignLanguages::ids() as $id) {
+            $lang = (array) DesignLanguages::get($id);
+            $kit  = (array) StyleKits::get((string) $lang['kit']);
+            $used = array_filter([
+                'none' !== $kit['shadow']['rest'] ? $kit['shadow']['rest'] : null,
+                'none' !== $kit['shadow']['hover'] ? $kit['shadow']['hover'] : null,
+                'lift' === $kit['hover'] ? 'lift' : null,
+                'bottom' === ($kit['border']['sides'] ?? 'all') ? 'bottom' : null,
+                'solid' !== $kit['border']['style'] ? $kit['border']['style'] : null,
+            ]);
+            foreach (array_unique($used) as $effect) {
+                if (null === self::effectAsk($lang, $effect)) {
+                    $problems[] = "$id ({$lang['kit']}) uses $effect but its prose does not ask for it";
+                }
+            }
+        }
+        $this->assertSame([], $problems);
+        // The check reads what it should.
+        $this->assertNull(self::effectAsk((array) DesignLanguages::get('brutalist-flat'), 'hard'), 'brutalist-flat says no shadows at all');
+        $this->assertNull(self::effectAsk((array) DesignLanguages::get('glass-dark'), 'soft'), 'glass-dark says no drop shadows');
+        $this->assertNull(self::effectAsk((array) DesignLanguages::get('soft-saas'), 'soft'), 'soft-saas buttons get no shadow of their own');
+        $this->assertSame('hard', self::effectAsk((array) DesignLanguages::get('playful-pastel'), 'hard'));
+        $this->assertSame('soft', self::effectAsk((array) DesignLanguages::get('organic-warm'), 'soft'));
+        $this->assertSame('dashed', self::effectAsk((array) DesignLanguages::get('tech-mono'), 'dashed'));
+    }
+
+    /**
+     * What a kit's buttons look like at a glance on a light section, as one string: corner family (sharp 0-2px, small
+     * 4-8px, round 12-48px, pill), the primary's visible frame (width and colour, or none when the border is 0px or the
+     * fill colour), the secondary (text-only, or its outline width and style), underline, shadow pair and lift. Capital
+     * letters, weight, letter spacing and hover colour changes are left out: they change the label or the hover colours,
+     * not the button's shape, so two kits that differ only there count as one look.
+     *
+     * @param array<string,mixed> $kit
+     */
+    private static function look(array $kit): string
+    {
+        $r      = (int) $kit['radius']['control'];
+        $corner = 999 === $r ? 'pill' : ($r <= 2 ? 'sharp' : ($r <= 8 ? 'small' : 'round'));
+        $b      = $kit['border'];
+        $frame  = 'solid' === $kit['fill'] && ('0px' === $b['width'] || 'same' === $b['color']) ? 'none' : $b['width'] . ' ' . $b['color'];
+        $second = 'solid' === $kit['fill'] && '0px' === $b['width'] ? 'text-only' : $b['width'] . ' ' . $b['style'];
+        return implode('|', [$corner, $kit['fill'], $frame, $second, $b['sides'] ?? 'all', $kit['shadow']['rest'] . '/' . $kit['shadow']['hover'], 'lift' === $kit['hover'] ? 'lift' : '-']);
+    }
+
+    public function testTheLanguagesKitsShowAtLeastEightDistinctButtonLooks(): void
+    {
+        $looks = [];
+        foreach (DesignLanguages::ids() as $id) {
+            $looks[self::look((array) StyleKits::get((string) DesignLanguages::get($id)['kit']))][] = $id;
+        }
+        $this->assertGreaterThanOrEqual(8, count($looks), "distinct looks:\n" . json_encode($looks, JSON_PRETTY_PRINT));
+    }
+
     public function testMarkdownNamesTheLanguagesStyleKit(): void
     {
         foreach (DesignLanguages::ids() as $id) {

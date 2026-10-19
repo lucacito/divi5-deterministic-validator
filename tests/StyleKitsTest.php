@@ -96,8 +96,26 @@ final class StyleKitsTest extends TestCase
             'border style groove'        => [ static function (array $k): array { $k['border']['style'] = 'groove'; return $k; } ],
             'border style none'          => [ static function (array $k): array { $k['border']['style'] = 'none'; return $k; } ],
             'border colour unknown'      => [ static function (array $k): array { $k['border']['color'] = 'red'; return $k; } ],
-            'shadow not none'            => [ static function (array $k): array { $k['shadow']['rest'] = '0 4px 8px'; return $k; } ],
-            'hover lift not v1'          => [ static function (array $k): array { $k['hover'] = 'lift'; return $k; } ],
+            'shadow not a value'         => [ static function (array $k): array { $k['shadow']['rest'] = '0 4px 8px'; return $k; } ],
+            'shadow glow'                => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'glow', 'hover' => 'glow' ]; return $k; } ],
+            'hover shadow hard over none' => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'none', 'hover' => 'hard' ]; return $k; } ],
+            'rest soft, hover none'      => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'soft', 'hover' => 'none' ]; return $k; } ],
+            'rest hard, hover soft'      => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'hard', 'hover' => 'soft' ]; return $k; } ],
+            'rest soft, hover hard'      => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'soft', 'hover' => 'hard' ]; return $k; } ],
+            'shadow rest missing'        => [ static function (array $k): array { unset($k['shadow']['rest']); return $k; } ],
+            'hover darken'               => [ static function (array $k): array { $k['hover'] = 'darken'; return $k; } ],
+            'hover scale'                => [ static function (array $k): array { $k['hover'] = 'scale'; return $k; } ],
+            'border sides top'           => [ static function (array $k): array { $k['border']['sides'] = 'top'; return $k; } ],
+            'border sides left'          => [ static function (array $k): array { $k['border']['sides'] = 'left'; return $k; } ],
+            'border sides not a string'  => [ static function (array $k): array { $k['border']['sides'] = [ 'bottom' ]; return $k; } ],
+            'border sides upper case'    => [ static function (array $k): array { $k['border']['sides'] = 'Bottom'; return $k; } ],
+            'underline with fill-swap'   => [ static function (array $k): array { $k['border']['sides'] = 'bottom'; $k['hover'] = 'fill-swap'; return $k; } ],
+            'underline with invert'      => [ static function (array $k): array { $k['border']['sides'] = 'bottom'; $k['hover'] = 'invert'; return $k; } ],
+            'underline of 0px'           => [ static function (array $k): array { $k['border']['sides'] = 'bottom'; $k['hover'] = 'none'; $k['border']['width'] = '0px'; return $k; } ],
+            'underline on a ghost'       => [ static function (array $k): array { $k['border']['sides'] = 'bottom'; $k['hover'] = 'none'; $k['fill'] = 'ghost'; return $k; } ],
+            'gradient fill (no kit can pass contrast)' => [ static function (array $k): array { $k['fill'] = 'gradient'; $k['color2'] = 'text'; return $k; } ],
+            'color2 key'                 => [ static function (array $k): array { $k['color2'] = 'text'; return $k; } ],
+            'direction key'              => [ static function (array $k): array { $k['direction'] = '90deg'; return $k; } ],
             'capitalization unknown'     => [ static function (array $k): array { $k['text']['capitalization'] = 'lowercase'; return $k; } ],
             'letter spacing 5px'         => [ static function (array $k): array { $k['text']['letterSpacing'] = '5px'; return $k; } ],
             'weight 900'                 => [ static function (array $k): array { $k['text']['weight'] = '900'; return $k; } ],
@@ -145,6 +163,29 @@ final class StyleKitsTest extends TestCase
         }
     }
 
+    /** @return array<string,array{0:callable}> */
+    public static function goodVariants(): array
+    {
+        return [
+            'soft rest and hover'          => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'soft', 'hover' => 'soft' ]; return $k; } ],
+            'hard rest and hover'          => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'hard', 'hover' => 'hard' ]; return $k; } ],
+            'soft on hover only'           => [ static function (array $k): array { $k['shadow'] = [ 'rest' => 'none', 'hover' => 'soft' ]; return $k; } ],
+            'lift'                         => [ static function (array $k): array { $k['hover'] = 'lift'; return $k; } ],
+            'lift with a hover shadow'     => [ static function (array $k): array { $k['hover'] = 'lift'; $k['shadow'] = [ 'rest' => 'none', 'hover' => 'soft' ]; return $k; } ],
+            'lift with a hard shadow'      => [ static function (array $k): array { $k['hover'] = 'lift'; $k['shadow'] = [ 'rest' => 'hard', 'hover' => 'hard' ]; return $k; } ],
+            'sides all'                    => [ static function (array $k): array { $k['border']['sides'] = 'all'; return $k; } ],
+            'underline, hover none'        => [ static function (array $k): array { $k['border']['sides'] = 'bottom'; $k['hover'] = 'none'; $k['fill'] = 'outline'; return $k; } ],
+            'underline, lift'              => [ static function (array $k): array { $k['border']['sides'] = 'bottom'; $k['hover'] = 'lift'; return $k; } ],
+            'dashed'                       => [ static function (array $k): array { $k['border']['style'] = 'dashed'; return $k; } ],
+        ];
+    }
+
+    #[DataProvider('goodVariants')]
+    public function testTheNewOptionalDecisionsAreAccepted(callable $mutate): void
+    {
+        $this->assertSame([], StyleKits::problems($mutate(self::good())));
+    }
+
     public function testControlCharactersAndBracesAreRejectedEverywhereWithTheirPath(): void
     {
         $kit = self::good();
@@ -172,8 +213,10 @@ final class StyleKitsTest extends TestCase
     public function testTheVocabularyConstantsAreTheOnlyAllowedValues(): void
     {
         $this->assertSame([ 'solid', 'dashed', 'dotted', 'double' ], StyleKits::BORDER_STYLES);
-        $this->assertSame([ 'fill-swap', 'invert', 'none' ], StyleKits::HOVERS);
-        $this->assertSame([ 'none' ], StyleKits::SHADOWS);
+        $this->assertSame([ 'fill-swap', 'invert', 'none', 'lift' ], StyleKits::HOVERS);
+        $this->assertSame([ 'none', 'soft', 'hard' ], StyleKits::SHADOWS);
+        $this->assertSame([ 'all', 'bottom' ], StyleKits::BORDER_SIDES);
+        $this->assertSame([ 'solid', 'outline', 'ghost' ], StyleKits::FILLS, 'no gradient fill: no role pair reads in every language');
     }
 
     public function testTheFileStaysSmall(): void
@@ -237,6 +280,12 @@ final class StyleKitsTest extends TestCase
         foreach (StyleKits::ids() as $id) {
             $this->assertSame(1, substr_count($md, '`' . $id . '`'), $id);
         }
+        $kit = self::good();
+        $kit['id'] = 'x';
+        $kit['border']['sides'] = 'bottom';
+        $kit['hover'] = 'lift';
+        $kit['shadow'] = [ 'rest' => 'hard', 'hover' => 'hard' ];
+        $this->assertSame([], StyleKits::problems($kit));
         $one = StyleKits::markdown('outline-2');
         $this->assertStringContainsString('outline-2', $one);
         $this->assertStringContainsString('2px', $one);

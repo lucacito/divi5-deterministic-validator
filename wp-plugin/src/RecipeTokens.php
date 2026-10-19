@@ -12,7 +12,9 @@ require_once __DIR__ . '/DesignLanguages.php';
 require_once __DIR__ . '/KitResolver.php';
 
 /**
- * Colour and font tokens in section recipes: {{aied:color:<role>}} and {{aied:font:<role>}}.
+ * Colour and font tokens in section recipes: {{aied:color:<role>}} and {{aied:font:<role>}}, plus the alpha form
+ * {{aied:color:<role>:<NN>}} (NN an integer percent, 1 to 99): the role's colour at NN percent opacity, written as
+ * rgba(r,g,b,a) from the language's hex (or rgb/rgba) value. Deterministic colour arithmetic, not a Divi setting.
  *
  * A recipe stores tokens where its look depends on the design language; they are resolved when the
  * recipe is SERVED, so the AI always receives hard values and a saved page never contains a token.
@@ -44,8 +46,11 @@ final class RecipeTokens
     /** Anything that looks like a token, however malformed (closed braces, no nested braces). Only used to DETECT, never echoed. */
     private const LOOSE_AIED = '/\{\{aied:[^{}]*\}\}/';
 
-    /** A well-formed token of any kind: lower-case kind, then lower-case role or name (color, font, image, or one this code does not know). */
-    private const STRICT_AIED = '/\{\{aied:[a-z]+:[a-z0-9-]+\}\}/';
+    /**
+     * A well-formed token of any kind: lower-case kind, then lower-case role or name (color, font, image, or one this code does not
+     * know), optionally followed by an alpha percent 1 to 99 (the colour alpha form).
+     */
+    private const STRICT_AIED = '/\{\{aied:[a-z]+:[a-z0-9-]+(?::[1-9][0-9]?)?\}\}/';
 
     /** A listed token longer than this many characters is not echoed (it counts as malformed). */
     public const MAX_TOKEN_LENGTH = 64;
@@ -61,8 +66,8 @@ final class RecipeTokens
 
     public const UNRESOLVED_MESSAGE = "This layout still contains the placeholder tokens listed in tokens. A token is not a real value: Divi will not understand it, so a color or font would be wrong and an image would not load. It is valid and saved as is; this is only a hint. Fetch the recipe again through get_section_recipes (the recipe it returns has every token already replaced with a real value, and you can pass a design language), or replace each listed token with a real value yourself.";
 
-    /** A well-formed colour or font token (role characters only). */
-    private const TOKEN = '/\{\{aied:(color|font):([a-z-]+)\}\}/';
+    /** A well-formed colour or font token (role characters only), with the optional alpha percent 1 to 99 (colours only). */
+    private const TOKEN = '/\{\{aied:(color|font):([a-z-]+)(?::([1-9][0-9]?))?\}\}/';
 
     /**
      * The language used when none is requested: the `editorial` language, so a recipe served without
@@ -123,6 +128,7 @@ final class RecipeTokens
         return (string) preg_replace_callback(
             self::TOKEN,
             static function ( array $m ) use ( $colors, $fonts ): string {
+                $alpha = $m[3] ?? '';
                 if ( 'color' === $m[1] ) {
                     $key = self::COLOR_ROLES[ $m[2] ] ?? null;
                     if ( null === $key ) {
@@ -133,17 +139,48 @@ final class RecipeTokens
                         $value = $colors['surface'] ?? null;
                     }
                 } else {
-                    $key = self::FONT_ROLES[ $m[2] ] ?? null;
+                    $key = '' === $alpha ? ( self::FONT_ROLES[ $m[2] ] ?? null ) : null;
                     if ( null === $key ) {
                         return $m[0];
                     }
                     $value = $fonts[ $key ] ?? null;
                 }
+                if ( ! is_string( $value ) || '' === $value ) {
+                    return $m[0];
+                }
+                if ( '' !== $alpha ) {
+                    $value = self::withAlpha( $value, (int) $alpha );
+                    if ( null === $value ) {
+                        return $m[0];
+                    }
+                }
 
-                return is_string( $value ) && '' !== $value ? self::jsonSafe( $value ) : $m[0];
+                return self::jsonSafe( $value );
             },
             $markup
         );
+    }
+
+    /**
+     * `rgba(r,g,b,a)` for a `#rgb`, `#rrggbb`, `rgb(...)` or `rgba(...)` colour at $percent percent opacity (the colour's own
+     * alpha is replaced), a written as a short decimal (0.18, 0.5). Null for any other value (it is then left as a token).
+     */
+    private static function withAlpha( string $colour, int $percent ): ?string
+    {
+        $c = trim( $colour );
+        if ( 1 === preg_match( '/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\z/', $c, $h ) ) {
+            $hex = 3 === strlen( $h[1] ) ? $h[1][0] . $h[1][0] . $h[1][1] . $h[1][1] . $h[1][2] . $h[1][2] : $h[1];
+            $rgb = [ hexdec( substr( $hex, 0, 2 ) ), hexdec( substr( $hex, 2, 2 ) ), hexdec( substr( $hex, 4, 2 ) ) ];
+        } elseif ( 1 === preg_match( '/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*(?:0|1|0?\.\d+|1\.0+)\s*)?\)\z/i', $c, $r ) ) {
+            $rgb = [ (int) $r[1], (int) $r[2], (int) $r[3] ];
+            if ( max( $rgb ) > 255 ) {
+                return null;
+            }
+        } else {
+            return null;
+        }
+
+        return sprintf( 'rgba(%d,%d,%d,%s)', $rgb[0], $rgb[1], $rgb[2], rtrim( rtrim( sprintf( '%.2f', $percent / 100 ), '0' ), '.' ) );
     }
 
     /**

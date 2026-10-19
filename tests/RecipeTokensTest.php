@@ -419,4 +419,48 @@ class RecipeTokensTest extends TestCase
         }
         $this->assertGreaterThan( 0, $marked, 'the stored recipes carry kit markers' );
     }
+
+    public function testAnAlphaColourTokenResolvesToTheRolesColourAtThatOpacity(): void
+    {
+        $lang = [ 'colors' => [ 'text' => '#1c1a17', 'bg' => '#FFF', 'overlay' => 'rgba(28,22,16,0.72)', 'accent' => 'rgb(10, 20, 30)', 'surface' => '#ffffff', 'muted' => 'tomato' ] ];
+        // A hex value: its channels at NN percent (the role's own alpha, if any, is replaced).
+        $this->assertSame( 'rgba(28,26,23,0.18)', RecipeTokens::resolve( '{{aied:color:text:18}}', $lang ) );
+        $this->assertSame( 'rgba(255,255,255,0.5)', RecipeTokens::resolve( '{{aied:color:bg:50}}', $lang ), 'short hex, trailing zero trimmed' );
+        $this->assertSame( 'rgba(28,26,23,0.01)', RecipeTokens::resolve( '{{aied:color:text:1}}', $lang ) );
+        $this->assertSame( 'rgba(28,26,23,0.99)', RecipeTokens::resolve( '{{aied:color:text:99}}', $lang ) );
+        // A role whose value is already rgb()/rgba() (overlay): the same channels at NN percent.
+        $this->assertSame( 'rgba(28,22,16,0.25)', RecipeTokens::resolve( '{{aied:color:overlay:25}}', $lang ) );
+        $this->assertSame( 'rgba(10,20,30,0.1)', RecipeTokens::resolve( '{{aied:color:accent:10}}', $lang ) );
+        // surface-glass falls back to surface exactly as the plain token does.
+        $this->assertSame( 'rgba(255,255,255,0.4)', RecipeTokens::resolve( '{{aied:color:surface-glass:40}}', $lang ) );
+        // Left as they are (found() reports them): an invalid percent, an unknown role, a value that is not a hex or rgb colour,
+        // a font with an alpha, a missing role value.
+        foreach ( [ '{{aied:color:text:0}}', '{{aied:color:text:100}}', '{{aied:color:text:05}}', '{{aied:color:text:-5}}', '{{aied:color:text:1.5}}', '{{aied:color:nonsense:20}}', '{{aied:color:muted:20}}', '{{aied:font:body:20}}', '{{aied:color:border:20}}' ] as $token ) {
+            $this->assertSame( $token, RecipeTokens::resolve( $token, $lang ), $token );
+            $this->assertSame( [ $token ], RecipeTokens::found( $token ), $token );
+        }
+        // Inside JSON it stays JSON-safe and the result carries no token; resolving again changes nothing.
+        $json = '{"c":"{{aied:color:text:18}}","d":"{{aied:color:text}}"}';
+        $once = RecipeTokens::resolve( $json, $lang );
+        $this->assertSame( '{"c":"rgba(28,26,23,0.18)","d":"#1c1a17"}', $once );
+        $this->assertSame( [], RecipeTokens::found( $once ) );
+        $this->assertSame( $once, RecipeTokens::resolve( $once, $lang ) );
+        $this->assertIsArray( json_decode( $once, true ) );
+        // Every shipped language resolves an alpha token of every hex or rgba role.
+        foreach ( DesignLanguages::ids() as $id ) {
+            $l = (array) DesignLanguages::get( $id );
+            foreach ( [ 'text', 'accent', 'overlay', 'inverse', 'bg' ] as $role ) {
+                $out = RecipeTokens::resolve( '{{aied:color:' . $role . ':18}}', $l );
+                $this->assertMatchesRegularExpression( '/^rgba\(\d{1,3},\d{1,3},\d{1,3},0\.18\)$/', $out, "$id $role" );
+            }
+        }
+    }
+
+    public function testAnAlphaTokenIsListedAsAWellFormedTokenByFoundAllAndAdvise(): void
+    {
+        $text = 'x {{aied:color:overlay:18}} y {{aied:color:text}} {{aied:color:text:100}}';
+        $this->assertSame( [ '{{aied:color:overlay:18}}', '{{aied:color:text}}' ], RecipeTokens::foundAll( $text ), 'an invalid percent is not well-formed' );
+        $this->assertSame( [ '{{aied:color:overlay:18}}', '{{aied:color:text}}', '{{aied:color:text:100}}' ], RecipeTokens::found( $text ) );
+        $this->assertSame( [ '{{aied:color:overlay:18}}', '{{aied:color:text}}', RecipeTokens::MALFORMED_ENTRY ], RecipeTokens::advise( $text )['tokens'] );
+    }
 }

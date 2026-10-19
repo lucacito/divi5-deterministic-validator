@@ -120,9 +120,42 @@ class StyleGuideKitTopicsTest extends TestCase
         $this->assertStringNotContainsString( 'will follow later', $catalog );
         foreach ( StyleKits::ids() as $id ) {
             $text = StyleGuide::markdown( 'style-kit:' . $id );
-            $this->assertMatchesRegularExpression( '/card and media radius, shadow and card padding are recorded but NOT applied today/', $text, $id );
+            $this->assertMatchesRegularExpression( '/card and media radius and card padding are recorded but NOT applied today/', $text, $id );
             $this->assertStringContainsString( "only the button's control values are", $text, $id );
+            $this->assertStringNotContainsString( 'shadow and card padding are recorded', $text, $id . ': a button shadow IS applied now' );
         }
+        $this->assertStringNotContainsString( 'shadow and card padding are listed', $catalog );
+        $this->assertStringContainsString( 'card and media radius and card padding are listed', $catalog );
+    }
+
+    public function testEachKitTopicDescribesItsShadowLiftAndUnderlineTruthfully(): void
+    {
+        $seen = [];
+        foreach ( StyleKits::ids() as $id ) {
+            $kit    = (array) StyleKits::get( $id );
+            $text   = StyleGuide::markdown( 'style-kit:' . $id );
+            $pair   = $kit['shadow']['rest'] . '/' . $kit['shadow']['hover'];
+            $lift   = 'lift' === $kit['hover'];
+            $bottom = 'bottom' === ( $kit['border']['sides'] ?? 'all' );
+            $expect = [
+                'A soft shadow sits under the button'                => 'soft/soft' === $pair,
+                'A hard offset shadow sits under the button'         => 'hard/hard' === $pair,
+                'A soft shadow appears under the button on hover'    => 'none/soft' === $pair,
+                'On hover the button lifts 4px'                      => $lift,
+                'Only the bottom border is drawn: an underline'      => $bottom,
+            ];
+            foreach ( $expect as $sentence => $applies ) {
+                if ( $applies ) {
+                    $seen[ $sentence ] = true;
+                    $this->assertStringContainsString( $sentence, $text, $id );
+                } else {
+                    $this->assertStringNotContainsString( $sentence, $text, $id );
+                }
+            }
+            $effects = 'none/none' !== $pair || $lift || $bottom;
+            $this->assertSame( $effects, str_contains( $text, '## Shadow, lift and underline' ), $id );
+        }
+        $this->assertCount( 5, $seen, 'the shipped kits use every effect' );
     }
 
     public function testATextOnlyButtonIsNamedExactlyWhenTheKitDrawsOne(): void
@@ -133,7 +166,8 @@ class StyleGuideKitTopicsTest extends TestCase
             $text = StyleGuide::markdown( 'style-kit:' . $id );
             foreach ( [ 'control' => 'primary', 'control-secondary' => 'secondary' ] as $role => $name ) {
                 $d        = KitAdapters::patch( 'divi/button', $role, 'light', $kit )['button']['decoration'];
-                $textOnly = KitAdapters::TRANSPARENT === $d['background']['desktop']['value']['color'] && '0px' === $d['border']['desktop']['value']['styles']['all']['width'];
+                $textOnly = KitAdapters::TRANSPARENT === $d['background']['desktop']['value']['color'] && '0px' === $d['border']['desktop']['value']['styles']['all']['width']
+                    && ! isset( $d['border']['desktop']['value']['styles']['bottom'] );
                 $sentence = sprintf( 'The %s button is text-only', $name );
                 if ( $textOnly ) {
                     ++$seen;
@@ -202,11 +236,16 @@ class StyleGuideKitTopicsTest extends TestCase
                 $this->assertSame( [ 'display' => 'block' ], $attrs['module']['decoration']['layout']['desktop']['value'], 'the module layout survives' );
             }
             $this->assertSame( 'solid' === $kit['fill'] ? $editorial['colors'][ $kit['color'] ] ?? $editorial['colors'][ str_replace( '-', '_', $kit['color'] ) ] : KitAdapters::TRANSPARENT, $primary['button']['decoration']['background']['desktop']['value']['color'], 'the primary fill follows the kit' );
-            $this->assertNotSame(
-                $primary['button']['decoration']['background']['desktop']['value']['color'],
-                $secondary['button']['decoration']['background']['desktop']['value']['color'],
-                'primary and secondary differ in their fill'
-            );
+            // A ghost kit's secondary is its outline treatment: both transparent, told apart by the outline.
+            $look = static fn ( array $a ): array => [ $a['button']['decoration']['background']['desktop']['value']['color'], $a['button']['decoration']['border']['desktop']['value']['styles']['all']['width'] ];
+            $this->assertNotSame( $look( $primary ), $look( $secondary ), 'primary and secondary differ in their fill or their outline' );
+            if ( 'ghost' !== $kit['fill'] ) {
+                $this->assertNotSame(
+                    $primary['button']['decoration']['background']['desktop']['value']['color'],
+                    $secondary['button']['decoration']['background']['desktop']['value']['color'],
+                    'primary and secondary differ in their fill'
+                );
+            }
         }
     }
 

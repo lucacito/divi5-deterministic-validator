@@ -173,7 +173,7 @@ final class StyleGuide
         $topics = implode( ', ', array_map( static fn ( string $id ): string => '`style-kit:' . $id . '`', StyleKits::ids() ) );
 
         return "# Style kits: one shape for every control\n\n"
-            . "A style kit is a bundle of decisions applied to a module so that every module of that kind on the page matches: border width and style, corner radius, filled or outline, hover behaviour, label capitalization, weight and letter spacing, padding. "
+            . "A style kit is a bundle of decisions applied to a module so that every module of that kind on the page matches: border width, style and sides (a full frame or an underline), corner radius, filled or outline, shadow, hover behaviour (a colour change or a lift), label capitalization, weight and letter spacing, padding. "
             . "Colour and font are NOT part of a kit: they always come from the page's design language, so one kit looks different in every language and stays readable in all of them.\n\n"
             . "Every design language has a default kit (named in its brief). `get_section_recipes` takes `style_kit` together with `name` to serve one recipe in another kit; without it the recipe uses the language's own kit.\n\n"
             . "## The kits\n\n" . $catalog . "\n"
@@ -185,7 +185,7 @@ final class StyleGuide
             . "- One kit per page. Don't mix kits on one page: a soft filled button next to a tight outline one looks like two designs.\n"
             . "- Buttons on an accent band or on a photo keep the kit's shape; only their colours change (each kit topic says how).\n\n"
             . "## What is kit-driven today\n\n"
-            . "Only buttons are kit-driven so far. Cards, accordions, forms and the other modules still carry the recipe's own styling and are not kit-driven yet; a kit's card and media radius, shadow and card padding are listed for that reason but are not applied yet. "
+            . "Only buttons are kit-driven so far. Cards, accordions, forms and the other modules still carry the recipe's own styling and are not kit-driven yet; a kit's card and media radius and card padding are listed for that reason but are not applied yet (a kit's shadow is applied to its buttons only). "
             . "To build a button in a kit without a recipe, copy the block from the kit's topic and swap its colours for your design language's roles.\n";
     }
 
@@ -202,7 +202,7 @@ final class StyleGuide
         $secondary = self::kitButton( $kit, $language, 'control-secondary', 'Secondary button' );
 
         $lines = [ rtrim( StyleKits::markdown( $id ) ), '' ];
-        $lines[] = "Applied today: only the button's control values are (fill, border, control radius, hover, text and control padding). This kit's card and media radius, shadow and card padding are recorded but NOT applied today: cards and other modules keep the recipe's own styling.";
+        $lines[] = "Applied today: only the button's control values are (fill, border and its sides, control radius, shadow, hover and lift, text and control padding). This kit's card and media radius and card padding are recorded but NOT applied today: cards and other modules keep the recipe's own styling.";
         $textOnly = self::kitTextOnlySentence( $kit );
         if ( '' !== $textOnly ) {
             $lines[] = '';
@@ -231,9 +231,55 @@ final class StyleGuide
             $lines[] = '## On an accent band and on a photo';
             $lines[] = '';
             $lines[] = 'Same shape, only the colour rules change. ' . self::kitSurfaceSentence( $kit, 'accent', 'on an accent band' ) . ' ' . self::kitSurfaceSentence( $kit, 'dark', 'on a photo or a dark overlay' );
+            $effects = self::kitEffectsSentence( $kit );
+            if ( '' !== $effects ) {
+                $lines[] = '';
+                $lines[] = '## Shadow, lift and underline';
+                $lines[] = '';
+                $lines[] = $effects;
+            }
         }
 
         return implode( "\n", $lines ) . "\n";
+    }
+
+    /**
+     * What the kit's shadow, lift and underline do, read from the adapter's own patch for the primary button (the same on
+     * the secondary), or '' when the kit has none of them.
+     *
+     * @param array<string,mixed> $kit
+     */
+    private static function kitEffectsSentence( array $kit ): string
+    {
+        $patch = KitAdapters::patch( 'divi/button', 'control', 'light', $kit );
+        if ( null === $patch ) {
+            return '';
+        }
+        $module = (array) $patch['module']['decoration'];
+        $out    = [];
+        $rest   = $module['boxShadow']['desktop']['value']['style'] ?? null;
+        if ( 'preset1' === $rest ) {
+            $out[] = 'A soft shadow sits under the button: box shadow preset1 on the button module, 8px down, 24px blur, in the design language\'s overlay colour at 18% opacity; it stays on hover.';
+        } elseif ( 'preset4' === $rest ) {
+            $out[] = 'A hard offset shadow sits under the button: box shadow preset4 on the button module, 6px right and 6px down, no blur, opaque, in the ink of the surface (the text colour on a light section, accent-text on an accent band, inverse on a photo); it stays on hover.';
+        }
+        if ( isset( $module['boxShadow']['desktop']['hover'] ) ) {
+            $out[] = 'A soft shadow appears under the button on hover: box shadow preset1 on the button module, 12px down, 24px blur, in the overlay colour at 25% opacity.';
+        }
+        if ( isset( $module['transform'] ) ) {
+            $out[] = 'On hover the button lifts 4px (a transform on the button module, translate y -4px); its colours stay as they are.';
+        }
+        if ( isset( $patch['button']['decoration']['border']['desktop']['value']['styles']['bottom'] ) ) {
+            $out[] = 'Only the bottom border is drawn: an underline (the frame width is 0px and the bottom side carries the width, style and colour); its colours never change on hover.';
+        }
+        if ( [] === $out ) {
+            return '';
+        }
+        if ( isset( $module['boxShadow'] ) || isset( $module['transform'] ) ) {
+            $out[] = 'Shadows and transforms belong on the button module (module.decoration.boxShadow, module.decoration.transform), never on button.decoration: Divi drops those on a button.';
+        }
+
+        return implode( ' ', $out );
     }
 
     /**
@@ -252,7 +298,8 @@ final class StyleGuide
                 continue;
             }
             $d = (array) $patch['button']['decoration'];
-            if ( KitAdapters::TRANSPARENT === $d['background']['desktop']['value']['color'] && '0px' === $d['border']['desktop']['value']['styles']['all']['width'] ) {
+            if ( KitAdapters::TRANSPARENT === $d['background']['desktop']['value']['color'] && '0px' === $d['border']['desktop']['value']['styles']['all']['width']
+                && ! isset( $d['border']['desktop']['value']['styles']['bottom'] ) ) {
                 $out[] = sprintf( 'The %s button is text-only: no fill and no border (this kit\'s border width is 0px), so it reads as a quiet link.', $name );
             }
         }
@@ -296,17 +343,17 @@ final class StyleGuide
         $roles = [];
         foreach ( [ 'control', 'control-secondary' ] as $role ) {
             $patch = KitAdapters::patch( 'divi/button', $role, 'light', $kit );
-            if ( null !== $patch && false !== preg_match_all( '/\{\{aied:color:([a-z-]+)\}\}/', (string) json_encode( $patch ), $m ) ) {
-                $roles = array_merge( $roles, $m[1] );
+            if ( null !== $patch && false !== preg_match_all( '/\{\{aied:color:[a-z-]+(?::[0-9]+)?\}\}/', (string) json_encode( $patch ), $m ) ) {
+                $roles = array_merge( $roles, $m[0] );
             }
         }
-        $colors = (array) $language['colors'];
-        $parts  = [];
-        foreach ( array_values( array_unique( $roles ) ) as $role ) {
-            $hex = $colors[ str_replace( '-', '_', $role ) ] ?? null;
-            if ( is_string( $hex ) ) {
-                $parts[] = $role . ' ' . $hex;
+        $parts = [];
+        foreach ( array_values( array_unique( $roles ) ) as $token ) {
+            $value = RecipeTokens::resolve( $token, $language );
+            if ( $value === $token || 1 !== preg_match( '/^\{\{aied:color:([a-z-]+)(?::([0-9]+))?\}\}$/', $token, $t ) ) {
+                continue;
             }
+            $parts[] = $t[1] . ( isset( $t[2] ) ? ' at ' . $t[2] . '%' : '' ) . ' ' . $value;
         }
 
         return implode( ', ', $parts );

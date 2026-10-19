@@ -88,8 +88,32 @@ class KitAdaptersTest extends TestCase
                             $v['color']           = $color;
                             $v['hover']           = $hover;
                             $v['border']['color'] = $borderColor;
+                            if ( 'bottom' === ( $kit['border']['sides'] ?? 'all' ) && [] !== StyleKits::problems( $v ) ) {
+                                continue; // an underline allows only hover none or lift and no ghost fill (StyleKitsTest)
+                            }
                             $this->assertSame( [], StyleKits::problems( $v ) );
                             $out[ "{$kit['id']}/$fill/$color/$hover/$borderColor" ] = $v;
+                        }
+                    }
+                }
+            }
+            // The effects: every proven shadow pair x every hover x both border sides (where the schema allows the pair).
+            foreach ( StyleKits::SHADOW_PAIRS as $pair ) {
+                [ $rest, $hoverShadow ] = explode( '/', $pair );
+                foreach ( StyleKits::HOVERS as $hover ) {
+                    foreach ( StyleKits::BORDER_SIDES as $sides ) {
+                        foreach ( [ 'solid', 'outline' ] as $fill ) {
+                            $v                    = $kit;
+                            $v['fill']            = $fill;
+                            $v['hover']           = $hover;
+                            $v['shadow']          = [ 'rest' => $rest, 'hover' => $hoverShadow ];
+                            $v['border']['sides'] = $sides;
+                            if ( 'bottom' === $sides && '0px' === $v['border']['width'] ) {
+                                $v['border']['width'] = '2px';
+                            }
+                            if ( [] === StyleKits::problems( $v ) ) {
+                                $out[ "{$kit['id']}/$fill/fx/$pair/$hover/$sides" ] = $v;
+                            }
                         }
                     }
                 }
@@ -133,11 +157,21 @@ class KitAdaptersTest extends TestCase
             foreach ( self::ROLES as $role ) {
                 foreach ( self::SURFACES as $on ) {
                     $patch = $this->patch( $kit, $role, $on );
-                    // Exactly three decoration groups of the button element and the module's spacing, nothing else.
+                    // Exactly three decoration groups of the button element; on the module its spacing, plus a box shadow
+                    // exactly when the kit has one and a transform exactly when it lifts, nothing else.
                     $this->assertSame( [ 'button', 'module' ], array_keys( $patch ) );
                     $this->assertSame( [ 'decoration' ], array_keys( $patch['button'] ) );
                     $this->assertEqualsCanonicalizing( [ 'background', 'border', 'font' ], array_keys( $patch['button']['decoration'] ) );
-                    $this->assertSame( [ 'decoration' => [ 'spacing' => [ 'desktop' => [ 'value' => [ 'padding' => '{{aied:kit:space-control}}' ] ] ] ] ], $patch['module'] );
+                    $this->assertSame( [ 'decoration' ], array_keys( $patch['module'] ) );
+                    $expected = [ 'spacing' ];
+                    if ( 'none/none' !== $kit['shadow']['rest'] . '/' . $kit['shadow']['hover'] ) {
+                        $expected[] = 'boxShadow';
+                    }
+                    if ( 'lift' === $kit['hover'] ) {
+                        $expected[] = 'transform';
+                    }
+                    $this->assertSame( $expected, array_keys( $patch['module']['decoration'] ), "$label $role on $on" );
+                    $this->assertSame( [ 'desktop' => [ 'value' => [ 'padding' => '{{aied:kit:space-control}}' ] ] ], $patch['module']['decoration']['spacing'] );
                     // The resolved block (kit tokens expanded) is what reaches the AI: lint its paths.
                     $markup = KitResolver::resolve( $this->buttonBlock( $role, $on ), $kit );
                     $this->assertSame( [], KitResolver::leftovers( $markup ), "$label $role on $on" );
@@ -172,11 +206,13 @@ class KitAdaptersTest extends TestCase
                     $this->assertStringContainsString( '"text":"Start here"', $markup, 'innerContent is never touched' );
                     $this->assertStringContainsString( '"display":"block"', $markup, 'a recipe\'s module.decoration.layout survives the merge' );
                     $this->assertStringContainsString( '"family":"{{aied:font:body}}"', $markup, 'an untouched recipe value survives the merge' );
+                    $this->assertSame( $markup, KitResolver::resolve( $markup, $kit ), "$label $role on $on: resolving twice changes nothing" );
                     foreach ( [ null, 'brutalist-flat' ] as $langId ) {
                         $lang     = null === $langId ? RecipeTokens::default() : DesignLanguages::get( $langId );
                         $this->assertIsArray( $lang );
                         $resolved = RecipeTokens::resolve( $markup, $lang );
                         $this->assertSame( [], RecipeTokens::found( $resolved ) );
+                        $this->assertSame( $resolved, RecipeTokens::resolve( $resolved, $lang ) );
                         $result = LayoutGate::check( $this->page( $resolved ) );
                         $codes  = implode( ', ', array_map( static fn ( $v ) => $v->toArray()['code'], $result->violations() ) );
                         $this->assertTrue( $result->isValid(), "$label $role on $on must pass the gate, got: $codes" );
@@ -199,8 +235,9 @@ class KitAdaptersTest extends TestCase
                     }
                     preg_match_all( '/\{\{[^}]*\}\}/', $json, $t );
                     foreach ( $t[0] as $token ) {
+                        // A colour role, the soft shadow's overlay at the two proven opacities, or a kit token.
                         $this->assertMatchesRegularExpression(
-                            '/^\{\{aied:(?:color:(?:' . implode( '|', array_map( 'preg_quote', array_keys( self::ROLE_KEYS ) ) ) . ')|kit:(?:radius-control|space-control))\}\}$/',
+                            '/^\{\{aied:(?:color:(?:' . implode( '|', array_map( 'preg_quote', array_keys( self::ROLE_KEYS ) ) ) . ')|color:overlay:(?:18|25)|kit:(?:radius-control|space-control))\}\}$/',
                             $token,
                             "$label $role on $on"
                         );
@@ -210,6 +247,92 @@ class KitAdaptersTest extends TestCase
                 }
             }
         }
+    }
+
+    /** A valid copy of a shipped kit with some decisions changed. */
+    private function kitWith( string $id, array $changes ): array
+    {
+        $kit = StyleKits::get( $id );
+        $this->assertIsArray( $kit );
+        $kit = array_replace_recursive( $kit, $changes );
+        $this->assertSame( [], StyleKits::problems( $kit ) );
+        return $kit;
+    }
+
+    public function testShadowsAreWrittenOnTheModuleInTheProbeProvenForms(): void
+    {
+        $soft = $this->kitWith( 'soft-solid', [ 'shadow' => [ 'rest' => 'soft', 'hover' => 'soft' ] ] );
+        foreach ( self::SURFACES as $on ) {
+            // kb-shadow-module-soft; the hover keeps the rest shadow (nothing written on hover).
+            $this->assertSame(
+                [ 'desktop' => [ 'value' => [ 'style' => 'preset1', 'vertical' => '8px', 'blur' => '24px', 'color' => '{{aied:color:overlay:18}}' ] ] ],
+                $this->patch( $soft, 'control', $on )['module']['decoration']['boxShadow'],
+                "soft on $on"
+            );
+        }
+
+        // kb-shadow-module-hover: a soft shadow on hover only.
+        $hoverOnly = $this->kitWith( 'soft-solid', [ 'shadow' => [ 'rest' => 'none', 'hover' => 'soft' ] ] );
+        $this->assertSame(
+            [ 'desktop' => [ 'hover' => [ 'style' => 'preset1', 'vertical' => '12px', 'blur' => '24px', 'color' => '{{aied:color:overlay:25}}' ] ] ],
+            $this->patch( $hoverOnly, 'control', 'light' )['module']['decoration']['boxShadow']
+        );
+
+        // kb-shadow-module-hard: an offset solid shadow in the ink of the surface (text, accent-text on an accent band,
+        // inverse on a photo), opaque.
+        $hard = $this->kitWith( 'soft-solid', [ 'shadow' => [ 'rest' => 'hard', 'hover' => 'hard' ] ] );
+        foreach ( [ 'light' => 'text', 'accent' => 'accent-text', 'dark' => 'inverse' ] as $on => $ink ) {
+            $this->assertSame(
+                [ 'desktop' => [ 'value' => [ 'style' => 'preset4', 'horizontal' => '6px', 'vertical' => '6px', 'blur' => '0px', 'color' => '{{aied:color:' . $ink . '}}' ] ] ],
+                $this->patch( $hard, 'control-secondary', $on )['module']['decoration']['boxShadow'],
+                "hard on $on"
+            );
+        }
+
+        // Never on the button element (dead there), and no shadow at all for a kit without one.
+        foreach ( [ $soft, $hoverOnly, $hard ] as $kit ) {
+            $this->assertArrayNotHasKey( 'boxShadow', $this->patch( $kit, 'control', 'light' )['button']['decoration'] );
+        }
+        $this->assertArrayNotHasKey( 'boxShadow', $this->patch( (array) StyleKits::get( 'soft-solid' ), 'control', 'light' )['module']['decoration'] );
+    }
+
+    public function testLiftWritesTheProvenModuleTransformAndKeepsTheRestColours(): void
+    {
+        $lift = $this->kitWith( 'soft-solid', [ 'hover' => 'lift', 'shadow' => [ 'rest' => 'none', 'hover' => 'soft' ] ] );
+        foreach ( self::ROLES as $role ) {
+            foreach ( self::SURFACES as $on ) {
+                $patch = $this->patch( $lift, $role, $on );
+                // kb-lift-hover-shadow: translate y -4px on hover together with the soft hover shadow.
+                $this->assertSame( [ 'desktop' => [ 'hover' => [ 'translate' => [ 'y' => '-4px' ] ] ] ], $patch['module']['decoration']['transform'] );
+                $this->assertArrayNotHasKey( 'transform', $patch['button']['decoration'] );
+                $d = $patch['button']['decoration'];
+                $this->assertSame( $d['background']['desktop']['value']['color'], $d['background']['desktop']['hover']['color'], "$role on $on" );
+                $this->assertSame( $d['font']['font']['desktop']['value']['color'], $d['font']['font']['desktop']['hover']['color'], "$role on $on" );
+                $this->assertSame( $d['border']['desktop']['value']['styles']['all']['color'], $d['border']['desktop']['hover']['styles']['all']['color'], "$role on $on" );
+            }
+        }
+        // The colours of a lift kit are exactly those of the same kit with hover none.
+        $none = $this->kitWith( 'soft-solid', [ 'shadow' => [ 'rest' => 'none', 'hover' => 'soft' ] ] );
+        $this->assertSame( $this->patch( $none, 'control', 'light' )['button'], $this->patch( $lift, 'control', 'light' )['button'] );
+    }
+
+    public function testAnUnderlineWritesAZeroWidthFrameAndTheBottomSide(): void
+    {
+        $kit = $this->kitWith( 'outline-2', [ 'hover' => 'none', 'border' => [ 'sides' => 'bottom', 'width' => '2px', 'style' => 'solid' ] ] );
+        $b   = $this->patch( $kit, 'control', 'light' )['button']['decoration']['border']['desktop'];
+        // kb-border-bottom-only: styles.all.width 0px plus styles.bottom width, style and colour.
+        $this->assertSame( '0px', $b['value']['styles']['all']['width'] );
+        $this->assertSame( [ 'width' => '2px', 'style' => 'solid', 'color' => '{{aied:color:text}}' ], $b['value']['styles']['bottom'] );
+        $this->assertSame( '{{aied:kit:radius-control}}', $b['value']['radius'] );
+        $this->assertSame( KitAdapters::TRANSPARENT, $this->patch( $kit, 'control', 'light' )['button']['decoration']['background']['desktop']['value']['color'] );
+        // The hover colour of the frame is the bottom side's colour (an underline never changes colour).
+        $this->assertSame( '{{aied:color:text}}', $b['hover']['styles']['all']['color'] );
+        $this->assertArrayNotHasKey( 'bottom', $b['hover']['styles'] );
+        // On an accent band and on a photo the underline takes the surface's ink.
+        $this->assertSame( '{{aied:color:accent-text}}', $this->patch( $kit, 'control', 'accent' )['button']['decoration']['border']['desktop']['value']['styles']['bottom']['color'] );
+        $this->assertSame( '{{aied:color:inverse}}', $this->patch( $kit, 'control', 'dark' )['button']['decoration']['border']['desktop']['value']['styles']['bottom']['color'] );
+        // A kit with sides "all" (or none given) writes no side.
+        $this->assertArrayNotHasKey( 'bottom', $this->patch( $this->kitWith( 'outline-2', [ 'border' => [ 'sides' => 'all' ] ] ), 'control', 'light' )['button']['decoration']['border']['desktop']['value']['styles'] );
     }
 
     public function testUnknownCombinationsAreNull(): void
@@ -453,9 +576,11 @@ class KitAdaptersTest extends TestCase
                 foreach ( self::ROLES as $role ) {
                     foreach ( $surfaces as $on => $list ) {
                         $d      = $this->patch( $kit, $role, $on )['button']['decoration'];
-                        $width  = (string) $d['border']['desktop']['value']['styles']['all']['width'];
+                        // An underline carries the shape with its bottom side alone: judge that side.
+                        $side   = $d['border']['desktop']['value']['styles']['bottom'] ?? $d['border']['desktop']['value']['styles']['all'];
+                        $width  = (string) $side['width'];
                         $states = [
-                            'rest'  => [ $d['background']['desktop']['value']['color'], $d['font']['font']['desktop']['value']['color'], $d['border']['desktop']['value']['styles']['all']['color'] ],
+                            'rest'  => [ $d['background']['desktop']['value']['color'], $d['font']['font']['desktop']['value']['color'], $side['color'] ],
                             'hover' => [ $d['background']['desktop']['hover']['color'], $d['font']['font']['desktop']['hover']['color'], $d['border']['desktop']['hover']['styles']['all']['color'] ],
                         ];
                         foreach ( $list as $surfaceName => $surface ) {
