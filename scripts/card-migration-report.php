@@ -22,6 +22,15 @@
  *                   alone). Several of them in one recipe (same block name) are `card`s, a single one is a `panel`;
  *                   PANEL_OVERRIDES names the one block where that rule would be wrong.
  *
+ * `index` is the block's order among ALL `divi/group` (or all `divi/column`) blocks of the recipe, in document
+ * order, not the spec's "#0/#1" naming of a recipe's cards: the migration tasks must follow this numbering.
+ * Two fill-only surface columns (hero-cta column#0, split-image-text column#0: a `surface` fill and padding, no border,
+ * radius or shadow) are deliberately NOT listed: they have no frame for a kit to restyle.
+ *
+ * `marked` is `card` or `panel` when the block already carries an `"aied":{"kit":"card|panel"}` marker (read from the
+ * top-level attributes; any other marker, such as the button roles, gives null). The marker replaces the decoration, so
+ * a marked block is still classified by whatever decoration it has left; compare `marked` before and after a migration.
+ *
  * Anything that fits none of these throws, so a new recipe shape cannot slip through unclassified. An existing
  * `"aied"` marker (the buttons' kit marker) is just another attribute: the classifier looks at module.decoration only.
  */
@@ -42,7 +51,7 @@ final class CardReport
     /**
      * @param list<array{name:string,markup:string}> $recipes the rows of section-recipes.json
      *
-     * @return list<array{recipe:string,block:string,index:int,class:string,role:?string,bytes:int}>
+     * @return list<array{recipe:string,block:string,index:int,class:string,role:?string,marked:?string,bytes:int}>
      */
     public static function classify( array $recipes ): array
     {
@@ -74,7 +83,7 @@ final class CardReport
     }
 
     /**
-     * @return list<array{recipe:string,block:string,index:int,class:string,role:?string,bytes:int}>
+     * @return list<array{recipe:string,block:string,index:int,class:string,role:?string,marked:?string,bytes:int}>
      */
     private static function walk( string $recipe, string $markup ): array
     {
@@ -97,7 +106,7 @@ final class CardReport
             $dec = $attrs['module']['decoration'] ?? [];
             $dec = is_array( $dec ) ? $dec : [];
             $f   = self::features( $dec );
-            if ( 'divi/group' === $name || ( 'divi/column' === $name && ( isset( $dec['border'] ) || isset( $dec['boxShadow'] ) ) ) ) {
+            if ( 'divi/group' === $name || ( 'divi/column' === $name && ( isset( $dec['border'] ) || isset( $dec['boxShadow'] ) || null !== self::marker( $attrs ) ) ) ) {
                 $inGrid = false;
                 foreach ( $stack as $open ) {
                     if ( 'divi/group' === $open[0] && 'border' === $open[1] ) {
@@ -110,6 +119,7 @@ final class CardReport
                     'index'  => $seen[ $name ],
                     'class'  => self::decide( "$recipe $name#{$seen[$name]}", $f, $inGrid ),
                     'role'   => null,
+                    'marked' => self::marker( $attrs ),
                     'bytes'  => self::bytes( $dec ),
                 ];
             }
@@ -212,6 +222,19 @@ final class CardReport
     }
 
     /**
+     * The card marker a block already carries: `aied.kit` when it is `card` or `panel`, else null (the button roles
+     * control / control-secondary are not card markers).
+     *
+     * @param array<string,mixed> $attrs
+     */
+    private static function marker( array $attrs ): ?string
+    {
+        $kit = is_array( $attrs['aied'] ?? null ) ? ( $attrs['aied']['kit'] ?? null ) : null;
+
+        return in_array( $kit, [ 'card', 'panel' ], true ) ? $kit : null;
+    }
+
+    /**
      * Bytes of the literals a card marker would own: the border, box shadow and spacing objects of the block.
      *
      * @param array<string,mixed> $dec
@@ -231,7 +254,7 @@ final class CardReport
     /**
      * The text report.
      *
-     * @param list<array{recipe:string,block:string,index:int,class:string,role:?string,bytes:int}> $rows
+     * @param list<array{recipe:string,block:string,index:int,class:string,role:?string,marked:?string,bytes:int}> $rows
      */
     public static function render( array $rows, bool $all ): string
     {
@@ -245,13 +268,13 @@ final class CardReport
         $out = "Card classification of the shipped recipes (wp-plugin/data/section-recipes.json)\n\n";
         $out .= "Per recipe: the blocks that are not plain wrappers" . ( $all ? '' : ' (--all lists every one)' ) . "\n";
         foreach ( $by as $recipe => $list ) {
-            $show = array_filter( $list, static fn ( array $r ): bool => $all || ! in_array( $r['class'], [ 'wrapper', 'padded-wrapper' ], true ) );
+            $show = array_filter( $list, static fn ( array $r ): bool => $all || null !== $r['marked'] || ! in_array( $r['class'], [ 'wrapper', 'padded-wrapper' ], true ) );
             if ( [] === $show ) {
                 continue;
             }
             $out .= "\n$recipe\n";
             foreach ( $show as $r ) {
-                $out .= sprintf( "  %-12s #%-3d %-14s %s%s\n", $r['block'], $r['index'], $r['class'], null === $r['role'] ? '' : 'role=' . $r['role'] . ' ', $r['bytes'] . ' B of border/shadow/spacing' );
+                $out .= sprintf( "  %-12s #%-3d %-14s %s%s%s\n", $r['block'], $r['index'], $r['class'], null === $r['role'] ? '' : 'role=' . $r['role'] . ' ', null === $r['marked'] ? '' : 'MARKED=' . $r['marked'] . ' ', $r['bytes'] . ' B of border/shadow/spacing' );
             }
         }
         $out .= "\nTotals\n";
@@ -265,6 +288,7 @@ final class CardReport
             $out .= sprintf( "  %s: %d blocks: %s\n", $block, array_sum( $counts ), implode( ', ', $parts ) );
         }
         $marked = array_filter( $rows, static fn ( array $r ): bool => null !== $r['role'] );
+        $out .= sprintf( "  marked (carry an aied card/panel marker): %d blocks\n", count( array_filter( $rows, static fn ( array $r ): bool => null !== $r['marked'] ) ) );
         $out .= sprintf( "  card/panel literals a marker replaces: %d blocks, %s B\n", count( $marked ), number_format( array_sum( array_column( $marked, 'bytes' ) ) ) );
 
         return $out;

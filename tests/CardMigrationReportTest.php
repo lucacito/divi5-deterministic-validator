@@ -138,6 +138,24 @@ class CardMigrationReportTest extends TestCase
         $this->assertSame( [ 'wrapper' ], array_column( $rows, 'class' ) );
     }
 
+    public function test_a_card_or_panel_marker_is_reported_and_other_markers_are_not(): void
+    {
+        $markedGroup  = $this->block( 'group', [ 'aied' => [ 'kit' => 'card', 'on' => 'light' ], 'module' => [ 'decoration' => [ 'layout' => [ 'desktop' => [ 'value' => [ 'display' => 'flex' ] ] ] ] ] ] );
+        $markedColumn = $this->block( 'column', [ 'aied' => [ 'kit' => 'panel', 'on' => 'surface' ] ] );
+        $buttonRole   = $this->block( 'group', [ 'aied' => [ 'kit' => 'control', 'on' => 'light' ] ] );
+        $markup       = $this->block( 'section', [], $this->block( 'row', [], $markedColumn . $this->block( 'column', [], $markedGroup . $buttonRole ) ) );
+        $rows         = \CardReport::classify( [ [ 'name' => 'planted-marked', 'markup' => $markup ] ] );
+
+        $this->assertSame(
+            [ 'divi/column#0' => 'panel', 'divi/group#0' => 'card', 'divi/group#1' => null ],
+            array_column( array_map( fn ( $r ) => [ $r['block'] . '#' . $r['index'], $r['marked'] ], $rows ), 1, 0 ),
+            'a marked block is reported with its marker (a marked column is listed even without a frame); a button-role marker is null'
+        );
+        $this->assertSame( [ 'wrapper', 'wrapper', 'wrapper' ], array_column( $rows, 'class' ), 'a marked block is still classified by the decoration it has left, no class is invented' );
+        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 2 blocks', \CardReport::render( $rows, false ) );
+        $this->assertStringContainsString( 'MARKED=card', \CardReport::render( $rows, false ) );
+    }
+
     public function test_an_unclassifiable_group_fails_loudly(): void
     {
         $this->expectException( \RuntimeException::class );
@@ -195,6 +213,16 @@ class CardMigrationReportTest extends TestCase
             ],
             $byRecipe
         );
+    }
+
+    public function test_nothing_in_the_shipped_recipes_is_marked_yet_and_fill_only_columns_are_unlisted(): void
+    {
+        $rows = $this->shipped();
+        $this->assertSame( 0, count( array_filter( $rows, fn ( $r ) => null !== $r['marked'] ) ) );
+        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 0 blocks', \CardReport::render( $rows, false ) );
+        $listed = array_map( fn ( $r ) => $r['recipe'] . ' ' . $r['block'] . '#' . $r['index'], $rows );
+        $this->assertNotContains( 'hero-cta divi/column#0', $listed, 'a surface fill with padding and no frame: nothing for a kit to restyle' );
+        $this->assertNotContains( 'split-image-text divi/column#0', $listed );
     }
 
     public function test_the_shipped_cards_panels_and_inverted_surfaces_are_these_blocks(): void
