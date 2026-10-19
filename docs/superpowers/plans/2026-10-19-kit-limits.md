@@ -161,5 +161,5 @@ Ground rules (spec section 2): fill `text` (inverted) or `accent` (accent); fram
 
 ### Task 9: Final live gates and review (controller)
 
-- [ ] **Step 1:** full `make verify-kits` (expect about 85-90 minutes, 0 FAIL), then the full default `verify-recipes` in 4 chunks of about 18 recipes with a fresh login each (expect 0 FAIL), then `node scripts/verify-shapes.cjs fixtures/shapes/candidates/known.json` (PASS, PASS, DEAD, DEAD); check the branch before and after each.
+- [ ] **Step 1:** full `make verify-kits` (expect about 85-90 minutes, 0 FAIL), then `verify-recipes` for the recipes this branch can change, NOT all 71 (owner-approved speed-up A): every recipe that carries a card/panel marker (15) or a kit button marker (about 22; `php scripts/card-migration-report.php --all` and a scan for `"aied"` markers give the list) plus 10 untouched recipes as a guard sample, under the default look and glass-dark (about 30 minutes); then `node scripts/verify-shapes.cjs fixtures/shapes/candidates/known.json` (PASS, PASS, DEAD, DEAD); check the branch before and after each. A failure outside the changed set widens the run to all 71.
 - [ ] **Step 2:** final whole-branch review on the most capable model, one fix wave, one scoped re-review; then the controller merges per the owner's instruction.
