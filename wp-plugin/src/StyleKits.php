@@ -209,7 +209,9 @@ final class StyleKits
     /**
      * A value a recipe can drop in for a `radius-*` or `space-*` token, in the shape Divi stores it, or
      * null for any other name. Radius: the four corners. `space-control`: four sides (top and bottom are
-     * the vertical value, left and right the horizontal one) plus both sync flags on. `space-card`: four sides.
+     * the vertical value, left and right the horizontal one), exactly the form the effect probe proved on a button's
+     * `module.decoration.spacing` (kb-padding-module; the builder's sync flags are only toggles and are not written).
+     * `space-card`: four sides.
      *
      * @param array<string,mixed> $kit
      * @return array<string,string>|null
@@ -228,14 +230,7 @@ final class StyleKits
                 $control    = (array) ( $space['control'] ?? [] );
                 $vertical   = (string) ( $control['vertical'] ?? '' );
                 $horizontal = (string) ( $control['horizontal'] ?? '' );
-                return [
-                    'top'            => $vertical,
-                    'right'          => $horizontal,
-                    'bottom'         => $vertical,
-                    'left'           => $horizontal,
-                    'syncVertical'   => 'on',
-                    'syncHorizontal' => 'on',
-                ];
+                return [ 'top' => $vertical, 'right' => $horizontal, 'bottom' => $vertical, 'left' => $horizontal ];
             case 'space-card':
                 $space = (array) ( $kit['space'] ?? [] );
                 $v     = (string) ( $space['card'] ?? '' );

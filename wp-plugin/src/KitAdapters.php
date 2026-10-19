@@ -15,11 +15,20 @@ require_once __DIR__ . '/StyleKits.php';
  * carries a marker. v1 knows one module, `divi/button`, in two roles (`control`, `control-secondary`) on three
  * surfaces (`light`: the section's bg or surface, `accent`: an accent band, `dark`: a photo or overlay).
  *
- * The button patch writes only `button.decoration.{background,border,font,spacing}` at `desktop` (never innerContent,
- * never `module`), and every path it controls is written explicitly, rest and hover: an absent key would fall back to
- * the site's module preset. Every path is in the shape registry (fixtures/shapes/verified-shapes.json). Colours are
- * `{{aied:color:<role>}}` tokens (the language supplies the value), the radius and padding whole-value kit tokens;
- * the only literal is TRANSPARENT.
+ * The button patch writes only `button.decoration.{background,border,font}` and `module.decoration.spacing` at
+ * `desktop` (never innerContent, nothing else under `module`: a recipe's `module.decoration.layout` and the like survive
+ * the merge), and every path it controls is written explicitly, rest and hover: an absent key would fall back to the
+ * site's module preset. Every path is in the shape registry (fixtures/shapes/verified-shapes.json) and none is in
+ * fixtures/shapes/dead-on-module.txt. Colours are `{{aied:color:<role>}}` tokens (the language supplies the value), the
+ * radius and padding whole-value kit tokens; the only literal is TRANSPARENT.
+ *
+ * Module rule (controller Ruling 10, effect probe 2026-10-18, fixtures/shapes/kit-button-vocabulary.md): on
+ * `divi/button` Divi 5.15.1 drops every `button.decoration` group whose `<name>Group` is render:false (ButtonModule.php
+ * :664-712, :760), so the button ELEMENT's spacing, boxShadow and transform are DEAD (kb-padding-element,
+ * kb-shadow-element-hard, kb-skew-x-element). The control padding is therefore written at
+ * `module.decoration.spacing.desktop.value.padding` (kb-padding-module PASS: Divi prints it on the button element).
+ * The adapter MAY write `module.decoration.spacing`, and later `module.decoration.boxShadow` / `module.decoration.transform`
+ * (proven, not written yet).
  *
  * Role table (final, controller Ruling 6; proven by KitAdaptersTest's contrast proof over every shipped kit x language
  * x role x surface x state, with no exception):
@@ -133,7 +142,11 @@ final class KitAdapters
                             ],
                         ],
                     ],
-                    'spacing'    => [
+                ],
+            ],
+            'module' => [
+                'decoration' => [
+                    'spacing' => [
                         'desktop' => [ 'value' => [ 'padding' => '{{aied:kit:space-control}}' ] ],
                     ],
                 ],

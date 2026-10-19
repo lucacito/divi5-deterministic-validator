@@ -159,6 +159,14 @@ class StyleGuideKitTopicsTest extends TestCase
                 $this->assertSame( array_fill_keys( [ 'topLeft', 'topRight', 'bottomRight', 'bottomLeft' ], $kit['radius']['control'] ), $deco['border']['desktop']['value']['radius'], 'the kit radius is written as the four corners' );
                 $this->assertSame( $kit['text']['weight'], $deco['font']['font']['desktop']['value']['weight'] );
                 $this->assertMatchesRegularExpression( '/^#[0-9a-f]{6}$/i', $deco['font']['font']['desktop']['value']['color'], 'colours are the language values' );
+                // The button padding is the MODULE's spacing (the button element's spacing is dead on divi/button).
+                $this->assertSame(
+                    [ 'top' => $kit['space']['control']['vertical'], 'right' => $kit['space']['control']['horizontal'], 'bottom' => $kit['space']['control']['vertical'], 'left' => $kit['space']['control']['horizontal'] ],
+                    $attrs['module']['decoration']['spacing']['desktop']['value']['padding'],
+                    'the kit padding is written on module.decoration.spacing'
+                );
+                $this->assertArrayNotHasKey( 'spacing', $deco, 'never on button.decoration.spacing' );
+                $this->assertSame( [ 'display' => 'block' ], $attrs['module']['decoration']['layout']['desktop']['value'], 'the module layout survives' );
             }
             $this->assertSame( 'solid' === $kit['fill'] ? $editorial['colors'][ $kit['color'] ] ?? $editorial['colors'][ str_replace( '-', '_', $kit['color'] ) ] : KitAdapters::TRANSPARENT, $primary['button']['decoration']['background']['desktop']['value']['color'], 'the primary fill follows the kit' );
             $this->assertNotSame(

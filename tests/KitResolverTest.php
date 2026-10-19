@@ -97,7 +97,7 @@ class KitResolverTest extends TestCase
         $this->assertSame( [ 'text' => 'Learn More', 'id' => 0 ], $attrs['button']['innerContent']['desktop']['value'] );
         $this->assertSame( [ 'default' ], $attrs['modulePreset'] );
         $this->assertSame(
-            [ 'top' => '14px', 'right' => '28px', 'bottom' => '14px', 'left' => '28px', 'syncVertical' => 'on', 'syncHorizontal' => 'on' ],
+            [ 'top' => '14px', 'right' => '28px', 'bottom' => '14px', 'left' => '28px' ],
             $attrs['button']['decoration']['spacing']['desktop']['value']['padding'],
             'a kit token the adapter emits is resolved too'
         );

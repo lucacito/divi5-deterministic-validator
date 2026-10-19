@@ -1,0 +1,8 @@
+# Attribute paths that ARE in the path-only registry (fixtures/shapes/verified-shapes.json, usually from another module's
+# export) but are DEAD on a given module, measured by the effect probe on the real Divi 5.15.1. Any block of that module
+# whose attributes use the path, or anything below it, fails the lint (tests/Support/DeadOnModule.php).
+#
+# Line: module|path prefix|evidence id (docs/shape-evidence-5.15.1.md)|reason
+divi/button|button.decoration.spacing|kb-padding-element|Divi drops button.decoration groups whose <name>Group is render:false (ButtonModule.php:664-712, :760); use module.decoration.spacing (kb-padding-module PASS)
+divi/button|button.decoration.boxShadow|kb-shadow-element-hard|same sanitiser drops it; a button shadow is module.decoration.boxShadow
+divi/button|button.decoration.transform|kb-skew-x-element|not a declared button.decoration group; a button transform is module.decoration.transform

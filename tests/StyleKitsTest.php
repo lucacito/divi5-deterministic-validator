@@ -177,7 +177,7 @@ final class StyleKitsTest extends TestCase
             StyleKits::valueToken($kit, 'radius-media')
         );
         $this->assertSame(
-            [ 'top' => '12px', 'right' => '24px', 'bottom' => '12px', 'left' => '24px', 'syncVertical' => 'on', 'syncHorizontal' => 'on' ],
+            [ 'top' => '12px', 'right' => '24px', 'bottom' => '12px', 'left' => '24px' ],
             StyleKits::valueToken($kit, 'space-control')
         );
         $this->assertSame(

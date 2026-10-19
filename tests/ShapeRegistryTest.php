@@ -10,10 +10,12 @@ use AiEditorDivi5\WP\StyleGuide;
 use AiEditorDivi5\WP\StyleKits;
 use Divi5Validator\Tests\Support\ShapePaths;
 use Divi5Validator\Tests\Support\ShapeRegistry;
+use Divi5Validator\Tests\Support\DeadOnModule;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/Support/ShapePaths.php';
 require_once __DIR__ . '/Support/ShapeRegistry.php';
+require_once __DIR__ . '/Support/DeadOnModule.php';
 foreach ( [ 'ImagePack', 'ImageTokens', 'SectionRecipes', 'StyleGuide', 'StyleKits', 'KitAdapters', 'KitResolver' ] as $shapeRegistryClass ) {
     require_once __DIR__ . '/../wp-plugin/src/' . $shapeRegistryClass . '.php';
 }
@@ -78,6 +80,15 @@ final class ShapeRegistryTest extends TestCase
             $lines[] = $path . ' (' . implode( ', ', $names ) . ')';
         }
         $this->assertSame( [], $lines, "recipe paths with no export or render behind them:\n" . implode( "\n", $lines ) );
+        // The registry is path-only: a path proven on one module can be dead on another (fixtures/shapes/dead-on-module.txt).
+        $dead = DeadOnModule::load();
+        $killed = [];
+        foreach ( $markups as $name => $served ) {
+            foreach ( $dead->violations( $served ) as $v ) {
+                $killed[] = $name . ': ' . $v;
+            }
+        }
+        $this->assertSame( [], $killed, "served recipes use paths that are dead on their module:\n" . implode( "\n", $killed ) );
         // The frozen list of recipe paths still awaiting an export may only shrink: an entry that is now registered
         // (or no longer used by any recipe) must be deleted from it.
         $this->assertSame( [], $problems['stale'], "remove from ungrounded-recipe-paths.txt:\n" . implode( "\n", $problems['stale'] ) );
@@ -214,6 +225,14 @@ final class ShapeRegistryTest extends TestCase
             $problems = array_merge( $problems, $this->topicProblems( $registry, $topic, StyleGuide::markdown( $topic ) ) );
         }
         $this->assertSame( [], $problems, "topic paths (4 or more segments) that are not registered:\n" . implode( "\n", $problems ) );
+        $dead   = DeadOnModule::load();
+        $killed = [];
+        foreach ( array_merge( [ null ], StyleGuide::topics() ) as $topic ) {
+            foreach ( $dead->violations( StyleGuide::markdown( $topic ) ) as $v ) {
+                $killed[] = ( $topic ?? 'default guide' ) . ': ' . $v;
+            }
+        }
+        $this->assertSame( [], $killed, "guide blocks that use paths dead on their module:\n" . implode( "\n", $killed ) );
     }
 
     public function testAnUnregisteredTopicPathFailsTheLint(): void

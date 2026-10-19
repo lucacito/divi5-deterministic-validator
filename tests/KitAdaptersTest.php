@@ -9,8 +9,10 @@ use AiEditorDivi5\WP\KitAdapters;
 use AiEditorDivi5\WP\KitResolver;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\RecipeTokens;
+use AiEditorDivi5\WP\SectionRecipes;
 use AiEditorDivi5\WP\StyleKits;
 use Divi5Validator\Tests\Support\Colour;
+use Divi5Validator\Tests\Support\DeadOnModule;
 use Divi5Validator\Tests\Support\ShapePaths;
 use Divi5Validator\Tests\Support\ShapeRegistry;
 use PHPUnit\Framework\TestCase;
@@ -28,6 +30,7 @@ require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
 require_once __DIR__ . '/Support/ShapePaths.php';
 require_once __DIR__ . '/Support/ShapeRegistry.php';
 require_once __DIR__ . '/Support/Colour.php';
+require_once __DIR__ . '/Support/DeadOnModule.php';
 
 /**
  * The button adapter: a kit's decisions become `divi/button` attributes (colour roles as tokens, radius and padding as
@@ -122,22 +125,30 @@ class KitAdaptersTest extends TestCase
     public function testEveryEmittedPathIsInTheRegistry(): void
     {
         $registry = ShapeRegistry::load();
+        $dead     = DeadOnModule::load();
+        $this->assertNotSame( [], $dead->all(), 'the dead-on-module list must load' );
         $missing  = [];
+        $killed   = [];
         foreach ( $this->allKitVariants() as $label => $kit ) {
             foreach ( self::ROLES as $role ) {
                 foreach ( self::SURFACES as $on ) {
                     $patch = $this->patch( $kit, $role, $on );
-                    // Exactly the four decoration groups of the button element, nothing else.
-                    $this->assertSame( [ 'button' ], array_keys( $patch ) );
+                    // Exactly three decoration groups of the button element and the module's spacing, nothing else.
+                    $this->assertSame( [ 'button', 'module' ], array_keys( $patch ) );
                     $this->assertSame( [ 'decoration' ], array_keys( $patch['button'] ) );
-                    $this->assertEqualsCanonicalizing( [ 'background', 'border', 'font', 'spacing' ], array_keys( $patch['button']['decoration'] ) );
+                    $this->assertEqualsCanonicalizing( [ 'background', 'border', 'font' ], array_keys( $patch['button']['decoration'] ) );
+                    $this->assertSame( [ 'decoration' => [ 'spacing' => [ 'desktop' => [ 'value' => [ 'padding' => '{{aied:kit:space-control}}' ] ] ] ] ], $patch['module'] );
                     // The resolved block (kit tokens expanded) is what reaches the AI: lint its paths.
                     $markup = KitResolver::resolve( $this->buttonBlock( $role, $on ), $kit );
                     $this->assertSame( [], KitResolver::leftovers( $markup ), "$label $role on $on" );
                     foreach ( ShapePaths::fromMarkup( $markup ) as $path ) {
-                        if ( ! $registry->covers( $path ) ) {
+                        if ( ! $registry->coversLeaf( $path ) ) {
                             $missing[ $path ] = $label;
                         }
+                    }
+                    // The registry is path-only; a path it knows from another module can still be dead on a button.
+                    foreach ( $dead->violations( $markup ) as $v ) {
+                        $killed[ $v ] = $label;
                     }
                     // Only the desktop breakpoint is written.
                     $json = (string) json_encode( $patch );
@@ -148,6 +159,7 @@ class KitAdaptersTest extends TestCase
             }
         }
         $this->assertSame( [], $missing, 'the button adapter emits paths the registry does not know' );
+        $this->assertSame( [], array_keys( $killed ), 'the button adapter emits paths that are dead on divi/button' );
     }
 
     public function testPatchValidatesInsideAButtonBlock(): void
@@ -158,7 +170,7 @@ class KitAdaptersTest extends TestCase
                     $markup = KitResolver::resolve( $this->buttonBlock( $role, $on ), $kit );
                     $this->assertStringNotContainsString( '"aied"', $markup, "$label $role on $on keeps its marker" );
                     $this->assertStringContainsString( '"text":"Start here"', $markup, 'innerContent is never touched' );
-                    $this->assertStringContainsString( '"display":"block"', $markup, 'module is never touched' );
+                    $this->assertStringContainsString( '"display":"block"', $markup, 'a recipe\'s module.decoration.layout survives the merge' );
                     $this->assertStringContainsString( '"family":"{{aied:font:body}}"', $markup, 'an untouched recipe value survives the merge' );
                     foreach ( [ null, 'brutalist-flat' ] as $langId ) {
                         $lang     = null === $langId ? RecipeTokens::default() : DesignLanguages::get( $langId );
@@ -331,6 +343,50 @@ class KitAdaptersTest extends TestCase
         $p = $this->patch( $inv, 'control', 'light' )['button']['decoration'];
         $this->assertSame( '{{aied:color:text}}', $p['font']['font']['desktop']['value']['color'] );
         $this->assertStringNotContainsString( '"color":"{{aied:color:inverse}}"', (string) json_encode( [ $p['background'] ] ) );
+    }
+
+    public function testARealRecipeButtonKeepsItsModuleLayoutAndGetsModulePadding(): void
+    {
+        $markup = SectionRecipes::rawMarkup( 'hero-cta' );
+        $this->assertIsString( $markup );
+        $this->assertSame( 1, preg_match( '/<!-- wp:divi\/button (\{.*?"aied":\{"kit":"control"\}\}) \/-->/', $markup, $m ), 'hero-cta carries a control marker' );
+        $before = json_decode( $m[1], true );
+        $this->assertSame( [ 'layout' ], array_keys( $before['module']['decoration'] ) );
+
+        $kit      = StyleKits::get( 'soft-solid' );
+        $this->assertIsArray( $kit );
+        $resolved = KitResolver::resolve( '<!-- wp:divi/button ' . $m[1] . ' /-->', $kit );
+        $this->assertSame( 1, preg_match( '/^<!-- wp:divi\/button (\{.*\}) \/-->$/s', $resolved, $r ) );
+        $after = json_decode( $r[1], true );
+        $this->assertSame( $before['module']['decoration']['layout'], $after['module']['decoration']['layout'], 'the recipe\'s module layout is kept' );
+        $this->assertSame( [ 'layout', 'spacing' ], array_keys( $after['module']['decoration'] ) );
+        $this->assertSame(
+            [ 'top' => $kit['space']['control']['vertical'], 'right' => $kit['space']['control']['horizontal'], 'bottom' => $kit['space']['control']['vertical'], 'left' => $kit['space']['control']['horizontal'] ],
+            $after['module']['decoration']['spacing']['desktop']['value']['padding']
+        );
+        $this->assertArrayNotHasKey( 'spacing', $after['button']['decoration'] );
+        $this->assertSame( $before['button']['innerContent'], $after['button']['innerContent'] );
+        $this->assertSame( $before['modulePreset'], $after['modulePreset'] );
+        $this->assertSame( [], DeadOnModule::load()->violations( $resolved ) );
+    }
+
+    public function testTheDeadOnModuleGuardCatchesWhatItShould(): void
+    {
+        $dead = DeadOnModule::load();
+        $prefixes = array_map( static fn ( array $e ): string => $e['module'] . '|' . $e['prefix'], $dead->all() );
+        foreach ( [ 'divi/button|button.decoration.spacing', 'divi/button|button.decoration.boxShadow', 'divi/button|button.decoration.transform' ] as $expected ) {
+            $this->assertContains( $expected, $prefixes );
+        }
+        $bad = '<!-- wp:divi/button {"button":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"14px"}}}},"boxShadow":{"desktop":{"value":{"style":"preset1"}}}}}} /-->';
+        $this->assertSame(
+            [ 'divi/button: button.decoration.boxShadow.{bp}.value.style (dead: kb-shadow-element-hard)', 'divi/button: button.decoration.spacing.{bp}.value.padding.top (dead: kb-padding-element)' ],
+            $dead->violations( "Some guide text\n```\n$bad\n```\n" )
+        );
+        // The same paths on another module (a slider's button group) and the module-level padding are fine.
+        $this->assertSame( [], $dead->violations( str_replace( 'wp:divi/button', 'wp:divi/slide', $bad ) ) );
+        $this->assertSame( [], $dead->violations( '<!-- wp:divi/button {"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"14px"}}}}}}} /-->' ) );
+        // A prefix does not match a longer sibling name.
+        $this->assertSame( [], $dead->violations( '<!-- wp:divi/button {"button":{"decoration":{"spacingX":{"a":"b"}}}} /-->' ) );
     }
 
     public function testThePatchIsDeterministic(): void
