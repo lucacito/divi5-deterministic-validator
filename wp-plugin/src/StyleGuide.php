@@ -850,6 +850,17 @@ Positions: 4 proven: bottom, none, top, topBottom. none was rendered as a phone 
 section off at 400 px only).
 An offset without a `position` did nothing (rendered: dead). Use one sticky bar per page.
 
+## Sticky group in a column and its limit
+A Group inside a column (a side title that follows the reader), with `position` "top" and `offset.top` "20px", stayed on screen while its
+section scrolled. With no limit it stayed there 600px past the end of the section too (rendered). The limit is
+`module.decoration.sticky.{bp}.value.limit.bottom`. Rendered with a 1200px sibling after the group in its column, at 1280, 900 and 400 px:
+- `limit.bottom`: "section", "row" or "column"
+Rules (rendered, scrolling 150px at a time): with "section" the group stuck inside the section, then stopped with its bottom edge on
+the section's bottom edge and scrolled away with it. One 1,000px jump instead leaves Divi's script mid-update, so a measurement or a
+screenshot taken straight after a long jump can show the group in the wrong place. "body" and "none" are in Divi's own list (source) and were not
+rendered; `limit.top` is the mirror for the positions bottom and topBottom and was not rendered. A section's own list has no section,
+row or column (source), so a sticky section takes no such limit.
+
 ## Using motion well (strategy, not measured)
 One entrance style per page, applied to the hero and the main cards; stagger neighbours by 100 to 200ms of `delay`. Keep
 `scale` on hover small (103 to 108%) and transitions short (200 to 400ms). Scroll effects: one or two gentle ones.
@@ -886,7 +897,7 @@ A bar that sticks to the top of the screen, and a section that fades as it scrol
 
 ## Limits
 Not measured, so do not rely on them: `decoration.interactions` (not built, not taught), scroll effects and sticky on anything but
-a section, sticky limits, offset surrounding and its own transition, other durations, delays and percentages, animation of
+a section or a Group in a column, `limit.top`, offset surrounding and its own transition, other durations, delays and percentages, animation of
 elements below the fold, and how any motion looks. Divi's animation, scroll and sticky code was searched for a reduced-motion
 rule and none was found, so keep motion short and gentle; the plugin cannot add one.
 MD;
@@ -1950,6 +1961,8 @@ semi-transparent + border recipe above for the glass look.
 **Sticky** (a header bar that stays on screen while the page scrolls), on a section, row or module:
 `module.decoration.sticky.{bp}.value.position` = "top" (or "bottom", or "topBottom"), and optionally
 `module.decoration.sticky.{bp}.value.offset.top` = "20px" (the gap from the top of the screen).
+A sticky element keeps following the reader past the end of its section unless it has a limit: `module.decoration.sticky.{bp}.value.limit.bottom`
+= "section" (on a Group in a column, with position "top"; see topic `motion`).
 **Scroll effects** (a section that drifts, fades, scales, rotates or blurs as the page scrolls):
 `module.decoration.scroll.{bp}.value.verticalMotion.enable` = "on". The same shape turns on
 `horizontalMotion`, `fade`, `scaling`, `rotating` and `blur` (each also has `viewport` {top, start, end, bottom} and

@@ -18938,3 +18938,71 @@ Phone overflow at 400 px: no.
 Note: Does a card with a 24px radius clip a full-width image child on a column (module.decoration is the card's own element)? PASS only if the child image's corners are clipped (the card gets overflow hidden); otherwise recorded DEAD for the clip with the reason. The image is the first child, so its top corners touch the card's. Also read the card's computed overflow in changedProps. RESULT (separate pixel check, Docker site, Divi 5.15.1, 1280 and 400 px): writing a radius makes Divi print overflow:hidden on the column (computed overflow visible -> hidden, radius 24px), and a full-width image that touches the card's top-left corner is clipped: the screenshot pixel 2px inside the corner is white (the page) with the radius and the image's blue without it, on both widths. The probe's computed-style diff shows the card's overflow-x/overflow-y/overflow-block/overflow-inline change. The image's own border-radius stays 0px: the clip is the card's, not a radius on the child. Side effect: overflow:hidden also clips anything of a child that spills out of the card.
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-st-limit-bottom-section
+
+Block: `group`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, with `group` after it in the same container, measured in the `scroll` state (element centre at -2 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.desktop.value.limit.bottom` = `"section"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | no | `0:div:bottom: 808px -> 254px` |
+| 900 px | yes | 5 | no | `0:div:bottom: 808px -> 254px` |
+| 400 px | yes | 5 | no | `0:div:bottom: 840px -> 332px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `margin-block-start`, `margin-top`, `rect:top`.
+
+Phone overflow at 400 px: no.
+
+Note: A sticky GROUP inside a column (position top, offset.top 20px) with a 1200px sibling after it in the same column, between two tall sections. Scrolled (scrollAt -2) so the viewport top is about 500px below the bottom of the section: without a limit Divi's sticky script keeps the group stuck at the top of the screen; with limit.bottom it must have stopped at that limit and scrolled away with the section. Divi 5.15.1 source: limit.top / limit.bottom, values none|body|section|row|column (includes/builder/module/field/Sticky.php get_limit_options, includes/builder-5/server/Packages/Conversion/AdvancedOptionConversion.php $stickyConversionMap 'limit.bottom', scripts/utils/sticky.js getLimit validLimits). A section's own limit list has no section/row/column (Sticky.php get_limit_options); a group is a module, so it has all of them. The probe scrolls in ONE jump, which leaves Divi's sticky script mid-update, so it proves only that the key changes the page. The behaviour itself (the group sticks inside the section, stops with its bottom edge on the section's bottom edge and scrolls away with it; without the limit it keeps following the reader 600px past the end of the section) is measured with scrolling in 150px steps by `make verify-guide-shapes` (step 7b).
+
+Registered paths added:
+
+- `module.decoration.sticky.{bp}.value.limit.bottom`
+
+## mo-st-limit-bottom-row
+
+Block: `group`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, with `group` after it in the same container, measured in the `scroll` state (element centre at -2 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.desktop.value.limit.bottom` = `"row"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | no | `0:div:bottom: 808px -> 198px` |
+| 900 px | yes | 5 | no | `0:div:bottom: 808px -> 198px` |
+| 400 px | yes | 5 | no | `0:div:bottom: 840px -> 276px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `margin-block-start`, `margin-top`, `rect:top`.
+
+Phone overflow at 400 px: no.
+
+Note: A sticky GROUP inside a column (position top, offset.top 20px) with a 1200px sibling after it in the same column, between two tall sections. Scrolled (scrollAt -2) so the viewport top is about 500px below the bottom of the section: without a limit Divi's sticky script keeps the group stuck at the top of the screen; with limit.bottom it must have stopped at that limit and scrolled away with the section. Divi 5.15.1 source: limit.top / limit.bottom, values none|body|section|row|column (includes/builder/module/field/Sticky.php get_limit_options, includes/builder-5/server/Packages/Conversion/AdvancedOptionConversion.php $stickyConversionMap 'limit.bottom', scripts/utils/sticky.js getLimit validLimits). A section's own limit list has no section/row/column (Sticky.php get_limit_options); a group is a module, so it has all of them. The probe scrolls in ONE jump, which leaves Divi's sticky script mid-update, so it proves only that the key changes the page. The behaviour itself (the group sticks inside the section, stops with its bottom edge on the section's bottom edge and scrolls away with it; without the limit it keeps following the reader 600px past the end of the section) is measured with scrolling in 150px steps by `make verify-guide-shapes` (step 7b).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## mo-st-limit-bottom-column
+
+Block: `group`, with 1 plain neighbour section(s) before it, with 1 plain neighbour section(s) after it, with `group` after it in the same container, measured in the `scroll` state (element centre at -2 x the viewport height). Set on top of the base block:
+
+- `module.decoration.sticky.desktop.value.limit.bottom` = `"column"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 5 | no | `0:div:bottom: 808px -> 198px` |
+| 900 px | yes | 5 | no | `0:div:bottom: 808px -> 198px` |
+| 400 px | yes | 5 | no | `0:div:bottom: 840px -> 276px` |
+
+Properties that changed (any width): `bottom`, `inset-block-end`, `margin-block-start`, `margin-top`, `rect:top`.
+
+Phone overflow at 400 px: no.
+
+Note: A sticky GROUP inside a column (position top, offset.top 20px) with a 1200px sibling after it in the same column, between two tall sections. Scrolled (scrollAt -2) so the viewport top is about 500px below the bottom of the section: without a limit Divi's sticky script keeps the group stuck at the top of the screen; with limit.bottom it must have stopped at that limit and scrolled away with the section. Divi 5.15.1 source: limit.top / limit.bottom, values none|body|section|row|column (includes/builder/module/field/Sticky.php get_limit_options, includes/builder-5/server/Packages/Conversion/AdvancedOptionConversion.php $stickyConversionMap 'limit.bottom', scripts/utils/sticky.js getLimit validLimits). A section's own limit list has no section/row/column (Sticky.php get_limit_options); a group is a module, so it has all of them. The probe scrolls in ONE jump, which leaves Divi's sticky script mid-update, so it proves only that the key changes the page. The behaviour itself (the group sticks inside the section, stops with its bottom edge on the section's bottom edge and scrolls away with it; without the limit it keeps following the reader 600px past the end of the section) is measured with scrolling in 150px steps by `make verify-guide-shapes` (step 7b).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).

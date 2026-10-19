@@ -412,6 +412,26 @@ class StyleGuideMotionTopicTest extends TestCase
         $this->assertSame( '300ms', $cands['mo-tr-duration-tablet']['base']['module']['decoration']['transition']['desktop']['value']['duration'] );
     }
 
+    /**
+     * The bottom limit of a sticky Group (the "side title that stops at the end of its section"): taught only because the effect probe
+     * moved the group for each of the three limits it names (fixtures/shapes/candidates/sticky-limit.json), and the behaviour was
+     * measured with `make verify-guide-shapes` step 7b. What was not rendered is said so.
+     */
+    public function testStickyLimitIsTaughtOnlyForWhatWasProbed(): void
+    {
+        $registry = ShapeRegistry::load();
+        $this->assertTrue( $registry->covers( 'module.decoration.sticky.{bp}.value.limit.bottom' ), 'the path is registered (probe-proven)' );
+        $this->assertFalse( $registry->covers( 'module.decoration.sticky.{bp}.value.limit.top' ), 'limit.top was not rendered, so it is not registered' );
+        $cands = json_decode( (string) file_get_contents( dirname( __DIR__ ) . '/fixtures/shapes/candidates/sticky-limit.json' ), true );
+        $this->assertSame( [ 'mo-st-limit-bottom-section', 'mo-st-limit-bottom-row', 'mo-st-limit-bottom-column' ], array_column( $cands, 'id' ) );
+        $motion = preg_replace( '/\s+/', ' ', $this->topic( 'motion' ) ) ?? '';
+        foreach ( [ '## Sticky group in a column and its limit', '`limit.bottom`: "section", "row" or "column"', 'stopped with its bottom edge on the section\'s bottom edge', '"body" and "none" are in Divi\'s own list (source) and were not rendered', '`limit.top` is the mirror for the positions bottom and topBottom and was not rendered' ] as $needle ) {
+            $this->assertStringContainsString( $needle, $motion, $needle );
+        }
+        $this->assertStringContainsString( 'limit.bottom', StyleGuide::markdown(), 'the default guide points at the limit' );
+        $this->assertStringContainsString( 'topic `motion`', StyleGuide::markdown() );
+    }
+
     public function testStickyEdgeClaimIsOnlyForTopAndHostsAreScopedToWhatWasMeasured(): void
     {
         [ $cands ] = $this->evidence();

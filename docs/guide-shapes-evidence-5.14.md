@@ -31,6 +31,20 @@ Measured: a 16:9 and a 1:1 source image side by side render at **484x363 and 484
 Not enough on their own: a fixed `height` (heights match, widths do not: 356x200 vs 200x200).
 Source of the key names: Divi's own `FitStyle` (`objectFit`, `objectPosition`) and `Sizing` (`aspectRatio.width|height`) classes, then proven by the render above.
 
+## "Make the sticky side title stop at the end of its section": `limit.bottom` = "section" (Divi 5.15.1, found 2026-10-19)
+
+A sticky Group in a column (`module.decoration.sticky.{bp}.value` = `{"position":"top","offset":{"top":"20px"}}`) keeps following the reader to the
+end of the page: with no limit it was still at the top of the screen 600px past the end of its section (`top 52` three times).
+The limit is `module.decoration.sticky.{bp}.value.limit.bottom`. Values (Divi source: `Sticky.php` `get_limit_options`, `AdvancedOptionConversion::$stickyConversionMap`
+`limit.bottom`, `scripts/utils/sticky.js` `getLimit`): `none` (default), `body`, `section`, `row`, `column`; a section's own list leaves out section, row and column.
+
+Measured (`make verify-guide-shapes` step 7b, scrolling 150px at a time): with `"section"` the group stuck inside the section (top 52), then stopped
+with its bottom edge on the section's bottom edge (bottom -600 = section bottom -600) and scrolled away with it. Also measured on the owner's real page
+(two sticky titles beside long columns): groupBottom -401 against sectionBottom -400 after the section ended.
+The effect probe (`fixtures/shapes/candidates/sticky-limit.json`, `docs/shape-evidence-5.15.1.md`) moved the group for `section`, `row` and `column` at 1280, 900 and 400 px.
+Not rendered: `body`, `none`, `limit.top`. A single 1,000px scroll jump leaves Divi's sticky script mid-update (the group ended up below the section), so
+measure sticky by scrolling in steps.
+
 ## Corrections to the first draft of this guidance
 
 An earlier draft taught `decoration.fit.{bp}.value.type`, `image.innerContent...forceFullwidth: true` and gallery `aspect-ratio` paths. Rendering them

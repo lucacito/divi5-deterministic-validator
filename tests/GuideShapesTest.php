@@ -84,7 +84,7 @@ final class GuideShapesTest extends TestCase
             $this->assertValid( '<!-- wp:divi/placeholder -->' . $this->block( 'section', [ 'module' => [ 'decoration' => [ $key => $value ] ], 'builderVersion' => '5.15.1' ], '' ) . '<!-- /wp:divi/placeholder -->' );
         }
         $g = StyleGuide::markdown();
-        foreach ( [ 'module.decoration.sticky.{bp}.value.position', '"topBottom"', 'offset.top', 'module.decoration.scroll.{bp}.value.verticalMotion.enable', '`fade`', 'Do not guess other names' ] as $needle ) {
+        foreach ( [ 'module.decoration.sticky.{bp}.value.position', '"topBottom"', 'offset.top', 'module.decoration.scroll.{bp}.value.verticalMotion.enable', '`fade`', 'Do not guess other names', 'module.decoration.sticky.{bp}.value.limit.bottom', '"section"' ] as $needle ) {
             $this->assertStringContainsString( $needle, $g, $needle );
         }
     }

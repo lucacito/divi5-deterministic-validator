@@ -148,6 +148,36 @@ function makePage(label, content) {
     check(topNone[0] - topNone[1] >= 500, `without sticky the section scrolls with the page: its top is ${topNone[0]}px then ${topNone[1]}px after scrolling 600px more`);
     check(topSticky[0] >= 0 && topSticky[0] <= 160 && Math.abs(topSticky[0] - topSticky[1]) <= 2, `position "top" with offset.top 20px keeps it fixed near the top of the screen: ${topSticky[0]}px then ${topSticky[1]}px after scrolling 600px more`);
 
+    // ---- 7b. a sticky GROUP in a column (a side heading that follows the reader) and its bottom limit
+    // Divi 5.15.1 source: module.decoration.sticky.{bp}.value.limit.bottom = none | body | section | row | column (Sticky.php get_limit_options; the section's own list has no section/row/column).
+    const stickyGroup = (limit) => block('group', { module: { decoration: { sticky: { desktop: { value: Object.assign({ position: 'top', offset: { top: '20px' } }, limit ? { limit: { bottom: limit } } : {}) } } } }, builderVersion: V }, mod('heading', { title: { innerContent: { desktop: { value: 'STICKYMARK' } } } }, {}));
+    const tallGroup = block('group', { module: { decoration: { sizing: { desktop: { value: { minHeight: '1200px' } } } } }, builderVersion: V }, mod('text', { content: { innerContent: { desktop: { value: '<p>COLTALL</p>' } } } }, {}));
+    const limitPage = (limit) => '<!-- wp:divi/placeholder -->' + spacer + sectionWith({}, oneColumn([stickyGroup(limit), tallGroup])) + tall + '<!-- /wp:divi/placeholder -->';
+    const limitRun = (id_) => measure(id_, 1280, async () => {
+      const g = [...document.querySelectorAll('.et_pb_group')].find((e) => e.textContent.includes('STICKYMARK') && !e.textContent.includes('COLTALL'));
+      const sec = g.closest('.et_pb_section');
+      const secTop = sec.getBoundingClientRect().top + window.scrollY;
+      const secBottom = sec.getBoundingClientRect().bottom + window.scrollY;
+      const out = [];
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      // Divi's sticky script follows scroll events, so scroll the way a reader does (150px at a time), then let it settle: one 1000px jump leaves it mid-update.
+      const go = async (y) => { let cur = window.scrollY; while (Math.abs(y - cur) > 1) { cur += (y > cur ? 1 : -1) * Math.min(150, Math.abs(y - cur)); window.scrollTo(0, cur); await sleep(120); } await sleep(900); };
+      for (const y of [secTop + 300, secBottom - 450, secBottom + 600]) {
+        await go(y);
+        const gr = g.getBoundingClientRect();
+        out.push({ top: Math.round(gr.top), bottom: Math.round(gr.bottom), sectionBottom: Math.round(sec.getBoundingClientRect().bottom) });
+      }
+      return out;
+    });
+    id = makePage('sticky-group-nolimit', limitPage(null));
+    const lNone = await limitRun(id);
+    id = makePage('sticky-group-limit-section', limitPage('section'));
+    const lSec = await limitRun(id);
+    const desc = (r) => r.map((x) => `top ${x.top}, bottom ${x.bottom} (section bottom ${x.sectionBottom})`).join(' | ');
+    check(lNone.every((x) => x.top >= 0 && x.top <= 160), `a sticky group with no limit keeps following the reader past the end of its section: ${desc(lNone)}`);
+    check(lSec[0].top >= 0 && lSec[0].top <= 160 && lSec[1].top >= 0 && lSec[1].top <= 160, `limit.bottom "section": the group still sticks inside the section: ${desc(lSec)}`);
+    check(lSec[2].bottom <= lSec[2].sectionBottom + 2 && lSec[2].top < 0, `limit.bottom "section": past the end of the section the group has stopped at it and scrolled away: ${desc(lSec)}`);
+
     // ---- 8. a scroll effect (real Divi 5.15.1 builder save: module.decoration.scroll.desktop.value.verticalMotion.enable = "on"; the other effects use the same group, defined in Divi's own ScrollEffectsUtils::$scroll_effect_default_group_attr)
     const effectSection = (effects) => sectionWith(effects ? { module: { decoration: { scroll: { desktop: { value: effects } } } } } : {}, oneColumn([mod('heading', { title: { innerContent: { desktop: { value: 'STICKYMARK' } } } }, {})]));
     const effectProbe = (id_) => measure(id_, 1280, async () => {
