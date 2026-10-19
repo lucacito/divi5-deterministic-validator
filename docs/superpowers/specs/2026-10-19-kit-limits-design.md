@@ -328,11 +328,13 @@ forms, blurb and testimonial adapters (the accordion adapter is the next project
   inverted band contrast has a measured least of 11.978:1 (organic-warm).
 - The kit topics have 8 B of headroom (see T7).
 
-**Live gates.** The full gates (full make verify-kits, the narrowed recipe render, verify-shapes) were pending when this
-section was written; the controller records their results in the ledger and updates this paragraph. Results already recorded
-in the ledger: the T1 hover measurement (above) and hero-gradient-stats 24 PASS, 0 FAIL (default + 7 languages x 3 widths);
-the T4 smoke 18 PASS, 0 FAIL; the T5 render of three recipes 72 PASS, 0 FAIL. The T6 pricing-three-tier render (x 8 looks)
-result is pending.
+**Live gates (Divi 5.15.1, 2026-10-19, head 3b2ef9d).** The full `make verify-kits`: 264 PASS, 0 FAIL over 88 kit/language cells
+(each cell now renders 20 cards, the inverted and accent grounds, the panel buttons and a featured middle card; it took about
+1 h 57 min, against about 70 minutes for the card gate). The narrowed recipe render (the 29 recipes that carry a kit marker plus
+10 untouched recipes drawn at random with seed 19, default look and glass-dark, 3 widths): 234 PASS, 0 KNOWN-FAIL, 0 FAIL, 0
+low-contrast advisories. `verify-shapes`: the probe agrees with every expectation (PASS, PASS, DEAD, DEAD). Earlier per-task
+results: the T1 hover measurement (above) and hero-gradient-stats 24 PASS; the T4 smoke 18 PASS; the T5 render of three recipes
+72 PASS; the T6 pricing-three-tier render 24 PASS (default + 7 languages x 3 widths); all 0 FAIL.
 
 **Owner decisions left.** Merge and release; the accordion/toggle adapter next (its `kit-rules` topic frees the kit-topic
 headroom), then forms and blurb; image-to-layout later.
