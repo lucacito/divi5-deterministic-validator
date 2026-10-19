@@ -69,15 +69,11 @@ class RecipeLibraryTest extends TestCase
 
     /**
      * Recipe buttons deliberately NOT driven by a style kit: "recipe#index" (the index counts the recipe's buttons in
-     * markup order) => why. Shrink-only. Both sit on a `text`-coloured (inverted) panel, a surface the button adapter
-     * does not have: its `light` ink is `text` (invisible on the panel) and its `dark` ink is `inverse`, which is light on
-     * a light `text` panel in the dark languages (glass-dark, tech-mono, luxe). They keep their own colours until the
-     * adapter learns an inverted surface.
+     * markup order) => why. Shrink-only, and EMPTY since kit-limits Task 5: the two buttons that sat on `text`-coloured
+     * panels (compare-two-panels#0, pricing-two-plan-highlight#1) are kit-driven on the `panel` surface. It stays as a
+     * guard: nothing may be added.
      */
-    private const BESPOKE_BUTTONS = [
-        'compare-two-panels#0'         => 'solid accent button on the text-coloured "after" panel (no adapter surface for an inverted panel)',
-        'pricing-two-plan-highlight#1' => 'bg-filled button on the text-coloured highlighted plan (no adapter surface for an inverted panel)',
-    ];
+    private const BESPOKE_BUTTONS = [];
 
     /**
      * Label roles a style kit's BUTTON may bring that a recipe need not declare: [label, fill], where the fill names the
@@ -100,6 +96,9 @@ class RecipeLibraryTest extends TestCase
     /** The file size before the card migration (card adapter plan, Task 7): the recipe file must end below it (spec section 4). */
     private const SIZE_BEFORE_CARDS = 695877;
 
+    /** The file size before the four grounds and two panel buttons were migrated (kit-limits plan, Task 5): the file must end below it. */
+    private const SIZE_BEFORE_GROUNDS = 683633;
+
     /** The file size before the column cards were migrated (card adapter plan, Task 9; the end of Task 8). */
     private const SIZE_BEFORE_COLUMNS = 688186;
 
@@ -111,22 +110,18 @@ class RecipeLibraryTest extends TestCase
      *
      * SHRINK-ONLY (testBespokeCardsAreListedAndShrinkOnly): it can never hold more than BESPOKE_CARDS_MAX entries, a listed
      * block that gets a marker fails until its entry is removed, and the migration tasks lower BESPOKE_CARDS_MAX as they
-     * remove entries. The inverted surfaces stay (spec "Inverted surfaces": no adapter role for a text-coloured or accent
-     * ground in v1) and the FEATURED plan column of pricing-three-tier (its frame and shadow ARE the highlight). Tasks 7-9
-     * migrated every other group and column card. A bespoke group or column that sits beside a kit card takes the kit's corner
-     * radius through the whole-value token `{{aied:kit:radius-card}}` (testBespokeCornersFollowTheKit), so the pair never has
-     * mismatched corners; its fill, frame and padding stay.
+     * remove entries. Tasks 7-9 migrated every group and column card; kit-limits Task 5 migrated the four inverted/accent
+     * grounds (marker field `ground`). What is left is the FEATURED plan column of pricing-three-tier (kit-limits Task 6).
+     * A bespoke group or column that sits beside a kit card takes the kit's corner radius through the whole-value token
+     * `{{aied:kit:radius-card}}` (testBespokeCornersFollowTheKit), so the pair never has mismatched corners; its fill,
+     * frame and padding stay.
      */
     private const BESPOKE_CARDS = [
-        'divi/group|compare-two-panels|7'          => 'inverted text-coloured "after" panel: no adapter role for an inverted ground',
-        'divi/group|features-bento|1'              => 'accent bento tile: no adapter role for an inverted ground',
-        'divi/group|features-bento|3'              => 'inverted bento tile: no adapter role for an inverted ground',
-        'divi/group|pricing-two-plan-highlight|8'  => 'inverted text-coloured highlighted plan: no adapter role for an inverted ground',
         'divi/column|pricing-three-tier|2'         => 'the featured plan: it keeps its own 2px accent frame, fill and shadow to stand out from its two neighbours (a kit would give all three plans the same frame and erase the highlight); its corners follow the kit through the radius token',
     ];
 
     /** The most entries BESPOKE_CARDS may hold. It may only be LOWERED (in the commit that removes entries), never raised. */
-    private const BESPOKE_CARDS_MAX = 5;
+    private const BESPOKE_CARDS_MAX = 1;
 
     /** Every card surface the report found when the card adapter started (Task 2): each one is either marked or listed. */
     private const CARD_SURFACES_KNOWN = 32;
@@ -543,7 +538,7 @@ class RecipeLibraryTest extends TestCase
                 $this->assertArrayNotHasKey( 'hover', $font['desktop'] ?? [], "$key: the kit writes the hover label" );
             }
         }
-        $this->assertLessThanOrEqual( 2, count( self::BESPOKE_BUTTONS ), 'shrink-only by test: the bespoke list can never grow past today\'s 2' );
+        $this->assertSame( 0, count( self::BESPOKE_BUTTONS ), 'shrink-only by test: no recipe button is bespoke any more, and none may be added' );
         $this->assertSame( 28, $total, 'the recipes hold 28 buttons (update this count with the recipes)' );
         $this->assertSame( array_keys( self::BESPOKE_BUTTONS ), $bespoke, 'every bespoke entry names a real button that is still bespoke' );
         $this->assertSame( $total - count( self::BESPOKE_BUTTONS ), $migrated );
@@ -611,8 +606,10 @@ class RecipeLibraryTest extends TestCase
                 $marker = $b->attrs()['aied'] ?? null;
                 $out[ '#' . count( $out ) ] = [ is_array( $marker ) ? $marker : null, [] === $surfaces ? 'light' : (string) end( $surfaces ) ];
             }
-            // A card/panel marker's block is filled by the kit with `surface` (or `bg` on a surface band): light for a button.
-            $own = null === self::cardMarker( $b->attrs() ) ? self::surfaceOf( $b->attrs() ) : 'light';
+            // A card/panel marker's block is filled by the kit with `surface` (or `bg` on a surface band): light for a button;
+            // on an `inverted` ground (`text`) it is the `panel` surface, on an `accent` ground the accent band.
+            $cardMarker = self::cardMarker( $b->attrs() );
+            $own        = null === $cardMarker ? self::surfaceOf( $b->attrs() ) : ( [ 'inverted' => 'panel', 'accent' => 'accent' ][ $cardMarker[2] ?? '' ] ?? 'light' );
             if ( null !== $own ) {
                 $surfaces[] = $own;
             }
@@ -640,7 +637,7 @@ class RecipeLibraryTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 26, $checked, 'every kit marker is checked (update with the recipes)' );
+        $this->assertSame( 28, $checked, 'every kit marker is checked (update with the recipes)' );
         $this->assertSame( [], $problems, 'a button\'s "on" must name the band it really sits on, or the kit picks unreadable colours' );
     }
 
@@ -670,13 +667,62 @@ class RecipeLibraryTest extends TestCase
         // A kit-filled card (its literal background moved to the kit) is light ground for the button inside it.
         $panel = '<!-- wp:divi/group {"aied":{"kit":"panel","on":"accent"}} -->' . $btn( $m ) . '<!-- /wp:divi/group -->';
         $this->assertSame( 'light', self::buttonSurfaces( $sec( $bg( '{"color":"{{aied:color:accent}}"}' ), $panel ) )['#0'][1] );
+        // An inverted ground makes a `panel` surface, an accent ground the accent band; a plain card stays light.
+        $ground = static fn ( string $g, string $inner ): string => '<!-- wp:divi/group {"aied":{"kit":"card","on":"light","ground":"' . $g . '"}} -->' . $inner . '<!-- /wp:divi/group -->';
+        $page   = static fn ( string $inner ): string => $sec( $bg( '{"color":"{{aied:color:bg}}"}' ), $inner );
+        $this->assertSame( 'panel', self::buttonSurfaces( $page( $ground( 'inverted', $btn( $m ) ) ) )['#0'][1] );
+        $this->assertSame( 'accent', self::buttonSurfaces( $page( $ground( 'accent', $btn( $m ) ) ) )['#0'][1] );
+        $this->assertSame( 'light', self::buttonSurfaces( $page( $panel . $ground( 'inverted', '' ) ) )['#0'][1], 'a sibling ground never leaks' );
     }
 
     /**
-     * [role, on] of a card/panel marker in $attrs, or null (a button role is no card marker). A card/panel marker without
-     * a string `on` throws: the resolver would default it to `light`, and a recipe card must say where it sits.
+     * The buttons marked `on:"panel"` that do NOT sit inside an inverted ground ("<id> <why>"). A `panel` button gets a `bg`
+     * fill and `text` label for a `text`-coloured panel; anywhere else it would be invisible or unreadable.
      *
-     * @return array{0:string,1:string}|null
+     * @return list<string>
+     */
+    private static function panelButtonProblems( string $label, string $markup ): array
+    {
+        $out = [];
+        foreach ( self::buttonSurfaces( $markup ) as $index => [ $marker, $surface ] ) {
+            if ( 'panel' === ( $marker['on'] ?? null ) && 'panel' !== $surface ) {
+                $out[] = "$label$index: on=panel, but it has no inverted-ground ancestor (its surface is $surface)";
+            }
+        }
+        return $out;
+    }
+
+    public function testAPanelButtonSitsInAnInvertedGround(): void
+    {
+        $problems = [];
+        $panels   = 0;
+        foreach ( SectionRecipes::names() as $name ) {
+            $raw = (string) SectionRecipes::rawMarkup( $name );
+            $problems = array_merge( $problems, self::panelButtonProblems( $name, $raw ) );
+            $panels  += count( array_filter( self::buttonSurfaces( $raw ), static fn ( array $b ): bool => 'panel' === ( $b[0]['on'] ?? null ) ) );
+        }
+        $this->assertSame( [], $problems );
+        $this->assertSame( 2, $panels, 'compare-two-panels#0 and pricing-two-plan-highlight#1 are the panel buttons' );
+
+        // Planted: a panel button on a bare page, in a plain card, in an accent ground, or in a literal text section fails;
+        // in an inverted ground (also through a nested wrapper) it passes.
+        $btn    = '<!-- wp:divi/button {"aied":{"kit":"control","on":"panel"}} /-->';
+        $grp    = static fn ( string $marker, string $inner ): string => '<!-- wp:divi/group {"aied":' . $marker . '} -->' . $inner . '<!-- /wp:divi/group -->';
+        $inv    = '{"kit":"panel","on":"light","ground":"inverted"}';
+        $this->assertCount( 1, self::panelButtonProblems( 'p', $btn ) );
+        $this->assertCount( 1, self::panelButtonProblems( 'p', $grp( '{"kit":"card","on":"light"}', $btn ) ) );
+        $this->assertCount( 1, self::panelButtonProblems( 'p', $grp( '{"kit":"card","on":"light","ground":"accent"}', $btn ) ) );
+        $this->assertCount( 1, self::panelButtonProblems( 'p', '<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"{{aied:color:text}}"}}}}}} -->' . $btn . '<!-- /wp:divi/section -->' ) );
+        $this->assertSame( [], self::panelButtonProblems( 'p', $grp( $inv, $btn ) ) );
+        $this->assertSame( [], self::panelButtonProblems( 'p', $grp( $inv, '<!-- wp:divi/group {} -->' . $btn . '<!-- /wp:divi/group -->' ) ) );
+    }
+
+    /**
+     * [role, on] of a card/panel marker in $attrs, plus the ground as a third element when the marker names one (`inverted`
+     * or `accent`), or null (a button role is no card marker). A card/panel marker without a string `on` throws: the
+     * resolver would default it to `light`, and a recipe card must say where it sits. A ground that is not a string throws.
+     *
+     * @return array{0:string,1:string,2?:string}|null
      */
     private static function cardMarker( array $attrs ): ?array
     {
@@ -686,6 +732,12 @@ class RecipeLibraryTest extends TestCase
         }
         if ( ! is_string( $m['on'] ?? null ) || '' === $m['on'] ) {
             throw new \UnexpectedValueException( 'a ' . $m['kit'] . ' marker without "on": a recipe card must name its band, never default to light' );
+        }
+        if ( array_key_exists( 'ground', $m ) ) {
+            if ( ! is_string( $m['ground'] ) || '' === $m['ground'] ) {
+                throw new \UnexpectedValueException( 'a ' . $m['kit'] . ' marker with a "ground" that is not a string' );
+            }
+            return [ (string) $m['kit'], $m['on'], $m['ground'] ];
         }
         return [ (string) $m['kit'], $m['on'] ];
     }
@@ -743,6 +795,10 @@ class RecipeLibraryTest extends TestCase
     {
         $marker = self::cardMarker( $attrs );
         if ( null !== $marker ) {
+            if ( isset( $marker[2] ) ) {
+                // A ground card is filled `text` (inverted: no card band) or `accent`.
+                return 'accent' === $marker[2] ? 'accent' : 'other:text';
+            }
             return 'surface' === $marker[1] ? 'light' : 'surface';
         }
         $v = $attrs['module']['decoration']['background']['desktop']['value'] ?? null;
@@ -807,17 +863,34 @@ class RecipeLibraryTest extends TestCase
         return $out;
     }
 
+    /**
+     * What is wrong with the card markers of one markup ([] = fine): `on` must equal the band the marker really sits on, and
+     * a `ground` (inverted or accent) may sit only on a `light` or `surface` band.
+     *
+     * @return list<string>
+     */
+    private static function bandProblems( string $label, string $markup, int &$checked = 0 ): array
+    {
+        $out = [];
+        foreach ( self::cardBands( $markup ) as $key => [ $marker, $band ] ) {
+            ++$checked;
+            $on = $marker[1];
+            if ( $on !== $band ) {
+                $out[] = "$label $key: marker on=$on, but the nearest ground makes it $band";
+            }
+            if ( isset( $marker[2] ) && ! in_array( $band, [ 'light', 'surface' ], true ) ) {
+                $out[] = "$label $key: ground {$marker[2]} on a $band band (a ground sits on a light or surface band only)";
+            }
+        }
+        return $out;
+    }
+
     public function testCardMarkersMatchTheirBand(): void
     {
         $checked  = 0;
         $problems = [];
         foreach ( SectionRecipes::names() as $name ) {
-            foreach ( self::cardBands( (string) SectionRecipes::rawMarkup( $name ) ) as $key => [ [ , $on ], $band ] ) {
-                ++$checked;
-                if ( $on !== $band ) {
-                    $problems[] = "$name $key: marker on=$on, but the nearest ground makes it $band";
-                }
-            }
+            $problems = array_merge( $problems, self::bandProblems( $name, (string) SectionRecipes::rawMarkup( $name ), $checked ) );
         }
         [ $parsed, $spelled ] = self::cardMarkersInFile();
         $this->assertSame( $spelled, $parsed, 'every "kit":"card|panel" in the file is a top-level marker of a block comment' );
@@ -850,6 +923,18 @@ class RecipeLibraryTest extends TestCase
         $nested = static fn ( string $outerOn ): string => '<!-- wp:divi/group {"aied":{"kit":"panel","on":"' . $outerOn . '"}} -->' . $card( 'x' ) . '<!-- /wp:divi/group -->';
         $this->assertSame( 'surface', $band( $sec( $bg( '{"color":"{{aied:color:bg}}"}' ), $nested( 'light' ) ), 'divi/group#1' ) );
         $this->assertSame( 'light', $band( $sec( $bg( '{"color":"{{aied:color:surface}}"}' ), $nested( 'surface' ) ), 'divi/group#1' ) );
+        // A ground block's `on` is the band behind it; a ground on an accent or dark band fails even when `on` agrees.
+        $ground = static fn ( string $on, string $g = 'inverted' ): string => '<!-- wp:divi/group {"aied":{"kit":"panel","on":"' . $on . '","ground":"' . $g . '"}} --><!-- /wp:divi/group -->';
+        $page   = static fn ( string $colour, string $inner ): string => $sec( $bg( '{"color":"{{aied:color:' . $colour . '}}"}' ), $inner );
+        $this->assertSame( [], self::bandProblems( 'p', $page( 'bg', $ground( 'light' ) ) ) );
+        $this->assertSame( [], self::bandProblems( 'p', $page( 'surface', $ground( 'surface', 'accent' ) ) ) );
+        $this->assertSame( [ 'p divi/group#0: marker on=surface, but the nearest ground makes it light' ], self::bandProblems( 'p', $page( 'bg', $ground( 'surface' ) ) ), 'a ground block\'s on must equal the real band' );
+        $this->assertSame( [ 'p divi/group#0: ground inverted on a accent band (a ground sits on a light or surface band only)' ], self::bandProblems( 'p', $page( 'accent', $ground( 'accent' ) ) ) );
+        $this->assertCount( 1, self::bandProblems( 'p', $sec( $bg( '{"image":{"url":"x.jpg"}}' ), $ground( 'dark', 'accent' ) ) ), 'a ground on a photo band' );
+        // A ground card is a text or an accent ground for what sits inside it, never a light card band.
+        $inner = static fn ( string $g ): string => '<!-- wp:divi/group {"aied":{"kit":"card","on":"light","ground":"' . $g . '"}} -->' . $card( 'x' ) . '<!-- /wp:divi/group -->';
+        $this->assertSame( 'other:text', self::cardBands( $page( 'bg', $inner( 'inverted' ) ) )['divi/group#1'][1] );
+        $this->assertSame( 'accent', self::cardBands( $page( 'bg', $inner( 'accent' ) ) )['divi/group#1'][1] );
         // A column carrier is keyed by its own count.
         $this->assertSame( 'surface', self::cardBands( $sec( $bg( '{"color":"{{aied:color:surface}}"}' ), $col( '{}', '' ) . '<!-- wp:divi/column {"aied":{"kit":"card","on":"surface"}} --><!-- /wp:divi/column -->' ) )['divi/column#1'][1] );
     }
@@ -899,11 +984,11 @@ class RecipeLibraryTest extends TestCase
         foreach ( StyleKits::ids() as $kitId ) {
             [ $p, $t ] = self::bespokeCornerProblems( $markups, self::BESPOKE_CARDS, (array) StyleKits::get( $kitId ) );
             $problems  = array_merge( $problems, array_map( static fn ( string $x ): string => "$kitId: $x", $p ) );
-            $this->assertSame( 5, $t, "$kitId: the four inverted/accent groups and the featured plan column carry the token" );
+            $this->assertSame( 1, $t, "$kitId: the featured plan column carries the token (the grounds are marked: the marker writes their radius)" );
             $tokened   = $t;
         }
         $this->assertSame( [], $problems, 'a bespoke group or column beside a kit card takes the kit\'s corners ({{aied:kit:radius-card}}), or the pair has mismatched corners' );
-        $this->assertSame( 5, $tokened, 'the four inverted/accent groups (compare-two-panels#7, features-bento#1 and #3, pricing-two-plan-highlight#8) and the featured column (pricing-three-tier#2)' );
+        $this->assertSame( 1, $tokened, 'only the featured column (pricing-three-tier#2) is still bespoke' );
     }
 
     /**
@@ -1066,6 +1151,13 @@ class RecipeLibraryTest extends TestCase
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
         clearstatcache();
         $this->assertLessThan( self::SIZE_BEFORE_CARDS, filesize( $file ), 'the recipe file ends smaller than before the card adapter (spec section 4)' );
+    }
+
+    public function testRecipesFileIsSmallerThanBeforeTheGrounds(): void
+    {
+        $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
+        clearstatcache();
+        $this->assertLessThan( self::SIZE_BEFORE_GROUNDS, filesize( $file ), 'the recipe file ends smaller than before the grounds and panel buttons (kit-limits spec section 4)' );
     }
 
     public function testRecipesFileIsSmallerThanBeforeTheColumnCards(): void
@@ -1244,9 +1336,10 @@ class RecipeLibraryTest extends TestCase
             }
             ++$checked;
             [ $role, $on ] = $marker;
-            $where = "$label $name#$i ($role on $on)";
+            $ground = $marker[2] ?? null;
+            $where = "$label $name#$i ($role on $on" . ( null === $ground ? '' : ", $ground ground" ) . ')';
             $got   = $after[ "$name#$i" ] ?? null;
-            $patch = KitAdapters::patch( $name, $role, $on, $kit );
+            $patch = null === $ground ? KitAdapters::patch( $name, $role, $on, $kit ) : KitAdapters::patch( $name, $role, $on, $kit, $ground );
             if ( ! is_array( $got ) || ! is_array( $patch ) ) {
                 $out[] = "$where: not resolved";
                 continue;
@@ -1293,7 +1386,7 @@ class RecipeLibraryTest extends TestCase
             if ( ! $exact ) {
                 continue;
             }
-            $expect = self::blocks( KitResolver::resolve( '<!-- wp:' . $name . ' ' . json_encode( [ 'aied' => [ 'kit' => $role, 'on' => $on ] ] ) . ' /-->', $kit ) )[0][1]['module']['decoration'] ?? [];
+            $expect = self::blocks( KitResolver::resolve( '<!-- wp:' . $name . ' ' . json_encode( [ 'aied' => [ 'kit' => $role, 'on' => $on ] + ( null === $ground ? [] : [ 'ground' => $ground ] ) ] ) . ' /-->', $kit ) )[0][1]['module']['decoration'] ?? [];
             foreach ( [ 'background', 'border', 'boxShadow' ] as $key ) {
                 if ( ( $dec[ $key ] ?? null ) !== ( $expect[ $key ] ?? null ) ) {
                     $out[] = "$where: $key is not exactly the kit's (" . json_encode( $dec[ $key ] ?? null, JSON_UNESCAPED_SLASHES ) . ')';
@@ -1462,6 +1555,21 @@ class RecipeLibraryTest extends TestCase
             $this->assertStringContainsString( 'transform.desktop.hover is a hover transform the kit does not write', $onlyHover );
         }
         $this->assertStringContainsString( 'transform.phone.hover is a hover transform', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'transform' => [ 'phone' => [ 'hover' => [ 'translate' => [ 'y' => '-2px' ] ] ] ] ] ], 'aied' => $panel ] ) ), $kit ) );
+        // A ground marker (kit-limits Task 5): clean with structure only. The deep merge overwrites a literal fill or radius with
+        // the kit's own value, so the strays that matter are the keys the patch does NOT write: a shadow under a no-shadow kit, a
+        // hover key on a panel, a rest tilt, a phone padding on a card. Each is caught beside a ground marker too.
+        $inverted = [ 'kit' => 'panel', 'on' => 'light', 'ground' => 'inverted' ];
+        $accentG  = [ 'kit' => 'card', 'on' => 'surface', 'ground' => 'accent' ];
+        $this->assertSame( '', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'spacing' => [ 'desktop' => [ 'value' => [ 'padding' => [ 'top' => '44px' ] ] ] ] ] ], 'aied' => $inverted ] ) ), $kit ), 'a clean inverted panel keeps its padding' );
+        $this->assertSame( '', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'layout' => [ 'desktop' => [ 'value' => [ 'rowGap' => '12px' ] ] ] ] ], 'aied' => $accentG ] ) ), $lift ), 'a clean accent card' );
+        $own = $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'boxShadow' => [ 'desktop' => [ 'value' => [ 'blur' => '40px' ] ] ] ] ], 'aied' => $inverted ] ) ), $kit );
+        $this->assertStringContainsString( 'module.decoration keeps boxShadow that the kit does not write', $own, 'a literal shadow beside a ground marker' );
+        $this->assertStringContainsString( '(panel on light, inverted ground)', $own );
+        foreach ( [ $kit, $lift ] as $k ) {
+            $this->assertStringContainsString( 'a panel keeps a hover key', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'border' => [ 'desktop' => [ 'hover' => [ 'styles' => [ 'all' => [ 'color' => '{{aied:color:text}}' ] ] ] ] ] ] ], 'aied' => $inverted ] ) ), $k ) );
+            $this->assertStringContainsString( 'transform.desktop.value is a rest transform', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'transform' => $tilt ] ], 'aied' => $accentG ] ) ), $k ), 'a rest tilt beside a ground marker' );
+            $this->assertStringContainsString( 'spacing.phone.value.padding overrides the kit\'s card padding', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'spacing' => [ 'phone' => [ 'value' => [ 'padding' => [ 'top' => '8px' ] ] ] ] ] ], 'aied' => $accentG ] ) ), $k ) );
+        }
         // A key outside the structure list.
         $this->assertStringContainsString( 'keeps filters', $run( $sec( $grp( [ 'module' => [ 'decoration' => [ 'filters' => [ 'desktop' => [ 'value' => [ 'blur' => '2px' ] ] ] ] ], 'aied' => $card ] ) ), $kit ) );
         // An underline kit's bottom side is the kit's own and passes; a recipe's extra top side does not.
@@ -1567,7 +1675,7 @@ class RecipeLibraryTest extends TestCase
                 }
             }
         }
-        // 22 recipes have a button; compare-two-panels has only a bespoke one (BESPOKE_BUTTONS): 21 with a kit-driven button,
+        // 22 recipes have a button; every one of them is kit-driven,
         // plus the recipes whose only kit marker is a card or panel: cta-split-form (card adapter Task 7) and
         // compare-two-panels, features-bento, contact-location-form, contact-details-form, transition-overlap-panel (Task 8),
         // and icon-values, testimonials-avatar-grid (Task 9; pricing-three-tier already has kit-driven buttons).

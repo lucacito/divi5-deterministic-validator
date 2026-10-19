@@ -193,8 +193,10 @@ class CardMigrationReportTest extends TestCase
             // Tasks 7 and 8 marked every group card (9, now plain wrappers: the kit owns their padding) and panel (10, padded
             // wrappers: a panel keeps its own padding); a marked block is classified by the decoration it has left. Kit-limits
             // Task 1 added 3 unmarked wrapper groups (the tilt of hero-gradient-stats' three stat cards): 356 -> 359 groups,
-            // 221 -> 224 wrappers, nothing else changed.
-            [ 'chip' => 14, 'grid-cell' => 40, 'inverted' => 4, 'padded-wrapper' => 51, 'rule' => 26, 'wrapper' => 224 ],
+            // 221 -> 224 wrappers, nothing else changed. Kit-limits Task 5 marked the four grounds (the inverted panels of
+            // compare-two-panels and pricing-two-plan-highlight keep their padding: padded wrappers; the two bento tiles
+            // lose theirs: wrappers), so no inverted group is left.
+            [ 'chip' => 14, 'grid-cell' => 40, 'padded-wrapper' => 53, 'rule' => 26, 'wrapper' => 226 ],
             $groups
         );
     }
@@ -222,8 +224,8 @@ class CardMigrationReportTest extends TestCase
     public function test_the_marked_blocks_are_counted_and_fill_only_columns_are_unlisted(): void
     {
         $rows = $this->shipped();
-        $this->assertSame( 27, count( array_filter( $rows, fn ( $r ) => null !== $r['marked'] ) ), 'the blocks migrated so far (plan Tasks 7, 8 and 9)' );
-        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 27 blocks', \CardReport::render( $rows, false ) );
+        $this->assertSame( 31, count( array_filter( $rows, fn ( $r ) => null !== $r['marked'] ) ), 'the blocks migrated so far (card plan Tasks 7, 8 and 9, kit-limits Task 5)' );
+        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 31 blocks', \CardReport::render( $rows, false ) );
         $listed = array_map( fn ( $r ) => $r['recipe'] . ' ' . $r['block'] . '#' . $r['index'], $rows );
         $this->assertNotContains( 'hero-cta divi/column#0', $listed, 'a surface fill with padding and no frame: nothing for a kit to restyle' );
         $this->assertNotContains( 'split-image-text divi/column#0', $listed );
@@ -242,15 +244,15 @@ class CardMigrationReportTest extends TestCase
         sort( $got );
         $want = [
             'compare-two-panels divi/group#2 marked panel',
-            'compare-two-panels divi/group#7 inverted',
+            'compare-two-panels divi/group#7 marked panel',
             'contact-details-form divi/group#13 marked panel',
             'contact-location-form divi/group#6 marked panel',
             'cta-card-over-image divi/group#1 marked panel',
             'cta-split-form divi/group#4 marked panel',
             'features-bento divi/group#0 marked card',
-            'features-bento divi/group#1 inverted',
+            'features-bento divi/group#1 marked card',
             'features-bento divi/group#2 marked card',
-            'features-bento divi/group#3 inverted',
+            'features-bento divi/group#3 marked card',
             'features-bento divi/group#4 marked card',
             'hero-bordered-cells divi/group#0 marked panel',
             'hero-bordered-cells divi/group#2 marked card',
@@ -268,7 +270,7 @@ class CardMigrationReportTest extends TestCase
             'pricing-three-tier divi/column#2 panel',
             'pricing-three-tier divi/column#3 marked card',
             'pricing-two-plan-highlight divi/group#1 marked panel',
-            'pricing-two-plan-highlight divi/group#8 inverted',
+            'pricing-two-plan-highlight divi/group#8 marked panel',
             'testimonials-avatar-grid divi/column#1 marked card',
             'testimonials-avatar-grid divi/column#2 marked card',
             'testimonials-avatar-grid divi/column#3 marked card',
