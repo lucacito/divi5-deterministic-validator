@@ -462,5 +462,11 @@ class RecipeTokensTest extends TestCase
         $this->assertSame( [ '{{aied:color:overlay:18}}', '{{aied:color:text}}' ], RecipeTokens::foundAll( $text ), 'an invalid percent is not well-formed' );
         $this->assertSame( [ '{{aied:color:overlay:18}}', '{{aied:color:text}}', '{{aied:color:text:100}}' ], RecipeTokens::found( $text ) );
         $this->assertSame( [ '{{aied:color:overlay:18}}', '{{aied:color:text}}', RecipeTokens::MALFORMED_ENTRY ], RecipeTokens::advise( $text )['tokens'] );
+        // Only colour tokens have an alpha form: any other kind with a suffix is malformed.
+        foreach ( [ '{{aied:image:hero:12}}', '{{aied:kit:radius-control:12}}', '{{aied:font:body:20}}' ] as $token ) {
+            $this->assertSame( [], RecipeTokens::foundAll( $token ), $token );
+            $this->assertSame( [ RecipeTokens::MALFORMED_ENTRY ], RecipeTokens::advise( $token )['tokens'], $token );
+        }
+        $this->assertSame( [ '{{aied:image:hero}}', '{{aied:kit:radius-control}}' ], RecipeTokens::foundAll( '{{aied:image:hero}} {{aied:kit:radius-control}}' ) );
     }
 }

@@ -198,7 +198,7 @@
   {
     "id": "hairline-dashed",
     "title": "Hairline dashed",
-    "summary": "Neon-filled buttons with 2px corners; the secondary is a 1px dashed outline, like a ruled grid. Precise, no softness.",
+    "summary": "Accent-filled buttons with 2px corners; the secondary is a 1px dashed outline, like a ruled grid. Precise, no softness.",
     "avoids": [],
     "fill": "solid",
     "color": "accent",
@@ -212,16 +212,16 @@
   {
     "id": "underline-link",
     "title": "Underline link",
-    "summary": "A transparent label on a 2px underline with no frame; the secondary is a filled block in the same colour. Quiet and literary.",
+    "summary": "Square accent buttons with a 2px text-colour bottom edge and no frame; the secondary is a transparent label on an underline. Quiet and literary.",
     "avoids": [],
-    "fill": "outline",
-    "color": "text",
+    "fill": "solid",
+    "color": "accent",
     "border": { "width": "2px", "style": "solid", "color": "text", "sides": "bottom" },
     "radius": { "control": "0px", "card": "0px", "media": "0px" },
     "shadow": { "rest": "none", "hover": "none" },
     "hover": "none",
     "text": { "capitalization": "none", "letterSpacing": "0px", "weight": "600" },
-    "space": { "control": { "vertical": "8px", "horizontal": "14px" }, "card": "24px" }
+    "space": { "control": { "vertical": "10px", "horizontal": "20px" }, "card": "24px" }
   },
   {
     "id": "neo-brutal",

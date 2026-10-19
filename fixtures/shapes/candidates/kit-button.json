@@ -1108,5 +1108,42 @@
             "button.decoration.spacing.desktop.value.padding.syncHorizontal": "on"
         },
         "note": "The same padding on the button ELEMENT's spacing (button.decoration.spacing, the shape KitAdapters writes today; the registry knows the path only from a SLIDER's button in fixtures/valid/page-23-style-reference.json). Expected DEAD: Divi 5.15.1 includes/builder-5/server/Packages/ModuleLibrary/Button/ButtonModule.php:664-712 and :760 (_sanitize_button_decoration_attrs keeps only the `button.decoration` groups module.json declares and drops each whose `<name>Group` field has render:false; module.json declares background, border, boxShadow, button, font, sizing, spacing and sets boxShadowGroup and spacingGroup to render:false)."
+    },
+    {
+        "id": "kb-border-bottom-adapter-form",
+        "expect": "PASS",
+        "block": "button",
+        "base": {
+            "button": {
+                "decoration": {
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.width": "0px",
+            "button.decoration.border.desktop.value.styles.all.style": "solid",
+            "button.decoration.border.desktop.value.styles.all.color": "#f59e0b",
+            "button.decoration.border.desktop.value.styles.bottom.width": "3px",
+            "button.decoration.border.desktop.value.styles.bottom.style": "solid",
+            "button.decoration.border.desktop.value.styles.bottom.color": "#f59e0b",
+            "button.decoration.border.desktop.hover.styles.all.color": "#f59e0b"
+        },
+        "note": "NOT RUN YET (Task 9a review M6, for the next probe batch): the exact underline form KitAdapters writes for border.sides bottom, a superset of kb-border-bottom-only: styles.all carries width 0px plus style and colour, the bottom side carries width, style and colour, and the hover writes styles.all.color equal to the bottom colour. Expect only the bottom side to get a 3px solid border at rest and on hover (the other three sides stay 0px). Every path is registered (export or probe)."
     }
 ]

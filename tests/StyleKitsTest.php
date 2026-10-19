@@ -232,6 +232,20 @@ final class StyleKitsTest extends TestCase
         }
     }
 
+    public function testNoShippedKitNamesAColour(): void
+    {
+        // A kit carries no colour (the design language supplies it), so its words must not name one either.
+        $words = [ 'red', 'blue', 'green', 'neon', 'gold', 'black', 'white', 'pink', 'orange', 'purple', 'yellow', 'grey', 'gray' ];
+        $pattern = '/\\b(' . implode('|', $words) . ')\\b/i';
+        foreach (StyleKits::ids() as $id) {
+            $kit = StyleKits::get($id);
+            foreach ([ 'title', 'summary' ] as $key) {
+                $this->assertDoesNotMatchRegularExpression($pattern, (string) $kit[$key], "$id.$key");
+            }
+        }
+        $this->assertMatchesRegularExpression($pattern, 'Neon-filled buttons', 'the check catches a colour word');
+    }
+
     public function testParseOfCorruptTextIsEmpty(): void
     {
         $this->assertSame([], StyleKits::parse(''));

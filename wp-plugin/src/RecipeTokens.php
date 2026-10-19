@@ -48,9 +48,9 @@ final class RecipeTokens
 
     /**
      * A well-formed token of any kind: lower-case kind, then lower-case role or name (color, font, image, or one this code does not
-     * know), optionally followed by an alpha percent 1 to 99 (the colour alpha form).
+     * know); a colour token may end with an alpha percent 1 to 99 (the only kind with an alpha form).
      */
-    private const STRICT_AIED = '/\{\{aied:[a-z]+:[a-z0-9-]+(?::[1-9][0-9]?)?\}\}/';
+    private const STRICT_AIED = '/\{\{aied:(?:color:[a-z0-9-]+(?::[1-9][0-9]?)?|[a-z]+:[a-z0-9-]+)\}\}/';
 
     /** A listed token longer than this many characters is not echoed (it counts as malformed). */
     public const MAX_TOKEN_LENGTH = 64;

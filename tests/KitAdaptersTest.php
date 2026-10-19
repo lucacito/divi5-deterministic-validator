@@ -335,6 +335,20 @@ class KitAdaptersTest extends TestCase
         $this->assertArrayNotHasKey( 'bottom', $this->patch( $this->kitWith( 'outline-2', [ 'border' => [ 'sides' => 'all' ] ] ), 'control', 'light' )['button']['decoration']['border']['desktop']['value']['styles'] );
     }
 
+    public function testTheUnderlineKitIsAnAccentBlockWithABottomEdgeAndAnUnderlinedSecondary(): void
+    {
+        $kit = StyleKits::get( 'underline-link' );
+        $this->assertIsArray( $kit );
+        $this->assertSame( [ 'solid', 'accent', 'text', 'bottom' ], [ $kit['fill'], $kit['color'], $kit['border']['color'], $kit['border']['sides'] ] );
+        $primary = $this->patch( $kit, 'control', 'light' )['button']['decoration'];
+        $this->assertSame( '{{aied:color:accent}}', $primary['background']['desktop']['value']['color'] );
+        $this->assertSame( '{{aied:color:text}}', $primary['border']['desktop']['value']['styles']['bottom']['color'], 'a visible text-colour bottom edge' );
+        $secondary = $this->patch( $kit, 'control-secondary', 'light' )['button']['decoration'];
+        $this->assertSame( KitAdapters::TRANSPARENT, $secondary['background']['desktop']['value']['color'], 'the secondary is the quiet one' );
+        $this->assertSame( '{{aied:color:text}}', $secondary['border']['desktop']['value']['styles']['bottom']['color'] );
+        $this->assertSame( '{{aied:color:text}}', $secondary['font']['font']['desktop']['value']['color'] );
+    }
+
     public function testUnknownCombinationsAreNull(): void
     {
         $kit = $this->shippedKits()[0];
