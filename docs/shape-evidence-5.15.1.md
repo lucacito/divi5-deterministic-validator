@@ -18145,7 +18145,7 @@ Properties that changed (any width): `block-size`, `border-block-end-color`, `bo
 
 Phone overflow at 400 px: no.
 
-Note: The underline form the button adapter writes (styles.all width 0px plus styles.bottom 3px, hover styles.all.color) on a group (module.decoration is the card's own element). Expect only the bottom side to get a 3px solid border (changedProps border-bottom-*; the other three sides stay 0px).
+Note: The underline form the button adapter writes (styles.all width 0px plus styles.bottom 3px, hover styles.all.color) on a group (module.decoration is the card's own element). Expect only the bottom side to get a 3px solid border (changedProps border-bottom-*; the other three sides stay 0px). The hover half of this form (border.hover.styles.all.color) is deliberately NOT measured here (no hover state, hover colour equals the rest colour): this proves only the rest underline.
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
 
@@ -18642,7 +18642,7 @@ Properties that changed (any width): `block-size`, `border-block-end-color`, `bo
 
 Phone overflow at 400 px: no.
 
-Note: The underline form the button adapter writes (styles.all width 0px plus styles.bottom 3px, hover styles.all.color) on a column (module.decoration is the card's own element). Expect only the bottom side to get a 3px solid border (changedProps border-bottom-*; the other three sides stay 0px).
+Note: The underline form the button adapter writes (styles.all width 0px plus styles.bottom 3px, hover styles.all.color) on a column (module.decoration is the card's own element). Expect only the bottom side to get a 3px solid border (changedProps border-bottom-*; the other three sides stay 0px). The hover half of this form (border.hover.styles.all.color) is deliberately NOT measured here (no hover state, hover colour equals the rest colour): this proves only the rest underline.
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
 
