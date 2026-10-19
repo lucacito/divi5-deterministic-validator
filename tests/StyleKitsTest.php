@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\KitAdapters;
 use AiEditorDivi5\WP\StyleKits;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -12,6 +13,7 @@ require_once __DIR__ . '/../wp-plugin/src/ImagePack.php';
 require_once __DIR__ . '/../wp-plugin/src/ImageTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
 require_once __DIR__ . '/../wp-plugin/src/StyleKits.php';
+require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
 
 /**
  * Style kits are decision tables (never markup): the schema is strict, the file stays small,
@@ -396,6 +398,106 @@ final class StyleKitsTest extends TestCase
         $this->assertSame('soft', self::radiusFamily('16px'));
         $this->assertSame('round', self::radiusFamily('20px'));
         $this->assertSame('pill', self::radiusFamily('999px'));
+    }
+
+    private const CARD_NEAR_DUPLICATES = __DIR__ . '/../fixtures/shapes/card-near-duplicates.txt';
+
+    /**
+     * What a kit's card looks like, from the card adapter's `card` patch on a light band (the patch is the same in every
+     * language: colours are role tokens, so one fixed language is the patch itself): radius and padding in px (from the
+     * kit's card values the whole-value tokens resolve to), the frame (sides, width, style, colour role), the shadow and
+     * the hover (frame colour and transform).
+     *
+     * @param array<string,mixed> $kit
+     * @return array{radius:int,padding:int,frame:string,shadow:string,hover:string}
+     */
+    private static function cardLook(array $kit): array
+    {
+        $patch = KitAdapters::patch('divi/group', 'card', 'light', $kit);
+        self::assertIsArray($patch);
+        $d      = $patch['module']['decoration'];
+        $styles = $d['border']['desktop']['value']['styles'];
+        $side   = $styles['bottom'] ?? $styles['all'];
+        return [
+            'radius'  => (int) $kit['radius']['card'],
+            'padding' => (int) $kit['space']['card'],
+            'frame'   => (string) json_encode([ isset($styles['bottom']) ? 'bottom' : 'all', $side['width'], $side['style'], $side['color'] ]),
+            'shadow'  => (string) json_encode($d['boxShadow'] ?? null),
+            'hover'   => (string) json_encode([ $d['border']['desktop']['hover'] ?? null, $d['transform'] ?? null ]),
+        ];
+    }
+
+    /** Two kits make the same card: radius < 4px apart, padding < 8px apart, frame, shadow and hover equal. */
+    private static function sameCard(array $a, array $b): bool
+    {
+        $x = self::cardLook($a);
+        $y = self::cardLook($b);
+        return abs($x['radius'] - $y['radius']) < 4 && abs($x['padding'] - $y['padding']) < 8
+            && $x['frame'] === $y['frame'] && $x['shadow'] === $y['shadow'] && $x['hover'] === $y['hover'];
+    }
+
+    public function testEveryKitHasAVisiblyDifferentCard(): void
+    {
+        $kits = [];
+        foreach (StyleKits::ids() as $id) {
+            $kits[$id] = (array) StyleKits::get($id);
+        }
+        $ids   = array_keys($kits);
+        $found = [];
+        $pairs = 0;
+        for ($i = 0; $i < count($ids); $i++) {
+            for ($j = $i + 1; $j < count($ids); $j++) {
+                ++$pairs;
+                if (self::sameCard($kits[$ids[$i]], $kits[$ids[$j]])) {
+                    $found[] = $ids[$i] . '|' . $ids[$j];
+                }
+            }
+        }
+        $this->assertSame(780, $pairs);
+        $listed = [];
+        foreach ((array) file(self::CARD_NEAR_DUPLICATES, FILE_IGNORE_NEW_LINES) as $line) {
+            $line = trim((string) $line);
+            if ('' !== $line && '#' !== $line[0]) {
+                $listed[] = $line;
+            }
+        }
+        $this->assertSame($listed, $found, 'fixtures/shapes/card-near-duplicates.txt is exactly the set of kit pairs with the same card (remove a pair that no longer is one; a new kit must not add one)');
+        $this->assertLessThanOrEqual(9, count($listed), 'shrink-only by test: the card near-duplicate list can never grow past the 9 pairs measured in Task 4');
+    }
+
+    public function testTheSameCardRuleCatchesWhatItShould(): void
+    {
+        $a = (array) StyleKits::get('soft-solid');
+        $a['border']['width'] = '1px';      // so an underline variant is valid
+        $this->assertSame([], StyleKits::problems($a));
+        $b = $a;
+        $b['radius']['card'] = ((int) $a['radius']['card'] + 3) . 'px';
+        $b['space']['card']  = ((int) $a['space']['card'] + 7) . 'px';
+        $this->assertTrue(self::sameCard($a, $b), '3px of radius and 7px of padding are the same card');
+        $c = $b;
+        $c['radius']['card'] = ((int) $a['radius']['card'] + 4) . 'px';
+        $this->assertFalse(self::sameCard($a, $c), '4px of radius is visible');
+        $d = $b;
+        $d['space']['card'] = ((int) $a['space']['card'] + 8) . 'px';
+        $this->assertFalse(self::sameCard($a, $d), '8px of padding is visible');
+        foreach ([ [ 'border', 'style', 'dashed' ], [ 'border', 'width', '2px' ], [ 'border', 'color', 'text' ], [ 'border', 'sides', 'bottom' ] ] as [ $g, $k, $v ]) {
+            $e = $a;
+            $e[$g][$k] = $v;
+            $this->assertSame([], StyleKits::problems($e), "$g.$k");
+            $this->assertFalse(self::sameCard($a, $e), "a different frame $k is visible");
+        }
+        $f = $a;
+        $f['hover'] = 'lift';
+        $this->assertFalse(self::sameCard($a, $f), 'a lift is visible');
+        $g = $a;
+        $g['shadow'] = [ 'rest' => 'soft', 'hover' => 'soft' ];
+        $this->assertFalse(self::sameCard($a, $g), 'a shadow is visible');
+        // fill and text decisions do not reach a card: a kit differing only there is the same card.
+        $h = $a;
+        $h['fill'] = 'outline';
+        $h['text']['capitalization'] = 'uppercase';
+        $this->assertSame([], StyleKits::problems($h));
+        $this->assertTrue(self::sameCard($a, $h));
     }
 
     public function testParseOfCorruptTextIsEmpty(): void

@@ -19,7 +19,10 @@ require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
 /**
  * The card patches of the ten design languages' default kits are pinned byte for byte: the golden file holds each kit's
  * decisions and its card adapter patch for both roles (`card`, `panel`) on every band (light, surface, accent, dark),
- * captured when the card adapter was built (Task 3) and reviewed by eye. Both carriers get the same patch.
+ * captured when the card adapter was built (Task 3) and reviewed by eye. Both carriers get the same patch. Regenerated
+ * once, deliberately, in Task 4: the contrast proof moved the card's hover frame colour from `accent` to `text` (written
+ * only on a `border` hairline frame), which changed the `card` patches of glass-edge, heavy-block (hover frame now
+ * text), chunky-pill-offset and raw-frame (no hover frame any more: their frame already is text).
  */
 class KitCardGoldenTest extends TestCase
 {

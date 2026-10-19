@@ -12,6 +12,7 @@ use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\SectionRecipes;
 use AiEditorDivi5\WP\StyleKits;
+use Divi5Validator\Tests\Support\Colour;
 use Divi5Validator\Tests\Support\DeadOnModule;
 use Divi5Validator\Tests\Support\ShapePaths;
 use Divi5Validator\Tests\Support\ShapeRegistry;
@@ -29,12 +30,13 @@ require_once __DIR__ . '/../wp-plugin/src/CodePolicy.php';
 require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
 require_once __DIR__ . '/Support/ShapePaths.php';
 require_once __DIR__ . '/Support/ShapeRegistry.php';
+require_once __DIR__ . '/Support/Colour.php';
 require_once __DIR__ . '/Support/DeadOnModule.php';
 
 /**
  * The card adapter: a kit's decisions become the `module.decoration` of a card (`divi/group` or `divi/column`, roles
  * `card` and `panel`, on a light, surface, accent or dark band): fill, frame, radius, padding, shadow and hover, every
- * path a registry path not dead on its carrier, the merged block passes the real gate. Contrast proofs are Task 4.
+ * path a registry path not dead on its carrier, the merged block passes the real gate, and no kit x language x role x band makes a card whose fill, text or meaningful frame cannot be read (Task 4).
  */
 class KitCardAdapterTest extends TestCase
 {
@@ -297,7 +299,8 @@ class KitCardAdapterTest extends TestCase
         $this->assertSame( [ 'width' => '1px', 'style' => 'dashed', 'color' => '{{aied:color:border}}' ], $this->deco( $dashed, 'panel', 'dark' )['border']['desktop']['value']['styles']['all'] );
         $rimmed = StyleKits::get( 'rimmed-solid' );
         $this->assertIsArray( $rimmed );
-        $this->assertSame( '{{aied:color:accent}}', $this->deco( $rimmed, 'card', 'accent' )['border']['desktop']['value']['styles']['all']['color'] );
+        // An accent frame is a text frame (the contrast proof: accent is below 3:1 on the card fill in two languages).
+        $this->assertSame( '{{aied:color:text}}', $this->deco( $rimmed, 'card', 'accent' )['border']['desktop']['value']['styles']['all']['color'] );
         $inverse                    = $chunky;
         $inverse['border']['color'] = 'inverse';
         $this->assertSame( [], StyleKits::problems( $inverse ) );
@@ -363,18 +366,23 @@ class KitCardAdapterTest extends TestCase
         $deco = $this->deco( $kits['neo-brutal'], 'card', 'light' );
         $this->assertSame( [ 'desktop' => [ 'hover' => [ 'translate' => [ 'y' => '-4px' ] ] ] ], $deco['transform'] );
         $this->assertArrayNotHasKey( 'hover', $deco['border']['desktop'] );
-        // fill-swap and invert: the frame goes to accent on hover (a `text` frame, a `border` frame).
-        foreach ( [ 'outline-2' => 'fill-swap', 'chunky-pill' => 'invert', 'glass-edge' => 'invert' ] as $id => $hover ) {
+        // fill-swap and invert: a `border` hairline frame goes to text on hover (glass-edge, heavy-block, flat-square).
+        foreach ( [ 'glass-edge' => 'invert', 'heavy-block' => 'invert', 'flat-square' => 'invert' ] as $id => $hover ) {
             $this->assertSame( $hover, $kits[ $id ]['hover'] );
             foreach ( self::SURFACES as $on ) {
                 $deco = $this->deco( $kits[ $id ], 'card', $on );
-                $this->assertSame( [ 'styles' => [ 'all' => [ 'color' => '{{aied:color:accent}}' ] ] ], $deco['border']['desktop']['hover'], "$id on $on" );
+                $this->assertSame( '{{aied:color:border}}', $deco['border']['desktop']['value']['styles']['all']['color'] );
+                $this->assertSame( [ 'styles' => [ 'all' => [ 'color' => '{{aied:color:text}}' ] ] ], $deco['border']['desktop']['hover'], "$id on $on" );
                 $this->assertArrayNotHasKey( 'transform', $deco );
             }
         }
-        // An accent frame is already accent: no redundant hover key.
-        $this->assertSame( 'invert', $kits['rimmed-solid']['hover'] );
-        $this->assertArrayNotHasKey( 'hover', $this->deco( $kits['rimmed-solid'], 'card', 'light' )['border']['desktop'] );
+        // A frame that already is text (a `text` frame, an `accent` frame made text) gets no redundant hover key.
+        foreach ( [ 'outline-2' => 'fill-swap', 'chunky-pill' => 'invert', 'rimmed-solid' => 'invert' ] as $id => $hover ) {
+            $this->assertSame( $hover, $kits[ $id ]['hover'] );
+            foreach ( self::SURFACES as $on ) {
+                $this->assertArrayNotHasKey( 'hover', $this->deco( $kits[ $id ], 'card', $on )['border']['desktop'], "$id on $on" );
+            }
+        }
         // none: nothing on hover at all.
         $deco = $this->deco( $kits['quiet-solid'], 'card', 'light' );
         $this->assertNotContains( 'hover', self::keys( $deco ) );
@@ -441,6 +449,165 @@ class KitCardAdapterTest extends TestCase
         $bad['fill'] = 'gradient';
         $this->assertNull( KitAdapters::patch( 'divi/group', 'card', 'light', $bad ), 'an invalid kit has no patch' );
         $this->assertNull( KitAdapters::patch( 'divi/column', 'panel', 'light', [] ) );
+    }
+
+    /**
+     * A colour value of a patch or recipe as an opaque hex on $ground: a colour token resolved by the real pipeline
+     * (RecipeTokens, alpha forms included) and composited over $ground; null when it does not resolve to a colour.
+     */
+    public static function opaqueOn( string $value, array $lang, string $ground ): ?string
+    {
+        return Colour::opaque( RecipeTokens::resolve( $value, $lang ), $ground );
+    }
+
+    /**
+     * Contrast problems of one card patch in one language and state ([] = fine), keyed "$where|<check>":
+     * the fill is the `surface` or `bg` token (never transparent, never another role); `text` and `muted` on the fill
+     * and `accent-text` on `accent` (the pairs card children use) at least 4.5; the frame (the bottom side of an
+     * underline card, else `styles.all`; the hover colour when the patch writes one) at least 3.0 against the fill,
+     * unless it is the `border` hairline (decorative, exempt). Every other frame role is judged, so a new one fails closed.
+     *
+     * @param array<string,mixed> $patch
+     * @param array<string,mixed> $lang
+     * @return array<string,string>
+     */
+    public static function cardProblems( array $patch, array $lang, string $state, string $where ): array
+    {
+        $out    = [];
+        $colors = (array) $lang['colors'];
+        $deco   = (array) ( $patch['module']['decoration'] ?? [] );
+        $token  = (string) ( $deco['background']['desktop']['value']['color'] ?? '' );
+        if ( ! in_array( $token, [ '{{aied:color:surface}}', '{{aied:color:bg}}' ], true ) ) {
+            return [ "$where|fill" => "$where: the card fill is '$token', not the surface or bg token" ];
+        }
+        // `surface` is judged as painted over the language's bg (a translucent surface stays honest).
+        $fill = self::opaqueOn( $token, $lang, (string) $colors['bg'] );
+        if ( null === $fill ) {
+            return [ "$where|fill" => "$where: the card fill does not resolve" ];
+        }
+        foreach ( [ 'text' => [ 'text', $fill ], 'muted' => [ 'muted', $fill ], 'accent-text' => [ 'accent_text', (string) $colors['accent'] ] ] as $name => [ $key, $ground ] ) {
+            $r = Colour::contrast( (string) Colour::opaque( (string) $colors[ $key ], $ground ), $ground );
+            if ( $r < 4.5 ) {
+                $out[ "$where|$name" ] = sprintf( '%s: %s on %s is %.2f:1, needs 4.5', $where, $name, $ground, $r );
+            }
+        }
+        $value = (array) ( $deco['border']['desktop']['value']['styles'] ?? [] );
+        $side  = (array) ( $value['bottom'] ?? $value['all'] ?? [] );
+        $frame = (string) ( $side['color'] ?? '' );
+        if ( 'hover' === $state && isset( $deco['border']['desktop']['hover']['styles']['all']['color'] ) ) {
+            $frame = (string) $deco['border']['desktop']['hover']['styles']['all']['color'];
+        }
+        if ( '{{aied:color:border}}' !== $frame ) {
+            $edge = self::opaqueOn( $frame, $lang, $fill );
+            $r    = null === $edge ? 0.0 : Colour::contrast( $edge, $fill );
+            if ( $r < 3.0 ) {
+                $out[ "$where|frame" ] = sprintf( '%s: frame %s (%s) on fill %s is %.2f:1, needs 3.0', $where, $frame, (string) $edge, $fill, $r );
+            }
+        }
+        return $out;
+    }
+
+    public function testNoUnreadableCardInAnyKitLanguageRoleBand(): void
+    {
+        $problems = [];
+        $checked  = 0;
+        foreach ( $this->shippedKits() as $id => $kit ) {
+            foreach ( DesignLanguages::ids() as $langId ) {
+                $lang = DesignLanguages::get( $langId );
+                $this->assertIsArray( $lang );
+                foreach ( self::ROLES as $role ) {
+                    foreach ( self::SURFACES as $on ) {
+                        $patch = $this->patch( $kit, $role, $on );
+                        foreach ( [ 'rest', 'hover' ] as $state ) {
+                            ++$checked;
+                            $problems = array_merge( $problems, self::cardProblems( $patch, $lang, $state, "$id|$langId|$role|$on|$state" ) );
+                        }
+                    }
+                }
+            }
+        }
+        $this->assertSame( 40 * 10 * 2 * 4 * 2, $checked );
+        $this->assertSame( [], array_values( $problems ), "unreadable cards (fix the card role table in KitAdapters::card(), never the bound; no exceptions):\n" . implode( "\n", $problems ) );
+    }
+
+    public function testTheCardContrastCheckCatchesWhatItShould(): void
+    {
+        $pastel = DesignLanguages::get( 'playful-pastel' );
+        $this->assertIsArray( $pastel );
+        $good = $this->patch( $this->shippedKits()['quiet-solid'], 'card', 'light' );
+        $this->assertSame( [], self::cardProblems( $good, $pastel, 'rest', 'x' ) );
+        // A fill that is not surface or bg (an accent card) is refused outright, so is a transparent one.
+        foreach ( [ '{{aied:color:accent}}', KitAdapters::TRANSPARENT ] as $fill ) {
+            $bad = $good;
+            $bad['module']['decoration']['background']['desktop']['value']['color'] = $fill;
+            $this->assertArrayHasKey( 'x|fill', self::cardProblems( $bad, $pastel, 'rest', 'x' ) );
+        }
+        // An accent frame in a language whose accent is light (playful-pastel: about 2.45:1 on its surface) is caught,
+        // at rest and as a hover colour; a `text` frame is fine; the `border` hairline is exempt even at about 1.3:1.
+        $accent = $good;
+        $accent['module']['decoration']['border']['desktop']['value']['styles']['all']['color'] = '{{aied:color:accent}}';
+        $this->assertArrayHasKey( 'x|frame', self::cardProblems( $accent, $pastel, 'rest', 'x' ) );
+        $hover = $good;
+        $hover['module']['decoration']['border']['desktop']['hover'] = [ 'styles' => [ 'all' => [ 'color' => '{{aied:color:accent}}' ] ] ];
+        $this->assertSame( [], self::cardProblems( $hover, $pastel, 'rest', 'x' ) );
+        $this->assertArrayHasKey( 'x|frame', self::cardProblems( $hover, $pastel, 'hover', 'x' ) );
+        $text = $good;
+        $text['module']['decoration']['border']['desktop']['value']['styles']['all']['color'] = '{{aied:color:text}}';
+        $this->assertSame( [], self::cardProblems( $text, $pastel, 'rest', 'x' ) );
+        // The bottom side of an underline card is the one judged.
+        $under = $text;
+        $under['module']['decoration']['border']['desktop']['value']['styles']['bottom'] = [ 'width' => '2px', 'style' => 'solid', 'color' => '{{aied:color:accent}}' ];
+        $this->assertArrayHasKey( 'x|frame', self::cardProblems( $under, $pastel, 'rest', 'x' ) );
+        // A language whose muted text is unreadable on its surface is caught.
+        $grey                      = $pastel;
+        $grey['colors']['muted']   = $grey['colors']['surface'];
+        $this->assertArrayHasKey( 'x|muted', self::cardProblems( $good, $grey, 'rest', 'x' ) );
+        // An alpha token is composited over the ground before it is judged.
+        $this->assertSame( '#808080', self::opaqueOn( '{{aied:color:text:50}}', [ 'colors' => [ 'text' => '#000000' ] ], '#ffffff' ) );
+    }
+
+    public function testTheDeadOnModuleGuardReportsAButtonPathAndACarrierScopedLine(): void
+    {
+        // The shipped list: a button using its element padding is reported; the same path on a group is not.
+        $dead = DeadOnModule::load();
+        $btn  = '<!-- wp:divi/button {"button":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"14px"}}}}}}} /-->';
+        $this->assertSame( [ 'divi/button: button.decoration.spacing.{bp}.value.padding.top (dead: kb-padding-element)' ], $dead->violations( $btn ) );
+        $this->assertSame( [], $dead->violations( str_replace( 'wp:divi/button', 'wp:divi/group', $btn ) ) );
+        // A carrier-scoped line (a temporary list: the shipped one has none for cards) applies to that carrier only.
+        $file = tempnam( sys_get_temp_dir(), 'dead' );
+        $this->assertIsString( $file );
+        file_put_contents( $file, "# test list\ndivi/group|module.decoration.boxShadow|planted-evidence|planted for the test\n" );
+        try {
+            $scoped = DeadOnModule::load( $file );
+            $kit    = $this->shippedKits()['chunky-pill-offset'];
+            $group  = KitResolver::resolve( $this->kitMarkup( 'divi/group', 'card', 'light' ), $kit );
+            $column = KitResolver::resolve( $this->kitMarkup( 'divi/column', 'card', 'light' ), $kit );
+            $this->assertStringContainsString( '"boxShadow"', $group );
+            $found = $scoped->violations( $group );
+            $this->assertNotSame( [], $found );
+            foreach ( $found as $v ) {
+                $this->assertStringStartsWith( 'divi/group: module.decoration.boxShadow.', $v );
+                $this->assertStringEndsWith( '(dead: planted-evidence)', $v );
+            }
+            $this->assertSame( [], $scoped->violations( $column ), 'a divi/group line does not apply to a column card' );
+        } finally {
+            unlink( $file );
+        }
+    }
+
+    public function testTheResolverRoleTableIsAppliedInverted(): void
+    {
+        $table = ( new \ReflectionClass( KitResolver::class ) )->getConstant( 'ROLE_BLOCKS' );
+        $this->assertIsArray( $table );
+        $inverted = [];
+        foreach ( KitAdapters::APPLIED as $block => $roles ) {
+            foreach ( $roles as $role ) {
+                $inverted[ $role ][] = $block;
+            }
+        }
+        ksort( $inverted );
+        ksort( $table );
+        $this->assertSame( $inverted, $table, 'KitResolver::ROLE_BLOCKS is KitAdapters::APPLIED by role' );
     }
 
     public function testAppliedNamesEveryBlockAndRoleThePatchAnswers(): void

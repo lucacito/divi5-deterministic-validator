@@ -344,7 +344,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent}}"
+                                            "color": "{{aied:color:text}}"
                                         }
                                     }
                                 }
@@ -385,7 +385,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent}}"
+                                            "color": "{{aied:color:text}}"
                                         }
                                     }
                                 }
@@ -426,7 +426,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent}}"
+                                            "color": "{{aied:color:text}}"
                                         }
                                     }
                                 }
@@ -467,7 +467,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent}}"
+                                            "color": "{{aied:color:text}}"
                                         }
                                     }
                                 }
@@ -1297,13 +1297,6 @@
                                             "color": "{{aied:color:text}}"
                                         }
                                     }
-                                },
-                                "hover": {
-                                    "styles": {
-                                        "all": {
-                                            "color": "{{aied:color:accent}}"
-                                        }
-                                    }
                                 }
                             }
                         },
@@ -1347,13 +1340,6 @@
                                             "width": "2px",
                                             "style": "solid",
                                             "color": "{{aied:color:text}}"
-                                        }
-                                    }
-                                },
-                                "hover": {
-                                    "styles": {
-                                        "all": {
-                                            "color": "{{aied:color:accent}}"
                                         }
                                     }
                                 }
@@ -1401,13 +1387,6 @@
                                             "color": "{{aied:color:text}}"
                                         }
                                     }
-                                },
-                                "hover": {
-                                    "styles": {
-                                        "all": {
-                                            "color": "{{aied:color:accent}}"
-                                        }
-                                    }
                                 }
                             }
                         },
@@ -1451,13 +1430,6 @@
                                             "width": "2px",
                                             "style": "solid",
                                             "color": "{{aied:color:text}}"
-                                        }
-                                    }
-                                },
-                                "hover": {
-                                    "styles": {
-                                        "all": {
-                                            "color": "{{aied:color:accent}}"
                                         }
                                     }
                                 }
@@ -2266,7 +2238,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent}}"
+                                            "color": "{{aied:color:text}}"
                                         }
                                     }
                                 }
@@ -2307,7 +2279,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent}}"
+                                            "color": "{{aied:color:text}}"
                                         }
                                     }
                                 }
@@ -2348,7 +2320,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent}}"
+                                            "color": "{{aied:color:text}}"
                                         }
                                     }
                                 }
@@ -2389,7 +2361,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent}}"
+                                            "color": "{{aied:color:text}}"
                                         }
                                     }
                                 }
@@ -2573,13 +2545,6 @@
                                             "color": "{{aied:color:text}}"
                                         }
                                     }
-                                },
-                                "hover": {
-                                    "styles": {
-                                        "all": {
-                                            "color": "{{aied:color:accent}}"
-                                        }
-                                    }
                                 }
                             }
                         },
@@ -2612,13 +2577,6 @@
                                             "width": "4px",
                                             "style": "solid",
                                             "color": "{{aied:color:text}}"
-                                        }
-                                    }
-                                },
-                                "hover": {
-                                    "styles": {
-                                        "all": {
-                                            "color": "{{aied:color:accent}}"
                                         }
                                     }
                                 }
@@ -2655,13 +2613,6 @@
                                             "color": "{{aied:color:text}}"
                                         }
                                     }
-                                },
-                                "hover": {
-                                    "styles": {
-                                        "all": {
-                                            "color": "{{aied:color:accent}}"
-                                        }
-                                    }
                                 }
                             }
                         },
@@ -2694,13 +2645,6 @@
                                             "width": "4px",
                                             "style": "solid",
                                             "color": "{{aied:color:text}}"
-                                        }
-                                    }
-                                },
-                                "hover": {
-                                    "styles": {
-                                        "all": {
-                                            "color": "{{aied:color:accent}}"
                                         }
                                     }
                                 }

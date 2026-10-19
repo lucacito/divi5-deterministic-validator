@@ -1,0 +1,17 @@
+# Pairs of shipped style kits whose CARD (the card adapter's `card` patch on a light band) is the same card by
+# StyleKitsTest::testEveryKitHasAVisiblyDifferentCard: the card radius differs by less than 4px, the card padding by less
+# than 8px, and the frame (sides, width, style, colour role), the shadow (rest and hover) and the hover (frame colour and
+# lift) are all equal. Measured in Task 4 of the card adapter plan (9 of 780 pairs); the kits differ as BUTTONS, which is
+# what they were made for, and are never changed to pass this list.
+#
+# Shrink-only: the test asserts this file is exactly the set found and that it never holds more than 9 pairs. A pair that
+# stops being the same card must be removed; a new kit must not add one.
+quiet-solid|steady-solid
+steady-solid|soft-solid
+raw-frame|thick-frame-caps
+raw-frame|thick-frame
+hairline-frame-caps|text-link
+hairline-frame-caps|text-link-caps
+thick-frame-caps|thick-frame
+flat-square|block-caps
+text-link|text-link-caps

@@ -73,14 +73,17 @@ require_once __DIR__ . '/StyleKits.php';
  *   ghost kit keeps a filled card and shows its character in the frame): `surface`, or `bg` on a `surface` band. No hover fill.
  * - Radius: `{{aied:kit:radius-card}}`. A radius makes Divi print `overflow: hidden` on the card, so it clips an image child.
  * - Frame: `styles.all` at the kit width, `1px` when the kit's is `0px` (a quiet kit's card still separates from its band),
- *   in the kit style; colour role: `same` -> `border`, `inverse` -> `text`, `accent`/`text`/`border` as given (the band
- *   never changes it: the frame sits on the card's own fill).
+ *   in the kit style; colour role: `same` -> `border` (the decorative hairline), `inverse` -> `text`, `accent` -> `text`,
+ *   `text`/`border` as given (the band never changes it: the frame sits on the card's own fill). Amended by the contrast
+ *   proof (KitCardAdapterTest, Task 4): a frame that carries meaning must be >= 3:1 on the fill in every language and an
+ *   `accent` frame is not (playful-pastel 2.30-2.45:1, brutalist-flat 2.81:1 on its bg), so it is `text`.
  * - Underline kits (`border.sides` bottom): the button's underline form, `styles.all.width` 0px plus `styles.bottom` (width as
  *   above, style, colour), and NO hover border colour at all (the hover frame colour on a bottom-only card is not proven).
  * - `card` only: padding `{{aied:kit:space-card}}` (four sides) on `module.decoration.spacing`; hover `lift` ->
  *   `transform.desktop.hover.translate.y` -4px; hover `fill-swap` / `invert` -> `border.desktop.hover.styles.all.color`
- *   `accent` (a card cannot swap its fill: its children would lose contrast), written only when the rest frame is not
- *   already `accent`; hover `none` -> nothing. The shadow is shadow()'s pair (rest and hover) for the band, with a `surface`
+ *   `text` (a card cannot swap its fill: its children would lose contrast; `text` and not `accent`, amended by the same
+ *   proof: an accent hover frame fails in playful-pastel and brutalist-flat), written only when the rest frame is not
+ *   already `text`, so only a `border` hairline frame changes on hover; hover `none` -> nothing. The shadow is shadow()'s pair (rest and hover) for the band, with a `surface`
  *   band treated as `light` (a surface band is a light band): the same value the button gets.
  * - `panel` (a static surface: forms, spec sheets, overlap panels): no padding key (the recipe keeps its structural padding)
  *   and NO `hover` key anywhere (border, boxShadow, transform): only the rest shadow, nothing for a hover-only shadow pair.
@@ -114,8 +117,15 @@ final class KitAdapters
     private const CARD_ROLES    = [ 'card', 'panel' ];
     private const CARD_SURFACES = [ 'light', 'surface', 'accent', 'dark' ];
 
-    /** A kit border colour => the card's frame colour role (`accent`, `text` and `border` are used as given). */
-    private const CARD_FRAME = [ 'same' => 'border', 'inverse' => 'text' ];
+    /**
+     * A kit border colour => the card's frame colour role. A frame that carries meaning must be >= 3:1 on the card fill in
+     * every language, and only `text` is (an `accent` frame is 2.30:1 on playful-pastel's bg, 2.81:1 on brutalist-flat's):
+     * `accent` and `inverse` frames are `text`; `same` is the decorative `border` hairline; `text` and `border` as given.
+     */
+    private const CARD_FRAME = [ 'same' => 'border', 'inverse' => 'text', 'accent' => 'text' ];
+
+    /** The card's hover frame colour role (fill-swap / invert): the one role readable on every card fill, see CARD_FRAME. */
+    private const CARD_HOVER_FRAME = 'text';
 
     /** The label colour role on a fill of the given colour role (`inverse` is never a fill, see filled()). */
     private const ON = [ 'accent' => 'accent-text', 'text' => 'bg' ];
@@ -178,10 +188,11 @@ final class KitAdapters
 
         $hover = (string) $kit['hover'];
         $isCard = 'card' === $role;
-        if ( $isCard && ! $bottom && 'accent' !== $frame && ( 'fill-swap' === $hover || 'invert' === $hover ) ) {
-            // kc-hover-frame. Never on a bottom-only card (its hover frame colour is not proven) and never when the frame is
-            // already accent (a redundant key).
-            $frameAttrs['desktop']['hover'] = [ 'styles' => [ 'all' => [ 'color' => self::colour( 'accent' ) ] ] ];
+        if ( $isCard && ! $bottom && self::CARD_HOVER_FRAME !== $frame && ( 'fill-swap' === $hover || 'invert' === $hover ) ) {
+            // kc-hover-frame (the hover colour path, proven with an accent value; the role is the colour token only). Never
+            // on a bottom-only card (its hover frame colour is not proven) and never when the frame already is that colour
+            // (a redundant key): only a `border` hairline frame darkens to `text` on hover.
+            $frameAttrs['desktop']['hover'] = [ 'styles' => [ 'all' => [ 'color' => self::colour( self::CARD_HOVER_FRAME ) ] ] ];
         }
 
         $module = [
