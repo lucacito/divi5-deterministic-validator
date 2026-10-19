@@ -332,18 +332,29 @@ final class StyleKits
     }
 
     /**
+     * What the secondary button is, by the fill the adapter's role table gives it, when an AI could not guess it from the
+     * primary: an outline kit's secondary is a ghost (a plain label, no fill, no frame). An outlined secondary (of a solid
+     * or ghost kit) is what the AI expects and is not stated.
+     */
+    private const SECONDARY_SENTENCES = [
+        'solid' => 'The secondary is a filled block.',
+        'ghost' => 'The secondary is a plain text link.',
+    ];
+
+    /**
      * The kit's one-line summary, plus (derived from the adapter's role table, never typed by hand) what the SECONDARY button
-     * is when it is a filled block: the secondary of an outline kit is solid, and the AI must read that where it chooses.
-     * A summary that already says something about the secondary is left alone.
+     * is when its fill is one SECONDARY_SENTENCES names (today: the ghost secondary of an outline kit), so the AI reads it
+     * where it chooses. A summary that already says something about the secondary is left alone.
      *
      * @param array<string,mixed> $kit
      */
     private static function describe( array $kit ): string
     {
-        $summary = (string) ( $kit['summary'] ?? '' );
-        $fill    = (string) ( $kit['fill'] ?? '' );
-        if ( 'solid' !== $fill && 'solid' === KitAdapters::secondaryFill( $fill ) && false === stripos( $summary, 'secondary' ) ) {
-            $summary .= ' The secondary is a filled block.';
+        $summary   = (string) ( $kit['summary'] ?? '' );
+        $fill      = (string) ( $kit['fill'] ?? '' );
+        $secondary = KitAdapters::secondaryFill( $fill );
+        if ( $secondary !== $fill && isset( self::SECONDARY_SENTENCES[ $secondary ] ) && false === stripos( $summary, 'secondary' ) ) {
+            $summary .= ' ' . self::SECONDARY_SENTENCES[ $secondary ];
         }
         return $summary;
     }

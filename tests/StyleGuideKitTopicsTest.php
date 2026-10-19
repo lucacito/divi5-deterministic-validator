@@ -398,18 +398,40 @@ class StyleGuideKitTopicsTest extends TestCase
             $text = StyleGuide::markdown( 'style-kit:' . $id );
             foreach ( [ 'control' => 'primary', 'control-secondary' => 'secondary' ] as $role => $name ) {
                 $d        = KitAdapters::patch( 'divi/button', $role, 'light', $kit )['button']['decoration'];
-                $textOnly = KitAdapters::TRANSPARENT === $d['background']['desktop']['value']['color'] && '0px' === $d['border']['desktop']['value']['styles']['all']['width']
-                    && ! isset( $d['border']['desktop']['value']['styles']['bottom'] );
+                // No fill and no side wider than 0px (an underline kit's ghost secondary keeps a zero-width bottom side).
+                $widths   = array_map( static fn ( array $s ): string => (string) $s['width'], (array) $d['border']['desktop']['value']['styles'] );
+                $textOnly = KitAdapters::TRANSPARENT === $d['background']['desktop']['value']['color'] && [ '0px' ] === array_values( array_unique( $widths ) );
                 $sentence = sprintf( 'The %s button is text-only', $name );
                 if ( $textOnly ) {
                     ++$seen;
                     $this->assertStringContainsString( $sentence, $text, "$id: its $name button has no fill and no border" );
+                    // The reason given is true: the kit's own width is 0px, or the button is a ghost (no frame whatever the width).
+                    $fill = 'control' === $role ? (string) $kit['fill'] : KitAdapters::secondaryFill( (string) $kit['fill'] );
+                    $this->assertSame( '0px' === $kit['border']['width'] && 'ghost' !== $fill, str_contains( $text, "The $name button is text-only: no fill and no border (this kit's border width is 0px)" ), "$id $name" );
+                    $this->assertSame( 'ghost' === $fill, str_contains( $text, "The $name button is text-only: a ghost, no fill and no frame" ), "$id $name" );
                 } else {
                     $this->assertStringNotContainsString( $sentence, $text, "$id: its $name button has a fill or a border" );
                 }
             }
         }
         $this->assertGreaterThan( 0, $seen, 'soft-solid\'s borderless secondary is text-only' );
+    }
+
+    /** The underline sentence speaks of the primary; when the secondary draws no underline (a ghost) the topic says so. */
+    public function testAnUnderlineKitTopicSaysWhenTheSecondaryHasNoUnderline(): void
+    {
+        $seen = [];
+        foreach ( StyleKits::ids() as $id ) {
+            $kit = (array) StyleKits::get( $id );
+            if ( 'bottom' !== ( $kit['border']['sides'] ?? 'all' ) ) {
+                continue;
+            }
+            $bottom      = KitAdapters::patch( 'divi/button', 'control-secondary', 'light', $kit )['button']['decoration']['border']['desktop']['value']['styles']['bottom'];
+            $plain       = '0px' === $bottom['width'];
+            $seen[ $id ] = $plain;
+            $this->assertSame( $plain, str_contains( StyleGuide::markdown( 'style-kit:' . $id ), 'The secondary button draws no underline' ), $id );
+        }
+        $this->assertSame( [ 'underline-link' => false, 'underlined-label' => true ], $seen );
     }
 
     /** @return list<array{0:string,1:array<string,mixed>}> block comment text and its decoded attributes, in document order */
@@ -469,9 +491,12 @@ class StyleGuideKitTopicsTest extends TestCase
             }
             $this->assertSame( 'solid' === $kit['fill'] ? $editorial['colors'][ $kit['color'] ] ?? $editorial['colors'][ str_replace( '-', '_', $kit['color'] ) ] : KitAdapters::TRANSPARENT, $primary['button']['decoration']['background']['desktop']['value']['color'], 'the primary fill follows the kit' );
             // A ghost kit's secondary is its outline treatment: both transparent, told apart by the outline.
-            $look = static fn ( array $a ): array => [ $a['button']['decoration']['background']['desktop']['value']['color'], $a['button']['decoration']['border']['desktop']['value']['styles']['all']['width'] ];
+            // An underline carries the shape with its bottom side alone: judge that side (as the contrast proof does).
+            $look = static fn ( array $a ): array => [ $a['button']['decoration']['background']['desktop']['value']['color'], ( $a['button']['decoration']['border']['desktop']['value']['styles']['bottom'] ?? $a['button']['decoration']['border']['desktop']['value']['styles']['all'] )['width'] ];
             $this->assertNotSame( $look( $primary ), $look( $secondary ), 'primary and secondary differ in their fill or their outline' );
-            if ( 'ghost' !== $kit['fill'] ) {
+            // A solid kit's primary is filled and its secondary is not; an outline or ghost kit's are both transparent and
+            // are told apart by the frame (the look above).
+            if ( 'solid' === $kit['fill'] ) {
                 $this->assertNotSame(
                     $primary['button']['decoration']['background']['desktop']['value']['color'],
                     $secondary['button']['decoration']['background']['desktop']['value']['color'],
@@ -494,26 +519,32 @@ class StyleGuideKitTopicsTest extends TestCase
         }
     }
 
-    /** An outline kit's secondary button is a filled block (KitAdapters' role table); the AI must read that where it chooses and where it copies. */
+    /**
+     * An outline kit's secondary button is a ghost (KitAdapters' role table, kit limits Decision 4): a plain label with no
+     * fill and no frame. The AI must read that where it chooses and where it copies, and no line may still call it a block.
+     */
     public function testTheSecondaryOfAnOutlineKitIsStatedInTheCatalogAndInTheKitTopic(): void
     {
         $catalog = StyleGuide::markdown( 'style-kits' );
         $seen    = 0;
+        $this->assertStringNotContainsStringIgnoringCase( 'filled block', $catalog, 'no secondary is a filled block any more' );
         foreach ( StyleKits::ids() as $id ) {
             $kit = (array) StyleKits::get( $id );
-            // Derived from the adapter, never a literal: a kit whose secondary fill differs from its own is "outline" -> "solid".
+            // Derived from the adapter, never a literal: an outline kit's secondary fill is "ghost".
             $secondaryFill = KitAdapters::secondaryFill( (string) $kit['fill'] );
             $line          = $this->catalogLine( $catalog, $id );
             $topic         = StyleGuide::markdown( 'style-kit:' . $id );
-            if ( 'solid' === $secondaryFill && 'solid' !== $kit['fill'] ) {
+            $this->assertNotSame( 'solid', $secondaryFill, $id );
+            if ( 'ghost' === $secondaryFill ) {
                 $seen++;
-                $this->assertMatchesRegularExpression( '/secondary is a filled block/i', $line, $id . ': the catalog line states the secondary' );
+                $this->assertMatchesRegularExpression( '/secondary is a plain (text link|label)/i', $line, $id . ': the catalog line states the secondary' );
+                $this->assertStringContainsString( 'The secondary button is text-only: a ghost, no fill and no frame', $topic, $id );
             }
             // Every kit topic states primary AND secondary on a light section, from the adapter's own patch.
             $this->assertStringContainsString( 'The primary button on a light section has', $topic, $id );
             $this->assertStringContainsString( 'The secondary button on a light section has', $topic, $id );
         }
-        $this->assertGreaterThan( 5, $seen, 'the shipped kits include outline kits' );
+        $this->assertSame( 13, $seen, 'the shipped kits include 13 outline kits' );
     }
 
     private function catalogLine( string $catalog, string $id ): string

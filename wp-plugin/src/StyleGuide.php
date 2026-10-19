@@ -394,7 +394,7 @@ final class StyleGuide
 
     /**
      * What the kit's shadow, lift and underline do, read from the adapter's own patch for the primary button (the same on
-     * the secondary), or '' when the kit has none of them.
+     * the secondary, except that a ghost secondary draws no underline, which is then said), or '' when the kit has none of them.
      *
      * @param array<string,mixed> $kit
      */
@@ -426,6 +426,10 @@ final class StyleGuide
         }
         if ( isset( $patch['button']['decoration']['border']['desktop']['value']['styles']['bottom'] ) ) {
             $out[] = 'Only the bottom border is drawn: an underline (the frame width is 0px and the bottom side carries the width, style and colour); its colours never change on hover.';
+            $secondary = KitAdapters::patch( 'divi/button', 'control-secondary', 'light', $kit );
+            if ( '0px' === (string) ( $secondary['button']['decoration']['border']['desktop']['value']['styles']['bottom']['width'] ?? '' ) ) {
+                $out[] = 'The secondary button draws no underline: it is a plain label (its bottom side is 0px).';
+            }
         }
         if ( [] === $out ) {
             return '';
@@ -438,9 +442,10 @@ final class StyleGuide
     }
 
     /**
-     * "The secondary button is text-only: ..." for each button role the kit draws with no fill and no border on a light
-     * section (read from the adapter's own patch, e.g. a solid kit with a 0px border makes its secondary a transparent,
-     * borderless button), or '' when every role has a fill or a border.
+     * "The secondary button is text-only: ..." for each button role the kit draws with no fill and no side wider than 0px
+     * on a light section (read from the adapter's own patch: a solid kit with a 0px border makes its secondary a
+     * transparent, borderless button; a ghost, the primary of a ghost kit or the secondary of an outline kit, has no frame
+     * whatever the kit's width), with the reason that is true for it, or '' when every role has a fill or a border.
      *
      * @param array<string,mixed> $kit
      */
@@ -452,11 +457,16 @@ final class StyleGuide
             if ( null === $patch ) {
                 continue;
             }
-            $d = (array) $patch['button']['decoration'];
-            if ( KitAdapters::TRANSPARENT === $d['background']['desktop']['value']['color'] && '0px' === $d['border']['desktop']['value']['styles']['all']['width']
-                && ! isset( $d['border']['desktop']['value']['styles']['bottom'] ) ) {
-                $out[] = sprintf( 'The %s button is text-only: no fill and no border (this kit\'s border width is 0px), so it reads as a quiet link.', $name );
+            $d      = (array) $patch['button']['decoration'];
+            $widths = array_map( static fn ( $s ): string => (string) ( $s['width'] ?? '' ), (array) $d['border']['desktop']['value']['styles'] );
+            if ( KitAdapters::TRANSPARENT !== $d['background']['desktop']['value']['color'] || [ '0px' ] !== array_values( array_unique( $widths ) ) ) {
+                continue;
             }
+            $fill  = (string) $kit['fill'];
+            $fill  = 'control' === $role ? $fill : KitAdapters::secondaryFill( $fill );
+            $out[] = 'ghost' === $fill
+                ? sprintf( 'The %s button is text-only: a ghost, no fill and no frame, so it reads as a quiet link.', $name )
+                : sprintf( 'The %s button is text-only: no fill and no border (this kit\'s border width is 0px), so it reads as a quiet link.', $name );
         }
 
         return implode( ' ', $out );

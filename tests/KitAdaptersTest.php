@@ -426,10 +426,14 @@ class KitAdaptersTest extends TestCase
         $this->assertSame( '{{aied:color:bg}}', $p['font']['font']['desktop']['hover']['color'] );
         $this->assertSame( '{{aied:color:text}}', $p['border']['desktop']['value']['styles']['all']['color'] );
 
-        // The secondary of an outline kit is its solid treatment.
+        // The secondary of an outline kit is a ghost (kit limits Decision 4): transparent, no frame, text ink; fill-swap
+        // fills it on hover exactly as the outlined primary.
         $p = $this->patch( $outline, 'control-secondary', 'light' )['button']['decoration'];
-        $this->assertSame( '{{aied:color:text}}', $p['background']['desktop']['value']['color'] );
-        $this->assertSame( '{{aied:color:bg}}', $p['font']['font']['desktop']['value']['color'] );
+        $this->assertSame( KitAdapters::TRANSPARENT, $p['background']['desktop']['value']['color'] );
+        $this->assertSame( '0px', $p['border']['desktop']['value']['styles']['all']['width'] );
+        $this->assertSame( '{{aied:color:text}}', $p['font']['font']['desktop']['value']['color'] );
+        $this->assertSame( '{{aied:color:text}}', $p['background']['desktop']['hover']['color'] );
+        $this->assertSame( '{{aied:color:bg}}', $p['font']['font']['desktop']['hover']['color'] );
 
         // A ghost is transparent with a zero border, and the background is still written.
         $ghost         = $outline;
@@ -498,16 +502,27 @@ class KitAdaptersTest extends TestCase
         $this->assertSame( '{{aied:color:text}}', $p['font']['font']['desktop']['hover']['color'] );
 
         // A filled button on a photo swaps to transparent in the photo's ink (inverse), not its fill colour.
-        $p = $this->patch( $outline, 'control-secondary', 'dark' )['button']['decoration'];
-        $this->assertSame( '{{aied:color:text}}', $p['background']['desktop']['value']['color'] );
+        $swap = $this->kitWith( 'soft-solid', [ 'hover' => 'fill-swap' ] );
+        $p = $this->patch( $swap, 'control', 'dark' )['button']['decoration'];
+        $this->assertSame( '{{aied:color:accent}}', $p['background']['desktop']['value']['color'] );
         $this->assertSame( KitAdapters::TRANSPARENT, $p['background']['desktop']['hover']['color'] );
         $this->assertSame( '{{aied:color:inverse}}', $p['font']['font']['desktop']['hover']['color'] );
         $this->assertSame( '{{aied:color:inverse}}', $p['border']['desktop']['hover']['styles']['all']['color'] );
 
         // On an accent band the same swap uses accent-text.
-        $p = $this->patch( $outline, 'control-secondary', 'accent' )['button']['decoration'];
+        $p = $this->patch( $swap, 'control', 'accent' )['button']['decoration'];
         $this->assertSame( '{{aied:color:surface}}', $p['background']['desktop']['value']['color'] );
         $this->assertSame( '{{aied:color:accent-text}}', $p['font']['font']['desktop']['hover']['color'] );
+
+        // The ghost secondary of an outline kit on a photo and on an accent band: transparent in the band's ink, no frame.
+        foreach ( [ 'dark' => 'inverse', 'accent' => 'accent-text' ] as $on => $ink ) {
+            $p = $this->patch( $outline, 'control-secondary', $on )['button']['decoration'];
+            $this->assertSame( KitAdapters::TRANSPARENT, $p['background']['desktop']['value']['color'], $on );
+            $this->assertSame( '{{aied:color:' . $ink . '}}', $p['font']['font']['desktop']['value']['color'], $on );
+            $this->assertSame( '0px', $p['border']['desktop']['value']['styles']['all']['width'], $on );
+            $this->assertSame( '{{aied:color:surface}}', $p['background']['desktop']['hover']['color'], $on );
+            $this->assertSame( '{{aied:color:text}}', $p['font']['font']['desktop']['hover']['color'], $on );
+        }
 
         // `inverse` is never a fill: a solid inverse kit is surface with a text label; on light its outline ink is text.
         $inv          = $outline;
@@ -520,6 +535,106 @@ class KitAdaptersTest extends TestCase
         $p = $this->patch( $inv, 'control', 'light' )['button']['decoration'];
         $this->assertSame( '{{aied:color:text}}', $p['font']['font']['desktop']['value']['color'] );
         $this->assertStringNotContainsString( '"color":"{{aied:color:inverse}}"', (string) json_encode( [ $p['background'] ] ) );
+    }
+
+    /** The shipped outline kits (kit limits Decision 4 names 13). @return array<string,array<string,mixed>> */
+    private function outlineKits(): array
+    {
+        $out = [];
+        foreach ( $this->shippedKits() as $kit ) {
+            if ( 'outline' === $kit['fill'] ) {
+                $out[ (string) $kit['id'] ] = $kit;
+            }
+        }
+        $this->assertSame(
+            [ 'outline-2', 'double-frame', 'dotted-pill', 'hairline-frame-caps', 'offset-frame', 'soft-hairline-caps', 'thick-frame-caps',
+                'thick-rounded-caps', 'outline-pill', 'outline-soft', 'thick-frame', 'underlined-label', 'hairline-halo' ],
+            array_keys( $out )
+        );
+        return $out;
+    }
+
+    /** Every border side a patch writes, with its width. @return array<string,string> */
+    private static function sideWidths( array $d ): array
+    {
+        $out = [];
+        foreach ( (array) $d['border']['desktop']['value']['styles'] as $side => $style ) {
+            $out[ (string) $side ] = (string) $style['width'];
+        }
+        return $out;
+    }
+
+    public function testTheSecondaryOfEveryOutlineKitIsAGhostOnEverySurface(): void
+    {
+        $ink   = [ 'light' => 'text', 'accent' => 'accent-text', 'dark' => 'inverse', 'panel' => 'bg' ];
+        // A ghost's hover (fill-swap or invert): filled as KitAdapters' transparent rest state is (light: fill its ink with
+        // on(ink); panel: bg with a text label; accent band and photo: surface with a text label).
+        $fills = [ 'light' => [ 'text', 'bg' ], 'accent' => [ 'surface', 'text' ], 'dark' => [ 'surface', 'text' ], 'panel' => [ 'bg', 'text' ] ];
+        $cells = 0;
+        foreach ( $this->outlineKits() as $id => $kit ) {
+            foreach ( self::ALL_SURFACES as $on ) {
+                ++$cells;
+                $d = $this->patch( $kit, 'control-secondary', $on )['button']['decoration'];
+                $this->assertSame( KitAdapters::TRANSPARENT, $d['background']['desktop']['value']['color'], "$id on $on: no fill" );
+                foreach ( self::sideWidths( $d ) as $side => $width ) {
+                    $this->assertSame( '0px', $width, "$id on $on: no frame ($side)" );
+                }
+                $token = '{{aied:color:' . $ink[ $on ] . '}}';
+                $this->assertSame( $token, $d['font']['font']['desktop']['value']['color'], "$id on $on: the label is the surface's ink" );
+                foreach ( (array) $d['border']['desktop']['value']['styles'] as $style ) {
+                    $this->assertSame( $token, $style['color'], "$id on $on: the (zero-width) border is the surface's ink" );
+                }
+                if ( 'fill-swap' === $kit['hover'] || 'invert' === $kit['hover'] ) {
+                    $this->assertSame( '{{aied:color:' . $fills[ $on ][0] . '}}', $d['background']['desktop']['hover']['color'], "$id on $on: hover fill" );
+                    $this->assertSame( '{{aied:color:' . $fills[ $on ][1] . '}}', $d['font']['font']['desktop']['hover']['color'], "$id on $on: hover label" );
+                } else {
+                    $this->assertSame( $d['background']['desktop']['value']['color'], $d['background']['desktop']['hover']['color'], "$id on $on" );
+                    $this->assertSame( $d['font']['font']['desktop']['value']['color'], $d['font']['font']['desktop']['hover']['color'], "$id on $on" );
+                }
+                // Exactly the existing ghost treatment: the same kit with a ghost fill draws this button as its primary
+                // (an underline kit cannot be a ghost kit, StyleKits; its ghost secondary keeps the zero-width bottom side).
+                $ghost         = $kit;
+                $ghost['fill'] = 'ghost';
+                if ( [] === StyleKits::problems( $ghost ) ) {
+                    $this->assertSame( $this->patch( $ghost, 'control', $on )['button'], $this->patch( $kit, 'control-secondary', $on )['button'], "$id on $on" );
+                } else {
+                    $this->assertSame( 'bottom', $kit['border']['sides'] ?? 'all', $id );
+                }
+            }
+        }
+        $this->assertSame( 13 * 4, $cells );
+    }
+
+    public function testEveryOutlineKitKeepsAVisibleHierarchyOutlinedPrimaryPlainSecondary(): void
+    {
+        foreach ( $this->outlineKits() as $id => $kit ) {
+            foreach ( self::ALL_SURFACES as $on ) {
+                $primary   = self::sideWidths( $this->patch( $kit, 'control', $on )['button']['decoration'] );
+                $secondary = self::sideWidths( $this->patch( $kit, 'control-secondary', $on )['button']['decoration'] );
+                $frame     = static fn ( array $w ): int => max( array_map( 'intval', $w ) );
+                $this->assertGreaterThan( 0, $frame( $primary ), "$id on $on: the primary is outlined" );
+                $this->assertSame( 0, $frame( $secondary ), "$id on $on: the secondary has no frame" );
+                $this->assertNotSame( $primary, $secondary, "$id on $on: primary and secondary differ in frame width" );
+            }
+        }
+    }
+
+    public function testEverySolidAndGhostKitKeepsItsOutlinedSecondary(): void
+    {
+        $seen = 0;
+        foreach ( $this->shippedKits() as $kit ) {
+            if ( 'outline' === $kit['fill'] ) {
+                continue;
+            }
+            ++$seen;
+            $this->assertSame( 'outline', KitAdapters::secondaryFill( (string) $kit['fill'] ), (string) $kit['id'] );
+            $d = $this->patch( $kit, 'control-secondary', 'light' )['button']['decoration'];
+            $this->assertSame( KitAdapters::TRANSPARENT, $d['background']['desktop']['value']['color'], (string) $kit['id'] );
+            $side = $d['border']['desktop']['value']['styles']['bottom'] ?? $d['border']['desktop']['value']['styles']['all'];
+            $this->assertSame( (string) $kit['border']['width'], (string) $side['width'], (string) $kit['id'] );
+        }
+        $this->assertSame( 27, $seen );
+        $this->assertSame( 'ghost', KitAdapters::secondaryFill( 'outline' ) );
     }
 
     public function testARealRecipeButtonKeepsItsModuleLayoutAndGetsModulePadding(): void
