@@ -1,6 +1,7 @@
 # Accordion adapter: a style kit also styles accordion and toggle items
 
-Status: DRAFT for the owner, 2026-10-19 (nothing built). Follows `2026-10-19-card-adapter-design.md` (built on
+Status: APPROVED (owner 2026-10-19, the recommended decisions; the image-radius token pass stays a separate small branch);
+built on branch `feat/accordion-adapter`, see the Outcome at the end. Follows `2026-10-19-card-adapter-design.md` (built on
 `feat/card-adapter`, see its Outcome) and `2026-10-18-style-kits-design.md`. The owner's order after cards:
 accordion/toggle, then forms, blurb, testimonial.
 
@@ -190,3 +191,109 @@ cost is mostly the proof machinery, which forms will reuse.
 
 Exact marker spelling within section 1; probe ids; golden layout; how the sheet lays out items; whether the item rules are
 read from the patch or from constants (never hand-typed per kit); the `kit-rules` topic name.
+
+## Outcome (2026-10-19)
+
+Built on branch `feat/accordion-adapter` (spec and plan commit 7766e85 from main ae0688d, rebased onto and later merged with
+`feat/kit-limits`) in seven tasks; Task 2 and Task 4 were delivered as one (Ruling 1b below). NO release, version bump or
+zip rebuild: the tracked root zip is still the published 4.12.0 build; the validator (`src/`, `wp-plugin/validator/`) is
+untouched. Decisions 1 to 5 went the recommended way.
+
+**What was built, per task.**
+- **T1 Probes.** 46 candidates (`fixtures/shapes/candidates/kit-item.json`, ids `ki-<decision>-<carrier>`; the spec expected
+  about 36) rendered on the real Divi 5.15.1 in a real browser at 1280/900/400: 46 PASS on BOTH `divi/accordion` and
+  `divi/toggle`, 0 DEAD, 0 css-only, no phone overflow; promotion added 1 registry path (the accordion's closed title colour,
+  `closedToggle.decoration.font.font.{bp}.value.color`), `dead-on-module.txt` gained nothing. Findings
+  (`fixtures/shapes/kit-item-vocabulary.md`): an accordion parent's padding pads the ANSWER, not the item (recorded, never
+  written); an accordion has no open icon (Divi hides it); a radius prints `overflow: hidden` on each item and clips nothing at
+  Divi's default insets (pixel check: identical red-ink counts with 16px, 36px and 999px, 1179 on the accordion, 657 on the
+  toggle); the 10px row gap stays under any frame; a shadow written on the accordion lands on EACH item; the title groups
+  differ by module (accordion: `closedToggle` + `openToggle` font; toggle: `closedTitle` + `openToggle` font).
+- **T2 + T4 Adapter, resolver and guide (one delivery, Ruling 1b).** `KitAdapters::item()` with the roles `item` (a boxed
+  item: fill `surface`, `bg` on a surface band; the card's frame, radius and rest shadow; `space-card` padding on a toggle only)
+  and `item-rule` (a rule row: the band itself as fill, an underline rule, square corners, no shadow, the recipe keeps its
+  padding) on both modules, bands light|surface|accent|dark for `item` and light|surface for `item-rule`; both states of every
+  colour are written explicitly (Divi's defaults are not transparent); the resolver roles; the item golden
+  `tests/golden/kit-item-patches.json`; after the review the card and the item share `frameStyles()`, `restShadow()` and
+  `cardFrameRole()`. The guide: a generated topic `kit-rules` (3,525 B) now holds the prose every kit topic used to repeat, the
+  kit topics carry a resolved toggle and one pointer line, `appliedSentence()` gets the noun "accordion and toggle items" and
+  `notAppliedSentence()` names only what no adapter covers, the `toggles` topic points to the kit topics. Sizes (commands in
+  Measured below): largest kit topic (neo-brutal) 9,992 -> 9,599 B, catalog 8,464 -> 8,423 B (9,948 -> 9,907 B at 50 kits),
+  default guide 28,964 -> 28,975 B (+11 B: a test requires the topic line to name every topic), topic parameter description
+  298 of 300 characters (the next topic name overflows it).
+- **T3 Proofs.** The contrast proof: `item` 3,200 + `item-rule` 1,600 cells (40 kits x 10 languages x bands x states), each
+  judging both modules (9,600 judgements), ZERO exceptions, no role-table change and no baseline file; planted failures for
+  every check. A visible-difference rule for items: 12 of 780 kit pairs give the same item, listed in
+  `fixtures/shapes/item-near-duplicates.txt` (9 card pairs plus hairline-mono|flat-square, hairline-mono|block-caps,
+  soft-rounded|soft-lift; shrink-only, cap 12). `tests/ItemMigrationTest.php`: the marked block's own ink, the accordion-item
+  decoration, the band walk (`item-rule` on light or surface only) and the merge trap over every kit x language.
+- **T5 Render gate.** `scripts/verify-kits.cjs`, `scripts/lib/kit-item-run.cjs`, `scripts/lib/kit-checks.cjs`: every kit/language
+  cell renders 10 item blocks (on the bg and surface bands an `item` accordion, a boxed `item` toggle and an open and a closed
+  `item-rule` toggle; on the accent and photo bands an `item` accordion) and measures them with the codes `items`,
+  `item-border`, `item-radius`, `item-padding`, `item-shadow`, `item-fill`, `item-title`, `item-body`, `item-icon`,
+  `item-contrast` and `item-click` (a real pointer click). The boxed item toggle is an addition beyond the brief, so that
+  `item-padding` runs live. 70 pure tests (`scripts/test-verify-kits.cjs`, 18 new) and synthetic Chromium departures for every
+  new code. The card-adapter carry-ins (compareCard ground, pointer parked at the right edge, stale header) were folded in.
+- **T6 Recipes.** 7 markers: faq-accordion (1 accordion, `item`), features-accordion-image (1 accordion) and faq-toggle-list
+  (5 toggles), both `item-rule`, all on `light`. `BESPOKE_ITEMS` is EMPTY (cap 0). `section-recipes.json` 681,274 -> 675,810 B
+  (-5,464). faq-accordion's moods widened from 2 to 6 languages (only brutalist-flat avoids its layout); recipes fitting at
+  most two languages 15 -> 14, no exemption added. `SectionRecipes::styleKitHelp()` now says "buttons, cards, accordions and
+  toggles".
+- **T7 Docs.** This Outcome, CLAUDE.md, `docs/token-usage.md`, the vocabulary final pass and the `KitAdapters` item-table
+  docblock (comments only).
+
+**Measured sizes and counts** (commands run in the worktree at the end of Task 7):
+- `wc -c wp-plugin/data/section-recipes.json`: **675,810 B** (681,274 B at the start of the branch; bound 716,800 B and the
+  700 KB rule hold). `style-kits.json`: 25,479 B (unchanged).
+- `php scripts/measure-tokens.php` (`docs/token-usage.md`): default guide 28,975 B, catalog topic `style-kits` 8,423 B, topic
+  `kit-rules` 3,525 B, topic `toggles` 5,602 -> 5,834 B (+232 B, the generated kit sentence), kit topics 8,025 B (rimmed-solid)
+  to 9,599 B (neo-brutal), tool definitions 21,621 -> 21,641 B (+20 B, as measured).
+- Suites: free **2614** tests (`php vendor/bin/phpunit -c phpunit.xml`; 2574 at the end of kit limits), Pro **2169**
+  (`-c pro-addon/phpunit.xml`), both OK. `node scripts/test-verify-kits.cjs`: 70 tests OK.
+- `fixtures/shapes/item-near-duplicates.txt`: 12 pairs. Item golden: 132 patches.
+
+**Deviations from the spec.**
+- Ruling 1b: Task 2 and Task 4 were one delivery, because the two new `APPLIED` entries lengthen `appliedSentence()` by 63 B
+  and three kit topics (neo-brutal 10,055, offset-block-caps 10,046, pressable 10,031 B) and the 50-kit catalog (10,011 B)
+  would have crossed 10,000 B; the adapter could not be green without the `kit-rules` topic.
+- The default guide grew by 11 B (the spec planned 0 B): a test requires the topic line to name every topic, so it gains
+  ", kit-rules", and the parameter description's tail was shortened to stay under 300 characters.
+- 46 probe candidates, not about 36.
+- The golden holds 132 patches, not 120: 10 default kits x 12 plus a deliberate extra kit, `underline-link` (not a language
+  default), so the underline form of an item is pinned.
+- `item-rule` writes no shadow value (no `none` form of `boxShadow` was probed), so the migration drops the recipe's own
+  shadows instead of overriding them.
+- A boxed `item` toggle was added to the render sheet beyond the brief, so that `item-padding` is measured live (an accordion
+  item keeps Divi's padding and nothing is judged there).
+- The shared `frameStyles()` / `restShadow()` helpers came from the review (the first pass copied the card's logic).
+- The accordion `title` group colour of the old recipes is not written by the adapter; the migration dropped it instead.
+
+**What changed on purpose (read as design changes).** faq-accordion now follows the kit: framed boxes with the kit's radius,
+frame, shadow and answer colour in every language, no longer the baked 16px/soft-saas look; the rule lists (features-accordion-
+image, faq-toggle-list) take the kit's rule width, style and colour instead of a fixed 1px solid rule; no open item is
+emphasised.
+
+**Known limits.**
+- v1 has no open-state emphasis and no hover on items (Decisions 3 and 4): open and closed share fill, title and icon colour.
+- Tabs stay unthemeable (the bar and separators are painted by Divi's stylesheet; the guide keeps saying so).
+- An accordion's padding reaches only the answer, so an `item` accordion keeps Divi's 20px item padding (a toggle takes the
+  kit's `space-card`).
+- The render gate's click check proves the class flip, the answer's visibility, the single-open rule and the open values at
+  rest and after the click, but NOT a colour switch: open and closed colours are equal in v1, so live data cannot show a state
+  that fails to switch (only the synthetic Chromium pages prove that comparison).
+- The boxed toggle snippet in each kit topic is validated and registry-checked but not rendered by the guide (the render gate
+  covers the same patch on the sheet).
+- faq-toggle-list's wrapping group keeps its own baked 2px top rule (it is unmarked).
+- The clip claim rests on Divi's default 20px insets; it holds for `space-card` of 20px or more (every kit is 24px or more).
+- A shadow on an accordion falls on each item with Divi's 10px gap, so a hard or edge shadow can sit close to the next item.
+- The kit-topic headroom is now about 400 B (9,599 of 10,000) and the `topic` parameter description has 2 characters left: a
+  new topic name or a new generated sentence needs the next size decision.
+- The recipe-prose test's bare `\bhairline\b` phrase ban (`ItemMigrationTest`) may over-fire on prose that legitimately says it.
+- Deferred minors: the item fill table exists three times in the tests (`KitItemAdapterTest`, `ItemMigrationTest::BANDS`);
+  `kit-checks.cjs` is about 1,250 lines; the per-item checks are partly duplicated across the render phases.
+
+**Live gates (Divi 5.15.1, 2026-10-19, head adcf7e8).** The accordion smoke (3 kits x editorial, glass-dark) passed 18 of 18 on Divi 5.15.1 with a real click changing the state of 10 of 10 item blocks per cell (11 min 45 s for 6 cells). The remaining gates (the three recipes under 8 looks, the full make verify-kits, the narrowed recipe render, verify-shapes) were pending when this section was written; the controller records their results in the ledger and updates this paragraph.
+
+**Owner decisions left.** Merge and release; forms next (4 recipes, and it fixes the contact-form submit button that does not
+follow the kit); the image-radius token pass (a separate small branch: 11 images in 5 recipes, no adapter); blurb and
+testimonial after that; image-to-layout later.

@@ -124,8 +124,10 @@ require_once __DIR__ . '/StyleKits.php';
  *   accent ground merges into its body (the shape comes from the fill).
  *
  * Item table (roles `item` and `item-rule` on `divi/accordion` and `divi/toggle`; spec 2026-10-19-accordion-adapter-design.md
- * sections 1 and 2, probe fixtures/shapes/kit-item-vocabulary.md: 46 candidates, every decision PASSED on both carriers, none
- * dead, so fixtures/shapes/dead-on-module.txt gains nothing). Only desktop is written; never innerContent, a child
+ * sections 1 and 2 and its Outcome, probe fixtures/shapes/kit-item-vocabulary.md: 46 candidates, every decision PASSED on both
+ * carriers, none dead, so fixtures/shapes/dead-on-module.txt gains nothing). `item` is a boxed item (an FAQ); `item-rule` is a
+ * rule row. Bands (ITEM_BANDS): `item` light|surface|accent|dark; `item-rule` light|surface only (its fill IS the band, and no
+ * `muted` body pair is proven on accent or a photo). A `ground` is never accepted on an item. Only desktop is written; never innerContent, a child
  * (`divi/accordion-item`), `title` (the recipe keeps family, size, weight, heading level), `advanced` (`open`) or `layout`.
  * Divi's defaults are NOT transparent (closed fill #f4f4f4, open #fff, closed title #666, open #333, icon #ccc, answer #666,
  * frame 1px #d9d9d9) and an omitted key falls back to them, so every state key below is written explicitly:
@@ -147,11 +149,17 @@ require_once __DIR__ . '/StyleKits.php';
  * - Shadow: `item` -> the kit's REST shadow from shadow() for the band (a surface band treated as light), as a panel: no
  *   hover value, so a hover-only pair writes nothing; on an accordion it lands on every item. `item-rule` -> none, and
  *   nothing is written for it: no `none` value form of `module.decoration.boxShadow` was probed (a probed form would be
- *   needed to override a recipe literal), so the recipe migration (accordion plan Task 6, the merge-trap test) drops the
- *   recipe's own shadow from every migrated rule row instead.
+ *   needed to override a recipe literal), so the recipe migration drops the recipe's own shadow from every migrated rule
+ *   row instead (`ItemMigrationTest` fails a marked block that keeps one).
  * - Hover: none, on either role (spec Decision 4: an accordion's hover is the parent's and would recolour every item at
  *   once; no hover path was probed on either carrier).
  * - Not used by items: the kit's `fill`, `color` and `text` decisions (button only), `rowGap` (Divi's 10px stays).
+ * - Clipping: a radius prints `overflow: hidden` on each item; measured not to clip title, icons or answer at Divi's default
+ *   20px insets, so it holds for any `space-card` of 20px or more (every shipped kit is 24px or more).
+ * - Proofs: KitItemAdapterTest (every leaf is a probe-PASS path of its carrier), KitItemGoldenTest (tests/golden/kit-item-patches.json,
+ *   132 patches: 10 default kits x 12 plus the underline-link extra), the contrast proof (item 3,200 + item-rule 1,600 cells, each
+ *   judging both modules, zero exceptions), the visible-difference rule (fixtures/shapes/item-near-duplicates.txt, shrink-only,
+ *   cap 12), ItemMigrationTest (own ink, band walk, merge trap) and the verify-kits item sheet with a real click.
  *
  * Pure and deterministic: no site access.
  */
