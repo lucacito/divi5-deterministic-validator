@@ -900,10 +900,51 @@ class RecipeLibraryTest extends TestCase
         foreach ( StyleKits::ids() as $kitId ) {
             [ $p, $t ] = self::bespokeCornerProblems( $markups, self::BESPOKE_CARDS, (array) StyleKits::get( $kitId ) );
             $problems  = array_merge( $problems, array_map( static fn ( string $x ): string => "$kitId: $x", $p ) );
+            $this->assertSame( 4, $t, "$kitId: the four inverted/accent groups carry the token" );
             $tokened   = $t;
         }
         $this->assertSame( [], $problems, 'a bespoke group beside a kit card takes the kit\'s corners ({{aied:kit:radius-card}}), or the pair has mismatched corners' );
         $this->assertSame( 4, $tokened, 'the four inverted/accent groups (compare-two-panels#7, features-bento#1 and #3, pricing-two-plan-highlight#8)' );
+    }
+
+    /**
+     * Blocks of $markup whose `module` or `module.decoration` is EMPTY (a list or an object): the residue a migration leaves
+     * when it moves every decoration key to the kit. Keys "<block>#<index>".
+     *
+     * @return list<string>
+     */
+    private static function emptyDecorationBlocks( string $markup ): array
+    {
+        $out = [];
+        foreach ( self::blocks( $markup ) as [ $name, $attrs, $i ] ) {
+            if ( ( array_key_exists( 'module', $attrs ) && [] === $attrs['module'] ) || ( is_array( $attrs['module'] ?? null ) && array_key_exists( 'decoration', $attrs['module'] ) && [] === $attrs['module']['decoration'] ) ) {
+                $out[] = "$name#$i";
+            }
+        }
+        return $out;
+    }
+
+    public function testNoBlockCarriesAnEmptyDecoration(): void
+    {
+        $problems = [];
+        foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $recipe ) {
+            $markup = (string) $recipe['markup'];
+            foreach ( self::emptyDecorationBlocks( $markup ) as $key ) {
+                $problems[] = $recipe['name'] . " $key";
+            }
+            foreach ( [ '"decoration":[]', '"decoration":{}', '"module":[]', '"module":{}' ] as $spelled ) {
+                if ( str_contains( $markup, $spelled ) ) {
+                    $problems[] = $recipe['name'] . " spells $spelled";
+                }
+            }
+        }
+        $this->assertSame( [], $problems, 'a migrated block drops an emptied module/decoration instead of keeping it' );
+        // Planted: an empty list, an empty object and an empty module are caught; a decoration with a key is not.
+        $grp = static fn ( string $attrs ): string => '<!-- wp:divi/group ' . $attrs . ' --><!-- /wp:divi/group -->';
+        $this->assertSame(
+            [ 'divi/group#0', 'divi/group#1', 'divi/group#2' ],
+            self::emptyDecorationBlocks( $grp( '{"module":{"decoration":[]}}' ) . $grp( '{"module":{"decoration":{}},"aied":{"kit":"card","on":"light"}}' ) . $grp( '{"module":{}}' ) . $grp( '{"module":{"decoration":{"zIndex":{"desktop":{"value":"1"}}}}}' ) . $grp( '{"aied":{"kit":"card","on":"light"}}' ) )
+        );
     }
 
     public function testTheBespokeCornerCheckCatchesWhatItShould(): void
@@ -914,11 +955,11 @@ class RecipeLibraryTest extends TestCase
         $listed = [ 'divi/group|r|0' => 'x', 'divi/group|r|1' => 'x', 'divi/group|r|2' => 'x', 'divi/group|r|3' => 'x', 'divi/column|r|0' => 'x', 'divi/group|r|9' => 'x' ];
         $markup = $grp( '{{aied:kit:radius-card}}' ) . $grp( $corner( '0px' ) ) . $grp( $corner( '999px' ) ) . $grp( null );
         [ $p, $t ] = self::bespokeCornerProblems( [ 'r' => $markup ], $listed, $kit );
-        $this->assertSame( [ 'r divi/group#1: border.desktop.value.radius is a literal, not {{aied:kit:radius-card}}', 'r divi/group#9: no such block' ], $p );
+        $this->assertSame( [ 'r divi/group#1: border.desktop.value.radius is not the card radius token {{aied:kit:radius-card}}', 'r divi/group#9: no such block' ], $p );
         $this->assertSame( 1, $t, 'the token, the pill (999px) and no radius pass; columns are not this check\'s' );
         // A token that would not resolve to the kit's card radius (a control radius) fails.
         [ $p ] = self::bespokeCornerProblems( [ 'r' => $grp( '{{aied:kit:radius-control}}' ) ], [ 'divi/group|r|0' => 'x' ], $kit );
-        $this->assertSame( [ 'r divi/group#0: border.desktop.value.radius is a literal, not {{aied:kit:radius-card}}' ], $p );
+        $this->assertSame( [ 'r divi/group#0: border.desktop.value.radius is not the card radius token {{aied:kit:radius-card}}' ], $p );
     }
 
     /**
@@ -969,7 +1010,7 @@ class RecipeLibraryTest extends TestCase
                         continue;
                     }
                     if ( '{{aied:kit:radius-card}}' !== $radius ) {
-                        $out[] = "$where is a literal, not {{aied:kit:radius-card}}";
+                        $out[] = "$where is not the card radius token {{aied:kit:radius-card}}";
                         continue;
                     }
                     if ( ( $after['module']['decoration']['border'][ $bp ][ $state ]['radius'] ?? null ) !== $want ) {
