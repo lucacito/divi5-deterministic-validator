@@ -12456,5 +12456,1275 @@
                 }
             }
         }
+    },
+    "underline-link": {
+        "kit": {
+            "id": "underline-link",
+            "title": "Underline link",
+            "summary": "Square accent buttons with a 2px text-colour bottom edge and no frame; the secondary is a transparent label on an underline. Quiet and literary.",
+            "avoids": [],
+            "fill": "solid",
+            "color": "accent",
+            "border": {
+                "width": "2px",
+                "style": "solid",
+                "color": "text",
+                "sides": "bottom"
+            },
+            "radius": {
+                "control": "0px",
+                "card": "0px",
+                "media": "0px"
+            },
+            "shadow": {
+                "rest": "none",
+                "hover": "none"
+            },
+            "hover": "none",
+            "text": {
+                "capitalization": "none",
+                "letterSpacing": "0px",
+                "weight": "600"
+            },
+            "space": {
+                "control": {
+                    "vertical": "10px",
+                    "horizontal": "20px"
+                },
+                "card": "24px"
+            }
+        },
+        "patches": {
+            "divi/accordion|item|light": {
+                "module": {
+                    "decoration": {
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "0px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        },
+                                        "bottom": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "color": "{{aied:color:muted}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/accordion|item|surface": {
+                "module": {
+                    "decoration": {
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "0px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        },
+                                        "bottom": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:bg}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:bg}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "color": "{{aied:color:muted}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/accordion|item|accent": {
+                "module": {
+                    "decoration": {
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "0px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        },
+                                        "bottom": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "color": "{{aied:color:muted}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/accordion|item|dark": {
+                "module": {
+                    "decoration": {
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "0px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        },
+                                        "bottom": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "color": "{{aied:color:muted}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/accordion|item-rule|light": {
+                "module": {
+                    "decoration": {
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": {
+                                        "topLeft": "0px",
+                                        "topRight": "0px",
+                                        "bottomRight": "0px",
+                                        "bottomLeft": "0px"
+                                    },
+                                    "styles": {
+                                        "all": {
+                                            "width": "0px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        },
+                                        "bottom": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:bg}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:bg}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "color": "{{aied:color:muted}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/accordion|item-rule|surface": {
+                "module": {
+                    "decoration": {
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": {
+                                        "topLeft": "0px",
+                                        "topRight": "0px",
+                                        "bottomRight": "0px",
+                                        "bottomLeft": "0px"
+                                    },
+                                    "styles": {
+                                        "all": {
+                                            "width": "0px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        },
+                                        "bottom": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "color": "{{aied:color:muted}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/toggle|item|light": {
+                "module": {
+                    "decoration": {
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "0px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        },
+                                        "bottom": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedTitle": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "color": "{{aied:color:muted}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/toggle|item|surface": {
+                "module": {
+                    "decoration": {
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "0px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        },
+                                        "bottom": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:bg}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:bg}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedTitle": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "color": "{{aied:color:muted}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/toggle|item|accent": {
+                "module": {
+                    "decoration": {
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "0px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        },
+                                        "bottom": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedTitle": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "color": "{{aied:color:muted}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/toggle|item|dark": {
+                "module": {
+                    "decoration": {
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": "{{aied:kit:radius-card}}",
+                                    "styles": {
+                                        "all": {
+                                            "width": "0px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        },
+                                        "bottom": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": "{{aied:kit:space-card}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedTitle": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "color": "{{aied:color:muted}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/toggle|item-rule|light": {
+                "module": {
+                    "decoration": {
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": {
+                                        "topLeft": "0px",
+                                        "topRight": "0px",
+                                        "bottomRight": "0px",
+                                        "bottomLeft": "0px"
+                                    },
+                                    "styles": {
+                                        "all": {
+                                            "width": "0px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        },
+                                        "bottom": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:bg}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:bg}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedTitle": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "color": "{{aied:color:muted}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/toggle|item-rule|surface": {
+                "module": {
+                    "decoration": {
+                        "border": {
+                            "desktop": {
+                                "value": {
+                                    "radius": {
+                                        "topLeft": "0px",
+                                        "topRight": "0px",
+                                        "bottomRight": "0px",
+                                        "bottomLeft": "0px"
+                                    },
+                                    "styles": {
+                                        "all": {
+                                            "width": "0px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        },
+                                        "bottom": {
+                                            "width": "2px",
+                                            "style": "solid",
+                                            "color": "{{aied:color:text}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        },
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggle": {
+                    "decoration": {
+                        "background": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:surface}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedTitle": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "color": "{{aied:color:text}}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "closedToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "openToggleIcon": {
+                    "decoration": {
+                        "icon": {
+                            "desktop": {
+                                "value": {
+                                    "color": "{{aied:color:text}}"
+                                }
+                            }
+                        }
+                    }
+                },
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "color": "{{aied:color:muted}}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -252,20 +252,10 @@ final class KitAdapters
         $border = (array) $kit['border'];
         $fill   = null === $ground ? ( 'surface' === $on ? 'bg' : 'surface' ) : self::GROUNDS[ $ground ];
         // On a ground the frame is the fill colour (the shape comes from the fill; the frame keeps the box's size).
-        $frame  = null !== $ground ? $fill : ( self::CARD_FRAME[ (string) $border['color'] ] ?? (string) $border['color'] );
-        $width  = '0px' === (string) $border['width'] ? '1px' : (string) $border['width'];
-        $style  = (string) $border['style'];
-        $colour = self::colour( $frame );
+        $frame  = null !== $ground ? $fill : self::cardFrameRole( $border );
         $bottom = 'bottom' === ( $border['sides'] ?? 'all' );
 
-        $styles = $bottom
-            // The button's underline form (kc-edge-bottom): no frame, only the bottom side.
-            ? [
-                'all'    => [ 'width' => '0px', 'style' => $style, 'color' => $colour ],
-                'bottom' => [ 'width' => $width, 'style' => $style, 'color' => $colour ],
-            ]
-            : [ 'all' => [ 'width' => $width, 'style' => $style, 'color' => $colour ] ];
-        $frameAttrs = [ 'desktop' => [ 'value' => [ 'radius' => '{{aied:kit:radius-card}}', 'styles' => $styles ] ] ];
+        $frameAttrs = [ 'desktop' => [ 'value' => [ 'radius' => '{{aied:kit:radius-card}}', 'styles' => self::frameStyles( $border, $frame, $bottom ) ] ] ];
 
         $hover = (string) $kit['hover'];
         $isCard = 'card' === $role;
@@ -283,12 +273,8 @@ final class KitAdapters
         if ( $isCard ) {
             $module['spacing'] = [ 'desktop' => [ 'value' => [ 'padding' => '{{aied:kit:space-card}}' ] ] ];
         }
-        // A surface band is a light band for the shadow's ink.
-        $shadow = self::shadow( (array) $kit['shadow'], 'surface' === $on ? 'light' : $on );
-        if ( null !== $shadow && ! $isCard ) {
-            unset( $shadow['desktop']['hover'] );
-            $shadow = [] === $shadow['desktop'] ? null : $shadow;
-        }
+        // A surface band is a light band for the shadow's ink; a panel takes the rest shadow only.
+        $shadow = $isCard ? self::shadow( (array) $kit['shadow'], 'surface' === $on ? 'light' : $on ) : self::restShadow( $kit, $on );
         if ( null !== $shadow ) {
             $module['boxShadow'] = $shadow;
         }
@@ -315,32 +301,18 @@ final class KitAdapters
         $border = (array) $kit['border'];
         // A rule row's fill IS the band; a boxed item is a card: `surface`, or `bg` on a surface band.
         $fill   = $rule ? ( 'surface' === $on ? 'surface' : 'bg' ) : ( 'surface' === $on ? 'bg' : 'surface' );
-        $colour = self::colour( self::CARD_FRAME[ (string) $border['color'] ] ?? (string) $border['color'] );
-        $width  = '0px' === (string) $border['width'] ? '1px' : (string) $border['width'];
-        $style  = (string) $border['style'];
-
-        $styles = $rule || 'bottom' === ( $border['sides'] ?? 'all' )
-            // The underline form (ki-edge-bottom): no frame, only the bottom side; a rule row always takes it.
-            ? [
-                'all'    => [ 'width' => '0px', 'style' => $style, 'color' => $colour ],
-                'bottom' => [ 'width' => $width, 'style' => $style, 'color' => $colour ],
-            ]
-            : [ 'all' => [ 'width' => $width, 'style' => $style, 'color' => $colour ] ];
+        // The card's frame (ki-frame-*, ki-edge-bottom); a rule row always takes the underline form.
+        $styles = self::frameStyles( $border, self::cardFrameRole( $border ), $rule || 'bottom' === ( $border['sides'] ?? 'all' ) );
 
         $module = [ 'border' => [ 'desktop' => [ 'value' => [ 'radius' => $rule ? self::SQUARE : '{{aied:kit:radius-card}}', 'styles' => $styles ] ] ] ];
         if ( ! $rule && $toggle ) {
             // ki-padding-toggle. Never on an accordion: its parent padding pads the answer, not the item (ki-padding-accordion).
             $module['spacing'] = [ 'desktop' => [ 'value' => [ 'padding' => '{{aied:kit:space-card}}' ] ] ];
         }
-        if ( ! $rule ) {
-            // The rest shadow only (no hover on items); a surface band is a light band for the shadow's ink.
-            $shadow = self::shadow( (array) $kit['shadow'], 'surface' === $on ? 'light' : $on );
-            if ( null !== $shadow ) {
-                unset( $shadow['desktop']['hover'] );
-                if ( [] !== $shadow['desktop'] ) {
-                    $module['boxShadow'] = $shadow;
-                }
-            }
+        $shadow = $rule ? null : self::restShadow( $kit, $on );
+        if ( null !== $shadow ) {
+            // The rest shadow only, as a panel's (no hover on items).
+            $module['boxShadow'] = $shadow;
         }
 
         $background = [ 'desktop' => [ 'value' => [ 'color' => self::colour( $fill ) ] ] ];
@@ -365,6 +337,52 @@ final class KitAdapters
         $patch['content'] = [ 'decoration' => [ 'bodyFont' => [ 'body' => [ 'font' => [ 'desktop' => [ 'value' => [ 'color' => self::colour( 'muted' ) ] ] ] ] ] ] ];
 
         return $patch;
+    }
+
+    /** The frame colour role of a card (and an item) for a kit border: CARD_FRAME, else the kit's own role. @param array<string,mixed> $border */
+    private static function cardFrameRole( array $border ): string
+    {
+        return self::CARD_FRAME[ (string) $border['color'] ] ?? (string) $border['color'];
+    }
+
+    /**
+     * The `border.desktop.value.styles` of a card or an item: the kit width (`1px` when the kit's is `0px`: a quiet kit's card
+     * still separates from its band) and style in the colour role $frameRole on all sides, or with $underline the button's
+     * underline form (kc-edge-bottom, ki-edge-bottom): `all` 0px plus the `bottom` side.
+     *
+     * @param array<string,mixed> $border the kit's border
+     * @return array<string,array<string,string>>
+     */
+    private static function frameStyles( array $border, string $frameRole, bool $underline ): array
+    {
+        $width  = '0px' === (string) $border['width'] ? '1px' : (string) $border['width'];
+        $style  = (string) $border['style'];
+        $colour = self::colour( $frameRole );
+
+        return $underline
+            ? [
+                'all'    => [ 'width' => '0px', 'style' => $style, 'color' => $colour ],
+                'bottom' => [ 'width' => $width, 'style' => $style, 'color' => $colour ],
+            ]
+            : [ 'all' => [ 'width' => $width, 'style' => $style, 'color' => $colour ] ];
+    }
+
+    /**
+     * The REST shadow of a kit on band $on for a static surface (a panel, an item): shadow()'s pair for the band, with a
+     * `surface` band treated as `light`, minus any hover value; null when nothing is left (none/none, or a hover-only pair).
+     *
+     * @param array<string,mixed> $kit
+     * @return array<string,mixed>|null
+     */
+    private static function restShadow( array $kit, string $on ): ?array
+    {
+        $shadow = self::shadow( (array) $kit['shadow'], 'surface' === $on ? 'light' : $on );
+        if ( null === $shadow ) {
+            return null;
+        }
+        unset( $shadow['desktop']['hover'] );
+
+        return [] === $shadow['desktop'] ? null : $shadow;
     }
 
     /**

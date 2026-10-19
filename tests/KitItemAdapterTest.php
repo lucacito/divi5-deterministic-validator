@@ -251,13 +251,65 @@ class KitItemAdapterTest extends TestCase
         }
     }
 
+    /**
+     * What an item patch must never lack or carry: a state key missing (it would fall back to Divi's grey default), a
+     * shadow or padding on a rule row, padding or an open icon on an accordion.
+     *
+     * @param array<string,mixed> $patch
+     * @return list<string>
+     */
+    private static function itemProblems( array $patch, string $carrier, string $role ): array
+    {
+        $leaves   = self::leaves( $patch );
+        $problems = [];
+        foreach ( array_merge( self::STATE_KEYS[ $carrier ], self::FRAME_ALL ) as $key ) {
+            if ( ! array_key_exists( $key, $leaves ) ) {
+                $problems[] = "missing $key";
+            }
+        }
+        $deco = (array) ( $patch['module']['decoration'] ?? [] );
+        if ( 'item-rule' === $role && isset( $deco['boxShadow'] ) ) {
+            $problems[] = 'a rule row with a shadow';
+        }
+        if ( ( 'item-rule' === $role || 'divi/accordion' === $carrier ) && isset( $deco['spacing'] ) ) {
+            $problems[] = 'padding where none is written';
+        }
+        if ( 'divi/accordion' === $carrier && isset( $patch['openToggleIcon'] ) ) {
+            $problems[] = 'an open icon on an accordion';
+        }
+        return $problems;
+    }
+
+    public function testTheItemCheckCatchesAPlantedFault(): void
+    {
+        $kit  = $this->shippedKits()['chunky-pill-offset']; // a hard shadow, so its item has a boxShadow to plant
+        $good = $this->patch( $kit, 'item', 'light', 'divi/toggle' );
+        $this->assertSame( [], self::itemProblems( $good, 'divi/toggle', 'item' ) );
+        $this->assertArrayHasKey( 'boxShadow', $good['module']['decoration'] );
+
+        $missing = $good;
+        unset( $missing['closedTitle'] );
+        $this->assertSame( [ 'missing closedTitle.decoration.font.font.desktop.value.color' ], self::itemProblems( $missing, 'divi/toggle', 'item' ) );
+
+        $rule                                   = $this->patch( $kit, 'item-rule', 'light', 'divi/toggle' );
+        $rule['module']['decoration']['boxShadow'] = $good['module']['decoration']['boxShadow'];
+        $this->assertSame( [ 'a rule row with a shadow' ], self::itemProblems( $rule, 'divi/toggle', 'item-rule' ) );
+
+        $accordion                   = $this->patch( $kit, 'item', 'light', 'divi/accordion' );
+        $accordion['openToggleIcon'] = $good['openToggleIcon'];
+        $accordion['module']['decoration']['spacing'] = $good['module']['decoration']['spacing'];
+        $this->assertSame( [ 'padding where none is written', 'an open icon on an accordion' ], self::itemProblems( $accordion, 'divi/accordion', 'item' ) );
+    }
+
     public function testEveryStateKeyIsWrittenForBothStatesOnBothCarriers(): void
     {
         foreach ( $this->allKitVariants() as $label => $kit ) {
             foreach ( self::CARRIERS as $carrier ) {
                 foreach ( self::BANDS as $role => $bands ) {
                     foreach ( $bands as $on ) {
-                        $leaves = self::leaves( $this->patch( $kit, $role, $on, $carrier ) );
+                        $patch  = $this->patch( $kit, $role, $on, $carrier );
+                        $this->assertSame( [], self::itemProblems( $patch, $carrier, $role ), "$label $role on $on ($carrier)" );
+                        $leaves = self::leaves( $patch );
                         foreach ( array_merge( self::STATE_KEYS[ $carrier ], self::FRAME_ALL ) as $key ) {
                             $this->assertArrayHasKey( $key, $leaves, "$label $role on $on ($carrier): $key must be written (no fallback to Divi's default)" );
                         }

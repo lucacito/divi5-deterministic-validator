@@ -242,6 +242,37 @@ final class StyleGuide
     }
 
     /**
+     * The kit-rules paragraph on grounds, with the fill roles read from the adapter's own ground patches (KitAdapters::GROUNDS
+     * through patch(), for the first shipped kit) and the child inks from GROUND_INK, followed by a blank line; '' (the
+     * paragraph is dropped, fail closed) unless the fills are exactly `text` (inverted) and `accent` (accent), the two the
+     * sentence and GROUND_INK describe.
+     *
+     * @param array<string,string>|null $fills ground => fill colour role; defaults to the adapter's (a parameter only so a test can prove the check fails closed)
+     */
+    public static function groundSentence( ?array $fills = null ): string
+    {
+        if ( null === $fills ) {
+            $fills = [];
+            $kit   = StyleKits::get( (string) ( StyleKits::ids()[0] ?? '' ) );
+            foreach ( [ 'inverted', 'accent' ] as $ground ) {
+                $patch            = null === $kit ? null : KitAdapters::patch( 'divi/group', 'panel', 'light', $kit, $ground );
+                $fills[ $ground ] = (string) preg_replace( '/^\{\{aied:color:([a-z-]+)\}\}$/', '$1', (string) ( $patch['module']['decoration']['background']['desktop']['value']['color'] ?? '' ) );
+            }
+        }
+        if ( [ 'inverted' => 'text', 'accent' => 'accent' ] !== $fills ) {
+            return '';
+        }
+
+        return sprintf(
+            'A panel can sit on an `inverted` ground (%s colour as fill; its text in the %s colour, or the surface colour on a surface band) or an `accent` ground (%s colour as fill; its text in the %s colour). The frame takes the fill colour; the kit never re-inks the children. ',
+            $fills['inverted'],
+            self::GROUND_INK[ $fills['inverted'] ],
+            $fills['accent'],
+            self::GROUND_INK[ $fills['accent'] ]
+        ) . 'A button on an inverted panel takes the `panel` treatment (each kit topic says how).' . "\n\n";
+    }
+
+    /**
      * Topic `kit-rules`: what each module takes from a kit, the same for every kit, said ONCE here instead of in every kit
      * topic. Generated from KitAdapters::APPLIED: a module's section is served only while an adapter answers its roles. At
      * most 10,000 bytes.
@@ -273,8 +304,7 @@ final class StyleGuide
                 . 'The fill is always the language\'s surface colour (the `surface` role; the `bg` role on a surface-coloured band), never transparent. '
                 . 'The kit\'s border width and style are used, but at least 1px; the frame colour is the text colour (an accent frame is drawn in the text colour) or the border hairline (the `border` role) when the kit\'s border colour is `same` or `border`. '
                 . 'A card takes the card radius and padding. A panel is a static surface: the same radius, frame and shadow, no hover, and the recipe keeps its own padding. A panel takes the rest shadow only.' . "\n\n"
-                . sprintf( 'A panel can sit on an `inverted` ground (text colour as fill; its text in the %s colour, or the surface colour on a surface band) or an `accent` ground (accent colour as fill; its text in the %s colour). The frame takes the fill colour; the kit never re-inks the children. ', self::GROUND_INK['text'], self::GROUND_INK['accent'] )
-                . 'A button on an inverted panel takes the `panel` treatment (each kit topic says how).' . "\n\n"
+                . self::groundSentence()
                 . 'Kit decisions no card takes: the text decisions (capitalization, weight and letter spacing are button-only) and the fill colour; a kit\'s media radius is recorded in the kit but no module takes it yet.' . "\n";
         }
         if ( $has( 'item' ) ) {
@@ -1780,7 +1810,7 @@ MD;
             return '';
         }
 
-        return "\n\n## Style kits\nAn accordion or a toggle can take the page's style kit (frame, corners, shadow and every state colour): a ready-made toggle per kit is in topic=style-kit:<id>, the rules in topic=kit-rules. Tabs keep their own look.";
+        return "\n\n## Style kits\n\nAn accordion or a toggle can take the page's style kit (frame, corners, shadow and every state colour): a ready-made toggle per kit is in topic=style-kit:<id>, the rules in topic=kit-rules. Tabs keep their own look.";
     }
 
     private static function togglesTopicText(): string

@@ -21,11 +21,15 @@ require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
  * decisions and its item adapter patch on both carriers (`divi/accordion`, `divi/toggle`) for `item` on every band
  * (light, surface, accent, dark) and `item-rule` on light and surface (keys "<block>|<role>|<on>"), captured when the item
  * adapter was built (accordion plan Task 2) and reviewed by eye. The carriers differ (a toggle's closed title is
- * `closedTitle`, it has an open icon and, for `item`, the card padding), so both are pinned.
+ * `closedTitle`, it has an open icon and, for `item`, the card padding), so both are pinned. One deliberate EXTRA entry,
+ * `underline-link` (no language starts with it), pins the underline form of an `item` (no default kit is an underline kit).
  */
 class KitItemGoldenTest extends TestCase
 {
     private const GOLDEN = __DIR__ . '/golden/kit-item-patches.json';
+
+    /** Kits pinned besides the ten language defaults. */
+    private const EXTRA = [ 'underline-link' ];
 
     /** @return list<string> the patch keys of one entry, in order */
     private static function keys(): array
@@ -45,13 +49,18 @@ class KitItemGoldenTest extends TestCase
     {
         $golden = json_decode( (string) file_get_contents( self::GOLDEN ), true );
         $this->assertIsArray( $golden );
-        $this->assertCount( 10, $golden );
+        $this->assertCount( 11, $golden );
 
         $defaults = [];
         foreach ( DesignLanguages::ids() as $lang ) {
             $defaults[] = (string) ( DesignLanguages::get( $lang )['kit'] ?? '' );
         }
-        $this->assertEqualsCanonicalizing( $defaults, array_keys( $golden ), 'the golden holds exactly the ten language default kits' );
+        $this->assertEqualsCanonicalizing( array_merge( $defaults, self::EXTRA ), array_keys( $golden ), 'the golden holds exactly the ten language default kits and the extra entry' );
+        foreach ( self::EXTRA as $id ) {
+            $this->assertNotContains( $id, $defaults, "$id is an extra, not a default" );
+            $this->assertSame( 'bottom', $golden[ $id ]['kit']['border']['sides'] ?? null, "$id is an underline kit" );
+            $this->assertArrayHasKey( 'bottom', $golden[ $id ]['patches']['divi/toggle|item|light']['module']['decoration']['border']['desktop']['value']['styles'], "$id: the item takes the underline form" );
+        }
 
         $patches = 0;
         foreach ( $golden as $id => $entry ) {
@@ -69,6 +78,6 @@ class KitItemGoldenTest extends TestCase
                 ++$patches;
             }
         }
-        $this->assertSame( 120, $patches );
+        $this->assertSame( 132, $patches );
     }
 }
