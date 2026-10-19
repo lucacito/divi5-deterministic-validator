@@ -520,7 +520,7 @@
   {
     "id": "underlined-label",
     "title": "Underlined label",
-    "summary": "A transparent label on a 3px underline; the secondary is a filled block with the same underline. Quiet.",
+    "summary": "A transparent label on a 3px underline; the secondary is a plain label with no underline. Quiet.",
     "avoids": [],
     "fill": "outline",
     "color": "text",

@@ -35,6 +35,36 @@ class KitAdapterGoldenTest extends TestCase
         'soft-rounded', 'heavy-block', 'raw-frame', 'gilt-hairline', 'soft-solid', 'outline-2',
     ];
 
+    /**
+     * The golden entries kit limits Task 3 (Decision 4: an outline kit's secondary is a ghost) regenerated ON PURPOSE: the
+     * `control-secondary` patches of the outline kits held here. Of the 13 outline kits only `outline-2` is in the golden,
+     * and it is no language default, so it has no panel entries. Every other entry was left byte-identical.
+     */
+    private const CHANGED_BY_THE_GHOST_SECONDARY = [
+        'outline-2|control-secondary|light',
+        'outline-2|control-secondary|accent',
+        'outline-2|control-secondary|dark',
+    ];
+
+    public function testExactlyTheOutlineKitsSecondariesAreGhostsInTheGolden(): void
+    {
+        $golden = json_decode( (string) file_get_contents( self::GOLDEN ), true );
+        $this->assertIsArray( $golden );
+        $outlineSecondaries = [];
+        foreach ( $golden as $id => $entry ) {
+            foreach ( $entry['patches'] as $key => $patch ) {
+                $d     = $patch['button']['decoration'];
+                $ghost = KitAdapters::TRANSPARENT === $d['background']['desktop']['value']['color']
+                    && [ '0px' ] === array_values( array_unique( array_map( static fn ( array $s ): string => (string) $s['width'], $d['border']['desktop']['value']['styles'] ) ) );
+                if ( 'outline' === $entry['kit']['fill'] && str_starts_with( (string) $key, 'control-secondary|' ) ) {
+                    $outlineSecondaries[] = "$id|$key";
+                    $this->assertTrue( $ghost, "$id $key is a ghost" );
+                }
+            }
+        }
+        $this->assertSame( self::CHANGED_BY_THE_GHOST_SECONDARY, $outlineSecondaries );
+    }
+
     public function testEveryKitShippedBeforeTheNewDecisionsIsUnchangedAndResolvesByteIdentically(): void
     {
         $golden = json_decode( (string) file_get_contents( self::GOLDEN ), true );

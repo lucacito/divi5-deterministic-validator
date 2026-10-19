@@ -5700,10 +5700,10 @@
                         "background": {
                             "desktop": {
                                 "value": {
-                                    "color": "{{aied:color:text}}"
+                                    "color": "rgba(255,255,255,0)"
                                 },
                                 "hover": {
-                                    "color": "rgba(255,255,255,0)"
+                                    "color": "{{aied:color:text}}"
                                 }
                             }
                         },
@@ -5713,7 +5713,7 @@
                                     "radius": "{{aied:kit:radius-control}}",
                                     "styles": {
                                         "all": {
-                                            "width": "2px",
+                                            "width": "0px",
                                             "style": "solid",
                                             "color": "{{aied:color:text}}"
                                         }
@@ -5732,13 +5732,13 @@
                             "font": {
                                 "desktop": {
                                     "value": {
-                                        "color": "{{aied:color:bg}}",
+                                        "color": "{{aied:color:text}}",
                                         "capitalization": "none",
                                         "letterSpacing": "0px",
                                         "weight": "600"
                                     },
                                     "hover": {
-                                        "color": "{{aied:color:text}}"
+                                        "color": "{{aied:color:bg}}"
                                     }
                                 }
                             }
@@ -5763,10 +5763,10 @@
                         "background": {
                             "desktop": {
                                 "value": {
-                                    "color": "{{aied:color:surface}}"
+                                    "color": "rgba(255,255,255,0)"
                                 },
                                 "hover": {
-                                    "color": "rgba(255,255,255,0)"
+                                    "color": "{{aied:color:surface}}"
                                 }
                             }
                         },
@@ -5776,16 +5776,16 @@
                                     "radius": "{{aied:kit:radius-control}}",
                                     "styles": {
                                         "all": {
-                                            "width": "2px",
+                                            "width": "0px",
                                             "style": "solid",
-                                            "color": "{{aied:color:text}}"
+                                            "color": "{{aied:color:accent-text}}"
                                         }
                                     }
                                 },
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent-text}}"
+                                            "color": "{{aied:color:surface}}"
                                         }
                                     }
                                 }
@@ -5795,13 +5795,13 @@
                             "font": {
                                 "desktop": {
                                     "value": {
-                                        "color": "{{aied:color:text}}",
+                                        "color": "{{aied:color:accent-text}}",
                                         "capitalization": "none",
                                         "letterSpacing": "0px",
                                         "weight": "600"
                                     },
                                     "hover": {
-                                        "color": "{{aied:color:accent-text}}"
+                                        "color": "{{aied:color:text}}"
                                     }
                                 }
                             }
@@ -5826,10 +5826,10 @@
                         "background": {
                             "desktop": {
                                 "value": {
-                                    "color": "{{aied:color:text}}"
+                                    "color": "rgba(255,255,255,0)"
                                 },
                                 "hover": {
-                                    "color": "rgba(255,255,255,0)"
+                                    "color": "{{aied:color:surface}}"
                                 }
                             }
                         },
@@ -5839,16 +5839,16 @@
                                     "radius": "{{aied:kit:radius-control}}",
                                     "styles": {
                                         "all": {
-                                            "width": "2px",
+                                            "width": "0px",
                                             "style": "solid",
-                                            "color": "{{aied:color:text}}"
+                                            "color": "{{aied:color:inverse}}"
                                         }
                                     }
                                 },
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:inverse}}"
+                                            "color": "{{aied:color:surface}}"
                                         }
                                     }
                                 }
@@ -5858,13 +5858,13 @@
                             "font": {
                                 "desktop": {
                                     "value": {
-                                        "color": "{{aied:color:bg}}",
+                                        "color": "{{aied:color:inverse}}",
                                         "capitalization": "none",
                                         "letterSpacing": "0px",
                                         "weight": "600"
                                     },
                                     "hover": {
-                                        "color": "{{aied:color:inverse}}"
+                                        "color": "{{aied:color:text}}"
                                     }
                                 }
                             }

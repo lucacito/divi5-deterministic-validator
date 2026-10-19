@@ -54,7 +54,9 @@ require_once __DIR__ . '/StyleKits.php';
  *   on hover, so the box would shrink beside its secondary and jump on hover; the box keeps its size, as a ground frame.
  * - outline: transparent, label and border in the ink at the kit width.
  * - ghost: as outline with a zero border.
- * - The secondary role uses the outline treatment for solid and ghost kits, and the solid one for outline kits.
+ * - The secondary role uses the outline treatment for solid and ghost kits, and the ghost one for outline kits (kit limits
+ *   Decision 4: transparent, no frame, in the surface's ink, so an outlined primary keeps the weight over a plain-text
+ *   secondary; every pair is one the 3 ghost kits already pass in the contrast proof, on all four surfaces).
  * Hover:
  * - `none` repeats the rest values.
  * - `fill-swap` swaps the filled and transparent treatments: a transparent button fills (light: fill = its ink, label
@@ -158,7 +160,7 @@ final class KitAdapters
     private const ON = [ 'accent' => 'accent-text', 'text' => 'bg' ];
 
     /** The secondary treatment of each primary fill. */
-    private const SECONDARY = [ 'solid' => 'outline', 'outline' => 'solid', 'ghost' => 'outline' ];
+    private const SECONDARY = [ 'solid' => 'outline', 'outline' => 'ghost', 'ghost' => 'outline' ];
 
     /** The fill of the secondary button of a kit whose primary has $fill (`solid`, `outline` or `ghost`): the role table's one source. */
     public static function secondaryFill( string $fill ): string
