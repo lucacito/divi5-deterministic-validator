@@ -106,8 +106,9 @@ final class StyleKits
     /**
      * What is wrong with a kit (empty list = valid). Strict: every key required except `avoids`,
      * no unknown keys, every value from its closed vocabulary or pattern, and no string value that
-     * looks like markup or a colour (a hex colour, `<`, `>`, `&`, `--`, a quote) or is longer than 160
-     * characters.
+     * looks like markup, a token or a colour (a hex colour, `<`, `>`, `&`, `--`, a quote, a backtick, a
+     * brace), carries a control character (a newline included: it could forge a heading in markdown())
+     * or is longer than 160 characters.
      *
      * @param array<string,mixed> $kit
      * @return list<string>
@@ -200,7 +201,7 @@ final class StyleKits
         }
 
         foreach ( self::unsafeStringPaths( $kit, '' ) as $path ) {
-            $p[] = $path . ' must be plain text of at most ' . self::MAX_STRING . ' characters (no markup, colour, quote, & or --)';
+            $p[] = $path . ' must be plain text of at most ' . self::MAX_STRING . ' characters (no markup, colour, quote, &, --, brace, backtick or control character)';
         }
 
         return $p;
@@ -344,7 +345,7 @@ final class StyleKits
 
     /**
      * Dotted paths of every string under $node that is too long or contains a hex colour, `<`, `>`, `&`,
-     * `--` or a quote.
+     * `--`, a quote, a backtick, a brace or a control character (0x00-0x1F, 0x7F).
      *
      * @param mixed $node
      * @return list<string>
@@ -353,7 +354,8 @@ final class StyleKits
     {
         if ( is_string( $node ) ) {
             $bad = strlen( $node ) > self::MAX_STRING
-                || false !== strpbrk( $node, "<>&\"'`" )
+                || false !== strpbrk( $node, "<>&\"'`{}" )
+                || 1 === preg_match( '/[\x00-\x1F\x7F]/', $node )
                 || str_contains( $node, '--' )
                 || 1 === preg_match( '/#[0-9a-fA-F]{3,8}(?![0-9a-zA-Z])/', $node );
             return $bad ? [ '' === $path ? 'value' : $path ] : [];

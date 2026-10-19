@@ -106,6 +106,23 @@ final class StyleKitsTest extends TestCase
             'space missing horizontal'   => [ static function (array $k): array { unset($k['space']['control']['horizontal']); return $k; } ],
             'avoids not a list'          => [ static function (array $k): array { $k['avoids'] = 'split'; return $k; } ],
             'avoids unknown layout'      => [ static function (array $k): array { $k['avoids'] = [ 'not-a-layout' ]; return $k; } ],
+            'greater-than alone'         => [ static function (array $k): array { $k['summary'] = 'a > b'; return $k; } ],
+            'backtick'                   => [ static function (array $k): array { $k['summary'] = 'use `code` here'; return $k; } ],
+            'newline in a summary'       => [ static function (array $k): array { $k['summary'] = "one\n# Injected"; return $k; } ],
+            'carriage return in a title' => [ static function (array $k): array { $k['title'] = "Kit\rtwo"; return $k; } ],
+            'tab in a title'             => [ static function (array $k): array { $k['title'] = "Kit\ttwo"; return $k; } ],
+            'nul byte in a summary'      => [ static function (array $k): array { $k['summary'] = "one\0two"; return $k; } ],
+            'delete character'           => [ static function (array $k): array { $k['summary'] = "one\x7ftwo"; return $k; } ],
+            'opening brace'              => [ static function (array $k): array { $k['summary'] = 'a {{aied:color:accent}} token'; return $k; } ],
+            'closing brace alone'        => [ static function (array $k): array { $k['title'] = 'Kit }'; return $k; } ],
+            'brace in an avoids-free id' => [ static function (array $k): array { $k['id'] = 'kit{x}'; return $k; } ],
+            'shadow hover not none'      => [ static function (array $k): array { $k['shadow']['hover'] = '0 8px 16px'; return $k; } ],
+            'space above 120px'          => [ static function (array $k): array { $k['space']['card'] = '121px'; return $k; } ],
+            'space control vertical bad' => [ static function (array $k): array { $k['space']['control']['vertical'] = '12'; return $k; } ],
+            'space control vertical big' => [ static function (array $k): array { $k['space']['control']['vertical'] = '200px'; return $k; } ],
+            'radius 100px'               => [ static function (array $k): array { $k['radius']['control'] = '100px'; return $k; } ],
+            'radius 1000px'              => [ static function (array $k): array { $k['radius']['control'] = '1000px'; return $k; } ],
+            'non-string weight'          => [ static function (array $k): array { $k['text']['weight'] = 600; return $k; } ],
         ];
     }
 
@@ -113,6 +130,34 @@ final class StyleKitsTest extends TestCase
     public function testProblemsRejectsWhatItShould(callable $mutate): void
     {
         $this->assertNotSame([], StyleKits::problems($mutate(self::good())));
+    }
+
+    public function testEveryProvenBorderStyleIsAccepted(): void
+    {
+        foreach ([ 'solid', 'dashed', 'dotted', 'double' ] as $style) {
+            $kit = self::good();
+            $kit['border']['style'] = $style;
+            $this->assertSame([], StyleKits::problems($kit), $style);
+        }
+        // Every border style a shipped kit uses is one of them.
+        foreach (StyleKits::ids() as $id) {
+            $this->assertContains(StyleKits::get($id)['border']['style'], StyleKits::BORDER_STYLES, $id);
+        }
+    }
+
+    public function testControlCharactersAndBracesAreRejectedEverywhereWithTheirPath(): void
+    {
+        $kit = self::good();
+        $kit['summary'] = "line\nbreak";
+        $this->assertContains('summary must be plain text of at most 160 characters (no markup, colour, quote, &, --, brace, backtick or control character)', StyleKits::problems($kit));
+        $kit = self::good();
+        $kit['border']['color'] = "text\n";
+        $problems = StyleKits::problems($kit);
+        $this->assertContains('border.color must be plain text of at most 160 characters (no markup, colour, quote, &, --, brace, backtick or control character)', $problems);
+        // Ordinary punctuation a summary needs stays allowed.
+        $kit = self::good();
+        $kit['summary'] = 'Filled, rounded (8px) buttons: calm; quiet.';
+        $this->assertSame([], StyleKits::problems($kit));
     }
 
     public function testAvoidsIsOptional(): void
@@ -138,7 +183,7 @@ final class StyleKitsTest extends TestCase
             $this->assertLessThanOrEqual(1536, strlen((string) json_encode($kit)), (string) $kit['id']);
             array_walk_recursive($kit, function ($v, $k): void {
                 if (is_string($v)) {
-                    $this->assertDoesNotMatchRegularExpression('/[<>&"\']|--|#[0-9a-fA-F]{3,8}\b/', $v, (string) $k);
+                    $this->assertDoesNotMatchRegularExpression('/[<>&"\'`{}\x00-\x1F\x7F]|--|#[0-9a-fA-F]{3,8}\b/', $v, (string) $k);
                 }
             });
         }
