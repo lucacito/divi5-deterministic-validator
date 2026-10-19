@@ -194,6 +194,10 @@ Assistants that run on your own computer (Claude Code, Claude Desktop, Cursor, V
 
 Claude Desktop connects through a small helper that needs Node.js. Install the LTS version from nodejs.org, then fully quit Claude Desktop (Cmd+Q) and open it again. The Claude tab on the Settings screen has the details.
 
+= My host cuts me off after I connect (too many 404 errors) =
+
+Some hosts run a firewall rule (for example ModSecurity's "too many 404 responses from same IP") that bans an address after about ten "not found" answers. The plugin does not cause 404s on its own address: when an assistant opens the connection with a GET request, it answers 405 (Method Not Allowed), which is what the MCP specification asks for and which these rules do not count. Some connection helpers, such as the mcp-remote helper that Claude Desktop uses, also look for sign-in information at addresses like /.well-known/oauth-protected-resource. If Claude sign-in is switched off, there is nothing at those addresses, so WordPress answers 404, and several reconnects in a row can still add up. If you get banned, ask your host to allow your own IP address, or to raise the limit for it.
+
 = Does it use up my Claude or ChatGPT plan? =
 
 The plugin has no AI of its own, so it adds no AI cost. Your own assistant does the thinking, and its usage counts against whatever plan or API account you already use with it. A small edit costs very little; building a whole page costs more, because your assistant writes the layout. The plugin's checking runs on your server and is free.
