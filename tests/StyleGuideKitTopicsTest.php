@@ -434,10 +434,147 @@ class StyleGuideKitTopicsTest extends TestCase
         $this->assertSame( [ 'underline-link' => false, 'underlined-label' => true ], $seen );
     }
 
+    /** @return array{attrs:array<string,mixed>,block:string,button:array<string,mixed>} the inverted panel snippet of a kit topic, decoded */
+    private function invertedPanel( string $topic ): array
+    {
+        $text = StyleGuide::markdown( $topic );
+        $this->assertSame( 1, preg_match( '/Inverted panel:\n\n```\n(<!-- wp:divi\/group (\{.*?\}) -->\n<!-- wp:divi\/button (\{.*?\}) \/-->\n<!-- \/wp:divi\/group -->)\n```/s', $text, $m ), $topic . ': an inverted panel snippet' );
+        $out = [ 'block' => $m[1] ];
+        foreach ( [ 'attrs' => 2, 'button' => 3 ] as $key => $i ) {
+            $out[ $key ] = json_decode( $m[ $i ], true );
+            $this->assertIsArray( $out[ $key ], $topic . ': ' . $key . ' decodes' );
+        }
+
+        return $out;
+    }
+
+    /**
+     * The attributes the real resolver steps give a marker (kit patch, kit value tokens, then colour tokens for editorial),
+     * minus the marker: what the adapter alone says a block must carry. The marker's patch is also checked against the adapter.
+     *
+     * @param array<string,mixed> $marker
+     * @param array<string,mixed> $kit
+     * @return array<string,mixed>
+     */
+    private static function resolvedPatch( string $block, array $marker, array $kit ): array
+    {
+        $markup = \AiEditorDivi5\WP\RecipeTokens::resolve(
+            \AiEditorDivi5\WP\KitResolver::resolve( '<!-- wp:' . $block . ' ' . json_encode( [ 'aied' => $marker ] ) . ' -->', $kit ),
+            (array) \AiEditorDivi5\WP\DesignLanguages::get( 'editorial' )
+        );
+        self::assertSame( 1, preg_match( '/^<!-- wp:' . preg_quote( $block, '/' ) . ' (\{.*\}) -->$/', $markup, $m ), 'the marker resolves' );
+
+        return (array) json_decode( $m[1], true );
+    }
+
+    public function testEachKitTopicCarriesAnInvertedPanelWithAPanelButtonFromTheRealPipeline(): void
+    {
+        $editorial = (array) \AiEditorDivi5\WP\DesignLanguages::get( 'editorial' );
+        $registry  = ShapeRegistry::load();
+        $text      = strtolower( (string) $editorial['colors']['text'] );
+        $bg        = strtolower( (string) $editorial['colors']['bg'] );
+        $this->assertNotSame( $text, $bg );
+        foreach ( StyleKits::ids() as $id ) {
+            $kit   = (array) StyleKits::get( $id );
+            $found = $this->invertedPanel( 'style-kit:' . $id );
+            $this->assertStringNotContainsString( 'aied', $found['block'], $id );
+
+            // The panel is filled with the text colour (an inverted ground), exactly the adapter's patch for that ground.
+            $this->assertSame( $text, strtolower( $found['attrs']['module']['decoration']['background']['desktop']['value']['color'] ), "$id: the inverted panel is filled with the text colour" );
+            $panelPatch = self::resolvedPatch( 'divi/group', [ 'kit' => 'panel', 'on' => 'light', 'ground' => 'inverted' ], $kit );
+            $this->assertSame( $found['attrs']['module']['decoration']['background'], $panelPatch['module']['decoration']['background'], $id );
+            $this->assertSame( $found['attrs'], array_replace_recursive( $found['attrs'], $panelPatch ), "$id: the panel carries the adapter's whole ground patch" );
+            $this->assertArrayNotHasKey( 'hover', (array) json_decode( (string) json_encode( $found['attrs'] ), true )['module']['decoration']['border']['desktop'], $id );
+
+            // The button follows the kit's `panel` treatment, computed from the adapter, not from the guide.
+            $buttonPatch = self::resolvedPatch( 'divi/button', [ 'kit' => 'control', 'on' => 'panel' ], $kit );
+            $this->assertSame( $found['button'], array_replace_recursive( $found['button'], $buttonPatch ), "$id: the button carries the adapter's whole panel patch" );
+            $label = strtolower( (string) $found['button']['button']['decoration']['font']['font']['desktop']['value']['color'] );
+            $fill  = $found['button']['button']['decoration']['background']['desktop']['value']['color'];
+            if ( 'solid' === $kit['fill'] ) {
+                $this->assertSame( $bg, strtolower( (string) $fill ), "$id: a solid button on the panel is filled with the background colour" );
+                $this->assertSame( $text, $label, "$id: its label is the text colour" );
+            } else {
+                $this->assertSame( KitAdapters::TRANSPARENT, $fill, "$id: an outline or ghost button on the panel has no fill" );
+                $this->assertSame( $bg, $label, "$id: its label is the background colour" );
+            }
+            $this->assertArrayNotHasKey( 'aied', $found['button'] );
+            $this->assertSame( 'Button', $found['button']['button']['innerContent']['desktop']['value']['text'] );
+
+            $page   = '<!-- wp:divi/section {"builderVersion":"5.0.0-public-beta.1"} --><!-- wp:divi/row {"builderVersion":"5.0.0-public-beta.1"} --><!-- wp:divi/column {"builderVersion":"5.0.0-public-beta.1"} -->' . $found['block'] . '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->';
+            $result = ( new Validator() )->validateContent( $page );
+            $this->assertTrue( $result->isValid(), "$id inverted panel: " . json_encode( array_map( static fn ( $v ) => $v->code() . ' ' . $v->path(), $result->violations() ) ) );
+            $this->assertTrue( LayoutGate::check( $page )->isValid(), "$id inverted panel passes the plugin gate" );
+            foreach ( [ $found['attrs'], $found['button'] ] as $attrs ) {
+                foreach ( ShapePaths::fromBlockAttrs( $attrs ) as $path ) {
+                    $this->assertTrue( $registry->covers( $path ), "$id inverted panel uses an unregistered path $path" );
+                }
+            }
+        }
+    }
+
+    public function testEachKitTopicSaysGenericallyWhatAnInvertedPanelAndItsButtonTake(): void
+    {
+        foreach ( StyleKits::ids() as $id ) {
+            $kit  = (array) StyleKits::get( $id );
+            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            $this->assertStringContainsString( 'A panel can sit on an `inverted` ground (text colour as fill; its text in the background colour, or the surface colour on a surface band) or an `accent` ground (accent colour as fill; its text in the accent-text colour). The frame takes the fill colour; the kit never re-inks the children.', $text, $id );
+            $this->assertStringContainsString( 'A button on an inverted panel takes the `panel` treatment: ', $text, $id );
+            $d    = KitAdapters::patch( 'divi/button', 'control', 'panel', $kit )['button']['decoration'];
+            $role = static fn ( string $v ): string => preg_match( '/^\{\{aied:color:([a-z-]+)\}\}$/', $v, $m ) ? 'the ' . $m[1] . ' colour as' : 'a transparent';
+            $this->assertStringContainsString(
+                sprintf( 'The primary button on it has %s fill, %s label and %s border.', $role( $d['background']['desktop']['value']['color'] ), $role( $d['font']['font']['desktop']['value']['color'] ), $role( $d['border']['desktop']['value']['styles']['all']['color'] ) ),
+                $text,
+                $id
+            );
+        }
+    }
+
+    public function testTheGroundInkTableMatchesTheAdapter(): void
+    {
+        $adapter = new \ReflectionClassConstant( KitAdapters::class, 'ON' );
+        $guide   = new \ReflectionClassConstant( StyleGuide::class, 'GROUND_INK' );
+        $this->assertSame( $adapter->getValue(), $guide->getValue(), 'the guide names the ink of an inverted and of an accent ground exactly as the adapter pairs a fill with its label' );
+    }
+
+    public function testTheLegendCoversTheInvertedPanelColoursAndFailsWhenOneIsDropped(): void
+    {
+        $editorial = (array) \AiEditorDivi5\WP\DesignLanguages::get( 'editorial' );
+        foreach ( StyleKits::ids() as $id ) {
+            $text   = StyleGuide::markdown( 'style-kit:' . $id );
+            $legend = $this->invertedPanel( 'style-kit:' . $id );
+            $prose  = (string) preg_replace( '/```.*?```/s', '', $text );
+            $this->assertMatchesRegularExpression( '/' . preg_quote( (string) $editorial['colors']['text'], '/' ) . ' = [^;.)]*\btext\b/', $prose, "$id: the panel fill hex names its role" );
+            $this->assertMatchesRegularExpression( '/' . preg_quote( (string) $editorial['colors']['bg'], '/' ) . ' = [^;.)]*\bbg\b/', $prose, "$id: the ink hex names its role" );
+            $this->assertSame( [], self::legendProblems( $text, $editorial ), $id );
+            $this->assertNotSame( '', $legend['block'] );
+        }
+        // Planted: drop the ink's entry from the legend and the check fails.
+        $id   = (string) StyleKits::ids()[0];
+        $text = StyleGuide::markdown( 'style-kit:' . $id );
+        $bg   = (string) $editorial['colors']['bg'];
+        $gone = (string) preg_replace( '/' . preg_quote( $bg, '/' ) . ' = [^;.)]+/', $bg . ' is', $text );
+        $this->assertNotSame( $text, $gone );
+        $this->assertNotSame( [], self::legendProblems( $gone, $editorial ), 'an ink hex with no legend entry is caught' );
+    }
+
+    public function testTheLargestKitTopicIsPinnedAndUnderTheBudgetAndTheDefaultGuideDidNotGrow(): void
+    {
+        $max = 0;
+        foreach ( StyleKits::ids() as $id ) {
+            $max = max( $max, strlen( StyleGuide::markdown( 'style-kit:' . $id ) ) );
+        }
+        $this->assertLessThanOrEqual( self::TOPIC_BUDGET, $max );
+        $this->assertSame( 9992, $max, 'the largest kit topic today (neo-brutal; was 8124 before the inverted panel)' );
+        $this->assertSame( 28964, strlen( StyleGuide::markdown() ), 'the default guide is byte-for-byte the size it was' );
+        $this->assertSame( 8464, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog topic is untouched' );
+    }
+
     /** @return list<array{0:string,1:array<string,mixed>}> block comment text and its decoded attributes, in document order */
     private function buttons( string $topic ): array
     {
-        preg_match_all( '/<!-- wp:divi\/button (\{.*?\}) \/-->/', StyleGuide::markdown( $topic ), $m );
+        // The inverted panel's button is a third button, on its own surface; it has its own test.
+        preg_match_all( '/<!-- wp:divi\/button (\{.*?\}) \/-->/', (string) preg_replace( '/Inverted panel:\n\n```.*?```/s', '', StyleGuide::markdown( $topic ) ), $m );
         $out = [];
         foreach ( $m[0] as $i => $block ) {
             $attrs = json_decode( $m[1][ $i ], true );
