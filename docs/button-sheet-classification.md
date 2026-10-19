@@ -228,3 +228,49 @@ filled button); `raised-square`, `offset-block-caps` and the hard/soft kits rely
   when it was written; Task 9a is adding exactly those four now, so kits using them are in the selection. Everything
   still "later" after 9a (hover darken, skew, left-only or other one-side borders, per-corner radius) is left out.
 - Corner and border sizes are read by eye from a compressed JPEG; within a step (for example 3px vs 4px) they may be off.
+
+## What was built (Task 9, 2026-10-18)
+
+19 new kits were added to `wp-plugin/data/style-kits.json`, so 40 kits ship in all (the cap is 50). Each kit takes its
+colours from the design language, so a sheet button and its kit match in shape, border, corners, shadow, hover and
+capitals, not in colour. A rule now keeps near-duplicates out: two kits must differ in at least one of fill, border
+style, border sides, border width by 2px or more, corner family (square 0-4px, soft 6-16px, round 20px and up, pill),
+shadow, hover or capitals (`tests/StyleKitsTest.php`). Because of that rule a few looks from section 3 were folded into
+a close neighbour instead of getting their own kit; they are marked "near-duplicate" below.
+
+Look up a sheet number here:
+
+| Sheet numbers | Kit |
+|---|---|
+| 01, 02, 03, 04, 11, 13, 15, 16, 22, 26, 27, 39, 85 | `hairline-frame-caps` |
+| 06, 08, 10, 25, 43, 119 (2px outline, capitals) | `hairline-frame-caps` (near-duplicate: a 2px outline vs 1px; `frame-caps` was not added) |
+| 14, 21 | `thick-frame-caps` |
+| 18 | `offset-frame` |
+| 20 | `soft-hairline-caps` |
+| 23 | `thick-rounded-caps` |
+| 52 | `rimmed-solid` (a 2px rim instead of 1px, so it differs visibly from `flat-square`) |
+| 32 | `rimmed-solid` (the same look in capitals; one rimmed kit is enough) |
+| 34, 36, 54, 56, 58, 61, 63, 84, 86, 103 | `flat-square` |
+| 117, 42, 80 | `block-caps` |
+| 44, 96 | `pill-caps` |
+| 35, 79, 108, 109, 113 | `outline-pill` |
+| 60 (thin outline pill) | `outline-pill` (near-duplicate: 1px vs 2px; `hairline-pill` was not added) |
+| 111 | `outline-soft` |
+| 73, 104 | `thick-frame` |
+| 38, 87, 107 | `raised-square` |
+| 41 | `offset-block-caps` |
+| 78, 74 (without its icon) | `text-link` |
+| 91, 124 | `text-link-caps` |
+| 118 | `underlined-label` |
+| 97 | `pressable` (a new `edge` shadow: a hard edge straight below, proven on Divi 5.15.1) |
+| 75 | `hairline-halo` (a new `glow` shadow in the accent colour, proven on Divi 5.15.1) |
+| 28, 81, 82, 115, 50 (without its icon) | `outline-2` (shipped before) |
+| 47, 112, 125 (thin outline, small corners) | `outline-2` (near-duplicate: 1px vs 2px; `hairline-frame` was not added) |
+| 37, 100, 122 | `warm-pill` (shipped before) |
+| 40 (solid pill, soft shadow) | `warm-pill-soft` (shipped before; the same look at rest, so `raised-pill` was not added; the probe proved the shadow follows the round ends) |
+| 45 | `soft-solid` (shipped before) |
+| 55 | `soft-rounded` / `glass-edge` (shipped before) |
+| 93 | `quiet-solid` (shipped before) |
+| 49, 101 (gradients) | not built: a kit has no gradient fill, because no pair of colour roles gives a label readable on both ends of the gradient in all ten design languages |
+
+Every other sheet number keeps the reason given in section 5 (custom CSS, icon, later, or a duplicate of a button above).
