@@ -105,8 +105,9 @@ first table had 50 failing cells).
 `section-recipes.json` ends **smaller** than 695,877 B (bound 716,800 unchanged). Measured on the current file: the
 literal `border` + `boxShadow` + `spacing` objects on the 24 card-like groups total 9,969 B; a marker is about 35 B. Net
 saving about 8 KB for groups, about 3-4 KB for the 12 column cards, minus the cost of any literal left bespoke. The
-fill colour literal (`{{aied:color:surface}}`, 24 B) stays in the recipe (it is not kit-variable), so the marker owns
-only border, radius, padding, shadow and hover. Each phase is checked: file size after <= before; if a phase cannot
+adapter also writes the fill (it depends on `on`: `surface`, or `bg` on a surface band), so a migrated card drops its own
+background literal too (about 40 B each, not counted above); the marker owns fill, border, radius, padding, shadow and
+hover. Each phase is checked: file size after <= before; if a phase cannot
 meet it, it stops and comes back to you.
 
 ### 5. Probe list (registry is path-only: probe ON each carrier)
