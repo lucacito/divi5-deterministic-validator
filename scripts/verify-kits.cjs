@@ -36,7 +36,9 @@
  * really touch the corners so the radius clip is exercised: a computed-style and geometry check, not a pixel one); card-contrast (the
  * heading and the paragraph against the MEASURED card fill >= 4.5, every drawn frame side >= 3.0 unless it is the language's decorative
  * `border` hairline); overflow also covers every card (inside its container and the window, rest and hover) and the row of three column
- * cards (side by side at 1280, stacked at 400, no demand at 900). A run whose card selection is empty fails. A sheet the gate or the
+ * cards (side by side at 1280, stacked at 400, no demand at 900); `card-expectation` is the fail-closed guard of compareCard (an expectation
+ * with a hole is refused, never skipped): the cell gate below stops such a cell first, so it only shows if that gate is bypassed. A run whose
+ * card selection is empty fails. A sheet the gate or the
  * resolver refuses FAILs once as `<kit>/<language>/gate`. Problems in the script's own page handling are `render-error`. A preview that
  * comes back as a 404 or without the page content is retried once with a fresh login.
  *
@@ -89,7 +91,7 @@ let cleanOrphans = false;
 
 const K = require('./lib/kit-checks.cjs');
 const { measureInPage, PHP_ERROR, over, ratioOf } = require('./lib/recipe-checks.cjs');
-const { checkCards } = require('./lib/kit-card-run.cjs');
+const { checkCards, transitionMs } = require('./lib/kit-card-run.cjs');
 
 const wp = makeWp(ROOT);
 const pages = throwawayPages(wp, K.TITLE_PREFIX, 'kit');
@@ -177,13 +179,6 @@ ${own}
     console.log('WARNING could not write the kit sheet: ' + (e && e.message ? e.message : e));
   }
 }
-
-/** Seconds of the longest transition (duration + delay) in computed lists like "0.3s, 0s". */
-const transitionMs = (st) => {
-  const list = (v) => String(v || '0s').split(',').map((x) => { const t = x.trim(); return t.endsWith('ms') ? parseFloat(t) : parseFloat(t) * 1000; });
-  const d = list(st.transitionDuration); const dl = list(st.transitionDelay);
-  return Math.max(0, ...d.map((v, i) => (v || 0) + (dl[i % dl.length] || 0)));
-};
 
 /** A fresh login for the run; the previous session token is destroyed first. */
 function renewSession(state) {

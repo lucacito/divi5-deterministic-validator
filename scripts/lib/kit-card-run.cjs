@@ -32,11 +32,19 @@ async function checkCards(p, { width, expects, hairline }) {
   if (count.length) return { problems: count, observations: [], cardsChecked: 0, layout: null };
 
   // The painted fill under each card (and a strip of the band just above it): children hidden, shadow off, no transition (so it applies at once).
-  await p.evaluate(() => document.querySelectorAll('[data-aied-card]').forEach((card) => {
-    card.dataset.aiedTr = card.style.transition; card.dataset.aiedSh = card.style.boxShadow;
-    card.style.transition = 'none'; card.style.boxShadow = 'none';
-    card.querySelectorAll('*').forEach((n) => { n.dataset.aiedV = n.style.visibility; n.style.visibility = 'hidden'; });
-  }));
+  // Fixed and sticky elements (the logged-in preview's WordPress admin bar and the menu it opens under the pointer) are painted over the
+  // page wherever it is scrolled, so they would land inside a card's box in the screenshot: they are hidden too (found by the live smoke).
+  await p.evaluate(() => {
+    document.querySelectorAll('[data-aied-card]').forEach((card) => {
+      card.dataset.aiedTr = card.style.transition; card.dataset.aiedSh = card.style.boxShadow;
+      card.style.transition = 'none'; card.style.boxShadow = 'none';
+      card.querySelectorAll('*').forEach((n) => { n.dataset.aiedV = n.style.visibility; n.style.visibility = 'hidden'; });
+    });
+    document.querySelectorAll('body *').forEach((n) => {
+      const pos = getComputedStyle(n).position;
+      if (pos === 'fixed' || pos === 'sticky') { n.dataset.aiedF = n.style.visibility; n.style.visibility = 'hidden'; }
+    });
+  });
   await p.waitForTimeout(50);
   const fills = []; const bands = [];
   for (const c of rest.cards) {
@@ -49,11 +57,14 @@ async function checkCards(p, { width, expects, hairline }) {
     } catch (e) { band = null; }
     bands.push(band);
   }
-  await p.evaluate(() => document.querySelectorAll('[data-aied-card]').forEach((card) => {
-    card.querySelectorAll('*').forEach((n) => { n.style.visibility = n.dataset.aiedV || ''; delete n.dataset.aiedV; });
-    card.style.boxShadow = card.dataset.aiedSh || ''; card.style.transition = card.dataset.aiedTr || '';
-    delete card.dataset.aiedSh; delete card.dataset.aiedTr;
-  }));
+  await p.evaluate(() => {
+    document.querySelectorAll('[data-aied-card]').forEach((card) => {
+      card.querySelectorAll('*').forEach((n) => { n.style.visibility = n.dataset.aiedV || ''; delete n.dataset.aiedV; });
+      card.style.boxShadow = card.dataset.aiedSh || ''; card.style.transition = card.dataset.aiedTr || '';
+      delete card.dataset.aiedSh; delete card.dataset.aiedTr;
+    });
+    document.querySelectorAll('[data-aied-f]').forEach((n) => { n.style.visibility = n.dataset.aiedF || ''; delete n.dataset.aiedF; });
+  });
   await p.waitForTimeout(50);
 
   const observations = [];
@@ -71,7 +82,7 @@ async function checkCards(p, { width, expects, hairline }) {
     } catch (e) {
       problems.push(['card-hover', `${slot.key} could not be hovered: ${(e && e.message ? e.message : String(e)).split('\n')[0]}`]);
     } finally {
-      await p.mouse.move(0, 0);
+      await p.mouse.move(Math.max(0, width - 2), 450); // parked at the right edge: (0,0) would open the admin bar's menu
       await p.waitForTimeout(wait);
     }
     const cmp = K.compareCard(exp, slot.role, { rest: { el: c.el }, hover: hov && hov.found ? { el: hov.el } : null });

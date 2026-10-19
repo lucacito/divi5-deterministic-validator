@@ -67,7 +67,15 @@ t('the sheet carries 12 marked cards: a card and a panel on each band, an image-
   assert.deepStrictEqual(K.CARD_SLOTS.map((c) => c.key), ['card-bg', 'panel-bg', 'panel-clip', 'card-surface', 'panel-surface', 'card-accent', 'panel-accent', 'card-dark', 'panel-dark', 'column-1', 'column-2', 'column-3']);
   assert.strictEqual(new Set(K.CARD_SLOTS.map((c) => c.heading)).size, K.CARD_SLOTS.length, 'every card is found by a unique heading');
   const markers = [];
-  const walk = (nodes) => { for (const n of nodes) { if (n.attrs && n.attrs.aied && n.name !== 'divi/button') markers.push([n.name, n.attrs.aied, K.CARD_SLOTS.find((c) => c.heading === (n.children.map((x) => x).find((x) => x.name === 'divi/heading') || { attrs: {} }).attrs.title?.innerContent.desktop.value)]); walk(n.children); } };
+  const walk = (nodes) => {
+    for (const n of nodes) {
+      if (n.attrs.aied && n.name !== 'divi/button') {
+        const heading = n.children.find((x) => x.name === 'divi/heading');
+        markers.push([n.name, n.attrs.aied, K.CARD_SLOTS.find((c) => heading && c.heading === heading.attrs.title.innerContent.desktop.value)]);
+      }
+      walk(n.children);
+    }
+  };
   walk(K.blockTree(m));
   assert.strictEqual(markers.length, 12);
   markers.forEach(([name, marker, slot]) => {
@@ -235,7 +243,7 @@ const exQuiet = K.expectCardFromAttrs(attrsOf(QUIET_CARD));
 const exQuietPanel = K.expectCardFromAttrs(attrsOf(QUIET_PANEL));
 t('card expectations: a hairline frame, four radii, the kit padding, no shadow and no hover', () => {
   assert.strictEqual(exQuiet.rest.fill, '#ffffff');
-  for (const [side] of [['top'], ['right'], ['bottom'], ['left']]) assert.deepStrictEqual(exQuiet.rest[side], { width: 1, style: 'solid', color: '#e3dccf' }, side);
+  for (const side of ['top', 'right', 'bottom', 'left']) assert.deepStrictEqual(exQuiet.rest[side], { width: 1, style: 'solid', color: '#e3dccf' }, side);
   assert.deepStrictEqual(exQuiet.rest.radius, [4, 4, 4, 4]);
   assert.deepStrictEqual(exQuiet.rest.padding, [32, 32, 32, 32]);
   assert.deepStrictEqual(exQuiet.shadow, { rest: null, hover: null });
@@ -309,6 +317,7 @@ function cstyle(o) {
   }, o);
 }
 const same = (el) => ({ rest: { el }, hover: { el } });
+const rgbOf = (c) => { const x = K.colour(c); return `rgb(${x.r}, ${x.g}, ${x.b})`; };
 const codesOf = (r) => r.problems.map((x) => x[0]);
 t('a matching card has no problem; a matching panel has none either', () => {
   assert.deepStrictEqual(K.compareCard(exQuiet, 'card', same(cstyle({}))).problems, []);
@@ -341,7 +350,7 @@ t('card radius, fill, padding are each reported', () => {
 t('card shadow: sits on the card element, with the markup\'s offsets, blur and colour', () => {
   const hard = (o) => K.compareCard(exHardCard, 'card', same(cstyle(Object.assign({ borderTopWidth: '3px', borderRightWidth: '3px', borderBottomWidth: '3px', borderLeftWidth: '3px', borderTopLeftRadius: '0px', borderTopRightRadius: '0px', borderBottomRightRadius: '0px', borderBottomLeftRadius: '0px', borderTopColor: 'rgb(28, 26, 23)', borderRightColor: 'rgb(28, 26, 23)', borderBottomColor: 'rgb(28, 26, 23)', borderLeftColor: 'rgb(28, 26, 23)', paddingTop: '24px', paddingRight: '24px', paddingBottom: '24px', paddingLeft: '24px' }, o))));
   const sh = exHardCard.shadow.rest;
-  const value = `${K.colour(sh.color) ? 'rgb(' + K.colour(sh.color).r + ', ' + K.colour(sh.color).g + ', ' + K.colour(sh.color).b + ')' : ''} 6px 6px 0px 0px`;
+  const value = `${rgbOf(sh.color)} 6px 6px 0px 0px`;
   assert.deepStrictEqual(hard({ boxShadow: value }).problems.filter((x) => x[0] === 'card-shadow'), []);
   assert.deepStrictEqual(codesOf(hard({ boxShadow: 'none' })).filter((c) => c.startsWith('card-')), ['card-shadow', 'card-hover', 'card-hover'], 'no shadow where a hard one is expected (rest and hover), and neo-brutal lifts, so the missing lift too');
   assert.match(hard({ boxShadow: 'none' }).problems[0][1], /expected a shadow/);
@@ -386,15 +395,34 @@ t('a PANEL must not change on hover at all: no lift, no frame colour, no shadow,
   assert.deepStrictEqual(codesOf(ok({ borderTopColor: 'rgb(28, 26, 23)', borderBottomColor: 'rgb(28, 26, 23)' })), ['card-hover', 'card-hover'], 'a panel whose frame darkens');
   assert.deepStrictEqual(codesOf(ok({ boxShadow: 'rgba(0, 0, 0, 0.25) 0px 12px 24px 0px' })), ['card-hover'], 'a panel that gains a shadow');
   assert.deepStrictEqual(codesOf(ok({ backgroundColor: 'rgb(250, 247, 242)' })), ['card-hover'], 'a panel whose fill changes');
-  assert.deepStrictEqual(codesOf(ok({ borderLeftWidth: '3px' })), ['card-hover', 'card-border'].filter((c) => c === 'card-hover'), 'a panel whose frame grows');
+  assert.deepStrictEqual(codesOf(ok({ borderLeftWidth: '3px' })), ['card-hover'], 'a panel whose frame grows');
   // a panel never gets the card's hover expectations, even when its expectation object carries them
   const wrong = JSON.parse(JSON.stringify(exQuietPanel)); wrong.lift = -4;
   assert.deepStrictEqual(codesOf(K.compareCard(wrong, 'panel', { rest: { el: rest }, hover: { el: Object.assign({}, rest, { transform: 'matrix(1, 0, 0, 1, 0, -4)' }) } })), ['card-hover']);
   // the rest shadow of a panel (hard shadow kit) is checked and stays on hover
   const hardRest = cstyle(Object.assign({ borderTopWidth: '3px', borderRightWidth: '3px', borderBottomWidth: '3px', borderLeftWidth: '3px', borderTopLeftRadius: '0px', borderTopRightRadius: '0px', borderBottomRightRadius: '0px', borderBottomLeftRadius: '0px', borderTopColor: 'rgb(28, 26, 23)', borderRightColor: 'rgb(28, 26, 23)', borderBottomColor: 'rgb(28, 26, 23)', borderLeftColor: 'rgb(28, 26, 23)' }, pad));
-  const c = K.colour(exHardPanel.shadow.rest.color); const sv = `rgb(${c.r}, ${c.g}, ${c.b}) 6px 6px 0px 0px`;
+  const sv = `${rgbOf(exHardPanel.shadow.rest.color)} 6px 6px 0px 0px`;
   assert.deepStrictEqual(K.compareCard(exHardPanel, 'panel', { rest: { el: Object.assign({}, hardRest, { boxShadow: sv }) }, hover: { el: Object.assign({}, hardRest, { boxShadow: sv }) } }).problems, []);
   assert.deepStrictEqual(codesOf(K.compareCard(exHardPanel, 'panel', { rest: { el: Object.assign({}, hardRest, { boxShadow: sv }) }, hover: { el: Object.assign({}, hardRest, { boxShadow: 'none' }) } })), ['card-hover'], 'the hard shadow disappears on hover');
+});
+
+t('hover transform: the WHOLE transform is compared, so a scale or rotate on hover fails (panel, lift-less card, lift card)', () => {
+  const pad = { paddingTop: '40px', paddingRight: '40px', paddingBottom: '40px', paddingLeft: '40px' };
+  const rest = cstyle(pad);
+  const panel = (tr) => codesOf(K.compareCard(exQuietPanel, 'panel', { rest: { el: rest }, hover: { el: Object.assign({}, rest, { transform: tr }) } }));
+  assert.deepStrictEqual(panel('none'), []);
+  assert.deepStrictEqual(panel('matrix(1, 0, 0, 1, 0, 0)'), [], 'an identity matrix is no change');
+  assert.deepStrictEqual(panel('matrix(1.02, 0, 0, 1.02, 0, 0)'), ['card-hover'], 'a scale');
+  assert.deepStrictEqual(panel('matrix(0.9998, 0.0175, -0.0175, 0.9998, 0, 0)'), ['card-hover'], 'a rotate');
+  assert.deepStrictEqual(panel('matrix(1, 0, 0, 1, 6, 0)'), ['card-hover'], 'a sideways move');
+  assert.deepStrictEqual(panel('matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 6, 0, 0, 1)'), ['card-hover'], 'a matrix3d sideways move');
+  const card = (tr) => codesOf(K.compareCard(exQuiet, 'card', { rest: { el: cstyle({}) }, hover: { el: cstyle({ transform: tr }) } }));
+  assert.deepStrictEqual(card('matrix(1.03, 0, 0, 1.03, 0, 0)'), ['card-hover'], 'a card with no lift that scales');
+  const liftRest = cstyle({ borderTopLeftRadius: '16px', borderTopRightRadius: '16px', borderBottomRightRadius: '16px', borderBottomLeftRadius: '16px', paddingTop: '28px', paddingRight: '28px', paddingBottom: '28px', paddingLeft: '28px' });
+  const lift = (tr) => codesOf(K.compareCard(exLift, 'card', { rest: { el: liftRest }, hover: { el: Object.assign({}, liftRest, { boxShadow: `${LIFT_SHADOW_COLOUR} 0px 12px 24px 0px`, transform: tr }) } }));
+  assert.deepStrictEqual(lift('matrix(1, 0, 0, 1, 0, -4)'), []);
+  assert.deepStrictEqual(lift('matrix(1.05, 0, 0, 1.05, 0, -4)'), ['card-hover'], 'a lift that also scales');
+  assert.deepStrictEqual(lift('matrix(1, 0, 0, 1, 3, -4)'), ['card-hover'], 'a lift that also drifts sideways');
 });
 
 // ---- cards: clip ----
@@ -550,7 +578,7 @@ t('every kit x every language: the sheet resolves with zero leftovers, passes La
       const ratio = (a, b) => require('./lib/recipe-checks.cjs').ratioOf(K.colour(a), b);
       assert.ok(ratio(pal.text, fill) >= 4.5, where + ' heading ' + ratio(pal.text, fill));
       assert.ok(ratio(pal.muted, fill) >= 4.5, where + ' paragraph ' + ratio(pal.muted, fill));
-      for (const [side] of [['top'], ['right'], ['bottom'], ['left']]) {
+      for (const side of ['top', 'right', 'bottom', 'left']) {
         const e = exp.rest[side];
         if (e.width > 0 && !K.sameColour(e.color, pal.border)) assert.ok(ratio(e.color, fill) >= 3, `${where} ${side} frame ${ratio(e.color, fill)}`);
       }

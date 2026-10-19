@@ -58,9 +58,10 @@ function pageHtml({ extraCss = '', tweak = (s, h) => h, drop = [], textColor = '
 
 (async () => {
   const browser = await chromium.launch();
-  const run = async (html, width = 1280) => {
+  const run = async (html, width = 1280, before = null) => {
     const p = await browser.newPage({ viewport: { width, height: 900 } });
     await p.setContent(html);
+    if (before) await before(p);
     const r = await checkCards(p, { width, expects, hairline: HAIRLINE });
     await p.close();
     return r;
@@ -96,6 +97,9 @@ function pageHtml({ extraCss = '', tweak = (s, h) => h, drop = [], textColor = '
     const panelLifts = await run(pageHtml({ extraCss: '[data-k="panel-accent"]:hover{transform:translateY(-4px)}' }));
     assert.deepStrictEqual(codes(panelLifts), ['card-hover']);
     assert.match(panelLifts.problems[0][1], /^panel-accent hover: the panel moved/);
+    const panelScales = await run(pageHtml({ extraCss: '[data-k="panel-surface"]:hover{transform:scale(1.03)}' }));
+    assert.ok(codes(panelScales).includes('card-hover'), codes(panelScales).join());
+    assert.match(panelScales.problems.find((x) => x[0] === 'card-hover')[1], /^panel-surface hover: the panel moved/);
     const panelShadow = await run(pageHtml({ extraCss: '[data-k="panel-bg"]:hover{box-shadow:0 8px 24px rgba(0,0,0,.3)}' }));
     assert.deepStrictEqual(codes(panelShadow), ['card-hover']);
     const noLift = await run(pageHtml({ extraCss: '[data-k="card-bg"]:hover{transform:none}' }));
@@ -108,6 +112,9 @@ function pageHtml({ extraCss = '', tweak = (s, h) => h, drop = [], textColor = '
     assert.ok(codes(pale).length >= 12 && codes(pale).every((c) => c === 'card-contrast'), 'pale paragraph text on every card: ' + codes(pale).join());
     const unclipped = await run(pageHtml({ extraCss: '[data-k="panel-clip"]{overflow:visible}' }));
     assert.deepStrictEqual(codes(unclipped), ['card-clip']);
+    // A fixed bar (the logged-in preview's WordPress admin bar) scrolled over a card must not disturb the painted-fill sample.
+    const bar = await run(pageHtml({ extraCss: '#bar{position:fixed;top:0;left:0;right:0;height:32px;background:#23282d;z-index:9}' }), 1280, (page) => page.evaluate(() => { const b = document.createElement('div'); b.id = 'bar'; document.body.appendChild(b); const h = [...document.querySelectorAll('.et_pb_heading')].find((n) => n.textContent.trim() === 'Card on accent'); window.scrollTo(0, h.closest('.et_pb_group').getBoundingClientRect().top + window.scrollY - 5); }));
+    assert.deepStrictEqual(bar.problems, [], JSON.stringify(bar.problems));
     const lost = await run(pageHtml({ drop: ['panel-surface'] }));
     assert.deepStrictEqual(codes(lost), ['cards']);
     assert.match(lost.problems[0][1], /11 cards rendered, expected 12 \(missing: panel-surface\)/);
@@ -116,7 +123,7 @@ function pageHtml({ extraCss = '', tweak = (s, h) => h, drop = [], textColor = '
     assert.ok(codes(notStacked).includes('overflow'), codes(notStacked).join());
     const wide = await run(pageHtml({ extraCss: '[data-k="card-bg"]{width:900px}' }), 400);
     assert.ok(codes(wide).includes('overflow'), 'a card wider than the phone: ' + codes(wide).join());
-    console.log('OK kit-card-run in a real Chromium on synthetic pages: a matching page passes at 1280 and 400, 14 departures are each caught with their code');
+    console.log('OK kit-card-run in a real Chromium on synthetic pages: a matching page passes at 1280 and 400, 15 departures are each caught (and a fixed bar over a card is not mistaken for one) with their code');
   } finally {
     await browser.close();
   }

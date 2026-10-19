@@ -259,6 +259,21 @@ function translateY(str) {
   if (m) return parseFloat(m[1].split(',')[13]);
   return NaN;
 }
+/** A computed transform as its 2D matrix [a, b, c, d, tx, ty] ('none' = the identity), or null when it is not a matrix. */
+function matrix2d(str) {
+  const t = String(str || 'none').trim();
+  if (t === 'none') return [1, 0, 0, 1, 0, 0];
+  let m = /^matrix\(([^)]+)\)$/.exec(t);
+  if (m) { const v = m[1].split(',').map(parseFloat); return v.length === 6 && v.every((x) => !Number.isNaN(x)) ? v : null; }
+  m = /^matrix3d\(([^)]+)\)$/.exec(t);
+  if (m) { const v = m[1].split(',').map(parseFloat); return v.length === 16 && v.every((x) => !Number.isNaN(x)) ? [v[0], v[1], v[4], v[5], v[12], v[13]] : null; }
+  return null;
+}
+/** Two computed transforms are the same matrix (scale and rotate terms within 0.001, the translation within 0.1px). An unreadable one is never the same. */
+function sameTransform(a, b) {
+  const x = matrix2d(a); const y = matrix2d(b);
+  return !!x && !!y && x.every((v, i) => Math.abs(v - y[i]) <= (i < 4 ? 0.001 : 0.1));
+}
 const px = (v) => (v === 'normal' ? 0 : parseFloat(v));
 const near = (a, b, tol = 0.6) => Math.abs(a - b) <= tol;
 /** Border widths: Chrome reports whole-pixel widths at DPR 1, so a quarter pixel is enough room and a 1px vs 1.5px drift fails. */
@@ -531,9 +546,11 @@ function compareCard(exp, role, computed) {
   for (const [, d] of hoverShadow.problems) out.push(['card-hover', d]);
   const ty = translateY(he.transform);
   if (role === 'card' && exp.lift !== null) {
+    // The lift is a pure translateY of exp.lift: a scale, a rotate or a sideways drift on top of it is a failure too.
     if (!near(ty, exp.lift, 0.3)) out.push(['card-hover', `hover: translateY ${ty}px, expected ${exp.lift}px`]);
-  } else if (!(Math.abs(ty) <= 0.1)) {
-    out.push(['card-hover', `hover: the ${role} moved (transform ${he.transform})${role === 'panel' ? ': a panel is static' : ' but the kit has no lift'}`]);
+    else if (!sameTransform(he.transform, `matrix(1, 0, 0, 1, 0, ${ty})`)) out.push(['card-hover', `hover: transform ${he.transform} is more than the ${exp.lift}px lift`]);
+  } else if (!sameTransform(he.transform, el.transform)) {
+    out.push(['card-hover', `hover: the ${role} moved (transform ${he.transform}, rest ${el.transform})${role === 'panel' ? ': a panel is static' : ' but the kit has no lift'}`]);
   }
   return { problems: out, shadowWhere: { rest: restShadow.where, hover: hoverShadow.where } };
 }
@@ -761,7 +778,7 @@ function measureCards(slots) {
 
 module.exports = {
   SURFACES, ROLES, SLOTS, sheetMarkup, TITLE_PREFIX, runTitle, parseRunTitle, selectCells, buttonAttrs, expectFromAttrs, missingExpectations, BORDER_TOLERANCE,
-  colour, sameColour, parseShadows, translateY, shadowProblems, compareButton, contrastProblems, overflowProblems,
+  colour, sameColour, parseShadows, translateY, matrix2d, sameTransform, shadowProblems, compareButton, contrastProblems, overflowProblems,
   CONTRAST_LABEL, CONTRAST_SHAPE, decodePng, pixelStats, measureButtons, hex, round2,
   CARD_ON, CARD_SLOTS, cardMarkup, blockTree, cardAttrs, expectCardFromAttrs, missingCardExpectations, compareCard, cardClipProblems, cardContrastProblems,
   paintedFillProblems, cardOverflowProblems, columnRowProblems, cardCountProblems, cardSampleClip, emptyRunProblems, measureCards,
