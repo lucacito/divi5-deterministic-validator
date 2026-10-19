@@ -96,7 +96,7 @@ class StyleGuideKitTopicsTest extends TestCase
         $this->assertStringContainsString( 'style_kit', $text );
         $this->assertStringContainsString( 'get_section_recipes', $text );
         $this->assertStringContainsString( 'Kit-driven today:', $text, 'the scope today is said honestly' );
-        $this->assertMatchesRegularExpression( '/accordions/i', $text, 'what is NOT kit-driven is named' );
+        $this->assertStringContainsString( StyleGuide::notAppliedSentence(), $text, 'what is NOT kit-driven is named (generated from APPLIED)' );
         $this->assertMatchesRegularExpression( '/do(n\'t| not) mix/i', $text, 'one kit per page' );
         $this->assertSame( 1, preg_match_all( '/^# /m', $text ), 'one H1' );
         // Each language's default kit is named with the language; the other kits are covered by one line.
@@ -130,6 +130,12 @@ class StyleGuideKitTopicsTest extends TestCase
         foreach ( self::everyKitTopic() as [ $topic ] ) {
             $text = StyleGuide::markdown( $topic );
             $this->assertDoesNotMatchRegularExpression( '/not applied|NOT applied|Only buttons are kit-driven|not kit-driven yet|not applied yet/i', $text, $topic );
+            if ( 'style-kits' !== $topic ) {
+                // A kit topic points to kit-rules, which says it once (StyleGuideKitRulesTest).
+                $this->assertStringNotContainsString( 'Kit-driven today:', $text, $topic );
+                $this->assertStringContainsString( 'topic=kit-rules', $text, $topic );
+                continue;
+            }
             $this->assertSame( 1, preg_match( '/Kit-driven today: [^\n]*?\.(?= |\n)/', $text, $m ), $topic . ' has the generated sentence' );
             preg_match_all( '/`(divi\/[a-z0-9-]+)`/', $m[0], $b );
             $this->assertEqualsCanonicalizing( $blocks, array_values( array_unique( $b[1] ) ), $topic . ': the blocks named are the blocks in APPLIED' );
@@ -155,9 +161,12 @@ class StyleGuideKitTopicsTest extends TestCase
     public function testTheCatalogSaysWhatIsAndIsNotKitDrivenAndHowToBuildOne(): void
     {
         $catalog = StyleGuide::markdown( 'style-kits' );
-        foreach ( [ 'accordions', 'forms', 'blurbs', 'testimonials', 'image radius' ] as $word ) {
+        foreach ( [ 'forms', 'blurbs', 'testimonials', 'image radius' ] as $word ) {
             $this->assertStringContainsStringIgnoringCase( $word, $catalog );
         }
+        // Accordions are kit-driven since the item adapter: named as such, never as keeping the recipe's styling.
+        $this->assertStringContainsString( 'accordion and toggle items', $catalog );
+        $this->assertStringNotContainsStringIgnoringCase( 'accordions', $catalog );
         $this->assertStringContainsString( 'card', $catalog );
         $this->assertStringContainsString( 'panel', $catalog );
         $this->assertStringContainsString( 'copy the block from the kit\'s topic', $catalog );
@@ -196,10 +205,8 @@ class StyleGuideKitTopicsTest extends TestCase
             $this->assertStringContainsString( $frame, $text, $id );
             $this->assertStringContainsString( $hover, $text, $id );
             $this->assertStringContainsString( sprintf( 'Corner radius %s, padding %s', $kit['radius']['card'], $kit['space']['card'] ), $text, $id );
-            $this->assertStringContainsString( 'A panel is a static surface: the same radius, frame and shadow, no hover, and the recipe keeps its own padding.', $text, $id );
-            $this->assertStringContainsString( 'The fill is always the language\'s surface colour', $text, $id );
-            $this->assertStringContainsString( 'a kit\'s media radius is recorded in the kit but no module takes it yet', $text, $id );
-            $this->assertStringContainsString( 'capitalization, weight and letter spacing are button-only', $text, $id );
+            // What every card and panel shares moved to kit-rules (said once there: StyleGuideKitRulesTest).
+            $this->assertStringContainsString( 'topic=kit-rules', $text, $id );
             $bottom ? ++$under : ( 'text' === $role ? ++$frames : ++$none );
             if ( 'lift' === $kit['hover'] ) {
                 ++$lifts;
@@ -280,13 +287,12 @@ class StyleGuideKitTopicsTest extends TestCase
 
     public function testTheCardSectionNamesTheRolesOfTheFillAndTheHairline(): void
     {
-        foreach ( StyleKits::ids() as $id ) {
-            $text = StyleGuide::markdown( 'style-kit:' . $id );
-            $this->assertStringContainsString( 'the `surface` role', $text, $id );
-            $this->assertStringContainsString( 'the `bg` role', $text, $id );
-            $this->assertStringContainsString( 'the `border` role', $text, $id );
-            $this->assertStringContainsString( 'border colour is `same` or `border`', $text, $id );
-        }
+        // Said once, in kit-rules, for every kit.
+        $text = StyleGuide::markdown( 'kit-rules' );
+        $this->assertStringContainsString( 'the `surface` role', $text );
+        $this->assertStringContainsString( 'the `bg` role', $text );
+        $this->assertStringContainsString( 'the `border` role', $text );
+        $this->assertStringContainsString( 'border colour is `same` or `border`', $text );
     }
 
     public function testNoKitTopicClaimsAHoverTheAdapterDoesNotWrite(): void
@@ -518,7 +524,7 @@ class StyleGuideKitTopicsTest extends TestCase
         foreach ( StyleKits::ids() as $id ) {
             $kit  = (array) StyleKits::get( $id );
             $text = StyleGuide::markdown( 'style-kit:' . $id );
-            $this->assertStringContainsString( 'A panel can sit on an `inverted` ground (text colour as fill; its text in the background colour, or the surface colour on a surface band) or an `accent` ground (accent colour as fill; its text in the accent-text colour). The frame takes the fill colour; the kit never re-inks the children.', $text, $id );
+            $this->assertStringNotContainsString( 'A panel can sit on an `inverted` ground', $text, "$id: the generic ground rule is in kit-rules" );
             $this->assertStringContainsString( 'A button on an inverted panel takes the `panel` treatment: ', $text, $id );
             $d    = KitAdapters::patch( 'divi/button', 'control', 'panel', $kit )['button']['decoration'];
             $role = static fn ( string $v ): string => preg_match( '/^\{\{aied:color:([a-z-]+)\}\}$/', $v, $m ) ? 'the ' . $m[1] . ' colour as' : 'a transparent';
@@ -528,6 +534,11 @@ class StyleGuideKitTopicsTest extends TestCase
                 $id
             );
         }
+    }
+
+    public function testKitRulesSaysWhatAnInvertedAndAnAccentGroundTake(): void
+    {
+        $this->assertSame( 1, substr_count( StyleGuide::markdown( 'kit-rules' ), 'A panel can sit on an `inverted` ground (text colour as fill; its text in the bg colour, or the surface colour on a surface band) or an `accent` ground (accent colour as fill; its text in the accent-text colour). The frame takes the fill colour; the kit never re-inks the children.' ) );
     }
 
     public function testTheGroundInkTableMatchesTheAdapter(): void
@@ -565,9 +576,11 @@ class StyleGuideKitTopicsTest extends TestCase
             $max = max( $max, strlen( StyleGuide::markdown( 'style-kit:' . $id ) ) );
         }
         $this->assertLessThanOrEqual( self::TOPIC_BUDGET, $max );
-        $this->assertSame( 9992, $max, 'the largest kit topic today (neo-brutal; was 8124 before the inverted panel)' );
-        $this->assertSame( 28964, strlen( StyleGuide::markdown() ), 'the default guide is byte-for-byte the size it was' );
-        $this->assertSame( 8464, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog topic is untouched' );
+        // Re-pinned deliberately (accordion plan T2+T4): 9,992 before; the shared prose moved to kit-rules and a toggle was added.
+        $this->assertSame( 9599, $max, 'the largest kit topic today (neo-brutal; was 8124 before the inverted panel, 9992 before kit-rules)' );
+        // The default guide grew only by ", kit-rules" in its topic line (Ruling 19: the line names every topic): 28,964 + 11.
+        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide changed only by the new topic name' );
+        $this->assertSame( 8423, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog topic (8,464 before kit-rules)' );
     }
 
     /** @return list<array{0:string,1:array<string,mixed>}> block comment text and its decoded attributes, in document order */
