@@ -208,10 +208,10 @@ class CardMigrationReportTest extends TestCase
         ksort( $byRecipe );
         $this->assertSame(
             [
-                'icon-values'              => [ 'card', 'card', 'card' ],
-                'pricing-three-tier'       => [ 'card', 'card', 'card' ],
+                'icon-values'              => [ 'wrapper', 'wrapper', 'wrapper' ], // marked (Task 9): classified by the decoration they have left
+                'pricing-three-tier'       => [ 'wrapper', 'panel', 'wrapper' ], // #2 is the featured plan: its frame and shadow stay, its radius is the kit's token (reads as 0)
                 'proof-press-quotes'       => [ 'rule', 'rule', 'rule' ], // a 2px top rule, no fill: a divider, like the group rules
-                'testimonials-avatar-grid' => [ 'card', 'card', 'card' ],
+                'testimonials-avatar-grid' => [ 'wrapper', 'wrapper', 'wrapper' ],
             ],
             $byRecipe
         );
@@ -220,8 +220,8 @@ class CardMigrationReportTest extends TestCase
     public function test_the_marked_blocks_are_counted_and_fill_only_columns_are_unlisted(): void
     {
         $rows = $this->shipped();
-        $this->assertSame( 19, count( array_filter( $rows, fn ( $r ) => null !== $r['marked'] ) ), 'the blocks migrated so far (plan Tasks 7 and 8)' );
-        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 19 blocks', \CardReport::render( $rows, false ) );
+        $this->assertSame( 27, count( array_filter( $rows, fn ( $r ) => null !== $r['marked'] ) ), 'the blocks migrated so far (plan Tasks 7, 8 and 9)' );
+        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 27 blocks', \CardReport::render( $rows, false ) );
         $listed = array_map( fn ( $r ) => $r['recipe'] . ' ' . $r['block'] . '#' . $r['index'], $rows );
         $this->assertNotContains( 'hero-cta divi/column#0', $listed, 'a surface fill with padding and no frame: nothing for a kit to restyle' );
         $this->assertNotContains( 'split-image-text divi/column#0', $listed );
@@ -259,17 +259,17 @@ class CardMigrationReportTest extends TestCase
             'hero-gradient-stats divi/group#3 marked card',
             'hero-spec-card divi/group#1 marked panel',
             'hero-split-left-overlap divi/group#0 marked panel',
-            'icon-values divi/column#1 card',
-            'icon-values divi/column#2 card',
-            'icon-values divi/column#3 card',
-            'pricing-three-tier divi/column#1 card',
-            'pricing-three-tier divi/column#2 card',
-            'pricing-three-tier divi/column#3 card',
+            'icon-values divi/column#1 marked card',
+            'icon-values divi/column#2 marked card',
+            'icon-values divi/column#3 marked card',
+            'pricing-three-tier divi/column#1 marked card',
+            'pricing-three-tier divi/column#2 panel',
+            'pricing-three-tier divi/column#3 marked card',
             'pricing-two-plan-highlight divi/group#1 marked panel',
             'pricing-two-plan-highlight divi/group#8 inverted',
-            'testimonials-avatar-grid divi/column#1 card',
-            'testimonials-avatar-grid divi/column#2 card',
-            'testimonials-avatar-grid divi/column#3 card',
+            'testimonials-avatar-grid divi/column#1 marked card',
+            'testimonials-avatar-grid divi/column#2 marked card',
+            'testimonials-avatar-grid divi/column#3 marked card',
             'transition-overlap-panel divi/group#2 marked panel',
         ];
         sort( $want );
