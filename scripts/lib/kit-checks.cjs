@@ -12,6 +12,9 @@
  *    the clip, the contrast on the measured card fill, overflow and the three-column row,
  *  - and for the ITEMS (accordion and toggle, roles item / item-rule): ITEM_SLOTS, expectations read from the resolved block tree per state
  *    (open and closed), the comparison with the computed style, contrast on the painted fill, the count and the real click.
+ *  - and for the FORMS (contact form, role form): FORM_SLOTS, expectations read from the resolved block tree (the form's field.*, button.* and captcha.* groups;
+ *    the submit's padding, shadow and lift live at button.decoration.* on a form), the comparison of the fields, the submit (the button measures plus a real
+ *    hover), the captcha and the form's own container, the painted fill and contrast, the clip, overflow and the count.
  */
 const zlib = require('zlib');
 const { parseColor, over, ratioOf } = require('./recipe-checks.cjs');
@@ -102,6 +105,30 @@ function itemMarkup(slot) {
   return blockOf('toggle', Object.assign({ title: Object.assign({ innerContent: { desktop: { value: it.title } } }, titleFont), content: Object.assign({ innerContent: { desktop: { value: ITEM_ANSWER } } }, bodyFont) }, Object.keys(module).length ? { module } : {}, { builderVersion: '5.8.0', aied: marker }), null);
 }
 
+/**
+ * The forms of the sheet (Task 5 of the forms-adapter plan): one `divi/contact-form` per light band (`bg`, marker `{"kit":"form"}`, and
+ * `surface`, marker `{"kit":"form","on":"surface"}`), each with two fields, the basic captcha (Divi's default, so nothing is written for it)
+ * and a submit button. A form is found again by the UNIQUE text of its submit button (the marker is stripped by the resolver), `fields` is the
+ * number of `divi/contact-field` blocks it holds.
+ */
+const FORM_SLOTS = [
+  { key: 'form-bg', band: 'bg', on: 'light', submit: 'Send form on bg', fields: 2 },
+  { key: 'form-surface', band: 'surface', on: 'surface', submit: 'Send form on surface', fields: 2 },
+];
+
+/**
+ * One form slot as markup: a marked `divi/contact-form` with two fields. The recipe's own keys only: the label, the "custom button" switch
+ * (`button.decoration.button.enable`, icon off, as every recipe form writes it) and the body font token on the button, the fields and the
+ * captcha. The kit supplies every colour, frame, radius, padding, shadow and lift, and writes NO `module.decoration`.
+ */
+function formMarkup(slot) {
+  const marker = slot.on === 'light' ? { kit: 'form' } : { kit: 'form', on: slot.on };
+  const family = { font: { font: { desktop: { value: { family: '{{aied:font:body}}' } } } } };
+  const field = (id, label, type) => blockOf('contact-field', { fieldItem: { advanced: Object.assign({ id: { desktop: { value: id } } }, type ? { type: { desktop: { value: type } } } : {}), innerContent: { desktop: { value: label } } }, builderVersion: '5.8.0' }, null);
+  const button = { innerContent: { desktop: { value: { text: slot.submit } } }, decoration: Object.assign({ button: { desktop: { value: { enable: 'on', icon: { enable: 'off' } } } } }, family) };
+  return blockOf('contact-form', { button, field: { decoration: family }, captcha: { decoration: family }, builderVersion: '5.8.0', aied: marker }, [field('Name', 'Name', null), field('Email', 'Email Address', 'email')].join('\n'));
+}
+
 /** The kit buttons a button slot holds, in order: [{ role, text }]. */
 const PANEL_BUTTONS = [{ role: 'control', text: 'Primary action' }, { role: 'control-secondary', text: 'Secondary action' }];
 /** One button block of the sheet: the marker names the surface (`on`, omitted for light). */
@@ -128,12 +155,12 @@ function cardMarkup(slot) {
   return blockOf('group', { module: { decoration }, builderVersion: '5.8.0', aied: marker }, body);
 }
 
-/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS), inside the two button panels 4 more buttons, and 10 item blocks (ITEM_SLOTS: 4 accordions, 6 toggles). */
+/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS), inside the two button panels 4 more buttons, 10 item blocks (ITEM_SLOTS: 4 accordions, 6 toggles) and 2 forms (FORM_SLOTS: one on the bg band, one on the surface band). */
 function sheetMarkup() {
   const v = V;
   const sections = SURFACES.map((s) => {
     const buttons = ROLES.map((r) => buttonBlock(r.role, r.text, s.on)).join('\n');
-    const cards = [...CARD_SLOTS.filter((c) => c.band === s.key && !c.row).map(cardMarkup), ...ITEM_SLOTS.filter((c) => c.band === s.key).map(itemMarkup)].join('\n');
+    const cards = [...CARD_SLOTS.filter((c) => c.band === s.key && !c.row).map(cardMarkup), ...ITEM_SLOTS.filter((c) => c.band === s.key).map(itemMarkup), ...FORM_SLOTS.filter((c) => c.band === s.key).map(formMarkup)].join('\n');
     return `<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":${s.bg}}},"spacing":{"desktop":{"value":{"padding":{"top":"64px","bottom":"64px"}}}}}},${v}} -->
 <!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},${v}} -->
 <!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},${v}} -->
@@ -1077,6 +1104,278 @@ function emptyRunProblems({ checked, cardsChecked, itemsChecked }) {
   return out;
 }
 
+// ---- forms (contact form, role form) ---------------------------------------------------------------------------------
+/** The contact forms of the RESOLVED markup (the marker is gone, so a form is found by its unique submit text): [{ slot, attrs, fields }] in FORM_SLOTS order; attrs is null when the form is not in the markup, fields = the number of `divi/contact-field` blocks it holds. */
+function formAttrs(markup, slots = FORM_SLOTS) {
+  const forms = [];
+  const walk = (list) => { for (const n of list) { if (n.name === 'divi/contact-form') forms.push(n); walk(n.children); } };
+  walk(blockTree(markup));
+  return slots.map((slot) => {
+    const node = forms.find((n) => dig(n.attrs, 'button', 'innerContent', 'desktop', 'value', 'text') === slot.submit) || null;
+    return { slot, attrs: node ? node.attrs : null, fields: node ? node.children.filter((c) => c.name === 'divi/contact-field').length : null };
+  });
+}
+
+/** Whether a key named `key` occurs anywhere in a value (objects and arrays, depth first). */
+function hasKey(o, key) {
+  if (!o || typeof o !== 'object') return false;
+  return Object.keys(o).some((k) => k === key || hasKey(o[k], key));
+}
+
+/**
+ * What the kit says about one form, read ONLY from its resolved attributes (KitAdapters::formPatch merged into the sheet's form):
+ * { field: { fill, ink, placeholder, radius:[4], padding:[4]|null, top|right|bottom|left: {width, style, color}, shadow, hover },
+ *   button: expectFromAttrs of the submit (its padding, shadow and lift live at `button.decoration.*` on a form, mapped onto the module
+ *   paths expectFromAttrs reads), captcha: { ink }, moduleKeys: [keys of module.decoration] (the kit must write none) }.
+ */
+function expectFormFromAttrs(attrs) {
+  const fd = dig(attrs, 'field', 'decoration') || {};
+  const border = dig(fd, 'border', 'desktop', 'value') || {};
+  const styles = border.styles || {};
+  const all = styles.all || {};
+  const side = (k) => { const e = Object.assign({}, all, styles[k] || {}); return { width: e.width !== undefined && e.width !== '' ? parseFloat(e.width) : null, style: e.style || null, color: e.color || null }; };
+  const radius = border.radius || {};
+  const pad = dig(fd, 'spacing', 'desktop', 'value', 'padding') || null;
+  const bd = dig(attrs, 'button', 'decoration') || {};
+  const md = dig(attrs, 'module', 'decoration');
+  return {
+    field: {
+      fill: dig(fd, 'background', 'desktop', 'value', 'color') || null,
+      ink: dig(fd, 'font', 'font', 'desktop', 'value', 'color') || null,
+      placeholder: dig(fd, 'placeholderFont', 'font', 'desktop', 'value', 'color') || null,
+      top: side('top'), right: side('right'), bottom: side('bottom'), left: side('left'),
+      radius: CORNERS.map((k) => (radius[k] !== undefined ? parseFloat(radius[k]) : null)),
+      padding: pad ? ['top', 'right', 'bottom', 'left'].map((k) => (pad[k] !== undefined && pad[k] !== '' ? parseFloat(pad[k]) : null)) : null,
+      shadow: dig(fd, 'boxShadow') !== undefined,
+      hover: hasKey(fd, 'hover'),
+    },
+    button: expectFromAttrs({ button: { decoration: bd }, module: { decoration: { spacing: bd.spacing, boxShadow: bd.boxShadow, transform: bd.transform } } }),
+    captcha: { ink: dig(attrs, 'captcha', 'decoration', 'font', 'font', 'desktop', 'value', 'color') || null },
+    moduleKeys: md && typeof md === 'object' ? Object.keys(md) : [],
+  };
+}
+
+/** Whether a submit expectation is the underline form (no top edge, a bottom edge). */
+const underlineSubmit = (exp) => exp.rest.top.width === 0 && exp.rest.bottom.width > 0;
+
+/**
+ * The expectation fields that are missing although KitAdapters::formPatch() ALWAYS writes them (the field fill, ink, placeholder, four radii,
+ * every frame side, the padding; the whole submit as button() writes it; the captcha ink), plus what the adapter must NEVER write: a
+ * `module.decoration` on the form (on a contact form it is the whole form container), a field shadow or a field hover (Ruling 3), and, on an
+ * underline submit, a hover border colour (it only recolours the 0px sides, so the edge keeps its rest colour on hover). A non-empty list is a
+ * `gate` failure and compareForm refuses to compare: a null never silently skips a check.
+ */
+function missingFormExpectations(exp) {
+  const out = [];
+  const num = (v) => typeof v === 'number' && !Number.isNaN(v);
+  const f = exp.field;
+  for (const k of ['fill', 'ink', 'placeholder']) if (!f[k]) out.push('field.' + k);
+  if (!Array.isArray(f.radius) || f.radius.length !== 4 || !f.radius.every(num)) out.push('field.radius');
+  if (!Array.isArray(f.padding) || f.padding.length !== 4 || !f.padding.every(num)) out.push('field.padding');
+  for (const [k] of SIDES) {
+    if (!num(f[k].width)) out.push(`field.${k}.width`);
+    if (!f[k].style) out.push(`field.${k}.style`);
+    if (!f[k].color) out.push(`field.${k}.color`);
+  }
+  if (f.shadow) out.push('field carries a shadow (Ruling 3)');
+  if (f.hover) out.push('field carries a hover or focus state (not proven)');
+  const under = exp.button.rest && exp.button.rest.top && underlineSubmit(exp.button);
+  for (const m of missingExpectations(exp.button)) if (!(under && m === 'hover.border')) out.push('button.' + m);
+  if (under && exp.button.hover.border) out.push('button underline carries a hover border colour (the edge never changes on hover)');
+  if (!exp.captcha.ink) out.push('captcha.ink');
+  if (exp.moduleKeys.length) out.push('form carries module.decoration (' + exp.moduleKeys.join(',') + '): the kit must write none');
+  return out;
+}
+
+/** Problems ([code, detail]) of the field at rest against the expectation: form-field-fill, -border (width, style, colour of each side, and no shadow), -radius, -ink, -placeholder, -padding. `name` is e.g. "field 1". */
+function compareFormField(ef, f, name, phase = 'rest') {
+  const out = [];
+  const el = f.el;
+  const at = (s) => `${name} ${phase}: ${s}`;
+  if (!sameColour(ef.fill, el.backgroundColor)) out.push(['form-field-fill', at(`background-color ${el.backgroundColor}, expected ${ef.fill}`)]);
+  for (const [side, cap] of SIDES) {
+    const e = ef[side];
+    if (!near(px(el[`border${cap}Width`]), e.width, BORDER_TOLERANCE)) out.push(['form-field-border', at(`border-${side}-width ${el[`border${cap}Width`]}, expected ${e.width}px`)]);
+    if (e.width > 0) {
+      if (el[`border${cap}Style`] !== e.style) out.push(['form-field-border', at(`border-${side}-style ${el[`border${cap}Style`]}, expected ${e.style}`)]);
+      if (!sameColour(e.color, el[`border${cap}Color`])) out.push(['form-field-border', at(`border-${side}-color ${el[`border${cap}Color`]}, expected ${e.color}`)]);
+    }
+  }
+  if (parseShadows(el.boxShadow).some((s) => !s.inset)) out.push(['form-field-border', at(`box-shadow ${el.boxShadow}, the kit writes no field shadow`)]);
+  CORNER_PROPS.forEach((k, i) => { if (!near(px(el[k]), ef.radius[i])) out.push(['form-field-radius', at(`${k} ${el[k]}, expected ${ef.radius[i]}px`)]); });
+  if (!sameColour(ef.ink, el.color)) out.push(['form-field-ink', at(`color ${el.color}, expected ${ef.ink}`)]);
+  if (!f.placeholder || !sameColour(ef.placeholder, f.placeholder.color)) out.push(['form-field-placeholder', at(`::placeholder color ${f.placeholder ? f.placeholder.color : 'not measured'}, expected ${ef.placeholder}`)]);
+  ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'].forEach((k, i) => { if (!near(px(el[k]), ef.padding[i])) out.push(['form-field-padding', at(`${k} ${el[k]}, expected ${ef.padding[i]}px`)]); });
+  return out;
+}
+
+/** form-container: the form's own container carries nothing of the kit (the kit writes no module.decoration): no shadow, no movement, no frame. */
+function formContainerProblems(c, state) {
+  const out = [];
+  const el = c.el;
+  if (parseShadows(el.boxShadow).some((s) => !s.inset)) out.push(['form-container', `${state}: the form container has a box-shadow (${el.boxShadow}) but the kit writes none on a form`]);
+  if (Math.abs(translateY(el.transform)) > 0.1 || !sameTransform(el.transform, 'none')) out.push(['form-container', `${state}: the form container is transformed (${el.transform}) but the kit writes no lift on a form`]);
+  for (const [side, cap] of SIDES) if (px(el[`border${cap}Width`]) > 0) out.push(['form-container', `${state}: the form container has a ${el[`border${cap}Width`]} ${side} border but the kit writes no frame on a form`]);
+  return out;
+}
+
+/** form-captcha: the captcha question (and its row, and a label in it) is printed in the band's ink the markup says. */
+function formCaptchaProblems(exp, cap, phase = 'rest') {
+  if (!cap || !cap.found) return [['form-captcha', `${phase}: the captcha question is not on the page`]];
+  const out = [];
+  const check = (name, got) => { if (!got || !sameColour(exp.captcha.ink, got.color)) out.push(['form-captcha', `${phase}: captcha ${name} colour ${got ? got.color : 'not measured'}, expected ${exp.captcha.ink}`]); };
+  check('question', cap.question);
+  check('row', cap.row);
+  if (cap.label) check('label', cap.label);
+  return out;
+}
+
+/** Every disagreement ([code, detail]) of one measured form at rest with its expectation, except the submit (formButtonProblems) and the painted values (formPaintedFillProblems, formContrastProblems): every field, the captcha and the container. */
+function compareForm(exp, m, phase = 'rest') {
+  const miss = missingFormExpectations(exp);
+  if (miss.length) return [['form-expectation', 'expectation missing (an adapter attribute path drifted): ' + miss.join(', ')]];
+  const out = [];
+  m.fields.forEach((f, j) => out.push(...compareFormField(exp.field, f, `field ${j + 1}`, phase)));
+  out.push(...formCaptchaProblems(exp, m.captcha, phase));
+  out.push(...formContainerProblems(m.container, phase));
+  return out;
+}
+
+/**
+ * form-button: the submit button against the kit's primary control (compareButton: border top and bottom, radius, fill, label, text, padding,
+ * shadow, lift, and on a real hover the fill, label, edge, shadow and lift), plus the left and right edges (the underline form has none), and, on an
+ * underline submit, the bottom edge keeping its REST colour on hover. rest/hover = { el, wrap } (hover null = not measured: a failure).
+ */
+function formButtonProblems(exp, rest, hover) {
+  const out = [];
+  for (const [code, d] of compareButton(exp, { rest, hover }).problems) out.push(['form-button', code === 'hover' ? `submit ${d}` : `submit ${code}: ${d}`]);
+  const w = exp.rest.top.width;
+  for (const [side, cap] of [['left', 'Left'], ['right', 'Right']]) {
+    if (rest.el[`border${cap}Width`] !== undefined && !near(px(rest.el[`border${cap}Width`]), w, BORDER_TOLERANCE)) out.push(['form-button', `submit border: rest: border-${side}-width ${rest.el[`border${cap}Width`]}, expected ${w}px`]);
+  }
+  if (!hover) out.push(['form-button', 'submit hover: the hover state was not measured']);
+  else if (underlineSubmit(exp) && !sameColour(exp.rest.bottom.color, hover.el.borderBottomColor)) out.push(['form-button', `submit hover: the underline's bottom edge is ${hover.el.borderBottomColor} on hover, expected its rest colour ${exp.rest.bottom.color}`]);
+  return out;
+}
+
+/** form-field-fill from the PAINTED fill (screenshot mean of the field's inner box, placeholder hidden): an opaque computed fill must be what is painted (within 4 per channel), and the field must not be the colour of what is under it (surfaces.fields[j]). A missing sample fails. */
+function formPaintedFillProblems(m, fills, surfaces) {
+  const out = [];
+  m.fields.forEach((f, j) => {
+    const name = `field ${j + 1}`;
+    const fill = fills && fills[j];
+    if (!fill) { out.push(['form-field-fill', `${name}: the painted field fill was not sampled`]); return; }
+    for (const [, d] of paintedFillProblems(f.el, fill)) out.push(['form-field-fill', `${name}: ${d.replace('over the card', 'over the field')}`]);
+    const surf = surfaces && surfaces.fields && surfaces.fields[j];
+    if (surf && Math.max(Math.abs(surf.r - fill.r), Math.abs(surf.g - fill.g), Math.abs(surf.b - fill.b)) <= 4) out.push(['form-field-fill', `${name}: the field fill ${hex(fill)} is the colour of the form behind it ${hex(surf)} (a field never matches its container)`]);
+  });
+  return out;
+}
+
+/**
+ * form-contrast, on the MEASURED surfaces (screenshots with the element hidden): each field's ink and placeholder against the painted field
+ * fill >= 4.5, each drawn frame side >= 3.0 against the painted fill and against the form behind it, the submit (contrastProblems: the label against
+ * its fill >= 4.5, a transparent fill's drawn edges >= 3.0 against the surface) at rest and on hover, and the captcha question against the surface >= 4.5.
+ * A missing sample, an unreadable colour or a missing hover is a failure, never a skip. fills = per field, surfaces = { fields, submit, captcha }.
+ */
+function formContrastProblems(exp, m, fills, surfaces, hoverEl) {
+  const out = []; const info = { fields: [] };
+  const ratio = (raw, bg) => { const c = colour(raw); return c ? round2(ratioOf(over(c, bg), bg)) : null; };
+  const check = (name, raw, bg, min) => {
+    const r = ratio(raw, bg);
+    if (r === null) { out.push(['form-contrast', `${name}: no readable colour (${raw})`]); return null; }
+    if (r < min) out.push(['form-contrast', `${name} ${hex(over(colour(raw), bg))} on ${hex(bg)} is ${r}:1, needs ${min}`]);
+    return r;
+  };
+  m.fields.forEach((f, j) => {
+    const name = `field ${j + 1}`;
+    const fill = fills && fills[j]; const surf = surfaces && surfaces.fields && surfaces.fields[j];
+    const row = {};
+    if (!fill) out.push(['form-contrast', `${name}: the painted field fill was not sampled`]);
+    else {
+      const base = { r: fill.r, g: fill.g, b: fill.b, a: 1 };
+      row.ink = check(`${name} ink`, f.el.color, base, CONTRAST_LABEL);
+      row.placeholder = check(`${name} placeholder`, f.placeholder ? f.placeholder.color : null, base, CONTRAST_LABEL);
+      const sb = surf ? { r: surf.r, g: surf.g, b: surf.b, a: 1 } : null;
+      if (!sb) out.push(['form-contrast', `${name}: the form behind the field was not sampled`]);
+      for (const [side, cap] of SIDES) {
+        if (!(px(f.el[`border${cap}Width`]) > 0)) continue;
+        const raw = f.el[`border${cap}Color`];
+        row[side] = check(`${name} frame ${side} against the field fill`, raw, base, CONTRAST_SHAPE);
+        if (sb) row[side + 'OnForm'] = check(`${name} frame ${side} against the form behind it`, raw, sb, CONTRAST_SHAPE);
+      }
+    }
+    info.fields.push(row);
+  });
+  if (!surfaces || !surfaces.submit) out.push(['form-contrast', 'the form behind the submit button was not sampled']);
+  else {
+    const rest = contrastProblems(m.submit.el, surfaces.submit, 'rest');
+    for (const [, d] of rest.problems) out.push(['form-contrast', 'submit ' + d]);
+    info.submit = { rest: rest.info };
+    if (!hoverEl) out.push(['form-contrast', 'submit hover: the hover state was not measured']);
+    else {
+      const hov = contrastProblems(hoverEl, surfaces.submit, 'hover');
+      for (const [, d] of hov.problems) out.push(['form-contrast', 'submit ' + d]);
+      info.submit.hover = hov.info;
+    }
+  }
+  if (!m.captcha || !m.captcha.found) out.push(['form-contrast', 'the captcha question is not on the page']);
+  else if (!surfaces || !surfaces.captcha) out.push(['form-contrast', 'the form behind the captcha was not sampled']);
+  else info.captcha = check('captcha ink', m.captcha.question.color, { r: surfaces.captcha.r, g: surfaces.captcha.g, b: surfaces.captcha.b, a: 1 }, CONTRAST_LABEL);
+  return { problems: out, info };
+}
+
+/** form-clip: when the form container clips (overflow not visible), no field or submit may stick out of it; the submit's label must not be cut (scrollWidth within clientWidth). */
+function formClipProblems(m, state = 'rest') {
+  const out = [];
+  const c = m.container;
+  const clips = c.el.overflowX !== 'visible' || c.el.overflowY !== 'visible';
+  const parts = [...m.fields.map((f, j) => [`field ${j + 1}`, f.rect]), ['submit', m.submit.rect]];
+  if (clips) for (const [name, r] of parts) if (r.left < c.rect.left - 1 || r.right > c.rect.right + 1 || r.top < c.rect.top - 1 || r.bottom > c.rect.bottom + 1) out.push(['form-clip', `${state}: ${name} ${Math.round(r.left)}..${Math.round(r.right)} x ${Math.round(r.top)}..${Math.round(r.bottom)} is cut by the form container (overflow ${c.el.overflowX}/${c.el.overflowY})`]);
+  if (m.submit.scrollWidth > m.submit.clientWidth + 1) out.push(['form-clip', `${state}: the submit label is cut (scrollWidth ${m.submit.scrollWidth} > clientWidth ${m.submit.clientWidth})`]);
+  return out;
+}
+
+/** Overflow of one measured form: a field, the submit or the captcha beyond the form container (1px) or the window, or the page wider than the window. */
+function formOverflowProblems(m, state, page) {
+  const out = [];
+  const c = m.container.rect;
+  const parts = [...m.fields.map((f, j) => [`field ${j + 1}`, f.rect]), ['submit', m.submit.rect]];
+  if (m.captcha && m.captcha.found && m.captcha.rect) parts.push(['captcha', m.captcha.rect]);
+  for (const [name, r] of parts) {
+    if (r.left < c.left - 1 || r.right > c.right + 1) out.push(['overflow', `${state}: ${name} ${Math.round(r.left)}..${Math.round(r.right)} outside its form ${Math.round(c.left)}..${Math.round(c.right)}`]);
+    if (r.right > page.innerWidth + 1 || r.left < -1) out.push(['overflow', `${state}: ${name} ${Math.round(r.left)}..${Math.round(r.right)} outside the window (${page.innerWidth})`]);
+  }
+  if (page.scrollWidth > page.innerWidth) out.push(['overflow', `${state}: scrollWidth ${page.scrollWidth} > innerWidth ${page.innerWidth}`]);
+  return out;
+}
+
+/**
+ * Problems of the form count (code form): every sheet form on the page, with exactly the fields the resolved markup gives it, ONE submit
+ * button and the captcha question. measured = measureForms(...).forms in FORM_SLOTS order; counts = the field counts of the resolved markup.
+ * An empty slot list is an error.
+ */
+function formCountProblems(measured, counts, slots = FORM_SLOTS) {
+  if (!slots.length) throw new Error('no form slots: nothing would be checked');
+  const bad = [];
+  slots.forEach((slot, i) => {
+    const mm = measured[i];
+    if (!mm || !mm.found) { bad.push(`${slot.key} is not in the page`); return; }
+    if (mm.submitCount !== 1) bad.push(`${slot.key} has ${mm.submitCount} submit buttons with its label, expected 1`);
+    if (mm.fields.length !== counts[i]) bad.push(`${slot.key} renders ${mm.fields.length} fields, expected ${counts[i]}`);
+    if (!mm.captcha || !mm.captcha.found) bad.push(`${slot.key} shows no captcha question`);
+  });
+  if (measured.length > slots.length) bad.push(`${measured.length} forms measured for ${slots.length} slots`);
+  if (!bad.length) return [];
+  const found = slots.filter((s, i) => measured[i] && measured[i].found).length;
+  return [['form', `${found} of ${slots.length} forms rendered as the sheet says: ${bad.slice(0, 6).join('; ')}${bad.length > 6 ? ` and ${bad.length - 6} more` : ''}`]];
+}
+
+/** What a finished run must have checked as to forms: at least one (an empty selection fails the run with the code form; the older emptyRunProblems keeps its own three checks). */
+function emptyFormRunProblems({ formsChecked }) {
+  return formsChecked ? [] : ['no form was checked: the form selection was empty'];
+}
+
 // ---- PNG (screenshots) ---------------------------------------------------------------------------------------------
 /** Decodes an 8-bit, non-interlaced RGB or RGBA PNG (what Chromium writes) to { width, height, data: RGBA bytes }. */
 function decodePng(buf) {
@@ -1234,6 +1533,56 @@ function measureItems(slots) {
   };
 }
 
+/**
+ * Runs IN THE PAGE (self-contained). For each slot ({ key, submit }) the rendered contact form: found by the `.et_pb_contact_submit` that holds
+ * the slot's submit text (`submitCount` = how many buttons carry it), its `<form>` and its container (`.et_pb_contact_form_container`, the
+ * element the form's module.decoration would land on). Fields = the visible text-like inputs of the form except the captcha's, each with its
+ * computed fields and `getComputedStyle(el, '::placeholder').color`, tagged `data-aied-ff="<key>:<n>"`; the submit button (and its wrapper)
+ * tagged `data-aied-fs="<key>"` so the script can hover it; the captcha question, its row and a label in it, the row tagged `data-aied-fc="<key>"`.
+ */
+function measureForms(slots) {
+  const root = document.querySelector('.et-l--post');
+  const FF = ['borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderRightWidth', 'borderRightStyle', 'borderRightColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderLeftWidth', 'borderLeftStyle', 'borderLeftColor', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius', 'backgroundColor', 'color', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'boxShadow', 'transform', 'overflowX', 'overflowY', 'transitionDuration', 'transitionDelay'];
+  const BF = ['borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderLeftWidth', 'borderRightWidth', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius', 'backgroundColor', 'color', 'textTransform', 'letterSpacing', 'fontWeight', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'boxShadow', 'transform', 'transitionDuration', 'transitionDelay'];
+  const pick = (node, list) => { const cs = getComputedStyle(node); const o = {}; for (const k of list) o[k] = cs[k]; return o; };
+  const box = (n) => { const r = n.getBoundingClientRect(); return { left: r.left + window.scrollX, right: r.right + window.scrollX, top: r.top + window.scrollY, bottom: r.bottom + window.scrollY, width: r.width, height: r.height }; };
+  const submits = root ? [...root.querySelectorAll('.et_pb_contact_submit')] : [];
+  return {
+    hasRoot: !!root,
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth: window.innerWidth,
+    forms: slots.map((s) => {
+      const hits = submits.filter((b) => (b.textContent || '').trim() === s.submit);
+      const btn = hits[0];
+      if (!btn) return { key: s.key, found: false, submitCount: 0 };
+      const form = btn.closest('form');
+      const container = btn.closest('.et_pb_contact_form_container') || (form && form.parentElement) || btn.parentElement;
+      const wrap = btn.parentElement;
+      const inputs = form ? [...form.querySelectorAll('input, textarea, select')].filter((n) => {
+        const type = (n.getAttribute('type') || '').toLowerCase();
+        if (['hidden', 'checkbox', 'radio', 'submit', 'button'].includes(type) || n.classList.contains('et_pb_contact_captcha')) return false;
+        const r = n.getBoundingClientRect();
+        return getComputedStyle(n).display !== 'none' && r.width > 0 && r.height > 0;
+      }) : [];
+      btn.setAttribute('data-aied-fs', s.key);
+      const q = form ? form.querySelector('.et_pb_contact_captcha_question') : null;
+      const row = q ? (q.closest('p') || q.parentElement) : null;
+      const label = row ? row.querySelector('label') : null;
+      if (row) row.setAttribute('data-aied-fc', s.key);
+      return {
+        key: s.key, found: true, submitCount: hits.length, rect: box(container),
+        container: { el: pick(container, FF), rect: box(container) },
+        fields: inputs.map((n, j) => {
+          n.setAttribute('data-aied-ff', s.key + ':' + j);
+          return { el: pick(n, FF), placeholder: { color: getComputedStyle(n, '::placeholder').color }, rect: box(n) };
+        }),
+        submit: { el: pick(btn, BF), wrap: pick(wrap, BF), rect: box(btn), parentRect: box(container), scrollWidth: btn.scrollWidth, clientWidth: btn.clientWidth },
+        captcha: q ? { found: true, question: { color: getComputedStyle(q).color }, row: { color: getComputedStyle(row).color }, label: label ? { color: getComputedStyle(label).color } : null, rect: box(row) } : { found: false },
+      };
+    }),
+  };
+}
+
 module.exports = {
   SURFACES, ROLES, SLOTS, sheetMarkup, TITLE_PREFIX, runTitle, parseRunTitle, selectCells, buttonAttrs, expectFromAttrs, missingExpectations, BORDER_TOLERANCE,
   colour, sameColour, parseShadows, translateY, matrix2d, sameTransform, shadowProblems, compareButton, contrastProblems, overflowProblems,
@@ -1243,4 +1592,6 @@ module.exports = {
   pageButtonAttrs, groundFillProblems, FEATURED_RATIO, boxProminence, featuredProblems, panelButtonProblems, PANEL_BUTTONS,
   ITEM_SLOTS, itemMarkup, itemAttrs, expectItemFromAttrs, missingItemExpectations, compareItem, itemCountProblems, clickTarget, itemClickProblems,
   itemContrastProblems, itemPaintedFillProblems, itemOverflowProblems, measureItems,
+  FORM_SLOTS, formMarkup, formAttrs, expectFormFromAttrs, missingFormExpectations, compareFormField, compareForm, formContainerProblems, formCaptchaProblems,
+  formButtonProblems, formPaintedFillProblems, formContrastProblems, formClipProblems, formOverflowProblems, formCountProblems, emptyFormRunProblems, measureForms,
 };
