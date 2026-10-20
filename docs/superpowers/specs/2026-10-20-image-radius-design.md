@@ -90,7 +90,7 @@ token replaces the whole value), split-image-text keeps it. Kept literal: the fo
 **Measured sizes and counts.** (`wc -c` and `php scripts/measure-tokens.php` at the end of Task 3.)
 - `section-recipes.json` **671,687 -> 670,981 B** (-706 B; the first step was 670,983, the rewording of the three descriptions
   made it 2 B smaller; bound 716,800).
-- Guide, before -> after (`docs/token-usage.md`): topic `kit-rules` **4,301 -> 4,592 B** (+291; budget +400); topic
+- Guide, before -> after (`docs/token-usage.md`): topic `kit-rules` **4,301 -> 4,607 B** (+306; budget +400); topic
   `style-kits` (the catalog) **8,453 -> 8,439 B** (-14, because "image radius" left the generated not-applied sentence);
   default guide **28,975 B, unchanged** (133 B under its 29,108 B bound); every `style-kit:<id>` topic unchanged in size (largest
   neo-brutal 9,599 B, 401 B under the 10,000 bound); the `topic` parameter description 258 characters, unchanged; the filtered
@@ -143,10 +143,10 @@ token replaces the whole value), split-image-text keeps it. Kept literal: the fo
   asked only of rounded kits.
 
 **Guide headroom left.** Default guide 133 B (bound 29,108), largest kit topic 401 B (neo-brutal, bound 10,000), `kit-rules`
-4,592 B (well under the 10,000 B topic bound), the `topic` parameter description 258 characters (pinned `<= 260`), the
+4,607 B (well under the 10,000 B topic bound), the `topic` parameter description 258 characters (pinned `<= 260`), the
 `section-recipes.json` file 45,819 B under the 716,800 B bound.
 
 **Owner decisions left.** Push the branch and merge; release (nothing is versioned or zipped); the blurb and testimonial
 adapters (blurb images and testimonial portraits are the next module kinds that could take the media radius); image-to-layout later.
 
-**Live gates:** pending (the controller fills this in).
+**Live gates** (Divi 5.15.1, 2026-10-20, head 1f6ecf8 for the code under test; the later commits only changed docs and one guide sentence, see below; one run at a time on the dev site). (1) Smoke before the chain: 5 kits (quiet-solid, warm-pill, chunky-pill, underline-link, neo-brutal) x editorial, glass-dark: 30 PASS 0 FAIL, with the image measured (e.g. 4px quiet-solid, 32px warm-pill, wrapper and picture both rounded, overflow hidden on the wrapper). (2) The full `make verify-kits`: **264 PASS, 0 FAIL** over 88 kit/language cells with the one image per cell (88 `NOTE media` lines), about 3 h 01 min (08:15 to 11:16). (3) The narrowed recipe render: the 33 recipes that carry a kit marker (the five migrated image recipes among them) plus 10 unmarked guard recipes chosen with a fixed seed, in three chunks of 15, 15 and 13: **258 PASS** (90 + 90 + 78), 0 KNOWN-FAIL, 0 FAIL, 0 low-contrast warnings, about 20 min; the full default `verify-recipes` was not run, by the narrowing the owner approved at the kit-limits branch. (4) `make verify-shapes`: the probe agrees with every expectation (2 of 2; the stray untracked `probe-results-known.json` was removed). After the chain the final review's wording follow-up was applied (the Images sentence now reads 'a photo that the recipe rounds follows it', kit-rules 4,592 -> 4,607 B, pinned) and the CLAUDE.md Card paragraph was corrected; neither touches what the render gate measures.

@@ -316,7 +316,7 @@ final class StyleGuide
         if ( [] !== $media ) {
             $out .= "\n## Images\n\n"
                 . 'Photos (' . implode( ', ', array_map( static fn ( string $b ): string => '`' . $b . '`', $media ) ) . ') take the kit\'s media radius, the third radius of every kit topic. '
-                . 'In a recipe served with a kit a photo\'s corners follow it (0px gives a square photo); a circle, a pill, an arch or a tiled grid keeps its own corners: those are shapes. '
+                . 'In a recipe served with a kit, a photo that the recipe rounds follows it (0px gives a square photo); a circle, a pill, an arch or a tiled grid keeps its own corners: those are shapes. '
                 . 'For your own image write all four corners at that radius at `image.decoration.border.desktop.value.radius`.' . "\n";
         }
         if ( $has( 'item' ) ) {

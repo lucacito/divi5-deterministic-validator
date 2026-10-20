@@ -234,7 +234,7 @@ class StyleGuideKitRulesTest extends TestCase
         // Re-pinned deliberately (forms adapter T2): kit-rules 3,525 + the Contact forms paragraph (+776 B in all after fix round 2, with the 30 B applied-sentence change: fix round 1's underline wording, the accent-band clause of the field frame and the `button.decoration.*` path clause, all generated; the hard cap is 10,000 B); the catalog 8,423 + "forms (`divi/contact-form`: `form`)" less "Forms, " in the not-applied sentence (30 B).
         $this->assertSame( 4301, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules as it was before the image radius pass (no block takes the media radius)' );
         // Image radius pass (Task 1): the Images paragraph replaces the "recorded but unused" clause: +291 B net (plan bound: 4,301 + 400).
-        $this->assertSame( 4592, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        $this->assertSame( 4607, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         $this->assertSame( 8439, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter, 8,453 with it; 14 B less since "image radius" left the not-applied sentence)' );
     }
 
