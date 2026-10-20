@@ -163,7 +163,7 @@ require_once __DIR__ . '/StyleKits.php';
  *   cap 12), ItemMigrationTest (own ink, band walk, merge trap) and the verify-kits item sheet with a real click.
  *
  * Form table (role `form` on `divi/contact-form`; spec 2026-10-19-forms-adapter-design.md sections 1 and 2, probe
- * fixtures/shapes/kit-form-vocabulary.md: 47 candidates measured ON the contact form, 41 PASS, 6 css-only, none dead).
+ * fixtures/shapes/kit-form-vocabulary.md: 50 candidates measured ON the contact form, 44 PASS, 6 css-only, none dead).
  * One marker styles the whole form: its fields (`field.*` styles every child field), its submit button (`button.*`) and its
  * captcha (`captcha.*`). Bands: `light` | `surface` | `accent` | `dark` (`on` = the band the form is printed on). No ground.
  * The form module's own `module.decoration` is NEVER written: on the contact form it is the whole form container (its
@@ -172,10 +172,13 @@ require_once __DIR__ . '/StyleKits.php';
  * - Field fill: `surface`, `bg` on a `surface` band (a field never matches its container). Ink `text`; placeholder `muted`
  *   (the field ink does not reach the placeholder, kf-placeholder-colour). No field shadow, no field hover or focus (Ruling 3).
  * - Field frame: the kit's width with a 1px floor, the kit's style, colour `text` when the kit's border colour is `text`,
- *   `accent` or `inverse`, and always `text` on an `accent` band (amended by the Task 3 contrast proof: there `muted` is 2.55:1 or
- *   less on the accent and the white field of playful-pastel is only 2.45:1, so neither edge would reach 3:1), and `muted` otherwise (Ruling 1: a field's frame is its affordance, so it uses the strong roles; the
- *   card's decorative `border` hairline is not enough). An underline kit draws the bottom edge only (`styles.all` 0px plus
- *   `styles.bottom`) when FORM_PROVEN['field-underline']; otherwise the full frame at 1px (Ruling 2).
+ *   `accent` or `inverse`, always `text` on an `accent` band, and `muted` otherwise (a field's frame is its affordance, so it
+ *   uses the strong roles; the card's decorative `border` hairline is not enough). The accent-band rule comes from the
+ *   Task 3 contrast proof: there `muted` is 2.55:1 or less on the accent, and playful-pastel's white field is only 2.45:1.
+ *   The proof judges the field BOUNDARY against the container as the better of the frame and the fill (each at 3:1, WCAG
+ *   1.4.11: either edge identifies the control) and the frame against the fill strictly (Ruling 6, spec Outcome). An underline
+ *   kit draws the bottom edge only (`styles.all` 0px plus `styles.bottom`) when FORM_PROVEN['field-underline']; otherwise the
+ *   full frame at 1px (Ruling 2).
  * - Field radius `{{aied:kit:radius-control}}`; field padding `{{aied:kit:space-control}}` when FORM_PROVEN['field-padding'].
  * - Submit button: exactly the kit's `control` treatment of `divi/button` on the band (a `surface` band is a `light` band for
  *   it: it has no `surface` band), built by button() so no second table exists, and moved to the form's own
