@@ -161,9 +161,11 @@ class StyleGuideKitTopicsTest extends TestCase
     public function testTheCatalogSaysWhatIsAndIsNotKitDrivenAndHowToBuildOne(): void
     {
         $catalog = StyleGuide::markdown( 'style-kits' );
-        foreach ( [ 'forms', 'blurbs', 'testimonials', 'image radius' ] as $word ) {
+        foreach ( [ 'forms', 'blurbs', 'testimonials' ] as $word ) {
             $this->assertStringContainsStringIgnoringCase( $word, $catalog );
         }
+        // Image radius left the not-applied sentence in the image radius pass: a kit's media radius rounds photos now.
+        $this->assertStringNotContainsStringIgnoringCase( 'image radius', $catalog );
         // Accordions are kit-driven since the item adapter: named as such, never as keeping the recipe's styling.
         $this->assertStringContainsString( 'accordion and toggle items', $catalog );
         $this->assertStringNotContainsStringIgnoringCase( 'accordions', $catalog );
@@ -581,7 +583,8 @@ class StyleGuideKitTopicsTest extends TestCase
         // The default guide grew only by ", kit-rules" in its topic line (Ruling 19: the line names every topic): 28,964 + 11.
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide changed only by the new topic name' );
         // Re-pinned deliberately (forms adapter T2): +30 B, the form named in the kit-driven sentence and "Forms, " dropped from the not-applied one.
-        $this->assertSame( 8453, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog topic (8,464 before kit-rules, 8,423 before the form adapter)' );
+        // Re-pinned deliberately (image radius pass): -14 B, ", image radius" left the not-applied sentence.
+        $this->assertSame( 8439, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog topic (8,464 before kit-rules, 8,423 before the form adapter, 8,453 after it)' );
     }
 
     /** @return list<array{0:string,1:array<string,mixed>}> block comment text and its decoded attributes, in document order */
