@@ -653,7 +653,7 @@
     {
         "name": "hero-split-left-overlap",
         "title": "Hero / image left, overlapping card",
-        "description": "Split hero: a large rounded image on the left and, on the right, a surface card holding eyebrow, headline, copy and button that slides over the image edge (on phones it overlaps the bottom of the image instead).",
+        "description": "Split hero: a large image on the left and, on the right, a surface card holding eyebrow, headline, copy and button that slides over the image edge (on phones it overlaps the bottom of the image instead).",
         "when": "Top of a page for warm, friendly or product brands that want depth on the first screen; needs one strong image.",
         "stage": "Hero",
         "tags": {
@@ -881,7 +881,7 @@
     {
         "name": "hero-product-glow",
         "title": "Hero / product shot with a glow",
-        "description": "Centered product hero: eyebrow, headline, one sentence and two buttons over a soft radial glow, then a wide framed product picture with rounded corners and a row of three short placeholder trust lines under it.",
+        "description": "Centered product hero: eyebrow, headline, one sentence and two buttons over a soft radial glow, then a wide framed product picture (its corners follow the style kit) and a row of three short placeholder trust lines under it.",
         "when": "Top of a page for a software product or app with a screenshot to show; the screenshot and every trust line are placeholders the owner replaces (never invented customers, ratings or figures).",
         "stage": "Hero",
         "tags": {
@@ -2225,7 +2225,7 @@
     {
         "name": "portfolio-featured-grid",
         "title": "Portfolio / one featured project over a grid",
-        "description": "A heading with a secondary button beside it, then a two-column grid of rounded project images: the first project spans both columns, four more sit two by two; each has its name and a small bordered category label under the picture; one column on phones. A static grid: nothing filters.",
+        "description": "A heading with a secondary button beside it, then a two-column grid of project images: the first project spans both columns, four more sit two by two; each has its name and a small bordered category label under the picture; one column on phones. A static grid: nothing filters.",
         "when": "A studio, agency or freelancer portfolio, or case studies, with five projects to show; modern, rounded and dark-glass brands. Project names, categories and images are placeholders for the owner's real work, shown with the client's permission.",
         "stage": "Social proof (work)",
         "tags": {
