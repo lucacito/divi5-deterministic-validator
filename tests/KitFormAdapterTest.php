@@ -259,9 +259,9 @@ class KitFormAdapterTest extends TestCase
     public function testFormProvenMatchesTheVocabularyTable(): void
     {
         $table = $this->vocabularyDecisions();
-        $this->assertSame( [ 'button-padding', 'button-shadow', 'button-lift', 'field-underline', 'field-padding' ], array_keys( $table ), 'five decisions, in the table\'s order' );
+        $this->assertSame( [ 'button-padding', 'button-shadow', 'button-lift', 'field-underline', 'field-padding', 'button-underline' ], array_keys( $table ), 'six decisions, in the table\'s order' );
         $this->assertSame( $table, KitAdapters::FORM_PROVEN, 'KitAdapters::FORM_PROVEN is exactly the Adapter decisions table of kit-form-vocabulary.md' );
-        $this->assertSame( [ 'button-padding' => true, 'button-shadow' => true, 'button-lift' => true, 'field-underline' => true, 'field-padding' => true ], KitAdapters::FORM_PROVEN, 'all five passed on the real Divi 5.15.1' );
+        $this->assertSame( [ 'button-padding' => true, 'button-shadow' => true, 'button-lift' => true, 'field-underline' => true, 'field-padding' => true, 'button-underline' => true ], KitAdapters::FORM_PROVEN, 'all six passed on the real Divi 5.15.1' );
     }
 
     public function testUnprovenDecisionsWriteNothing(): void
@@ -332,9 +332,9 @@ class KitFormAdapterTest extends TestCase
                 $expected = $button['button']['decoration'];
                 $module   = $button['module']['decoration'];
                 if ( 'bottom' === ( $kit['border']['sides'] ?? 'all' ) ) {
-                    // A bottom-only edge was probed on a field but never on the submit button of a form: the submit takes the
-                    // same edge as a full frame, in the same width, style and colour (the divi/button treatment, relocated).
-                    $expected['border']['desktop']['value']['styles'] = [ 'all' => $expected['border']['desktop']['value']['styles']['bottom'] ];
+                    // button-underline is proven: the submit takes button()'s underline form, but WITHOUT the hover border colour
+                    // (kf-button-underline-hover: it recolours only the 0px sides, so the bottom edge never changes on hover).
+                    unset( $expected['border']['desktop']['hover'] );
                 }
                 foreach ( [ 'spacing', 'boxShadow', 'transform' ] as $moved ) {
                     if ( isset( $module[ $moved ] ) ) {
@@ -347,9 +347,10 @@ class KitFormAdapterTest extends TestCase
                 // The relocated shadow, padding and lift never remain on module.decoration.
                 $this->assertArrayNotHasKey( 'module', $form );
                 // And the same with every decision off: only the relocated three vanish, the treatment stays.
-                $off = $this->provenPatch( $kit, $on, array_merge( $all, [ 'button-padding' => false, 'button-shadow' => false, 'button-lift' => false ] ) );
+                $off = $this->provenPatch( $kit, $on, array_merge( $all, [ 'button-padding' => false, 'button-shadow' => false, 'button-lift' => false, 'button-underline' => false ] ) );
                 $alone = $button['button']['decoration'];
                 if ( 'bottom' === ( $kit['border']['sides'] ?? 'all' ) ) {
+                    // button-underline not proven: the same edge as a full frame (its hover colour, equal to the rest one, stays).
                     $alone['border']['desktop']['value']['styles'] = [ 'all' => $alone['border']['desktop']['value']['styles']['bottom'] ];
                 }
                 $this->assertEquals( $alone, $off['button']['decoration'], "$label form on $on: the treatment alone" );
@@ -536,5 +537,135 @@ class KitFormAdapterTest extends TestCase
         $this->assertStringContainsString( 'bottom rule', $on );
         $this->assertStringNotContainsString( 'bottom rule', $off, 'an unproven underline is not claimed' );
         $this->assertStringContainsString( 'full 1px frame', $off );
+    }
+    public function testTheSubmitUnderlineIsWrittenBothWays(): void
+    {
+        $all = KitAdapters::FORM_PROVEN;
+        $this->assertTrue( $all['button-underline'] );
+        foreach ( [ 'underline-link', 'underlined-label' ] as $id ) {
+            $kit = $this->shippedKits()[ $id ];
+            $this->assertSame( 'bottom', $kit['border']['sides'] ?? 'all' );
+            foreach ( self::BANDS as $on ) {
+                $proven   = self::leaves( $this->provenPatch( $kit, $on, $all ) );
+                $unproven = self::leaves( $this->provenPatch( $kit, $on, array_merge( $all, [ 'button-underline' => false ] ) ) );
+                $p        = 'button.decoration.border.desktop.';
+                $this->assertSame( '0px', $proven[ $p . 'value.styles.all.width' ], "$id on $on: proven, the all-sides frame is zero" );
+                $this->assertSame( $kit['border']['width'], $proven[ $p . 'value.styles.bottom.width' ], "$id on $on: the bottom edge at the kit width" );
+                $this->assertSame( $proven[ $p . 'value.styles.all.color' ], $proven[ $p . 'value.styles.bottom.color'] );
+                $this->assertArrayNotHasKey( $p . 'hover.styles.all.color', $proven, "$id on $on: the underline edge does not change on hover, so no hover border colour is written" );
+                $this->assertSame( $kit['border']['width'], $unproven[ $p . 'value.styles.all.width' ], "$id on $on: unproven, the full frame at the kit width" );
+                $this->assertArrayNotHasKey( $p . 'value.styles.bottom.width', $unproven );
+                $this->assertArrayHasKey( $p . 'hover.styles.all.color', $unproven, 'a full frame\'s hover colour is visible, so it stays' );
+                // Fill and label hover still follow the kit.
+                $this->assertArrayHasKey( 'button.decoration.background.desktop.hover.color', $proven );
+                $this->assertArrayHasKey( 'button.decoration.font.font.desktop.hover.color', $proven );
+            }
+        }
+        // A kit that is not an underline kit is untouched by the decision, and so is divi/button.
+        $kit = $this->shippedKits()['soft-solid'];
+        $this->assertSame(
+            json_encode( $this->provenPatch( $kit, 'light', $all ) ),
+            json_encode( $this->provenPatch( $kit, 'light', array_merge( $all, [ 'button-underline' => false ] ) ) )
+        );
+        $button = KitAdapters::patch( 'divi/button', 'control', 'light', $this->shippedKits()['underline-link'] );
+        $this->assertArrayHasKey( 'hover', $button['button']['decoration']['border']['desktop'], 'divi/button keeps its hover border colour' );
+        $this->assertArrayHasKey( 'bottom', $button['button']['decoration']['border']['desktop']['value']['styles'] );
+    }
+
+    /**
+     * Every width the submit button's frame can be given, over every kit variant and band, was probed on the form: the
+     * candidates cover `styles.all.width` 0px (kf-button-border-width-0px, kf-button-underline), 1px, 2px, 4px and
+     * `styles.bottom.width` 3px (kf-button-underline); an unprobed value cannot slip in.
+     */
+    public function testEverySubmitFrameWidthWasProbedOnTheForm(): void
+    {
+        $probed = [];
+        $results = [];
+        foreach ( (array) json_decode( (string) file_get_contents( self::RESULTS ), true ) as $r ) {
+            $results[ $r['id'] ] = $r;
+        }
+        foreach ( (array) json_decode( (string) file_get_contents( self::CANDIDATES ), true ) as $candidate ) {
+            $r = $results[ $candidate['id'] ] ?? [];
+            if ( true !== ( $r['effect'] ?? false ) || true === ( $r['cssOnly'] ?? false ) ) {
+                continue;
+            }
+            foreach ( (array) ( $candidate['set'] ?? [] ) as $path => $value ) {
+                if ( preg_match( '/^button\.decoration\.border\.desktop\.value\.styles\.(all|bottom)\.width$/', (string) $path ) ) {
+                    $probed[ (string) $value ] = true;
+                }
+            }
+        }
+        $probed = array_keys( $probed );
+        sort( $probed );
+        $this->assertSame( [ '0px', '1px', '2px', '3px', '4px' ], $probed, 'what the candidates cover' );
+        $seen = [];
+        foreach ( $this->allKitVariants() as $label => $kit ) {
+            foreach ( self::BANDS as $on ) {
+                foreach ( [ KitAdapters::FORM_PROVEN, array_merge( KitAdapters::FORM_PROVEN, [ 'button-underline' => false ] ) ] as $proven ) {
+                    foreach ( self::leaves( KitAdapters::formPatch( $on, $kit, $proven ) ) as $path => $value ) {
+                        if ( preg_match( '/^button\.decoration\.border\.desktop\.value\.styles\.(all|bottom)\.width$/', $path ) ) {
+                            $this->assertContains( $value, $probed, "$label on $on: $path = $value was not probed on the form" );
+                            $seen[ $value ] = true;
+                        }
+                    }
+                }
+            }
+        }
+        $this->assertGreaterThanOrEqual( 4, count( $seen ), 'the kits exercise several widths' );
+    }
+
+    /** Expands `{a,b}` groups and `{bp}` (desktop) of a path pattern into every concrete dotted path. @return list<string> */
+    private static function expandPattern( string $pattern ): array
+    {
+        $pattern = str_replace( '{bp}', 'desktop', $pattern );
+        if ( ! preg_match( '/\{([^{}]+)\}/', $pattern, $m, PREG_OFFSET_CAPTURE ) ) {
+            return [ $pattern ];
+        }
+        $out = [];
+        foreach ( explode( ',', $m[1][0] ) as $alt ) {
+            $out = array_merge( $out, self::expandPattern( substr( $pattern, 0, $m[0][1] ) . trim( $alt ) . substr( $pattern, $m[0][1] + strlen( $m[0][0] ) ) ) );
+        }
+        return $out;
+    }
+
+    public function testTheSubmitBorderIsWrittenOnlyThroughPathsTheVocabularyLists(): void
+    {
+        $text = (string) file_get_contents( self::VOCABULARY );
+        preg_match_all( '/`(button\.decoration\.border\.[^`\s]+)`/', $text, $m );
+        $listed = [];
+        foreach ( array_unique( $m[1] ) as $pattern ) {
+            foreach ( self::expandPattern( $pattern ) as $path ) {
+                $listed[ $path ] = true;
+            }
+        }
+        foreach ( [ 'button.decoration.border.desktop.value.styles.all.color', 'button.decoration.border.desktop.hover.styles.all.color', 'button.decoration.border.desktop.value.styles.bottom.color' ] as $must ) {
+            $this->assertArrayHasKey( $must, $listed, "the vocabulary lists $must" );
+        }
+        $colourPaths = [];
+        foreach ( $this->allKitVariants() as $label => $kit ) {
+            foreach ( self::BANDS as $on ) {
+                foreach ( [ KitAdapters::FORM_PROVEN, array_merge( KitAdapters::FORM_PROVEN, [ 'button-underline' => false ] ) ] as $proven ) {
+                    foreach ( array_keys( self::expandTokens( self::leaves( KitAdapters::formPatch( $on, $kit, $proven ) ), $kit ) ) as $path ) {
+                        if ( str_starts_with( $path, 'button.decoration.border.' ) ) {
+                            $this->assertArrayHasKey( $path, $listed, "$label on $on: $path is not a border path the vocabulary lists" );
+                            if ( str_ends_with( $path, '.color' ) ) {
+                                $colourPaths[ $path ] = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        $colourPaths = array_keys( $colourPaths );
+        sort( $colourPaths );
+        $this->assertSame(
+            [
+                'button.decoration.border.desktop.hover.styles.all.color',
+                'button.decoration.border.desktop.value.styles.all.color',
+                'button.decoration.border.desktop.value.styles.bottom.color',
+            ],
+            $colourPaths,
+            'the submit border colour is written at rest (all, bottom) and on hover (all) only'
+        );
     }
 }

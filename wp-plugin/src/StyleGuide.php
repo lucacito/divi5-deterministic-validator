@@ -346,7 +346,7 @@ final class StyleGuide
             $is( 'button-shadow' ) ? '' : 'The submit button has no shadow. ',
             $is( 'button-lift' ) ? '' : 'The submit button does not lift. ',
         ] ) );
-        $text .= 'The submit button is the kit\'s primary button' . ( [] === $with ? '' : ', with ' . ( count( $with ) > 1 ? implode( ', ', array_slice( $with, 0, -1 ) ) . ' and ' . end( $with ) : $with[0] ) ) . ' (an underline edge is a full frame). '
+        $text .= 'The submit button is the kit\'s primary button' . ( [] === $with ? '' : ', with ' . ( count( $with ) > 1 ? implode( ', ', array_slice( $with, 0, -1 ) ) . ' and ' . end( $with ) : $with[0] ) ) . ' (' . ( $is( 'button-underline' ) ? 'an underline edge keeps its colour on hover' : 'an underline edge is a full frame' ) . '). '
             . implode( '', $without )
             . 'The captcha takes the band\'s ink. The form frame stays yours.';
 

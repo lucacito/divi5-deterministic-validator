@@ -193,8 +193,8 @@ class StyleGuideKitRulesTest extends TestCase
         }
         $this->assertLessThanOrEqual( self::BUDGET, $max );
         $this->assertSame( [ 'neo-brutal', 9599 ], [ $at, $max ], 'the largest kit topic (was 9,992 before kit-rules, without the toggle)' );
-        // Re-pinned deliberately (forms adapter T2): kit-rules 3,525 + the Contact forms paragraph (683 B, budget 700); the catalog 8,423 + "forms (`divi/contact-form`: `form`)" less "Forms, " in the not-applied sentence (30 B).
-        $this->assertSame( 4208, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        // Re-pinned deliberately (forms adapter T2): kit-rules 3,525 + the Contact forms paragraph (693 B after fix round 1, budget 700); the catalog 8,423 + "forms (`divi/contact-form`: `form`)" less "Forms, " in the not-applied sentence (30 B).
+        $this->assertSame( 4218, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         $this->assertSame( 8453, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter)' );
     }
 
@@ -257,6 +257,8 @@ class StyleGuideKitRulesTest extends TestCase
             'button-padding'  => [ 'submit padding', 'submit button keeps the recipe\'s padding' ],
             'button-shadow'   => [ 'submit shadow', 'submit button has no shadow' ],
             'button-lift'     => [ 'submit lift', 'submit button does not lift' ],
+            // Keyed to the underline decisions: proven it says the edge does not change on hover, unproven it says full frame.
+            'button-underline' => [ 'keeps its colour on hover', 'an underline edge is a full frame' ],
         ];
         foreach ( $wording as $decision => [ $when, $unless ] ) {
             // The Contact forms paragraph is the last section (other paragraphs also say "control padding" and "bottom rule").

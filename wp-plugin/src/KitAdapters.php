@@ -182,8 +182,10 @@ require_once __DIR__ . '/StyleKits.php';
  *   (`boxShadow`, rest and hover-only) and the lift (`transform`) are the paths that reach the submit button ON THE FORM
  *   (`button.decoration.{spacing,boxShadow,transform}`; on `divi/button` they live on `module.decoration` and the button's own are
  *   dead, here it is the other way round), each written only when FORM_PROVEN says so (button-padding, button-shadow,
- *   button-lift). A bottom-only submit edge was probed on a field but never on the submit button, so an underline kit's submit
- *   takes the same edge as a full frame (the same width, style and colour as the bottom edge button() writes).
+ *   button-lift). An underline kit's submit takes button()'s underline form (`styles.all` 0px + `styles.bottom`) when
+ *   FORM_PROVEN['button-underline'] (kf-button-underline), WITHOUT a hover border colour: the hover `styles.all.color`
+ *   recolours only the 0px sides (kf-button-underline-hover), so the edge never changes on hover; fill and label hover still
+ *   follow the kit. When unproven it takes the same edge as a full frame (same width, style and colour; its hover colour stays).
  * - Captcha ink: the band's ink, `text` on light and surface, `accent-text` on accent, `inverse` on dark. The captcha is the one
  *   element printed straight on the container; family and size stay the recipe's.
  *
@@ -212,7 +214,7 @@ final class KitAdapters
     ];
 
     /**
-     * The five conditional form decisions => whether the effect probe proved them ON `divi/contact-form` (the "Adapter
+     * The six conditional form decisions => whether the effect probe proved them ON `divi/contact-form` (the "Adapter
      * decisions" table of fixtures/shapes/kit-form-vocabulary.md; a test pins this constant to that table). A decision is
      * written only when true and only at the path the probe measured; the generated guide wording follows the same constant.
      *
@@ -224,6 +226,7 @@ final class KitAdapters
         'button-lift'     => true,
         'field-underline' => true,
         'field-padding'   => true,
+        'button-underline' => true,
     ];
 
     /** The bands a button may sit on (`panel`: inside an inverted, `text`-filled panel). */
@@ -386,8 +389,13 @@ final class KitAdapters
         // button() and moved from divi/button's paths to the form's own.
         $control = self::button( 'control', 'surface' === $on ? 'light' : $on, $kit );
         $submit  = $control['button']['decoration'];
-        if ( $bottom ) {
-            // The bottom-only edge was never probed on the form's submit button: the same edge as a full frame.
+        if ( $bottom && $is( 'button-underline' ) ) {
+            // The underline form button() writes (`all` 0px + `bottom`), probed on the form's submit (kf-button-underline). The
+            // hover `styles.all.color` recolours only the 0px top/left/right sides, never the bottom edge (kf-button-underline-hover),
+            // so a hover colour with no visible effect is not written: the edge keeps its rest colour on hover.
+            unset( $submit['border']['desktop']['hover'] );
+        } elseif ( $bottom ) {
+            // Not proven on the submit: the same edge as a full frame (its hover colour is the same value, visible on a full frame).
             $submit['border']['desktop']['value']['styles'] = [ 'all' => $submit['border']['desktop']['value']['styles']['bottom'] ];
         }
         $module = $control['module']['decoration'];
