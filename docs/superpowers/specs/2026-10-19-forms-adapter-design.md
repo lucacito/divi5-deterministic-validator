@@ -71,10 +71,11 @@ keys `kit`/`on` go through the existing strict `KitResolver::marker()`; `ROLE_BL
 - Field ink `text`; placeholder `muted` (the field colour does not reach it); family stays recipe-owned (`{{aied:font:body}}`,
   the kit has no font decision for fields).
 - Field frame: kit border width with a 1px floor, kit style, colour `text` when the kit's border colour is `text`, `accent`
-  or `inverse` and `muted` otherwise (Ruling 1: a field's frame is its affordance, so it must be at least 3:1 on the field fill
-  and the container in every language; the card's decorative `border` hairline is NOT enough, `muted` is, as the recipes
-  already use). An underline kit draws the bottom edge only IF the probe proves it on a field; otherwise it draws the full
-  frame at 1px (Ruling 2, decided by the probe; the fallback is stated in the guide).
+  or `inverse` and `muted` otherwise, and always `text` on an `accent` band (Ruling 1, amended by Ruling 6: a field's frame is
+  its affordance, so it uses the strong roles and is at least 3:1 on the field fill; the field's boundary against the container
+  is the BETTER of the frame and the fill at 3:1, the WCAG 1.4.11 reading; the card's decorative `border` hairline is NOT
+  enough, `muted` is, as the recipes already use). An underline kit draws the bottom edge only IF the probe proves it on a
+  field; otherwise it draws the full frame at 1px (Ruling 2, decided by the probe; the fallback is stated in the guide).
 - Field radius: the kit's `radius-control` token (a field is a control; matches the submit button). Field padding and shadow:
   only if the probe proves them; a shadow on a field is not written (Ruling 3: noise, and the soft shadow is faint on dark
   languages).
@@ -90,9 +91,11 @@ keys `kit`/`on` go through the existing strict `KitResolver::marker()`; `ROLE_BL
 ### 3. Contrast proof (pure PHP, zero exceptions, no baseline file)
 
 Over 40 kits x 10 languages x 4 bands x {rest, hover}: field text on field fill, placeholder on field fill, field frame
-against field fill and against the container, the submit label on its fill and the submit border against the container, the
-captcha ink on the band. Floors: text 4.5:1, placeholder 4.5:1, frame and button border 3:1 (an outline or ghost submit:
-border and label 4.5:1 / 3:1 as the button proof defines). A failing cell changes the role table, never a baseline.
+against field fill (strict), the field's boundary against the container (the better of the frame and the fill against the
+container, Ruling 6), the submit label on its fill and the submit border against the container, the captcha ink on the band.
+Floors: text 4.5:1, placeholder 4.5:1, frame and button border 3:1 (an outline or ghost submit: border and label 4.5:1 / 3:1
+as the button proof defines). A failing cell changes the role table, never a baseline. (This section first demanded the frame
+against BOTH the fill and the container; the first run of the proof showed that cannot be met, see Ruling 6 in the Outcome.)
 
 ### 4. Probe list (`fixtures/shapes/candidates/kit-form.json`, ids `kf-<decision>`)
 
@@ -146,3 +149,145 @@ Task 7 live gates (serial, controller). Estimated 5 to 6 hours elapsed, about 3 
 Names of constants and test helpers; the exact probe candidate list beyond section 4 where the first runs show a path is
 dead; the wording of the generated sentences within the byte budgets; which of the shared helpers (`frameStyles()`,
 `restShadow()`, `treatment()`) are reused as they are.
+
+## Outcome (2026-10-19)
+
+Built on branch `feat/forms-adapter` (spec 6ac6295 and plan 2cb3057 from main 89b6f4f) in six tasks plus a one-candidate-group
+probe follow-up (Task 1b) and a fix round on Task 2; Tasks 3, 4 and 5 ran in parallel worktrees and were merged back. NO
+release, version bump or zip rebuild: the tracked root zip is still the published 4.12.0 build; the validator (`src/`,
+`wp-plugin/validator/`) is untouched. The spec was approved by delegation; the Rulings below are the calls the owner might
+have made differently.
+
+**What was built, per task.**
+- **T1 + T1b Probe.** 50 candidates (`fixtures/shapes/candidates/kit-form.json`, ids `kf-<decision>`; the first run had 47,
+  Task 1b added the submit underline, its hover and the 0px frame) rendered ON `divi/contact-form` on the real Divi 5.15.1
+  in a real browser at 1280/900/400: **44 PASS, 6 css-only, 0 DEAD**, no phone overflow, no control noise. The six
+  css-only are one finding, not six: `module.decoration.{spacing,boxShadow,transform}` on a contact form land on the WHOLE
+  form container (`div.et_pb_contact_form_container`), never on the submit button, and the button's own
+  `button.decoration.{spacing,boxShadow,transform}` are the live paths: the OPPOSITE of `divi/button`, where the module paths
+  are live and the button's own are dead. Because nothing was DEAD on the module, `fixtures/shapes/dead-on-module.txt` gained
+  no line (recipes may legitimately style the form container); the "kit writes no `module.decoration`" rule and the
+  per-decision tests carry the risk instead. 17 new registry paths in `verified-shapes.json`; evidence in
+  `docs/shape-evidence-5.15.1.md#kf-*` and `fixtures/shapes/kit-form-vocabulary.md`. Task 1 also extended the probe tooling
+  (`hoverSelector`: hover a selector inside the measured element, since the form's centre is not the submit button;
+  `changedElements` in each width's detail).
+- **T2 Adapter, resolver, generated guide.** `KitAdapters::formPatch()` (reached through `patch('divi/contact-form','form',
+  $on,$kit)`; `APPLIED['divi/contact-form'] = ['form']`; bands light|surface|accent|dark; no ground; output keys `field`,
+  `button`, `captcha` only, never `module`). The submit is `button('control', ...)` relocated to `button.decoration.*`, so no
+  second treatment table exists. `KitAdapters::FORM_PROVEN` holds six decisions, **all true**: `button-padding`,
+  `button-shadow`, `button-lift`, `field-underline`, `field-padding`, `button-underline`; a test parses the "Adapter
+  decisions" table of `kit-form-vocabulary.md` and requires equality, so a false decision flips the written output and the
+  guide wording. `KitResolver` gained the role `form` (`ROLE_BLOCKS`, `ROLE_SURFACES`). The guide is generated: `kit-rules`
+  gains a "Contact forms" paragraph (worded from `FORM_PROVEN`), the `forms` topic gains `formsKitSentence()`,
+  `appliedSentence()` says forms. `testEveryLeafIsAProbedPathOnTheForm` builds the set of probed paths from the candidate file
+  and results and fails for any leaf of any of 40 kits x 4 bands outside it (css-only paths excluded; a planted fault proves
+  it bites).
+- **T2 fix round 1.** The sixth decision `button-underline` (Task 1b proved the bottom-only submit edge): an underline kit's
+  submit takes button()'s underline form (`styles.all` 0px + `styles.bottom`) and NO hover border colour, because the hover
+  `styles.all.color` recolours only the 0px sides and the visible bottom edge never changes (kf-button-underline-hover). The
+  guide parenthesis is keyed to the decision. Two new tests pin every emitted submit width and border path to the probed set.
+- **T3 Proofs.** The contrast proof: 40 kits x 10 languages x 4 bands x {rest, hover} = **3,200 cells, zero exceptions, no
+  baseline file** (see Ruling 6 for the one reading that matters). `tests/KitFormGoldenTest.php` +
+  `tests/golden/kit-form-patches.json`: **40 patches** (10 default kits x 4 bands). The visible-difference rule for forms:
+  **2 of 780** kit pairs give the same form (`fixtures/shapes/form-near-duplicates.txt`: quiet-solid|steady-solid,
+  steady-solid|soft-solid; shrink-only, cap 2). The dead-on-module guard test (a planted `divi/contact-form|
+  button.decoration.boxShadow` line makes the resolved form fail, scoped to the form only). Planted failures for every check.
+- **T4 Recipes.** Four markers, all four forms migrated, `BESPOKE_FORMS` EMPTY (cap 0): contact-form `on:dark`, cta-split-form
+  `on:light`, contact-location-form `on:surface`, contact-details-form `on:surface`. Dropped from each: the field fill, frame,
+  radius, spacing and ink, the placeholder colour, the captcha ink, and the submit's fill, border, radius, padding (including
+  the per-device steps), shadow, lift, label colour and weight. Kept: the form's uniqueId, the fonts, the label and button
+  settings, the phone sizes, and (contact-form) the form's own 1px frame, 20px radius, maxWidth and centring.
+  `tests/FormMigrationTest.php` (own ink, band walk, merge trap over all 40 kits x 10 languages, pinned markers, planted
+  failures; 5 of 9 checks fail against the old file). `section-recipes.json` **675,810 -> 671,687 B** (-4,123 B).
+  `RecipeLibraryTest`'s marker-recipe count went 32 -> 33 and two `SectionRecipesTest` assertions now read the SERVED recipe.
+- **T5 Render gate.** `scripts/verify-kits.cjs`, `scripts/lib/kit-checks.cjs`, new `scripts/lib/kit-form-run.cjs`: every
+  kit/language cell renders two forms (`form-bg` marker `{"kit":"form"}`, `form-surface` marker `{"kit":"form","on":"surface"}`,
+  two fields each, Divi's basic captcha, a unique submit label) and measures them with the codes `form`,
+  `form-field-fill|border|radius|ink|placeholder|padding`, `form-button`, `form-captcha`, `form-container`, `form-contrast`,
+  `form-clip` and `form-expectation` (only if the fail-closed gate is bypassed). Computed AND painted fills (admin bar and
+  fixed elements hidden), `::placeholder` colour, a real hover on the submit, the form container checked for stray shadow, lift
+  and frame. **85 pure tests** (`node scripts/test-verify-kits.cjs`, 70 -> 85) and **34 synthetic Chromium departures**
+  (`scripts/test-kit-card-run.cjs`), each caught with the intended code. The accent and dark bands of a form are judged by the
+  pure contrast proof, not by the render sheet (the sheet renders the bg and surface forms).
+- **T6 Docs.** This Outcome, CLAUDE.md, `docs/token-usage.md`, the vocabulary final pass.
+
+**Measured sizes and counts.** (`wc -c` and `php scripts/measure-tokens.php` at the end of Task 6.)
+- `section-recipes.json` **675,810 -> 671,687 B** (bound 675,810 held; the 700 KB rule and the 716,800 B spec bound hold).
+  `style-kits.json` 25,479 B (unchanged, no kit-file change).
+- Guide, before -> after (`docs/token-usage.md`): default guide **28,975 -> 28,975 B** (0 B, pinned; 133 B under its 29,108 B
+  bound); topic `kit-rules` **3,525 -> 4,218 B** (+693; budget +700); topic `forms` **6,315 -> 6,474 B** (+159; budget +350);
+  topic `style-kits` (the catalog) **8,423 -> 8,453 B** (+30); the largest kit topic (neo-brutal) **9,599 B, unchanged**
+  (401 B under the 10,000 bound; the 40 kit topics total 339,482 B before and after, because the forms sentence lives in
+  `kit-rules` and `appliedSentence()` only gained a noun that replaced another); tool definitions **21,641 -> 21,601 B**; the
+  `topic` parameter description **298 -> 258 characters** (fixed text 90 -> 44 characters; pinned `<= 260`, so 42 characters
+  of headroom for the next topic names; Task 2 reclaimed it on purpose).
+- Suites: free **2658** tests (`make test` at the merged head, 3,922,310 assertions, OK; 2574 at the end of kit limits and
+  2614 after the accordion adapter), Pro **2169** (untouched, last run by Task 3). `node scripts/test-verify-kits.cjs`: 85 tests OK.
+- `fixtures/shapes/form-near-duplicates.txt`: 2 pairs. Form golden: 40 patches. The card, item and button goldens are
+  byte-identical.
+
+**Rulings made** (in plain words).
+1. *The field frame uses the strong roles.* A field's frame is its affordance, so it is `text` when the kit's border colour
+   is text, accent or inverse, and `muted` otherwise, never the card's decorative `border` hairline. Amended by Ruling 6: on
+   an `accent` band the frame is always `text`.
+2. *An underline kit.* A field draws the bottom edge only (probe: kf-field-underline); an underline SUBMIT takes the bottom
+   edge too and has no hover border colour (sixth decision `button-underline`: the hover recolours only the 0px sides). Without
+   the decision both fall back to a full frame, and the guide says so.
+3. *No field shadow, no field hover, no focus ring.* Noise, and not proven; none is written.
+4. *Padding.* The submit padding is written at `button.decoration.spacing` (not `module.decoration.spacing`, which pads the
+   whole form). The field padding is the kit's control padding, `{{aied:kit:space-control}}` (the implementer's call at Task
+   2, accepted: the same four-sides shape the probe measured).
+5. *Space for the guide.* No new topic name: the form rules are a generated "Contact forms" paragraph in `kit-rules` and one
+   generated sentence in `forms`; the default guide grows 0 B; the kit topics get no form example; the `topic` parameter
+   description was reworded to buy headroom for later adapters; `section-recipes.json` does not grow.
+6. *The field boundary is judged as the better of frame and fill (controller, ratified at the Task 3 review).* The strict
+   reading of section 3 (the frame at least 3:1 on the field fill AND on the container) fails **636** kit x language x band
+   cells (356 on the accent band, 280 on the dark band) and **600 even after any change to the role table**: on a dark photo
+   band a light language's field is a near-white `surface` box (9.5 to 15:1 against the container) and a frame that is 3:1
+   on both a near-white fill and a near-black container needs a mid grey (relative luminance about 0.16 to 0.30) that no colour
+   role of a light language has. The relaxed reading, WCAG 1.4.11-consistent (the component's boundary must reach 3:1, not
+   every edge of it), takes the BETTER of frame-vs-container and fill-vs-container at 3:1, keeps frame-vs-fill strict at
+   3:1, and exempts nothing. Under it 18 cells (all playful-pastel on the accent band, a `muted` frame at 2.55:1 and a white
+   field at 2.45:1 on `#ff7aa5`) failed before and **0 fail after** the one role change, the accent-band frame being `text`
+   (5.75:1 there). Section 2 and section 3 above were amended to say this; the strict wording no longer stands. The impossibility
+   is arithmetic, not a test.
+- The plan expected `on:"light"` for contact-form; the walk found it sits in a column of a row with a photo background and an
+  `overlay` gradient, so the nearest ground is dark and it is `on:"dark"` (the old form already used `surface` fields and
+  `inverse` captcha ink, exactly the kit's dark-band output).
+
+**Deviations from the spec.**
+- 50 probe candidates (section 4 listed groups of decisions, not a count); the sixth decision `button-underline` (probe follow-up 1b) was
+  not in the spec.
+- Task 2's first pass wrote an underline submit as a full frame (only `styles.all` was probed on the button); the fix round
+  added the probe and the decision. The guide wording changed with it.
+- `KitAdapters::formPatch()` is public and takes the proven map as a parameter, so the false branches are testable.
+- The render sheet has two forms (bg and surface bands) per cell as the spec said; the accent and dark bands of a form are
+  proven by the contrast test only.
+- The contrast proof's boundary rule is Ruling 6, not the spec's first wording.
+- `form-container`, `form-clip` and `form-field-padding` are extra render-gate codes beyond section 5.
+
+**Known limits.**
+- `divi/signup` (Email Optin) and its custom fields are not adapted (no recipe uses them; a later pass).
+- No focus ring and no field hover or focus state: none was probed, none is written.
+- The per-device padding steps the old recipe submits had (desktop 40px, tablet and phone steps) are gone: a kit gives one
+  padding on all devices, as with cards.
+- An underline kit's submit hover edge is unchanged (hover recolours only the 0px sides); fill and label hover follow the kit.
+- contact-form's own frame (1px `border` colour, a recipe decision) on a dark photo band is the recipe's and is not covered by
+  the contrast proof (decorative).
+- The placeholder is judged for contrast but its opacity (Chrome applies one) is not modelled; the ink walk's style limits
+  (fail-open on module backgrounds) are unchanged.
+- The render gate's field and submit selectors come from Divi's class names; the first smoke is the check of them.
+- The form golden has no extra underline-kit entry (40 patches as briefed); the underline form is pinned by
+  `KitFormAdapterTest`.
+- A form's submit label may wrap at 400 px on a wide kit padding; the gate's `form-clip` and `overflow` codes watch it.
+- Checks left in the review as minors: the placeholder assertion in `FormMigrationTest` is looser than `KitFormAdapterTest`'s;
+  `FORM_KEEPS` is wider than needed; no test asserts the strict reading is unsatisfiable; `KitAdapters`' docblock line about
+  the accent-band frame is long and still says "neither edge would reach 3:1" (wording only, comments only).
+
+**Live gates:** pending (the controller fills this in).
+
+**Owner decisions left.** Merge and release (push is the owner's); the blurb and testimonial adapters next; the image-radius
+token pass (a separate small branch); image-to-layout later. Guide headroom after this branch, so the next adapter can plan:
+default guide 133 B (28,975 of 29,108), the largest kit topic 401 B (9,599 of 10,000), `kit-rules` 5,782 B of its 10,000
+bound but each kit topic still points to it, the `topic` parameter description 42 characters (258 of 300), the catalog 8,453 B (about 9,937 B
+at 50 kits, 63 B under the bound).

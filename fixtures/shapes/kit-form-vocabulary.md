@@ -7,7 +7,7 @@ with two `divi/contact-field` children (Name, Email). Every decision was measure
 registry is path-only and the button work showed a path can be dead on one module and live on another. Each candidate id is
 `kf-<decision>`. The form is measured as the `<form>` element and all its descendants (the submit `button`, its wrappers,
 the field wrappers, the `input`s and, with the captcha on, `p.clearfix` with its label and question). What was built from
-this vocabulary, its proofs and known limits: the Outcome section of the forms adapter spec once it exists.
+this vocabulary, its proofs and known limits: the Outcome section of `docs/superpowers/specs/2026-10-19-forms-adapter-design.md`.
 
 Rendered on the Docker dev site (Divi 5.15.1) at 1280, 900 and 400 px, 2026-10-19: 50 candidates, 44 PASS, 0 DEAD,
 6 css-only (all six are the SAME finding: a `module.decoration.*` shadow or lift, see below), no phone overflow, no control
@@ -90,6 +90,7 @@ as one page; the render gate covers them.
 
 T2's const and tests read this table: a decision is written by the adapter only when its verdict is PASS, and only at the
 path in the second column (the registry is path-only, so the path must also be in `verified-shapes.json`, which it is).
+The six rows below are exactly the six keys of `KitAdapters::FORM_PROVEN`, in this order (`KitFormAdapterTest` compares them).
 
 | Decision | Verdict | Path the adapter writes | Evidence |
 |---|---|---|---|
