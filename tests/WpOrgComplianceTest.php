@@ -57,6 +57,7 @@ class WpOrgComplianceTest extends TestCase
         'www.w3.org'   => 'xmlns namespace identifier inside the bundled SVG images (an XML name, never fetched)',
         'www.gnu.org'  => 'GPL licence URI in the plugin header',
         'divi5lab.com' => 'Author URI, the connection guides and the one Pro add-on card link (links, never fetched)',
+        'wordpress.org' => 'the review reminder links to this plugin\'s own reviews page on WordPress.org (a link the user chooses to open, never fetched)',
         'example.com'  => 'reserved documentation domain (RFC 2606) for examples',
     ];
 

@@ -124,6 +124,7 @@ The plugin stores these things in your own WordPress database:
 * The API key (and which user it belongs to).
 * Only if you turn on sign-in for Claude on the web: the apps that registered, and their access and refresh tokens, in a table in your own database. The tokens are stored only as one-way hashes and you can disconnect any app, or turn the feature off and remove everything, from the Settings screen.
 * An activity log of AI actions: the action, the page ID, the result, the assistant's name (or, when it is not recognised, the first 80 characters of its user-agent string) and a hashed IP address (hashed with your site's own secret key, so the IP itself is not stored). You can clear it from the Settings screen.
+* Whether you chose "Maybe later" or "Don't ask again" on the review reminder (one value per user, shown only on the plugin's Dashboard after the plugin has saved at least 5 changes). Nothing is sent when you choose, and the reminder's link only opens this plugin's own page on WordPress.org if you click it.
 * Page history for undo: up to the last 10 previous versions of each page the AI changes (fewer for very large pages, about 768 KB per page at most). It is kept in a table in your own database.
 
 Nothing is sent anywhere by the plugin. All of this is removed when you delete the plugin.

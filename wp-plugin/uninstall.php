@@ -15,3 +15,4 @@ delete_option( AiEditorDivi5\WP\ApprovalMode::OPTION );
 delete_option( AiEditorDivi5\WP\OAuthSettings::OPTION );
 // The aied_prev_* preview transients are not deleted here: each one expires on its own within 30 minutes.
 delete_metadata( 'user', 0, 'aied_pro_card_dismissed', '', true );
+delete_metadata( 'user', 0, AiEditorDivi5\WP\ReviewPrompt::META, '', true );

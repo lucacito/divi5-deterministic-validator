@@ -27,6 +27,8 @@ final class AdminPage
         add_action('admin_post_ai_editor_divi5_clear_usage',        [$this, 'handleClearUsage']);
         add_action('admin_post_ai_editor_divi5_restore_page',       [$this, 'handleRestorePage']);
         add_action('admin_post_ai_editor_divi5_dismiss_pro_card',   [$this, 'handleDismissProCard']);
+        add_action('admin_post_ai_editor_divi5_review_later',       [$this, 'handleReviewLater']);
+        add_action('admin_post_ai_editor_divi5_review_done',        [$this, 'handleReviewDone']);
         add_action('admin_post_ai_editor_divi5_toggle_approval', [$this, 'handleToggleApproval']);
         add_action('wp_ajax_ai_editor_divi5_diagnose', [$this, 'handleDiagnose']);
         OAuthAdmin::registerHooks();
@@ -125,6 +127,22 @@ final class AdminPage
     {
         $this->guard('ai_editor_divi5_dismiss_pro_card'); // guard() verifies the nonce via check_admin_referer().
         update_user_meta( get_current_user_id(), 'aied_pro_card_dismissed', 1 );
+        $this->redirect('dashboard');
+    }
+
+    /** "Maybe later" on the review reminder: hidden for ReviewPrompt::SNOOZE_DAYS, per user. */
+    public function handleReviewLater(): void
+    {
+        $this->guard('ai_editor_divi5_review_later');
+        update_user_meta( get_current_user_id(), ReviewPrompt::META, ReviewPrompt::later( time() ) );
+        $this->redirect('dashboard');
+    }
+
+    /** "Don't ask again" on the review reminder: hidden for good, per user. */
+    public function handleReviewDone(): void
+    {
+        $this->guard('ai_editor_divi5_review_done');
+        update_user_meta( get_current_user_id(), ReviewPrompt::META, ReviewPrompt::done() );
         $this->redirect('dashboard');
     }
 
@@ -647,7 +665,47 @@ final class AdminPage
             </div>
         <?php endif; ?>
 
+        <?php $this->reviewCard( (int) $summary['saved'] ); ?>
+
         <?php $this->historySection(); ?>
+        <?php
+    }
+
+    /**
+     * The one review reminder: Dashboard only, once the plugin has saved real work, per user, easy to dismiss.
+     * No incentive, no pre-selected rating: it only links to this plugin's own review page.
+     */
+    private function reviewCard( int $saved ): void
+    {
+        $uid = get_current_user_id();
+        if ( ! ReviewPrompt::shouldShow( $saved, get_user_meta( $uid, ReviewPrompt::META, true ), time() ) ) {
+            return;
+        }
+        ?>
+        <div class="aied-card aied-review">
+            <div class="aied-card__head">
+                <h3><?php esc_html_e( 'Is the AI Editor saving you time?', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
+            </div>
+            <p class="aied-muted">
+                <?php
+                /* translators: %s: how many changes the AI assistant has saved so far. */
+                echo esc_html( sprintf( _n( 'Your AI assistant has saved %s change so far. If the plugin works well for you, a short review on WordPress.org helps other Divi users find it. Honest feedback of any kind is welcome.', 'Your AI assistant has saved %s changes so far. If the plugin works well for you, a short review on WordPress.org helps other Divi users find it. Honest feedback of any kind is welcome.', $saved, 'jhmg-ai-editor-for-divi-5' ), number_format_i18n( $saved ) ) );
+                ?>
+            </p>
+            <div class="aied-review__actions">
+                <a class="button button-primary" href="<?php echo esc_url( ReviewPrompt::URL ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Leave a review', 'jhmg-ai-editor-for-divi-5' ); ?><span class="screen-reader-text"> <?php esc_html_e( '(opens in a new tab)', 'jhmg-ai-editor-for-divi-5' ); ?></span></a>
+                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                    <input type="hidden" name="action" value="ai_editor_divi5_review_later">
+                    <?php wp_nonce_field( 'ai_editor_divi5_review_later' ); ?>
+                    <button type="submit" class="button"><?php esc_html_e( 'Maybe later', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+                </form>
+                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                    <input type="hidden" name="action" value="ai_editor_divi5_review_done">
+                    <?php wp_nonce_field( 'ai_editor_divi5_review_done' ); ?>
+                    <button type="submit" class="button-link"><?php esc_html_e( 'Already did, or don\'t ask again', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+                </form>
+            </div>
+        </div>
         <?php
     }
 
