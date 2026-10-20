@@ -20076,3 +20076,1069 @@ Phone overflow at 400 px: no.
 Note: Row gap 30px (module.decoration.layout rowGap, the layout group's default is 30px in module.json) under a 2px solid frame on divi/accordion, measured on its three items (the first is open); the module's own attributes reach every item (module.json border selector '{{selector}}.et_pb_accordion .et_pb_accordion_item', boxShadow '{{selector}} .et_pb_toggle'): does the gap between framed items move? The printed default between items is measured separately (task report).
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-fill
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.background.desktop.value.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `10:button:background-color: rgba(0, 0, 0, 0) -> rgb(245, 158, 11)` |
+| 900 px | yes | 1 | yes | `10:button:background-color: rgba(0, 0, 0, 0) -> rgb(245, 158, 11)` |
+| 400 px | yes | 1 | yes | `10:button:background-color: rgba(0, 0, 0, 0) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit fill (the base has a label colour only). Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-border-width-1px
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 32 | yes | `0:form:block-size: 184px -> 180px` |
+| 900 px | yes | 32 | yes | `0:form:block-size: 184px -> 180px` |
+| 400 px | yes | 32 | yes | `0:form:block-size: 184px -> 180px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `margin-inline-start`, `margin-left`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit frame width 1px over a 3px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-border-width-2px
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 32 | yes | `0:form:block-size: 184px -> 182px` |
+| 900 px | yes | 32 | yes | `0:form:block-size: 184px -> 182px` |
+| 400 px | yes | 32 | yes | `0:form:block-size: 184px -> 182px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `margin-inline-start`, `margin-left`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit frame width 2px over a 3px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-border-width-4px
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 32 | yes | `0:form:block-size: 184px -> 186px` |
+| 900 px | yes | 32 | yes | `0:form:block-size: 184px -> 186px` |
+| 400 px | yes | 32 | yes | `0:form:block-size: 184px -> 186px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `margin-inline-start`, `margin-left`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit frame width 4px over a 3px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-border-style-dashed
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `10:button:border-block-end-style: solid -> dashed` |
+| 900 px | yes | 8 | yes | `10:button:border-block-end-style: solid -> dashed` |
+| 400 px | yes | 8 | yes | `10:button:border-block-end-style: solid -> dashed` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit frame style dashed over a 4px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-border-style-dotted
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `10:button:border-block-end-style: solid -> dotted` |
+| 900 px | yes | 8 | yes | `10:button:border-block-end-style: solid -> dotted` |
+| 400 px | yes | 8 | yes | `10:button:border-block-end-style: solid -> dotted` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit frame style dotted over a 4px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-border-style-double
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.style` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `10:button:border-block-end-style: solid -> double` |
+| 900 px | yes | 8 | yes | `10:button:border-block-end-style: solid -> double` |
+| 400 px | yes | 8 | yes | `10:button:border-block-end-style: solid -> double` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit frame style double over a 4px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-border-colour
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `10:button:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 900 px | yes | 8 | yes | `10:button:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 400 px | yes | 8 | yes | `10:button:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit frame colour over a 2px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-radius-16
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.radius.topLeft` = `"16px"`
+- `button.decoration.border.desktop.value.radius.topRight` = `"16px"`
+- `button.decoration.border.desktop.value.radius.bottomRight` = `"16px"`
+- `button.decoration.border.desktop.value.radius.bottomLeft` = `"16px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `10:button:border-bottom-left-radius: 3px -> 16px` |
+| 900 px | yes | 8 | yes | `10:button:border-bottom-left-radius: 3px -> 16px` |
+| 400 px | yes | 8 | yes | `10:button:border-bottom-left-radius: 3px -> 16px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit corner radius 16px on the four corners (the form {{aied:kit:radius-control}} resolves to) over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-radius-36
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.radius.topLeft` = `"36px"`
+- `button.decoration.border.desktop.value.radius.topRight` = `"36px"`
+- `button.decoration.border.desktop.value.radius.bottomRight` = `"36px"`
+- `button.decoration.border.desktop.value.radius.bottomLeft` = `"36px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `10:button:border-bottom-left-radius: 3px -> 36px` |
+| 900 px | yes | 8 | yes | `10:button:border-bottom-left-radius: 3px -> 36px` |
+| 400 px | yes | 8 | yes | `10:button:border-bottom-left-radius: 3px -> 36px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit corner radius 36px on the four corners (the form {{aied:kit:radius-control}} resolves to) over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-radius-999
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.radius.topLeft` = `"999px"`
+- `button.decoration.border.desktop.value.radius.topRight` = `"999px"`
+- `button.decoration.border.desktop.value.radius.bottomRight` = `"999px"`
+- `button.decoration.border.desktop.value.radius.bottomLeft` = `"999px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `10:button:border-bottom-left-radius: 3px -> 999px` |
+| 900 px | yes | 8 | yes | `10:button:border-bottom-left-radius: 3px -> 999px` |
+| 400 px | yes | 8 | yes | `10:button:border-bottom-left-radius: 3px -> 999px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit corner radius 999px on the four corners (the form {{aied:kit:radius-control}} resolves to) over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-label-colour
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.font.font.desktop.value.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `10:button:border-block-end-color: rgb(255, 255, 255) -> rgb(245, 158, 11)` |
+| 900 px | yes | 17 | yes | `10:button:border-block-end-color: rgb(255, 255, 255) -> rgb(245, 158, 11)` |
+| 400 px | yes | 17 | yes | `10:button:border-block-end-color: rgb(255, 255, 255) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit label colour. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-text-capitalization
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.font.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 15 | yes | `8:div:inline-size: 109.188px -> 114.062px` |
+| 900 px | yes | 15 | yes | `8:div:inline-size: 109.188px -> 114.062px` |
+| 400 px | yes | 15 | yes | `8:div:inline-size: 109.188px -> 114.062px` |
+
+Properties that changed (any width): `inline-size`, `margin-inline-start`, `margin-left`, `perspective-origin`, `text-transform`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit label capitalization uppercase. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-text-letterspacing
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.font.font.desktop.value.letterSpacing` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 15 | yes | `8:div:inline-size: 109.188px -> 117.188px` |
+| 900 px | yes | 15 | yes | `8:div:inline-size: 109.188px -> 117.188px` |
+| 400 px | yes | 15 | yes | `8:div:inline-size: 109.188px -> 117.188px` |
+
+Properties that changed (any width): `inline-size`, `letter-spacing`, `margin-inline-start`, `margin-left`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit label letter spacing 2px. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-text-weight
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.font.font.desktop.value.weight` = `"700"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 15 | yes | `8:div:inline-size: 108.703px -> 110.641px` |
+| 900 px | yes | 15 | yes | `8:div:inline-size: 108.703px -> 110.641px` |
+| 400 px | yes | 15 | yes | `8:div:inline-size: 108.703px -> 110.641px` |
+
+Properties that changed (any width): `font-weight`, `inline-size`, `margin-inline-start`, `margin-left`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit label weight 700 over weight 400. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-hover-fill
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, measured in the `hover` state (hovering `.et_pb_contact_submit` inside the element). Set on top of the base block:
+
+- `button.decoration.background.desktop.hover.color` = `"#1e3a8a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `10:button:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+| 900 px | yes | 2 | yes | `10:button:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+| 400 px | yes | 2 | yes | `10:button:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+
+Properties that changed (any width): `background-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit hover fill (no enableColor, as KitAdapters writes it) over a transparent rest, a real hover on the submit button. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-hover-fill-enable
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, measured in the `hover` state (hovering `.et_pb_contact_submit` inside the element). Set on top of the base block:
+
+- `button.decoration.background.desktop.hover.color` = `"#1e3a8a"`
+- `button.decoration.background.desktop.hover.enableColor` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `10:button:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+| 900 px | yes | 2 | yes | `10:button:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+| 400 px | yes | 2 | yes | `10:button:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+
+Properties that changed (any width): `background-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Same with enableColor on (the form the contact-form recipe uses). Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-hover-label
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, measured in the `hover` state (hovering `.et_pb_contact_submit` inside the element). Set on top of the base block:
+
+- `button.decoration.font.font.desktop.hover.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 10 | yes | `10:button:caret-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 900 px | yes | 10 | yes | `10:button:caret-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 400 px | yes | 10 | yes | `10:button:caret-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit hover label colour, a real hover on the submit button. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-hover-border
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, measured in the `hover` state (hovering `.et_pb_contact_submit` inside the element). Set on top of the base block:
+
+- `button.decoration.border.desktop.hover.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 9 | yes | `10:button:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 900 px | yes | 9 | yes | `10:button:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 400 px | yes | 9 | yes | `10:button:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit hover frame colour, a real hover on the submit button. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-hover-trio
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, measured in the `hover` state (hovering `.et_pb_contact_submit` inside the element). Set on top of the base block:
+
+- `button.decoration.background.desktop.hover.color` = `"#1e3a8a"`
+- `button.decoration.border.desktop.hover.styles.all.color` = `"#f59e0b"`
+- `button.decoration.font.font.desktop.hover.color` = `"#ffffff"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 19 | yes | `10:button:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+| 900 px | yes | 19 | yes | `10:button:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+| 400 px | yes | 19 | yes | `10:button:background-color: rgba(255, 255, 255, 0) -> rgb(30, 58, 138)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `background-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit hover fill, frame and label together (the outline kits' fill swap), a real hover on the submit button. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-padding-element
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.spacing.desktop.value.padding.top` = `"14px"`
+- `button.decoration.spacing.desktop.value.padding.bottom` = `"14px"`
+- `button.decoration.spacing.desktop.value.padding.left` = `"28px"`
+- `button.decoration.spacing.desktop.value.padding.right` = `"28px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 32 | yes | `0:form:block-size: 182px -> 198px` |
+| 900 px | yes | 32 | yes | `0:form:block-size: 182px -> 198px` |
+| 400 px | yes | 32 | yes | `0:form:block-size: 182px -> 198px` |
+
+Properties that changed (any width): `block-size`, `height`, `inline-size`, `margin-inline-start`, `margin-left`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-inline-end`, `padding-inline-start`, `padding-left`, `padding-right`, `padding-top`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Padding 14px 28px written at button.decoration.spacing; changedElements records whether it pads the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-padding-module
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"14px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"14px"`
+- `module.decoration.spacing.desktop.value.padding.left` = `"28px"`
+- `module.decoration.spacing.desktop.value.padding.right` = `"28px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 22 | yes | `0:form:inline-size: 1024px -> 968px` |
+| 900 px | yes | 22 | yes | `0:form:inline-size: 720px -> 664px` |
+| 400 px | yes | 22 | yes | `0:form:inline-size: 320px -> 264px` |
+
+Properties that changed (any width): `inline-size`, `margin-inline-start`, `margin-left`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Padding 14px 28px written at module.decoration.spacing; changedElements records whether it pads the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-shadow-element-soft
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `button.decoration.boxShadow.desktop.value.vertical` = `"8px"`
+- `button.decoration.boxShadow.desktop.value.blur` = `"24px"`
+- `button.decoration.boxShadow.desktop.value.color` = `"rgba(0,0,0,0.18)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `10:button:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 900 px | yes | 1 | yes | `10:button:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 400 px | yes | 1 | yes | `10:button:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Box shadow (soft) written at button.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added:
+
+- `button.decoration.boxShadow.{bp}.value.blur`
+- `button.decoration.boxShadow.{bp}.value.color`
+- `button.decoration.boxShadow.{bp}.value.style`
+- `button.decoration.boxShadow.{bp}.value.vertical`
+
+## kf-button-shadow-element-hard
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `button.decoration.boxShadow.desktop.value.horizontal` = `"6px"`
+- `button.decoration.boxShadow.desktop.value.vertical` = `"6px"`
+- `button.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `button.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `10:button:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 900 px | yes | 1 | yes | `10:button:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 400 px | yes | 1 | yes | `10:button:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Box shadow (hard) written at button.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added:
+
+- `button.decoration.boxShadow.{bp}.value.horizontal`
+
+## kf-button-lift-element
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, measured in the `hover` state (hovering `.et_pb_contact_submit` inside the element). Set on top of the base block:
+
+- `button.decoration.transform.desktop.hover.translate.y` = `"-4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `10:button:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+| 900 px | yes | 2 | yes | `10:button:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+| 400 px | yes | 2 | yes | `10:button:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+
+Properties that changed (any width): `transform`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: The lift (translate.y -4px on hover) written at button.decoration.transform, a real hover on the submit button; changedElements records what moves. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added:
+
+- `button.decoration.transform.{bp}.hover.translate.y`
+
+## kf-field-fill
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.background.desktop.value.color` = `"#f1f5f9"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `3:input:background-color: rgb(238, 238, 238) -> rgb(241, 245, 249)` |
+| 900 px | yes | 2 | yes | `3:input:background-color: rgb(238, 238, 238) -> rgb(241, 245, 249)` |
+| 400 px | yes | 2 | yes | `3:input:background-color: rgb(238, 238, 238) -> rgb(241, 245, 249)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Field fill (control: proven on the form before). Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-field-underline
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `field.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `field.decoration.border.desktop.value.styles.all.color` = `"#1e3a8a"`
+- `field.decoration.border.desktop.value.styles.bottom.width` = `"3px"`
+- `field.decoration.border.desktop.value.styles.bottom.style` = `"solid"`
+- `field.decoration.border.desktop.value.styles.bottom.color` = `"#1e3a8a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 40 | yes | `0:form:block-size: 182px -> 188px` |
+| 900 px | yes | 40 | yes | `0:form:block-size: 182px -> 188px` |
+| 400 px | yes | 40 | yes | `0:form:block-size: 182px -> 188px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-width`, `border-block-start-color`, `border-bottom-color`, `border-bottom-width`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Field frame on the bottom side only: styles.all width 0px plus styles.bottom width 3px (the card underline form). Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added:
+
+- `field.decoration.border.{bp}.value.styles.bottom.color`
+- `field.decoration.border.{bp}.value.styles.bottom.style`
+- `field.decoration.border.{bp}.value.styles.bottom.width`
+
+## kf-field-underline-over-frame
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `field.decoration.border.desktop.value.styles.bottom.width` = `"3px"`
+- `field.decoration.border.desktop.value.styles.bottom.style` = `"solid"`
+- `field.decoration.border.desktop.value.styles.bottom.color` = `"#1e3a8a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 36 | yes | `0:form:block-size: 186px -> 188px` |
+| 900 px | yes | 36 | yes | `0:form:block-size: 186px -> 188px` |
+| 400 px | yes | 36 | yes | `0:form:block-size: 186px -> 188px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: The same underline set over a 1px all-sides frame: the all-sides frame goes to 0px and a bottom edge appears. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-field-padding
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.spacing.desktop.value.padding.top` = `"24px"`
+- `field.decoration.spacing.desktop.value.padding.right` = `"24px"`
+- `field.decoration.spacing.desktop.value.padding.bottom` = `"24px"`
+- `field.decoration.spacing.desktop.value.padding.left` = `"24px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 36 | yes | `0:form:block-size: 182px -> 214px` |
+| 900 px | yes | 36 | yes | `0:form:block-size: 182px -> 214px` |
+| 400 px | yes | 36 | yes | `0:form:block-size: 182px -> 214px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-inline-end`, `padding-inline-start`, `padding-left`, `padding-right`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Padding 24px on all four sides of the input fields at field.decoration.spacing; changedElements records which elements grow. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added:
+
+- `field.decoration.spacing.{bp}.value.padding.bottom`
+- `field.decoration.spacing.{bp}.value.padding.left`
+- `field.decoration.spacing.{bp}.value.padding.right`
+- `field.decoration.spacing.{bp}.value.padding.top`
+
+## kf-field-radius-16
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.border.desktop.value.radius.topLeft` = `"16px"`
+- `field.decoration.border.desktop.value.radius.topRight` = `"16px"`
+- `field.decoration.border.desktop.value.radius.bottomRight` = `"16px"`
+- `field.decoration.border.desktop.value.radius.bottomLeft` = `"16px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 16 | yes | `3:input:border-bottom-left-radius: 0px -> 16px` |
+| 900 px | yes | 16 | yes | `3:input:border-bottom-left-radius: 0px -> 16px` |
+| 400 px | yes | 16 | yes | `3:input:border-bottom-left-radius: 0px -> 16px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Field corner radius 16px on the four corners (the form {{aied:kit:radius-control}} resolves to) over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-field-radius-36
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.border.desktop.value.radius.topLeft` = `"36px"`
+- `field.decoration.border.desktop.value.radius.topRight` = `"36px"`
+- `field.decoration.border.desktop.value.radius.bottomRight` = `"36px"`
+- `field.decoration.border.desktop.value.radius.bottomLeft` = `"36px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 16 | yes | `3:input:border-bottom-left-radius: 0px -> 36px` |
+| 900 px | yes | 16 | yes | `3:input:border-bottom-left-radius: 0px -> 36px` |
+| 400 px | yes | 16 | yes | `3:input:border-bottom-left-radius: 0px -> 36px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Field corner radius 36px on the four corners (the form {{aied:kit:radius-control}} resolves to) over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-field-frame-width-2px
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.border.desktop.value.styles.all.width` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 36 | yes | `0:form:block-size: 186px -> 190px` |
+| 900 px | yes | 36 | yes | `0:form:block-size: 186px -> 190px` |
+| 400 px | yes | 36 | yes | `0:form:block-size: 186px -> 190px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Field frame width 2px over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-field-frame-width-4px
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.border.desktop.value.styles.all.width` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 36 | yes | `0:form:block-size: 186px -> 198px` |
+| 900 px | yes | 36 | yes | `0:form:block-size: 186px -> 198px` |
+| 400 px | yes | 36 | yes | `0:form:block-size: 186px -> 198px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Field frame width 4px over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-field-frame-style-dashed
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 16 | yes | `3:input:border-block-end-style: solid -> dashed` |
+| 900 px | yes | 16 | yes | `3:input:border-block-end-style: solid -> dashed` |
+| 400 px | yes | 16 | yes | `3:input:border-block-end-style: solid -> dashed` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Field frame style dashed over a 2px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-field-frame-colour
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 16 | yes | `3:input:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 900 px | yes | 16 | yes | `3:input:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 400 px | yes | 16 | yes | `3:input:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Field frame colour over a 2px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-placeholder-colour
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, also comparing the computed styles of the pseudo-elements `::placeholder`. Set on top of the base block:
+
+- `field.decoration.placeholderFont.font.desktop.value.color` = `"#c2410c"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 34 | yes | `3:input:::placeholder:border-block-end-color: rgb(117, 117, 117) -> rgb(194, 65, 12)` |
+| 900 px | yes | 34 | yes | `3:input:::placeholder:border-block-end-color: rgb(117, 117, 117) -> rgb(194, 65, 12)` |
+| 400 px | yes | 34 | yes | `3:input:::placeholder:border-block-end-color: rgb(117, 117, 117) -> rgb(194, 65, 12)` |
+
+Properties that changed (any width): `::placeholder:-webkit-text-fill-color`, `::placeholder:-webkit-text-stroke-color`, `::placeholder:border-block-end-color`, `::placeholder:border-block-start-color`, `::placeholder:border-bottom-color`, `::placeholder:border-inline-end-color`, `::placeholder:border-inline-start-color`, `::placeholder:border-left-color`, `::placeholder:border-right-color`, `::placeholder:border-top-color`, `::placeholder:caret-color`, `::placeholder:color`, `::placeholder:column-rule-color`, `::placeholder:outline-color`, `::placeholder:row-rule-color`, `::placeholder:text-decoration-color`, `::placeholder:text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Placeholder colour, measured as getComputedStyle(input, '::placeholder').color. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-field-ink
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `field.decoration.font.font.desktop.value.color` = `"#c2410c"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 18 | yes | `3:input:caret-color: rgb(153, 153, 153) -> rgb(194, 65, 12)` |
+| 900 px | yes | 18 | yes | `3:input:caret-color: rgb(153, 153, 153) -> rgb(194, 65, 12)` |
+| 400 px | yes | 18 | yes | `3:input:caret-color: rgb(153, 153, 153) -> rgb(194, 65, 12)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Field ink (control: proven on the form before). Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-captcha-ink
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, ignoring the computed properties `width`, `inline-size`, `block-size`, `height`, `min-width`, `min-inline-size`, `perspective-origin`, `transform-origin`, `max-width`, `max-inline-size`, `margin-left`, `margin-inline-start`, `margin-right`, `margin-inline-end`, `left`, `right`, `inset-inline-start`, `inset-inline-end`. Set on top of the base block:
+
+- `captcha.decoration.font.font.desktop.value.color` = `"#c2410c"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 51 | yes | `10:p:border-block-end-color: rgb(102, 102, 102) -> rgb(194, 65, 12)` |
+| 900 px | yes | 51 | yes | `10:p:border-block-end-color: rgb(102, 102, 102) -> rgb(194, 65, 12)` |
+| 400 px | yes | 51 | yes | `10:p:border-block-end-color: rgb(102, 102, 102) -> rgb(194, 65, 12)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Captcha question colour with the basic captcha ON (the default; its random question changes sizes, so size and position properties are ignored on both pages, the list rc-captcha-color uses). A form of two fields. Control: proven on the form before.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-shadow-element-edge
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `button.decoration.boxShadow.desktop.value.horizontal` = `"0px"`
+- `button.decoration.boxShadow.desktop.value.vertical` = `"4px"`
+- `button.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `button.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `10:button:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 900 px | yes | 1 | yes | `10:button:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 400 px | yes | 1 | yes | `10:button:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Box shadow (edge) written at button.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-shadow-element-glow
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `button.decoration.boxShadow.desktop.value.vertical` = `"0px"`
+- `button.decoration.boxShadow.desktop.value.blur` = `"16px"`
+- `button.decoration.boxShadow.desktop.value.color` = `"rgba(245,158,11,0.45)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `10:button:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 900 px | yes | 1 | yes | `10:button:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 400 px | yes | 1 | yes | `10:button:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Box shadow (glow) written at button.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-shadow-element-hover-soft
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, measured in the `hover` state (hovering `.et_pb_contact_submit` inside the element). Set on top of the base block:
+
+- `button.decoration.boxShadow.desktop.hover.style` = `"preset1"`
+- `button.decoration.boxShadow.desktop.hover.vertical` = `"12px"`
+- `button.decoration.boxShadow.desktop.hover.blur` = `"24px"`
+- `button.decoration.boxShadow.desktop.hover.color` = `"rgba(0,0,0,0.25)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `10:button:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+| 900 px | yes | 2 | yes | `10:button:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+| 400 px | yes | 2 | yes | `10:button:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: Hover-only soft shadow at button.decoration.boxShadow (the none/soft pair of KitAdapters::shadow), a real hover on the submit button. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added:
+
+- `button.decoration.boxShadow.{bp}.hover.blur`
+- `button.decoration.boxShadow.{bp}.hover.color`
+- `button.decoration.boxShadow.{bp}.hover.style`
+- `button.decoration.boxShadow.{bp}.hover.vertical`
+
+## kf-button-underline
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `button.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `button.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+- `button.decoration.border.desktop.value.styles.bottom.width` = `"3px"`
+- `button.decoration.border.desktop.value.styles.bottom.style` = `"solid"`
+- `button.decoration.border.desktop.value.styles.bottom.color` = `"#f59e0b"`
+- `button.decoration.border.desktop.hover.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 41 | yes | `0:form:block-size: 182px -> 181px` |
+| 900 px | yes | 41 | yes | `0:form:block-size: 182px -> 181px` |
+| 400 px | yes | 41 | yes | `0:form:block-size: 182px -> 181px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-width`, `border-block-start-color`, `border-block-start-width`, `border-bottom-color`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-width`, `border-left-color`, `border-left-width`, `border-right-color`, `border-right-width`, `border-top-color`, `border-top-width`, `height`, `inline-size`, `margin-inline-start`, `margin-left`, `perspective-origin`, `transform-origin`, `transition-duration`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit underline in the exact form KitAdapters::button writes for an underline kit (border.sides bottom): styles.all width 0px with style and colour, styles.bottom width, style and colour, hover styles.all.color; mirrors kb-border-bottom-adapter-form on divi/button. Base: Divi's own default button frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-underline-hover
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, measured in the `hover` state (hovering `.et_pb_contact_submit` inside the element). Set on top of the base block:
+
+- `button.decoration.border.desktop.hover.styles.all.color` = `"#1e3a8a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `10:button:border-block-start-color: rgb(245, 158, 11) -> rgb(30, 58, 138)` |
+| 900 px | yes | 7 | yes | `10:button:border-block-start-color: rgb(245, 158, 11) -> rgb(30, 58, 138)` |
+| 400 px | yes | 7 | yes | `10:button:border-block-start-color: rgb(245, 158, 11) -> rgb(30, 58, 138)` |
+
+Properties that changed (any width): `border-block-start-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: The hover frame colour (styles.all.color, the only border hover value KitAdapters::button writes) over the underline rest state of kf-button-underline, a real hover on the submit button: does the bottom edge follow, or does the hover reach only the (0px) other sides? Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-border-width-0px
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `button.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `button.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 40 | yes | `0:form:block-size: 182px -> 178px` |
+| 900 px | yes | 40 | yes | `0:form:block-size: 182px -> 178px` |
+| 400 px | yes | 40 | yes | `0:form:block-size: 182px -> 178px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-width`, `border-block-start-color`, `border-block-start-width`, `border-bottom-color`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-width`, `border-left-color`, `border-left-width`, `border-right-color`, `border-right-width`, `border-top-color`, `border-top-width`, `height`, `inline-size`, `margin-inline-start`, `margin-left`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit frame width 0px with style solid and a colour (what KitAdapters::button writes for the solid/filled kits and the ghost primary), over a 2px solid frame: expect all four computed border widths 0px. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (kit-form)
+
+Candidates from `kit-form.json` that were measured and are not taught, with the reason:
+
+- `kf-button-shadow-module-soft`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Box shadow (soft) written at module.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+- `kf-button-shadow-module-hard`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Box shadow (hard) written at module.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+- `kf-button-shadow-module-edge`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Box shadow (edge) written at module.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+- `kf-button-shadow-module-glow`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Box shadow (glow) written at module.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+- `kf-button-shadow-module-hover-soft`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Hover-only soft shadow at module.decoration.boxShadow (the none/soft pair of KitAdapters::shadow), a real hover on the submit button. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+- `kf-button-lift-module`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). The lift (translate.y -4px on hover) written at module.decoration.transform, a real hover on the submit button; changedElements records what moves. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-kit-form.json`):
+
+- divi/contact-form: module.decoration.boxShadow, module.decoration.transform and module.decoration.spacing as the SUBMIT BUTTON's shadow, lift and padding: Measured on the real Divi 5.15.1 (scratch check after the kit-form probe: a form with a red hard shadow, 14px 28px padding and a hover lift at module.decoration.*): all three land on div.et_pb_contact_form_container, the whole form, never on the submit button (button: box-shadow none, padding 6px 20px, transform none, rest and hover; container: the shadow, padding 14px 28px, and on hover matrix(1, 0, 0, 1, 0, -4)). The probe saw only a stylesheet difference (css-only, nothing inside the form changed) for the shadow and lift, and a narrower form for the padding. The button's own button.decoration.boxShadow, button.decoration.transform and button.decoration.spacing are the paths that reach it (kf-button-shadow-element-*, kf-button-lift-element, kf-button-padding-element PASS): the opposite of divi/button. Note on evidence: the finding that these module-level values land on the form container rests on a one-off manual ancestor-by-ancestor check of computed styles in a real browser (a scratch script, not committed), not on a committed probe; the committed probe results show only the css-only / narrower-form symptoms.

@@ -11,7 +11,7 @@
  * Candidates that rendered nothing (DEAD), overflow a phone, or ended in an ERROR are never added. A result the probe labelled
  * `cssOnly` (the emitted stylesheet changed but no computed style did) is promoted only when the candidate sets
  * `"allowCssOnly": true` AND has a non-empty `note` saying why a stylesheet-only effect is proof enough. A candidate's optional `parent`,
- * `neighbours`, `siblings`, `wrapperBase`, `geometry`, `children`, `state` (hover / scroll with `scrollAt` / click with `clickSelector`), `settleMs`, `ignore`, `pseudo`, `text`, `canvas` and `attrs` (see scripts/verify-shapes.cjs) are described in its evidence section,
+ * `neighbours`, `siblings`, `wrapperBase`, `geometry`, `children`, `state` (hover (optionally with `hoverSelector`) / scroll with `scrollAt` / click with `clickSelector`), `settleMs`, `ignore`, `pseudo`, `text`, `canvas` and `attrs` (see scripts/verify-shapes.cjs) are described in its evidence section,
  * which also lists the property names that changed (`changedProps` of the probe result, when present). Every candidate that is NOT promoted (dead, overflowing a
  * phone, an error, a stylesheet-only result without `allowCssOnly`, an unreliable measurement) is listed with its reason in a
  * `## Not taught (<candidates file name>)` section of the evidence file (followed by the items of the optional hand-written
@@ -160,7 +160,7 @@ foreach ( $candidates as $c ) {
             $where .= ', with base settings on its wrapper(s) ' . implode( ', ', array_map( static fn ( $n ): string => '`' . $n . '`', array_keys( $c['wrapperBase'] ) ) );
         }
         if ( isset( $c['state'] ) && is_string( $c['state'] ) ) {
-            $where .= ', measured in the `' . $c['state'] . '` state' . ( 'click' === $c['state'] && isset( $c['clickSelector'] ) ? ' (clicking `' . (string) $c['clickSelector'] . '` inside the element)' : '' ) . ( 'scroll' === $c['state'] ? ' (element centre at ' . ( is_numeric( $c['scrollAt'] ?? null ) ? (string) $c['scrollAt'] : '0.25' ) . ' x the viewport height)' : '' );
+            $where .= ', measured in the `' . $c['state'] . '` state' . ( 'click' === $c['state'] && isset( $c['clickSelector'] ) ? ' (clicking `' . (string) $c['clickSelector'] . '` inside the element)' : '' ) . ( 'hover' === $c['state'] && isset( $c['hoverSelector'] ) ? ' (hovering `' . (string) $c['hoverSelector'] . '` inside the element)' : '' ) . ( 'scroll' === $c['state'] ? ' (element centre at ' . ( is_numeric( $c['scrollAt'] ?? null ) ? (string) $c['scrollAt'] : '0.25' ) . ' x the viewport height)' : '' );
         }
         if ( is_array( $c['ignore'] ?? null ) && $c['ignore'] !== [] ) {
             $where .= ', ignoring the computed properties ' . implode( ', ', array_map( static fn ( $n ): string => '`' . $n . '`', $c['ignore'] ) );

@@ -605,6 +605,123 @@ final class StyleKitsTest extends TestCase
         $this->assertTrue(self::sameItem($a, $h));
     }
 
+    /** The form near-duplicate pairs measured in forms-adapter Task 3. It may only be LOWERED, never raised. */
+    private const FORM_NEAR_DUPLICATES_CAP = 2;
+
+    private const FORM_NEAR_DUPLICATES = __DIR__ . '/../fixtures/shapes/form-near-duplicates.txt';
+
+    /**
+     * What a kit's contact form looks like, from the form adapter's patch on a light band: the field (control radius and
+     * padding in px from the kit's values the whole-value tokens resolve to; the frame is sides, width, style and colour role)
+     * and the submit button, whose whole decoration (fill, border, label and its hover, spacing, shadow, lift) is compared
+     * except the two whole-value tokens already counted as numbers. One fixed language is the patch itself (colours are role tokens).
+     *
+     * @param array<string,mixed> $kit
+     * @return array{radius:int,vertical:int,horizontal:int,frame:string,submit:string}
+     */
+    private static function formLook(array $kit): array
+    {
+        $patch = KitAdapters::patch('divi/contact-form', 'form', 'light', $kit);
+        self::assertIsArray($patch);
+        self::assertSame('{{aied:kit:radius-control}}', $patch['field']['decoration']['border']['desktop']['value']['radius']);
+        self::assertSame('{{aied:kit:space-control}}', $patch['field']['decoration']['spacing']['desktop']['value']['padding']);
+        $submit = $patch['button']['decoration'];
+        unset($submit['border']['desktop']['value']['radius'], $submit['spacing']['desktop']['value']['padding']);
+        return [
+            'radius'     => (int) $kit['radius']['control'],
+            'vertical'   => (int) $kit['space']['control']['vertical'],
+            'horizontal' => (int) $kit['space']['control']['horizontal'],
+            'frame'      => (string) json_encode($patch['field']['decoration']['border']['desktop']['value']['styles']),
+            'submit'     => (string) json_encode($submit),
+        ];
+    }
+
+    /** Two kits make the same form: control radius < 4px apart, control padding < 4px apart on both axes, field frame and whole submit equal. */
+    private static function sameForm(array $a, array $b): bool
+    {
+        $x = self::formLook($a);
+        $y = self::formLook($b);
+        return abs($x['radius'] - $y['radius']) < 4 && abs($x['vertical'] - $y['vertical']) < 4 && abs($x['horizontal'] - $y['horizontal']) < 4
+            && $x['frame'] === $y['frame'] && $x['submit'] === $y['submit'];
+    }
+
+    public function testEveryKitHasAVisiblyDifferentForm(): void
+    {
+        $kits = [];
+        foreach (StyleKits::ids() as $id) {
+            $kits[$id] = (array) StyleKits::get($id);
+        }
+        $ids   = array_keys($kits);
+        $found = [];
+        $pairs = 0;
+        for ($i = 0; $i < count($ids); $i++) {
+            for ($j = $i + 1; $j < count($ids); $j++) {
+                ++$pairs;
+                if (self::sameForm($kits[$ids[$i]], $kits[$ids[$j]])) {
+                    $found[] = $ids[$i] . '|' . $ids[$j];
+                }
+            }
+        }
+        $this->assertSame(780, $pairs);
+        $listed = [];
+        foreach ((array) file(self::FORM_NEAR_DUPLICATES, FILE_IGNORE_NEW_LINES) as $line) {
+            $line = trim((string) $line);
+            if ('' !== $line && '#' !== $line[0]) {
+                $listed[] = $line;
+            }
+        }
+        $this->assertSame($listed, $found, 'fixtures/shapes/form-near-duplicates.txt is exactly the set of kit pairs with the same form (remove a pair that no longer is one; a new kit must not add one)');
+        $this->assertLessThanOrEqual(self::FORM_NEAR_DUPLICATES_CAP, count($listed), 'shrink-only by test: the form near-duplicate list can never grow past the pairs measured in forms-adapter Task 3');
+    }
+
+    public function testTheSameFormRuleCatchesWhatItShould(): void
+    {
+        $a = (array) StyleKits::get('soft-solid');
+        $a['border']['width'] = '1px';      // so an underline variant is valid
+        $this->assertSame([], StyleKits::problems($a));
+        $b = $a;
+        $b['radius']['control'] = ((int) $a['radius']['control'] + 3) . 'px';
+        $b['space']['control']['vertical']   = ((int) $a['space']['control']['vertical'] + 3) . 'px';
+        $b['space']['control']['horizontal'] = ((int) $a['space']['control']['horizontal'] + 3) . 'px';
+        $this->assertSame([], StyleKits::problems($b));
+        $this->assertTrue(self::sameForm($a, $b), '3px of radius and 3px of padding are the same form');
+        $c = $b;
+        $c['radius']['control'] = ((int) $a['radius']['control'] + 4) . 'px';
+        $this->assertFalse(self::sameForm($a, $c), '4px of radius is visible');
+        foreach ([ 'vertical', 'horizontal' ] as $axis) {
+            $d = $b;
+            $d['space']['control'][$axis] = ((int) $a['space']['control'][$axis] + 4) . 'px';
+            $this->assertFalse(self::sameForm($a, $d), "4px of $axis padding is visible");
+        }
+        foreach ([ [ 'border', 'style', 'dashed' ], [ 'border', 'width', '2px' ], [ 'border', 'color', 'text' ], [ 'border', 'sides', 'bottom' ] ] as [ $g, $k, $v ]) {
+            $e = $a;
+            $e[$g][$k] = $v;
+            $this->assertSame([], StyleKits::problems($e), "$g.$k");
+            $this->assertFalse(self::sameForm($a, $e), "a different frame $k is visible");
+        }
+        // The submit is part of the form: its fill, hover, shadow and text are visible too.
+        foreach ([ [ 'fill', 'outline' ], [ 'hover', 'lift' ], [ 'hover', 'invert' ], [ 'color', 'text' ] ] as [ $k, $v ]) {
+            $f = $a;
+            $f[$k] = $v;
+            $this->assertSame([], StyleKits::problems($f), $k);
+            $this->assertFalse(self::sameForm($a, $f), "a different submit $k is visible");
+        }
+        $g = $a;
+        $g['shadow'] = [ 'rest' => 'soft', 'hover' => 'soft' ];
+        $this->assertFalse(self::sameForm($a, $g), 'a rest shadow is visible');
+        $h = $a;
+        $h['text']['capitalization'] = 'uppercase';
+        $this->assertSame([], StyleKits::problems($h));
+        $this->assertFalse(self::sameForm($a, $h), 'a capitalised submit label is visible');
+        // The card radius, card padding and media radius never reach a form.
+        $i = $a;
+        $i['radius']['card'] = '40px';
+        $i['radius']['media'] = '40px';
+        $i['space']['card'] = '60px';
+        $this->assertSame([], StyleKits::problems($i));
+        $this->assertTrue(self::sameForm($a, $i));
+    }
+
     public function testParseOfCorruptTextIsEmpty(): void
     {
         $this->assertSame([], StyleKits::parse(''));

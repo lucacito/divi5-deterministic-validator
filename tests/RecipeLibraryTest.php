@@ -1781,8 +1781,9 @@ class RecipeLibraryTest extends TestCase
         // plus the recipes whose only kit marker is a card or panel: cta-split-form (card adapter Task 7) and
         // compare-two-panels, features-bento, contact-location-form, contact-details-form, transition-overlap-panel (Task 8),
         // and icon-values, testimonials-avatar-grid (Task 9; pricing-three-tier already has kit-driven buttons), plus the three
-        // recipes whose only kit marker is an item: faq-accordion, features-accordion-image, faq-toggle-list (accordion adapter Task 6).
-        $this->assertSame( 32, $checked, 'the recipes with a kit marker (button, card or item)' );
+        // recipes whose only kit marker is an item: faq-accordion, features-accordion-image, faq-toggle-list (accordion adapter Task 6),
+        // plus contact-form, whose only kit marker is its form (forms adapter Task 4; the other three recipe forms already count above).
+        $this->assertSame( 33, $checked, 'the recipes with a kit marker (button, card, item or form)' );
     }
 
     public function testRecipesWithoutPairsAreOnlyTheFrozenBaselineAndItOnlyShrinks(): void

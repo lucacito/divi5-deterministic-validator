@@ -44,6 +44,9 @@
  *                        measured element, e.g. a carousel's next arrow) is clicked once and the page waits `settleMs` (default 1200); the same click is
  *                        done on the A page. For settings that only act when the visitor operates the module (how far a carousel moves per click).
  *            Absent = the page is measured as loaded.
+ *   hoverSelector (optional, only with state "hover") a CSS selector looked up INSIDE the measured element: the pointer is moved onto
+ *            that element instead of the measured element's centre (added for the forms adapter probe: the submit button of a contact
+ *            form, whose centre is not the form's centre). The same hover is done on the A page.
  *   siblings (optional, not on a section candidate) { "before": [<block spec>], "after": [<block spec>] }: plain blocks placed before / after the
  *            candidate INSIDE ITS IMMEDIATE CONTAINER (the `parent` when given, otherwise the automatic wrapper: a column for a module, a row for a
  *            column ...), identical in the A and B pages. Needed for settings that act against a neighbour (a column `order`, an overlap, a
@@ -393,11 +396,13 @@ function snapshotInPage({ cls, index, withRect, attrs, ignore, geometry, pseudo,
     return out;
   };
   const props = {};
+  let elems = [];
   let found = false;
   let geo = null;
   if (el) {
     found = true;
     const all = [el, ...el.querySelectorAll('*')];
+    elems = all.map((e) => e.tagName.toLowerCase() + (typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\s+/).slice(0, 3).join('.') : ''));
     all.forEach((e, i) => {
       const cs = getComputedStyle(e);
       for (let k = 0; k < cs.length; k++) {
@@ -435,7 +440,7 @@ function snapshotInPage({ cls, index, withRect, attrs, ignore, geometry, pseudo,
     }
     if (geometry) geo = geometryOf(el);
   }
-  return { styleText, props, found, geo, overflow: document.documentElement.scrollWidth > window.innerWidth, overflowPx: Math.max(0, document.documentElement.scrollWidth - window.innerWidth) };
+  return { styleText, props, elems, found, geo, overflow: document.documentElement.scrollWidth > window.innerWidth, overflowPx: Math.max(0, document.documentElement.scrollWidth - window.innerWidth) };
 }
 
 function diffProps(a, b) {
@@ -451,6 +456,18 @@ function changedNames(a, b) {
   const names = new Set();
   for (const k of keys) if (a[k] !== b[k]) names.add(k.replace(/^\d+:[a-z0-9-]+:/, ''));
   return [...names].sort().slice(0, 40);
+}
+
+/** Which elements differ: [{ el: "tag.class.class", props: [distinct property names, at most 12] }] (at most 12 elements); added for the forms adapter probe (where a padding or a shadow lands). */
+function changedElements(a, b, elems) {
+  const byIndex = new Map();
+  for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    const m = /^(\d+):[a-z0-9-]+:(.*)$/.exec(k);
+    if (!m || a[k] === b[k]) continue;
+    if (!byIndex.has(m[1])) byIndex.set(m[1], new Set());
+    byIndex.get(m[1]).add(m[2]);
+  }
+  return [...byIndex.entries()].slice(0, 12).map(([i, set]) => ({ el: elems[Number(i)] || ('#' + i), props: [...set].sort().slice(0, 12) }));
 }
 
 if (cleanOrphans) process.exit(removeOrphans() ? 0 : 1);
@@ -491,7 +508,8 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
         await p.goto(`${SITE}/?page_id=${id}&preview=true`, { waitUntil: 'load' });
         await p.waitForTimeout(settle);
         if (c.state === 'hover') {
-          await p.locator('.et-l--post .' + cls).nth(index).hover({ timeout: 10000 });
+          const hoverRoot = p.locator('.et-l--post .' + cls).nth(index);
+          await (c.hoverSelector ? hoverRoot.locator(c.hoverSelector).first() : hoverRoot).hover({ timeout: 10000 });
           await p.waitForTimeout(settle);
         } else if (c.state === 'click') {
           await p.locator('.et-l--post .' + cls).nth(index).locator(c.clickSelector).first().click({ timeout: 10000 });
@@ -528,6 +546,7 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
         if (!c || typeof c.id !== 'string' || !c.id) throw new Error('a candidate needs a string `id`');
         if (!c.set || typeof c.set !== 'object' || !Object.keys(c.set).length) throw new Error('a candidate needs a non-empty `set`');
         if (c.state !== undefined && c.state !== 'hover' && c.state !== 'scroll' && c.state !== 'click') throw new Error('`state` must be "hover", "scroll" or "click"');
+        if (c.hoverSelector !== undefined && !(c.state === 'hover' && typeof c.hoverSelector === 'string' && c.hoverSelector)) throw new Error('`hoverSelector` needs `state: "hover"` and a selector string');
         if (c.state === 'click' && !(typeof c.clickSelector === 'string' && c.clickSelector)) throw new Error('`state: "click"` needs a `clickSelector`');
         if (c.ignore !== undefined && !(Array.isArray(c.ignore) && c.ignore.every((x) => typeof x === 'string'))) throw new Error('`ignore` must be a list of computed property names');
         if (c.pseudo !== undefined && !(Array.isArray(c.pseudo) && c.pseudo.every((x) => typeof x === 'string' && /^::[a-z-]+$/.test(x)))) throw new Error('`pseudo` must be a list of pseudo-elements such as "::before"');
@@ -555,7 +574,7 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
           const styleDiff = sa.styleText !== sb.styleText;
           const computed = diffProps(sa.props, sb.props);
           entry.widths[w] = styleDiff || computed.length > 0;
-          entry.detail[w] = { stylesheetDiffers: styleDiff, computedDiffs: computed.length, sample: computed.slice(0, 6), changedProps: changedNames(sa.props, sb.props), controlNoise: noise, overflowPx: sb.overflowPx };
+          entry.detail[w] = { stylesheetDiffers: styleDiff, computedDiffs: computed.length, sample: computed.slice(0, 6), changedProps: changedNames(sa.props, sb.props), changedElements: changedElements(sa.props, sb.props, sb.elems), controlNoise: noise, overflowPx: sb.overflowPx };
           if (c.geometry === true) entry.detail[w].geometry = { control: sa.geo, candidate: sb.geo };
           if (noise) { entry.detail[w].warning = 'two loads of the same page differ: the result at this width is not reliable'; throw new Error('page A differs from itself at ' + w + 'px'); }
           if (w === 400) entry.phoneOverflow = sb.overflow;

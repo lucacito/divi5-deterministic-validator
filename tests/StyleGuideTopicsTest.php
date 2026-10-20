@@ -294,6 +294,19 @@ class StyleGuideTopicsTest extends TestCase
         }
     }
 
+    /**
+     * The generated `topic` description keeps at least 40 characters of headroom under the 300-character bound (forms adapter
+     * T2 reworded its fixed text, 90 to 44 characters), so the next adapters' topic names fit without a new topic.
+     */
+    public function testTheTopicParameterDescriptionLeavesHeadroom(): void
+    {
+        $desc = StyleGuide::topicParameterDescription();
+        $this->assertLessThanOrEqual( 260, strlen( $desc ), 'at most 260 characters' );
+        $this->assertStringStartsWith( 'Optional', $desc );
+        $this->assertStringContainsString( '<id>', $desc, 'the <id> hint stays' );
+        $this->assertStringContainsString( 'style-kit:<id>', $desc );
+    }
+
     public function testMcpSchemaDeclaresTheStringTopic(): void
     {
         $req   = new \WP_REST_Request( [ 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list', 'params' => new \stdClass() ] );

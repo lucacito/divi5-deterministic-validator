@@ -685,4 +685,58 @@ class KitResolverTest extends TestCase
             $this->assertSame( [ KitResolver::LEFT_MARKER ], KitResolver::leftovers( $out ), "$label: reported" );
         }
     }
+    private function contactForm( string $marker ): string
+    {
+        return '<!-- wp:divi/contact-form {"button":{"innerContent":{"desktop":{"value":{"text":"Send"}}}},"builderVersion":"5.15.1"' . $marker . '} -->'
+            . '<!-- wp:divi/contact-field {"fieldItem":{"advanced":{"id":{"desktop":{"value":"Name"}}},"innerContent":{"desktop":{"value":"Name"}}}} /-->'
+            . '<!-- /wp:divi/contact-form -->';
+    }
+
+    public function testAFormMarkerResolvesAndIsStrippedOnAContactForm(): void
+    {
+        $kit = $this->shipped( 'soft-solid' );
+        foreach ( [ 'light', 'surface', 'accent', 'dark' ] as $on ) {
+            $out   = $this->noWarnings( fn() => KitResolver::resolve( $this->contactForm( ',"aied":{"on":"' . $on . '","kit":"form"}' ), $kit ) );
+            $attrs = json_decode( $this->comments( $out )[0], true );
+            $this->assertIsArray( $attrs );
+            $this->assertArrayNotHasKey( 'aied', $attrs, "form on $on: the marker is stripped" );
+            $this->assertSame( [], KitResolver::leftovers( $out ), "form on $on" );
+            $this->assertArrayHasKey( 'field', $attrs );
+            $this->assertArrayHasKey( 'captcha', $attrs );
+            $this->assertSame( 'Send', $attrs['button']['innerContent']['desktop']['value']['text'], 'the submit label is untouched' );
+            $this->assertSame( '8px', $attrs['field']['decoration']['border']['desktop']['value']['radius']['topLeft'], 'the radius token is resolved' );
+            $this->assertArrayNotHasKey( 'module', $attrs, 'the form container is never styled' );
+            $this->assertStringContainsString( '<!-- wp:divi/contact-field {"fieldItem"', $out, 'the child field stays byte-identical' );
+        }
+        $this->assertSame(
+            KitResolver::resolve( $this->contactForm( ',"aied":{"kit":"form","on":"light"}' ), $kit ),
+            KitResolver::resolve( $this->contactForm( ',"aied":{"kit":"form"}' ), $kit ),
+            'no `on` is a light band'
+        );
+    }
+
+    public function testAFormMarkerTheResolverDoesNotKnowIsLeftAndReported(): void
+    {
+        $kit   = $this->shipped( 'soft-solid' );
+        $cases = [
+            'form on panel'          => $this->contactForm( ',"aied":{"kit":"form","on":"panel"}' ),
+            'form on photo'          => $this->contactForm( ',"aied":{"kit":"form","on":"photo"}' ),
+            'a ground on a form'     => $this->contactForm( ',"aied":{"kit":"form","on":"light","ground":"inverted"}' ),
+            'extra key'              => $this->contactForm( ',"aied":{"kit":"form","on":"light","x":1}' ),
+            'card on a form'         => $this->contactForm( ',"aied":{"kit":"card","on":"light"}' ),
+            'control on a form'      => $this->contactForm( ',"aied":{"kit":"control"}' ),
+            'item on a form'         => $this->contactForm( ',"aied":{"kit":"item"}' ),
+            'form on a group'        => $this->group( ',"aied":{"kit":"form","on":"light"}' ),
+            'form on a button'       => $this->button( ',"aied":{"kit":"form"}' ),
+            'form on a toggle'       => $this->toggle( ',"aied":{"kit":"form"}' ),
+            'form on a field'        => '<!-- wp:divi/contact-field {"fieldItem":{"innerContent":{"desktop":{"value":"Name"}}},"aied":{"kit":"form"}} /-->',
+            'non-string role'        => $this->contactForm( ',"aied":{"kit":["form"]}' ),
+            'non-string band'        => $this->contactForm( ',"aied":{"kit":"form","on":1}' ),
+        ];
+        foreach ( $cases as $label => $markup ) {
+            $out = $this->noWarnings( fn() => KitResolver::resolve( $markup, $kit ) );
+            $this->assertSame( $markup, $out, "$label: left untouched, nothing guessed" );
+            $this->assertSame( [ KitResolver::LEFT_MARKER ], KitResolver::leftovers( $out ), "$label: reported" );
+        }
+    }
 }

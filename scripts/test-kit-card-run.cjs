@@ -9,14 +9,20 @@
  * image, columns that do not stack) is caught with the right code. The item pages carry the class names Divi 5.15.1's module.json selectors
  * name (`et_pb_accordion`, `et_pb_toggle` + `et_pb_accordion_item`, `et_pb_toggle_open|close`, `et_pb_toggle_title` with a ::before icon,
  * `et_pb_toggle_content`) and a few lines of script that open and close them on a click; each item code has its own departure, including a
- * click that opens nothing and a state fill that stays closed after the click. Needs php (the offline sheet) and Playwright (../layoutlab).
+ * click that opens nothing and a state fill that stays closed after the click. The form pages carry the class names Divi 5.15.1 renders for a contact
+ * form (`et_pb_contact_form_container` > `form` > `p.et_pb_contact_field` > `input`, `.et_pb_contact_captcha_question`, `button.et_pb_contact_submit`) and a
+ * stylesheet generated from the form expectations (soft-lift and underline-link under editorial); each form code has its own departure, including a
+ * placeholder colour, a painted-only overlay on a field, a hover that moves the container, a submit that cannot be hovered and a fixed element over a field.
+ * Needs php (the offline sheet) and Playwright (../layoutlab).
  * It cannot prove what Divi itself prints: that is `node scripts/verify-kits.cjs`. */
 const assert = require('assert');
+const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const K = require('./lib/kit-checks.cjs');
 const { checkCards } = require('./lib/kit-card-run.cjs');
 const { checkItems } = require('./lib/kit-item-run.cjs');
+const { checkForms } = require('./lib/kit-form-run.cjs');
 const PW = process.env.PLAYWRIGHT_PATH || path.resolve(__dirname, '..', '..', 'layoutlab', 'node_modules', 'playwright');
 const { chromium } = require(PW);
 
@@ -35,6 +41,18 @@ const clone = (o) => JSON.parse(JSON.stringify(o));
 const itemExpects = itemSheet.map((h) => { const e = K.expectItemFromAttrs(h.attrs, h.slot.carrier); e.open.fill = '#fff3d6'; e.open.title = '#3a1a00'; if (e.open.icon !== null) e.open.icon = '#7a3b00'; return e; });
 const itemLists = itemSheet.map((h) => h.items);
 const NI = K.ITEM_SLOTS.length;
+const offline = (kit) => {
+  const r = spawnSync('php', [path.join(__dirname, 'lib', 'kit-sheet-offline.php'), '--kit', kit, '--language', 'editorial'], { input: K.sheetMarkup(), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  assert.strictEqual(r.status, 0, 'php failed: ' + (r.error ? r.error.message : r.stderr));
+  return JSON.parse(r.stdout)[0];
+};
+const EDITORIAL = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'wp-plugin', 'data', 'design-languages.json'), 'utf8')).find((l) => l.id === 'editorial').colors;
+const formSheet = K.formAttrs(row.markup);
+const formExpects = formSheet.map((f) => K.expectFormFromAttrs(f.attrs));
+const formCounts = formSheet.map((f) => f.fields);
+const underSheet = K.formAttrs(offline('underline-link').markup);
+const underExpects = underSheet.map((f) => K.expectFormFromAttrs(f.attrs));
+const NF = K.FORM_SLOTS.length;
 const HAIRLINE = '#e3dccf';
 const IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='9'><rect width='16' height='9' fill='%23336699'/></svg>";
 
@@ -144,6 +162,42 @@ function itemPageHtml({ extraCss = '', exps = itemExpects, noClick = [], noClose
   }})(${JSON.stringify({ noClick, noClose, stuck, slowMs })})`;
   return `<style>body{margin:0;background:#faf7f2}.et_pb_row{width:90%;margin:0 auto;padding:16px 0}${css}${extraCss}</style>`
     + `<div class="et-l--post"><div class="et_pb_section"><div class="et_pb_row"><div class="et_pb_column" style="display:block">${blocks.join('')}</div></div></div></div><script>${script}</script>`;
+}
+
+/** The stylesheet that makes a synthetic contact form agree with its expectation (what Divi would print for the resolved markup). */
+function formCssFor(key, e) {
+  const sel = `[data-f="${key}"]`;
+  const f = e.field; const b = e.button;
+  const fsides = ['top', 'right', 'bottom', 'left'].map((k) => `border-${k}:${f[k].width}px ${f[k].style} ${f[k].color};`).join('');
+  let css = `${sel} input.input:not(.et_pb_contact_captcha){box-sizing:border-box;display:block;width:100%;margin:0 0 12px;background:${f.fill};color:${f.ink};${fsides}border-radius:${f.radius.map((v) => v + 'px').join(' ')};padding:${f.padding.map((v) => v + 'px').join(' ')};font:16px sans-serif;transition:none}`;
+  css += `${sel} input.input::placeholder{color:${f.placeholder};opacity:1}`;
+  css += `${sel} p.clearfix,${sel} .et_pb_contact_captcha_question{color:${e.captcha.ink};margin:0;font:16px sans-serif}`;
+  const sd = (k) => `${b.rest[k].width}px ${b.rest[k].style} ${b.rest[k].color}`;
+  const bw = `${b.rest.top.width}px solid ${b.rest.top.color}`;
+  css += `${sel} .et_pb_contact_submit{display:inline-block;box-sizing:border-box;background:${b.rest.fill};color:${b.rest.label};border-top:${sd('top')};border-bottom:${sd('bottom')};border-left:${bw};border-right:${bw};border-radius:${b.rest.radius.map((v) => v + 'px').join(' ')};padding:${b.rest.padding.map((v) => v + 'px').join(' ')};text-transform:${b.rest.capitalization};letter-spacing:${b.rest.letterSpacing}px;font:${b.rest.weight} 16px sans-serif;box-shadow:${shadowCss(b.shadow.rest)};transition:none;cursor:pointer}`;
+  const hov = [`background:${b.hover.fill}`, `color:${b.hover.label}`];
+  if (b.hover.border) hov.push(`border-color:${b.hover.border}`);
+  if (b.lift !== null) hov.push(`transform:translateY(${b.lift}px)`);
+  if (b.shadow.hover && b.shadow.hover !== b.shadow.rest) hov.push(`box-shadow:${shadowCss(b.shadow.hover)}`);
+  return css + `${sel} .et_pb_contact_submit:hover{${hov.join(';')}}`;
+}
+
+/**
+ * The form page: every FORM_SLOT as Divi nests it (a section in the band's colour, the container, the form, a `p.et_pb_contact_field` per field, a hidden
+ * input, the captcha row and the submit in the bottom container). `exps` are the expectations the stylesheet is generated from; `drop` leaves a form out,
+ * `dropField` removes the last field of one form, `noCaptcha` leaves the captcha out of one form.
+ */
+function formPageHtml({ extraCss = '', exps = formExpects, drop = [], dropField = null, noCaptcha = [] } = {}) {
+  const live = K.FORM_SLOTS.filter((s) => !drop.includes(s.key));
+  const sections = live.map((slot) => {
+    const band = slot.on === 'surface' ? EDITORIAL.surface : EDITORIAL.bg;
+    const names = ['Name', 'Email Address'].slice(0, dropField === slot.key ? 1 : 2);
+    const fields = names.map((n) => `<p class="et_pb_contact_field et_pb_contact_field_half"><label class="et_pb_contact_form_label" for="${slot.key}-${n}" style="display:none">${n}</label><input type="text" id="${slot.key}-${n}" class="input" placeholder="${n}"></p>`).join('');
+    const captcha = noCaptcha.includes(slot.key) ? '' : '<div class="et_pb_contact_right"><p class="clearfix"><label><span class="et_pb_contact_captcha_question">4 + 7</span> =</label> <input type="text" size="2" class="input et_pb_contact_captcha" value=""></p></div>';
+    return `<div class="et_pb_section" style="background:${band};padding:40px 0"><div class="et_pb_row"><div class="et_pb_column" style="display:block"><div class="et_pb_module et_pb_contact_form_container" data-f="${slot.key}" style="display:block"><div class="et_pb_contact"><form class="et_pb_contact_form clearfix">${fields}<input type="hidden" name="et_pb_contact_form_submit" value="x"><div class="et_contact_bottom_container" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">${captcha}<button type="submit" class="et_pb_contact_submit et_pb_button">${slot.submit}</button></div></form></div></div></div></div></div>`;
+  });
+  const css = live.map((slot) => formCssFor(slot.key, exps[K.FORM_SLOTS.indexOf(slot)])).join('');
+  return `<style>body{margin:0;background:#faf7f2}.et_pb_row{width:90%;margin:0 auto}${css}${extraCss}</style><div class="et-l--post">${sections.join('')}</div>`;
 }
 
 (async () => {
@@ -337,7 +391,166 @@ function itemPageHtml({ extraCss = '', exps = itemExpects, noClick = [], noClose
     const emptyPage = await runItems(itemPageHtml({ drop: K.ITEM_SLOTS.map((s) => s.key) }));
     assert.deepStrictEqual(ic(emptyPage), ['items'], 'a page with no item at all fails');
 
-    console.log('OK kit-card-run and kit-item-run in a real Chromium on synthetic pages: a matching page passes at 1280 and 400 (items: a real click opens a closed item and closes the open one), every departure is caught (and a fixed bar over a card or an item is not mistaken for one) with its code');
+    // ---- forms: the fields, the submit with a real hover, the captcha, the container ----
+    const runForms = async (html, { width = 1280, exps = formExpects, counts = formCounts, before = null } = {}) => {
+      const p = await browser.newPage({ viewport: { width, height: 900 } });
+      await p.setContent(html);
+      if (before) await before(p);
+      const r = await checkForms(p, { width, expects: exps, counts });
+      await p.close();
+      return r;
+    };
+    const fc = (r) => [...new Set(r.problems.map((x) => x[0]))]; // distinct codes
+    const fokay = await runForms(formPageHtml());
+    assert.deepStrictEqual(fokay.problems, [], JSON.stringify(fokay.problems));
+    assert.strictEqual(fokay.formsChecked, NF);
+    assert.strictEqual(fokay.observations.length, NF);
+    assert.ok(fokay.observations.every((o) => o.fieldFills.length === 2 && o.fieldFills.every((x, j) => K.sameColour(x, formExpects[0].field.fill) || K.sameColour(x, formExpects[1].field.fill))), 'the painted field fills were measured: ' + JSON.stringify(fokay.observations.map((o) => o.fieldFills)));
+    assert.deepStrictEqual(fokay.observations.map((o) => K.sameColour(o.surface, o.key === 'form-bg' ? EDITORIAL.bg : EDITORIAL.surface)), [true, true], 'the surface behind the submit button is the band');
+    assert.ok(fokay.observations.every((o) => o.contrast.captcha >= 4.5 && o.contrast.fields[0].ink >= 4.5 && o.contrast.submit.hover.label >= 4.5), 'the contrast was measured: ' + JSON.stringify(fokay.observations[0].contrast));
+    const fphone = await runForms(formPageHtml(), { width: 400 });
+    assert.deepStrictEqual(fphone.problems, [], JSON.stringify(fphone.problems));
+    const ftablet = await runForms(formPageHtml(), { width: 900 });
+    assert.deepStrictEqual(ftablet.problems, [], JSON.stringify(ftablet.problems));
+    // An underline kit: bottom-only field frames and a bottom-only submit whose edge keeps its rest colour on hover.
+    const funder = await runForms(formPageHtml({ exps: underExpects }), { exps: underExpects });
+    assert.deepStrictEqual(funder.problems, [], JSON.stringify(funder.problems));
+    const fdual = await runForms(formPageHtml({ extraCss: '[data-f="form-bg"] .et_pb_contact_submit:hover{border-bottom-color:#10b981}' , exps: underExpects }), { exps: underExpects });
+    assert.deepStrictEqual(fc(fdual), ['form-button']);
+    assert.match(fdual.problems[0][1], /^form-bg submit hover: the underline's bottom edge is rgb\(16, 185, 129\) on hover, expected its rest colour #1c1a17/);
+    const ffull = await runForms(formPageHtml({ extraCss: '[data-f="form-surface"] input.input:not(.et_pb_contact_captcha){border-top:2px solid #1c1a17}', exps: underExpects }), { exps: underExpects });
+    assert.ok(fc(ffull).includes('form-field-border'), 'a full frame where the underline kit draws one edge: ' + fc(ffull).join());
+
+    // The count: a form, a field or the captcha missing, nothing else is then checked; a page with no form at all fails.
+    const flost = await runForms(formPageHtml({ drop: ['form-surface'] }));
+    assert.deepStrictEqual(fc(flost), ['form']);
+    assert.match(flost.problems[0][1], /^1 of 2 forms rendered as the sheet says: form-surface is not in the page/);
+    assert.strictEqual(flost.formsChecked, 0, 'a page with a form missing checks nothing else');
+    const ffield = await runForms(formPageHtml({ dropField: 'form-surface' }));
+    assert.match(ffield.problems[0][1], /form-surface renders 1 fields, expected 2/);
+    const fnocap = await runForms(formPageHtml({ noCaptcha: ['form-bg'] }));
+    assert.match(fnocap.problems[0][1], /form-bg shows no captcha question/);
+    const fnone = await runForms(formPageHtml({ drop: K.FORM_SLOTS.map((s) => s.key) }));
+    assert.deepStrictEqual(fc(fnone), ['form'], 'a page with no form at all fails');
+    assert.deepStrictEqual(K.emptyFormRunProblems({ formsChecked: fnone.formsChecked }), ['no form was checked: the form selection was empty']);
+
+    // The fields.
+    const IN = 'input.input:not(.et_pb_contact_captcha)';
+    const fFill = await runForms(formPageHtml({ extraCss: `[data-f="form-surface"] ${IN}{background:#e0e0e0 !important}` }));
+    assert.ok(fc(fFill).includes('form-field-fill'), fc(fFill).join());
+    assert.match(fFill.problems.find((x) => x[0] === 'form-field-fill')[1], /^form-surface field 1 rest: background-color rgb\(224, 224, 224\), expected #faf7f2/);
+    // Something painted over a correct field (the computed style stays right): only the painted fill gives it away.
+    const fOver = await runForms(formPageHtml({ extraCss: '[data-f="form-bg"] p.et_pb_contact_field{position:relative}[data-f="form-bg"] p.et_pb_contact_field::after{content:"";position:absolute;left:0;right:0;top:0;bottom:12px;background:#f4e6c8}' }));
+    assert.ok(fc(fOver).includes('form-field-fill'), 'a field covered by something else: ' + fc(fOver).join());
+    assert.ok(fOver.problems.some(([c, d]) => c === 'form-field-fill' && /painted fill #f4e6c8 differs from the computed/.test(d)), JSON.stringify(fOver.problems.slice(0, 3)));
+    // A field the colour of its container (the form on the bg band with a bg field).
+    const fSame = await runForms(formPageHtml({ extraCss: `[data-f="form-bg"] ${IN}{background:${EDITORIAL.bg} !important}` }));
+    assert.ok(fSame.problems.some(([c, d]) => c === 'form-field-fill' && /never matches its container/.test(d)), 'a field that matches its container: ' + JSON.stringify(fSame.problems.slice(0, 4)));
+    const fBorder = await runForms(formPageHtml({ extraCss: `[data-f="form-bg"] ${IN}{border-left-width:3px}` }));
+    assert.ok(fc(fBorder).every((c) => ['form-field-border', 'form-contrast'].includes(c)) && fc(fBorder).includes('form-field-border'), fc(fBorder).join());
+    assert.match(fBorder.problems.find((x) => x[0] === 'form-field-border')[1], /^form-bg field 1 rest: border-left-width 3px, expected 1px/);
+    const fStyle = await runForms(formPageHtml({ extraCss: `[data-f="form-surface"] ${IN}{border-bottom-style:dashed}` }));
+    assert.deepStrictEqual(fc(fStyle), ['form-field-border']);
+    const fRadius = await runForms(formPageHtml({ extraCss: `[data-f="form-surface"] ${IN}{border-top-left-radius:2px}` }));
+    assert.deepStrictEqual(fc(fRadius), ['form-field-radius']);
+    assert.match(fRadius.problems[0][1], /^form-surface field 1 rest: borderTopLeftRadius 2px, expected 12px/);
+    const fInk = await runForms(formPageHtml({ extraCss: `[data-f="form-bg"] ${IN}{color:#3355aa}` }));
+    assert.deepStrictEqual(fc(fInk), ['form-field-ink']);
+    const fPh = await runForms(formPageHtml({ extraCss: `[data-f="form-surface"] ${IN}::placeholder{color:#444444}` }));
+    assert.deepStrictEqual(fc(fPh), ['form-field-placeholder']);
+    assert.match(fPh.problems[0][1], /^form-surface field 1 rest: ::placeholder color rgb\(68, 68, 68\), expected #6b645a/);
+    const fPad = await runForms(formPageHtml({ extraCss: `[data-f="form-bg"] ${IN}{padding-left:5px}` }));
+    assert.deepStrictEqual(fc(fPad), ['form-field-padding']);
+    const fShadow = await runForms(formPageHtml({ extraCss: `[data-f="form-bg"] ${IN}{box-shadow:0 4px 8px rgba(0,0,0,.3)}` }));
+    assert.deepStrictEqual(fc(fShadow), ['form-field-border']);
+
+    // The submit button, measured with a real hover.
+    const SUB = '.et_pb_contact_submit';
+    const fbFill = await runForms(formPageHtml({ extraCss: `[data-f="form-bg"] ${SUB}{background:#eeeeee !important}` }));
+    assert.ok(fc(fbFill).includes('form-button'), fc(fbFill).join());
+    const fbHover = await runForms(formPageHtml({ extraCss: `[data-f="form-surface"] ${SUB}:hover{background:#c00000 !important}` }));
+    assert.deepStrictEqual(fc(fbHover), ['form-button']);
+    assert.match(fbHover.problems[0][1], /^form-surface submit hover: background-color rgb\(192, 0, 0\), expected /);
+    const fbLift = await runForms(formPageHtml({ extraCss: `[data-f="form-bg"] ${SUB}:hover{transform:none !important}` }));
+    assert.deepStrictEqual(fc(fbLift), ['form-button']);
+    assert.match(fbLift.problems[0][1], /^form-bg submit lift: hover: translateY button 0px/);
+    const fbShadow = await runForms(formPageHtml({ extraCss: `[data-f="form-bg"] ${SUB}:hover{box-shadow:none !important}` }));
+    assert.deepStrictEqual(fc(fbShadow), ['form-button']);
+    const fbEdge = await runForms(formPageHtml({ extraCss: `[data-f="form-surface"] ${SUB}{border-left-width:3px}` }));
+    assert.deepStrictEqual(fc(fbEdge), ['form-button']);
+    const fbPad = await runForms(formPageHtml({ extraCss: `[data-f="form-bg"] ${SUB}{padding-right:3px}` }));
+    assert.deepStrictEqual(fc(fbPad), ['form-button']);
+    const fbDead = await runForms(formPageHtml({ extraCss: `[data-f="form-bg"] ${SUB}{pointer-events:none}` }));
+    assert.ok(fbDead.problems.some(([c, d]) => c === 'form-button' && /^form-bg submit could not be hovered/.test(d)), 'a submit button that cannot be hovered is a failure, not a skip: ' + JSON.stringify(fbDead.problems.slice(0, 3)));
+
+    // The captcha and the container.
+    const fCap = await runForms(formPageHtml({ extraCss: '[data-f="form-surface"] .et_pb_contact_captcha_question{color:#666666}' }));
+    assert.deepStrictEqual(fc(fCap), ['form-captcha']);
+    assert.match(fCap.problems[0][1], /^form-surface rest: captcha question colour rgb\(102, 102, 102\), expected #1c1a17/);
+    const fContShadow = await runForms(formPageHtml({ extraCss: '[data-f="form-bg"]{box-shadow:0 8px 24px rgba(0,0,0,.3)}' }));
+    assert.deepStrictEqual(fc(fContShadow), ['form-container']);
+    assert.match(fContShadow.problems[0][1], /^form-bg rest: the form container has a box-shadow/);
+    const fContLift = await runForms(formPageHtml({ extraCss: '[data-f="form-surface"]:hover{transform:translateY(-4px)}' }));
+    assert.deepStrictEqual(fc(fContLift), ['form-container']);
+    assert.match(fContLift.problems[0][1], /^form-surface hover: the form container is transformed/);
+    const fContFrame = await runForms(formPageHtml({ extraCss: '[data-f="form-bg"]{border:2px solid #1c1a17}' }));
+    assert.ok(fc(fContFrame).includes('form-container'), fc(fContFrame).join());
+
+    // Contrast on its own: the page agrees with its (pale) expectations, so only the painted-surface rule can object.
+    const paleInk = clone(formExpects); paleInk[0].field.ink = '#d8d8d8';
+    const fPale = await runForms(formPageHtml({ exps: paleInk }), { exps: paleInk });
+    assert.ok(fc(fPale).length > 0 && fc(fPale).every((c) => c === 'form-contrast'), 'pale field text that matches the markup is still unreadable: ' + fc(fPale).join());
+    assert.match(fPale.problems[0][1], /^form-bg field 1 ink #d8d8d8 on #ffffff is /);
+    const paleCap = clone(formExpects); paleCap[1].captcha.ink = '#dddddd';
+    const fPaleCap = await runForms(formPageHtml({ exps: paleCap }), { exps: paleCap });
+    assert.ok(fc(fPaleCap).every((c) => c === 'form-contrast') && fPaleCap.problems.some(([, d]) => /^form-surface captcha ink /.test(d)), fc(fPaleCap).join());
+    const faintFrame = clone(formExpects); for (const side of ['top', 'right', 'bottom', 'left']) faintFrame[0].field[side].color = '#f1ece2';
+    const fFaint = await runForms(formPageHtml({ exps: faintFrame }), { exps: faintFrame });
+    assert.ok(fc(fFaint).every((c) => c === 'form-contrast') && fFaint.problems.some(([, d]) => /frame top against the field fill/.test(d)), fc(fFaint).join());
+    // Ruling 6: the boundary against the form behind is the better of the frame and the fill. A frame that is 3:1 on the white field but under 3:1 on the warm form,
+    // with a fill that is no stronger, leaves NO edge that reaches 3:1 (boundary); a dark field with the same grey frame passes (the fill is the edge).
+    const lowBoundary = clone(formExpects); for (const side of ['top', 'right', 'bottom', 'left']) lowBoundary[0].field[side].color = '#949494';
+    const fLowB = await runForms(formPageHtml({ exps: lowBoundary }), { exps: lowBoundary });
+    assert.deepStrictEqual(fc(fLowB), ['form-contrast']);
+    assert.ok(fLowB.problems.some(([, d]) => /^form-bg field [12] boundary: neither the frame \(best 2\.84:1\) nor the fill #ffffff \(1\.07:1\)/.test(d)), JSON.stringify(fLowB.problems));
+    const darkField = clone(formExpects);
+    for (const side of ['top', 'right', 'bottom', 'left']) darkField[0].field[side].color = '#9a9a9a';
+    darkField[0].field.fill = '#1c1a17'; darkField[0].field.ink = '#ffffff'; darkField[0].field.placeholder = '#ffffff';
+    const fDark = await runForms(formPageHtml({ exps: darkField }), { exps: darkField });
+    assert.deepStrictEqual(fDark.problems, [], 'the fill is 16:1 on the form, so a 2.6:1 frame still leaves a boundary: ' + JSON.stringify(fDark.problems));
+    const paleLabel = clone(formExpects); paleLabel[0].button.rest.label = paleLabel[0].button.rest.fill;
+    const fLabel = await runForms(formPageHtml({ exps: paleLabel }), { exps: paleLabel });
+    assert.ok(fLabel.problems.some(([c, d]) => c === 'form-contrast' && /^form-bg submit rest: label /.test(d)), JSON.stringify(fLabel.problems.slice(0, 3)));
+
+    // Clip and overflow.
+    const fClip = await runForms(formPageHtml({ extraCss: `[data-f="form-bg"]{overflow:hidden}[data-f="form-bg"] p.et_pb_contact_field{width:130%}` }));
+    assert.ok(fc(fClip).includes('form-clip'), 'a field cut by the clipping form container: ' + fc(fClip).join());
+    const fWide = await runForms(formPageHtml({ extraCss: `[data-f="form-bg"] ${IN}{width:900px}` }), { width: 400 });
+    assert.ok(fc(fWide).includes('overflow'), 'a field wider than the phone: ' + fc(fWide).join());
+    const fCut = await runForms(formPageHtml({ extraCss: `[data-f="form-surface"] ${SUB}{width:40px;overflow:hidden;white-space:nowrap}` }));
+    assert.ok(fc(fCut).includes('form-clip'), 'a submit label that is cut: ' + fc(fCut).join());
+    // A fixed bar scrolled over the page, and a fixed element laid over a field, must not disturb the painted samples.
+    const fBar = await runForms(formPageHtml({ extraCss: '#bar{position:fixed;top:0;left:0;right:0;height:32px;background:#23282d;z-index:9}' }), { before: (page) => page.evaluate(() => { const b = document.createElement('div'); b.id = 'bar'; document.body.appendChild(b); }) });
+    assert.deepStrictEqual(fBar.problems, [], JSON.stringify(fBar.problems));
+    for (const [initial, expected] of [['', 'visible'], ['hidden', 'hidden']]) {
+      const pg = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+      await pg.setContent(formPageHtml());
+      await pg.evaluate((v) => {
+        const f = document.querySelector('[data-f="form-bg"] input.input');
+        const r = f.getBoundingClientRect();
+        const x = document.createElement('div'); x.id = 'fx'; x.style.cssText = `position:fixed;left:${r.left + 8}px;top:${r.top + 6}px;width:${Math.max(10, r.width - 16)}px;height:${Math.max(6, r.height - 12)}px;background:#cc0000;z-index:9;visibility:${v || 'visible'}`;
+        document.body.appendChild(x);
+      }, initial);
+      const r = await checkForms(pg, { width: 1280, expects: formExpects, counts: formCounts });
+      const after = await pg.evaluate(() => { const f = document.getElementById('fx'); return { vis: getComputedStyle(f).visibility, tagged: Object.keys(f.dataset), style: !!document.getElementById('aied-form-paint') }; });
+      if (initial === '') assert.deepStrictEqual(r.problems, [], 'a fixed element over a field is hidden for the painted samples: ' + JSON.stringify(r.problems.slice(0, 3)));
+      assert.strictEqual(after.vis, expected, 'a fixed element over a field is restored (was ' + JSON.stringify(initial) + ')');
+      assert.deepStrictEqual(after.tagged, [], 'no leftover data attributes');
+      assert.strictEqual(after.style, false, 'the injected placeholder style is removed');
+      await pg.close();
+    }
+
+    console.log('OK kit-card-run, kit-item-run and kit-form-run in a real Chromium on synthetic pages: a matching page passes at 1280 and 400 (items: a real click opens a closed item and closes the open one; forms: a real hover on the submit), every departure is caught (and a fixed bar over a card, an item or a field is not mistaken for one) with its code');
   } finally {
     await browser.close();
   }
