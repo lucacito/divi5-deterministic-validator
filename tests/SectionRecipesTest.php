@@ -344,8 +344,13 @@ class SectionRecipesTest extends TestCase
             $this->assertSame(count($m[1]), count(array_unique($m[1])), "$name: every image alt is distinct");
         }
         // Placeholders are the only field labels (Divi keeps labels off): they get the muted colour, not Chrome's #757575.
-        foreach (['cta-split-form', 'contact-location-form', 'contact-details-form'] as $name) {
-            $this->assertStringContainsString('"placeholderFont":{"font":{"desktop":{"value":{"color":"{{aied:color:muted}}"}}}}', (string) SectionRecipes::rawMarkup($name), $name);
+        // Since the forms adapter (Task 4) the kit writes the placeholder colour and the field fill, so the check reads the SERVED form.
+        foreach (['contact-form', 'cta-split-form', 'contact-location-form', 'contact-details-form'] as $name) {
+            $served = (string) SectionRecipes::recipe($name);
+            $this->assertSame(1, preg_match('/<!-- wp:divi\/contact-form (\{[^\n]*?\}) -->/', $served, $m), $name);
+            $form = (array) json_decode($m[1], true);
+            $this->assertMatchesRegularExpression('/^(#|rgb)/', (string) ($form['field']['decoration']['placeholderFont']['font']['desktop']['value']['color'] ?? ''), "$name: the placeholder has a colour of its own");
+            $this->assertMatchesRegularExpression('/^(#|rgb)/', (string) ($form['field']['decoration']['background']['desktop']['value']['color'] ?? ''), "$name: the field has a fill of its own");
         }
         // Every form keeps Divi's default receiver (the site admin email): no address is invented, none is written.
         foreach (['cta-split-form', 'contact-location-form', 'contact-details-form'] as $name) {
@@ -353,7 +358,7 @@ class SectionRecipesTest extends TestCase
             $this->assertStringContainsString('<!-- wp:divi/contact-form ', $markup, $name);
             $this->assertStringNotContainsString('receiver', $markup, "$name writes no receiver");
             $this->assertDoesNotMatchRegularExpression('/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/', $markup, "$name holds no email address");
-            $this->assertStringContainsString('"field":{"decoration":{"background"', $markup, "$name sets the field colours (Divi's default grey fields otherwise)");
+            $this->assertStringContainsString('"aied":{"kit":"form","on":', $markup, "$name takes the kit's field colours (Divi's default grey fields otherwise)");
         }
         // The countdown's end date is the labelled far-future placeholder, never a date that reads as a real deadline.
         $this->assertStringContainsString('"dateTime":{"desktop":{"value":"2099-12-31 23:59"}}', (string) SectionRecipes::rawMarkup('cta-countdown'));
