@@ -193,8 +193,8 @@ class StyleGuideKitRulesTest extends TestCase
         }
         $this->assertLessThanOrEqual( self::BUDGET, $max );
         $this->assertSame( [ 'neo-brutal', 9599 ], [ $at, $max ], 'the largest kit topic (was 9,992 before kit-rules, without the toggle)' );
-        // Re-pinned deliberately (forms adapter T2): kit-rules 3,525 + the Contact forms paragraph (693 B after fix round 1, budget 700); the catalog 8,423 + "forms (`divi/contact-form`: `form`)" less "Forms, " in the not-applied sentence (30 B).
-        $this->assertSame( 4218, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        // Re-pinned deliberately (forms adapter T2): kit-rules 3,525 + the Contact forms paragraph (+776 B in all after fix round 2, with the 30 B applied-sentence change: fix round 1's underline wording, the accent-band clause of the field frame and the `button.decoration.*` path clause, all generated; the hard cap is 10,000 B); the catalog 8,423 + "forms (`divi/contact-form`: `form`)" less "Forms, " in the not-applied sentence (30 B).
+        $this->assertSame( 4301, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         $this->assertSame( 8453, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter)' );
     }
 
@@ -290,7 +290,10 @@ class StyleGuideKitRulesTest extends TestCase
     public function testTheDefaultGuideAndTheBudgetsOfTheFormAdapter(): void
     {
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
-        $this->assertLessThanOrEqual( 3525 + 700, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules: +700 B at most' );
+        // The 700 B planned for kit-rules growth became 776 B: the accent-band clause of the field frame and the path clause
+        // (`button.decoration.*`, not `module.decoration`) were added after review. The bound below is the real one, the cap is 10,000 B.
+        $this->assertLessThanOrEqual( 3525 + 800, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules: the form paragraph at most 800 B' );
+        $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
         foreach ( StyleKits::ids() as $id ) {
@@ -306,5 +309,47 @@ class StyleGuideKitRulesTest extends TestCase
     {
         $this->assertStringContainsString( 'forms (`divi/contact-form`: `form`)', StyleGuide::appliedSentence() );
         $this->assertStringNotContainsStringIgnoringCase( 'forms, ', StyleGuide::notAppliedSentence(), 'forms are kit-driven now' );
+    }
+    /** The Contact forms paragraph of kit-rules (the last section). */
+    private function formsParagraph( ?array $proven = null ): string
+    {
+        $text = StyleGuide::kitRules( null, $proven );
+        return substr( $text, (int) strpos( $text, '## Contact forms' ) );
+    }
+
+    public function testTheFormParagraphStatesTheAccentBandFrameException(): void
+    {
+        // KitAdapters::formPatch writes a `text` frame on an accent band whatever the kit says (muted is 2.55:1 or less there).
+        $this->assertStringContainsString( 'muted for a `same` or `border` border colour (never on an accent band)', $this->formsParagraph() );
+        $kit = (array) StyleKits::get( 'soft-solid' );
+        $this->assertContains( $kit['border']['color'], [ 'same', 'border' ], 'a kit whose frame is muted on every other band' );
+        $frame = static fn ( string $on ): string => KitAdapters::formPatch( $on, $kit )['field']['decoration']['border']['desktop']['value']['styles']['all']['color'];
+        $this->assertSame( '{{aied:color:text}}', $frame( 'accent' ), 'the clause is true: text on the accent band' );
+        foreach ( [ 'light', 'surface', 'dark' ] as $on ) {
+            $this->assertSame( '{{aied:color:muted}}', $frame( $on ), "and muted on $on, as the paragraph says" );
+        }
+    }
+
+    public function testTheFormParagraphSaysWhereTheSubmitPaddingShadowAndLiftGo(): void
+    {
+        $yes  = KitAdapters::FORM_PROVEN;
+        $path = 'at `button.decoration.*`, not `module.decoration`';
+        $this->assertStringContainsString( $path, $this->formsParagraph( $yes ), 'proven: said, in a few bytes' );
+        foreach ( [ 'button-padding', 'button-shadow', 'button-lift' ] as $decision ) {
+            $this->assertStringContainsString( $path, $this->formsParagraph( array_merge( $yes, [ $decision => false ] ) ), "$decision alone unproven: the other two still go there" );
+        }
+        $none = array_merge( $yes, [ 'button-padding' => false, 'button-shadow' => false, 'button-lift' => false ] );
+        $this->assertStringNotContainsString( 'button.decoration', $this->formsParagraph( $none ), 'nothing is written there, nothing is claimed' );
+        $this->assertStringNotContainsString( 'module.decoration', $this->formsParagraph( $none ) );
+        // The Buttons sentence stays true for divi/button and is not copied onto the form.
+        $rules = StyleGuide::kitRules();
+        $this->assertStringContainsString( 'never on button.decoration: Divi drops those on a button.', $rules );
+        $this->assertSame( 1, substr_count( $rules, 'never on button.decoration' ) );
+        // The claim is true: the submit's padding, shadow and lift are at button.decoration on the form and absent from module.
+        $kit   = (array) StyleKits::get( 'chunky-pill-offset' );
+        $patch = KitAdapters::formPatch( 'light', $kit );
+        $this->assertArrayHasKey( 'spacing', $patch['button']['decoration'] );
+        $this->assertArrayHasKey( 'boxShadow', $patch['button']['decoration'] );
+        $this->assertArrayNotHasKey( 'module', $patch );
     }
 }

@@ -336,7 +336,7 @@ final class StyleGuide
         $is = static fn ( string $decision ): bool => true === ( $proven[ $decision ] ?? false );
 
         $text = 'A `form` marker styles a `divi/contact-form` (fields, submit button, captcha); `on` is the band: light, surface, accent or dark. '
-            . 'A field is filled with surface (bg on a surface band); text colour for its text, muted for its placeholder; frame in the kit\'s width (1px at least) and style, muted for a `same` or `border` border colour, else text. '
+            . 'A field is filled with surface (bg on a surface band); text colour for its text, muted for its placeholder; frame in the kit\'s width (1px at least) and style, in text colour, or muted for a `same` or `border` border colour (never on an accent band). '
             . ( $is( 'field-padding' ) ? 'It takes the control radius and control padding. ' : 'It takes the control radius; its padding stays the recipe\'s. ' )
             . ( $is( 'field-underline' ) ? 'An underline kit draws a bottom rule only. ' : 'An underline kit still draws a full 1px frame. ' );
 
@@ -346,7 +346,8 @@ final class StyleGuide
             $is( 'button-shadow' ) ? '' : 'The submit button has no shadow. ',
             $is( 'button-lift' ) ? '' : 'The submit button does not lift. ',
         ] ) );
-        $text .= 'The submit button is the kit\'s primary button' . ( [] === $with ? '' : ', with ' . ( count( $with ) > 1 ? implode( ', ', array_slice( $with, 0, -1 ) ) . ' and ' . end( $with ) : $with[0] ) ) . ' (' . ( $is( 'button-underline' ) ? 'an underline edge keeps its colour on hover' : 'an underline edge is a full frame' ) . '). '
+        $text .= 'The submit button is the kit\'s primary button' . ( [] === $with ? '' : ', with ' . ( count( $with ) > 1 ? implode( ', ', array_slice( $with, 0, -1 ) ) . ' and ' . end( $with ) : $with[0] ) . ' at `button.decoration.*`, not `module.decoration`' ) . '; '
+            . ( $is( 'button-underline' ) ? 'an underline edge keeps its colour on hover. ' : 'an underline edge is a full frame. ' )
             . implode( '', $without )
             . 'The captcha takes the band\'s ink. The form frame stays yours.';
 
