@@ -15,6 +15,9 @@
  *  - and for the FORMS (contact form, role form): FORM_SLOTS, expectations read from the resolved block tree (the form's field.*, button.* and captcha.* groups;
  *    the submit's padding, shadow and lift live at button.decoration.* on a form), the comparison of the fields, the submit (the button measures plus a real
  *    hover), the captcha and the form's own container, the painted fill and contrast, the clip, overflow and the count.
+ *  - and for the IMAGE (the media radius): MEDIA_SLOTS, one `divi/image` that carries the whole-value token `{{aied:kit:radius-media}}`; the expectation
+ *    is the four corners of the RESOLVED markup, the comparison reads the img, its wrapper (`.et_pb_image_wrap`, where Divi prints the radius and
+ *    overflow:hidden) and the module box, the clip, overflow and the count.
  */
 const zlib = require('zlib');
 const { parseColor, over, ratioOf } = require('./recipe-checks.cjs');
@@ -129,6 +132,26 @@ function formMarkup(slot) {
   return blockOf('contact-form', { button, field: { decoration: family }, captcha: { decoration: family }, builderVersion: '5.8.0', aied: marker }, [field('Name', 'Name', null), field('Email', 'Email Address', 'email')].join('\n'));
 }
 
+/**
+ * The image of the sheet (the image-radius pass): ONE `divi/image` on the bg band whose radius is the whole-value token `{{aied:kit:radius-media}}` at
+ * `image.decoration.border.desktop.value.radius` (the path candidate ty-i-radius-16 proved ON divi/image), a built-in pack picture as the recipes use,
+ * and no marker (a token is not a role). It is found again by its UNIQUE alt text.
+ */
+const MEDIA_SLOTS = [{ key: 'media-bg', band: 'bg', alt: 'Media radius sample on bg' }];
+
+/** One media slot as markup: the recipe's own keys (width, aspect ratio, the picture, the object fit) and the radius token. */
+function mediaMarkup(slot) {
+  const attrs = {
+    module: { advanced: { sizing: { desktop: { value: { width: '50%', aspectRatio: { width: '2', height: '1' } } } } } },
+    image: {
+      innerContent: { desktop: { value: { src: '{{aied:image:hero-teal-1}}', alt: slot.alt } } },
+      decoration: { border: { desktop: { value: { radius: '{{aied:kit:radius-media}}' } } }, fit: { desktop: { value: { objectFit: 'cover' } } } },
+    },
+    builderVersion: '5.8.0',
+  };
+  return blockOf('image', attrs, null);
+}
+
 /** The kit buttons a button slot holds, in order: [{ role, text }]. */
 const PANEL_BUTTONS = [{ role: 'control', text: 'Primary action' }, { role: 'control-secondary', text: 'Secondary action' }];
 /** One button block of the sheet: the marker names the surface (`on`, omitted for light). */
@@ -155,12 +178,12 @@ function cardMarkup(slot) {
   return blockOf('group', { module: { decoration }, builderVersion: '5.8.0', aied: marker }, body);
 }
 
-/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS), inside the two button panels 4 more buttons, 10 item blocks (ITEM_SLOTS: 4 accordions, 6 toggles) and 2 forms (FORM_SLOTS: one on the bg band, one on the surface band). */
+/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS), inside the two button panels 4 more buttons, 10 item blocks (ITEM_SLOTS: 4 accordions, 6 toggles), 2 forms (FORM_SLOTS: one on the bg band, one on the surface band) and 1 image carrying the media-radius token (MEDIA_SLOTS). */
 function sheetMarkup() {
   const v = V;
   const sections = SURFACES.map((s) => {
     const buttons = ROLES.map((r) => buttonBlock(r.role, r.text, s.on)).join('\n');
-    const cards = [...CARD_SLOTS.filter((c) => c.band === s.key && !c.row).map(cardMarkup), ...ITEM_SLOTS.filter((c) => c.band === s.key).map(itemMarkup), ...FORM_SLOTS.filter((c) => c.band === s.key).map(formMarkup)].join('\n');
+    const cards = [...CARD_SLOTS.filter((c) => c.band === s.key && !c.row).map(cardMarkup), ...ITEM_SLOTS.filter((c) => c.band === s.key).map(itemMarkup), ...FORM_SLOTS.filter((c) => c.band === s.key).map(formMarkup), ...MEDIA_SLOTS.filter((c) => c.band === s.key).map(mediaMarkup)].join('\n');
     return `<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":${s.bg}}},"spacing":{"desktop":{"value":{"padding":{"top":"64px","bottom":"64px"}}}}}},${v}} -->
 <!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},${v}} -->
 <!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},${v}} -->
@@ -1389,6 +1412,119 @@ function emptyFormRunProblems({ formsChecked }) {
   return formsChecked ? [] : ['no form was checked: the form selection was empty'];
 }
 
+// ---- the image (media radius) ----------------------------------------------------------------------------------------
+/** The image blocks of the RESOLVED markup (a token is not a marker, so an image is found by its unique alt text): [{ slot, attrs }] in MEDIA_SLOTS order; attrs is null when the image is not in the markup. */
+function mediaAttrs(markup, slots = MEDIA_SLOTS) {
+  const images = [];
+  const walk = (list) => { for (const n of list) { if (n.name === 'divi/image') images.push(n); walk(n.children); } };
+  walk(blockTree(markup));
+  return slots.map((slot) => {
+    const node = images.find((n) => dig(n.attrs, 'image', 'innerContent', 'desktop', 'value', 'alt') === slot.alt) || null;
+    return { slot, attrs: node ? node.attrs : null };
+  });
+}
+
+/**
+ * What the kit says about the image, read ONLY from its resolved attributes (the token `{{aied:kit:radius-media}}` became the four-corner object):
+ * { radius: [topLeft, topRight, bottomRight, bottomLeft] in px }. A corner that is absent is null and one that is not a length is NaN; both are holes
+ * (missingMediaExpectations), never a check that quietly stops. A kit with media 0px gives four zeros, which ARE expectations (a square image).
+ */
+function expectMediaFromAttrs(attrs) {
+  const radius = dig(attrs, 'image', 'decoration', 'border', 'desktop', 'value', 'radius');
+  const r = radius && typeof radius === 'object' ? radius : {};
+  return { radius: CORNERS.map((k) => (r[k] !== undefined ? parseFloat(r[k]) : null)) };
+}
+
+/** The expectation fields that are missing although the token always resolves to them: all four corners must be numbers. A non-empty list means the path drifted or the token stayed unresolved (a gate failure). */
+function missingMediaExpectations(exp) {
+  const ok = exp && Array.isArray(exp.radius) && exp.radius.length === 4 && exp.radius.every((v) => typeof v === 'number' && Number.isFinite(v));
+  return ok ? [] : ['radius'];
+}
+
+const rectText = (r) => `${Math.round(r.left)}..${Math.round(r.right)} x ${Math.round(r.top)}..${Math.round(r.bottom)}`;
+
+/**
+ * Every disagreement ([code, detail]) of one measured image with its expectation. Divi 5.15.1 prints the radius and overflow:hidden on
+ * `.et_pb_image_wrap` and gives the img `border-radius: inherit`, but the gate does not depend on that: the img, the wrapper and the module box are
+ * all read, and
+ *  - media-radius: every element that has a radius must have the EXPECTED one in each corner (a baked radius on a square kit, a wrong corner, a rounded
+ *    module box all fail), and when the expectation is not square at least one of the img and its wrapper must carry it;
+ *  - media-clip (only when the expectation is rounded and an element carries it): a wrapper that carries the radius while the picture does not
+ *    inherit it must clip (overflow not visible), or the picture's square corners show; a rounded img inside a SMALLER clipping wrapper that is square
+ *    is cut by it, so its rounding is not visible; and an img bigger than a wrapper that does not clip sticks out of it.
+ * m = measureMedia(...).images[i] ({ img, wrap, module }, each { el, rect } or null).
+ */
+function compareMedia(exp, m, phase = 'rest') {
+  const miss = missingMediaExpectations(exp);
+  if (miss.length) return [['media-expectation', 'expectation missing (the radius token did not resolve to four corners): ' + miss.join(', ')]];
+  const out = [];
+  const parts = [['img', m.img], ['wrapper', m.wrap], ['module', m.module]];
+  const carries = {};
+  for (const [name, part] of parts) {
+    if (!part) { if (name === 'img') out.push(['media-radius', `${phase}: the img was not measured`]); continue; }
+    const got = CORNER_PROPS.map((k) => px(part.el[k]));
+    carries[name] = got.every((g, i) => near(g, exp.radius[i]));
+    const square = got.every((g) => near(g, 0));
+    if (carries[name] || square) continue;
+    CORNER_PROPS.forEach((k, i) => { if (!near(got[i], exp.radius[i])) out.push(['media-radius', `${phase}: ${name} ${k} ${part.el[k]}, expected ${exp.radius[i]}px`]); });
+  }
+  const maxR = Math.max(...exp.radius);
+  if (maxR <= 0) return out;
+  const roundedImg = !!carries.img && Math.max(...CORNER_PROPS.map((k) => px(m.img.el[k]))) > 0;
+  const roundedWrap = !!carries.wrapper && Math.max(...CORNER_PROPS.map((k) => px(m.wrap.el[k]))) > 0;
+  if (!roundedImg && !roundedWrap) {
+    if (!out.length) out.push(['media-radius', `${phase}: no element of the image carries the expected radius ${exp.radius.join('/')}px (img ${CORNER_PROPS.map((k) => (m.img ? m.img.el[k] : '?')).join(' ')}, wrapper ${m.wrap ? CORNER_PROPS.map((k) => m.wrap.el[k]).join(' ') : 'none'})`]);
+    return out;
+  }
+  if (m.wrap && m.img) {
+    const clips = (v) => v === 'hidden' || v === 'clip';
+    const wrapClips = clips(m.wrap.el.overflowX) && clips(m.wrap.el.overflowY);
+    const a = m.img.rect; const b = m.wrap.rect;
+    const within = a.left >= b.left - 1 && a.right <= b.right + 1 && a.top >= b.top - 1 && a.bottom <= b.bottom + 1;
+    if (roundedWrap && !roundedImg && !wrapClips) out.push(['media-clip', `${phase}: the wrapper carries the radius ${maxR}px but is overflow ${m.wrap.el.overflowX}/${m.wrap.el.overflowY} and the picture does not inherit it: the picture's square corners show`]);
+    if (!within && wrapClips && roundedImg && !roundedWrap) out.push(['media-clip', `${phase}: the picture ${rectText(a)} is cut by its wrapper ${rectText(b)}, so its rounded corners are not visible`]);
+    if (!within && !wrapClips) out.push(['media-clip', `${phase}: the picture ${rectText(a)} sticks out of its wrapper ${rectText(b)}, which does not clip it`]);
+  }
+  return out;
+}
+
+/** Overflow of one measured image: the picture, its wrapper or the module box beyond the column (1px) or the window, or the page wider than the window. */
+function mediaOverflowProblems(m, state, page) {
+  const out = [];
+  const c = m.parentRect;
+  for (const [name, part] of [['image', m.img], ['wrapper', m.wrap], ['module', m.module]]) {
+    if (!part) continue;
+    const r = part.rect;
+    if (r.left < c.left - 1 || r.right > c.right + 1) out.push(['overflow', `${state}: ${name} ${Math.round(r.left)}..${Math.round(r.right)} outside its column ${Math.round(c.left)}..${Math.round(c.right)}`]);
+    if (r.right > page.innerWidth + 1 || r.left < -1) out.push(['overflow', `${state}: ${name} ${Math.round(r.left)}..${Math.round(r.right)} outside the window (${page.innerWidth})`]);
+  }
+  if (page.scrollWidth > page.innerWidth) out.push(['overflow', `${state}: scrollWidth ${page.scrollWidth} > innerWidth ${page.innerWidth}`]);
+  return out;
+}
+
+/**
+ * Problems of the image count (code media): every sheet image on the page exactly once. measured = measureMedia(...).images in MEDIA_SLOTS order.
+ * An empty slot list is an error.
+ */
+function mediaCountProblems(measured, slots = MEDIA_SLOTS) {
+  if (!slots.length) throw new Error('no image slots: nothing would be checked');
+  const bad = [];
+  slots.forEach((slot, i) => {
+    const mm = measured[i];
+    if (!mm || !mm.found) { bad.push(`${slot.key} is not in the page`); return; }
+    if (mm.count !== 1) bad.push(`${slot.key} is on the page ${mm.count} times, expected 1`);
+  });
+  if (measured.length > slots.length) bad.push(`${measured.length} images measured for ${slots.length} slots`);
+  if (!bad.length) return [];
+  const found = slots.filter((s, i) => measured[i] && measured[i].found).length;
+  return [['media', `${found} of ${slots.length} images rendered as the sheet says: ${bad.slice(0, 6).join('; ')}${bad.length > 6 ? ` and ${bad.length - 6} more` : ''}`]];
+}
+
+/** What a finished run must have checked as to images: at least one (an empty selection fails the run with the code media; the older emptyRunProblems keeps its own three checks). */
+function emptyMediaRunProblems({ mediaChecked }) {
+  return mediaChecked ? [] : ['no image was checked: the image selection was empty'];
+}
+
 // ---- PNG (screenshots) ---------------------------------------------------------------------------------------------
 /** Decodes an 8-bit, non-interlaced RGB or RGBA PNG (what Chromium writes) to { width, height, data: RGBA bytes }. */
 function decodePng(buf) {
@@ -1596,6 +1732,35 @@ function measureForms(slots) {
   };
 }
 
+/**
+ * Runs IN THE PAGE (self-contained). For each slot ({ key, alt }) the rendered picture: the `img` whose alt is the slot's (`count` = how many), its
+ * wrapper (`.et_pb_image_wrap`, where Divi 5.15.1 prints the radius and overflow:hidden; null when the render has none), the module box
+ * (`.et_pb_image`) and the column that holds it. Each part carries the four computed corner radii, the overflow and its box; `loaded` and the natural
+ * width are only for the observations.
+ */
+function measureMedia(slots) {
+  const root = document.querySelector('.et-l--post');
+  const F = ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius', 'overflowX', 'overflowY'];
+  const pick = (node) => { const cs = getComputedStyle(node); const o = {}; for (const k of F) o[k] = cs[k]; return o; };
+  const box = (n) => { const r = n.getBoundingClientRect(); return { left: r.left + window.scrollX, right: r.right + window.scrollX, top: r.top + window.scrollY, bottom: r.bottom + window.scrollY, width: r.width, height: r.height }; };
+  const part = (n) => (n ? { el: pick(n), rect: box(n) } : null);
+  const imgs = root ? [...root.querySelectorAll('img')] : [];
+  return {
+    hasRoot: !!root,
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth: window.innerWidth,
+    images: slots.map((s) => {
+      const hits = imgs.filter((n) => n.getAttribute('alt') === s.alt);
+      const img = hits[0];
+      if (!img) return { key: s.key, found: false, count: 0 };
+      const wrap = img.closest('.et_pb_image_wrap');
+      const mod = img.closest('.et_pb_image');
+      const column = (mod || img).closest('.et_pb_column') || (mod || img).parentElement;
+      return { key: s.key, found: true, count: hits.length, img: part(img), wrap: part(wrap), module: part(mod), parentRect: box(column), loaded: img.complete && img.naturalWidth > 0, naturalWidth: img.naturalWidth };
+    }),
+  };
+}
+
 module.exports = {
   SURFACES, ROLES, SLOTS, sheetMarkup, TITLE_PREFIX, runTitle, parseRunTitle, selectCells, buttonAttrs, expectFromAttrs, missingExpectations, BORDER_TOLERANCE,
   colour, sameColour, parseShadows, translateY, matrix2d, sameTransform, shadowProblems, compareButton, contrastProblems, overflowProblems,
@@ -1607,4 +1772,5 @@ module.exports = {
   itemContrastProblems, itemPaintedFillProblems, itemOverflowProblems, measureItems,
   FORM_SLOTS, formMarkup, formAttrs, expectFormFromAttrs, missingFormExpectations, compareFormField, compareForm, formContainerProblems, formCaptchaProblems,
   formButtonProblems, formPaintedFillProblems, formContrastProblems, formClipProblems, formOverflowProblems, formCountProblems, emptyFormRunProblems, measureForms,
+  CORNER_PROPS_LIST: CORNER_PROPS, MEDIA_SLOTS, mediaMarkup, mediaAttrs, expectMediaFromAttrs, missingMediaExpectations, compareMedia, mediaOverflowProblems, mediaCountProblems, emptyMediaRunProblems, measureMedia,
 };

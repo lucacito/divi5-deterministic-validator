@@ -13,6 +13,9 @@
  * form (`et_pb_contact_form_container` > `form` > `p.et_pb_contact_field` > `input`, `.et_pb_contact_captcha_question`, `button.et_pb_contact_submit`) and a
  * stylesheet generated from the form expectations (soft-lift and underline-link under editorial); each form code has its own departure, including a
  * placeholder colour, a painted-only overlay on a field, a hover that moves the container, a submit that cannot be hovered and a fixed element over a field.
+ * The image page carries the class names Divi 5.15.1 renders for `divi/image` (`et_pb_module et_pb_image` > `span.et_pb_image_wrap` > `img`, the radius and overflow:hidden on the wrapper and
+ * the img inheriting it, ImageModule.php); each image code has its own departure (a wrong or a missing corner, a stray radius on a square kit, a wrapper that does not clip,
+ * a rounded picture cut square by a smaller wrapper, a picture sticking out, a module box that is rounded, an image wider than the phone, a missing or doubled image).
  * Needs php (the offline sheet) and Playwright (../layoutlab).
  * It cannot prove what Divi itself prints: that is `node scripts/verify-kits.cjs`. */
 const assert = require('assert');
@@ -23,6 +26,7 @@ const K = require('./lib/kit-checks.cjs');
 const { checkCards } = require('./lib/kit-card-run.cjs');
 const { checkItems } = require('./lib/kit-item-run.cjs');
 const { checkForms } = require('./lib/kit-form-run.cjs');
+const { checkMedia } = require('./lib/kit-media-run.cjs');
 const PW = process.env.PLAYWRIGHT_PATH || path.resolve(__dirname, '..', '..', 'layoutlab', 'node_modules', 'playwright');
 const { chromium } = require(PW);
 
@@ -34,6 +38,8 @@ const expects = sheet.map((c) => K.expectCardFromAttrs(c.attrs));
 const buttonExpects = sheet.map((c) => c.buttons.map(K.expectFromAttrs));
 /** Development switch: AIED_ITEMS_ONLY=1 runs only the item half (the card half alone takes about four minutes). The full run (no variable) is the one that counts. */
 const ITEMS_ONLY = process.env.AIED_ITEMS_ONLY === '1';
+/** Development switch: AIED_MEDIA_ONLY=1 runs only the image half (seconds, not minutes). The full run (no variable) is the one that counts. */
+const MEDIA_ONLY = process.env.AIED_MEDIA_ONLY === '1';
 const N = K.CARD_SLOTS.length;
 const itemSheet = K.itemAttrs(row.markup);
 const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -53,6 +59,10 @@ const formCounts = formSheet.map((f) => f.fields);
 const underSheet = K.formAttrs(offline('underline-link').markup);
 const underExpects = underSheet.map((f) => K.expectFormFromAttrs(f.attrs));
 const NF = K.FORM_SLOTS.length;
+const mediaSheet = K.mediaAttrs(row.markup);
+const mediaExpects = mediaSheet.map((m) => K.expectMediaFromAttrs(m.attrs));
+const squareExpects = K.mediaAttrs(offline('underline-link').markup).map((m) => K.expectMediaFromAttrs(m.attrs));
+const NM = K.MEDIA_SLOTS.length;
 const HAIRLINE = '#e3dccf';
 const IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='9'><rect width='16' height='9' fill='%23336699'/></svg>";
 
@@ -200,6 +210,19 @@ function formPageHtml({ extraCss = '', exps = formExpects, drop = [], dropField 
   return `<style>body{margin:0;background:#faf7f2}.et_pb_row{width:90%;margin:0 auto}${css}${extraCss}</style><div class="et-l--post">${sections.join('')}</div>`;
 }
 
+/**
+ * The image page: the module Divi nests (`et_pb_image` > `et_pb_image_wrap` > `img`) in a column on the bg band, the radius and overflow:hidden on the
+ * wrapper and the img inheriting it (what Divi 5.15.1 prints), generated from the expectation. `drop` removes the image, `dup` renders it twice.
+ */
+function mediaPageHtml({ exps = mediaExpects, extraCss = '', drop = false, dup = false } = {}) {
+  const e = exps[0];
+  const r = e.radius.map((v) => v + 'px').join(' ');
+  const one = () => `<div class="et_pb_module et_pb_image" data-m="media-bg"><span class="et_pb_image_wrap"><img alt="${K.MEDIA_SLOTS[0].alt}" src="${IMG}"></span></div>`;
+  const css = `.et_pb_image{width:50%}.et_pb_image_wrap{display:block;box-sizing:border-box;${Math.max(...e.radius) > 0 ? `overflow:hidden;border-radius:${r};` : ''}}.et_pb_image_wrap img{display:block;width:100%;aspect-ratio:2/1;border-radius:inherit}`;
+  return `<style>body{margin:0;background:#faf7f2}.et_pb_row{width:90%;margin:0 auto;padding:16px 0}${css}${extraCss}</style>`
+    + `<div class="et-l--post"><div class="et_pb_section"><div class="et_pb_row"><div class="et_pb_column" style="display:block">${drop ? '<p>nothing here</p>' : one() + (dup ? one() : '')}</div></div></div></div>`;
+}
+
 (async () => {
   const browser = await chromium.launch();
   const run = async (html, width = 1280, before = null) => {
@@ -212,6 +235,73 @@ function formPageHtml({ extraCss = '', exps = formExpects, drop = [], dropField 
   };
   const codes = (r) => r.problems.map((x) => x[0]);
   try {
+    // ---- the image: the corners of the img, its wrapper and the module box, the clip, overflow and the count ----
+    const runMedia = async (html, { width = 1280, exps = mediaExpects } = {}) => {
+      const p = await browser.newPage({ viewport: { width, height: 900 } });
+      await p.setContent(html);
+      const r = await checkMedia(p, { width, expects: exps });
+      await p.close();
+      return r;
+    };
+    const mc = (r) => [...new Set(r.problems.map((x) => x[0]))];
+    const WRAP = '.et_pb_image_wrap';
+    const mokay = await runMedia(mediaPageHtml());
+    assert.deepStrictEqual(mokay.problems, [], JSON.stringify(mokay.problems));
+    assert.strictEqual(mokay.mediaChecked, NM);
+    assert.strictEqual(mokay.observations.length, NM);
+    assert.deepStrictEqual(mokay.observations[0].expected, mediaExpects[0].radius);
+    assert.ok(mokay.observations[0].wrapper.every((v) => v === '16px') && mokay.observations[0].img.every((v) => v === '16px') && mokay.observations[0].wrapperOverflow === 'hidden/hidden', 'the corners were measured on the img and the wrapper: ' + JSON.stringify(mokay.observations[0]));
+    for (const w of [900, 400]) { const r = await runMedia(mediaPageHtml(), { width: w }); assert.deepStrictEqual(r.problems, [], w + ': ' + JSON.stringify(r.problems)); }
+    // A square kit (media 0px) is checked too, and passes when the image is square.
+    assert.deepStrictEqual(squareExpects[0].radius, [0, 0, 0, 0]);
+    const msquare = await runMedia(mediaPageHtml({ exps: squareExpects }), { exps: squareExpects });
+    assert.deepStrictEqual(msquare.problems, [], JSON.stringify(msquare.problems));
+    assert.strictEqual(msquare.mediaChecked, NM, 'a square image counts as checked');
+    // The radius on the img alone (a wrapper that is square and does not clip) passes: whichever element Divi paints it on.
+    const mimgOnly = await runMedia(mediaPageHtml({ extraCss: `${WRAP}{border-radius:0 !important;overflow:visible !important}${WRAP} img{border-radius:16px !important}` }));
+    assert.deepStrictEqual(mimgOnly.problems, [], 'the radius on the img only: ' + JSON.stringify(mimgOnly.problems));
+
+    // Departures, each caught with its own code.
+    const mWrong = await runMedia(mediaPageHtml({ extraCss: `${WRAP}{border-top-left-radius:2px}` }));
+    assert.ok(mc(mWrong).includes('media-radius'), mc(mWrong).join());
+    assert.match(mWrong.problems[0][1], /^media-bg rest: img borderTopLeftRadius 2px, expected 16px/);
+    assert.ok(mWrong.problems.some(([, d]) => /^media-bg rest: wrapper borderTopLeftRadius 2px, expected 16px/.test(d)), 'the wrapper is named too');
+    const mCorner = await runMedia(mediaPageHtml({ extraCss: `${WRAP} img{border-bottom-right-radius:9px}` }));
+    assert.deepStrictEqual(mc(mCorner), ['media-radius']);
+    assert.match(mCorner.problems[0][1], /^media-bg rest: img borderBottomRightRadius 9px, expected 16px/);
+    const mNone = await runMedia(mediaPageHtml({ extraCss: `${WRAP}{border-radius:0 !important}${WRAP} img{border-radius:0 !important}` }));
+    assert.deepStrictEqual(mc(mNone), ['media-radius']);
+    assert.match(mNone.problems[0][1], /^media-bg rest: no element of the image carries the expected radius 16\/16\/16\/16px/);
+    const mStray = await runMedia(mediaPageHtml({ exps: squareExpects, extraCss: `${WRAP}{overflow:hidden;border-radius:16px}` }), { exps: squareExpects });
+    assert.ok(mc(mStray).includes('media-radius'), 'a baked radius on a square kit: ' + mc(mStray).join());
+    assert.match(mStray.problems[0][1], /^media-bg rest: img borderTopLeftRadius 16px, expected 0px/);
+    const mModule = await runMedia(mediaPageHtml({ extraCss: '.et_pb_image{border-radius:30px}' }));
+    assert.deepStrictEqual(mc(mModule), ['media-radius']);
+    assert.match(mModule.problems[0][1], /^media-bg rest: module borderTopLeftRadius 30px, expected 16px/);
+    // The clip.
+    const mNoClip = await runMedia(mediaPageHtml({ extraCss: `${WRAP}{overflow:visible !important}${WRAP} img{border-radius:0 !important}` }));
+    assert.deepStrictEqual(mc(mNoClip), ['media-clip']);
+    assert.match(mNoClip.problems[0][1], /^media-bg rest: the wrapper carries the radius 16px but is overflow visible\/visible/);
+    const mCut = await runMedia(mediaPageHtml({ extraCss: `${WRAP}{border-radius:0 !important;width:80%;overflow:hidden !important}${WRAP} img{border-radius:16px !important;width:125%}` }));
+    assert.deepStrictEqual(mc(mCut), ['media-clip']);
+    assert.match(mCut.problems[0][1], /is cut by its wrapper .*, so its rounded corners are not visible/);
+    const mOut = await runMedia(mediaPageHtml({ extraCss: `${WRAP}{border-radius:0 !important;width:80%;overflow:visible !important}${WRAP} img{border-radius:16px !important;width:125%}` }));
+    assert.deepStrictEqual(mc(mOut), ['media-clip']);
+    assert.match(mOut.problems[0][1], /sticks out of its wrapper/);
+    // Overflow.
+    const mWide = await runMedia(mediaPageHtml({ extraCss: '.et_pb_image{width:900px}' }), { width: 400 });
+    assert.ok(mc(mWide).includes('overflow'), 'an image wider than the phone: ' + mc(mWide).join());
+    // The count: the image missing or twice, nothing else checked; a page with no image at all fails the run.
+    const mLost = await runMedia(mediaPageHtml({ drop: true }));
+    assert.deepStrictEqual(mc(mLost), ['media']);
+    assert.match(mLost.problems[0][1], /^0 of 1 images rendered as the sheet says: media-bg is not in the page/);
+    assert.strictEqual(mLost.mediaChecked, 0, 'a page with the image missing checks nothing else');
+    assert.deepStrictEqual(K.emptyMediaRunProblems({ mediaChecked: mLost.mediaChecked }), ['no image was checked: the image selection was empty']);
+    const mTwice = await runMedia(mediaPageHtml({ dup: true }));
+    assert.deepStrictEqual(mc(mTwice), ['media']);
+    assert.match(mTwice.problems[0][1], /media-bg is on the page 2 times, expected 1/);
+    if (MEDIA_ONLY) { console.log('OK kit-media-run in a real Chromium on synthetic pages (AIED_MEDIA_ONLY): a matching page passes at 1280, 900 and 400, a square kit is checked, every departure is caught with its code'); return; }
+
     if (!ITEMS_ONLY) {
       // A page that agrees with the kit passes, at desktop (columns side by side) and at 400 px (stacked).
       const ok = await run(pageHtml());
@@ -550,7 +640,7 @@ function formPageHtml({ extraCss = '', exps = formExpects, drop = [], dropField 
       await pg.close();
     }
 
-    console.log('OK kit-card-run, kit-item-run and kit-form-run in a real Chromium on synthetic pages: a matching page passes at 1280 and 400 (items: a real click opens a closed item and closes the open one; forms: a real hover on the submit), every departure is caught (and a fixed bar over a card, an item or a field is not mistaken for one) with its code');
+    console.log('OK kit-card-run, kit-item-run, kit-form-run and kit-media-run in a real Chromium on synthetic pages: a matching page passes at 1280 and 400 (items: a real click opens a closed item and closes the open one; forms: a real hover on the submit; images: the img and its wrapper read, a square kit checked), every departure is caught (and a fixed bar over a card, an item or a field is not mistaken for one) with its code');
   } finally {
     await browser.close();
   }

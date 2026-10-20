@@ -4,7 +4,7 @@
  * of scripts/lib/kit-checks.cjs: a primary `control` and a secondary `control-secondary` button on each surface: light on a bg section, light
  * on a surface section, an accent band ("on":"accent") and a photo band with the overlay scrim ("on":"dark"); on the same four bands a `card`
  * and a `panel` (divi/group, each with a heading and a paragraph; the bg-band card and one zero-padding "clip" panel also hold an image),
- * plus a row of three `divi/column` cards on the bg band; resolved in PHP exactly as SectionRecipes::recipe serves a recipe: ImageTokens with
+ * plus a row of three `divi/column` cards on the bg band, and one `divi/image` on the bg band whose radius is the token `{{aied:kit:radius-media}}`; resolved in PHP exactly as SectionRecipes::recipe serves a recipe: ImageTokens with
  * the plugin's pack, KitResolver with the kit, RecipeTokens with the language), gates it through LayoutGate::check, saves it as a throwaway
  * DRAFT and opens it with the real Divi in Chromium at 1280, 900 and 400 px.
  *
@@ -85,6 +85,17 @@
  * the form and the window, rest and hover). A cell whose form expectations have a hole, or carry a module.decoration, a field shadow or a field hover,
  * stops at the gate before any browser work (and, if that gate were bypassed, compareForm answers `form-expectation` instead of comparing against a hole).
  *
+ * The IMAGE (scripts/lib/kit-media-run.cjs, judged by the pure comparisons of kit-checks.cjs): ONE `divi/image` on the bg band whose radius is the
+ * whole-value token `{{aied:kit:radius-media}}` at `image.decoration.border.desktop.value.radius` (no marker), with a built-in pack picture, found by its
+ * unique alt text. The expected four corners are read from the RESOLVED markup (a kit with media 0px gives four zeros, which are checked: a square
+ * image), never a table here. The page is measured for the img, its wrapper (`.et_pb_image_wrap`, where Divi prints the radius and overflow:hidden) and
+ * the module box. Codes, each `<slot> <detail>`: media (the image missing or on the page twice: nothing else is then checked; a run that checked no
+ * image fails with `FAIL media:`); media-radius (every element of the image that has a radius must carry the expected one in each corner, and when
+ * the kit is not square at least one of the img and its wrapper must carry it; the radius is accepted on whichever the render paints it on); media-clip
+ * (a wrapper that carries the radius must clip the picture unless the img inherits it, a rounded img must not be cut square by a smaller clipping wrapper,
+ * and an img must not stick out of a non-clipping wrapper); and overflow also covers the picture, its wrapper and the module box (inside the column
+ * and the window at 1280, 900 and 400). A cell whose image expectation has a hole stops at the gate before any browser work.
+ *
  * A sheet the gate or the
  * resolver refuses FAILs once as `<kit>/<language>/gate`. Problems in the script's own page handling are `render-error`. A preview that
  * comes back as a 404 or without the page content is retried once with a fresh login.
@@ -94,7 +105,7 @@
  * element, how far the card stands out from its band, whether the flush image corner is cut by the radius, the column row's layout at 900);
  * dist/kit-sheet/<kit>-<language>-<width>.png (the full page, cards included), dist/kit-sheet/observations.json,
  * dist/kit-sheet/card-observations.json (with the button-panel contrast and the featured card's prominence), dist/kit-sheet/item-observations.json (the painted fills
- * and the click of every item), dist/kit-sheet/form-observations.json (the painted fields, the contrast of every form) and dist/kit-sheet/index.html (one row per kit: editorial and glass-dark at 1280 and 400). dist/
+ * and the click of every item), dist/kit-sheet/form-observations.json (the painted fields, the contrast of every form), dist/kit-sheet/media-observations.json (the computed corners of the img, its wrapper and the module box) and dist/kit-sheet/index.html (one row per kit: editorial and glass-dark at 1280 and 400). dist/
  * is git-ignored; writing the sheet never fails the run.
  *
  * Dev site only (localhost). RUN ONE RUN AT A TIME. Every throwaway page is titled `aied kit <runToken> <kit> <language>`; the run deletes
@@ -142,6 +153,7 @@ const { measureInPage, PHP_ERROR, over, ratioOf } = require('./lib/recipe-checks
 const { checkCards, transitionMs } = require('./lib/kit-card-run.cjs');
 const { checkItems } = require('./lib/kit-item-run.cjs');
 const { checkForms } = require('./lib/kit-form-run.cjs');
+const { checkMedia } = require('./lib/kit-media-run.cjs');
 
 const wp = makeWp(ROOT);
 const pages = throwawayPages(wp, K.TITLE_PREFIX, 'kit');
@@ -264,9 +276,11 @@ async function openPreview(ctx, id, state) {
   const cardObservations = [];
   const itemObservations = [];
   const formObservations = [];
+  const mediaObservations = [];
   let cardsChecked = 0;
   let itemsChecked = 0;
   let formsChecked = 0;
+  let mediaChecked = 0;
   const state = { cookies: null, token: null };
   cleanupOnSignals(run, sweep, pages.runPrefix);
   let cells = [];
@@ -332,6 +346,13 @@ async function openPreview(ctx, id, state) {
         const formMissing = formExpects.flatMap((e, i) => K.missingFormExpectations(e).map((f) => `${formBlocks[i].slot.key} ${f}`));
         if (formMissing.length) { report(kit, lang, 'gate', [['gate', 'form expectation missing (an adapter attribute path drifted): ' + formMissing.slice(0, 6).join(', ') + (formMissing.length > 6 ? ` and ${formMissing.length - 6} more` : '')]]); continue; }
         const formCounts = formBlocks.map((b) => b.fields);
+        // The image: found in the resolved sheet by its unique alt text, with a complete expectation (the radius token must have resolved to four corners).
+        const mediaBlocks = K.mediaAttrs(page.markup);
+        const mediaAbsent = mediaBlocks.filter((b) => !b.attrs).map((b) => b.slot.key);
+        if (mediaAbsent.length) { report(kit, lang, 'gate', [['gate', 'images not found in the resolved sheet (by their alt text): ' + mediaAbsent.join(', ')]]); continue; }
+        const mediaExpects = mediaBlocks.map((b) => K.expectMediaFromAttrs(b.attrs));
+        const mediaMissing = mediaExpects.flatMap((e, i) => K.missingMediaExpectations(e).map((f) => `${mediaBlocks[i].slot.key} ${f}`));
+        if (mediaMissing.length) { report(kit, lang, 'gate', [['gate', 'image expectation missing (the radius token did not resolve to four corners): ' + mediaMissing.join(', ')]]); continue; }
         for (const width of WIDTHS) {
           const ctx = await browser.newContext({ viewport: { width, height: 900 } });
           const problems = [];
@@ -410,6 +431,12 @@ async function openPreview(ctx, id, state) {
               for (const pr of fr.problems) problems.push(pr);
               for (const o of fr.observations) formObservations.push({ kit, language: lang, ...o });
             }
+            if (m.hasRoot) {
+              const mr = await checkMedia(p, { width, expects: mediaExpects });
+              mediaChecked += mr.mediaChecked;
+              for (const pr of mr.problems) problems.push(pr);
+              for (const o of mr.observations) mediaObservations.push({ kit, language: lang, ...o });
+            }
             if (consoleErrors.length) problems.push(['console-error', [...new Set(consoleErrors)].slice(0, 3).join(' | ')]);
             await p.close();
           } catch (e) {
@@ -430,10 +457,12 @@ async function openPreview(ctx, id, state) {
     try { fs.writeFileSync(path.join(OUT_DIR, 'card-observations.json'), JSON.stringify(cardObservations, null, 1)); } catch (e) { console.log('WARNING could not write card-observations.json'); }
     try { fs.writeFileSync(path.join(OUT_DIR, 'item-observations.json'), JSON.stringify(itemObservations, null, 1)); } catch (e) { console.log('WARNING could not write item-observations.json'); }
     try { fs.writeFileSync(path.join(OUT_DIR, 'form-observations.json'), JSON.stringify(formObservations, null, 1)); } catch (e) { console.log('WARNING could not write form-observations.json'); }
+    try { fs.writeFileSync(path.join(OUT_DIR, 'media-observations.json'), JSON.stringify(mediaObservations, null, 1)); } catch (e) { console.log('WARNING could not write media-observations.json'); }
     printNotes(observations);
     printCardNotes(cardObservations);
     printItemNotes(itemObservations);
     printFormNotes(formObservations);
+    printMediaNotes(mediaObservations);
     writeSheet(status, cells);
   } catch (e) {
     console.log('ERROR script: ' + (e && e.message ? e.message : e));
@@ -448,6 +477,7 @@ async function openPreview(ctx, id, state) {
   if (run.cleaning) return;
   for (const why of K.emptyRunProblems({ checked: passes + failures, cardsChecked, itemsChecked })) { failures++; console.log('FAIL ' + why); }
   for (const why of K.emptyFormRunProblems({ formsChecked })) { failures++; console.log('FAIL form: ' + why); }
+  for (const why of K.emptyMediaRunProblems({ mediaChecked })) { failures++; console.log('FAIL media: ' + why); }
   console.log(`\n${passes} PASS, ${failures} FAIL (cell/width lines) over ${cells.length} kit/language cell(s)`);
   console.log(failures ? 'FAILED' : 'Every selected kit renders as it says on the real Divi.');
   process.exit(failures ? 1 : 0);
@@ -514,5 +544,12 @@ function printFormNotes(obs) {
     const fields = list.flatMap((o) => o.contrast.fields || []);
     const frames = fields.flatMap((f) => ['top', 'right', 'bottom', 'left'].flatMap((s) => [f[s], f[s + 'OnForm']]));
     console.log(`NOTE forms ${k}: ${list.length} forms; field ink ${range(fields.map((f) => f.ink))}:1, placeholder ${range(fields.map((f) => f.placeholder))}:1, drawn frame sides ${range(frames)}:1; submit label ${range(list.map((o) => o.contrast.submit && o.contrast.submit.rest && o.contrast.submit.rest.label))}:1 at rest; captcha ${range(list.map((o) => o.contrast.captcha))}:1`);
+  }
+}
+
+/** NOTE lines for the image, one per kit/language at 1280 px: the expected corner, what the img and its wrapper computed, the wrapper's overflow and whether the picture loaded. */
+function printMediaNotes(obs) {
+  for (const o of obs.filter((x) => x.width === 1280)) {
+    console.log(`NOTE media ${o.kit}/${o.language}: expected ${o.expected[0]}px; img ${o.img ? o.img[0] : 'n/a'}, wrapper ${o.wrapper ? o.wrapper[0] : 'none'} (overflow ${o.wrapperOverflow || 'n/a'}), module ${o.module ? o.module[0] : 'none'}; picture ${o.box ? o.box.join('x') : 'n/a'} ${o.loaded ? 'loaded' : 'NOT loaded'}`);
   }
 }
