@@ -218,6 +218,16 @@ final class KitAdapters
     ];
 
     /**
+     * The blocks whose corners take a kit's MEDIA radius through the whole-value token `{{aied:kit:radius-media}}`
+     * (StyleKits::VALUE_TOKENS) at `image.decoration.border.{bp}.value.radius`. Not a marker role: no adapter writes a
+     * patch, a recipe just carries the token (proven on `divi/image`, candidate ty-i-radius-16). The generated kit-rules
+     * topic follows this list: while it is empty the guide says the media radius is recorded but unused.
+     *
+     * @var list<string>
+     */
+    public const MEDIA_RADIUS_BLOCKS = [ 'divi/image' ];
+
+    /**
      * The six conditional form decisions => whether the effect probe proved them ON `divi/contact-form` (the "Adapter
      * decisions" table of fixtures/shapes/kit-form-vocabulary.md; a test pins this constant to that table). A decision is
      * written only when true and only at the path the probe measured; the generated guide wording follows the same constant.

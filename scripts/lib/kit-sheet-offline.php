@@ -7,7 +7,8 @@
  * zero leftovers and a valid gate for every pair and checks the card expectations on the resolved markup (the 20 cards of the sheet:
  * plain cards and panels, the inverted and accent grounds, the button panels with their `on:"panel"` buttons, and the accent middle card) and of
  * the 10 item blocks (the `item` accordions on every band, the boxed and rule toggles on the two light ones: every state colour, frame and radius)
- * and the 2 contact forms (a `form` on the bg band and one on the surface band: the field fill, frame, radius, ink, padding and placeholder, the submit button and the captcha ink).
+ * and the 2 contact forms (a `form` on the bg band and one on the surface band: the field fill, frame, radius, ink, padding and placeholder, the submit button and the captcha ink)
+ * and the 1 image (a `divi/image` on the bg band whose radius token `{{aied:kit:radius-media}}` resolves to the kit's four media corners, its picture to a site-local pack URL).
  *
  * Usage: node -e '...' | php scripts/lib/kit-sheet-offline.php [--kit id] [--language id] [--no-markup]
  */

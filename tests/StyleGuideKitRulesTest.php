@@ -42,7 +42,10 @@ class StyleGuideKitRulesTest extends TestCase
         'border colour is `same` or `border`',
         'The frame takes the fill colour; the kit never re-inks the children.',
         'capitalization, weight and letter spacing are button-only',
-        'a kit\'s media radius is recorded in the kit but no module takes it yet',
+        // Image radius pass: the old "recorded in the kit but no module takes it yet" sentence is generated only while
+        // KitAdapters::MEDIA_RADIUS_BLOCKS is empty (see testKitRulesHasAnImagesParagraphGeneratedFromTheConst); while a block
+        // takes the media radius the Images paragraph is the sentence that moved.
+        'take the kit\'s media radius, the third radius of every kit topic.',
         'Shadows and transforms belong on the button module',
         'two roles can share one value',
         'Kit-driven today:',
@@ -81,14 +84,49 @@ class StyleGuideKitRulesTest extends TestCase
     {
         $shipped = StyleGuide::notAppliedSentence();
         // Forms left the list with the form adapter (the sentence is generated from KitAdapters::APPLIED).
-        $this->assertSame( 'Blurbs, testimonials, image radius and every other module keep the recipe\'s own styling.', $shipped );
+        // Image radius left the list with the media-radius const (the sentence is generated from KitAdapters::MEDIA_RADIUS_BLOCKS too).
+        $this->assertSame( 'Blurbs, testimonials and every other module keep the recipe\'s own styling.', $shipped );
+        $this->assertSame( 'Blurbs, testimonials, image radius and every other module keep the recipe\'s own styling.', StyleGuide::notAppliedSentence( null, [] ), 'with no block taking the media radius the sentence names it again' );
         $this->assertStringNotContainsStringIgnoringCase( 'accordion', $shipped, 'accordions are kit-driven now' );
         $this->assertStringContainsString( 'accordion and toggle items (`divi/accordion`, `divi/toggle`: `item`, `item-rule`)', StyleGuide::appliedSentence() );
-        $this->assertSame( 'Accordions, forms, blurbs, testimonials, image radius and every other module keep the recipe\'s own styling.', StyleGuide::notAppliedSentence( [ 'divi/button' => [ 'control' ] ] ) );
-        $this->assertSame( 'Accordions, forms, testimonials, image radius and every other module keep the recipe\'s own styling.', StyleGuide::notAppliedSentence( [ 'divi/blurb' => [ 'tile' ] ] ) );
+        $this->assertSame( 'Accordions, forms, blurbs, testimonials, image radius and every other module keep the recipe\'s own styling.', StyleGuide::notAppliedSentence( [ 'divi/button' => [ 'control' ] ], [] ) );
+        $this->assertSame( 'Accordions, forms, testimonials, image radius and every other module keep the recipe\'s own styling.', StyleGuide::notAppliedSentence( [ 'divi/blurb' => [ 'tile' ] ], [] ) );
         foreach ( [ 'style-kits', 'kit-rules' ] as $topic ) {
             $this->assertStringContainsString( StyleGuide::appliedSentence() . ' ' . $shipped, StyleGuide::markdown( $topic ), $topic );
         }
+    }
+
+    public function testKitRulesHasAnImagesParagraphGeneratedFromTheConst(): void
+    {
+        $old = 'a kit\'s media radius is recorded in the kit but no module takes it yet';
+        $this->assertSame( [ 'divi/image' ], KitAdapters::MEDIA_RADIUS_BLOCKS );
+
+        $text = StyleGuide::markdown( 'kit-rules' );
+        $this->assertStringContainsString( "\n## Images\n", $text );
+        $this->assertStringContainsString( '(`divi/image`)', $text );
+        $this->assertStringContainsString( 'image.decoration.border.desktop.value.radius', $text );
+        $this->assertStringNotContainsString( $old, $text, 'the shipped guide must not say the media radius is recorded but unused' );
+        $this->assertStringNotContainsString( 'no module takes it', $text );
+        $this->assertSame( StyleGuide::kitRules(), StyleGuide::kitRules( null, null, KitAdapters::MEDIA_RADIUS_BLOCKS ) );
+
+        // Planted empty const: the old sentence is back and the Images paragraph is gone (the text follows the const).
+        $empty = StyleGuide::kitRules( null, null, [] );
+        $this->assertStringContainsString( $old, $empty );
+        $this->assertSame( 1, substr_count( $empty, $old ) );
+        $this->assertStringNotContainsString( '## Images', $empty );
+        $this->assertStringNotContainsString( '`divi/image`', $empty );
+
+        // A different block is named in the paragraph, so it is generated, not canned.
+        $other = StyleGuide::kitRules( null, null, [ 'divi/blurb' ] );
+        $this->assertStringContainsString( '(`divi/blurb`)', $other );
+        $this->assertStringNotContainsString( '`divi/image`', $other );
+        $this->assertStringNotContainsString( $old, $other );
+
+        // Budgets: the paragraph costs at most 400 B net of the clause it replaced; no kit topic or other guide moved.
+        $this->assertLessThanOrEqual( 4301 + 400, strlen( $text ) );
+        $this->assertLessThanOrEqual( self::BUDGET, strlen( $text ) );
+        $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
+        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide is exactly as before' );
     }
 
     public function testTheRepeatedProseIsSaidOnceInKitRulesAndInNoKitTopic(): void
@@ -194,8 +232,10 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertLessThanOrEqual( self::BUDGET, $max );
         $this->assertSame( [ 'neo-brutal', 9599 ], [ $at, $max ], 'the largest kit topic (was 9,992 before kit-rules, without the toggle)' );
         // Re-pinned deliberately (forms adapter T2): kit-rules 3,525 + the Contact forms paragraph (+776 B in all after fix round 2, with the 30 B applied-sentence change: fix round 1's underline wording, the accent-band clause of the field frame and the `button.decoration.*` path clause, all generated; the hard cap is 10,000 B); the catalog 8,423 + "forms (`divi/contact-form`: `form`)" less "Forms, " in the not-applied sentence (30 B).
-        $this->assertSame( 4301, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
-        $this->assertSame( 8453, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter)' );
+        $this->assertSame( 4301, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules as it was before the image radius pass (no block takes the media radius)' );
+        // Image radius pass (Task 1): the Images paragraph replaces the "recorded but unused" clause: +291 B net (plan bound: 4,301 + 400).
+        $this->assertSame( 4607, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        $this->assertSame( 8439, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter, 8,453 with it; 14 B less since "image radius" left the not-applied sentence)' );
     }
 
     public function testTheGroundSentenceNamesTheAdaptersFillsAndFailsClosed(): void
@@ -292,7 +332,8 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
         // The 700 B planned for kit-rules growth became 776 B: the accent-band clause of the field frame and the path clause
         // (`button.decoration.*`, not `module.decoration`) were added after review. The bound below is the real one, the cap is 10,000 B.
-        $this->assertLessThanOrEqual( 3525 + 800, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules: the form paragraph at most 800 B' );
+        $this->assertLessThanOrEqual( 3525 + 800, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph: the form paragraph at most 800 B' );
+        $this->assertLessThanOrEqual( 4301 + 400, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules with the Images paragraph (image radius pass): at most 400 B more' );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
