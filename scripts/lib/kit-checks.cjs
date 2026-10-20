@@ -1274,7 +1274,9 @@ function formPaintedFillProblems(m, fills, surfaces) {
 
 /**
  * form-contrast, on the MEASURED surfaces (screenshots with the element hidden): each field's ink and placeholder against the painted field
- * fill >= 4.5, each drawn frame side >= 3.0 against the painted fill and against the form behind it, the submit (contrastProblems: the label against
+ * fill >= 4.5, each drawn frame side >= 3.0 against the painted fill (strict, no exemption), the field's BOUNDARY against the form behind it >= 3.0 from the
+ * BETTER of the frame (best drawn side) and the fill (Ruling 6, WCAG 1.4.11: either edge identifies the control; a strict "every side AND the fill" reading is
+ * unsatisfiable, a white field on a dark band needs a frame between the two), the submit (contrastProblems: the label against
  * its fill >= 4.5, a transparent fill's drawn edges >= 3.0 against the surface) at rest and on hover, and the captcha question against the surface >= 4.5.
  * A missing sample, an unreadable colour or a missing hover is a failure, never a skip. fills = per field, surfaces = { fields, submit, captcha }.
  */
@@ -1298,11 +1300,22 @@ function formContrastProblems(exp, m, fills, surfaces, hoverEl) {
       row.placeholder = check(`${name} placeholder`, f.placeholder ? f.placeholder.color : null, base, CONTRAST_LABEL);
       const sb = surf ? { r: surf.r, g: surf.g, b: surf.b, a: 1 } : null;
       if (!sb) out.push(['form-contrast', `${name}: the form behind the field was not sampled`]);
+      let bestEdge = 0;
       for (const [side, cap] of SIDES) {
         if (!(px(f.el[`border${cap}Width`]) > 0)) continue;
         const raw = f.el[`border${cap}Color`];
         row[side] = check(`${name} frame ${side} against the field fill`, raw, base, CONTRAST_SHAPE);
-        if (sb) row[side + 'OnForm'] = check(`${name} frame ${side} against the form behind it`, raw, sb, CONTRAST_SHAPE);
+        if (sb) {
+          const c = colour(raw);
+          row[side + 'OnForm'] = c ? ratio(raw, sb) : null;
+          if (c) bestEdge = Math.max(bestEdge, ratio(raw, sb));
+        }
+      }
+      // The boundary against the form behind: the better of the frame and the fill (Ruling 6).
+      if (sb) {
+        row.fillOnForm = round2(ratioOf(base, sb));
+        row.boundary = round2(Math.max(bestEdge, row.fillOnForm));
+        if (row.boundary < CONTRAST_SHAPE) out.push(['form-contrast', `${name} boundary: neither the frame (best ${bestEdge > 0 ? bestEdge : 'none drawn'}:1) nor the fill ${hex(base)} (${row.fillOnForm}:1) reaches ${CONTRAST_SHAPE} on the form behind it ${hex(sb)}`]);
       }
     }
     info.fields.push(row);

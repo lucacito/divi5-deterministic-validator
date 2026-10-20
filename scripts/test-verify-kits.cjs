@@ -1252,7 +1252,23 @@ t('form-contrast: ink and placeholder 4.5 on the painted field, the frame 3.0 on
   const palePh = K.formContrastProblems(qForm, withField(m, 1, {}, { placeholder: { color: 'rgb(190, 190, 190)' } }), [F, F], surfaces, submitM(qForm.button, 'hover').el);
   assert.match(palePh.problems[0][1], /^field 2 placeholder /);
   const faint = K.formContrastProblems(qForm, withField(m, 0, { borderTopColor: 'rgb(240, 240, 240)' }), [F, F], surfaces, submitM(qForm.button, 'hover').el);
-  assert.ok(faint.problems.length === 2 && faint.problems.every(([c, d]) => c === 'form-contrast' && /field 1 frame top against the (field fill|form behind it)/.test(d)), JSON.stringify(faint.problems));
+  // Ruling 6: the frame against the painted FILL stays strict per side; the other three sides still draw the boundary against the form behind, so only the fill rule fires.
+  assert.ok(faint.problems.length === 1 && faint.problems[0][0] === 'form-contrast' && /^field 1 frame top against the field fill /.test(faint.problems[0][1]), JSON.stringify(faint.problems));
+  // The boundary against the form behind the field is the BETTER of the frame and the fill (WCAG 1.4.11): a dark field with a mid-grey frame that is only 2.6:1 on the
+  // light form passes because the fill is 16:1 on it; a white field with a frame that is 3.03:1 on the fill but 2.84:1 on the form fails (both edges below 3).
+  const sides4 = (c) => ({ borderTopColor: c, borderRightColor: c, borderBottomColor: c, borderLeftColor: c });
+  const DARK = K.colour(EDITORIAL.text); const D = { r: DARK.r, g: DARK.g, b: DARK.b };
+  const darkM = withField(withField(m, 0, Object.assign({ color: 'rgb(255, 255, 255)' }, sides4('rgb(154, 154, 154)')), { placeholder: { color: 'rgb(255, 255, 255)' } }), 1, Object.assign({ color: 'rgb(255, 255, 255)' }, sides4('rgb(154, 154, 154)')), { placeholder: { color: 'rgb(255, 255, 255)' } });
+  const relaxed = K.formContrastProblems(qForm, darkM, [D, D], surfaces, submitM(qForm.button, 'hover').el);
+  assert.deepStrictEqual(relaxed.problems, [], JSON.stringify(relaxed.problems));
+  assert.ok(relaxed.info.fields[0].topOnForm < 3 && relaxed.info.fields[0].top >= 3 && relaxed.info.fields[0].fillOnForm >= 3 && relaxed.info.fields[0].boundary === relaxed.info.fields[0].fillOnForm, 'frame < 3 on the form, fill >= 3: ' + JSON.stringify(relaxed.info.fields[0]));
+  const bothLow = K.formContrastProblems(qForm, withField(m, 0, sides4('rgb(148, 148, 148)')), [F, F], surfaces, submitM(qForm.button, 'hover').el);
+  assert.strictEqual(bothLow.problems.length, 1, JSON.stringify(bothLow.problems));
+  assert.strictEqual(bothLow.problems[0][0], 'form-contrast');
+  assert.match(bothLow.problems[0][1], /^field 1 boundary: neither the frame \(best 2\.84:1\) nor the fill #ffffff \(1\.07:1\) reaches 3 on the form behind it #faf7f2/);
+  const noFrame = K.formContrastProblems(qForm, withField(m, 0, { borderTopWidth: '0px', borderRightWidth: '0px', borderBottomWidth: '0px', borderLeftWidth: '0px' }), [F, F], surfaces, submitM(qForm.button, 'hover').el);
+  assert.match(noFrame.problems[0][1], /^field 1 boundary: neither the frame \(best none drawn:1\) nor the fill /, 'no frame and a fill that matches the form: no boundary at all');
+  assert.strictEqual(K.formContrastProblems(qForm, m, [F, F], surfaces, submitM(qForm.button, 'hover').el).problems.length, 0, 'the real sheet passes');
   const paleCaptcha = K.formContrastProblems(qForm, Object.assign({}, m, { captcha: Object.assign({}, m.captcha, { question: { color: 'rgb(210, 210, 210)' } }) }), [F, F], surfaces, submitM(qForm.button, 'hover').el);
   assert.match(paleCaptcha.problems[0][1], /^captcha ink /);
   const badLabel = K.formContrastProblems(qForm, Object.assign({}, m, { submit: Object.assign({}, m.submit, { el: Object.assign({}, m.submit.el, { color: 'rgb(154, 59, 31)' }) }) }), [F, F], surfaces, submitM(qForm.button, 'hover').el);
@@ -1267,7 +1283,7 @@ t('form-contrast: ink and placeholder 4.5 on the painted field, the frame 3.0 on
   // An underline field draws one side: only that side is judged.
   const um = mform(uForm);
   assert.deepStrictEqual(K.formContrastProblems(uForm, um, [F, F], surfaces, submitM(uForm.button, 'hover').el).problems, []);
-  assert.deepStrictEqual(Object.keys(K.formContrastProblems(uForm, um, [F, F], surfaces, submitM(uForm.button, 'hover').el).info.fields[0]).sort(), ['bottom', 'bottomOnForm', 'ink', 'placeholder']);
+  assert.deepStrictEqual(Object.keys(K.formContrastProblems(uForm, um, [F, F], surfaces, submitM(uForm.button, 'hover').el).info.fields[0]).sort(), ['bottom', 'bottomOnForm', 'boundary', 'fillOnForm', 'ink', 'placeholder']);
 });
 
 t('form-clip and overflow: a field or the submit cut by a clipping container, a cut label, anything beyond the form or the window, a page wider than the window', () => {

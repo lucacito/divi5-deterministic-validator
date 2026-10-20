@@ -78,11 +78,12 @@
  * keeps its REST bottom edge colour on hover, the kit writes no hover border for it); form-captcha (the question, its row and its label in the
  * band's ink); form-container (the form's own container carries nothing of the kit: no shadow, no movement, no frame, at rest and on hover, because
  * the kit writes no module.decoration on a form); form-contrast (ink and placeholder against the PAINTED field fill >= 4.5, every drawn frame side >= 3.0
- * against the painted field fill and against the form behind it, the submit label and drawn edges against the form behind it, rest and hover, and the
+ * against the painted field fill (strict), the field's boundary against the form behind it >= 3.0 from the BETTER of its frame and its fill (Ruling 6,
+ * WCAG 1.4.11: either edge identifies the control), the submit label and drawn edges against the form behind it, rest and hover, and the
  * captcha ink >= 4.5; the surfaces are screenshots with the element hidden, the admin bar and every fixed or sticky element hidden too); form-clip (a
  * field or the submit cut by a clipping container, or a cut submit label); and overflow also covers every field, the submit and the captcha (inside
  * the form and the window, rest and hover). A cell whose form expectations have a hole, or carry a module.decoration, a field shadow or a field hover,
- * stops at the gate before any browser work.
+ * stops at the gate before any browser work (and, if that gate were bypassed, compareForm answers `form-expectation` instead of comparing against a hole).
  *
  * A sheet the gate or the
  * resolver refuses FAILs once as `<kit>/<language>/gate`. Problems in the script's own page handling are `render-error`. A preview that

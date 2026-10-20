@@ -193,7 +193,7 @@ function formPageHtml({ extraCss = '', exps = formExpects, drop = [], dropField 
     const band = slot.on === 'surface' ? EDITORIAL.surface : EDITORIAL.bg;
     const names = ['Name', 'Email Address'].slice(0, dropField === slot.key ? 1 : 2);
     const fields = names.map((n) => `<p class="et_pb_contact_field et_pb_contact_field_half"><label class="et_pb_contact_form_label" for="${slot.key}-${n}" style="display:none">${n}</label><input type="text" id="${slot.key}-${n}" class="input" placeholder="${n}"></p>`).join('');
-    const captcha = noCaptcha.includes(slot.key) ? '' : '<div class="et_pb_contact_right"><p class="clearfix"><span class="et_pb_contact_captcha_question">4 + 7</span> = <input type="text" size="2" class="input et_pb_contact_captcha" value=""></p></div>';
+    const captcha = noCaptcha.includes(slot.key) ? '' : '<div class="et_pb_contact_right"><p class="clearfix"><label><span class="et_pb_contact_captcha_question">4 + 7</span> =</label> <input type="text" size="2" class="input et_pb_contact_captcha" value=""></p></div>';
     return `<div class="et_pb_section" style="background:${band};padding:40px 0"><div class="et_pb_row"><div class="et_pb_column" style="display:block"><div class="et_pb_module et_pb_contact_form_container" data-f="${slot.key}" style="display:block"><div class="et_pb_contact"><form class="et_pb_contact_form clearfix">${fields}<input type="hidden" name="et_pb_contact_form_submit" value="x"><div class="et_contact_bottom_container" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">${captcha}<button type="submit" class="et_pb_contact_submit et_pb_button">${slot.submit}</button></div></form></div></div></div></div></div>`;
   });
   const css = live.map((slot) => formCssFor(slot.key, exps[K.FORM_SLOTS.indexOf(slot)])).join('');
@@ -506,7 +506,18 @@ function formPageHtml({ extraCss = '', exps = formExpects, drop = [], dropField 
     assert.ok(fc(fPaleCap).every((c) => c === 'form-contrast') && fPaleCap.problems.some(([, d]) => /^form-surface captcha ink /.test(d)), fc(fPaleCap).join());
     const faintFrame = clone(formExpects); for (const side of ['top', 'right', 'bottom', 'left']) faintFrame[0].field[side].color = '#f1ece2';
     const fFaint = await runForms(formPageHtml({ exps: faintFrame }), { exps: faintFrame });
-    assert.ok(fc(fFaint).every((c) => c === 'form-contrast') && fFaint.problems.some(([, d]) => /frame top against the form behind it/.test(d)), fc(fFaint).join());
+    assert.ok(fc(fFaint).every((c) => c === 'form-contrast') && fFaint.problems.some(([, d]) => /frame top against the field fill/.test(d)), fc(fFaint).join());
+    // Ruling 6: the boundary against the form behind is the better of the frame and the fill. A frame that is 3:1 on the white field but under 3:1 on the warm form,
+    // with a fill that is no stronger, leaves NO edge that reaches 3:1 (boundary); a dark field with the same grey frame passes (the fill is the edge).
+    const lowBoundary = clone(formExpects); for (const side of ['top', 'right', 'bottom', 'left']) lowBoundary[0].field[side].color = '#949494';
+    const fLowB = await runForms(formPageHtml({ exps: lowBoundary }), { exps: lowBoundary });
+    assert.deepStrictEqual(fc(fLowB), ['form-contrast']);
+    assert.ok(fLowB.problems.some(([, d]) => /^form-bg field [12] boundary: neither the frame \(best 2\.84:1\) nor the fill #ffffff \(1\.07:1\)/.test(d)), JSON.stringify(fLowB.problems));
+    const darkField = clone(formExpects);
+    for (const side of ['top', 'right', 'bottom', 'left']) darkField[0].field[side].color = '#9a9a9a';
+    darkField[0].field.fill = '#1c1a17'; darkField[0].field.ink = '#ffffff'; darkField[0].field.placeholder = '#ffffff';
+    const fDark = await runForms(formPageHtml({ exps: darkField }), { exps: darkField });
+    assert.deepStrictEqual(fDark.problems, [], 'the fill is 16:1 on the form, so a 2.6:1 frame still leaves a boundary: ' + JSON.stringify(fDark.problems));
     const paleLabel = clone(formExpects); paleLabel[0].button.rest.label = paleLabel[0].button.rest.fill;
     const fLabel = await runForms(formPageHtml({ exps: paleLabel }), { exps: paleLabel });
     assert.ok(fLabel.problems.some(([c, d]) => c === 'form-contrast' && /^form-bg submit rest: label /.test(d)), JSON.stringify(fLabel.problems.slice(0, 3)));
