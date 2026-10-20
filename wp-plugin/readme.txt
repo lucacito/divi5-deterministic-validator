@@ -1,6 +1,6 @@
 === JHMG AI Editor for Divi 5 ===
 Contributors:      lucaslopvet
-Tags:              divi, divi 5, ai, mcp, editor
+Tags:              divi 5, divi, mcp, claude, chatgpt
 Requires at least: 6.0
 Tested up to:      7.1
 Stable tag:        4.12.0
@@ -8,11 +8,26 @@ Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Edit and build Divi 5 pages and Divi Projects in plain English with the AI assistant you already use. Every change is checked before it is saved.
+MCP server for Divi 5: let Claude, ChatGPT or Cursor edit and build your pages, even from a screenshot or URL. Every change is checked and undoable.
 
 == Description ==
 
-Tell your AI assistant what you want changed on your Divi 5 website, in your own words, and it makes the change for you. A built-in checker tests every change the AI makes before it is saved.
+**An MCP server made for Divi 5.** Connect Claude, ChatGPT, Cursor, VS Code Copilot, Windsurf or Gemini to your WordPress site, then tell it in your own words what to change on your Divi 5 pages, or to build a new one. Give your assistant a screenshot or the address of a page you like and ask it to rebuild that design in Divi 5. A built-in checker tests every change before it is saved, and every change can be undone.
+
+The Model Context Protocol (MCP) server runs on your own site. Your assistant talks directly to your site: the plugin uses no cloud service and no account, and nothing is sent to us.
+
+= Why an MCP server built only for Divi 5? =
+
+Divi 5 stores a page as strict block data. A general-purpose assistant can save something that looks right in the code and still cannot be opened in the builder. This plugin gives your assistant Divi 5's real rules, proven section patterns and a checker that refuses a broken layout with the exact reason, so the assistant can fix it and save a page that works.
+
+= Rebuild a page from a screenshot or a URL =
+
+1. Give your assistant a screenshot, the address of a page, or the page's HTML.
+2. Ask it to build that page in Divi 5. It is always saved as a draft.
+3. It reads this plugin's guides, picks matching section patterns, a design language and a style kit, writes the layout, and the checker tests it before it is saved.
+4. Review the draft, swap in your own text and images, and publish.
+
+What to expect: your assistant, not the plugin, looks at the picture or reads the page, so the result follows the design closely but is not pixel-for-pixel. Photos from the original are never copied: the draft uses your Media Library images, or the plugin's built-in pictures as placeholders. If you already have the page's HTML, the `html_to_divi` tool turns it into a Divi 5 layout and reports anything it left out.
 
 = How it works (in plain words) =
 
@@ -32,6 +47,7 @@ Tell your AI assistant what you want changed on your Divi 5 website, in your own
 * **Preview before saving.** Your AI can ask what a change would do before it saves anything. It gets a list of the blocks and settings that would change, and the checker's verdict. Nothing is saved until it repeats the request for real.
 * **Matches your site.** Your AI can look up your site's own Divi colors and presets and reuse them, and it is told when a page uses one your site does not have. It cannot create or change presets or colors: that stays in Divi's Visual Builder.
 * **Proven building blocks.** 71 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
+* **Consistent looks.** Ten design languages (editorial, glass dark, organic warm, tech mono and more) and 40 style kits set the exact look of buttons, cards, accordions, toggles, contact forms and image corners, so a whole page matches.
 * **Sensible images.** The AI looks in your Media Library first. When nothing there fits, it uses a built-in pack of 44 original images that ships with the plugin.
 * **One-click undo.** The previous version of each page or Divi Project the AI changes is kept (up to the last 10). Restore it from the plugin's Dashboard with one click, or just ask your AI to undo.
 * **Works with the AI assistant you already use.** Claude, ChatGPT, Gemini, Cursor, VS Code Copilot, or any assistant that supports MCP.
@@ -211,6 +227,14 @@ Divi AI is Elegant Themes' own AI inside the Divi builder. This plugin does some
 = How is it different from other AI plugins for WordPress? =
 
 It is built for one job: editing Divi 5 layouts safely on a live site. It knows the Divi 5 page format, refuses any layout that is broken before it is saved, offers a preview of every change, makes new pages drafts, and keeps an undo history. It does not run code on your site and does not change your site settings.
+
+= Is this an MCP server for Divi? =
+
+Yes. The plugin adds a Model Context Protocol (MCP) server to your own WordPress site, with 21 tools made for Divi 5 pages and Divi Projects. Any MCP client can use it: Claude, Cursor, Windsurf, VS Code with GitHub Copilot, Gemini CLI and others. ChatGPT connects through a custom GPT Action that offers most of the same tools.
+
+= Can I give it a screenshot or a URL and have it copy a page? =
+
+Yes, through your AI assistant. Give the assistant a screenshot or the address of a page and ask it to build that page in Divi 5. It uses this plugin's guides and section patterns, writes a layout, and the checker tests it before it is saved as a draft. The plugin itself does not look at images or fetch websites, and photos are never copied, so expect a close match to the design with your own images and text swapped in.
 
 = Can I use Claude on the web (claude.ai) without installing anything? =
 
