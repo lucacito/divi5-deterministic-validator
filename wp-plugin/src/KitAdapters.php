@@ -172,7 +172,8 @@ require_once __DIR__ . '/StyleKits.php';
  * - Field fill: `surface`, `bg` on a `surface` band (a field never matches its container). Ink `text`; placeholder `muted`
  *   (the field ink does not reach the placeholder, kf-placeholder-colour). No field shadow, no field hover or focus (Ruling 3).
  * - Field frame: the kit's width with a 1px floor, the kit's style, colour `text` when the kit's border colour is `text`,
- *   `accent` or `inverse` and `muted` otherwise (Ruling 1: a field's frame is its affordance, so it uses the strong roles; the
+ *   `accent` or `inverse`, and always `text` on an `accent` band (amended by the Task 3 contrast proof: there `muted` is 2.55:1 or
+ *   less on the accent and the white field of playful-pastel is only 2.45:1, so neither edge would reach 3:1), and `muted` otherwise (Ruling 1: a field's frame is its affordance, so it uses the strong roles; the
  *   card's decorative `border` hairline is not enough). An underline kit draws the bottom edge only (`styles.all` 0px plus
  *   `styles.bottom`) when FORM_PROVEN['field-underline']; otherwise the full frame at 1px (Ruling 2).
  * - Field radius `{{aied:kit:radius-control}}`; field padding `{{aied:kit:space-control}}` when FORM_PROVEN['field-padding'].
@@ -371,7 +372,9 @@ final class KitAdapters
         $is     = static fn ( string $decision ): bool => true === ( $proven[ $decision ] ?? false );
 
         // Field frame (Ruling 1: strong roles; Ruling 2: the underline only where proven, else the full frame at 1px).
-        $role     = in_array( (string) $border['color'], [ 'text', 'accent', 'inverse' ], true ) ? 'text' : 'muted';
+        // On an accent band the frame is always `text` (Task 3 contrast proof): `muted` there is 2.55:1 or less on the accent in
+        // playful-pastel, where the white field is only 2.45:1 on it, so neither edge of the field would reach 3:1.
+        $role     = 'accent' === $on || in_array( (string) $border['color'], [ 'text', 'accent', 'inverse' ], true ) ? 'text' : 'muted';
         $underline = $bottom && $is( 'field-underline' );
         $frame    = self::frameStyles( $bottom && ! $underline ? array_merge( $border, [ 'width' => '1px' ] ) : $border, $role, $underline );
 

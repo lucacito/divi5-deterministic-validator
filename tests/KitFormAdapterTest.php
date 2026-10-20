@@ -12,6 +12,7 @@ use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\StyleGuide;
 use AiEditorDivi5\WP\StyleKits;
+use Divi5Validator\Tests\Support\Colour;
 use Divi5Validator\Tests\Support\DeadOnModule;
 use Divi5Validator\Tests\Support\ShapePaths;
 use Divi5Validator\Tests\Support\ShapeRegistry;
@@ -30,6 +31,7 @@ require_once __DIR__ . '/../wp-plugin/src/CodePolicy.php';
 require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
 require_once __DIR__ . '/Support/ShapePaths.php';
 require_once __DIR__ . '/Support/ShapeRegistry.php';
+require_once __DIR__ . '/Support/Colour.php';
 require_once __DIR__ . '/Support/DeadOnModule.php';
 
 /**
@@ -374,9 +376,10 @@ class KitFormAdapterTest extends TestCase
         foreach ( $this->allKitVariants() as $label => $kit ) {
             $border = $kit['border'];
             $width  = '0px' === $border['width'] ? '1px' : $border['width'];
-            $colour = '{{aied:color:' . ( in_array( $border['color'], [ 'text', 'accent', 'inverse' ], true ) ? 'text' : 'muted' ) . '}}';
             $under  = 'bottom' === ( $border['sides'] ?? 'all' );
             foreach ( self::BANDS as $on ) {
+                // Ruling 1, amended by the Task 3 contrast proof: always `text` on an accent band (muted there leaves neither edge at 3:1).
+                $colour = '{{aied:color:' . ( 'accent' === $on || in_array( $border['color'], [ 'text', 'accent', 'inverse' ], true ) ? 'text' : 'muted' ) . '}}';
                 $leaves = self::leaves( $this->patch( $kit, $on ) );
                 $p      = 'field.decoration.border.desktop.value.styles.';
                 if ( $under ) {
@@ -667,5 +670,316 @@ class KitFormAdapterTest extends TestCase
             $colourPaths,
             'the submit border colour is written at rest (all, bottom) and on hover (all) only'
         );
+    }
+
+    /**
+     * The `dark` band (a form over a photo) is modelled exactly as the button proof models it: the language's `overlay`
+     * composited over a mid grey. KitAdaptersTest::PHOTO_GREY is private, so its value is asserted equal here (see
+     * testThePhotoModelIsTheButtonProofs).
+     */
+    private const PHOTO_GREY = '#808080';
+
+    public function testThePhotoModelIsTheButtonProofs(): void
+    {
+        $this->assertSame( ( new \ReflectionClassConstant( KitAdaptersTest::class, 'PHOTO_GREY' ) )->getValue(), self::PHOTO_GREY );
+    }
+
+    /** A colour token or value resolved by the real pipeline (alpha forms included) as an opaque hex over $ground. @param array<string,mixed> $lang */
+    private static function opaqueOn( string $value, array $lang, string $ground ): ?string
+    {
+        return Colour::opaque( RecipeTokens::resolve( $value, $lang ), $ground );
+    }
+
+    /** The opaque colour a form of band $on is printed on, in $lang. @param array<string,mixed> $lang */
+    private static function containerOf( string $on, array $lang ): string
+    {
+        $c = (array) $lang['colors'];
+        return match ( $on ) {
+            'light'   => (string) Colour::opaque( (string) $c['bg'], '#ffffff' ),
+            'surface' => (string) Colour::opaque( (string) $c['surface'], (string) $c['bg'] ),
+            'accent'  => (string) Colour::opaque( (string) $c['accent'], (string) $c['bg'] ),
+            default   => (string) Colour::opaque( (string) $c['overlay'], self::PHOTO_GREY ),
+        };
+    }
+
+    /**
+     * Contrast problems of one form patch on band $on in one language and state ([] = fine), keyed "$where|<check>":
+     * - fill: the field fill is exactly `surface` (`bg` on a surface band) and, painted, is not the colour of the container;
+     * - text / placeholder: the field text and the placeholder at least 4.5 on the field fill (the placeholder is its own
+     *   colour: a missing one is 0:1);
+     * - frame-<side>-fill: every drawn side (width not 0px) of the field frame at least 3.0 on the field fill (no exemption
+     *   for the `border` hairline: a field's frame is its affordance);
+     * - boundary-container: the better of the drawn frame sides and the field fill at least 3.0 on the container;
+     * - submit-label: the submit label on its fill as painted over the container, at least 4.5, with this state's values;
+     * - submit-edge: where the submit's edge carries its shape (a transparent fill and a drawn side), the edge colour at
+     *   least 3.0 on the container; a hover state with no hover border colour (the underline form, Ruling 1) is judged with
+     *   the REST edge colour;
+     * - captcha: the captcha ink at least 4.5 on the container.
+     * Fields are identical in both states (no field hover is written); the submit takes this state's values.
+     *
+     * @param array<string,mixed> $patch
+     * @param array<string,mixed> $lang
+     * @return array<string,string>
+     */
+    public static function formContrastProblems( array $patch, string $on, array $lang, string $state, string $where ): array
+    {
+        $leaves    = self::leaves( $patch );
+        $container = self::containerOf( $on, $lang );
+        $want      = '{{aied:color:' . ( 'surface' === $on ? 'bg' : 'surface' ) . '}}';
+        $token     = (string) ( $leaves['field.decoration.background.desktop.value.color'] ?? '' );
+        if ( $want !== $token ) {
+            return [ "$where|fill" => "$where: the field fill is '$token', not $want" ];
+        }
+        $fill = self::opaqueOn( $token, $lang, $container );
+        if ( null === $fill ) {
+            return [ "$where|fill" => "$where: the field fill does not resolve" ];
+        }
+        $out = [];
+        if ( strtolower( $fill ) === strtolower( $container ) ) {
+            $out[ "$where|fill" ] = "$where: the field fill $fill is the colour of its container";
+        }
+        $judge = static function ( string $check, ?string $value, string $ground, float $need ) use ( &$out, $lang, $where ): void {
+            $ink = null === $value ? null : self::opaqueOn( $value, $lang, $ground );
+            $r   = null === $ink ? 0.0 : Colour::contrast( $ink, $ground );
+            if ( $r < $need ) {
+                $out[ "$where|$check" ] = sprintf( '%s: %s (%s) on %s is %.2f:1, needs %.1f', $where, $check, (string) $value, $ground, $r, $need );
+            }
+        };
+        $leaf = static fn ( string $path ): ?string => isset( $leaves[ $path ] ) ? (string) $leaves[ $path ] : null;
+
+        $judge( 'text', $leaf( 'field.decoration.font.font.desktop.value.color' ), $fill, 4.5 );
+        $judge( 'placeholder', $leaf( 'field.decoration.placeholderFont.font.desktop.value.color' ), $fill, 4.5 );
+        $judge( 'captcha', $leaf( 'captcha.decoration.font.font.desktop.value.color' ), $container, 4.5 );
+
+        // The field's boundary. Against its own fill every drawn side of the frame needs 3:1 (no exemption for the `border`
+        // hairline: a field's frame is its affordance). Against the container the boundary needs 3:1 from the better of the
+        // frame and the fill: the outer edge of the field is drawn by whichever of the two is stronger (WCAG 1.4.11 asks for
+        // the component's boundary, not for both). A strict reading (every drawn frame side AND the fill) is unsatisfiable:
+        // a white field on a dark photo band needs a frame between the two, and no colour role sits there in a light language.
+        $frame = 'field.decoration.border.desktop.value.styles.';
+        $best  = Colour::contrast( $fill, $container );
+        foreach ( [ 'all', 'bottom' ] as $side ) {
+            $width = $leaf( $frame . $side . '.width' );
+            if ( null === $width || '0px' === $width ) {
+                continue;
+            }
+            $colour = $leaf( $frame . $side . '.color' );
+            $judge( "frame-$side-fill", $colour, $fill, 3.0 );
+            $edge = null === $colour ? null : self::opaqueOn( $colour, $lang, $container );
+            $best = max( $best, null === $edge ? 0.0 : Colour::contrast( $edge, $container ) );
+        }
+        if ( $best < 3.0 ) {
+            $out[ "$where|boundary-container" ] = sprintf( '%s: neither the frame nor the fill %s reaches 3.0 on the container %s (best %.2f:1)', $where, $fill, $container, $best );
+        }
+
+        // The submit, with this state's values.
+        $key    = 'hover' === $state ? 'hover' : 'value';
+        $b      = 'button.decoration.';
+        $sFill  = $leaf( $b . 'background.desktop.' . $key . '.color' );
+        $sLabel = $leaf( $b . 'font.font.desktop.' . $key . '.color' );
+        $sFillR = null === $sFill ? null : RecipeTokens::resolve( $sFill, $lang );
+        $painted = null === $sFillR ? null : Colour::opaque( $sFillR, $container );
+        if ( null === $painted ) {
+            return $out + [ "$where|submit-fill" => "$where: the submit fill does not resolve" ];
+        }
+        $judge( 'submit-label', $sLabel, $painted, 4.5 );
+        $alpha = Colour::rgba( (string) $sFillR );
+        $side  = isset( $leaves[ $b . 'border.desktop.value.styles.bottom.width' ] ) ? 'bottom' : 'all';
+        $width = $leaf( $b . 'border.desktop.value.styles.' . $side . '.width' );
+        if ( null !== $alpha && $alpha[3] < 1.0 && null !== $width && '0px' !== $width ) {
+            $edge = 'hover' === $state ? ( $leaf( $b . 'border.desktop.hover.styles.all.color' ) ?? $leaf( $b . 'border.desktop.value.styles.' . $side . '.color' ) ) : $leaf( $b . 'border.desktop.value.styles.' . $side . '.color' );
+            $judge( 'submit-edge', $edge, $container, 3.0 );
+        }
+        return $out;
+    }
+
+    public function testNoUnreadableFormInAnyKitLanguageBandState(): void
+    {
+        $problems = [];
+        $checked  = 0;
+        $minFill  = 99.0;
+        foreach ( $this->shippedKits() as $id => $kit ) {
+            foreach ( DesignLanguages::ids() as $langId ) {
+                $lang = DesignLanguages::get( $langId );
+                $this->assertIsArray( $lang );
+                foreach ( self::BANDS as $on ) {
+                    $patch = $this->patch( $kit, $on );
+                    foreach ( [ 'rest', 'hover' ] as $state ) {
+                        ++$checked;
+                        $problems = array_merge( $problems, self::formContrastProblems( $patch, $on, $lang, $state, "$id|$langId|$on|$state" ) );
+                    }
+                }
+            }
+        }
+        $this->assertSame( 40 * 10 * 4 * 2, $checked );
+        $this->assertSame( 3200, $checked );
+        $this->assertSame( [], array_values( $problems ), "unreadable forms (fix the form role table in KitAdapters::formPatch(), never the bound; no exceptions):\n" . implode( "\n", array_slice( $problems, 0, 60 ) ) . "\n(" . count( $problems ) . ' problems)' );
+    }
+
+    public function testTheFormContrastCheckCatchesWhatItShould(): void
+    {
+        $pastel = DesignLanguages::get( 'playful-pastel' );
+        $this->assertIsArray( $pastel );
+        $kits  = $this->shippedKits();
+        $judge = static fn ( array $p, string $on = 'light', string $state = 'rest', ?array $lang = null ): array => self::formContrastProblems( $p, $on, $lang ?? $pastel, $state, 'x' );
+        $good  = $this->patch( $kits['steady-solid'], 'light' );
+        foreach ( [ 'rest', 'hover' ] as $state ) {
+            $this->assertSame( [], $judge( $good, 'light', $state ), "steady-solid on light, $state, is clean" );
+        }
+        $frame = 'field.decoration.border.desktop.value.styles.all.color';
+
+        // A muted frame swapped for the decorative `border` hairline (about 1.1:1): fails on the fill, and neither it nor the
+        // fill (white on the cream band, 1.06:1) reaches the container.
+        $bad = $good;
+        self::setLeaf( $bad, $frame, '{{aied:color:border}}' );
+        $this->assertSame( [ 'x|frame-all-fill', 'x|boundary-container' ], array_keys( $judge( $bad ) ) );
+
+        // The container is judged from the better of frame and fill. playful-pastel's white field is 2.45:1 on its accent
+        // band, so a muted frame (2.55:1 there) leaves the field without a boundary; the amended `text` frame is 5.75:1.
+        $accentForm = $this->patch( $kits['steady-solid'], 'accent' );
+        $this->assertSame( [], $judge( $accentForm, 'accent' ), 'the amended accent-band frame is clean' );
+        $this->assertSame( '{{aied:color:text}}', self::leaves( $accentForm )[ $frame ] );
+        self::setLeaf( $accentForm, $frame, '{{aied:color:muted}}' );
+        $this->assertSame( [ 'x|boundary-container' ], array_keys( $judge( $accentForm, 'accent' ) ), 'muted on the accent band: neither edge reaches 3:1' );
+        self::setLeaf( $accentForm, $frame, '{{aied:color:accent}}' );
+        $this->assertSame( [ 'x|frame-all-fill', 'x|boundary-container' ], array_keys( $judge( $accentForm, 'accent' ) ) );
+        // Where the FILL carries the edge, a frame that is 1.2:1 on the container is fine: a white field on editorial's accent band.
+        $editorial = DesignLanguages::get( 'editorial' );
+        $this->assertIsArray( $editorial );
+        self::setLeaf( $accentForm, $frame, '{{aied:color:muted}}' );
+        $this->assertSame( [], $judge( $accentForm, 'accent', 'rest', $editorial ), 'the white fill is 6.96:1 on the accent band' );
+        // ...but only while the frame still reads on the fill: a hairline there fails frame-fill.
+        self::setLeaf( $accentForm, $frame, '{{aied:color:border}}' );
+        $this->assertSame( [ 'x|frame-all-fill' ], array_keys( $judge( $accentForm, 'accent', 'rest', $editorial ) ) );
+        // A dark-band field in a light language: the light fill carries the edge against the photo.
+        $darkForm = $this->patch( $kits['steady-solid'], 'dark' );
+        $this->assertSame( [], $judge( $darkForm, 'dark', 'rest', $editorial ) );
+
+        // The placeholder removed (the field colour does not reach it): 0:1.
+        $bad = $good;
+        self::unsetLeaf( $bad, 'field.decoration.placeholderFont' );
+        $this->assertSame( [ 'x|placeholder' ], array_keys( $judge( $bad ) ) );
+        $bad = $good;
+        self::setLeaf( $bad, 'field.decoration.placeholderFont.font.desktop.value.color', '{{aied:color:border}}' );
+        $this->assertSame( [ 'x|placeholder' ], array_keys( $judge( $bad ) ) );
+
+        // A field filled like its container, or with another role, or transparent, or missing.
+        foreach ( [ '{{aied:color:bg}}', '{{aied:color:accent}}', KitAdapters::TRANSPARENT, null ] as $fill ) {
+            $bad = $good;
+            if ( null === $fill ) {
+                self::unsetLeaf( $bad, 'field.decoration.background' );
+            } else {
+                self::setLeaf( $bad, 'field.decoration.background.desktop.value.color', $fill );
+            }
+            $this->assertArrayHasKey( 'x|fill', $judge( $bad ), 'field fill ' . var_export( $fill, true ) );
+        }
+        $this->assertArrayHasKey( 'x|fill', $judge( $good, 'surface' ), 'a surface-band form is filled bg, not surface' );
+        $same            = $pastel;
+        $same['colors']['surface'] = $same['colors']['bg'];
+        $this->assertArrayHasKey( 'x|fill', $judge( $good, 'light', 'rest', $same ), 'a language whose surface is its bg paints a field in its container colour' );
+
+        // Captcha ink on the wrong band: the light band\'s `inverse`, the dark band\'s `text`.
+        $bad = $good;
+        self::setLeaf( $bad, 'captcha.decoration.font.font.desktop.value.color', '{{aied:color:inverse}}' );
+        $this->assertSame( [ 'x|captcha' ], array_keys( $judge( $bad ) ) );
+        $dark = $this->patch( $kits['steady-solid'], 'dark' );
+        $this->assertSame( [], $judge( $dark, 'dark' ) );
+        self::setLeaf( $dark, 'captcha.decoration.font.font.desktop.value.color', '{{aied:color:text}}' );
+        $this->assertSame( [ 'x|captcha' ], array_keys( $judge( $dark, 'dark' ) ) );
+        $bad = $good;
+        self::unsetLeaf( $bad, 'captcha' );
+        $this->assertSame( [ 'x|captcha' ], array_keys( $judge( $bad ) ), 'a missing captcha ink' );
+
+        // Field text unreadable on the fill.
+        $bad = $good;
+        self::setLeaf( $bad, 'field.decoration.font.font.desktop.value.color', '{{aied:color:border}}' );
+        $this->assertSame( [ 'x|text' ], array_keys( $judge( $bad ) ) );
+
+        // The submit: an unreadable label in each state, and an outline whose edge melts into the container.
+        $bad = $good;
+        self::setLeaf( $bad, 'button.decoration.font.font.desktop.value.color', '{{aied:color:border}}' );
+        $this->assertArrayHasKey( 'x|submit-label', $judge( $bad, 'light', 'rest' ) );
+        $this->assertArrayNotHasKey( 'x|submit-label', $judge( $bad, 'light', 'hover' ), 'the rest label is not the hover one' );
+        $bad = $good;
+        self::setLeaf( $bad, 'button.decoration.font.font.desktop.hover.color', '{{aied:color:border}}' );
+        $this->assertArrayHasKey( 'x|submit-label', $judge( $bad, 'light', 'hover' ) );
+
+        $outline = $this->patch( $kits['outline-2'], 'light' );
+        foreach ( [ 'rest', 'hover' ] as $state ) {
+            $this->assertSame( [], $judge( $outline, 'light', $state ), "outline-2 on light, $state, is clean" );
+        }
+        $this->assertSame( KitAdapters::TRANSPARENT, $outline['button']['decoration']['background']['desktop']['value']['color'] );
+        $bad = $outline;
+        self::setLeaf( $bad, 'button.decoration.border.desktop.value.styles.all.color', '{{aied:color:bg}}' );
+        $this->assertArrayHasKey( 'x|submit-edge', $judge( $bad, 'light', 'rest' ) );
+
+        // The underline submit has no hover border colour: the hover state judges the REST edge, so a faint rest edge fails
+        // in the hover state too, and a hover colour that exists is the one judged.
+        $under = $this->patch( $kits['underlined-label'], 'light' );
+        $this->assertSame( [], $judge( $under, 'light', 'hover' ), 'underlined-label on light, hover, is clean' );
+        $this->assertArrayNotHasKey( 'hover', $under['button']['decoration']['border']['desktop'] );
+        $bad = $under;
+        self::setLeaf( $bad, 'button.decoration.border.desktop.value.styles.bottom.color', '{{aied:color:bg}}' );
+        $this->assertArrayHasKey( 'x|submit-edge', $judge( $bad, 'light', 'hover' ), 'the rest edge is judged in the hover state' );
+        $bad = $outline;
+        self::setLeaf( $bad, 'button.decoration.background.desktop.hover.color', KitAdapters::TRANSPARENT );
+        self::setLeaf( $bad, 'button.decoration.font.font.desktop.hover.color', '{{aied:color:text}}' );
+        $this->assertSame( [], $judge( $bad, 'light', 'hover' ), 'a transparent hover with the kit edge is clean' );
+        self::setLeaf( $bad, 'button.decoration.border.desktop.hover.styles.all.color', '{{aied:color:bg}}' );
+        $this->assertSame( [], $judge( $bad, 'light', 'rest' ), 'a hover colour does not reach the rest state' );
+        $this->assertArrayHasKey( 'x|submit-edge', $judge( $bad, 'light', 'hover' ) );
+    }
+
+    /** Set the dotted $path of $node to $value. @param array<string,mixed> $node */
+    private static function setLeaf( array &$node, string $path, mixed $value ): void
+    {
+        $ref = &$node;
+        foreach ( explode( '.', $path ) as $k ) {
+            if ( ! isset( $ref[ $k ] ) || ! is_array( $ref[ $k ] ) ) {
+                $ref[ $k ] = [];
+            }
+            $ref = &$ref[ $k ];
+        }
+        $ref = $value;
+    }
+
+    /** Remove the dotted $path of $node. @param array<string,mixed> $node */
+    private static function unsetLeaf( array &$node, string $path ): void
+    {
+        $keys = explode( '.', $path );
+        $last = array_pop( $keys );
+        $ref  = &$node;
+        foreach ( $keys as $k ) {
+            if ( ! isset( $ref[ $k ] ) || ! is_array( $ref[ $k ] ) ) {
+                return;
+            }
+            $ref = &$ref[ $k ];
+        }
+        unset( $ref[ $last ] );
+    }
+
+    public function testTheDeadOnModuleGuardCoversTheForm(): void
+    {
+        // The shipped list has no contact-form line (every form path passed the probe), so a form clean today stays clean...
+        $kit = $this->shippedKits()['chunky-pill-offset'];
+        $markup = KitResolver::resolve( $this->formMarkup( 'light' ), $kit );
+        $this->assertSame( [], DeadOnModule::load()->violations( $markup ) );
+        // ...and a planted dead line for the form's own submit shadow (a path the adapter writes) fails, on the form only.
+        $file = tempnam( sys_get_temp_dir(), 'dead' );
+        $this->assertIsString( $file );
+        file_put_contents( $file, "# test list\ndivi/contact-form|button.decoration.boxShadow|planted-evidence|planted for the test\n" );
+        try {
+            $scoped = DeadOnModule::load( $file );
+            $this->assertStringContainsString( '"boxShadow"', $markup );
+            $found = $scoped->violations( $markup );
+            $this->assertNotSame( [], $found, 'a planted dead divi/contact-form path is reported' );
+            foreach ( $found as $v ) {
+                $this->assertStringStartsWith( 'divi/contact-form: button.decoration.boxShadow.', $v );
+                $this->assertStringEndsWith( '(dead: planted-evidence)', $v );
+            }
+            $this->assertSame( [], $scoped->violations( str_replace( 'wp:divi/contact-form', 'wp:divi/button', $markup ) ), 'the line is scoped to the contact form' );
+        } finally {
+            unlink( $file );
+        }
     }
 }
