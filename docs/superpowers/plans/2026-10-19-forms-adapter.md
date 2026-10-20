@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-19-forms-adapter-design.md` (approved by delegation 2026-10-19; Rulings 1-5 are listed again in its Outcome). Pattern: `docs/superpowers/plans/2026-10-19-accordion-adapter.md` and its spec Outcome; the code to mirror is `KitAdapters::item()`, `KitItemAdapterTest`, `KitItemGoldenTest`, `ItemMigrationTest`, `StyleGuideKitRulesTest`, `scripts/lib/kit-item-run.cjs`.
 
+> **Superseded wording (Ruling 6, 2026-10-19):** where this plan says a field frame must be 3:1 "on the field fill and on the container" (Review Focus 2, Task 3), the built and ratified rule is: frame vs fill strict 3:1; the field boundary against the container is the BETTER of frame-vs-container and fill-vs-container at 3:1 (WCAG 1.4.11). See the spec's Outcome.
+
 ## Global Constraints
 
 - Branch `feat/forms-adapter` (main checkout; T3/T4/T5 may run in git worktrees off it). No push, release or version bump; the tracked root zip stays the published 4.12.0 build; `git diff main -- src wp-plugin/validator jhmg-ai-editor-for-divi-5.zip` stays empty. The validator is untouched and deterministic.
