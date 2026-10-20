@@ -252,7 +252,7 @@ final class KitResolver
     {
         foreach ( $patch as $key => $value ) {
             $key = (string) $key;
-            if ( is_array( $value ) && [] !== $value && ! array_is_list( $value ) && isset( $node->{$key} ) && $node->{$key} instanceof \stdClass ) {
+            if ( is_array( $value ) && [] !== $value && array_keys( $value ) !== range( 0, count( $value ) - 1 ) && isset( $node->{$key} ) && $node->{$key} instanceof \stdClass ) {
                 self::merge( $node->{$key}, $value );
             } else {
                 $node->{$key} = $value;

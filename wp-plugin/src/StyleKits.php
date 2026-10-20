@@ -160,7 +160,7 @@ final class StyleKits
 
         if ( array_key_exists( 'avoids', $kit ) ) {
             $avoids = $kit['avoids'];
-            if ( ! is_array( $avoids ) || ! array_is_list( $avoids ) ) {
+            if ( ! is_array( $avoids ) || ( [] !== $avoids && array_keys( $avoids ) !== range( 0, count( $avoids ) - 1 ) ) ) {
                 $p[] = 'avoids must be a list of recipe layouts';
             } else {
                 foreach ( $avoids as $layout ) {

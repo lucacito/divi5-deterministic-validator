@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi 5, divi, mcp, claude, chatgpt
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.12.0
+Stable tag:        4.13.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -272,6 +272,18 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 
 == Changelog ==
 
+= 4.13.0 =
+* New: ask your assistant to rebuild a page from a screenshot, the address of a page or its HTML. It writes a Divi 5 layout as a draft and the checker tests it before it is saved. Your assistant, not the plugin, looks at the picture or reads the page.
+* New: 71 section patterns instead of 17, each one tested against the checker, with filters by role, layout and mood (`get_section_recipes`).
+* New: ten design languages (editorial, glass dark, organic warm, tech mono, playful pastel, corporate trust, soft SaaS, bold vibrant, brutalist flat, luxe) with their colors, fonts, corners and spacing, so a whole page keeps one look.
+* New: 40 style kits that set the exact look of buttons, cards, accordions, toggles, contact forms and image corners (`get_section_recipes` takes a `style_kit`; each kit has its own guide topic). Every combination was checked for readable text on the real Divi 5.15.1.
+* New: guide topics for backgrounds, dividers, motion, hover states, layout, typography, imagery, controls, toggles, forms and composition. Each setting in them was rendered on a real Divi 5.15.1 page before it was taught.
+* New: the AI Editor Dashboard asks once for a review, only after your assistant has saved at least 5 changes. Choose "Maybe later" (hidden for 30 days) or "Don't ask again". Nothing is sent anywhere.
+* New: when a layout looks repetitive, or a recipe color or font token could not be resolved, the result carries a short hint (`advisories`). It never blocks a save.
+* Improved: the MCP address answers a plain browser visit (GET) and DELETE with a normal "not allowed" reply instead of "not found". Hosts that ban an IP after many 404 errors no longer cut you off.
+* Improved: the readme and the plugin's short description now say plainly that this is an MCP server for Divi 5.
+* Improved: verified on Divi 5.15.1.
+
 = 4.12.0 =
 * New: works with Divi 5.15. Pages that use Divi 5.15 components (a section, row or module saved once and reused) and their Slots are now accepted, so your assistant can read and edit them instead of being refused. Verified by saving real builder-made components and rendering them in Divi 5.15.1. A Slot in a row or section, a row or another Slot inside a Slot, and a column saved as a component are still refused until they have been checked the same way.
 * New: your assistant can see your site's components with `get_site_structure` (name, kind, Slot ids, how many pages use each; never their content) and is told when a change inside a component would not show, because Divi displays the component's own content on every page that uses it.
@@ -371,6 +383,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 4.13.0 =
+Your assistant can rebuild a page from a screenshot or a web page, and gets many more section patterns, ten design languages and 40 style kits to keep a page looking consistent. Nothing changes unless your assistant uses them.
 
 = 4.7.0 =
 Your AI assistant can reuse your Divi number and text variables and is warned about ones that do not exist. Nothing changes unless your assistant uses them.
