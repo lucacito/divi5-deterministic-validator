@@ -1,0 +1,11 @@
+# Pairs of shipped style kits whose FORM (the form adapter's patch for `divi/contact-form` on a light band) is the same form by
+# StyleKitsTest::testEveryKitHasAVisiblyDifferentForm: the control radius differs by less than 4px, the control padding by less
+# than 4px on both axes, and the field frame (sides, width, style, colour role) and the whole submit button (fill, border,
+# label and their hover, shadow, lift) are equal. Measured in Task 3 of the forms adapter plan (2 of 780 pairs). The pairs are
+# not transitive (quiet-solid|soft-solid is not one): the tolerance sits on the radius and padding. The kits differ as
+# BUTTONS and cards, which is what they were made for, and are never changed to pass this list.
+#
+# Shrink-only: the test asserts this file is exactly the set found and that it never holds more than 2 pairs. A pair that
+# stops being the same form must be removed; a new kit must not add one.
+quiet-solid|steady-solid
+steady-solid|soft-solid
