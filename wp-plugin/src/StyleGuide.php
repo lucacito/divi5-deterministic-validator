@@ -227,13 +227,15 @@ final class StyleGuide
      * KitAdapters::APPLIED (see NOT_APPLIED_NOUNS).
      *
      * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED
+     * @param list<string>|null               $media   blocks that take the media radius; defaults to KitAdapters::MEDIA_RADIUS_BLOCKS (a block there is no longer named)
      */
-    public static function notAppliedSentence( ?array $applied = null ): string
+    public static function notAppliedSentence( ?array $applied = null, ?array $media = null ): string
     {
         $applied ??= KitAdapters::APPLIED;
+        $media   ??= KitAdapters::MEDIA_RADIUS_BLOCKS;
         $nouns = [];
         foreach ( self::NOT_APPLIED_NOUNS as $noun => $blocks ) {
-            if ( [] === array_intersect( $blocks, array_keys( $applied ) ) ) {
+            if ( [] === array_intersect( $blocks, array_merge( array_keys( $applied ), $media ) ) ) {
                 $nouns[] = $noun;
             }
         }
@@ -280,16 +282,18 @@ final class StyleGuide
      *
      * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED (a parameter only so a test can prove the topic follows the map)
      * @param array<string,bool>|null          $proven  defaults to KitAdapters::FORM_PROVEN (a parameter only so a test can prove the Contact forms paragraph follows the probe's verdicts)
+     * @param list<string>|null                $media   defaults to KitAdapters::MEDIA_RADIUS_BLOCKS (a parameter only so a test can prove the Images paragraph follows the const)
      */
-    public static function kitRules( ?array $applied = null, ?array $proven = null ): string
+    public static function kitRules( ?array $applied = null, ?array $proven = null, ?array $media = null ): string
     {
         $applied ??= KitAdapters::APPLIED;
+        $media   ??= KitAdapters::MEDIA_RADIUS_BLOCKS;
         $roles   = array_merge( [], ...array_values( $applied ) );
         $has     = static fn ( string $role ): bool => in_array( $role, $roles, true );
 
         $out = "# Kit rules: what each module takes from a kit\n\n"
             . "The same for every kit. Each kit's own values and ready-made blocks: topic=style-kit:<id>.\n\n"
-            . self::appliedSentence( $applied ) . ' ' . self::notAppliedSentence( $applied ) . "\n\n"
+            . self::appliedSentence( $applied ) . ' ' . self::notAppliedSentence( $applied, $media ) . "\n\n"
             . "## Reusing a kit topic's blocks\n\n"
             . "Every block in a kit topic is real: resolved by the plugin's own pipeline for the `editorial` language on a light section, with placeholder text. "
             . "Put it inside a column. With another design language keep the structure and swap each colour for its role (listed beside the blocks as value = role(s)), not by its value: two roles can share one value; "
@@ -307,7 +311,13 @@ final class StyleGuide
                 . 'The kit\'s border width and style are used, but at least 1px; the frame colour is the text colour (an accent frame is drawn in the text colour) or the border hairline (the `border` role) when the kit\'s border colour is `same` or `border`. '
                 . 'A card takes the card radius and padding. A panel is a static surface: the same radius, frame and shadow, no hover, and the recipe keeps its own padding. A panel takes the rest shadow only.' . "\n\n"
                 . self::groundSentence()
-                . 'Kit decisions no card takes: the text decisions (capitalization, weight and letter spacing are button-only) and the fill colour; a kit\'s media radius is recorded in the kit but no module takes it yet.' . "\n";
+                . 'Kit decisions no card takes: the text decisions (capitalization, weight and letter spacing are button-only) and the fill colour' . ( [] === $media ? '; a kit\'s media radius is recorded in the kit but no module takes it yet.' : '.' ) . "\n";
+        }
+        if ( [] !== $media ) {
+            $out .= "\n## Images\n\n"
+                . 'Photos (' . implode( ', ', array_map( static fn ( string $b ): string => '`' . $b . '`', $media ) ) . ') take the kit\'s media radius, the third radius of every kit topic. '
+                . 'In a recipe served with a kit a photo\'s corners follow it (0px gives a square photo); a circle, a pill, an arch or a tiled grid keeps its own corners: those are shapes. '
+                . 'For your own image write all four corners at that radius at `image.decoration.border.desktop.value.radius`.' . "\n";
         }
         if ( $has( 'item' ) ) {
             $out .= "\n## Accordion and toggle items\n\n"
