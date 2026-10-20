@@ -82,10 +82,10 @@ final class StyleGuide
         return 'Topics: call get_style_guide with topic=<name>: ' . implode( ', ', self::topicNames() ) . '.';
     }
 
-    /** The description of the `topic` parameter in the MCP schema and the OpenAPI spec (generated, at most 300 characters). */
+    /** The description of the `topic` parameter in the MCP schema and the OpenAPI spec (generated; at most 300 characters, and kept at 260 or fewer so the next adapters' topic names fit). */
     public static function topicParameterDescription(): string
     {
-        return 'Optional. One topic instead of the whole guide: ' . implode( ', ', self::topicNames() ) . '. <id>: one language or kit in full.';
+        return 'Optional topic: ' . implode( ', ', self::topicNames() ) . '. <id>: one language or kit.';
     }
 
     /**
@@ -206,6 +206,7 @@ final class StyleGuide
         'panel'             => 'cards',
         'item'              => 'accordion and toggle items',
         'item-rule'         => 'accordion and toggle items',
+        'form'              => 'forms',
     ];
 
     /**
@@ -278,8 +279,9 @@ final class StyleGuide
      * most 10,000 bytes.
      *
      * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED (a parameter only so a test can prove the topic follows the map)
+     * @param array<string,bool>|null          $proven  defaults to KitAdapters::FORM_PROVEN (a parameter only so a test can prove the Contact forms paragraph follows the probe's verdicts)
      */
-    public static function kitRules( ?array $applied = null ): string
+    public static function kitRules( ?array $applied = null, ?array $proven = null ): string
     {
         $applied ??= KitAdapters::APPLIED;
         $roles   = array_merge( [], ...array_values( $applied ) );
@@ -315,7 +317,40 @@ final class StyleGuide
                 . 'An `item-rule` (on a light or surface band only) is filled with the band colour, has square corners, only a bottom rule (the kit\'s width, at least 1px, and style, in the card frame colour) and no shadow; the recipe keeps its own padding.' . "\n";
         }
 
+        if ( $has( 'form' ) ) {
+            $out .= "\n## Contact forms\n\n" . self::formRules( $proven ?? KitAdapters::FORM_PROVEN ) . "\n";
+        }
+
         return $out;
+    }
+
+    /**
+     * The Contact forms paragraph of `kit-rules`: what the `form` marker writes, with every conditional decision worded from
+     * $proven (the probe's verdicts, KitAdapters::FORM_PROVEN): a proven one is said, an unproven one is never claimed and its
+     * fallback is stated.
+     *
+     * @param array<string,bool> $proven decision => proven on the form
+     */
+    private static function formRules( array $proven ): string
+    {
+        $is = static fn ( string $decision ): bool => true === ( $proven[ $decision ] ?? false );
+
+        $text = 'A `form` marker styles a `divi/contact-form` (fields, submit button, captcha); `on` is the band: light, surface, accent or dark. '
+            . 'A field is filled with surface (bg on a surface band); text colour for its text, muted for its placeholder; frame in the kit\'s width (1px at least) and style, muted for a `same` or `border` border colour, else text. '
+            . ( $is( 'field-padding' ) ? 'It takes the control radius and control padding. ' : 'It takes the control radius; its padding stays the recipe\'s. ' )
+            . ( $is( 'field-underline' ) ? 'An underline kit draws a bottom rule only. ' : 'An underline kit still draws a full 1px frame. ' );
+
+        $with    = array_values( array_filter( [ $is( 'button-padding' ) ? 'submit padding' : '', $is( 'button-shadow' ) ? 'submit shadow' : '', $is( 'button-lift' ) ? 'submit lift' : '' ] ) );
+        $without = array_values( array_filter( [
+            $is( 'button-padding' ) ? '' : 'The submit button keeps the recipe\'s padding. ',
+            $is( 'button-shadow' ) ? '' : 'The submit button has no shadow. ',
+            $is( 'button-lift' ) ? '' : 'The submit button does not lift. ',
+        ] ) );
+        $text .= 'The submit button is the kit\'s primary button' . ( [] === $with ? '' : ', with ' . ( count( $with ) > 1 ? implode( ', ', array_slice( $with, 0, -1 ) ) . ' and ' . end( $with ) : $with[0] ) ) . ' (an underline edge is a full frame). '
+            . implode( '', $without )
+            . 'The captcha takes the band\'s ink. The form frame stays yours.';
+
+        return $text;
     }
 
     /**
@@ -1884,6 +1919,27 @@ MD;
 
     /** Topic `forms`: contact form fields, captcha, countdown timer, and the modules not to use, every shape proven on the real Divi 5.15.1. At most 10,000 bytes. */
     private static function formsTopic(): string
+    {
+        return self::formsTopicText() . self::formsKitSentence();
+    }
+
+    /**
+     * The `forms` topic's one style-kit sentence, generated from KitAdapters::APPLIED: '' while no adapter styles a contact
+     * form.
+     *
+     * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED
+     */
+    public static function formsKitSentence( ?array $applied = null ): string
+    {
+        $applied ??= KitAdapters::APPLIED;
+        if ( ! isset( $applied['divi/contact-form'] ) ) {
+            return '';
+        }
+
+        return "\n\n## Style kits\n\nA contact form can take the page's style kit with one `form` marker (its fields, submit button and captcha); the rules are in topic=kit-rules.";
+    }
+
+    private static function formsTopicText(): string
     {
         return <<<'MD'
 # Forms: contact form fields, captcha and countdown

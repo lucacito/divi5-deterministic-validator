@@ -17,7 +17,8 @@ require_once __DIR__ . '/StyleKits.php';
  * inverted, `text`-filled panel), and the cards, `divi/group` and `divi/column` in two roles (`card`, `panel`) on four
  * bands (`light` a bg band, `surface` a surface band, `accent`, `dark`), optionally on a ground (`inverted` or `accent`,
  * on a light or surface band only), and the items, `divi/accordion` (one marker styles every item) and `divi/toggle`, in two
- * roles (`item` on four bands, `item-rule` on `light` and `surface` only); see the card, ground and item tables at the end.
+ * roles (`item` on four bands, `item-rule` on `light` and `surface` only), and the contact form, `divi/contact-form` in one
+ * role (`form`) on four bands; see the card, ground, item and form tables at the end.
  *
  * The button patch writes only `button.decoration.{background,border,font}` and `module.decoration.spacing` at
  * `desktop`, plus `module.decoration.boxShadow` when the kit has a shadow and `module.decoration.transform` when its hover
@@ -161,6 +162,31 @@ require_once __DIR__ . '/StyleKits.php';
  *   judging both modules, zero exceptions), the visible-difference rule (fixtures/shapes/item-near-duplicates.txt, shrink-only,
  *   cap 12), ItemMigrationTest (own ink, band walk, merge trap) and the verify-kits item sheet with a real click.
  *
+ * Form table (role `form` on `divi/contact-form`; spec 2026-10-19-forms-adapter-design.md sections 1 and 2, probe
+ * fixtures/shapes/kit-form-vocabulary.md: 47 candidates measured ON the contact form, 41 PASS, 6 css-only, none dead).
+ * One marker styles the whole form: its fields (`field.*` styles every child field), its submit button (`button.*`) and its
+ * captcha (`captcha.*`). Bands: `light` | `surface` | `accent` | `dark` (`on` = the band the form is printed on). No ground.
+ * The form module's own `module.decoration` is NEVER written: on the contact form it is the whole form container (its
+ * shadow, lift and padding land on `div.et_pb_contact_form_container`, css-only), so the form's own frame, radius, maxWidth and
+ * alignment stay the recipe's. Only desktop is written, never innerContent (the submit label), a field child or a family.
+ * - Field fill: `surface`, `bg` on a `surface` band (a field never matches its container). Ink `text`; placeholder `muted`
+ *   (the field ink does not reach the placeholder, kf-placeholder-colour). No field shadow, no field hover or focus (Ruling 3).
+ * - Field frame: the kit's width with a 1px floor, the kit's style, colour `text` when the kit's border colour is `text`,
+ *   `accent` or `inverse` and `muted` otherwise (Ruling 1: a field's frame is its affordance, so it uses the strong roles; the
+ *   card's decorative `border` hairline is not enough). An underline kit draws the bottom edge only (`styles.all` 0px plus
+ *   `styles.bottom`) when FORM_PROVEN['field-underline']; otherwise the full frame at 1px (Ruling 2).
+ * - Field radius `{{aied:kit:radius-control}}`; field padding `{{aied:kit:space-control}}` when FORM_PROVEN['field-padding'].
+ * - Submit button: exactly the kit's `control` treatment of `divi/button` on the band (a `surface` band is a `light` band for
+ *   it: it has no `surface` band), built by button() so no second table exists, and moved to the form's own
+ *   `button.decoration.*`: fill, border, label and hover as button() writes them; the padding (`spacing`), the shadow
+ *   (`boxShadow`, rest and hover-only) and the lift (`transform`) are the paths that reach the submit button ON THE FORM
+ *   (`button.decoration.{spacing,boxShadow,transform}`; on `divi/button` they live on `module.decoration` and the button's own are
+ *   dead, here it is the other way round), each written only when FORM_PROVEN says so (button-padding, button-shadow,
+ *   button-lift). A bottom-only submit edge was probed on a field but never on the submit button, so an underline kit's submit
+ *   takes the same edge as a full frame (the same width, style and colour as the bottom edge button() writes).
+ * - Captcha ink: the band's ink, `text` on light and surface, `accent-text` on accent, `inverse` on dark. The captcha is the one
+ *   element printed straight on the container; family and size stay the recipe's.
+ *
  * Pure and deterministic: no site access.
  */
 final class KitAdapters
@@ -182,6 +208,22 @@ final class KitAdapters
         'divi/column'    => [ 'card', 'panel' ],
         'divi/accordion' => [ 'item', 'item-rule' ],
         'divi/toggle'    => [ 'item', 'item-rule' ],
+        'divi/contact-form' => [ 'form' ],
+    ];
+
+    /**
+     * The five conditional form decisions => whether the effect probe proved them ON `divi/contact-form` (the "Adapter
+     * decisions" table of fixtures/shapes/kit-form-vocabulary.md; a test pins this constant to that table). A decision is
+     * written only when true and only at the path the probe measured; the generated guide wording follows the same constant.
+     *
+     * @var array<string,bool>
+     */
+    public const FORM_PROVEN = [
+        'button-padding'  => true,
+        'button-shadow'   => true,
+        'button-lift'     => true,
+        'field-underline' => true,
+        'field-padding'   => true,
     ];
 
     /** The bands a button may sit on (`panel`: inside an inverted, `text`-filled panel). */
@@ -196,6 +238,9 @@ final class KitAdapters
         'item'      => [ 'light', 'surface', 'accent', 'dark' ],
         'item-rule' => [ 'light', 'surface' ],
     ];
+
+    /** The form bands: the band the form's container is printed on. */
+    private const FORM_BANDS = [ 'light', 'surface', 'accent', 'dark' ];
 
     /** A rule row's radius, written explicitly (Divi's own item corners are square, but a recipe literal must not survive). */
     private const SQUARE = [ 'topLeft' => '0px', 'topRight' => '0px', 'bottomRight' => '0px', 'bottomLeft' => '0px' ];
@@ -242,7 +287,8 @@ final class KitAdapters
         }
         $card = in_array( $role, self::CARD_ROLES, true );
         $item = isset( self::ITEM_BANDS[ $role ] );
-        if ( ! in_array( $on, $item ? self::ITEM_BANDS[ $role ] : ( $card ? self::CARD_SURFACES : self::SURFACES ), true ) ) {
+        $form = 'form' === $role;
+        if ( ! in_array( $on, $form ? self::FORM_BANDS : ( $item ? self::ITEM_BANDS[ $role ] : ( $card ? self::CARD_SURFACES : self::SURFACES ) ), true ) ) {
             return null;
         }
         if ( null !== $ground && ( ! $card || ! isset( self::GROUNDS[ $ground ] ) || ! in_array( $on, self::GROUND_BANDS, true ) ) ) {
@@ -250,6 +296,9 @@ final class KitAdapters
         }
         if ( [] !== StyleKits::problems( $kit ) ) {
             return null;
+        }
+        if ( $form ) {
+            return self::formPatch( $on, $kit );
         }
         if ( $item ) {
             return self::item( $blockName, $role, $on, $kit );
@@ -301,6 +350,58 @@ final class KitAdapters
         }
 
         return [ 'module' => [ 'decoration' => $module ] ];
+    }
+
+    /**
+     * The form patch (role `form`, on `divi/contact-form`): only `field`, `button` and `captcha` at desktop, never `module`. See
+     * the class docblock's form table. Public only so a test can prove each conditional decision's branch with a planted
+     * $proven map; callers go through patch().
+     *
+     * @param array<string,mixed>  $kit    a valid kit
+     * @param array<string,bool>   $proven decision => proven on the form (defaults to FORM_PROVEN)
+     * @return array<string,mixed>
+     */
+    public static function formPatch( string $on, array $kit, array $proven = self::FORM_PROVEN ): array
+    {
+        $border = (array) $kit['border'];
+        $bottom = 'bottom' === ( $border['sides'] ?? 'all' );
+        $is     = static fn ( string $decision ): bool => true === ( $proven[ $decision ] ?? false );
+
+        // Field frame (Ruling 1: strong roles; Ruling 2: the underline only where proven, else the full frame at 1px).
+        $role     = in_array( (string) $border['color'], [ 'text', 'accent', 'inverse' ], true ) ? 'text' : 'muted';
+        $underline = $bottom && $is( 'field-underline' );
+        $frame    = self::frameStyles( $bottom && ! $underline ? array_merge( $border, [ 'width' => '1px' ] ) : $border, $role, $underline );
+
+        $field = [
+            'background'      => [ 'desktop' => [ 'value' => [ 'color' => self::colour( 'surface' === $on ? 'bg' : 'surface' ) ] ] ],
+            'font'            => [ 'font' => [ 'desktop' => [ 'value' => [ 'color' => self::colour( 'text' ) ] ] ] ],
+            'placeholderFont' => [ 'font' => [ 'desktop' => [ 'value' => [ 'color' => self::colour( 'muted' ) ] ] ] ],
+            'border'          => [ 'desktop' => [ 'value' => [ 'radius' => '{{aied:kit:radius-control}}', 'styles' => $frame ] ] ],
+        ];
+        if ( $is( 'field-padding' ) ) {
+            $field['spacing'] = [ 'desktop' => [ 'value' => [ 'padding' => '{{aied:kit:space-control}}' ] ] ];
+        }
+
+        // The submit is the kit's primary control on the band (a surface band is a light band for a button), built by
+        // button() and moved from divi/button's paths to the form's own.
+        $control = self::button( 'control', 'surface' === $on ? 'light' : $on, $kit );
+        $submit  = $control['button']['decoration'];
+        if ( $bottom ) {
+            // The bottom-only edge was never probed on the form's submit button: the same edge as a full frame.
+            $submit['border']['desktop']['value']['styles'] = [ 'all' => $submit['border']['desktop']['value']['styles']['bottom'] ];
+        }
+        $module = $control['module']['decoration'];
+        foreach ( [ 'spacing' => 'button-padding', 'boxShadow' => 'button-shadow', 'transform' => 'button-lift' ] as $group => $decision ) {
+            if ( $is( $decision ) && isset( $module[ $group ] ) ) {
+                $submit[ $group ] = $module[ $group ];
+            }
+        }
+
+        return [
+            'field'   => [ 'decoration' => $field ],
+            'button'  => [ 'decoration' => $submit ],
+            'captcha' => [ 'decoration' => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'color' => self::colour( self::ink( 'text', $on ) ) ] ] ] ] ] ],
+        ];
     }
 
     /**

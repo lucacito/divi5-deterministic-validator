@@ -580,7 +580,8 @@ class StyleGuideKitTopicsTest extends TestCase
         $this->assertSame( 9599, $max, 'the largest kit topic today (neo-brutal; was 8124 before the inverted panel, 9992 before kit-rules)' );
         // The default guide grew only by ", kit-rules" in its topic line (Ruling 19: the line names every topic): 28,964 + 11.
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide changed only by the new topic name' );
-        $this->assertSame( 8423, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog topic (8,464 before kit-rules)' );
+        // Re-pinned deliberately (forms adapter T2): +30 B, the form named in the kit-driven sentence and "Forms, " dropped from the not-applied one.
+        $this->assertSame( 8453, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog topic (8,464 before kit-rules, 8,423 before the form adapter)' );
     }
 
     /** @return list<array{0:string,1:array<string,mixed>}> block comment text and its decoded attributes, in document order */

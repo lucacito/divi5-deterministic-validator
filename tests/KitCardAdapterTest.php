@@ -1132,6 +1132,8 @@ class KitCardAdapterTest extends TestCase
                 'divi/column'    => [ 'card', 'panel' ],
                 'divi/accordion' => [ 'item', 'item-rule' ],
                 'divi/toggle'    => [ 'item', 'item-rule' ],
+                // Forms adapter T2: the map grows by one block and one role, on purpose (the pin follows the shipped adapters).
+                'divi/contact-form' => [ 'form' ],
             ],
             KitAdapters::APPLIED
         );
