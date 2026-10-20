@@ -21054,6 +21054,80 @@ Registered paths added:
 - `button.decoration.boxShadow.{bp}.hover.style`
 - `button.decoration.boxShadow.{bp}.hover.vertical`
 
+## kf-button-underline
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `button.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `button.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+- `button.decoration.border.desktop.value.styles.bottom.width` = `"3px"`
+- `button.decoration.border.desktop.value.styles.bottom.style` = `"solid"`
+- `button.decoration.border.desktop.value.styles.bottom.color` = `"#f59e0b"`
+- `button.decoration.border.desktop.hover.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 41 | yes | `0:form:block-size: 182px -> 181px` |
+| 900 px | yes | 41 | yes | `0:form:block-size: 182px -> 181px` |
+| 400 px | yes | 41 | yes | `0:form:block-size: 182px -> 181px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-width`, `border-block-start-color`, `border-block-start-width`, `border-bottom-color`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-width`, `border-left-color`, `border-left-width`, `border-right-color`, `border-right-width`, `border-top-color`, `border-top-width`, `height`, `inline-size`, `margin-inline-start`, `margin-left`, `perspective-origin`, `transform-origin`, `transition-duration`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit underline in the exact form KitAdapters::button writes for an underline kit (border.sides bottom): styles.all width 0px with style and colour, styles.bottom width, style and colour, hover styles.all.color; mirrors kb-border-bottom-adapter-form on divi/button. Base: Divi's own default button frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-underline-hover
+
+Block: `contact-form`, holding `contact-field`, `contact-field`, measured in the `hover` state (hovering `.et_pb_contact_submit` inside the element). Set on top of the base block:
+
+- `button.decoration.border.desktop.hover.styles.all.color` = `"#1e3a8a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 7 | yes | `10:button:border-block-start-color: rgb(245, 158, 11) -> rgb(30, 58, 138)` |
+| 900 px | yes | 7 | yes | `10:button:border-block-start-color: rgb(245, 158, 11) -> rgb(30, 58, 138)` |
+| 400 px | yes | 7 | yes | `10:button:border-block-start-color: rgb(245, 158, 11) -> rgb(30, 58, 138)` |
+
+Properties that changed (any width): `border-block-start-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `transition-duration`.
+
+Phone overflow at 400 px: no.
+
+Note: The hover frame colour (styles.all.color, the only border hover value KitAdapters::button writes) over the underline rest state of kf-button-underline, a real hover on the submit button: does the bottom edge follow, or does the hover reach only the (0px) other sides? Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kf-button-border-width-0px
+
+Block: `contact-form`, holding `contact-field`, `contact-field`. Set on top of the base block:
+
+- `button.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `button.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `button.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 40 | yes | `0:form:block-size: 182px -> 178px` |
+| 900 px | yes | 40 | yes | `0:form:block-size: 182px -> 178px` |
+| 400 px | yes | 40 | yes | `0:form:block-size: 182px -> 178px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-width`, `border-block-start-color`, `border-block-start-width`, `border-bottom-color`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-width`, `border-left-color`, `border-left-width`, `border-right-color`, `border-right-width`, `border-top-color`, `border-top-width`, `height`, `inline-size`, `margin-inline-start`, `margin-left`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Submit frame width 0px with style solid and a colour (what KitAdapters::button writes for the solid/filled kits and the ghost primary), over a 2px solid frame: expect all four computed border widths 0px. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
 ## Not taught (kit-form)
 
 Candidates from `kit-form.json` that were measured and are not taught, with the reason:
@@ -21067,4 +21141,4 @@ Candidates from `kit-form.json` that were measured and are not taught, with the 
 
 Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-kit-form.json`):
 
-- divi/contact-form: module.decoration.boxShadow, module.decoration.transform and module.decoration.spacing as the SUBMIT BUTTON's shadow, lift and padding: Measured on the real Divi 5.15.1 (scratch check after the kit-form probe: a form with a red hard shadow, 14px 28px padding and a hover lift at module.decoration.*): all three land on div.et_pb_contact_form_container, the whole form, never on the submit button (button: box-shadow none, padding 6px 20px, transform none, rest and hover; container: the shadow, padding 14px 28px, and on hover matrix(1, 0, 0, 1, 0, -4)). The probe saw only a stylesheet difference (css-only, nothing inside the form changed) for the shadow and lift, and a narrower form for the padding. The button's own button.decoration.boxShadow, button.decoration.transform and button.decoration.spacing are the paths that reach it (kf-button-shadow-element-*, kf-button-lift-element, kf-button-padding-element PASS): the opposite of divi/button.
+- divi/contact-form: module.decoration.boxShadow, module.decoration.transform and module.decoration.spacing as the SUBMIT BUTTON's shadow, lift and padding: Measured on the real Divi 5.15.1 (scratch check after the kit-form probe: a form with a red hard shadow, 14px 28px padding and a hover lift at module.decoration.*): all three land on div.et_pb_contact_form_container, the whole form, never on the submit button (button: box-shadow none, padding 6px 20px, transform none, rest and hover; container: the shadow, padding 14px 28px, and on hover matrix(1, 0, 0, 1, 0, -4)). The probe saw only a stylesheet difference (css-only, nothing inside the form changed) for the shadow and lift, and a narrower form for the padding. The button's own button.decoration.boxShadow, button.decoration.transform and button.decoration.spacing are the paths that reach it (kf-button-shadow-element-*, kf-button-lift-element, kf-button-padding-element PASS): the opposite of divi/button. Note on evidence: the finding that these module-level values land on the form container rests on a one-off manual ancestor-by-ancestor check of computed styles in a real browser (a scratch script, not committed), not on a committed probe; the committed probe results show only the css-only / narrower-form symptoms.
