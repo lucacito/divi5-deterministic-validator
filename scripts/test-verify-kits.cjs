@@ -5,7 +5,8 @@
  * shadows, lift, contrast on the painted surface, overflow and the PNG decoder, and for the CARDS (card/panel on a group and on a column) the
  * same set: the sheet, expectations read from the resolved block tree, the rest/hover comparison (a panel must not change), the clip, the
  * contrast on the measured card fill, overflow, the three-column row, the zero-card rule, the grounds (the painted fill against the resolved
- * one), the kit buttons on the inverted panel, the featured card's prominence, the ITEMS (accordion and toggle: the sheet, expectations per
+ * one), the kit buttons on the inverted panel, the featured card's prominence, the IMAGE (the media-radius token: the sheet, the four corners read from
+ * the resolved markup, the radius on the wrapper or the img, clip, overflow, count), the ITEMS (accordion and toggle: the sheet, expectations per
  * state read from the resolved markup, the comparison, the count, the click, the contrast on the painted fill) and an OFFLINE run of the whole sheet through the
  * real PHP pipeline (scripts/lib/kit-sheet-offline.php: every kit x every language, zero leftovers, LayoutGate valid). Run first by
  * `make verify-kits`. */
@@ -104,7 +105,7 @@ t('the sheet carries 20 marked cards: a card and a panel on each band, an image-
   assert.strictEqual(bySlot['card-bg'].module.decoration.spacing, undefined, 'the kit gives a card its padding');
   assert.strictEqual(bySlot['accent-tile-surface'].module.decoration.spacing, undefined, 'an accent tile is a card: the kit gives it its padding');
   assert.strictEqual(K.CARD_SLOTS.filter((c) => c.image).map((c) => c.key).join(), 'card-bg,panel-clip', 'the bg-band card and the clip panel hold an image');
-  assert.strictEqual((m.match(/wp:divi\/image /g) || []).length, 2);
+  assert.strictEqual((m.match(/wp:divi\/image /g) || []).length, 3, 'the two card images and the one media-radius image of the image slot');
   assert.ok(m.includes('"columnStructure":{"desktop":{"value":"1_3,1_3,1_3"}}') && m.includes('equal-columns_3'), 'the three-column row is the real proof-press-quotes shape');
   assert.strictEqual(K.cardAttrs(m).filter((c) => c.attrs).length, 20, 'every card is found again by its heading');
   assert.strictEqual(K.cardAttrs(m).find((c) => c.slot.key === 'column-2').attrs.module.advanced.type.desktop.value, '1_3');
@@ -1321,6 +1322,136 @@ t('form count: every sheet form on the page with its fields, ONE submit and a ca
   assert.deepStrictEqual(K.emptyRunProblems({ checked: 12, cardsChecked: 144, itemsChecked: 0 }), ['no item was checked: the item selection was empty'], 'the older run check is unchanged');
 });
 
+// ---- images (the media radius, role-less token): the sheet, expectations from the resolved markup, comparison, count, clip, overflow ----
+const mhit = (row) => K.mediaAttrs(row.markup)[0];
+const mexp = (row) => K.expectMediaFromAttrs(mhit(row).attrs);
+const CORNER_KEYS = ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius'];
+/** The computed style of one element of a measured image: the four corners (a number of px each, or a string) and the overflow. */
+const mel = (radius, o = {}) => Object.assign({ overflowX: 'visible', overflowY: 'visible' }, ...CORNER_KEYS.map((k, i) => ({ [k]: (typeof radius[i] === 'number' ? radius[i] + 'px' : radius[i]) })), o);
+/** What measureMedia returns for the image of a page that agrees with the expectation, the way Divi 5.15.1 paints it: the radius and overflow:hidden on the wrapper, the img inheriting the radius. */
+function mmedia(exp, o = {}) {
+  return Object.assign({
+    key: 'media-bg', found: true, count: 1,
+    img: { el: mel(exp.radius), rect: R(40, 100, 340, 250) },
+    wrap: { el: mel(exp.radius, { overflowX: 'hidden', overflowY: 'hidden' }), rect: R(40, 100, 340, 250) },
+    module: { el: mel([0, 0, 0, 0]), rect: R(40, 100, 340, 250) },
+    parentRect: R(20, 80, 380, 400),
+  }, o);
+}
+const SQ = [0, 0, 0, 0];
+const mq = mexp(ROWS.quiet); const mu = mexp(ROWS.under);
+
+t('the sheet carries ONE image on the bg band whose radius is the whole-value token radius-media at image.decoration.border.desktop.value.radius, a built-in pack picture, found again by its unique alt', () => {
+  const m = K.sheetMarkup();
+  assert.deepStrictEqual(K.MEDIA_SLOTS.map((s) => [s.key, s.band]), [['media-bg', 'bg']]);
+  assert.strictEqual(new Set(K.MEDIA_SLOTS.map((s) => s.alt)).size, K.MEDIA_SLOTS.length, 'unique alt');
+  const found = K.mediaAttrs(m);
+  assert.strictEqual(found.length, 1);
+  assert.ok(found[0].attrs, 'the image is in the sheet');
+  assert.strictEqual(found[0].attrs.image.decoration.border.desktop.value.radius, '{{aied:kit:radius-media}}');
+  assert.match(found[0].attrs.image.innerContent.desktop.value.src, /^\{\{aied:image:[a-z0-9-]+\}\}$/, 'a built-in pack picture, never a third-party host');
+  assert.strictEqual(found[0].attrs.aied, undefined, 'a token, not a marker');
+  assert.ok(!/"sync"/.test(JSON.stringify(found[0].attrs)), 'the sync key stays out');
+  assert.deepStrictEqual(K.mediaAttrs('<!-- wp:divi/text {} /-->').map((x) => x.attrs), [null], 'an image that is not in the markup is reported as absent');
+  // The other blocks of the sheet are unchanged by the new one.
+  assert.strictEqual(K.pageButtonAttrs(m).length, 8);
+  assert.strictEqual(K.cardAttrs(m).filter((c) => c.attrs).length, 20);
+  assert.strictEqual(K.itemAttrs(m).filter((c) => c.attrs).length, 10);
+  assert.strictEqual(K.formAttrs(m).filter((c) => c.attrs).length, 2);
+});
+
+t('image expectations: the four corners are read from the RESOLVED markup (4px for quiet-solid, 0px for underline-link: a square kit is checked too), never a table', () => {
+  assert.deepStrictEqual(mq.radius, [4, 4, 4, 4]);
+  assert.deepStrictEqual(mu.radius, [0, 0, 0, 0], 'a kit with media 0px resolves to four zeros, which are expectations, not holes');
+  assert.deepStrictEqual(mexp(ROWS.brutal).radius, [0, 0, 0, 0]);
+  assert.deepStrictEqual(K.missingMediaExpectations(mq), []);
+  assert.deepStrictEqual(K.missingMediaExpectations(mu), []);
+  // A path that drifted (no radius, a string that never resolved, three corners, a corner that is not a length) is a hole, never a skipped check.
+  assert.deepStrictEqual(K.missingMediaExpectations(K.expectMediaFromAttrs({ image: { decoration: {} } })), ['radius']);
+  assert.deepStrictEqual(K.missingMediaExpectations(K.expectMediaFromAttrs({ image: { decoration: { border: { desktop: { value: { radius: '{{aied:kit:radius-media}}' } } } } } })), ['radius']);
+  assert.deepStrictEqual(K.missingMediaExpectations(K.expectMediaFromAttrs({ image: { decoration: { border: { desktop: { value: { radius: { topLeft: '8px', topRight: '8px', bottomRight: '8px' } } } } } } })), ['radius']);
+  assert.deepStrictEqual(K.missingMediaExpectations(K.expectMediaFromAttrs({ image: { decoration: { border: { desktop: { value: { radius: { topLeft: '8px', topRight: 'big', bottomRight: '8px', bottomLeft: '8px' } } } } } } })), ['radius']);
+  assert.deepStrictEqual(K.missingMediaExpectations(null), ['radius'], 'no expectation at all is a hole');
+});
+
+t('media-radius: the radius on the wrapper that clips (the way Divi paints it), on the img alone, or inherited by both passes; a wrong or missing corner, or a radius on a square kit, fails', () => {
+  assert.deepStrictEqual(K.compareMedia(mq, mmedia(mq)), [], 'wrapper radius + overflow hidden + the img inheriting it');
+  assert.deepStrictEqual(K.compareMedia(mu, mmedia(mu)), [], 'a square kit: every element square');
+  // The radius painted on the img only, the wrapper square and not clipping.
+  assert.deepStrictEqual(K.compareMedia(mq, mmedia(mq, { wrap: { el: mel(SQ), rect: R(40, 100, 340, 250) } })), []);
+  // The img without an inherited radius under a wrapper that rounds and clips: the picture is still cut to the wrapper.
+  assert.deepStrictEqual(K.compareMedia(mq, mmedia(mq, { img: { el: mel(SQ), rect: R(40, 100, 340, 250) } })), []);
+  // A wrong corner, wherever it is.
+  const wrongImg = K.compareMedia(mq, mmedia(mq, { img: { el: mel([4, 4, 4, 9]), rect: R(40, 100, 340, 250) } }));
+  assert.deepStrictEqual(fcodes(wrongImg), ['media-radius']);
+  assert.match(wrongImg[0][1], /^rest: img borderBottomLeftRadius 9px, expected 4px/);
+  const wrongWrap = K.compareMedia(mq, mmedia(mq, { wrap: { el: mel([4, 4, 4, 4].map((v, i) => (i === 1 ? 16 : v)), { overflowX: 'hidden', overflowY: 'hidden' }), rect: R(40, 100, 340, 250) } }));
+  assert.ok(fcodes(wrongWrap).includes('media-radius'));
+  assert.match(wrongWrap[0][1], /^rest: wrapper borderTopRightRadius 16px, expected 4px/);
+  // No radius anywhere: the picture keeps its square (or baked) corners.
+  const none = K.compareMedia(mq, mmedia(mq, { img: { el: mel(SQ), rect: R(40, 100, 340, 250) }, wrap: { el: mel(SQ, { overflowX: 'hidden', overflowY: 'hidden' }), rect: R(40, 100, 340, 250) } }));
+  assert.deepStrictEqual(fcodes(none), ['media-radius']);
+  assert.match(none[0][1], /no element of the image carries the expected radius/);
+  // A square kit whose image still has a rounded wrapper (a baked radius): the stray radius fails even though the img is square.
+  const stray = K.compareMedia(mu, mmedia(mu, { wrap: { el: mel([16, 16, 16, 16], { overflowX: 'hidden', overflowY: 'hidden' }), rect: R(40, 100, 340, 250) } }));
+  assert.deepStrictEqual(fcodes(stray), ['media-radius']);
+  assert.match(stray[0][1], /wrapper borderTopLeftRadius 16px, expected 0px/);
+  const strayModule = K.compareMedia(mq, mmedia(mq, { module: { el: mel([30, 30, 30, 30]), rect: R(40, 100, 340, 250) } }));
+  assert.ok(strayModule.some(([c, d]) => c === 'media-radius' && /module borderTopLeftRadius 30px, expected 4px/.test(d)), 'a rounded module box is a stray too');
+  assert.ok(K.compareMedia(mq, mmedia(mq, { img: null })).some(([c]) => c === 'media-radius'), 'an unmeasured img is never skipped');
+  assert.deepStrictEqual(K.compareMedia(K.expectMediaFromAttrs({}), mmedia(mq)).map((x) => x[0]), ['media-expectation'], 'an expectation with a hole is one finding, not a skipped check');
+  // Sub-pixel noise passes.
+  assert.deepStrictEqual(K.compareMedia(mq, mmedia(mq, { img: { el: mel(['4.2px', '4px', '3.9px', '4px']), rect: R(40, 100, 340, 250) } })), []);
+});
+
+t('media-clip: a radius on the wrapper that does not clip leaves the picture square; a rounded img cut by a smaller clipping wrapper shows no rounding; an img bigger than a non-clipping wrapper sticks out', () => {
+  const noClip = mmedia(mq, { img: { el: mel(SQ), rect: R(40, 100, 340, 250) }, wrap: { el: mel(mq.radius), rect: R(40, 100, 340, 250) } });
+  const a = K.compareMedia(mq, noClip);
+  assert.deepStrictEqual(fcodes(a), ['media-clip']);
+  assert.match(a[0][1], /^rest: the wrapper carries the radius 4px but is overflow visible\/visible and the picture does not inherit it/);
+  // The img inheriting the radius needs no clipping wrapper.
+  assert.deepStrictEqual(K.compareMedia(mq, mmedia(mq, { wrap: { el: mel(mq.radius), rect: R(40, 100, 340, 250) } })), []);
+  // A rounded img inside a clipping wrapper that is smaller: the wrapper's square edge cuts the rounded corners off.
+  const cut = K.compareMedia(mq, mmedia(mq, { img: { el: mel(mq.radius), rect: R(30, 90, 350, 260) }, wrap: { el: mel(SQ, { overflowX: 'hidden', overflowY: 'hidden' }), rect: R(40, 100, 340, 250) } }));
+  assert.deepStrictEqual(fcodes(cut), ['media-clip']);
+  assert.match(cut[0][1], /^rest: the picture 30\.\.350 x 90\.\.260 is cut by its wrapper 40\.\.340 x 100\.\.250, so its rounded corners are not visible/);
+  // An img bigger than a wrapper that does not clip sticks out of it.
+  const out = K.compareMedia(mq, mmedia(mq, { img: { el: mel(mq.radius), rect: R(30, 90, 350, 260) }, wrap: { el: mel(SQ), rect: R(40, 100, 340, 250) } }));
+  assert.deepStrictEqual(fcodes(out), ['media-clip']);
+  assert.match(out[0][1], /sticks out of its wrapper/);
+  // A square kit is never asked to clip.
+  assert.deepStrictEqual(K.compareMedia(mu, mmedia(mu, { wrap: { el: mel(SQ), rect: R(40, 100, 340, 250) } })), []);
+  // One pixel of rounding in the boxes is not a cut.
+  assert.deepStrictEqual(K.compareMedia(mq, mmedia(mq, { img: { el: mel(mq.radius), rect: R(40, 100, 340.6, 250.6) } })), []);
+});
+
+t('image overflow: the picture, its wrapper or the module past the column or the window, or a page wider than the window', () => {
+  const page = { innerWidth: 400, scrollWidth: 400 };
+  const m = mmedia(mq);
+  assert.deepStrictEqual(K.mediaOverflowProblems(m, 'rest', page), []);
+  const wide = mmedia(mq, { img: { el: mel(mq.radius), rect: R(40, 100, 420, 250) } });
+  assert.deepStrictEqual(fcodes(K.mediaOverflowProblems(wide, 'rest', page)), ['overflow']);
+  assert.match(K.mediaOverflowProblems(wide, 'rest', page)[0][1], /^rest: image 40\.\.420 outside its column 20\.\.380/);
+  assert.ok(K.mediaOverflowProblems(mmedia(mq, { wrap: { el: mel(mq.radius), rect: R(40, 100, 500, 250) } }), 'rest', page).some(([, d]) => /wrapper 40\.\.500/.test(d)));
+  assert.ok(K.mediaOverflowProblems(mmedia(mq, { parentRect: R(20, 80, 500, 400) }), 'rest', page).some(([, d]) => /outside the window/.test(d)) === false, 'inside the window and its column');
+  assert.strictEqual(K.mediaOverflowProblems(m, 'rest', { innerWidth: 400, scrollWidth: 420 }).length, 1);
+});
+
+t('image count (code media): the image must be on the page exactly once; an empty slot list is an error and a run that checked no image fails', () => {
+  const m = mmedia(mq);
+  assert.deepStrictEqual(K.mediaCountProblems([m], K.MEDIA_SLOTS), []);
+  const gone = K.mediaCountProblems([{ key: 'media-bg', found: false, count: 0 }], K.MEDIA_SLOTS);
+  assert.deepStrictEqual(gone.map((x) => x[0]), ['media']);
+  assert.match(gone[0][1], /^0 of 1 images rendered as the sheet says: media-bg is not in the page/);
+  assert.match(K.mediaCountProblems([mmedia(mq, { count: 2 })], K.MEDIA_SLOTS)[0][1], /media-bg is on the page 2 times, expected 1/);
+  assert.match(K.mediaCountProblems([m, m], K.MEDIA_SLOTS)[0][1], /2 images measured for 1 slots/);
+  assert.throws(() => K.mediaCountProblems([], []), /no image slots/);
+  assert.deepStrictEqual(K.emptyMediaRunProblems({ mediaChecked: 3 }), []);
+  assert.deepStrictEqual(K.emptyMediaRunProblems({ mediaChecked: 0 }), ['no image was checked: the image selection was empty']);
+  assert.deepStrictEqual(K.emptyMediaRunProblems({}), ['no image was checked: the image selection was empty'], 'a caller that forgets the image count fails, never skips');
+  assert.deepStrictEqual(K.emptyFormRunProblems({ formsChecked: 4 }), [], 'the form run check is unchanged');
+});
+
 // ---- the sheet through the REAL PHP pipeline, offline ----
 t('every kit x every language: the sheet resolves with zero leftovers, passes LayoutGate, and every card, every item block and every form is in the resolved markup with a complete expectation and readable text', () => {
   const php = spawnSync('php', [path.join(__dirname, 'lib', 'kit-sheet-offline.php')], { input: K.sheetMarkup(), encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
@@ -1333,7 +1464,9 @@ t('every kit x every language: the sheet resolves with zero leftovers, passes La
   let cards = 0;
   let items_checked = 0;
   let forms_checked = 0;
+  let media_checked = 0;
   const featuredFillOnly = [];
+  const kitMedia = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(ROOT, 'wp-plugin', 'data', 'style-kits.json'), 'utf8')).map((k) => [k.id, k.radius.media]));
   for (const row of rows) {
     const cell = row.kit + '/' + row.language;
     assert.deepStrictEqual(row.leftovers, [], cell + ' leftovers');
@@ -1458,6 +1591,19 @@ t('every kit x every language: the sheet resolves with zero leftovers, passes La
         assert.deepStrictEqual(K.contrastProblems(el, solid(bandC), state).problems, [], `${where} submit ${state}`);
       }
     }
+    // The image: it is in the resolved markup, its four corners are the kit's media radius (a 0px kit gives four zeros, which are checked), and it is
+    // a picture of the built-in pack that now has a site-local address.
+    const foundMedia = K.mediaAttrs(row.markup);
+    assert.strictEqual(foundMedia.length, K.MEDIA_SLOTS.length);
+    for (const { slot, attrs } of foundMedia) {
+      const where = `${cell} ${slot.key}`;
+      assert.ok(attrs, where + ' not in the resolved markup');
+      media_checked++;
+      const exp = K.expectMediaFromAttrs(attrs);
+      assert.deepStrictEqual(K.missingMediaExpectations(exp), [], where);
+      assert.deepStrictEqual(exp.radius, [0, 1, 2, 3].map(() => parseFloat(kitMedia[row.kit])), `${where} radius ${exp.radius} is not the kit's media ${kitMedia[row.kit]}`);
+      assert.match(attrs.image.innerContent.desktop.value.src, /^https:\/\/example\.test\/assets\/images\/[a-z0-9-]+\.svg$/, where + ' the picture is a site-local pack image');
+    }
     // The featured middle card against the plain ones on the bg band, by FILL alone (frames, which only make a plain card stronger, are the live check).
     const band = K.colour(pal.bg);
     const prom = (key) => K.boxProminence(flat({ r: fillOf[key].r, g: fillOf[key].g, b: fillOf[key].b }), solid(band));
@@ -1466,6 +1612,7 @@ t('every kit x every language: the sheet resolves with zero leftovers, passes La
   assert.strictEqual(cards, rows.length * K.CARD_SLOTS.length);
   assert.strictEqual(items_checked, rows.length * K.ITEM_SLOTS.length, 'every item block of every cell was checked');
   assert.strictEqual(forms_checked, rows.length * K.FORM_SLOTS.length, 'every form of every cell was checked');
+  assert.strictEqual(media_checked, rows.length * K.MEDIA_SLOTS.length, 'every image of every cell was checked');
   // On fills alone the accent middle card is at least FEATURED_RATIO x the larger plain neighbour in every kit x language (kits do not change the fill).
   const weakest = featuredFillOnly.filter(([, f, n]) => K.featuredProblems({ featured: f, neighbours: [n, n] }).length);
   assert.deepStrictEqual(weakest.map(([c, f, n]) => `${c} featured ${f.toFixed(3)} vs ${n.toFixed(3)}`), [], 'by fill alone the featured card is not featured in these cells');
@@ -1539,4 +1686,4 @@ t('the PNG decoder reads every filter type', () => {
   assert.deepStrictEqual(st.mean, { r: 10, g: 20, b: 30 });
 });
 
-console.log(`OK verify-kits pure parts: ${n} tests (run titles, selection, sheet, expectations from resolved markup, rest and hover comparison, shadows, lift, contrast, overflow, PNG; cards: sheet, expectations, comparison, panel static on hover, clip, contrast, overflow, column row, counts, empty run; grounds, panel buttons, the featured card; items: sheet, expectations per state, comparison, count, click, contrast; forms: sheet, expectations from the resolved markup, field/submit/captcha/container comparison, painted fill, contrast, clip, overflow, count; offline sheet through PHP for every kit x language)`);
+console.log(`OK verify-kits pure parts: ${n} tests (run titles, selection, sheet, expectations from resolved markup, rest and hover comparison, shadows, lift, contrast, overflow, PNG; cards: sheet, expectations, comparison, panel static on hover, clip, contrast, overflow, column row, counts, empty run; grounds, panel buttons, the featured card; items: sheet, expectations per state, comparison, count, click, contrast; forms: sheet, expectations from the resolved markup, field/submit/captcha/container comparison, painted fill, contrast, clip, overflow, count; images: the media-radius token sheet, four corners from the resolved markup, radius on the wrapper or the img, clip, overflow, count, empty run; offline sheet through PHP for every kit x language)`);
