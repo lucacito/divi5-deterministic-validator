@@ -74,6 +74,9 @@
 .aied-procard { margin-top: 16px; }
 .aied-procard__actions { display: flex; align-items: center; gap: 16px; }
 .aied-procard__actions form { margin: 0; }
+.aied-review { margin-top: 16px; }
+.aied-review__actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.aied-review__actions form { margin: 0; }
 .aied-card--accent { border-color: #d8d6fb; background: linear-gradient(180deg, #f7f6ff, #fff); }
 .aied-muted { color: var(--aied-muted); }
 .aied-note { font-size: 12.5px; }
