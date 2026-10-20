@@ -215,7 +215,7 @@ have made differently.
 - `section-recipes.json` **675,810 -> 671,687 B** (bound 675,810 held; the 700 KB rule and the 716,800 B spec bound hold).
   `style-kits.json` 25,479 B (unchanged, no kit-file change).
 - Guide, before -> after (`docs/token-usage.md`): default guide **28,975 -> 28,975 B** (0 B, pinned; 133 B under its 29,108 B
-  bound); topic `kit-rules` **3,525 -> 4,218 B** (+693; budget +700); topic `forms` **6,315 -> 6,474 B** (+159; budget +350);
+  bound); topic `kit-rules` **3,525 -> 4,301 B** (+776; the original +700 budget was raised by the final review: the accent-band frame clause and the submit-path clause); topic `forms` **6,315 -> 6,474 B** (+159; budget +350);
   topic `style-kits` (the catalog) **8,423 -> 8,453 B** (+30); the largest kit topic (neo-brutal) **9,599 B, unchanged**
   (401 B under the 10,000 bound; the 40 kit topics total 339,482 B before and after, because the forms sentence lives in
   `kit-rules` and `appliedSentence()` only gained a noun that replaced another); tool definitions **21,641 -> 21,601 B**; the
