@@ -177,6 +177,51 @@
             "evidence": "docs/shape-evidence-5.15.1.md#kb-border-left-only"
         },
         {
+            "path": "button.decoration.boxShadow.{bp}.hover.blur",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-button-shadow-element-hover-soft"
+        },
+        {
+            "path": "button.decoration.boxShadow.{bp}.hover.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-button-shadow-element-hover-soft"
+        },
+        {
+            "path": "button.decoration.boxShadow.{bp}.hover.style",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-button-shadow-element-hover-soft"
+        },
+        {
+            "path": "button.decoration.boxShadow.{bp}.hover.vertical",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-button-shadow-element-hover-soft"
+        },
+        {
+            "path": "button.decoration.boxShadow.{bp}.value.blur",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-button-shadow-element-soft"
+        },
+        {
+            "path": "button.decoration.boxShadow.{bp}.value.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-button-shadow-element-soft"
+        },
+        {
+            "path": "button.decoration.boxShadow.{bp}.value.horizontal",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-button-shadow-element-hard"
+        },
+        {
+            "path": "button.decoration.boxShadow.{bp}.value.style",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-button-shadow-element-soft"
+        },
+        {
+            "path": "button.decoration.boxShadow.{bp}.value.vertical",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-button-shadow-element-soft"
+        },
+        {
             "path": "button.decoration.button.{bp}.value.enable",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
@@ -285,6 +330,11 @@
             "path": "button.decoration.spacing.{bp}.value.padding.top",
             "how": "export",
             "evidence": "fixtures/valid/page-23-style-reference.json"
+        },
+        {
+            "path": "button.decoration.transform.{bp}.hover.translate.y",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-button-lift-element"
         },
         {
             "path": "button.innerContent",
@@ -812,6 +862,21 @@
             "evidence": "docs/shape-evidence-5.15.1.md#rc-cf-field-border"
         },
         {
+            "path": "field.decoration.border.{bp}.value.styles.bottom.color",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-field-underline"
+        },
+        {
+            "path": "field.decoration.border.{bp}.value.styles.bottom.style",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-field-underline"
+        },
+        {
+            "path": "field.decoration.border.{bp}.value.styles.bottom.width",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-field-underline"
+        },
+        {
             "path": "field.decoration.font.font.{bp}.value.color",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#rm-cf-field-color"
@@ -825,6 +890,26 @@
             "path": "field.decoration.placeholderFont.font.{bp}.value.color",
             "how": "probe",
             "evidence": "docs/shape-evidence-5.15.1.md#rc-cf-placeholder-color"
+        },
+        {
+            "path": "field.decoration.spacing.{bp}.value.padding.bottom",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-field-padding"
+        },
+        {
+            "path": "field.decoration.spacing.{bp}.value.padding.left",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-field-padding"
+        },
+        {
+            "path": "field.decoration.spacing.{bp}.value.padding.right",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-field-padding"
+        },
+        {
+            "path": "field.decoration.spacing.{bp}.value.padding.top",
+            "how": "probe",
+            "evidence": "docs/shape-evidence-5.15.1.md#kf-field-padding"
         },
         {
             "path": "fieldItem.advanced.fullwidth.{bp}.value",

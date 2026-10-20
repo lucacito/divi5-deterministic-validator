@@ -1,0 +1,5083 @@
+[
+    {
+        "id": "kf-button-fill",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#111827"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.background.desktop.value.color": "#f59e0b"
+        },
+        "note": "Submit fill (the base has a label colour only). Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-border-width-1px",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#f59e0b"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.width": "1px"
+        },
+        "note": "Submit frame width 1px over a 3px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-border-width-2px",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#f59e0b"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.width": "2px"
+        },
+        "note": "Submit frame width 2px over a 3px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-border-width-4px",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "3px",
+                                        "style": "solid",
+                                        "color": "#f59e0b"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.width": "4px"
+        },
+        "note": "Submit frame width 4px over a 3px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-border-style-dashed",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#f59e0b"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.style": "dashed"
+        },
+        "note": "Submit frame style dashed over a 4px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-border-style-dotted",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#f59e0b"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.style": "dotted"
+        },
+        "note": "Submit frame style dotted over a 4px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-border-style-double",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "4px",
+                                        "style": "solid",
+                                        "color": "#f59e0b"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.style": "double"
+        },
+        "note": "Submit frame style double over a 4px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-border-colour",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.styles.all.color": "#f59e0b"
+        },
+        "note": "Submit frame colour over a 2px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-radius-16",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#f59e0b"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.radius.topLeft": "16px",
+            "button.decoration.border.desktop.value.radius.topRight": "16px",
+            "button.decoration.border.desktop.value.radius.bottomRight": "16px",
+            "button.decoration.border.desktop.value.radius.bottomLeft": "16px"
+        },
+        "note": "Submit corner radius 16px on the four corners (the form {{aied:kit:radius-control}} resolves to) over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-radius-36",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#f59e0b"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.radius.topLeft": "36px",
+            "button.decoration.border.desktop.value.radius.topRight": "36px",
+            "button.decoration.border.desktop.value.radius.bottomRight": "36px",
+            "button.decoration.border.desktop.value.radius.bottomLeft": "36px"
+        },
+        "note": "Submit corner radius 36px on the four corners (the form {{aied:kit:radius-control}} resolves to) over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-radius-999",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#f59e0b"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.value.radius.topLeft": "999px",
+            "button.decoration.border.desktop.value.radius.topRight": "999px",
+            "button.decoration.border.desktop.value.radius.bottomRight": "999px",
+            "button.decoration.border.desktop.value.radius.bottomLeft": "999px"
+        },
+        "note": "Submit corner radius 999px on the four corners (the form {{aied:kit:radius-control}} resolves to) over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-label-colour",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.font.font.desktop.value.color": "#f59e0b"
+        },
+        "note": "Submit label colour. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-text-capitalization",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.font.font.desktop.value.capitalization": "uppercase"
+        },
+        "note": "Submit label capitalization uppercase. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-text-letterspacing",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.font.font.desktop.value.letterSpacing": "2px"
+        },
+        "note": "Submit label letter spacing 2px. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-text-weight",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff",
+                                    "weight": "400"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.font.font.desktop.value.weight": "700"
+        },
+        "note": "Submit label weight 700 over weight 400. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-hover-fill",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "rgba(255,255,255,0)"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#1e3a8a"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.background.desktop.hover.color": "#1e3a8a"
+        },
+        "state": "hover",
+        "hoverSelector": ".et_pb_contact_submit",
+        "note": "Submit hover fill (no enableColor, as KitAdapters writes it) over a transparent rest, a real hover on the submit button. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-hover-fill-enable",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "rgba(255,255,255,0)"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#1e3a8a"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.background.desktop.hover.color": "#1e3a8a",
+            "button.decoration.background.desktop.hover.enableColor": "on"
+        },
+        "state": "hover",
+        "hoverSelector": ".et_pb_contact_submit",
+        "note": "Same with enableColor on (the form the contact-form recipe uses). Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-hover-label",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "rgba(255,255,255,0)"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#1e3a8a"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.font.font.desktop.hover.color": "#f59e0b"
+        },
+        "state": "hover",
+        "hoverSelector": ".et_pb_contact_submit",
+        "note": "Submit hover label colour, a real hover on the submit button. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-hover-border",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "rgba(255,255,255,0)"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#1e3a8a"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.border.desktop.hover.styles.all.color": "#f59e0b"
+        },
+        "state": "hover",
+        "hoverSelector": ".et_pb_contact_submit",
+        "note": "Submit hover frame colour, a real hover on the submit button. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-hover-trio",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "rgba(255,255,255,0)"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#1e3a8a"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.background.desktop.hover.color": "#1e3a8a",
+            "button.decoration.border.desktop.hover.styles.all.color": "#f59e0b",
+            "button.decoration.font.font.desktop.hover.color": "#ffffff"
+        },
+        "state": "hover",
+        "hoverSelector": ".et_pb_contact_submit",
+        "note": "Submit hover fill, frame and label together (the outline kits' fill swap), a real hover on the submit button. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-padding-element",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.spacing.desktop.value.padding.top": "14px",
+            "button.decoration.spacing.desktop.value.padding.bottom": "14px",
+            "button.decoration.spacing.desktop.value.padding.left": "28px",
+            "button.decoration.spacing.desktop.value.padding.right": "28px"
+        },
+        "note": "Padding 14px 28px written at button.decoration.spacing; changedElements records whether it pads the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-padding-module",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.spacing.desktop.value.padding.top": "14px",
+            "module.decoration.spacing.desktop.value.padding.bottom": "14px",
+            "module.decoration.spacing.desktop.value.padding.left": "28px",
+            "module.decoration.spacing.desktop.value.padding.right": "28px"
+        },
+        "note": "Padding 14px 28px written at module.decoration.spacing; changedElements records whether it pads the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-shadow-element-soft",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.boxShadow.desktop.value.style": "preset1",
+            "button.decoration.boxShadow.desktop.value.vertical": "8px",
+            "button.decoration.boxShadow.desktop.value.blur": "24px",
+            "button.decoration.boxShadow.desktop.value.color": "rgba(0,0,0,0.18)"
+        },
+        "note": "Box shadow (soft) written at button.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-shadow-element-hard",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.boxShadow.desktop.value.style": "preset4",
+            "button.decoration.boxShadow.desktop.value.horizontal": "6px",
+            "button.decoration.boxShadow.desktop.value.vertical": "6px",
+            "button.decoration.boxShadow.desktop.value.blur": "0px",
+            "button.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "note": "Box shadow (hard) written at button.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-shadow-element-edge",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.boxShadow.desktop.value.style": "preset4",
+            "button.decoration.boxShadow.desktop.value.horizontal": "0px",
+            "button.decoration.boxShadow.desktop.value.vertical": "4px",
+            "button.decoration.boxShadow.desktop.value.blur": "0px",
+            "button.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "note": "Box shadow (edge) written at button.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-shadow-element-glow",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.boxShadow.desktop.value.style": "preset1",
+            "button.decoration.boxShadow.desktop.value.vertical": "0px",
+            "button.decoration.boxShadow.desktop.value.blur": "16px",
+            "button.decoration.boxShadow.desktop.value.color": "rgba(245,158,11,0.45)"
+        },
+        "note": "Box shadow (glow) written at button.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-shadow-module-soft",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset1",
+            "module.decoration.boxShadow.desktop.value.vertical": "8px",
+            "module.decoration.boxShadow.desktop.value.blur": "24px",
+            "module.decoration.boxShadow.desktop.value.color": "rgba(0,0,0,0.18)"
+        },
+        "note": "Box shadow (soft) written at module.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-shadow-module-hard",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset4",
+            "module.decoration.boxShadow.desktop.value.horizontal": "6px",
+            "module.decoration.boxShadow.desktop.value.vertical": "6px",
+            "module.decoration.boxShadow.desktop.value.blur": "0px",
+            "module.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "note": "Box shadow (hard) written at module.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-shadow-module-edge",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset4",
+            "module.decoration.boxShadow.desktop.value.horizontal": "0px",
+            "module.decoration.boxShadow.desktop.value.vertical": "4px",
+            "module.decoration.boxShadow.desktop.value.blur": "0px",
+            "module.decoration.boxShadow.desktop.value.color": "#111827"
+        },
+        "note": "Box shadow (edge) written at module.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-shadow-module-glow",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.value.style": "preset1",
+            "module.decoration.boxShadow.desktop.value.vertical": "0px",
+            "module.decoration.boxShadow.desktop.value.blur": "16px",
+            "module.decoration.boxShadow.desktop.value.color": "rgba(245,158,11,0.45)"
+        },
+        "note": "Box shadow (glow) written at module.decoration.boxShadow, in the exact value form KitAdapters::shadow emits; changedElements records whether it lands on the submit button or the whole form. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-shadow-element-hover-soft",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.boxShadow.desktop.hover.style": "preset1",
+            "button.decoration.boxShadow.desktop.hover.vertical": "12px",
+            "button.decoration.boxShadow.desktop.hover.blur": "24px",
+            "button.decoration.boxShadow.desktop.hover.color": "rgba(0,0,0,0.25)"
+        },
+        "state": "hover",
+        "hoverSelector": ".et_pb_contact_submit",
+        "note": "Hover-only soft shadow at button.decoration.boxShadow (the none/soft pair of KitAdapters::shadow), a real hover on the submit button. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-shadow-module-hover-soft",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    },
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.boxShadow.desktop.hover.style": "preset1",
+            "module.decoration.boxShadow.desktop.hover.vertical": "12px",
+            "module.decoration.boxShadow.desktop.hover.blur": "24px",
+            "module.decoration.boxShadow.desktop.hover.color": "rgba(0,0,0,0.25)"
+        },
+        "state": "hover",
+        "hoverSelector": ".et_pb_contact_submit",
+        "note": "Hover-only soft shadow at module.decoration.boxShadow (the none/soft pair of KitAdapters::shadow), a real hover on the submit button. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-lift-element",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "button.decoration.transform.desktop.hover.translate.y": "-4px"
+        },
+        "state": "hover",
+        "hoverSelector": ".et_pb_contact_submit",
+        "note": "The lift (translate.y -4px on hover) written at button.decoration.transform, a real hover on the submit button; changedElements records what moves. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-button-lift-module",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "module.decoration.transform.desktop.hover.translate.y": "-4px"
+        },
+        "state": "hover",
+        "hoverSelector": ".et_pb_contact_submit",
+        "note": "The lift (translate.y -4px on hover) written at module.decoration.transform, a real hover on the submit button; changedElements records what moves. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-field-fill",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "field.decoration.background.desktop.value.color": "#f1f5f9"
+        },
+        "note": "Field fill (control: proven on the form before). Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-field-underline",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "field.decoration.border.desktop.value.styles.all.width": "0px",
+            "field.decoration.border.desktop.value.styles.all.style": "solid",
+            "field.decoration.border.desktop.value.styles.all.color": "#1e3a8a",
+            "field.decoration.border.desktop.value.styles.bottom.width": "3px",
+            "field.decoration.border.desktop.value.styles.bottom.style": "solid",
+            "field.decoration.border.desktop.value.styles.bottom.color": "#1e3a8a"
+        },
+        "note": "Field frame on the bottom side only: styles.all width 0px plus styles.bottom width 3px (the card underline form). Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-field-underline-over-frame",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "field": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "field.decoration.border.desktop.value.styles.all.width": "0px",
+            "field.decoration.border.desktop.value.styles.bottom.width": "3px",
+            "field.decoration.border.desktop.value.styles.bottom.style": "solid",
+            "field.decoration.border.desktop.value.styles.bottom.color": "#1e3a8a"
+        },
+        "note": "The same underline set over a 1px all-sides frame: the all-sides frame goes to 0px and a bottom edge appears. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-field-padding",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "field.decoration.spacing.desktop.value.padding.top": "24px",
+            "field.decoration.spacing.desktop.value.padding.right": "24px",
+            "field.decoration.spacing.desktop.value.padding.bottom": "24px",
+            "field.decoration.spacing.desktop.value.padding.left": "24px"
+        },
+        "note": "Padding 24px on all four sides of the input fields at field.decoration.spacing; changedElements records which elements grow. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-field-radius-16",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "field": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "field.decoration.border.desktop.value.radius.topLeft": "16px",
+            "field.decoration.border.desktop.value.radius.topRight": "16px",
+            "field.decoration.border.desktop.value.radius.bottomRight": "16px",
+            "field.decoration.border.desktop.value.radius.bottomLeft": "16px"
+        },
+        "note": "Field corner radius 16px on the four corners (the form {{aied:kit:radius-control}} resolves to) over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-field-radius-36",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "field": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "field.decoration.border.desktop.value.radius.topLeft": "36px",
+            "field.decoration.border.desktop.value.radius.topRight": "36px",
+            "field.decoration.border.desktop.value.radius.bottomRight": "36px",
+            "field.decoration.border.desktop.value.radius.bottomLeft": "36px"
+        },
+        "note": "Field corner radius 36px on the four corners (the form {{aied:kit:radius-control}} resolves to) over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-field-frame-width-2px",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "field": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "field.decoration.border.desktop.value.styles.all.width": "2px"
+        },
+        "note": "Field frame width 2px over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-field-frame-width-4px",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "field": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "1px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "field.decoration.border.desktop.value.styles.all.width": "4px"
+        },
+        "note": "Field frame width 4px over a 1px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-field-frame-style-dashed",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "field": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "field.decoration.border.desktop.value.styles.all.style": "dashed"
+        },
+        "note": "Field frame style dashed over a 2px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-field-frame-colour",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "field": {
+                "decoration": {
+                    "border": {
+                        "desktop": {
+                            "value": {
+                                "styles": {
+                                    "all": {
+                                        "width": "2px",
+                                        "style": "solid",
+                                        "color": "#1e3a8a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "field.decoration.border.desktop.value.styles.all.color": "#f59e0b"
+        },
+        "note": "Field frame colour over a 2px solid frame. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-placeholder-colour",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "field.decoration.placeholderFont.font.desktop.value.color": "#c2410c"
+        },
+        "pseudo": [
+            "::placeholder"
+        ],
+        "note": "Placeholder colour, measured as getComputedStyle(input, '::placeholder').color. Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-field-ink",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {
+            "module": {
+                "advanced": {
+                    "spamProtection": {
+                        "desktop": {
+                            "value": {
+                                "useBasicCaptcha": "off"
+                            }
+                        }
+                    }
+                }
+            },
+            "button": {
+                "innerContent": {
+                    "desktop": {
+                        "value": {
+                            "text": "Send"
+                        }
+                    }
+                },
+                "decoration": {
+                    "button": {
+                        "desktop": {
+                            "value": {
+                                "enable": "on",
+                                "icon": {
+                                    "enable": "off"
+                                }
+                            }
+                        }
+                    },
+                    "background": {
+                        "desktop": {
+                            "value": {
+                                "color": "#1e3a8a"
+                            }
+                        }
+                    },
+                    "font": {
+                        "font": {
+                            "desktop": {
+                                "value": {
+                                    "color": "#ffffff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "set": {
+            "field.decoration.font.font.desktop.value.color": "#c2410c"
+        },
+        "note": "Field ink (control: proven on the form before). Probe of the forms adapter (Task 1): ON divi/contact-form, the registry is path-only and a divi/button result proves nothing here. A form of two fields (Name, Email) with the basic captcha switched off in the base so the page is stable (its question is random on every load)."
+    },
+    {
+        "id": "kf-captcha-ink",
+        "block": "contact-form",
+        "children": [
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Name"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Name"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "block": "contact-field",
+                "base": {
+                    "fieldItem": {
+                        "advanced": {
+                            "id": {
+                                "desktop": {
+                                    "value": "Email"
+                                }
+                            },
+                            "type": {
+                                "desktop": {
+                                    "value": "email"
+                                }
+                            }
+                        },
+                        "innerContent": {
+                            "desktop": {
+                                "value": "Email"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "base": {},
+        "set": {
+            "captcha.decoration.font.font.desktop.value.color": "#c2410c"
+        },
+        "ignore": [
+            "width",
+            "inline-size",
+            "block-size",
+            "height",
+            "min-width",
+            "min-inline-size",
+            "perspective-origin",
+            "transform-origin",
+            "max-width",
+            "max-inline-size",
+            "margin-left",
+            "margin-inline-start",
+            "margin-right",
+            "margin-inline-end",
+            "left",
+            "right",
+            "inset-inline-start",
+            "inset-inline-end"
+        ],
+        "note": "Captcha question colour with the basic captcha ON (the default; its random question changes sizes, so size and position properties are ignored on both pages, the list rc-captcha-color uses). A form of two fields. Control: proven on the form before."
+    }
+]
