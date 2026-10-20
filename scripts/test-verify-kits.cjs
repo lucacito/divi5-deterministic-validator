@@ -1015,8 +1015,298 @@ t('compareCard also holds a ground to its contract (the carry-in): a ground whos
   assert.notStrictEqual(K.compareCard(e, 'card', same(cstyle({}))).problems[0][0], 'card-expectation', 'without the ground it is just an ordinary card');
 });
 
+// ---- forms (contact form, role form): the sheet, expectations from the resolved markup, comparison, count, contrast, clip, overflow ----
+const fhit = (row, key) => K.formAttrs(row.markup).find((x) => x.slot.key === key);
+const fexp = (row, key = 'form-bg') => K.expectFormFromAttrs(fhit(row, key).attrs);
+const SIDE4 = [['top', 'Top'], ['right', 'Right'], ['bottom', 'Bottom'], ['left', 'Left']];
+/** A measured field (the fields measureForms collects) that agrees with the field expectation. */
+function fieldM(ef, o = {}) {
+  const el = { backgroundColor: rgbOf(ef.fill), color: rgbOf(ef.ink), boxShadow: 'none', transform: 'none', overflowX: 'visible', overflowY: 'visible' };
+  for (const [k, cap] of SIDE4) Object.assign(el, { [`border${cap}Width`]: ef[k].width + 'px', [`border${cap}Style`]: ef[k].style, [`border${cap}Color`]: rgbOf(ef[k].color) });
+  ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius'].forEach((k, i) => { el[k] = ef.radius[i] + 'px'; });
+  ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'].forEach((k, i) => { el[k] = ef.padding[i] + 'px'; });
+  return Object.assign({ el, placeholder: { color: rgbOf(ef.placeholder) }, rect: R(40, 100, 340, 150) }, o);
+}
+/** A measured submit button ({ el, wrap }) that agrees with the button expectation in a state. */
+function submitM(be, state = 'rest') {
+  const hover = state === 'hover';
+  const sh = hover ? be.shadow.hover : be.shadow.rest;
+  const edge = hover && be.hover.border ? be.hover.border : null;
+  const el = {
+    backgroundColor: hover ? be.hover.fill : be.rest.fill, color: hover ? be.hover.label : be.rest.label,
+    borderTopWidth: be.rest.top.width + 'px', borderTopStyle: be.rest.top.style, borderTopColor: edge || be.rest.top.color,
+    borderBottomWidth: be.rest.bottom.width + 'px', borderBottomStyle: be.rest.bottom.style, borderBottomColor: edge || be.rest.bottom.color,
+    borderLeftWidth: be.rest.top.width + 'px', borderRightWidth: be.rest.top.width + 'px',
+    textTransform: be.rest.capitalization, letterSpacing: be.rest.letterSpacing + 'px', fontWeight: String(be.rest.weight), boxShadow: shadowText(sh), transform: hover && be.lift !== null ? `matrix(1, 0, 0, 1, 0, ${be.lift})` : 'none',
+    transitionDuration: '0s', transitionDelay: '0s',
+  };
+  ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius'].forEach((k, i) => { el[k] = be.rest.radius[i] + 'px'; });
+  ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'].forEach((k, i) => { el[k] = be.rest.padding[i] + 'px'; });
+  return { el, wrap: { boxShadow: 'none', transform: 'none' } };
+}
+/** A measured form (what measureForms returns for one slot) that agrees with the expectation in every respect. */
+function mform(exp, o = {}) {
+  const rest = submitM(exp.button, 'rest');
+  const ink = rgbOf(exp.captcha.ink);
+  const container = { el: { boxShadow: 'none', transform: 'none', borderTopWidth: '0px', borderRightWidth: '0px', borderBottomWidth: '0px', borderLeftWidth: '0px', overflowX: 'visible', overflowY: 'visible' }, rect: R(20, 80, 380, 420) };
+  return Object.assign({
+    key: 'form-bg', found: true, submitCount: 1, container,
+    fields: [fieldM(exp.field), fieldM(exp.field, { rect: R(40, 160, 340, 210) })],
+    submit: { el: rest.el, wrap: rest.wrap, rect: R(40, 300, 160, 340), parentRect: container.rect, scrollWidth: 100, clientWidth: 100 },
+    captcha: { found: true, question: { color: ink }, row: { color: ink }, label: null, rect: R(40, 230, 200, 270) },
+  }, o);
+}
+const fcodes = (problems) => [...new Set(problems.map((x) => x[0]))];
+const withField = (m, j, el, extra = {}) => Object.assign({}, m, { fields: m.fields.map((f, i) => (i === j ? Object.assign({}, f, extra, { el: Object.assign({}, f.el, el) }) : f)) });
+const qForm = fexp(ROWS.quiet); const bForm = fexp(ROWS.brutal); const uForm = fexp(ROWS.under);
+
+t('the sheet carries 2 marked forms: one per light band, two fields each, found again by the unique text of the submit', () => {
+  const m = K.sheetMarkup();
+  assert.deepStrictEqual(K.FORM_SLOTS.map((c) => [c.key, c.band, c.on, c.fields]), [['form-bg', 'bg', 'light', 2], ['form-surface', 'surface', 'surface', 2]]);
+  assert.strictEqual(new Set(K.FORM_SLOTS.map((c) => c.submit)).size, K.FORM_SLOTS.length, 'every form is found by a unique submit text');
+  const found = K.formAttrs(m);
+  assert.strictEqual(found.filter((f) => f.attrs).length, 2);
+  for (const f of found) {
+    const want = { kit: 'form' }; if (f.slot.on !== 'light') want.on = f.slot.on;
+    assert.deepStrictEqual(f.attrs.aied, want, f.slot.key);
+    assert.strictEqual(f.fields, f.slot.fields, f.slot.key + ' fields read back from the markup');
+    // The recipe's own keys only: the label, the custom-button switch and the body font token; no colour, frame, radius, shadow or module decoration.
+    assert.ok(!/color|"border"|boxShadow|background|"module"/.test(JSON.stringify(f.attrs).replace(/"aied":\{[^}]*\}/, '').replace(/\{\{aied:font:[a-z]+\}\}/g, '')), f.slot.key + ' carries no ink or module decoration of its own');
+  }
+  assert.strictEqual((m.match(/<!-- wp:divi\/contact-form /g) || []).length, 2);
+  assert.strictEqual((m.match(/wp:divi\/contact-field /g) || []).length, 4);
+  assert.ok(!/useBasicCaptcha/.test(m), 'the captcha is Divi\'s default: nothing is written for it');
+  assert.strictEqual(K.pageButtonAttrs(m).length, 8, 'the page-level buttons stay 8');
+  assert.strictEqual(K.cardAttrs(m).filter((c) => c.attrs).length, 20, 'the card slots stay 20');
+  assert.strictEqual(K.itemAttrs(m).filter((c) => c.attrs).length, 10, 'the item slots stay 10');
+  assert.deepStrictEqual(K.formAttrs('<!-- wp:divi/text {} /-->').map((f) => [f.attrs, f.fields]), [[null, null], [null, null]], 'a form that is not in the markup is reported as absent');
+});
+
+t('form expectations: a surface field on the bg band, a bg field on the surface band, the kit\'s frame and radius, a submit that is the kit\'s button, the band\'s captcha ink', () => {
+  const pal = EDITORIAL;
+  assert.ok(K.sameColour(qForm.field.fill, pal.surface), 'a field on the bg band is a surface');
+  assert.ok(K.sameColour(fexp(ROWS.quiet, 'form-surface').field.fill, pal.bg), 'a field on the surface band is a bg');
+  assert.ok(K.sameColour(qForm.field.ink, pal.text) && K.sameColour(qForm.field.placeholder, pal.muted), 'ink text, placeholder muted');
+  assert.ok(K.sameColour(qForm.captcha.ink, pal.text));
+  for (const side of ['top', 'right', 'bottom', 'left']) assert.deepStrictEqual(qForm.field[side], qForm.field.top, 'a full frame is the same on every side');
+  assert.ok(qForm.field.top.width >= 1 && qForm.field.radius.length === 4 && qForm.field.radius.every((v) => typeof v === 'number') && qForm.field.padding.length === 4);
+  assert.deepStrictEqual(qForm.moduleKeys, [], 'the kit writes no module.decoration on a form');
+  assert.deepStrictEqual(K.missingFormExpectations(qForm), []);
+  assert.deepStrictEqual(K.missingFormExpectations(bForm), []);
+  assert.deepStrictEqual(K.missingFormExpectations(uForm), []);
+  assert.strictEqual(qForm.button.lift, null);
+  assert.deepStrictEqual([bForm.button.shadow.rest.x, bForm.button.shadow.rest.y, bForm.button.shadow.rest.blur, bForm.button.lift], [6, 6, 0, -4], 'neo-brutal: a hard shadow and a lift on the submit, read from button.decoration.*');
+  assert.ok(bForm.button.rest.padding.every((v) => typeof v === 'number'), 'the padding is read from button.decoration.spacing');
+  // The submit is the kit's primary control on the band: the same fill and label as the page-level primary button of the same sheet.
+  const primary = K.expectFromAttrs(K.pageButtonAttrs(ROWS.quiet.markup)[0]);
+  assert.strictEqual(qForm.button.rest.fill, primary.rest.fill); assert.strictEqual(qForm.button.rest.label, primary.rest.label);
+});
+t('an underline kit: a bottom-only field frame and a bottom-only submit with NO hover border colour', () => {
+  assert.deepStrictEqual([uForm.field.top.width, uForm.field.right.width, uForm.field.left.width], [0, 0, 0]);
+  assert.ok(uForm.field.bottom.width > 0);
+  assert.strictEqual(uForm.button.rest.top.width, 0); assert.ok(uForm.button.rest.bottom.width > 0);
+  assert.strictEqual(uForm.button.hover.border, null, 'the hover border colour only recolours the 0px sides, so it is not written');
+  assert.deepStrictEqual(K.missingFormExpectations(uForm), [], 'a null hover border is expected on an underline');
+  const planted = clone(uForm); planted.button.hover.border = '#ff0000';
+  assert.deepStrictEqual(K.missingFormExpectations(planted), ['button underline carries a hover border colour (the edge never changes on hover)']);
+  const full = clone(qForm); full.button.hover.border = null;
+  assert.deepStrictEqual(K.missingFormExpectations(full), ['button.hover.border'], 'a non-underline submit must have its hover border');
+});
+
+t('form path drift: every field the adapter always writes is required; module.decoration, a field shadow and a field hover are refused', () => {
+  const cases = {
+    'field.fill': (e) => { e.field.fill = null; }, 'field.ink': (e) => { e.field.ink = null; }, 'field.placeholder': (e) => { e.field.placeholder = null; },
+    'field.radius': (e) => { e.field.radius[1] = null; }, 'field.padding': (e) => { e.field.padding = null; },
+    'field.top.width': (e) => { e.field.top.width = null; }, 'field.left.style': (e) => { e.field.left.style = null; }, 'field.bottom.color': (e) => { e.field.bottom.color = null; },
+    'button.rest.fill': (e) => { e.button.rest.fill = null; }, 'button.rest.padding': (e) => { e.button.rest.padding = null; }, 'button.hover.label': (e) => { e.button.hover.label = null; },
+    'captcha.ink': (e) => { e.captcha.ink = null; },
+  };
+  for (const [field, drop] of Object.entries(cases)) { const e = clone(qForm); drop(e); assert.deepStrictEqual(K.missingFormExpectations(e), [field], field + ' missing is reported'); }
+  const e = clone(qForm); e.moduleKeys = ['boxShadow', 'spacing'];
+  assert.deepStrictEqual(K.missingFormExpectations(e), ['form carries module.decoration (boxShadow,spacing): the kit must write none']);
+  const s = clone(qForm); s.field.shadow = true; s.field.hover = true;
+  assert.deepStrictEqual(K.missingFormExpectations(s), ['field carries a shadow (Ruling 3)', 'field carries a hover or focus state (not proven)']);
+  // Drift in the markup itself: no field padding, no captcha colour, a module decoration the kit must not write.
+  const attrs = clone(fhit(ROWS.quiet, 'form-bg').attrs);
+  delete attrs.field.decoration.spacing; delete attrs.captcha; attrs.module = { decoration: { boxShadow: { desktop: { value: {} } } } };
+  assert.deepStrictEqual(K.missingFormExpectations(K.expectFormFromAttrs(attrs)), ['field.padding', 'captcha.ink', 'form carries module.decoration (boxShadow): the kit must write none']);
+  assert.ok(K.missingFormExpectations(K.expectFormFromAttrs({})).length >= 20, 'an empty attribute object misses everything');
+  const hov = clone(fhit(ROWS.quiet, 'form-bg').attrs); hov.field.decoration.border.desktop.hover = { styles: { all: { color: '#000' } } };
+  assert.deepStrictEqual(K.missingFormExpectations(K.expectFormFromAttrs(hov)), ['field carries a hover or focus state (not proven)']);
+  assert.deepStrictEqual(fcodes(K.compareForm(e, mform(qForm))), ['form-expectation'], 'compareForm refuses an expectation with a hole instead of skipping');
+});
+
+t('a matching form has no problem (fields, captcha, container); the submit and the painted values have their own functions', () => {
+  for (const exp of [qForm, bForm, uForm]) {
+    assert.deepStrictEqual(K.compareForm(exp, mform(exp)), []);
+    assert.deepStrictEqual(K.formButtonProblems(exp.button, submitM(exp.button, 'rest'), submitM(exp.button, 'hover')), []);
+    assert.deepStrictEqual(K.formClipProblems(mform(exp)), []);
+  }
+});
+t('form-field-border: width, style and colour of EACH side (an underline kit draws one), a quarter-pixel tolerance, no field shadow', () => {
+  const m = mform(qForm);
+  const bad = K.compareForm(qForm, withField(m, 0, { borderLeftWidth: '3px' }));
+  assert.deepStrictEqual(fcodes(bad), ['form-field-border']);
+  assert.match(bad[0][1], /^field 1 rest: border-left-width 3px, expected 1px/);
+  assert.deepStrictEqual(fcodes(K.compareForm(qForm, withField(m, 1, { borderTopStyle: 'dashed' }))), ['form-field-border']);
+  assert.deepStrictEqual(fcodes(K.compareForm(qForm, withField(m, 1, { borderBottomColor: 'rgb(255, 0, 0)' }))), ['form-field-border']);
+  assert.deepStrictEqual(K.compareForm(qForm, withField(m, 0, { borderTopWidth: '1.2px' })), [], 'within a quarter pixel');
+  assert.deepStrictEqual(fcodes(K.compareForm(qForm, withField(m, 0, { borderTopWidth: '1.5px' }))), ['form-field-border'], 'half a pixel off fails');
+  assert.deepStrictEqual(fcodes(K.compareForm(qForm, withField(m, 0, { boxShadow: 'rgba(0, 0, 0, 0.2) 0px 4px 8px 0px' }))), ['form-field-border'], 'a shadow on a field');
+  const u = mform(uForm);
+  assert.deepStrictEqual(K.compareForm(uForm, u), []);
+  assert.deepStrictEqual(fcodes(K.compareForm(uForm, withField(u, 0, { borderTopWidth: '2px' }))), ['form-field-border'], 'a frame where the underline kit draws none');
+  assert.deepStrictEqual(fcodes(K.compareForm(uForm, withField(u, 1, { borderBottomWidth: '0px' }))), ['form-field-border'], 'no underline');
+});
+t('form-field-radius, -ink, -placeholder, -padding, -fill: each its own code, naming the field', () => {
+  const m = mform(qForm);
+  const one = (el, extra) => K.compareForm(qForm, withField(m, 1, el, extra));
+  assert.deepStrictEqual(one({ borderTopLeftRadius: '2px' }).map((x) => x[0]), ['form-field-radius']);
+  assert.match(one({ borderTopLeftRadius: '2px' })[0][1], /^field 2 rest: borderTopLeftRadius 2px, expected 4px/);
+  assert.deepStrictEqual(one({ color: 'rgb(255, 0, 0)' }).map((x) => x[0]), ['form-field-ink']);
+  assert.deepStrictEqual(one({}, { placeholder: { color: 'rgb(117, 117, 117)' } }).map((x) => x[0]), ['form-field-placeholder'], 'the browser default placeholder');
+  assert.match(one({}, { placeholder: { color: 'rgb(117, 117, 117)' } })[0][1], /^field 2 rest: ::placeholder color rgb\(117, 117, 117\), expected #6b645a/);
+  assert.deepStrictEqual(one({}, { placeholder: null }).map((x) => x[0]), ['form-field-placeholder'], 'a placeholder that was not measured fails, never skips');
+  assert.deepStrictEqual(one({ paddingLeft: '3px' }).map((x) => x[0]), ['form-field-padding']);
+  assert.deepStrictEqual(one({ backgroundColor: 'rgb(238, 238, 238)' }).map((x) => x[0]), ['form-field-fill'], 'Divi\'s own field grey');
+  assert.deepStrictEqual(K.compareForm(qForm, withField(m, 0, { color: qForm.field.ink })), [], 'the same value is no problem');
+});
+t('form-captcha: the question, its row and a label in it carry the band\'s ink; a missing captcha fails', () => {
+  const m = mform(qForm);
+  assert.deepStrictEqual(K.compareForm(qForm, Object.assign({}, m, { captcha: Object.assign({}, m.captcha, { question: { color: 'rgb(102, 102, 102)' } }) })).map((x) => x[0]), ['form-captcha'], 'Divi\'s own captcha grey');
+  assert.deepStrictEqual(fcodes(K.compareForm(qForm, Object.assign({}, m, { captcha: Object.assign({}, m.captcha, { row: { color: 'rgb(102, 102, 102)' } }) }))), ['form-captcha']);
+  assert.deepStrictEqual(fcodes(K.compareForm(qForm, Object.assign({}, m, { captcha: Object.assign({}, m.captcha, { label: { color: 'rgb(102, 102, 102)' } }) }))), ['form-captcha']);
+  assert.deepStrictEqual(K.compareForm(qForm, Object.assign({}, m, { captcha: Object.assign({}, m.captcha, { label: { color: rgbOf(qForm.captcha.ink) } }) })), []);
+  const gone = K.compareForm(qForm, Object.assign({}, m, { captcha: { found: false } }));
+  assert.deepStrictEqual(fcodes(gone), ['form-captcha']);
+  assert.match(gone[0][1], /the captcha question is not on the page/);
+});
+t('form-container: the kit writes nothing on the form\'s own container (no shadow, no lift, no frame), at rest and on hover', () => {
+  const m = mform(qForm);
+  const c = (el, state = 'rest') => K.formContainerProblems({ el: Object.assign({}, m.container.el, el), rect: m.container.rect }, state);
+  assert.deepStrictEqual(c({}), []);
+  assert.deepStrictEqual(fcodes(c({ boxShadow: 'rgb(0, 0, 0) 6px 6px 0px 0px' })), ['form-container']);
+  assert.deepStrictEqual(fcodes(c({ transform: 'matrix(1, 0, 0, 1, 0, -4)' }, 'hover')), ['form-container']);
+  assert.match(c({ transform: 'matrix(1, 0, 0, 1, 0, -4)' }, 'hover')[0][1], /^hover: the form container is transformed/);
+  assert.deepStrictEqual(fcodes(c({ borderLeftWidth: '2px' })), ['form-container']);
+  assert.deepStrictEqual(c({ boxShadow: 'rgb(0, 0, 0) 0px 0px 0px 1px inset' }), [], 'an inset ring is not the kit\'s shadow');
+  assert.deepStrictEqual(fcodes(K.compareForm(qForm, Object.assign({}, m, { container: { el: Object.assign({}, m.container.el, { boxShadow: 'rgb(0, 0, 0) 6px 6px 0px 0px' }), rect: m.container.rect } }))), ['form-container']);
+});
+
+t('form-button: the submit is judged by the button measures (rest and a real hover), every departure under the one code', () => {
+  const rest = (exp, o = {}) => { const r = submitM(exp.button, 'rest'); return { el: Object.assign({}, r.el, o), wrap: r.wrap }; };
+  const hover = (exp, o = {}, wrap = {}) => { const r = submitM(exp.button, 'hover'); return { el: Object.assign({}, r.el, o), wrap: Object.assign({}, r.wrap, wrap) }; };
+  const run = (exp, r, h) => K.formButtonProblems(exp.button, r, h);
+  assert.deepStrictEqual(run(qForm, rest(qForm), hover(qForm)), []);
+  for (const [what, o] of [['fill', { backgroundColor: 'rgb(238, 238, 238)' }], ['label', { color: 'rgb(0, 0, 0)' }], ['radius', { borderTopLeftRadius: '20px' }], ['padding', { paddingLeft: '3px' }], ['text', { textTransform: 'uppercase' }], ['shadow', { boxShadow: 'rgb(0, 0, 0) 3px 3px 0px 0px' }]]) {
+    const p = run(qForm, rest(qForm, o), hover(qForm));
+    assert.deepStrictEqual(fcodes(p), ['form-button'], what);
+    assert.match(p[0][1], new RegExp('^submit ' + what + ': '), what);
+  }
+  assert.deepStrictEqual(fcodes(run(qForm, rest(qForm, { borderLeftWidth: '3px' }), hover(qForm))), ['form-button'], 'a left edge where the kit draws none');
+  assert.deepStrictEqual(fcodes(run(qForm, rest(qForm), hover(qForm, { backgroundColor: 'rgb(238, 238, 238)' }))), ['form-button'], 'a hover fill that is not the kit\'s');
+  // The hard shadow and the lift the neo-brutal kit writes at button.decoration.*: present at rest and on hover, and the lift on hover only.
+  assert.deepStrictEqual(run(bForm, rest(bForm), hover(bForm)), []);
+  assert.deepStrictEqual(fcodes(run(bForm, rest(bForm, { boxShadow: 'none' }), hover(bForm))), ['form-button'], 'the hard shadow is missing at rest');
+  assert.deepStrictEqual(fcodes(run(bForm, rest(bForm), hover(bForm, { transform: 'none' }))), ['form-button'], 'the lift is missing on hover');
+  assert.deepStrictEqual(fcodes(run(bForm, rest(bForm, { transform: 'matrix(1, 0, 0, 1, 0, -4)' }), hover(bForm))), ['form-button'], 'moved at rest');
+  assert.deepStrictEqual(fcodes(run(qForm, rest(qForm), hover(qForm, { transform: 'matrix(1, 0, 0, 1, 0, -4)' }))), ['form-button'], 'a lift the kit does not ask for');
+  assert.match(run(qForm, rest(qForm), null).slice(-1)[0][1], /^submit hover: the hover state was not measured/, 'no hover measurement is a failure');
+});
+t('form-button on an underline submit: the bottom edge keeps its REST colour on hover', () => {
+  const r = submitM(uForm.button, 'rest'); const h = submitM(uForm.button, 'hover');
+  assert.strictEqual(h.el.borderBottomColor, r.el.borderBottomColor, 'the helper itself keeps the edge');
+  assert.deepStrictEqual(K.formButtonProblems(uForm.button, r, h), []);
+  const moved = K.formButtonProblems(uForm.button, r, { el: Object.assign({}, h.el, { borderBottomColor: 'rgb(16, 185, 129)' }), wrap: h.wrap });
+  assert.deepStrictEqual(fcodes(moved), ['form-button']);
+  assert.match(moved[0][1], /^submit hover: the underline's bottom edge is rgb\(16, 185, 129\) on hover, expected its rest colour #1c1a17/);
+  assert.deepStrictEqual(fcodes(K.formButtonProblems(uForm.button, Object.assign({}, r, { el: Object.assign({}, r.el, { borderTopWidth: '3px' }) }), h)), ['form-button'], 'a top edge on an underline submit');
+  assert.deepStrictEqual(fcodes(K.formButtonProblems(uForm.button, Object.assign({}, r, { el: Object.assign({}, r.el, { borderLeftWidth: '2px' }) }), h)), ['form-button'], 'a left edge on an underline submit');
+});
+
+t('form-field-fill from the painted fill: what is painted must be what the markup says, and a field never matches its container', () => {
+  const m = mform(qForm);
+  const fill = K.colour(qForm.field.fill); const surf = K.colour(EDITORIAL.bg);
+  const sample = { r: fill.r, g: fill.g, b: fill.b }; const behind = { r: surf.r, g: surf.g, b: surf.b };
+  const ok = K.formPaintedFillProblems(m, [sample, sample], { fields: [behind, behind] });
+  assert.deepStrictEqual(ok, []);
+  const covered = K.formPaintedFillProblems(m, [sample, { r: 244, g: 244, b: 244 }], { fields: [behind, behind] });
+  assert.deepStrictEqual(fcodes(covered), ['form-field-fill']);
+  assert.match(covered[0][1], /^field 2: painted fill #f4f4f4 differs from the computed rgb\(255, 255, 255\)/);
+  const same = K.formPaintedFillProblems(m, [sample, sample], { fields: [sample, behind] });
+  assert.match(same[0][1], /^field 1: the field fill #ffffff is the colour of the form behind it #ffffff \(a field never matches its container\)/);
+  assert.deepStrictEqual(fcodes(K.formPaintedFillProblems(m, [sample, null], { fields: [behind, behind] })), ['form-field-fill'], 'a missing sample fails, never skips');
+  assert.deepStrictEqual(fcodes(K.formPaintedFillProblems(m, null, null)), ['form-field-fill']);
+});
+t('form-contrast: ink and placeholder 4.5 on the painted field, the frame 3.0 on the field and on the form behind it, the submit rest and hover, the captcha 4.5', () => {
+  const m = mform(qForm);
+  const fill = K.colour(qForm.field.fill); const bg = K.colour(EDITORIAL.bg);
+  const F = { r: fill.r, g: fill.g, b: fill.b }; const B = { r: bg.r, g: bg.g, b: bg.b };
+  const surfaces = { fields: [B, B], submit: B, captcha: B };
+  const ok = K.formContrastProblems(qForm, m, [F, F], surfaces, submitM(qForm.button, 'hover').el);
+  assert.deepStrictEqual(ok.problems, []);
+  assert.ok(ok.info.fields[0].ink >= 4.5 && ok.info.fields[0].placeholder >= 4.5 && ok.info.fields[0].top >= 3 && ok.info.fields[0].topOnForm >= 3 && ok.info.captcha >= 4.5 && ok.info.submit.rest.label >= 4.5 && ok.info.submit.hover.label >= 4.5);
+  const pale = K.formContrastProblems(qForm, withField(m, 0, { color: 'rgb(200, 200, 200)' }), [F, F], surfaces, submitM(qForm.button, 'hover').el);
+  assert.strictEqual(pale.problems.length, 1);
+  assert.match(pale.problems[0][1], /^field 1 ink #c8c8c8 on #ffffff is 1\.67:1, needs 4\.5/);
+  const palePh = K.formContrastProblems(qForm, withField(m, 1, {}, { placeholder: { color: 'rgb(190, 190, 190)' } }), [F, F], surfaces, submitM(qForm.button, 'hover').el);
+  assert.match(palePh.problems[0][1], /^field 2 placeholder /);
+  const faint = K.formContrastProblems(qForm, withField(m, 0, { borderTopColor: 'rgb(240, 240, 240)' }), [F, F], surfaces, submitM(qForm.button, 'hover').el);
+  assert.ok(faint.problems.length === 2 && faint.problems.every(([c, d]) => c === 'form-contrast' && /field 1 frame top against the (field fill|form behind it)/.test(d)), JSON.stringify(faint.problems));
+  const paleCaptcha = K.formContrastProblems(qForm, Object.assign({}, m, { captcha: Object.assign({}, m.captcha, { question: { color: 'rgb(210, 210, 210)' } }) }), [F, F], surfaces, submitM(qForm.button, 'hover').el);
+  assert.match(paleCaptcha.problems[0][1], /^captcha ink /);
+  const badLabel = K.formContrastProblems(qForm, Object.assign({}, m, { submit: Object.assign({}, m.submit, { el: Object.assign({}, m.submit.el, { color: 'rgb(154, 59, 31)' }) }) }), [F, F], surfaces, submitM(qForm.button, 'hover').el);
+  assert.match(badLabel.problems[0][1], /^submit rest: label /);
+  // Nothing sampled, nothing skipped.
+  assert.ok(K.formContrastProblems(qForm, m, [F, null], surfaces, submitM(qForm.button, 'hover').el).problems.some(([, d]) => /field 2: the painted field fill was not sampled/.test(d)));
+  assert.ok(K.formContrastProblems(qForm, m, [F, F], { fields: [B, null], submit: B, captcha: B }, submitM(qForm.button, 'hover').el).problems.some(([, d]) => /field 2: the form behind the field was not sampled/.test(d)));
+  assert.ok(K.formContrastProblems(qForm, m, [F, F], { fields: [B, B], submit: null, captcha: B }, submitM(qForm.button, 'hover').el).problems.some(([, d]) => /behind the submit button was not sampled/.test(d)));
+  assert.ok(K.formContrastProblems(qForm, m, [F, F], { fields: [B, B], submit: B, captcha: null }, submitM(qForm.button, 'hover').el).problems.some(([, d]) => /behind the captcha was not sampled/.test(d)));
+  assert.ok(K.formContrastProblems(qForm, m, [F, F], surfaces, null).problems.some(([, d]) => /submit hover: the hover state was not measured/.test(d)));
+  assert.ok(K.formContrastProblems(qForm, Object.assign({}, m, { captcha: { found: false } }), [F, F], surfaces, submitM(qForm.button, 'hover').el).problems.some(([, d]) => /the captcha question is not on the page/.test(d)));
+  // An underline field draws one side: only that side is judged.
+  const um = mform(uForm);
+  assert.deepStrictEqual(K.formContrastProblems(uForm, um, [F, F], surfaces, submitM(uForm.button, 'hover').el).problems, []);
+  assert.deepStrictEqual(Object.keys(K.formContrastProblems(uForm, um, [F, F], surfaces, submitM(uForm.button, 'hover').el).info.fields[0]).sort(), ['bottom', 'bottomOnForm', 'ink', 'placeholder']);
+});
+
+t('form-clip and overflow: a field or the submit cut by a clipping container, a cut label, anything beyond the form or the window, a page wider than the window', () => {
+  const m = mform(qForm);
+  assert.deepStrictEqual(K.formClipProblems(m), []);
+  const clipping = Object.assign({}, m, { container: { el: Object.assign({}, m.container.el, { overflowX: 'hidden' }), rect: R(20, 80, 380, 420) } });
+  assert.deepStrictEqual(K.formClipProblems(clipping), []);
+  const stuck = withField(clipping, 1, {}, { rect: R(40, 160, 420, 210) });
+  assert.deepStrictEqual(fcodes(K.formClipProblems(stuck)), ['form-clip']);
+  assert.match(K.formClipProblems(stuck)[0][1], /^rest: field 2 40\.\.420 x 160\.\.210 is cut by the form container \(overflow hidden\/visible\)/);
+  assert.deepStrictEqual(K.formClipProblems(withField(m, 1, {}, { rect: R(40, 160, 420, 210) })), [], 'a container that does not clip cuts nothing (the overflow check reports the field)');
+  assert.deepStrictEqual(fcodes(K.formClipProblems(Object.assign({}, m, { submit: Object.assign({}, m.submit, { scrollWidth: 140, clientWidth: 100 }) }))), ['form-clip'], 'a cut label');
+  const page = { innerWidth: 400, scrollWidth: 400 };
+  assert.deepStrictEqual(K.formOverflowProblems(m, 'rest', page), []);
+  assert.deepStrictEqual(K.formOverflowProblems(withField(m, 0, {}, { rect: R(40, 100, 420, 150) }), 'hover', page).map((x) => x[0]), ['overflow', 'overflow'], 'beyond the form and beyond the window');
+  assert.match(K.formOverflowProblems(withField(m, 0, {}, { rect: R(40, 100, 420, 150) }), 'hover', page)[0][1], /^hover: field 1 40\.\.420 outside its form 20\.\.380/);
+  assert.strictEqual(K.formOverflowProblems(Object.assign({}, m, { captcha: Object.assign({}, m.captcha, { rect: R(40, 230, 500, 270) }) }), 'rest', page).length, 2, 'the captcha row is held to the form too');
+  assert.strictEqual(K.formOverflowProblems(m, 'rest', { innerWidth: 400, scrollWidth: 420 }).length, 1);
+});
+
+t('form count: every sheet form on the page with its fields, ONE submit and a captcha; an empty slot list is an error, an empty run fails', () => {
+  const m = mform(qForm); const s = mform(qForm, { key: 'form-surface' });
+  assert.deepStrictEqual(K.formCountProblems([m, s], [2, 2]), []);
+  const gone = K.formCountProblems([m, { key: 'form-surface', found: false, submitCount: 0 }], [2, 2]);
+  assert.deepStrictEqual(gone.map((x) => x[0]), ['form']);
+  assert.match(gone[0][1], /^1 of 2 forms rendered as the sheet says: form-surface is not in the page/);
+  assert.match(K.formCountProblems([m, mform(qForm, { fields: [m.fields[0]] })], [2, 2])[0][1], /form-bg renders 1 fields, expected 2|renders 1 fields, expected 2/);
+  assert.match(K.formCountProblems([m, mform(qForm, { captcha: { found: false } })], [2, 2])[0][1], /shows no captcha question/);
+  assert.match(K.formCountProblems([m, mform(qForm, { submitCount: 2 })], [2, 2])[0][1], /has 2 submit buttons with its label, expected 1/);
+  assert.match(K.formCountProblems([m, s, s], [2, 2])[0][1], /3 forms measured for 2 slots/);
+  assert.throws(() => K.formCountProblems([], [], []), /no form slots/);
+  assert.deepStrictEqual(K.emptyFormRunProblems({ formsChecked: 4 }), []);
+  assert.deepStrictEqual(K.emptyFormRunProblems({ formsChecked: 0 }), ['no form was checked: the form selection was empty']);
+  assert.deepStrictEqual(K.emptyFormRunProblems({}), ['no form was checked: the form selection was empty'], 'a caller that forgets the form count fails, never skips');
+  assert.deepStrictEqual(K.emptyRunProblems({ checked: 12, cardsChecked: 144, itemsChecked: 0 }), ['no item was checked: the item selection was empty'], 'the older run check is unchanged');
+});
+
 // ---- the sheet through the REAL PHP pipeline, offline ----
-t('every kit x every language: the sheet resolves with zero leftovers, passes LayoutGate, and every card and every item block is in the resolved markup with a complete expectation and readable text', () => {
+t('every kit x every language: the sheet resolves with zero leftovers, passes LayoutGate, and every card, every item block and every form is in the resolved markup with a complete expectation and readable text', () => {
   const php = spawnSync('php', [path.join(__dirname, 'lib', 'kit-sheet-offline.php')], { input: K.sheetMarkup(), encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
   assert.strictEqual(php.status, 0, 'php failed: ' + (php.error ? php.error.message : php.stderr));
   const rows = JSON.parse(php.stdout);
@@ -1026,6 +1316,7 @@ t('every kit x every language: the sheet resolves with zero leftovers, passes La
   assert.ok(rows.length >= 400);
   let cards = 0;
   let items_checked = 0;
+  let forms_checked = 0;
   const featuredFillOnly = [];
   for (const row of rows) {
     const cell = row.kit + '/' + row.language;
@@ -1112,6 +1403,45 @@ t('every kit x every language: the sheet resolves with zero leftovers, passes La
         assert.deepStrictEqual(exp.rest.padding, [28, 0, 28, 0], where);
       }
     }
+    // The forms: both are in the resolved markup with a complete expectation, and what the role table says holds on the resolved colours, readable
+    // as the live gate judges them: a field never the colour of its container, ink and placeholder 4.5 on the field, the frame 3.0 on the field and on
+    // the band, the submit label and edges on the band (rest and hover), the captcha ink 4.5 on the band, and nothing on the form's own module.decoration.
+    const foundForms = K.formAttrs(row.markup);
+    assert.strictEqual(foundForms.length, K.FORM_SLOTS.length);
+    for (const { slot, attrs, fields } of foundForms) {
+      const where = `${cell} ${slot.key}`;
+      assert.ok(attrs, where + ' not in the resolved markup');
+      assert.strictEqual(fields, slot.fields, where + ' fields');
+      forms_checked++;
+      const exp = K.expectFormFromAttrs(attrs);
+      assert.deepStrictEqual(K.missingFormExpectations(exp), [], where);
+      assert.deepStrictEqual(exp.moduleKeys, [], where + ' the kit writes no module.decoration on a form');
+      const fillC = K.colour(exp.field.fill);
+      const bandC = K.colour(slot.on === 'surface' ? pal.surface : pal.bg);
+      assert.strictEqual(fillC.a, 1, where + ' the field fill is opaque');
+      assert.ok(K.sameColour(exp.field.fill, slot.on === 'surface' ? pal.bg : pal.surface), `${where} field fill ${exp.field.fill}`);
+      assert.ok(!K.sameColour(exp.field.fill, slot.on === 'surface' ? pal.surface : pal.bg), where + ' a field never matches its container');
+      assert.ok(K.sameColour(exp.field.ink, pal.text) && K.sameColour(exp.field.placeholder, pal.muted) && K.sameColour(exp.captcha.ink, pal.text), where + ' inks');
+      assert.ok(ratio(exp.field.ink, fillC) >= 4.5, `${where} field ink ${ratio(exp.field.ink, fillC)}`);
+      assert.ok(ratio(exp.field.placeholder, fillC) >= 4.5, `${where} placeholder ${ratio(exp.field.placeholder, fillC)}`);
+      assert.ok(ratio(exp.captcha.ink, bandC) >= 4.5, `${where} captcha ${ratio(exp.captcha.ink, bandC)}`);
+      let drawn = 0;
+      for (const side of ['top', 'right', 'bottom', 'left']) {
+        const e = exp.field[side];
+        if (!(e.width > 0)) continue;
+        drawn++;
+        assert.ok(ratio(e.color, fillC) >= 3, `${where} ${side} frame on the field ${ratio(e.color, fillC)}`);
+        assert.ok(ratio(e.color, bandC) >= 3, `${where} ${side} frame on the band ${ratio(e.color, bandC)}`);
+      }
+      assert.ok(drawn >= 1, where + ' a field draws at least one edge');
+      const be = exp.button;
+      for (const state of ['rest', 'hover']) {
+        const h = state === 'hover';
+        const edge = h ? (be.hover.border || be.rest.bottom.color) : null;
+        const el = { backgroundColor: h ? be.hover.fill : be.rest.fill, color: h ? be.hover.label : be.rest.label, borderTopWidth: be.rest.top.width + 'px', borderBottomWidth: be.rest.bottom.width + 'px', borderTopColor: edge || be.rest.top.color, borderBottomColor: edge || be.rest.bottom.color };
+        assert.deepStrictEqual(K.contrastProblems(el, solid(bandC), state).problems, [], `${where} submit ${state}`);
+      }
+    }
     // The featured middle card against the plain ones on the bg band, by FILL alone (frames, which only make a plain card stronger, are the live check).
     const band = K.colour(pal.bg);
     const prom = (key) => K.boxProminence(flat({ r: fillOf[key].r, g: fillOf[key].g, b: fillOf[key].b }), solid(band));
@@ -1119,6 +1449,7 @@ t('every kit x every language: the sheet resolves with zero leftovers, passes La
   }
   assert.strictEqual(cards, rows.length * K.CARD_SLOTS.length);
   assert.strictEqual(items_checked, rows.length * K.ITEM_SLOTS.length, 'every item block of every cell was checked');
+  assert.strictEqual(forms_checked, rows.length * K.FORM_SLOTS.length, 'every form of every cell was checked');
   // On fills alone the accent middle card is at least FEATURED_RATIO x the larger plain neighbour in every kit x language (kits do not change the fill).
   const weakest = featuredFillOnly.filter(([, f, n]) => K.featuredProblems({ featured: f, neighbours: [n, n] }).length);
   assert.deepStrictEqual(weakest.map(([c, f, n]) => `${c} featured ${f.toFixed(3)} vs ${n.toFixed(3)}`), [], 'by fill alone the featured card is not featured in these cells');
@@ -1192,4 +1523,4 @@ t('the PNG decoder reads every filter type', () => {
   assert.deepStrictEqual(st.mean, { r: 10, g: 20, b: 30 });
 });
 
-console.log(`OK verify-kits pure parts: ${n} tests (run titles, selection, sheet, expectations from resolved markup, rest and hover comparison, shadows, lift, contrast, overflow, PNG; cards: sheet, expectations, comparison, panel static on hover, clip, contrast, overflow, column row, counts, empty run; grounds, panel buttons, the featured card; items: sheet, expectations per state, comparison, count, click, contrast; offline sheet through PHP for every kit x language)`);
+console.log(`OK verify-kits pure parts: ${n} tests (run titles, selection, sheet, expectations from resolved markup, rest and hover comparison, shadows, lift, contrast, overflow, PNG; cards: sheet, expectations, comparison, panel static on hover, clip, contrast, overflow, column row, counts, empty run; grounds, panel buttons, the featured card; items: sheet, expectations per state, comparison, count, click, contrast; forms: sheet, expectations from the resolved markup, field/submit/captcha/container comparison, painted fill, contrast, clip, overflow, count; offline sheet through PHP for every kit x language)`);

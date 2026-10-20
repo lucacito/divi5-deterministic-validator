@@ -65,6 +65,25 @@
  * its new state (item-fill, item-title, item-icon, reported with `after click`). Overflow also covers every item, at rest and after the
  * click. A cell whose item expectations have a hole stops at the gate before any browser work; a run whose item selection is empty fails.
  *
+ * The 2 FORMS (scripts/lib/kit-form-run.cjs, judged by the pure comparisons of kit-checks.cjs): a `divi/contact-form` marked `{"kit":"form"}` on
+ * the bg band and one marked `{"kit":"form","on":"surface"}` on the surface band, each with two fields, the basic captcha (Divi's default) and a
+ * submit button; found by the unique text of the submit, expectations read from the resolved block tree (the form's `field.*`, `button.*` and
+ * `captcha.*` groups), never a table here. Codes, each `<form> <detail>`: form (a form missing, the wrong number of fields, not exactly one submit,
+ * no captcha question: nothing else is then checked; a run that checked no form fails with `FAIL form:`); form-field-fill (the computed fill of
+ * EVERY field, and the PAINTED fill under it with the placeholder hidden; a field never the colour of the form behind it); form-field-border (width,
+ * style and colour of each of the four sides, so an underline kit draws only the bottom edge; no field shadow); form-field-radius (the four
+ * corners); form-field-ink (the typed text); form-field-placeholder (`getComputedStyle(field, '::placeholder')`, the field ink does not reach it);
+ * form-field-padding; form-button (the submit measured as a kit button: border top and bottom plus the left and right edges, radius, fill, label,
+ * capitalization, spacing and weight, padding, shadow and lift, and on a REAL hover the fill, label, edge, shadow and lift; an underline submit
+ * keeps its REST bottom edge colour on hover, the kit writes no hover border for it); form-captcha (the question, its row and its label in the
+ * band's ink); form-container (the form's own container carries nothing of the kit: no shadow, no movement, no frame, at rest and on hover, because
+ * the kit writes no module.decoration on a form); form-contrast (ink and placeholder against the PAINTED field fill >= 4.5, every drawn frame side >= 3.0
+ * against the painted field fill and against the form behind it, the submit label and drawn edges against the form behind it, rest and hover, and the
+ * captcha ink >= 4.5; the surfaces are screenshots with the element hidden, the admin bar and every fixed or sticky element hidden too); form-clip (a
+ * field or the submit cut by a clipping container, or a cut submit label); and overflow also covers every field, the submit and the captcha (inside
+ * the form and the window, rest and hover). A cell whose form expectations have a hole, or carry a module.decoration, a field shadow or a field hover,
+ * stops at the gate before any browser work.
+ *
  * A sheet the gate or the
  * resolver refuses FAILs once as `<kit>/<language>/gate`. Problems in the script's own page handling are `render-error`. A preview that
  * comes back as a 404 or without the page content is retried once with a fresh login.
@@ -74,7 +93,7 @@
  * element, how far the card stands out from its band, whether the flush image corner is cut by the radius, the column row's layout at 900);
  * dist/kit-sheet/<kit>-<language>-<width>.png (the full page, cards included), dist/kit-sheet/observations.json,
  * dist/kit-sheet/card-observations.json (with the button-panel contrast and the featured card's prominence), dist/kit-sheet/item-observations.json (the painted fills
- * and the click of every item) and dist/kit-sheet/index.html (one row per kit: editorial and glass-dark at 1280 and 400). dist/
+ * and the click of every item), dist/kit-sheet/form-observations.json (the painted fields, the contrast of every form) and dist/kit-sheet/index.html (one row per kit: editorial and glass-dark at 1280 and 400). dist/
  * is git-ignored; writing the sheet never fails the run.
  *
  * Dev site only (localhost). RUN ONE RUN AT A TIME. Every throwaway page is titled `aied kit <runToken> <kit> <language>`; the run deletes
@@ -121,6 +140,7 @@ const K = require('./lib/kit-checks.cjs');
 const { measureInPage, PHP_ERROR, over, ratioOf } = require('./lib/recipe-checks.cjs');
 const { checkCards, transitionMs } = require('./lib/kit-card-run.cjs');
 const { checkItems } = require('./lib/kit-item-run.cjs');
+const { checkForms } = require('./lib/kit-form-run.cjs');
 
 const wp = makeWp(ROOT);
 const pages = throwawayPages(wp, K.TITLE_PREFIX, 'kit');
@@ -242,8 +262,10 @@ async function openPreview(ctx, id, state) {
   const observations = [];
   const cardObservations = [];
   const itemObservations = [];
+  const formObservations = [];
   let cardsChecked = 0;
   let itemsChecked = 0;
+  let formsChecked = 0;
   const state = { cookies: null, token: null };
   cleanupOnSignals(run, sweep, pages.runPrefix);
   let cells = [];
@@ -300,6 +322,15 @@ async function openPreview(ctx, id, state) {
         const itemMissing = itemExpects.flatMap((e, i) => K.missingItemExpectations(e, itemBlocks[i].slot.role).map((f) => `${itemBlocks[i].slot.key} ${f}`));
         if (itemMissing.length) { report(kit, lang, 'gate', [['gate', 'item expectation missing (an adapter attribute path drifted): ' + itemMissing.slice(0, 6).join(', ') + (itemMissing.length > 6 ? ` and ${itemMissing.length - 6} more` : '')]]); continue; }
         const itemLists = itemBlocks.map((b) => b.items);
+        // The contact forms: found in the resolved sheet by the unique text of their submit button, with complete expectations (a hole, a module.decoration the
+        // kit must not write, a field shadow or hover are gate failures) and exactly the fields the sheet gives them.
+        const formBlocks = K.formAttrs(page.markup);
+        const formAbsent = formBlocks.filter((b) => !b.attrs).map((b) => b.slot.key);
+        if (formAbsent.length) { report(kit, lang, 'gate', [['gate', 'forms not found in the resolved sheet (by their submit text): ' + formAbsent.join(', ')]]); continue; }
+        const formExpects = formBlocks.map((b) => K.expectFormFromAttrs(b.attrs));
+        const formMissing = formExpects.flatMap((e, i) => K.missingFormExpectations(e).map((f) => `${formBlocks[i].slot.key} ${f}`));
+        if (formMissing.length) { report(kit, lang, 'gate', [['gate', 'form expectation missing (an adapter attribute path drifted): ' + formMissing.slice(0, 6).join(', ') + (formMissing.length > 6 ? ` and ${formMissing.length - 6} more` : '')]]); continue; }
+        const formCounts = formBlocks.map((b) => b.fields);
         for (const width of WIDTHS) {
           const ctx = await browser.newContext({ viewport: { width, height: 900 } });
           const problems = [];
@@ -372,6 +403,12 @@ async function openPreview(ctx, id, state) {
               for (const pr of ir.problems) problems.push(pr);
               for (const o of ir.observations) itemObservations.push({ kit, language: lang, ...o });
             }
+            if (m.hasRoot) {
+              const fr = await checkForms(p, { width, expects: formExpects, counts: formCounts });
+              formsChecked += fr.formsChecked;
+              for (const pr of fr.problems) problems.push(pr);
+              for (const o of fr.observations) formObservations.push({ kit, language: lang, ...o });
+            }
             if (consoleErrors.length) problems.push(['console-error', [...new Set(consoleErrors)].slice(0, 3).join(' | ')]);
             await p.close();
           } catch (e) {
@@ -391,9 +428,11 @@ async function openPreview(ctx, id, state) {
     try { fs.writeFileSync(path.join(OUT_DIR, 'observations.json'), JSON.stringify(observations, null, 1)); } catch (e) { console.log('WARNING could not write observations.json'); }
     try { fs.writeFileSync(path.join(OUT_DIR, 'card-observations.json'), JSON.stringify(cardObservations, null, 1)); } catch (e) { console.log('WARNING could not write card-observations.json'); }
     try { fs.writeFileSync(path.join(OUT_DIR, 'item-observations.json'), JSON.stringify(itemObservations, null, 1)); } catch (e) { console.log('WARNING could not write item-observations.json'); }
+    try { fs.writeFileSync(path.join(OUT_DIR, 'form-observations.json'), JSON.stringify(formObservations, null, 1)); } catch (e) { console.log('WARNING could not write form-observations.json'); }
     printNotes(observations);
     printCardNotes(cardObservations);
     printItemNotes(itemObservations);
+    printFormNotes(formObservations);
     writeSheet(status, cells);
   } catch (e) {
     console.log('ERROR script: ' + (e && e.message ? e.message : e));
@@ -407,6 +446,7 @@ async function openPreview(ctx, id, state) {
   }
   if (run.cleaning) return;
   for (const why of K.emptyRunProblems({ checked: passes + failures, cardsChecked, itemsChecked })) { failures++; console.log('FAIL ' + why); }
+  for (const why of K.emptyFormRunProblems({ formsChecked })) { failures++; console.log('FAIL form: ' + why); }
   console.log(`\n${passes} PASS, ${failures} FAIL (cell/width lines) over ${cells.length} kit/language cell(s)`);
   console.log(failures ? 'FAILED' : 'Every selected kit renders as it says on the real Divi.');
   process.exit(failures ? 1 : 0);
@@ -461,5 +501,17 @@ function printItemNotes(obs) {
     const titles = list.flatMap((o) => o.rest.map((i) => i.contrast && i.contrast.title));
     const frames = list.flatMap((o) => o.rest.flatMap((i) => ['top', 'right', 'bottom', 'left'].map((s) => i.contrast && i.contrast[s])));
     console.log(`NOTE items ${k}: ${clicked.length} of ${list.length} blocks changed state on a real click; title on its painted fill ${range(titles)}:1; drawn frame sides ${range(frames)}:1`);
+  }
+}
+
+/** NOTE lines for the forms, one per kit/language at 1280 px: how readable the fields' ink, placeholder and frame are on their painted fills, the submit label, and the captcha. */
+function printFormNotes(obs) {
+  const groups = new Map();
+  for (const o of obs.filter((x) => x.width === 1280)) { const k = o.kit + '/' + o.language; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(o); }
+  const range = (v) => { const n = v.filter((x) => typeof x === 'number'); return n.length ? `${Math.min(...n)}..${Math.max(...n)}` : 'n/a'; };
+  for (const [k, list] of groups) {
+    const fields = list.flatMap((o) => o.contrast.fields || []);
+    const frames = fields.flatMap((f) => ['top', 'right', 'bottom', 'left'].flatMap((s) => [f[s], f[s + 'OnForm']]));
+    console.log(`NOTE forms ${k}: ${list.length} forms; field ink ${range(fields.map((f) => f.ink))}:1, placeholder ${range(fields.map((f) => f.placeholder))}:1, drawn frame sides ${range(frames)}:1; submit label ${range(list.map((o) => o.contrast.submit && o.contrast.submit.rest && o.contrast.submit.rest.label))}:1 at rest; captcha ${range(list.map((o) => o.contrast.captcha))}:1`);
   }
 }
