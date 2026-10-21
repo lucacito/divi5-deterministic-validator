@@ -302,7 +302,8 @@ final class StyleGuide
             . "## Reusing a kit topic's blocks\n\n"
             . "Every block in a kit topic is real: resolved by the plugin's own pipeline for the `editorial` language on a light section, with placeholder text. "
             . "Put it inside a column. With another design language keep the structure and swap each colour for its role (listed beside the blocks as value = role(s)), not by its value: two roles can share one value; "
-            . "and swap the font family for your language's body font.\n";
+            . "and swap the font family for your language's body font. "
+            . "Where a design language's prose and the kit disagree about the corners, borders, shadow or hover of a block a kit styles, the kit wins.\n";
         if ( $has( 'control' ) ) {
             $out .= "\n## Buttons\n\n"
                 . "A button takes the kit's control values: fill, border and its sides, control radius, shadow, hover and lift, text and control padding. "
@@ -336,7 +337,10 @@ final class StyleGuide
             $out .= "\n## Contact forms\n\n" . self::formRules( $proven ?? KitAdapters::FORM_PROVEN ) . "\n";
         }
         if ( $has( 'rule' ) || $has( 'rule-strong' ) || $has( 'chip' ) ) {
-            $out .= "\n## Rules and chips\n\n" . self::ruleChipRules( $applied, $ruleProven ?? KitAdapters::RULE_PROVEN, $chipProven ?? KitAdapters::CHIP_PROVEN ) . "\n";
+            $rp    = $ruleProven ?? KitAdapters::RULE_PROVEN;
+            $cp    = $chipProven ?? KitAdapters::CHIP_PROVEN;
+            $shape = self::ruleChipShapes( $applied, $rp, $cp );
+            $out  .= "\n## Rules and chips\n\n" . self::ruleChipRules( $applied, $rp, $cp ) . ( '' === $shape ? '' : "\n\n" . $shape ) . "\n";
         }
 
         return $out;
@@ -437,6 +441,71 @@ final class StyleGuide
     }
 
     /**
+     * The "write it yourself" passage under Rules and chips: the exact width rule and the real attribute paths of each shape
+     * (guide polish, plan 2026-10-21-guide-polish-rules-chips). Same gates as ruleChipRules(): a clause is said only while the
+     * decision it relies on is proven, and the passage is '' when nothing is offered. The paths are the probe-proven ones
+     * (fixtures/shapes/kit-rule-vocabulary.md, kit-chip-vocabulary.md); the glyph path is the real-export one. It names the
+     * shapes and the numbers, never the marker syntax.
+     *
+     * @param array<string,list<string>> $applied
+     * @param array<string,bool>         $ruleProven decision => proven on its carrier
+     * @param array<string,bool>         $chipProven decision => proven on its carrier
+     */
+    private static function ruleChipShapes( array $applied, array $ruleProven, array $chipProven ): string
+    {
+        $is     = static fn ( array $map, string $decision ): bool => true === ( $map[ $decision ] ?? false );
+        $roleOf = static fn ( string $block, string $role ): bool => in_array( $role, $applied[ $block ] ?? [], true );
+        $rule   = static fn ( string $block ): bool => $roleOf( $block, 'rule' ) || $roleOf( $block, 'rule-strong' );
+        $parts  = [];
+
+        $divider = $rule( 'divi/divider' ) && $is( $ruleProven, 'divider-line' );
+        $edges   = [];
+        if ( $rule( 'divi/group' ) && $is( $ruleProven, 'group-top' ) ) {
+            $edges[] = 'group';
+        }
+        if ( $rule( 'divi/column' ) && $is( $ruleProven, 'column-top' ) ) {
+            $edges[] = 'column';
+        }
+        if ( $divider || [] !== $edges ) {
+            $double = ( $divider && $is( $ruleProven, 'divider-double' ) ) || ( in_array( 'group', $edges, true ) && $is( $ruleProven, 'group-top-double' ) ) || ( in_array( 'column', $edges, true ) && $is( $ruleProven, 'column-top-double' ) );
+            // The numbers are KitAdapters::ruleWidth(): max(1, min(2, w)) and max(2, min(4, w + 1)), a double at least 3px.
+            $parts[] = 'Width by hand: quiet = the kit\'s border width, at least 1px, at most 2px; strong = that width plus 1px, at least 2px, at most 4px'
+                . ( $double ? '; a double is never under 3px' : '' ) . '. Line style = the kit\'s border style.';
+            if ( $divider ) {
+                $parts[] = 'Divider: `divider.advanced.line.desktop.value` with `color`, `weight`, `style`.';
+            }
+            if ( [] !== $edges ) {
+                $parts[] = 'Top edge of a ' . implode( ' or ', $edges ) . ': `module.decoration.border.desktop.value.styles` with `all` = width `0px` plus the style and colour, and `top` = the rule width, the same style and colour; '
+                    . 'the other three sides stay 0; to rule the top of a specific ' . implode( ' or ', $edges ) . ' (for example between plan columns), write the edge on that block itself' . ( $divider ? '; a divider module is for a separate line between blocks.' : '.' );
+            }
+        }
+
+        if ( $roleOf( 'divi/group', 'chip' ) && ( $is( $chipProven, 'tag-radius' ) || $is( $chipProven, 'tag-frame' ) ) ) {
+            $tag = array_values( array_filter( [
+                $is( $chipProven, 'tag-radius' ) ? '`radius` (the four corners, the kit\'s control radius)' : '',
+                $is( $chipProven, 'tag-frame' ) ? '`styles.all` (width, style, colour; 1px at least)' : '',
+            ] ) );
+            $parts[] = 'Tag: `module.decoration.border.desktop.value` with ' . implode( ' and ', $tag ) . '.';
+        }
+
+        if ( $roleOf( 'divi/icon', 'chip' ) && ( $is( $chipProven, 'icon-radius' ) || $is( $chipProven, 'icon-fill' ) || $is( $chipProven, 'icon-glyph' ) ) ) {
+            $icon = array_values( array_filter( [
+                $is( $chipProven, 'icon-radius' ) ? '`module.decoration.border.desktop.value.radius` (the kit\'s control radius)' : '',
+                $is( $chipProven, 'icon-fill' ) ? '`module.decoration.background.desktop.value.color` (fill)' : '',
+                $is( $chipProven, 'icon-glyph' ) ? '`icon.advanced.color.desktop.value` (glyph colour)' : '',
+            ] ) );
+            $text = 'Icon chip: ' . implode( ', ', $icon );
+            if ( $is( $chipProven, 'icon-fill' ) || $is( $chipProven, 'icon-glyph' ) ) {
+                // The glyph character itself (a real export: unicode, type and weight go together).
+                $text .= '; the glyph itself is `icon.innerContent.desktop.value` with `unicode`, `type`, `weight` (e.g. "&#xf10d;", "fa", "900")';
+            }
+            $parts[] = $text . '.';
+        }
+
+        return implode( ' ', $parts );
+    }
+
+    /**
      * The Contact forms paragraph of `kit-rules`: what the `form` marker writes, with every conditional decision worded from
      * $proven (the probe's verdicts, KitAdapters::FORM_PROVEN): a proven one is said, an unproven one is never claimed and its
      * fallback is stated.
@@ -458,7 +527,7 @@ final class StyleGuide
             $is( 'button-shadow' ) ? '' : 'The submit button has no shadow. ',
             $is( 'button-lift' ) ? '' : 'The submit button does not lift. ',
         ] ) );
-        $text .= 'The submit button is the kit\'s primary button' . ( [] === $with ? '' : ', with ' . ( count( $with ) > 1 ? implode( ', ', array_slice( $with, 0, -1 ) ) . ' and ' . end( $with ) : $with[0] ) . ' at `button.decoration.*`, not `module.decoration`' ) . '; '
+        $text .= 'The submit button is the kit\'s primary button' . ( [] === $with ? '' : ', with ' . ( count( $with ) > 1 ? implode( ', ', array_slice( $with, 0, -1 ) ) . ' and ' . end( $with ) : $with[0] ) . ' at `button.decoration.*`, not `module.decoration` (live on a contact form, the opposite of a `divi/button`)' ) . '; '
             . ( $is( 'button-underline' ) ? 'an underline edge keeps its colour on hover. ' : 'an underline edge is a full frame. ' )
             . implode( '', $without )
             . 'The captcha takes the band\'s ink. The form frame stays yours.';
@@ -1854,22 +1923,25 @@ MD;
      * or an icon. It names only the roles those two blocks answer.
      *
      * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED
+     * @param array<string,bool>|null          $ruleProven defaults to KitAdapters::RULE_PROVEN (the divider half needs `divider-line`)
+     * @param array<string,bool>|null          $chipProven defaults to KitAdapters::CHIP_PROVEN (the icon half needs `icon-radius`)
      */
-    public static function controlsKitSentence( ?array $applied = null ): string
+    public static function controlsKitSentence( ?array $applied = null, ?array $ruleProven = null, ?array $chipProven = null ): string
     {
-        $applied ??= KitAdapters::APPLIED;
-        $roles    = array_merge( $applied['divi/divider'] ?? [], $applied['divi/icon'] ?? [] );
-        if ( [] === $roles ) {
-            return '';
-        }
-
+        $applied     ??= KitAdapters::APPLIED;
+        $ruleProven  ??= KitAdapters::RULE_PROVEN;
+        $chipProven  ??= KitAdapters::CHIP_PROVEN;
         $ticks = static fn ( array $names ): string => implode( ' or ', array_map( static fn ( string $r ): string => '`' . $r . '`', $names ) );
         $parts = [];
-        if ( isset( $applied['divi/divider'] ) ) {
+        // Each half is said only while the decision it relies on is proven (the divider's line, the icon's corners).
+        if ( isset( $applied['divi/divider'] ) && true === ( $ruleProven['divider-line'] ?? false ) ) {
             $parts[] = 'with a ' . $ticks( $applied['divi/divider'] ) . ' marker a divider takes the kit\'s width and style';
         }
-        if ( isset( $applied['divi/icon'] ) ) {
+        if ( isset( $applied['divi/icon'] ) && true === ( $chipProven['icon-radius'] ?? false ) ) {
             $parts[] = 'with a ' . $ticks( $applied['divi/icon'] ) . ' marker an icon takes the kit\'s corners';
+        }
+        if ( [] === $parts ) {
+            return '';
         }
 
         return "\n\n## Style kits\n\n" . ucfirst( implode( ', ', $parts ) ) . '; colours come from the design language (topic=kit-rules).';
@@ -2209,7 +2281,7 @@ A rule on one edge of a column or group (recipe `proof-press-quotes`, a rule ove
 - `module.decoration.border.{bp}.value.styles.all.{width,color,style}`: "0px", the rule colour, "solid"
 - `module.decoration.border.{bp}.value.styles.top.width`: "2px"
 The top edge takes the colour and style written on `all` (source: Divi's border styles write `all` first, then only what a side
-changes). Add top padding so the content clears the rule.
+changes). Add top padding so the content clears the rule. Under a style kit the width, style and colour come from the kit (topic=kit-rules); this example is the default look.
 
 ## Two-edged divider band
 A section in a contrasting fill with a divider on both edges, each filled with the page colour, so the band seems to flow out of the

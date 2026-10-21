@@ -125,7 +125,8 @@ class StyleGuideKitRulesTest extends TestCase
         // Budgets: the paragraph costs at most 400 B net of the clause it replaced; no kit topic or other guide moved. Re-pinned
         // deliberately (rules and chips adapter T3, plan 2026-10-21): the applied tail (+119 B) and the Rules and chips paragraph
         // (+529 B with its heading) take the bound to 4,607 + 650.
-        $this->assertLessThanOrEqual( 4607 + 650, strlen( $text ) );
+        // Guide polish (plan 2026-10-21-guide-polish-rules-chips) replaces the self-imposed 4,607 + 650 pin with 7,000 B (the real bound is 10,000 B).
+        $this->assertLessThanOrEqual( 7000, strlen( $text ) );
         $this->assertLessThanOrEqual( self::BUDGET, strlen( $text ) );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide is exactly as before' );
@@ -236,9 +237,11 @@ class StyleGuideKitRulesTest extends TestCase
         // Re-pinned deliberately (forms adapter T2): kit-rules 3,525 + the Contact forms paragraph (+776 B in all after fix round 2, with the 30 B applied-sentence change: fix round 1's underline wording, the accent-band clause of the field frame and the `button.decoration.*` path clause, all generated; the hard cap is 10,000 B); the catalog 8,423 + "forms (`divi/contact-form`: `form`)" less "Forms, " in the not-applied sentence (30 B).
         // Rules and chips adapter T3 (plan 2026-10-21), re-pinned deliberately: without the Images paragraph kit-rules was 4,301; the
         // applied sentence gained its tail (+119 B) and the Rules and chips paragraph (+529 B) arrived: 4,949.
-        $this->assertSame( 4949, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph (4,301 before the rules and chips adapter)' );
+        // Guide polish (plan 2026-10-21-guide-polish-rules-chips) re-pinned deliberately: + the shapes passage under Rules and chips, the
+        // "kit wins" sentence and the contact form's live-path clause: 4,949 -> 6,289 (and 5,255 -> 6,595 with the Images paragraph; the review fix reworded two clauses, +133 B).
+        $this->assertSame( 6289, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph (4,301 before the rules and chips adapter)' );
         // Image radius pass (Task 1): the Images paragraph replaces the "recorded but unused" clause: +291 B net. Rules and chips T3: 4,607 -> 5,255 (plan bound: 4,607 + 650).
-        $this->assertSame( 5255, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        $this->assertSame( 6595, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         // Rules and chips adapter Step 0 (plan 2026-10-21): the catalog's fixed prose was reworded to reclaim headroom BEFORE the applied sentence gained its rules and chips tail: 8,439 -> 8,325 B (50-kit projection 9,923 -> 9,809 B); the tail then added 119 B: 8,444 B (9,928 B with 50 kits).
         $this->assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter, 8,453 with it, 8,439 at image radius; 8,325 after the Step 0 rewording, 8,444 with the rules and chips tail)' );
     }
@@ -338,8 +341,9 @@ class StyleGuideKitRulesTest extends TestCase
         // The 700 B planned for kit-rules growth became 776 B: the accent-band clause of the field frame and the path clause
         // (`button.decoration.*`, not `module.decoration`) were added after review. The bound below is the real one, the cap is 10,000 B.
         // Re-bounded deliberately (rules and chips adapter T3): + the applied tail and the Rules and chips paragraph (648 B in all; the bound is 650).
-        $this->assertLessThanOrEqual( 3525 + 800 + 650, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph: the form paragraph at most 800 B, the rules and chips adapter at most 650 B more' );
-        $this->assertLessThanOrEqual( 4301 + 400 + 650, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules with the Images paragraph (image radius pass): at most 400 B more, then the rules and chips adapter at most 650 B more' );
+        // Guide polish (plan 2026-10-21-guide-polish-rules-chips): the self-imposed 3,525 + 800 + 650 and 4,301 + 400 + 650 pins are replaced by 7,000 B.
+        $this->assertLessThanOrEqual( 7000, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph' );
+        $this->assertLessThanOrEqual( 7000, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules with the Images paragraph' );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
@@ -361,7 +365,10 @@ class StyleGuideKitRulesTest extends TestCase
     private function formsParagraph( ?array $proven = null ): string
     {
         $text = StyleGuide::kitRules( null, $proven );
-        return substr( $text, (int) strpos( $text, '## Contact forms' ) );
+        $form = substr( $text, (int) strpos( $text, '## Contact forms' ) );
+        // Up to the next section (Rules and chips follows it and names module.decoration paths of its own).
+        $next = strpos( $form, "\n## ", 4 );
+        return false === $next ? $form : substr( $form, 0, $next + 1 );
     }
 
     public function testTheFormParagraphStatesTheAccentBandFrameException(): void
@@ -501,11 +508,12 @@ class StyleGuideKitRulesTest extends TestCase
     {
         // Review fix (rules and chips T3): the all-true text is byte-identical to what shipped in 2b3dc4a.
         $body = trim( (string) substr( $this->rulesParagraph(), strlen( "## Rules and chips\n\n" ) ) );
+        $body = (string) substr( $body, 0, (int) strpos( $body, "\n\nWidth by hand:" ) ); // the shapes passage follows (guide polish) and has its own tests
         $this->assertSame(
             '`rule` (quiet), `rule-strong`: a `divi/divider` (colour, weight, style) or the top edge of a `divi/group` or `divi/column`; `on`: light, surface, accent, dark or panel. Width from the kit: 1-2px quiet, 2-4px strong, 3px+ for a double. Quiet: hairline colour on light and surface, 40% ink elsewhere; strong: full ink. `chip`: tag (`divi/group`: control radius, outline frame) or icon (`divi/icon`: control radius, accent fill, accent-text glyph; surface/text on accent); `on`: light, surface, accent or dark.',
             $body
         );
-        $this->assertSame( 5255, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'the shipped kit-rules did not move' );
+        $this->assertSame( 6595, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'the shipped kit-rules (5,255 before the guide polish)' );
 
         $yes    = KitAdapters::RULE_PROVEN;
         $cyes   = KitAdapters::CHIP_PROVEN;
@@ -727,10 +735,12 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ), 'no topic name was added' );
         $rules = strlen( StyleGuide::markdown( 'kit-rules' ) );
-        $this->assertLessThanOrEqual( 4607 + 650, $rules, 'kit-rules: the paragraph and the applied tail cost at most 650 B' );
+        $this->assertLessThanOrEqual( 7000, $rules, 'kit-rules (guide polish replaced the 4,607 + 650 pin; the real bound is 10,000 B)' );
         $paragraph = $this->rulesParagraph();
-        $this->assertLessThanOrEqual( 525, strlen( trim( (string) substr( $paragraph, strlen( "## Rules and chips\n\n" ) ) ) ), 'the generated Rules and chips paragraph (ruleChipRules) is at most 525 B' );
-        $this->assertLessThanOrEqual( 535, strlen( $paragraph ), 'with its heading and the closing newline' );
+        $split     = (int) strpos( $paragraph, "\n\nWidth by hand:" );
+        $this->assertGreaterThan( 0, $split, 'the shapes passage follows the paragraph' );
+        $this->assertLessThanOrEqual( 525, strlen( trim( (string) substr( substr( $paragraph, 0, $split ), strlen( "## Rules and chips\n\n" ) ) ) ), 'the generated Rules and chips paragraph (ruleChipRules) is at most 525 B' );
+        $this->assertLessThanOrEqual( 1200, strlen( trim( substr( $paragraph, $split ) ) ), 'the shapes passage (ruleChipShapes) is at most 1,200 B (1,100 before the review fix)' );
         $this->assertLessThanOrEqual( self::BUDGET, $rules );
         $max = 0;
         $this->assertCount( 40, self::KIT_TOPIC_SIZES_BEFORE );
@@ -757,6 +767,269 @@ class StyleGuideKitRulesTest extends TestCase
             $property->setValue( null, $kits );
             $this->assertCount( 50, StyleKits::ids() );
             $this->assertLessThanOrEqual( 9950, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the 50-kit catalog' );
+        } finally {
+            StyleKits::clearCache();
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Guide polish for rules and chips, Task 1 (plan 2026-10-21-guide-polish-rules-chips): the dogfood check found that the
+    // guide named the roles but gave no shapes, no exact width rule, no word on kit-vs-language, and no live path for a
+    // contact form's submit. Everything below is generated from the same proven-decision maps as the paragraph above.
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** The sentence of the shapes passage that states the width rule, as a regular expression with six captures. */
+    private const WIDTH_RULE = '/quiet = the kit\'s border width, at least (\d)px, at most (\d)px; strong = that width plus (\d)px, at least (\d)px, at most (\d)px(?:; a double is never under (\d)px)?\./';
+
+    public function testTheRulesPassageStatesTheExactWidthRuleAndMatchesRuleWidth(): void
+    {
+        $this->assertSame( 1, preg_match( self::WIDTH_RULE, $this->rulesParagraph(), $m ), 'the served kit-rules states the quiet and the strong width rule' );
+        [ , $qMin, $qMax, $sPlus, $sMin, $sMax, $dMin ] = array_map( 'intval', $m + array_fill( 0, 7, 0 ) );
+        $this->assertSame( [ 1, 2, 1, 2, 4, 3 ], [ $qMin, $qMax, $sPlus, $sMin, $sMax, $dMin ] );
+        // The numbers the sentence implies equal ruleWidth() for both roles, every kit width 0px-4px, solid and double.
+        foreach ( [ 0, 1, 2, 3, 4 ] as $w ) {
+            foreach ( [ 'solid', 'dashed', 'dotted', 'double' ] as $style ) {
+                $border  = [ 'width' => $w . 'px', 'style' => $style, 'color' => 'text' ];
+                $quiet   = max( $qMin, min( $qMax, $w ) );
+                $strong  = max( $sMin, min( $sMax, $w + $sPlus ) );
+                if ( 'double' === $style ) {
+                    $quiet  = max( $dMin, $quiet );
+                    $strong = max( $dMin, $strong );
+                    $this->assertGreaterThanOrEqual( 3, (int) KitAdapters::ruleWidth( 'rule', $border ), 'a double is never under 3px (quiet)' );
+                    $this->assertGreaterThanOrEqual( 3, (int) KitAdapters::ruleWidth( 'rule-strong', $border ), 'a double is never under 3px (strong)' );
+                }
+                $this->assertSame( $quiet . 'px', KitAdapters::ruleWidth( 'rule', $border ), "quiet: kit width {$w}px, $style" );
+                $this->assertSame( $strong . 'px', KitAdapters::ruleWidth( 'rule-strong', $border ), "strong: kit width {$w}px, $style" );
+            }
+        }
+        // And over every shipped kit: the 3px kit gets 4px strong (the dogfood miss), the 2px kit 3px strong.
+        foreach ( StyleKits::ids() as $id ) {
+            $border = (array) ( (array) StyleKits::get( $id ) )['border'];
+            $w      = (int) $border['width'];
+            $strong = max( $sMin, min( $sMax, $w + $sPlus ) );
+            $quiet  = max( $qMin, min( $qMax, $w ) );
+            if ( 'double' === $border['style'] ) {
+                [ $quiet, $strong ] = [ max( $dMin, $quiet ), max( $dMin, $strong ) ];
+            }
+            $this->assertSame( [ $quiet . 'px', $strong . 'px' ], [ KitAdapters::ruleWidth( 'rule', $border ), KitAdapters::ruleWidth( 'rule-strong', $border ) ], $id );
+        }
+        $this->assertSame( '4px', KitAdapters::ruleWidth( 'rule-strong', [ 'width' => '3px', 'style' => 'solid' ] ) );
+        // The double clause is said only while a present carrier draws a double.
+        $none = KitAdapters::RULE_PROVEN;
+        foreach ( [ 'divider-', 'group-top-', 'column-top-' ] as $p ) {
+            $none[ $p . 'double' ] = false;
+        }
+        $off = $this->rulesParagraph( null, $none );
+        $this->assertSame( 1, preg_match( self::WIDTH_RULE, $off, $o ) );
+        $this->assertArrayNotHasKey( 6, $o, 'a double is drawn solid everywhere: no 3px floor claimed' );
+        $this->assertStringNotContainsString( 'never under', $off );
+        // No rule carrier, no width rule.
+        $chipsOnly = [ 'divi/group' => [ 'chip' ], 'divi/icon' => [ 'chip' ] ];
+        $this->assertStringNotContainsString( 'at most 4px', $this->rulesParagraph( $chipsOnly ) );
+    }
+
+    public function testTheRulesPassageNamesTheProvenShapes(): void
+    {
+        $para = $this->rulesParagraph();
+        // Divider.
+        $this->assertStringContainsString( '`divider.advanced.line.desktop.value`', $para );
+        $this->assertMatchesRegularExpression( '/`divider\.advanced\.line\.desktop\.value` with `color`, `weight`, `style`/', $para );
+        // The line style is the kit's border style.
+        $this->assertStringContainsString( 'style = the kit\'s border style', $para );
+        // Top edge of a group or column.
+        $this->assertStringContainsString( '`module.decoration.border.desktop.value.styles`', $para );
+        $this->assertMatchesRegularExpression( '/`all` = width `0px`/', $para );
+        $this->assertMatchesRegularExpression( '/`top` = the rule width, the same style and colour/', $para );
+        $this->assertStringContainsString( 'the other three sides stay 0', $para );
+        $this->assertStringContainsString( 'to rule the top of a specific group or column (for example between plan columns), write the edge on that block itself; a divider module is for a separate line between blocks.', $para );
+        // Tag.
+        $this->assertMatchesRegularExpression( '/Tag: `module\.decoration\.border\.desktop\.value` with `radius`.*`styles\.all`/', $para );
+        // Icon chip and its glyph.
+        $this->assertStringContainsString( '`module.decoration.border.desktop.value.radius`', $para );
+        $this->assertStringContainsString( '`module.decoration.background.desktop.value.color`', $para );
+        $this->assertStringContainsString( '`icon.advanced.color.desktop.value`', $para );
+        $this->assertMatchesRegularExpression( '/`icon\.innerContent\.desktop\.value` with `unicode`, `type`, `weight`/', $para );
+        $this->assertStringNotContainsString( 'aied', $para, 'the guide never names the marker token' );
+        // The claims are true of the patches the adapter writes.
+        $kit  = (array) StyleKits::get( 'hairline-dashed' );
+        $div  = KitAdapters::patch( 'divi/divider', 'rule-strong', 'light', $kit );
+        $this->assertSame( [ 'color', 'weight', 'style' ], array_keys( $div['divider']['advanced']['line']['desktop']['value'] ) );
+        $grp  = KitAdapters::patch( 'divi/column', 'rule', 'light', $kit );
+        $edge = $grp['module']['decoration']['border']['desktop']['value']['styles'];
+        $this->assertSame( [ 'all', 'top' ], array_keys( $edge ) );
+        $this->assertSame( '0px', $edge['all']['width'] );
+        $this->assertSame( [ $edge['all']['style'], $edge['all']['color'] ], [ $edge['top']['style'], $edge['top']['color'] ], 'top has the same style and colour' );
+        $tag = KitAdapters::patch( 'divi/group', 'chip', 'light', $kit );
+        $this->assertSame( [ 'radius', 'styles' ], array_keys( $tag['module']['decoration']['border']['desktop']['value'] ) );
+        $this->assertSame( [ 'all' ], array_keys( $tag['module']['decoration']['border']['desktop']['value']['styles'] ) );
+        $icon = KitAdapters::patch( 'divi/icon', 'chip', 'light', $kit );
+        $this->assertArrayHasKey( 'radius', $icon['module']['decoration']['border']['desktop']['value'] );
+        $this->assertArrayHasKey( 'color', $icon['module']['decoration']['background']['desktop']['value'] );
+        $this->assertArrayHasKey( 'color', $icon['icon']['advanced'] );
+    }
+
+    public function testEachShapeIsOnlyStatedWhileItsDecisionIsProven(): void
+    {
+        $yes  = KitAdapters::RULE_PROVEN;
+        $cyes = KitAdapters::CHIP_PROVEN;
+        $all  = $this->rulesParagraph();
+        $this->assertStringStartsWith( '`rule` (quiet), `rule-strong`:', trim( (string) substr( $all, strlen( "## Rules and chips\n\n" ) ) ), 'the earlier sentences come first and are unchanged' );
+
+        // Divider shape: gone with divider-line.
+        $off = $this->rulesParagraph( null, array_merge( $yes, [ 'divider-line' => false ] ) );
+        $this->assertStringNotContainsString( 'divider.advanced.line', $off );
+        $this->assertStringNotContainsString( 'Divider:', $off );
+        $this->assertStringContainsString( '`module.decoration.border.desktop.value.styles`', $off, 'the top edge is still proven' );
+        $this->assertStringContainsString( 'write the edge on that block itself.', $off, 'no divider offered: the edge sentence does not mention a divider module' );
+        $this->assertStringNotContainsString( 'divider module', $off );
+        // Top-edge shape: gone only when BOTH group-top and column-top are false.
+        $oneEdge = $this->rulesParagraph( null, array_merge( $yes, [ 'group-top' => false ] ) );
+        $this->assertStringContainsString( '`module.decoration.border.desktop.value.styles`', $oneEdge, 'the column still proves it' );
+        $this->assertStringContainsString( 'rule the top of a specific column (for example', $oneEdge );
+        $noEdge = $this->rulesParagraph( null, array_merge( $yes, [ 'group-top' => false, 'column-top' => false ] ) );
+        $this->assertStringNotContainsString( 'value.styles`', $noEdge );
+        $this->assertStringNotContainsString( 'the other three sides', $noEdge );
+        $this->assertStringNotContainsString( 'write the edge on that block itself', $noEdge );
+        $this->assertStringNotContainsString( 'a divider module is for', $noEdge );
+        $this->assertStringContainsString( 'divider.advanced.line', $noEdge );
+        // No rule carrier at all: no width rule and no rule shape.
+        $noRule = $this->rulesParagraph( null, array_merge( $yes, [ 'divider-line' => false, 'group-top' => false, 'column-top' => false ] ) );
+        $this->assertDoesNotMatchRegularExpression( '/at most 4px|divider\.advanced|the other three sides|Divider:/', $noRule );
+        $this->assertStringContainsString( 'Tag:', $noRule, 'the chips are untouched' );
+
+        // Tag clauses follow tag-radius and tag-frame.
+        $noFrame = $this->rulesParagraph( null, null, array_merge( $cyes, [ 'tag-frame' => false ] ) );
+        $this->assertMatchesRegularExpression( '/Tag: `module\.decoration\.border\.desktop\.value` with `radius`/', $noFrame );
+        $this->assertStringNotContainsString( '`styles.all`', $noFrame );
+        $noRadius = $this->rulesParagraph( null, null, array_merge( $cyes, [ 'tag-radius' => false ] ) );
+        $this->assertStringContainsString( 'Tag: `module.decoration.border.desktop.value` with `styles.all`', $noRadius );
+        $noTag = $this->rulesParagraph( null, null, array_merge( $cyes, [ 'tag-radius' => false, 'tag-frame' => false ] ) );
+        $this->assertStringNotContainsString( 'Tag:', $noTag );
+        $this->assertStringContainsString( 'Icon chip:', $noTag );
+
+        // Icon: all three false -> no icon shape at all; each clause follows its own decision.
+        $allNo  = array_map( static fn ( bool $v ): bool => false, $cyes );
+        $noIcon = $this->rulesParagraph( null, null, array_merge( $cyes, [ 'icon-radius' => false, 'icon-fill' => false, 'icon-glyph' => false ] ) );
+        foreach ( [ 'Icon chip:', 'icon.advanced.color', 'icon.innerContent', 'background.desktop.value.color' ] as $needle ) {
+            $this->assertStringNotContainsString( $needle, $noIcon, $needle );
+        }
+        $this->assertStringContainsString( 'Tag:', $noIcon );
+        $noFill = $this->rulesParagraph( null, null, array_merge( $cyes, [ 'icon-fill' => false ] ) );
+        $this->assertStringNotContainsString( 'background.desktop.value.color', $noFill );
+        $this->assertStringContainsString( '`icon.advanced.color.desktop.value`', $noFill );
+        $this->assertStringContainsString( '`icon.innerContent.desktop.value`', $noFill, 'a glyph colour is proven: the glyph is shown' );
+        $noGlyphColour = $this->rulesParagraph( null, null, array_merge( $cyes, [ 'icon-glyph' => false ] ) );
+        $this->assertStringNotContainsString( '`icon.advanced.color.desktop.value`', $noGlyphColour );
+        $this->assertStringContainsString( '`icon.innerContent.desktop.value`', $noGlyphColour, 'a fill is proven: the glyph is still shown' );
+        $radiusOnly = $this->rulesParagraph( null, null, array_merge( $allNo, [ 'icon-radius' => true ] ) );
+        $this->assertStringContainsString( 'Icon chip: `module.decoration.border.desktop.value.radius`', $radiusOnly );
+        $this->assertStringNotContainsString( 'icon.innerContent', $radiusOnly, 'neither fill nor glyph colour offered: the glyph clause is tied to them' );
+        $this->assertStringNotContainsString( 'icon.advanced.color', $radiusOnly );
+        $this->assertStringNotContainsString( 'background.desktop.value.color', $radiusOnly );
+        // A map without the icon block offers no icon shape.
+        $noIconBlock = KitAdapters::APPLIED;
+        unset( $noIconBlock['divi/icon'] );
+        $this->assertStringNotContainsString( 'icon.innerContent', $this->rulesParagraph( $noIconBlock ) );
+        // Nothing proven for chips and nothing for rules: no shapes passage, no heading either way (the earlier tests pin that).
+        $this->assertStringNotContainsString( 'Tag:', $this->rulesParagraph( null, null, $allNo ) );
+    }
+
+    public function testTheKitWinsOverTheLanguage(): void
+    {
+        $text = StyleGuide::markdown( 'kit-rules' );
+        $this->assertSame( 1, substr_count( $text, 'the kit wins' ) );
+        $this->assertStringContainsString( 'Where a design language\'s prose and the kit disagree about the corners, borders, shadow or hover of a block a kit styles, the kit wins.', $text );
+        // It sits in the "Reusing" section, before the next heading.
+        $reuse = substr( $text, (int) strpos( $text, "## Reusing a kit topic's blocks" ) );
+        $reuse = substr( $reuse, 0, (int) strpos( $reuse, "\n## ", 4 ) );
+        $this->assertStringContainsString( 'the kit wins', $reuse );
+    }
+
+    public function testTheFormsTextSaysTheSubmitPathIsLiveOnAContactForm(): void
+    {
+        $yes   = KitAdapters::FORM_PROVEN;
+        $forms = $this->formsParagraph( $yes );
+        $this->assertStringContainsString( 'at `button.decoration.*`, not `module.decoration`', $forms, 'the earlier clause is kept' );
+        $this->assertStringContainsString( 'live on a contact form, the opposite of a `divi/button`', $forms );
+        foreach ( [ 'button-padding', 'button-shadow', 'button-lift' ] as $decision ) {
+            $this->assertStringContainsString( 'the opposite of a `divi/button`', $this->formsParagraph( array_merge( $yes, [ $decision => false ] ) ), "$decision alone unproven" );
+        }
+        $none = array_merge( $yes, [ 'button-padding' => false, 'button-shadow' => false, 'button-lift' => false ] );
+        $this->assertStringNotContainsString( 'divi/button', $this->formsParagraph( $none ), 'nothing proven on the submit: no live-path claim' );
+        // The contrary statement about a plain button is kept, once, and the two do not contradict: one is a button, one a form.
+        $rules = StyleGuide::kitRules();
+        $this->assertSame( 1, substr_count( $rules, 'never on button.decoration' ) );
+    }
+
+    public function testControlsKitSentenceIsConditionalOnTheProvenDecisions(): void
+    {
+        $yes  = KitAdapters::RULE_PROVEN;
+        $cyes = KitAdapters::CHIP_PROVEN;
+        $now  = StyleGuide::controlsKitSentence();
+        $this->assertLessThanOrEqual( 250, strlen( $now ) );
+        $this->assertSame( $now, StyleGuide::controlsKitSentence( null, $yes, $cyes ), 'the default is the shipped decisions' );
+        $this->assertStringContainsString( 'a divider takes the kit\'s width and style', $now );
+        $this->assertStringContainsString( 'an icon takes the kit\'s corners', $now );
+        $noDivider = StyleGuide::controlsKitSentence( null, array_merge( $yes, [ 'divider-line' => false ] ), $cyes );
+        $this->assertStringNotContainsString( 'divider', $noDivider );
+        $this->assertStringContainsString( 'an icon takes the kit\'s corners', $noDivider );
+        $this->assertStringNotContainsString( '`rule`', $noDivider );
+        $noIcon = StyleGuide::controlsKitSentence( null, $yes, array_merge( $cyes, [ 'icon-radius' => false, 'icon-fill' => false, 'icon-glyph' => false ] ) );
+        $this->assertStringNotContainsString( 'icon', $noIcon );
+        $this->assertStringNotContainsString( '`chip`', $noIcon );
+        $this->assertStringContainsString( 'a divider takes the kit\'s width and style', $noIcon );
+        $this->assertSame( '', StyleGuide::controlsKitSentence( null, array_merge( $yes, [ 'divider-line' => false ] ), array_map( static fn ( bool $v ): bool => false, $cyes ) ), 'neither half proven: no sentence' );
+        // An icon with only a fill or glyph colour proven takes no corners: the corner claim follows icon-radius.
+        $noRadius = StyleGuide::controlsKitSentence( null, $yes, array_merge( $cyes, [ 'icon-radius' => false ] ) );
+        $this->assertStringNotContainsString( 'corners', $noRadius );
+        $this->assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ), 'the shipped controls topic did not move' );
+    }
+
+    public function testTheCompositionOneSideRuleSectionSaysTheKitDecides(): void
+    {
+        $text    = StyleGuide::markdown( 'composition' );
+        $section = substr( $text, (int) strpos( $text, '## One-side rule' ) );
+        $section = substr( $section, 0, (int) strpos( $section, "\n## ", 4 ) );
+        // The example is kept.
+        $this->assertStringContainsString( '`module.decoration.border.{bp}.value.styles.all.{width,color,style}`: "0px", the rule colour, "solid"', $section );
+        $this->assertStringContainsString( '`module.decoration.border.{bp}.value.styles.top.width`: "2px"', $section );
+        // And says that a kit decides.
+        $this->assertStringContainsString( 'Under a style kit the width, style and colour come from the kit (topic=kit-rules); this example is the default look.', $section );
+        $this->assertLessThanOrEqual( 10000, strlen( $text ) );
+        $this->assertStringNotContainsString( 'aied', $text );
+    }
+
+    public function testTheBudgetsOfTheGuidePolish(): void
+    {
+        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide did not move' );
+        $this->assertLessThanOrEqual( 7000, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (plan 2026-10-21-guide-polish-rules-chips; the real bound is 10,000 B)' );
+        $this->assertLessThanOrEqual( 9500, strlen( StyleGuide::markdown( 'controls' ) ) );
+        $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'composition' ) ) );
+        $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
+        $this->assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog did not move' );
+        $max = 0;
+        foreach ( self::KIT_TOPIC_SIZES_BEFORE as $id => $before ) {
+            $len = strlen( StyleGuide::markdown( 'style-kit:' . $id ) );
+            $this->assertSame( $before, $len, "$id: byte-equal to the size pinned before the polish" );
+            $max = max( $max, $len );
+        }
+        $this->assertSame( 9599, $max );
+        foreach ( StyleGuide::topics() as $topic ) {
+            $this->assertStringNotContainsString( 'aied', StyleGuide::markdown( $topic ), "$topic names no marker token" );
+        }
+        // The 50-kit catalog projection stays within 9,950 B (the same check as the rules and chips budget test).
+        $property = new \ReflectionProperty( StyleKits::class, 'cache' );
+        $real     = array_map( static fn ( string $id ): array => (array) StyleKits::get( $id ), StyleKits::ids() );
+        try {
+            $kits = $real;
+            for ( $n = 1; count( $kits ) < 50; $n++ ) {
+                $clone          = $real[ $n % count( $real ) ];
+                $clone['id']    = 'extra-kit-' . $n;
+                $clone['title'] = 'Extra kit ' . $n;
+                $kits[]         = $clone;
+            }
+            $property->setValue( null, $kits );
+            $this->assertLessThanOrEqual( 9950, strlen( StyleGuide::markdown( 'style-kits' ) ) );
         } finally {
             StyleKits::clearCache();
         }
