@@ -1128,12 +1128,16 @@ class KitCardAdapterTest extends TestCase
         $this->assertSame(
             [
                 'divi/button'    => [ 'control', 'control-secondary' ],
-                'divi/group'     => [ 'card', 'panel' ],
-                'divi/column'    => [ 'card', 'panel' ],
+                'divi/group'     => [ 'card', 'panel', 'rule', 'rule-strong', 'chip' ],
+                'divi/column'    => [ 'card', 'panel', 'rule', 'rule-strong' ],
                 'divi/accordion' => [ 'item', 'item-rule' ],
                 'divi/toggle'    => [ 'item', 'item-rule' ],
                 // Forms adapter T2: the map grows by one block and one role, on purpose (the pin follows the shipped adapters).
                 'divi/contact-form' => [ 'form' ],
+                // Rules and chips adapter T3 (plan 2026-10-21): the map grows on purpose, by the rule roles on group and column,
+                // `chip` on group, and two new carriers (the divider and the icon).
+                'divi/divider' => [ 'rule', 'rule-strong' ],
+                'divi/icon'    => [ 'chip' ],
             ],
             KitAdapters::APPLIED
         );

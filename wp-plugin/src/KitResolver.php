@@ -23,7 +23,10 @@ require_once __DIR__ . '/StyleKits.php';
  *   `dark`; `item` (a boxed item) on `divi/accordion` or `divi/toggle`, on `light`, `surface`, `accent` or `dark`, and
  *   `item-rule` (a rule row) on the same blocks, on `light` or `surface` only, and `form` (a whole contact form: its fields,
  *   submit button and captcha) on `divi/contact-form`, on `light`, `surface`, `accent` or `dark` (`surface` is a card, item
- *   and form band only, `panel` a button surface only). `on` defaults to `light`. `ground` (`inverted`
+ *   and form band only, `panel` a button and rule surface only), and `rule` / `rule-strong` (a thin line: the line of a
+ *   `divi/divider` or the top edge of a `divi/group` or `divi/column`) on `light`, `surface`, `accent`, `dark` or `panel`, and
+ *   `chip` (a tag on a `divi/group`, an icon chip on a `divi/icon`) on `light`, `surface`, `accent` or `dark`. `on` defaults
+ *   to `light`. `ground` (`inverted`
  *   or `accent`, a string) is accepted only for the card roles and only on a `light` or `surface` band. The adapter's
  *   patch for (block, role, on, kit, ground) is deep-merged into the
  *   attributes (the patch wins over a recipe literal at the same key; lists are replaced, not appended; untouched keys
@@ -46,6 +49,9 @@ final class KitResolver
         'control-secondary' => [ 'divi/button' ],
         'card'              => [ 'divi/group', 'divi/column' ],
         'panel'             => [ 'divi/group', 'divi/column' ],
+        'rule'              => [ 'divi/group', 'divi/column', 'divi/divider' ],
+        'rule-strong'       => [ 'divi/group', 'divi/column', 'divi/divider' ],
+        'chip'              => [ 'divi/group', 'divi/icon' ],
         'item'              => [ 'divi/accordion', 'divi/toggle' ],
         'item-rule'         => [ 'divi/accordion', 'divi/toggle' ],
         'form'              => [ 'divi/contact-form' ],
@@ -53,8 +59,9 @@ final class KitResolver
 
     /**
      * Marker role => the surfaces (bands) it may name; `light` when it names none. `surface` is for the card and item roles
-     * only, `panel` for the button roles only; a rule row (`item-rule`) sits on a light or surface band only; a form (`form`)
-     * takes the four bands a card does.
+     * only, `panel` for the button and rule roles only; a rule row (`item-rule`) sits on a light or surface band only; a form
+     * (`form`) takes the four bands a card does; a rule (`rule`, `rule-strong`) takes five (the four and `panel`) and a chip
+     * the four.
      */
     private const ROLE_SURFACES = [
         'control'           => [ 'light', 'accent', 'dark', 'panel' ],
@@ -64,6 +71,9 @@ final class KitResolver
         'item'              => [ 'light', 'surface', 'accent', 'dark' ],
         'item-rule'         => [ 'light', 'surface' ],
         'form'              => [ 'light', 'surface', 'accent', 'dark' ],
+        'rule'              => [ 'light', 'surface', 'accent', 'dark', 'panel' ],
+        'rule-strong'       => [ 'light', 'surface', 'accent', 'dark', 'panel' ],
+        'chip'              => [ 'light', 'surface', 'accent', 'dark' ],
     ];
 
     /** Marker role => the grounds it may name, and the surfaces a ground may sit on. Only the card roles take a ground. */
