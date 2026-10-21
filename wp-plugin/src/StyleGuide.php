@@ -330,7 +330,9 @@ final class StyleGuide
                 . 'An `item` is a boxed item and an `item-rule` a rule row, on a `divi/accordion` (one accordion styles all its items, never one item alone) or a `divi/toggle`. '
                 . 'Both: the title in the text colour, open and closed; the answer in the muted colour; the icons in the text colour (an accordion has no open icon); every state is written, so none falls back to Divi\'s grey defaults; no hover. '
                 . 'An `item` is filled like a card (the surface colour, the bg colour on a surface band), the same in both states, and takes the card\'s frame, radius and rest shadow; on a toggle it also takes the card padding (an accordion keeps Divi\'s own item padding: its padding setting would pad the answer). '
-                . 'An `item-rule` (on a light or surface band only) is filled with the band colour, has square corners, only a bottom rule (the kit\'s width, at least 1px, and style, in the card frame colour) and no shadow; the recipe keeps its own padding.' . "\n";
+                . 'An `item-rule` (on a light or surface band only) is filled with the band colour, has square corners, only a bottom rule (the kit\'s width, at least 1px, and style, in the card frame colour) and no shadow; the recipe keeps its own padding.'
+                . ( array_intersect( [ 'item', 'item-rule' ], $applied['divi/accordion'] ?? [] ) === [] ? '' : ' On the accordion write all of it on the parent; each item gets it: frame and radius at `module.decoration.border.desktop.value`, shadow at `module.decoration.boxShadow.desktop.value`, fills at `openToggle.decoration.background.desktop.value.color` and `closedToggle.decoration.background.desktop.value.color`, titles at `openToggle.decoration.font.font.desktop.value.color` and `closedToggle.decoration.font.font.desktop.value.color`, the icon at `closedToggleIcon.decoration.icon.desktop.value.color`, the answer at `content.decoration.bodyFont.body.font.desktop.value.color`.' )
+                . "\n";
         }
 
         if ( $has( 'form' ) ) {
@@ -485,7 +487,7 @@ final class StyleGuide
                 $is( $chipProven, 'tag-radius' ) ? '`radius` (the four corners, the kit\'s control radius)' : '',
                 $is( $chipProven, 'tag-frame' ) ? '`styles.all` (width, style, colour; 1px at least)' : '',
             ] ) );
-            $parts[] = 'Tag: `module.decoration.border.desktop.value` with ' . implode( ' and ', $tag ) . '.';
+            $parts[] = 'Tag: `module.decoration.border.desktop.value` with ' . implode( ' and ', $tag ) . '. Its fill stays transparent; its padding and size are yours.';
         }
 
         if ( $roleOf( 'divi/icon', 'chip' ) && ( $is( $chipProven, 'icon-radius' ) || $is( $chipProven, 'icon-fill' ) || $is( $chipProven, 'icon-glyph' ) ) ) {
@@ -518,7 +520,7 @@ final class StyleGuide
 
         $text = 'A `form` marker styles a `divi/contact-form` (fields, submit button, captcha); `on` is the band: light, surface, accent or dark. '
             . 'A field is filled with surface (bg on a surface band); text colour for its text, muted for its placeholder; frame in the kit\'s width (1px at least) and style, in text colour, or muted for a `same` or `border` border colour (never on an accent band). '
-            . ( $is( 'field-padding' ) ? 'It takes the control radius and control padding. ' : 'It takes the control radius; its padding stays the recipe\'s. ' )
+            . ( $is( 'field-padding' ) ? 'It takes the control radius and control padding (the four sides at `field.decoration.spacing.desktop.value.padding`). ' : 'It takes the control radius; its padding stays the recipe\'s. ' )
             . ( $is( 'field-underline' ) ? 'An underline kit draws a bottom rule only. ' : 'An underline kit still draws a full 1px frame. ' );
 
         $with    = array_values( array_filter( [ $is( 'button-padding' ) ? 'submit padding' : '', $is( 'button-shadow' ) ? 'submit shadow' : '', $is( 'button-lift' ) ? 'submit lift' : '' ] ) );
@@ -2358,7 +2360,7 @@ real Divi 5 exports; do not invent attribute keys.
 
 ## Structure (nesting)
 ```
-divi/placeholder              (root wrapper, required)
+divi/placeholder              (optional root wrapper)
   divi/section                (a section; may also hold a column directly)
     divi/row
       divi/column             (holds modules; may also hold a nested row)
@@ -2367,6 +2369,7 @@ divi/placeholder              (root wrapper, required)
           divi/column-inner   (same children as divi/column)
             [modules]
 ```
+Start with `divi/placeholder` (Divi's own exports) or directly with `divi/section` (the worked examples); both validate.
 **A `divi/column` can NEVER directly contain another `divi/column`** (doing so is
 rejected with UNEXPECTED_CHILD_TYPE). To nest columns inside a column, go through a
 row: **column → `divi/row-inner` → `divi/column-inner`** (or a plain `divi/row` →
