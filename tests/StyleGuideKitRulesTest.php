@@ -126,7 +126,7 @@ class StyleGuideKitRulesTest extends TestCase
         // deliberately (rules and chips adapter T3, plan 2026-10-21): the applied tail (+119 B) and the Rules and chips paragraph
         // (+529 B with its heading) take the bound to 4,607 + 650.
         // Guide polish (plan 2026-10-21-guide-polish-rules-chips) replaces the self-imposed 4,607 + 650 pin with 7,000 B (the real bound is 10,000 B).
-        $this->assertLessThanOrEqual( 7600, strlen( $text ) );
+        $this->assertLessThanOrEqual( 7900, strlen( $text ) );
         $this->assertLessThanOrEqual( self::BUDGET, strlen( $text ) );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
@@ -240,9 +240,10 @@ class StyleGuideKitRulesTest extends TestCase
         // Guide polish (plan 2026-10-21-guide-polish-rules-chips) re-pinned deliberately: + the shapes passage under Rules and chips, the
         // "kit wins" sentence and the contact form's live-path clause: 4,949 -> 6,289 (and 5,255 -> 6,595 with the Images paragraph; the review fix reworded two clauses, +133 B).
         // Guide polish second pass (spec Ruling 5), re-pinned deliberately: the tag fill/padding sentence, the form field padding path and the accordion paths: 6,289 -> 6,996 (6,595 -> 7,302 with the Images paragraph; the pin is 7,600).
-        $this->assertSame( 6996, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph (4,301 before the rules and chips adapter)' );
+        // Left items pass (guide), re-pinned deliberately: the accordion clause split per role and the toggle clause: 6,996 -> 7,558 (7,302 -> 7,864 with the Images paragraph; the bound is 7,900).
+        $this->assertSame( 7558, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph (4,301 before the rules and chips adapter)' );
         // Image radius pass (Task 1): the Images paragraph replaces the "recorded but unused" clause: +291 B net. Rules and chips T3: 4,607 -> 5,255 (plan bound: 4,607 + 650).
-        $this->assertSame( 7302, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        $this->assertSame( 7864, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         // Rules and chips adapter Step 0 (plan 2026-10-21): the catalog's fixed prose was reworded to reclaim headroom BEFORE the applied sentence gained its rules and chips tail: 8,439 -> 8,325 B (50-kit projection 9,923 -> 9,809 B); the tail then added 119 B: 8,444 B (9,928 B with 50 kits).
         $this->assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter, 8,453 with it, 8,439 at image radius; 8,325 after the Step 0 rewording, 8,444 with the rules and chips tail)' );
     }
@@ -343,8 +344,8 @@ class StyleGuideKitRulesTest extends TestCase
         // (`button.decoration.*`, not `module.decoration`) were added after review. The bound below is the real one, the cap is 10,000 B.
         // Re-bounded deliberately (rules and chips adapter T3): + the applied tail and the Rules and chips paragraph (648 B in all; the bound is 650).
         // Guide polish (plan 2026-10-21-guide-polish-rules-chips): the self-imposed 3,525 + 800 + 650 and 4,301 + 400 + 650 pins are replaced by 7,000 B.
-        $this->assertLessThanOrEqual( 7600, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph' );
-        $this->assertLessThanOrEqual( 7600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules with the Images paragraph' );
+        $this->assertLessThanOrEqual( 7900, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph' );
+        $this->assertLessThanOrEqual( 7900, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules with the Images paragraph' );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
@@ -514,7 +515,7 @@ class StyleGuideKitRulesTest extends TestCase
             '`rule` (quiet), `rule-strong`: a `divi/divider` (colour, weight, style) or the top edge of a `divi/group` or `divi/column`; `on`: light, surface, accent, dark or panel. Width from the kit: 1-2px quiet, 2-4px strong, 3px+ for a double. Quiet: hairline colour on light and surface, 40% ink elsewhere; strong: full ink. `chip`: tag (`divi/group`: control radius, outline frame) or icon (`divi/icon`: control radius, accent fill, accent-text glyph; surface/text on accent); `on`: light, surface, accent or dark.',
             $body
         );
-        $this->assertSame( 7302, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'the shipped kit-rules (5,255 before the guide polish, 6,595 before the second pass)' );
+        $this->assertSame( 7864, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'the shipped kit-rules (5,255 before the guide polish, 6,595 before the second pass, 7,302 before the per-role item clauses)' );
 
         $yes    = KitAdapters::RULE_PROVEN;
         $cyes   = KitAdapters::CHIP_PROVEN;
@@ -736,7 +737,7 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ), 'no topic name was added' );
         $rules = strlen( StyleGuide::markdown( 'kit-rules' ) );
-        $this->assertLessThanOrEqual( 7600, $rules, 'kit-rules (guide polish replaced the 4,607 + 650 pin; the real bound is 10,000 B)' );
+        $this->assertLessThanOrEqual( 7900, $rules, 'kit-rules (guide polish replaced the 4,607 + 650 pin; the real bound is 10,000 B)' );
         $paragraph = $this->rulesParagraph();
         $split     = (int) strpos( $paragraph, "\n\nWidth by hand:" );
         $this->assertGreaterThan( 0, $split, 'the shapes passage follows the paragraph' );
@@ -1060,45 +1061,269 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertTrue( KitAdapters::FORM_PROVEN['field-padding'] );
     }
 
+    /** @return array<string,mixed> the patch's leaves as dotted path => value */
+    private function leafMap( array $patch, string $prefix = '' ): array
+    {
+        $out = [];
+        foreach ( $patch as $key => $value ) {
+            $path = '' === $prefix ? (string) $key : $prefix . '.' . $key;
+            if ( is_array( $value ) ) {
+                $out += $this->leafMap( $value, $path );
+            } else {
+                $out[ $path ] = $value;
+            }
+        }
+        return $out;
+    }
+
+    /** Every dotted path a block writes for a role, over every shipped kit and every band the role has. */
+    private function writtenPaths( string $block, string $role ): array
+    {
+        $paths = [];
+        foreach ( StyleKits::ids() as $id ) {
+            foreach ( [ 'light', 'surface', 'accent', 'dark' ] as $band ) {
+                $patch = KitAdapters::patch( $block, $role, $band, (array) StyleKits::get( $id ) );
+                foreach ( null === $patch ? [] : array_keys( $this->leafMap( $patch ) ) as $leaf ) {
+                    $paths[ preg_replace( '/\.(topLeft|topRight|bottomRight|bottomLeft)$/', '', $leaf ) ] = true;
+                }
+            }
+        }
+        return array_keys( $paths );
+    }
+
+    /** The Items paragraph of a kit-rules text, cut into its clauses (null when a clause is absent). */
+    private function itemClauses( string $text ): array
+    {
+        $para = substr( $text, (int) strpos( $text, '## Accordion and toggle items' ) );
+        $para = substr( $para, 0, (int) strpos( $para, "\n## ", 4 ) ?: null );
+        $cut  = static function ( string $from, array $ends ) use ( $para ): ?string {
+            $at = strpos( $para, $from );
+            if ( false === $at ) {
+                return null;
+            }
+            $end = strlen( $para );
+            foreach ( $ends as $e ) {
+                $pos = strpos( $para, $e, $at + strlen( $from ) );
+                if ( false !== $pos ) {
+                    $end = min( $end, $pos );
+                }
+            }
+            return substr( $para, $at, $end - $at );
+        };
+        $marks = [ ' On the accordion write', ' A `divi/toggle` carries', ' An `item` also writes', ' An `item-rule` writes only' ];
+        return [
+            'para'      => $para,
+            'accordion' => $cut( 'On the accordion write', array_diff( $marks, [ ' On the accordion write' ] ) ),
+            'toggle'    => $cut( 'A `divi/toggle` carries', array_diff( $marks, [ ' A `divi/toggle` carries' ] ) ),
+            'item'      => $cut( 'An `item` also writes', array_diff( $marks, [ ' An `item` also writes' ] ) ),
+            'rule'      => $cut( 'An `item-rule` writes only', [ "\n" ] ),
+        ];
+    }
+
+    private static function backticked( string $path ): string
+    {
+        return '`' . $path . '`';
+    }
+
     public function testTheItemsParagraphNamesWhereAnAccordionCarriesTheKitLook(): void
     {
-        $text = StyleGuide::kitRules();
-        $para = substr( $text, (int) strpos( $text, '## Accordion and toggle items' ) );
-        $para = substr( $para, 0, (int) strpos( $para, "\n## ", 4 ) );
+        $c = $this->itemClauses( StyleGuide::kitRules() );
+        $this->assertNotNull( $c['accordion'], 'the accordion clause' );
         $paths = [
-            '`module.decoration.border.desktop.value`',
-            '`module.decoration.boxShadow.desktop.value`',
-            '`openToggle.decoration.background.desktop.value.color`',
-            '`closedToggle.decoration.background.desktop.value.color`',
-            '`openToggle.decoration.font.font.desktop.value.color`',
-            '`closedToggle.decoration.font.font.desktop.value.color`',
-            '`closedToggleIcon.decoration.icon.desktop.value.color`',
-            '`content.decoration.bodyFont.body.font.desktop.value.color`',
+            'openToggle.decoration.background.desktop.value.color',
+            'closedToggle.decoration.background.desktop.value.color',
+            'openToggle.decoration.font.font.desktop.value.color',
+            'closedToggle.decoration.font.font.desktop.value.color',
+            'closedToggleIcon.decoration.icon.desktop.value.color',
+            'content.decoration.bodyFont.body.font.desktop.value.color',
         ];
+        $written = [ ...$this->writtenPaths( 'divi/accordion', 'item' ), ...$this->writtenPaths( 'divi/accordion', 'item-rule' ) ];
         foreach ( $paths as $path ) {
-            $this->assertSame( 1, substr_count( $para, $path ), $path );
+            $this->assertSame( 1, substr_count( $c['accordion'], self::backticked( $path ) ), $path );
+            $this->assertContains( $path, $this->writtenPaths( 'divi/accordion', 'item' ), "$path: the adapter writes it for an accordion item" );
+            $this->assertContains( $path, $this->writtenPaths( 'divi/accordion', 'item-rule' ), "$path: the adapter writes it for an accordion rule row" );
         }
-        $this->assertStringContainsString( 'accordion', substr( $para, (int) strpos( $para, $paths[0] ) - 200, 200 ) );
-        // Every leaf group the adapter writes on an accordion is named (read from the adapter's own output).
-        $kit   = StyleKits::get( 'quiet-solid' );
-        $patch = KitAdapters::patch( 'divi/accordion', 'item', 'light', $kit );
-        $this->assertIsArray( $patch );
-        foreach ( [ 'openToggle', 'closedToggle', 'closedToggleIcon' ] as $group ) {
-            $this->assertArrayHasKey( $group, $patch );
-            $this->assertStringContainsString( '`' . $group . '.', $para );
+        // The accordion clause names no frame, radius, shadow or role-specific path any more: those belong to a role.
+        $this->assertStringNotContainsString( 'module.decoration', $c['accordion'] );
+        $this->assertStringContainsString( 'accordion', $c['accordion'] );
+        // Every leaf group the adapter writes on an accordion is named.
+        foreach ( [ 'openToggle', 'closedToggle', 'closedToggleIcon', 'content' ] as $group ) {
+            $this->assertStringContainsString( '`' . $group . '.', $c['accordion'] );
         }
-        $this->assertArrayNotHasKey( 'openToggleIcon', $patch, 'an accordion has no open icon: none is claimed' );
-        $this->assertStringNotContainsString( 'openToggleIcon', $para );
-        $this->assertStringNotContainsString( 'aied', $para );
+        $this->assertNotContains( 'openToggleIcon.decoration.icon.desktop.value.color', $written, 'an accordion has no open icon: none is claimed' );
+        $this->assertStringNotContainsString( 'openToggleIcon', $c['accordion'] );
+        $this->assertStringNotContainsString( 'closedTitle', $c['accordion'], 'the accordion has no closedTitle group' );
+        $this->assertStringNotContainsString( 'aied', $c['para'] );
 
-        // Gated on the map: no accordion item role, no clause.
+        // Gated on the map: no accordion item role, no accordion clause; the toggle still has its paragraph and its own clause.
         $noAccordion = KitAdapters::APPLIED;
         unset( $noAccordion['divi/accordion'] );
         $off = StyleGuide::kitRules( $noAccordion );
-        $this->assertStringNotContainsString( 'closedToggleIcon', $off );
-        $this->assertStringNotContainsString( 'openToggle.decoration', $off );
-        $toggleOnly = StyleGuide::kitRules( $noAccordion );
-        $this->assertStringContainsString( '## Accordion and toggle items', $toggleOnly, 'the toggle still has its paragraph' );
+        $this->assertStringNotContainsString( 'On the accordion write', $off );
+        $this->assertStringNotContainsString( 'closedToggle.decoration.font', $off, 'that path is the accordion\'s' );
+        $this->assertStringContainsString( '## Accordion and toggle items', $off, 'the toggle still has its paragraph' );
+        $this->assertStringContainsString( 'A `divi/toggle` carries', $off );
+    }
+
+    public function testEachItemRoleClauseNamesOnlyWhatThatRoleWrites(): void
+    {
+        $c = $this->itemClauses( StyleGuide::kitRules() );
+        $this->assertNotNull( $c['item'] );
+        $this->assertNotNull( $c['rule'] );
+        // item: frame, radius and shadow (and the toggle's padding), all written by the adapter for an item on both carriers.
+        foreach ( [ 'module.decoration.border.desktop.value', 'module.decoration.boxShadow.desktop.value' ] as $path ) {
+            $this->assertSame( 1, substr_count( $c['item'], self::backticked( $path ) ), $path );
+        }
+        $this->assertStringContainsString( 'module.decoration.spacing.desktop.value.padding', $c['item'] );
+        foreach ( [ 'divi/accordion', 'divi/toggle' ] as $block ) {
+            $written = $this->writtenPaths( $block, 'item' );
+            $this->assertContains( 'module.decoration.border.desktop.value.radius', $written, "$block item radius" );
+            $this->assertContains( 'module.decoration.border.desktop.value.styles.all.width', $written, "$block item frame" );
+            $this->assertContains( 'module.decoration.boxShadow.desktop.value.blur', $written, "$block item shadow" );
+        }
+        $this->assertContains( 'module.decoration.spacing.desktop.value.padding', $this->writtenPaths( 'divi/toggle', 'item' ) );
+        $this->assertNotContains( 'module.decoration.spacing.desktop.value.padding', $this->writtenPaths( 'divi/accordion', 'item' ), 'an accordion item takes no padding' );
+        $this->assertStringNotContainsString( 'item-rule', $c['item'], 'the item clause does not speak for the rule row' );
+
+        // item-rule: only the bottom rule and square corners; NO shadow, NO frame beyond the rule, on either carrier.
+        $this->assertStringContainsString( '`module.decoration.border.desktop.value.styles.bottom`', $c['rule'] );
+        $this->assertStringContainsString( '`module.decoration.border.desktop.value.radius`', $c['rule'] );
+        $this->assertStringNotContainsString( 'boxShadow', $c['rule'] );
+        $this->assertStringNotContainsString( 'spacing', $c['rule'] );
+        foreach ( [ 'divi/accordion', 'divi/toggle' ] as $block ) {
+            $written = $this->writtenPaths( $block, 'item-rule' );
+            $this->assertContains( 'module.decoration.border.desktop.value.styles.bottom.width', $written, "$block rule bottom" );
+            $this->assertContains( 'module.decoration.border.desktop.value.styles.all.width', $written, "$block rule: the other sides are set to 0px" );
+            $this->assertSame( [], array_filter( $written, static fn ( string $p ): bool => str_contains( $p, 'boxShadow' ) || str_contains( $p, 'spacing' ) ), "$block item-rule writes no shadow or padding" );
+            foreach ( StyleKits::ids() as $id ) {
+                $patch = KitAdapters::patch( $block, 'item-rule', 'light', (array) StyleKits::get( $id ) );
+                $v     = $patch['module']['decoration']['border']['desktop']['value'];
+                $this->assertSame( '0px', $v['styles']['all']['width'], "$id: the other sides" );
+                $this->assertSame( [ '0px', '0px', '0px', '0px' ], array_values( $v['radius'] ), "$id: square corners" );
+            }
+        }
+    }
+
+    public function testTheItemClausesFollowTheRoleMap(): void
+    {
+        $itemOnly = [ 'divi/accordion' => [ 'item' ], 'divi/toggle' => [ 'item' ] ];
+        $ruleOnly = [ 'divi/accordion' => [ 'item-rule' ], 'divi/toggle' => [ 'item-rule' ] ];
+
+        $a = $this->itemClauses( StyleGuide::kitRules( $itemOnly ) );
+        $this->assertNotNull( $a['para'] );
+        $this->assertNotNull( $a['item'] );
+        $this->assertNull( $a['rule'], 'no item-rule answered: no rule-row clause' );
+        $this->assertStringNotContainsString( 'styles.bottom', $a['para'] );
+        $this->assertStringNotContainsString( 'item-rule', $a['para'] );
+        $this->assertStringContainsString( 'module.decoration.boxShadow', $a['item'] );
+
+        $b = $this->itemClauses( StyleGuide::kitRules( $ruleOnly ) );
+        $this->assertNotNull( $b['rule'], 'the paragraph exists for a rule-row-only map' );
+        $this->assertNull( $b['item'], 'no item answered: no frame/shadow clause' );
+        $this->assertStringNotContainsString( 'boxShadow', $b['para'] );
+        $this->assertStringNotContainsString( 'module.decoration.spacing', $b['para'] );
+        $this->assertStringNotContainsString( '`item`', $b['para'] );
+        $this->assertStringNotContainsString( 'card padding', $b['para'] );
+
+        // The padding is claimed only while a toggle answers `item`.
+        $accItemToggleRule = [ 'divi/accordion' => [ 'item' ], 'divi/toggle' => [ 'item-rule' ] ];
+        $c = $this->itemClauses( StyleGuide::kitRules( $accItemToggleRule ) );
+        $this->assertNotNull( $c['item'] );
+        $this->assertNotNull( $c['rule'] );
+        $this->assertStringNotContainsString( 'module.decoration.spacing', $c['item'], 'only an accordion answers item: no padding' );
+        $toggleItem = $this->itemClauses( StyleGuide::kitRules( [ 'divi/accordion' => [ 'item-rule' ], 'divi/toggle' => [ 'item' ] ] ) );
+        $this->assertStringContainsString( 'module.decoration.spacing.desktop.value.padding', (string) $toggleItem['item'] );
+
+        // Planted false: a carrier that answers no item role gets no clause at all.
+        $accordionOnly = $this->itemClauses( StyleGuide::kitRules( [ 'divi/accordion' => [ 'item', 'item-rule' ], 'divi/toggle' => [ 'something-else' ] ] ) );
+        $this->assertNotNull( $accordionOnly['accordion'] );
+        $this->assertNull( $accordionOnly['toggle'], 'toggle answers no item role: no toggle clause' );
+        $this->assertStringNotContainsString( 'closedTitle', $accordionOnly['para'] );
+        $this->assertStringNotContainsString( 'openToggleIcon', $accordionOnly['para'] );
+        $toggleOnly = $this->itemClauses( StyleGuide::kitRules( [ 'divi/accordion' => [ 'something-else' ], 'divi/toggle' => [ 'item', 'item-rule' ] ] ) );
+        $this->assertNotNull( $toggleOnly['toggle'] );
+        $this->assertNull( $toggleOnly['accordion'], 'accordion answers no item role: no parent clause' );
+        $this->assertStringNotContainsString( 'On the accordion', $toggleOnly['para'] );
+        $this->assertStringNotContainsString( 'closedToggle.decoration.font', $toggleOnly['para'] );
+        // No item role anywhere: no paragraph at all.
+        $this->assertStringNotContainsString( '## Accordion and toggle items', StyleGuide::kitRules( [ 'divi/button' => [ 'control' ] ] ) );
+    }
+
+    public function testTheToggleClauseNamesTheLeavesTheAdapterWritesOnAToggle(): void
+    {
+        $paths = [
+            'openToggle.decoration.background.desktop.value.color',
+            'closedToggle.decoration.background.desktop.value.color',
+            'openToggle.decoration.font.font.desktop.value.color',
+            'closedTitle.decoration.font.font.desktop.value.color',
+            'closedToggleIcon.decoration.icon.desktop.value.color',
+            'openToggleIcon.decoration.icon.desktop.value.color',
+            'content.decoration.bodyFont.body.font.desktop.value.color',
+        ];
+        foreach ( [ 'item', 'item-rule' ] as $role ) {
+            $written = $this->writtenPaths( 'divi/toggle', $role );
+            foreach ( $paths as $path ) {
+                $this->assertContains( $path, $written, "$path: the adapter writes it on a toggle $role" );
+            }
+            $this->assertNotContains( 'closedToggle.decoration.font.font.desktop.value.color', $written, 'a toggle has no closedToggle font' );
+        }
+
+        // A toggle on its own: the full list, each path once.
+        $alone = $this->itemClauses( StyleGuide::kitRules( [ 'divi/toggle' => [ 'item', 'item-rule' ] ] ) );
+        $this->assertNotNull( $alone['toggle'] );
+        $this->assertStringContainsString( 'itself, not on a parent', $alone['toggle'] );
+        foreach ( $paths as $path ) {
+            $this->assertSame( 1, substr_count( $alone['toggle'], self::backticked( $path ) ), $path );
+        }
+        $this->assertStringNotContainsString( '`closedToggle.decoration.font', $alone['toggle'] );
+        $this->assertStringContainsString( '(not `closedToggle`)', $alone['toggle'] );
+        $this->assertStringNotContainsString( 'aied', $alone['toggle'] );
+
+        // Next to the accordion clause: "the same paths except ..." is true, and the two exceptions are the only differences.
+        $c = $this->itemClauses( StyleGuide::kitRules() );
+        $this->assertNotNull( $c['toggle'] );
+        $this->assertStringContainsString( 'itself, not on a parent, at the same paths except', $c['toggle'] );
+        $this->assertSame( 1, substr_count( $c['toggle'], '`closedTitle.decoration.font.font.desktop.value.color`' ) );
+        $this->assertSame( 1, substr_count( $c['toggle'], '`openToggleIcon.decoration.icon.desktop.value.color`' ) );
+        $this->assertStringContainsString( '(not `closedToggle`)', $c['toggle'] );
+        $colour = static fn ( string $p ): bool => str_ends_with( $p, '.color' ) && ! str_contains( $p, 'border' ) && ! str_contains( $p, 'boxShadow' );
+        foreach ( [ 'item', 'item-rule' ] as $role ) {
+            $acc = array_values( array_filter( $this->writtenPaths( 'divi/accordion', $role ), $colour ) );
+            $tog = array_values( array_filter( $this->writtenPaths( 'divi/toggle', $role ), $colour ) );
+            sort( $acc );
+            sort( $tog );
+            $this->assertSame(
+                [ 'closedToggle.decoration.font.font.desktop.value.color' ],
+                array_values( array_diff( $acc, $tog ) ),
+                "$role: only the accordion's closed title differs (toggle side: closedTitle)"
+            );
+            $this->assertSame(
+                [ 'closedTitle.decoration.font.font.desktop.value.color', 'openToggleIcon.decoration.icon.desktop.value.color' ],
+                array_values( array_diff( $tog, $acc ) ),
+                "$role: the toggle's only extra colour paths are the ones the clause names"
+            );
+        }
+        $this->assertStringNotContainsString( 'aied', $c['toggle'] );
+    }
+
+    public function testTheKitRulesBudgetOfTheLeftItemsPass(): void
+    {
+        // Deliberate raise from 7,600 B to 7,900 B for the per-role accordion clauses and the toggle clause; the real bound is 10,000 B.
+        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
+        $this->assertLessThanOrEqual( 7900, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        $this->assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ) );
+        $this->assertSame( 6474, strlen( StyleGuide::markdown( 'forms' ) ) );
+        $this->assertSame( 8706, strlen( StyleGuide::markdown( 'composition' ) ) );
+        $this->assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ) );
+        $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
+        $max = 0;
+        foreach ( StyleKits::ids() as $id ) {
+            $max = max( $max, strlen( StyleGuide::markdown( 'style-kit:' . $id ) ) );
+        }
+        $this->assertSame( 9599, $max, 'the largest kit topic did not move' );
+        foreach ( StyleGuide::topics() as $topic ) {
+            $this->assertStringNotContainsString( 'aied', StyleGuide::markdown( $topic ), "$topic names no marker token" );
+        }
     }
 
     public function testTheBudgetsOfTheSecondPass(): void
@@ -1107,7 +1332,7 @@ class StyleGuideKitRulesTest extends TestCase
         // The default guide does not grow (owner rule): the Structure fix is size-neutral.
         $this->assertSame( 28975, $size, 'the default guide, pinned exactly' );
         $this->assertLessThanOrEqual( 29108, $size, 'Ruling 5 ceiling' );
-        $this->assertLessThanOrEqual( 7600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (spec Ruling 5 raised the 7,000 B pin to 7,600 B; the real bound is 10,000 B)' );
+        $this->assertLessThanOrEqual( 7900, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (spec Ruling 5 raised the 7,000 B pin to 7,600 B; the real bound is 10,000 B)' );
         $this->assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
         $this->assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog did not move' );
@@ -1125,7 +1350,7 @@ class StyleGuideKitRulesTest extends TestCase
     public function testTheBudgetsOfTheGuidePolish(): void
     {
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
-        $this->assertLessThanOrEqual( 7600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (plan 2026-10-21-guide-polish-rules-chips; the real bound is 10,000 B)' );
+        $this->assertLessThanOrEqual( 7900, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (plan 2026-10-21-guide-polish-rules-chips; the real bound is 10,000 B)' );
         $this->assertLessThanOrEqual( 9500, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'composition' ) ) );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
