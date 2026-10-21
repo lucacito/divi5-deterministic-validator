@@ -63,6 +63,8 @@ each new slot. Pure test count rises from 100.
    `row` vs `row-inner` nesting; accordion parent paths without a worked example; dark languages and the band names) are out of scope here
    and are listed in the Outcome as findings for a separate guide pass.* Cost if wrong: a follow-up branch.
 
+5. *Second pass (after the dogfood re-run on dotted-pill, where the rule and chip gaps were closed but three more showed up in all three runs):* (a) the guide says a root `divi/placeholder` is "required" while the validator accepts a layout that starts with `divi/placeholder` or directly with `divi/section` ("confirmed across real site exports") and every worked example starts with a section: reword to say both are fine (the default guide may grow to its existing ceiling of 29,108 B, re-pinned on purpose); (b) the tag clause says transparent fill and own padding; (c) the Contact forms paragraph names the field padding path; (d) the Items paragraph says where an accordion parent carries the kit look, if it fits. `kit-rules` pin raised from 7,000 B to 7,600 B (real bound 10,000 B). Cost if wrong: change numbers.
+
 ## Done means
 Free suite green; `node scripts/test-verify-kits.cjs` green; smoke (5 kits x editorial, glass-dark) 0 FAIL; full `make verify-kits` 0 FAIL
 (the gate changed, so it is re-run in full, about 3 h 15 min); the dogfood check re-run once on a third kit (dotted-pill with a pastel

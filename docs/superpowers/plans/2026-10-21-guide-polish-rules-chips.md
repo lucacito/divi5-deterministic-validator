@@ -67,6 +67,28 @@
 
 ---
 
-### Task 3: Docs and live gates (controller)
+### Task 3: Second wording pass (the gaps all three dogfood assistants reported)
+
+**Files:**
+- Modify: `wp-plugin/src/StyleGuide.php` (the default guide's Structure block; the Rules and chips passage; the Contact forms paragraph; optionally the Items paragraph), `tests/StyleGuideKitRulesTest.php` and whichever test pins the default guide size (`StyleGuideTopicsTest` / `StyleGuideKitTopicsTest`: find with grep `28975`)
+- Do not modify: `KitAdapters.php`, data, goldens, recipes
+
+**Interfaces:**
+- Consumes: Task 1's passage (merged); `KitAdapters::formPatch()` (the field padding is written at `field.decoration.spacing.{bp}.value.padding.{top,right,bottom,left}`, proven by probe kf-field-padding and `FORM_PROVEN['field-padding']`), `KitAdapters::item()` output for `divi/accordion` (read-only; for the leaves), the validator's own statement (`wp-plugin/validator/Validator.php` ~287: a layout may start with `divi/placeholder` OR directly with `divi/section`, confirmed across real exports).
+- Produces: reworded served text; the default guide at most 29,108 B (its existing ceiling; today 28,975, re-pinned deliberately with a comment); `kit-rules` at most 7,600 B (this task amends the plan's 7,000 B pin on purpose: Ruling 5 below).
+
+- [ ] **Step 1: Write the failing tests:**
+  - `testTheStructureBlockSaysTheRootWrapperIsOptional`: the default guide's Structure block no longer says `(root wrapper, required)`; it says that a layout may start with `divi/placeholder` (Divi's own exports do) or directly with `divi/section` (as the worked examples do), and both validate; the default guide `<= 29108` and `>= 28975 - 0` (re-pinned exact size with a comment); `StyleGuideTopicsTest`'s pin for 28,975 moves deliberately.
+  - `testTheTagChipClauseSaysTransparentFillAndOwnPadding`: the tag clause says the fill stays transparent and the tag's padding and size are yours (only while the tag is offered; absent when tag decisions are planted false).
+  - `testTheContactFormsParagraphNamesTheFieldPaddingPath`: the Contact forms paragraph names `field.decoration.spacing.desktop.value.padding` (the four sides, the kit's control padding) only while `field-padding` is proven (planted false removes it).
+  - `testTheItemsParagraphNamesWhereAnAccordionCarriesTheKitLook` ONLY if it fits the budget: the Items paragraph says where an accordion parent carries the frame, radius, shadow and title/icon colours (taken from `KitAdapters::item()` for `divi/accordion`, one clause per leaf group, paths as probe-proven in `fixtures/shapes/kit-item-vocabulary.md`); skip this test and the clause if `kit-rules` would pass 7,600 B and say so in the report.
+  - `testTheBudgetsOfTheSecondPass`: default guide pinned exactly and `<= 29108`; `kit-rules <= 7600`; `controls`, `forms`, the 40 kit topics (largest 9,599), the catalog (8,444) and `topicParameterDescription()` (258) unchanged; no served topic contains `aied`.
+- [ ] **Step 2: Run** `php -d memory_limit=-1 vendor/bin/phpunit --filter 'StyleGuide'`; expect FAIL.
+- [ ] **Step 3: Implement** the wording in `StyleGuide.php` (terse; every clause gated like the existing ones).
+- [ ] **Step 4: Run** the focused tests, the full free suite and the Pro suite; commit.
+
+---
+
+### Task 4: Docs and live gates (controller)
 
 - [ ] Append the Outcome to the spec: what changed, the byte sizes before/after (`php scripts/measure-tokens.php`, `docs/token-usage.md`), pure test count, live gate numbers, the dogfood re-run on dotted-pill, the findings left for a separate guide pass (Ruling 4), and update the "Rules and chips adapter" paragraph of `CLAUDE.md` (known limits).
