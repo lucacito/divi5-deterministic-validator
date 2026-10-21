@@ -2193,4 +2193,68 @@ t('the PNG decoder reads every filter type', () => {
   assert.deepStrictEqual(st.mean, { r: 10, g: 20, b: 30 });
 });
 
-console.log(`OK verify-kits pure parts: ${n} tests (run titles, selection, sheet, expectations from resolved markup, rest and hover comparison, shadows, lift, contrast, overflow, PNG; cards: sheet, expectations, comparison, panel static on hover, clip, contrast, overflow, column row, counts, empty run; grounds, panel buttons, the featured card; items: sheet, expectations per state, comparison, count, click, contrast; forms: sheet, expectations from the resolved markup, field/submit/captcha/container comparison, painted fill, contrast, clip, overflow, count; images: the media-radius token sheet, four corners from the resolved markup, radius on the wrapper or the img, clip, overflow, count, empty run; rules and chips: the sheet, expectations from the resolved markup, style/width/colour/radius/frame/fill comparison, contrast on the painted band, count, overflow, empty run; offline sheet through PHP for every kit x language)`);
+// ---- the one bounded hover retry (a timing miss must not fail a cell; a persistent defect must) ----
+const HP = (d) => ['panel-button', d];
+const BG = 'hover: background-color rgba(0, 0, 0, 0), expected #faf7f2';
+const FG = 'hover: color rgb(28, 26, 23), expected #faf7f2';
+t('hover retry: a first measurement without a hover problem is final and is not retried', () => {
+  assert.strictEqual(K.needsHoverRetry([]), false);
+  assert.strictEqual(K.needsHoverRetry([['border', 'rest: border-top-width 1px, expected 2px']]), false, 'a rest problem never triggers a retry');
+  const rest = [['fill', 'rest: background-color red, expected blue']];
+  assert.deepStrictEqual(K.settleHover(rest, null), { problems: rest, retried: false });
+  assert.deepStrictEqual(K.settleHover([], null), { problems: [], retried: false });
+  assert.strictEqual(K.needsHoverRetry([HP(BG)]), true);
+  assert.strictEqual(K.needsHoverRetry([['card-hover', 'the hover state was not measured']]), true);
+  assert.strictEqual(K.needsHoverRetry([['lift', 'hover: translateY button 0px / wrapper 0px, expected -4px']]), true);
+  assert.strictEqual(K.needsHoverRetry([['panel-button', 'hover: label #1c1a17 on #1c1a17 is 1:1, needs 4.5']]), true);
+});
+t('hover retry: a first mismatch followed by a match passes (the rest problems are kept)', () => {
+  const r = K.settleHover([HP(BG), HP(FG)], []);
+  assert.deepStrictEqual(r, { problems: [], retried: true });
+  const keep = K.settleHover([['fill', 'rest: x'], HP(BG)], [['fill', 'rest: x']]);
+  assert.deepStrictEqual(keep, { problems: [['fill', 'rest: x']], retried: true }, 'a rest problem is still reported after a clean retry');
+});
+t('hover retry: a persistent mismatch fails and names both observations', () => {
+  const second = 'hover: background-color rgba(0, 0, 0, 0), expected #faf7f2';
+  const r = K.settleHover([HP(BG)], [HP(second)]);
+  assert.strictEqual(r.retried, true);
+  assert.strictEqual(r.problems.length, 1);
+  assert.strictEqual(r.problems[0][0], 'panel-button');
+  assert.ok(r.problems[0][1].startsWith(second), 'the second observation is the problem');
+  assert.match(r.problems[0][1], /\(retried once: first hover: background-color rgba\(0, 0, 0, 0\), expected #faf7f2, second hover: background-color rgba\(0, 0, 0, 0\), expected #faf7f2\)$/);
+  // A different wrong value the second time: both values are visible.
+  const r2 = K.settleHover([HP('hover: color rgb(1, 1, 1), expected #fff')], [HP('hover: color rgb(2, 2, 2), expected #fff')]);
+  assert.match(r2.problems[0][1], /rgb\(1, 1, 1\).*rgb\(2, 2, 2\)/);
+  // The first mismatch gone but a different one appears: still a failure.
+  const r3 = K.settleHover([HP(BG)], [HP(FG)]);
+  assert.strictEqual(r3.problems.length, 1);
+  assert.match(r3.problems[0][1], /^hover: color/);
+  // Two hover problems each, in the same order: each names ITS OWN first observation, not the other's.
+  const r5 = K.settleHover([HP('hover: background-color a, expected b'), HP('hover: color c, expected d')], [HP('hover: background-color a2, expected b'), HP('hover: color c2, expected d')]);
+  assert.match(r5.problems[0][1], /^hover: background-color a2, expected b \(retried once: first hover: background-color a, expected b, second hover: background-color a2, expected b\)$/);
+  assert.match(r5.problems[1][1], /\(retried once: first hover: color c, expected d, second hover: color c2, expected d\)$/);
+  // A different number of hover problems the second time: the first run's observations are listed together.
+  const r6 = K.settleHover([HP('hover: color c, expected d'), HP('hover: background-color a, expected b')], [HP('hover: color c2, expected d')]);
+  assert.match(r6.problems[0][1], /first hover: color c, expected d; hover: background-color a, expected b, second hover: color c2, expected d\)$/);
+  // Rest problems alongside are kept untouched, unannotated.
+  const r4 = K.settleHover([['fill', 'rest: a'], HP(BG)], [['fill', 'rest: a'], HP(BG)]);
+  assert.deepStrictEqual(r4.problems[0], ['fill', 'rest: a']);
+  assert.match(r4.problems[1][1], /retried once/);
+});
+t('hover retry: a null measurement fails, never passes', () => {
+  assert.deepStrictEqual(K.settleHover(null, null, 'panel-button'), { problems: [['panel-button', 'the hover state was not measured']], retried: false });
+  assert.deepStrictEqual(K.settleHover(undefined, [], 'card-hover').problems, [['card-hover', 'the hover state was not measured']], 'a missing first judgement cannot be rescued by a later clean one');
+  const lost = K.settleHover([HP(BG)], null, 'panel-button');
+  assert.strictEqual(lost.problems.length, 1);
+  assert.match(lost.problems[0][1], /retry measurement missing/);
+  assert.strictEqual(lost.retried, true);
+});
+t('hover retry: the second wait is twice the first, capped at 2000 ms, never shorter', () => {
+  assert.strictEqual(K.hoverRetryWait(150), 300);
+  assert.strictEqual(K.hoverRetryWait(450), 900);
+  assert.strictEqual(K.hoverRetryWait(1100), 2000);
+  assert.strictEqual(K.hoverRetryWait(2150), 2150, 'never shorter than the first wait');
+  assert.strictEqual(K.HOVER_RETRY_CAP_MS, 2000);
+});
+
+console.log(`OK verify-kits pure parts: ${n} tests (run titles, selection, sheet, the one bounded hover retry, expectations from resolved markup, rest and hover comparison, shadows, lift, contrast, overflow, PNG; cards: sheet, expectations, comparison, panel static on hover, clip, contrast, overflow, column row, counts, empty run; grounds, panel buttons, the featured card; items: sheet, expectations per state, comparison, count, click, contrast; forms: sheet, expectations from the resolved markup, field/submit/captcha/container comparison, painted fill, contrast, clip, overflow, count; images: the media-radius token sheet, four corners from the resolved markup, radius on the wrapper or the img, clip, overflow, count, empty run; rules and chips: the sheet, expectations from the resolved markup, style/width/colour/radius/frame/fill comparison, contrast on the painted band, count, overflow, empty run; offline sheet through PHP for every kit x language)`);

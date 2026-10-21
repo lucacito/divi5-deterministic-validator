@@ -2223,7 +2223,47 @@ function measureChips(slots) {
   };
 }
 
+// ---- the one bounded hover retry -------------------------------------------------------------------------------------
+/** The longest second wait of the hover retry (ms). */
+const HOVER_RETRY_CAP_MS = 2000;
+
+/** A problem that is about the HOVER state: its detail starts with "hover" (`hover: ...`) or says the hover state was not measured. Rest problems never are. */
+const isHoverProblem = (pr) => Array.isArray(pr) && /^(hover\b|the hover state was not measured)/.test(String(pr[1]));
+
+/** True when a judged first measurement carries a hover problem, i.e. the pointer may simply not have landed or the transition may not have finished. */
+const needsHoverRetry = (problems) => Array.isArray(problems) && problems.some(isHoverProblem);
+
+/** The wait of the retry: twice the first one, capped at HOVER_RETRY_CAP_MS, never shorter than the first. */
+const hoverRetryWait = (first) => Math.max(first, Math.min(HOVER_RETRY_CAP_MS, first * 2));
+
+/**
+ * Decides what a hover measurement finally reports. `first` = the problems judged from the first measurement, `second` = the problems judged
+ * from the one retry (null when no retry was made or it could not be measured). A clean first judgement, or one with only rest problems, is
+ * final and not retried. A hover problem is forgiven ONLY when the retry's judgement has no hover problem; when the retry disagrees too, the
+ * retry's problems are reported with BOTH observations in the text, so a persistent defect (a button that never changes on hover, a wrong hover
+ * colour) always fails. A missing first judgement is a failure (`code`: the hover state was not measured), never a pass.
+ * Returns { problems, retried }.
+ */
+function settleHover(first, second, code = 'hover') {
+  if (!Array.isArray(first)) return { problems: [[code, 'the hover state was not measured']], retried: false };
+  if (!needsHoverRetry(first)) return { problems: first, retried: false };
+  const firstHover = first.filter(isHoverProblem).map((pr) => pr[1]);
+  if (!Array.isArray(second)) {
+    return { problems: first.map((pr) => (isHoverProblem(pr) ? [pr[0], `${pr[1]} (retried once: retry measurement missing)`] : pr)), retried: true };
+  }
+  if (!needsHoverRetry(second)) return { problems: second, retried: true };
+  // Each remaining hover problem names its own first observation (same position when the two runs found the same number, else all of them).
+  const secondHover = second.filter(isHoverProblem).map((pr) => pr[1]);
+  const paired = firstHover.length === secondHover.length;
+  let k = 0;
+  return {
+    problems: second.map((pr) => (isHoverProblem(pr) ? [pr[0], `${pr[1]} (retried once: first ${paired ? firstHover[k++] : firstHover.join('; ')}, second ${pr[1]})`] : pr)),
+    retried: true,
+  };
+}
+
 module.exports = {
+  HOVER_RETRY_CAP_MS, isHoverProblem, needsHoverRetry, hoverRetryWait, settleHover,
   SURFACES, ROLES, SLOTS, sheetMarkup, TITLE_PREFIX, runTitle, parseRunTitle, selectCells, buttonAttrs, expectFromAttrs, missingExpectations, BORDER_TOLERANCE,
   colour, sameColour, parseShadows, translateY, matrix2d, sameTransform, shadowProblems, compareButton, contrastProblems, overflowProblems,
   CONTRAST_LABEL, CONTRAST_SHAPE, decodePng, pixelStats, measureButtons, hex, round2,
