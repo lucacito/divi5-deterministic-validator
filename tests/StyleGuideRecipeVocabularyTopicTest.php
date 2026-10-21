@@ -234,13 +234,16 @@ class StyleGuideRecipeVocabularyTopicTest extends TestCase
             'proof-logo-wall'          => [ '"columnGap":"1px"', '"rowGap":"1px"', '"display":"grid"' ],
             'stats-big-captions'       => [ '"columnGap":"1px"' ],
             'pricing-comparison-table' => [ '"columnGap":"1px"' ],
-            'proof-press-quotes'       => [ '"all":{"width":"0px"', '"top":{"width":"2px"}' ],
+            'proof-press-quotes'       => [ '"all":{"width":"0px"', '"top":{"width":"2px"' ],
             'transition-wave-band'     => [ '"dividers":{"top":{"desktop":{"value":{"style":"wave","height":"80px","color":"{{aied:color:bg}}"}}', '"flip":["horizontal"]' ],
             'transition-overlap-panel' => [ '"sizing":{"desktop":{"value":{"width":"100%","maxWidth":"100%"}}}', '"margin":{"top":"-160px"}' ],
         ] as $recipe => $needles ) {
             $this->assertStringContainsString( '`' . $recipe . '`', $text );
+            // proof-press-quotes' column rules are a kit marker since rules and chips Task 5: the shape the topic teaches is what the
+            // kit writes, so it is read from the served recipe (the default look); every other recipe is read raw.
+            $markup = 'proof-press-quotes' === $recipe ? (string) SectionRecipes::recipe( $recipe ) : (string) SectionRecipes::rawMarkup( $recipe );
             foreach ( $needles as $needle ) {
-                $this->assertStringContainsString( $needle, (string) SectionRecipes::rawMarkup( $recipe ), "$recipe uses $needle" );
+                $this->assertStringContainsString( $needle, $markup, "$recipe uses $needle" );
             }
         }
         $flat = self::flat( $text );

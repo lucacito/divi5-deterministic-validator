@@ -27,9 +27,11 @@
  * Two fill-only surface columns (hero-cta column#0, split-image-text column#0: a `surface` fill and padding, no border,
  * radius or shadow) are deliberately NOT listed: they have no frame for a kit to restyle.
  *
- * `marked` is `card` or `panel` when the block already carries an `"aied":{"kit":"card|panel"}` marker (read from the
- * top-level attributes; any other marker, such as the button roles, gives null). The marker replaces the decoration, so
- * a marked block is still classified by whatever decoration it has left; compare `marked` before and after a migration.
+ * `marked` is `card`, `panel`, `rule`, `rule-strong` or `chip` when the block already carries an
+ * `"aied":{"kit":"card|panel|rule|rule-strong|chip"}` marker (read from the top-level attributes; any other marker, such as
+ * the button roles, gives null). The marker replaces the decoration, so a marked block is still classified by whatever
+ * decoration it has left; compare `marked` before and after a migration. A migrated top rule (a group or a column) is
+ * listed as `MARKED=rule` / `MARKED=rule-strong`, a migrated outline tag as `MARKED=chip`.
  *
  * Anything that fits none of these throws, so a new recipe shape cannot slip through unclassified. An existing
  * `"aied"` marker (the buttons' kit marker) is just another attribute: the classifier looks at module.decoration only.
@@ -51,6 +53,9 @@ final class CardReport
         // on the accent body), 12px corners and 6/12px padding. A surface fill with a radius reads as a card to the rules above.
         'pricing-three-tier' => [ 'divi/group' => [ 10 => true ] ],
     ];
+
+    /** The kit markers the report lists as MARKED: the card roles, the rule roles and the chip role. */
+    private const MARKERS = [ 'card', 'panel', 'rule', 'rule-strong', 'chip' ];
 
     private const FILL_FLAT   = [ 'bg', 'surface', 'inverse' ];
     private const BLOCK_REGEX = '/<!--\s+(\/?)wp:(divi\/[a-z0-9-]+)(?:\s+(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\}))?\s+(\/?)-->/s';
@@ -235,8 +240,8 @@ final class CardReport
     }
 
     /**
-     * The card marker a block already carries: `aied.kit` when it is `card` or `panel`, else null (the button roles
-     * control / control-secondary are not card markers).
+     * The marker a block already carries: `aied.kit` when it is `card`, `panel`, `rule`, `rule-strong` or `chip`, else null
+     * (the button roles control / control-secondary are not reported here).
      *
      * @param array<string,mixed> $attrs
      */
@@ -244,7 +249,7 @@ final class CardReport
     {
         $kit = is_array( $attrs['aied'] ?? null ) ? ( $attrs['aied']['kit'] ?? null ) : null;
 
-        return in_array( $kit, [ 'card', 'panel' ], true ) ? $kit : null;
+        return in_array( $kit, self::MARKERS, true ) ? $kit : null;
     }
 
     /**
@@ -301,7 +306,8 @@ final class CardReport
             $out .= sprintf( "  %s: %d blocks: %s\n", $block, array_sum( $counts ), implode( ', ', $parts ) );
         }
         $marked = array_filter( $rows, static fn ( array $r ): bool => null !== $r['role'] );
-        $out .= sprintf( "  marked (carry an aied card/panel marker): %d blocks\n", count( array_filter( $rows, static fn ( array $r ): bool => null !== $r['marked'] ) ) );
+        $out .= sprintf( "  marked (carry an aied card/panel marker): %d blocks\n", count( array_filter( $rows, static fn ( array $r ): bool => in_array( $r['marked'], [ 'card', 'panel' ], true ) ) ) );
+        $out .= sprintf( "  marked as a rule or a chip (rule, rule-strong, chip): %d blocks\n", count( array_filter( $rows, static fn ( array $r ): bool => in_array( $r['marked'], [ 'rule', 'rule-strong', 'chip' ], true ) ) ) );
         $out .= sprintf( "  card/panel literals a marker replaces: %d blocks, %s B\n", count( $marked ), number_format( array_sum( array_column( $marked, 'bytes' ) ) ) );
 
         return $out;
