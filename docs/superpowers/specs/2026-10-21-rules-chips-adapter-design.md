@@ -144,7 +144,7 @@ Current: default guide 28,975 B (ceiling 29,108), `kit-rules` 4,607 B (bound 10,
 2. **The default guide grows 0 B** (pinned 28,975).
 3. **Kit topics get no rule or chip example**; `appliedSentence()` gains the nouns "rules" and "chips" (at most +40 B per kit
    topic, the largest stays at or below 9,700 B).
-4. `section-recipes.json` must not grow (now 670,983 B; markers replace more decoration than they add; bound 716,800 B).
+4. `section-recipes.json` must not grow (670,981 B at the base; markers replace more decoration than they add; bound 716,800 B).
 
 ### 7. Rulings (made by delegation; the cost if wrong is cheap because each is one entry of a role table)
 
@@ -188,7 +188,7 @@ which topic teaches `divi/divider`; which of `frameStyles()`, `restShadow()`, `c
 
 Built on branch `feat/rules-chips-adapter` (spec 155ff75 and plan 1a37fcc from main c0eed44) in seven tasks; Tasks 4, 5 and 6
 ran in parallel worktrees and were merged back, and Task 3 had one review fix round. NO release, version bump or zip rebuild:
-the tracked root zip is still the published 4.12.0 build; the validator (`src/`, `wp-plugin/validator/`) is untouched; no new
+the tracked root zip is the published 4.13.0 build; the validator (`src/`, `wp-plugin/validator/`) is untouched; no new
 guide topic name, MCP tool, REST route or OpenAPI operation. The spec was approved by delegation, so the Rulings below are the
 calls the owner might have made differently. Numbers are measured, not planned; where this differs from the sections above,
 this Outcome wins (the corrected counts are in "Deviations").
@@ -338,6 +338,9 @@ fill and glyph are always written by the kit (deterministic own-ink rule); the t
   can plant it false.
 
 **Known limits.**
+- The live render gate does not render every branch of the adapter: rules are rendered on the light band, the photo band and (a divider only) the panel; chips on the light band only. A `rule` / `rule-strong` on `surface` or `accent` (except where the narrowed recipe render covers it, e.g. pricing-three-tier's accent ground), a quiet rule or any group/column rule on `panel`, the icon chip on an accent band (fill `surface`, glyph `text`: no recipe uses it) and a tag on any band but light are proven by the pure PHP proofs only (spec section 5 asked for no more; more slots would lengthen the 3-hour run).
+- The default look moved (final review, editorial / quiet-solid): "role by colour" makes 18 one-pixel `text` / `inverse` rules 2px `rule-strong` (faq-two-column 6, values-list 4, before-after-compare 2, pricing-two-plan-highlight 2, hero-image-scrim 1, quote-over-image 1, card-grid-4 2), 3 steps-horizontal dividers go from 2px `border` to a 1px quiet rule, and all 9 icon chips take the control radius (icon-values 5px to 4px; features-carousel-strip's round 999px badges become 4px squares, Ruling 4). Intended by the rulings, listed so the owner sees it.
+- `controlsKitSentence()` prints its two halves from `APPLIED` alone, not from the proven-decision maps (true today; latent if a decision turned false). The "Rules and chips" paragraph does not say that the line style follows the kit's border style nor that a group or column rule zeroes the other three sides; kit-rules has 2 B of headroom under its self-imposed 5,257 B pin (real bound 10,000), so any rewording re-pins on purpose.
 - **The painted double is not measured.** The probe records the computed `border-top-style` and width of a double; the render
   gate checks computed values, not pixels, so a double line is proven to be requested, never seen. The 3px floor of Ruling 2
   is the reason it should paint as a double.
