@@ -16,6 +16,11 @@
  * The image page carries the class names Divi 5.15.1 renders for `divi/image` (`et_pb_module et_pb_image` > `span.et_pb_image_wrap` > `img`, the radius and overflow:hidden on the wrapper and
  * the img inheriting it, ImageModule.php); each image code has its own departure (a wrong or a missing corner, a stray radius on a square kit, a wrapper that does not clip,
  * a rounded picture cut square by a smaller wrapper, a picture sticking out, a module box that is rounded, an image wider than the phone, a missing or doubled image).
+ * The rule and chip pages carry the class names Divi 5.15.1 renders (`et_pb_group` > `et_pb_heading` + `et_pb_divider` whose line is the `::before`, a group or column's
+ * own `border-top`, `et_pb_text` in a tag group, `et_pb_icon` > `span.et-pb-icon`) and a stylesheet generated from the rule and chip expectations (soft-lift and
+ * underline-link under editorial); each rule and chip code has its own departure (a dashed line where the kit says solid, a 1px line where it says 2px, a wrong
+ * colour, a stray side, a faint quiet line, a strong line at 2.5:1, a rounded chip on a 0px kit, a missing tag frame, a filled tag, an icon fill equal to the
+ * band, a glyph equal to its fill, a fill painted over, a slot that is not on the page, a rule or chip wider than the phone).
  * Needs php (the offline sheet) and Playwright (../layoutlab).
  * It cannot prove what Divi itself prints: that is `node scripts/verify-kits.cjs`. */
 const assert = require('assert');
@@ -27,6 +32,7 @@ const { checkCards } = require('./lib/kit-card-run.cjs');
 const { checkItems } = require('./lib/kit-item-run.cjs');
 const { checkForms } = require('./lib/kit-form-run.cjs');
 const { checkMedia } = require('./lib/kit-media-run.cjs');
+const { checkRules, checkChips } = require('./lib/kit-rule-run.cjs');
 const PW = process.env.PLAYWRIGHT_PATH || path.resolve(__dirname, '..', '..', 'layoutlab', 'node_modules', 'playwright');
 const { chromium } = require(PW);
 
@@ -63,6 +69,15 @@ const mediaSheet = K.mediaAttrs(row.markup);
 const mediaExpects = mediaSheet.map((m) => K.expectMediaFromAttrs(m.attrs));
 const squareExpects = K.mediaAttrs(offline('underline-link').markup).map((m) => K.expectMediaFromAttrs(m.attrs));
 const NM = K.MEDIA_SLOTS.length;
+/** Development switch: AIED_RULES_ONLY=1 runs only the rule and chip half (seconds, not minutes). The full run (no variable) is the one that counts. */
+const RULES_ONLY = process.env.AIED_RULES_ONLY === '1';
+const ruleSheet = K.ruleAttrs(row.markup);
+const ruleExpects = ruleSheet.map((r) => K.expectRuleFromAttrs(r.attrs, r.slot.carrier));
+const chipSheet = K.chipAttrs(row.markup);
+const chipExpects = chipSheet.map((c) => K.expectChipFromAttrs(c.attrs, c.slot.carrier));
+const squareChipExpects = K.chipAttrs(offline('underline-link').markup).map((c) => K.expectChipFromAttrs(c.attrs, c.slot.carrier));
+const NR = K.RULE_SLOTS.length;
+const NC = K.CHIP_SLOTS.length;
 const HAIRLINE = '#e3dccf';
 const IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='9'><rect width='16' height='9' fill='%23336699'/></svg>";
 
@@ -223,6 +238,57 @@ function mediaPageHtml({ exps = mediaExpects, extraCss = '', drop = false, dup =
     + `<div class="et-l--post"><div class="et_pb_section"><div class="et_pb_row"><div class="et_pb_column" style="display:block">${drop ? '<p>nothing here</p>' : one() + (dup ? one() : '')}</div></div></div></div>`;
 }
 
+
+/**
+ * The rule page: every RULE_SLOT as Divi nests it, on the bg band and on a dark band, generated from the expectations. A divider is an `.et_pb_divider` inside
+ * a wrapper group whose line is the `::before`; a group rule carries its own `border-top`; the column rule is a `.et_pb_column` of its own row. `drop` leaves
+ * a slot out, `dup` renders a slot's heading twice, `extra` is HTML added to the page.
+ */
+function rulePageHtml({ exps = ruleExpects, extraCss = '', drop = [], dup = [], extra = '' } = {}) {
+  const colourOf = (c) => c;
+  let css = '';
+  const piece = (slot, e) => {
+    const heading = `<div class="et_pb_module et_pb_heading"><div class="et_pb_heading_container"><h3 style="margin:0;color:#1c1a17">${slot.heading}</h3></div></div>`;
+    const line = `${e.top.width}px ${e.top.style} ${colourOf(e.top.color)}`;
+    if (slot.carrier === 'divider') {
+      css += `[data-r="${slot.key}"]{display:block;height:6px;position:relative}[data-r="${slot.key}"]::before{content:"";display:block;position:absolute;left:0;right:0;top:0;border-top:${line}}`;
+      return `<div class="et_pb_module et_pb_group" data-rg="${slot.key}" style="display:block;padding:12px 0">${heading}${dup.includes(slot.key) ? heading : ''}<div class="et_pb_module et_pb_divider" data-r="${slot.key}"></div></div>`;
+    }
+    css += `[data-r="${slot.key}"]{box-sizing:border-box;display:block;padding:16px 0;border-top:${line}}`;
+    const body = `${heading}${dup.includes(slot.key) ? heading : ''}<div class="et_pb_module et_pb_text"><div class="et_pb_text_inner"><p style="margin:0">Placeholder</p></div></div>`;
+    return slot.carrier === 'column'
+      ? `<div class="et_pb_row"><div class="et_pb_column" data-r="${slot.key}">${body}</div></div>`
+      : `<div class="et_pb_module et_pb_group" data-r="${slot.key}">${body}</div>`;
+  };
+  const live = K.RULE_SLOTS.filter((s) => !drop.includes(s.key));
+  const band = (b, bg) => `<div class="et_pb_section" style="background:${bg};padding:24px 0"><div class="et_pb_row"><div class="et_pb_column" style="display:block">${live.filter((s) => s.band === b && s.carrier !== 'column' && !s.panel).map((s) => piece(s, exps[K.RULE_SLOTS.indexOf(s)])).join('')}${live.filter((s) => s.band === b && s.panel).map((s) => `<div style="background:#1c1a17;padding:24px">${piece(s, exps[K.RULE_SLOTS.indexOf(s)])}</div>`).join('')}</div></div>${live.filter((s) => s.band === b && s.carrier === 'column').map((s) => piece(s, exps[K.RULE_SLOTS.indexOf(s)])).join('')}</div>`;
+  const body = `${band('bg', '#faf7f2')}${band('dark', '#26211d')}`; // rendered first: building the pieces fills `css`
+  return `<style>body{margin:0;background:#faf7f2}.et_pb_row{width:90%;margin:0 auto}${css}${extraCss}</style><div class="et-l--post">${body}</div>${extra}`;
+}
+
+/**
+ * The chip page: a tag (an `.et_pb_group` holding an `.et_pb_text`) and an icon chip (an `.et_pb_icon` module box holding `span.et-pb-icon`, under a wrapper
+ * group with its heading), generated from the expectations. `drop` leaves a chip out, `dup` renders it twice.
+ */
+function chipPageHtml({ exps = chipExpects, extraCss = '', drop = [], dup = [], extra = '' } = {}) {
+  let css = '';
+  const piece = (slot, e) => {
+    const radius = e.radius.map((v) => v + 'px').join(' ');
+    if (slot.carrier === 'group') {
+      const fr = ['top', 'right', 'bottom', 'left'].map((k) => `border-${k}:${e.frame.width}px ${e.frame.style} ${e.frame.color};`).join('');
+      css += `[data-c="${slot.key}"]{box-sizing:border-box;display:inline-block;padding:4px 10px;background:none;border-radius:${radius};${fr}}`;
+      const one = `<div class="et_pb_module et_pb_group" data-c="${slot.key}"><div class="et_pb_module et_pb_text"><div class="et_pb_text_inner"><p style="margin:0">${slot.text}</p></div></div></div>`;
+      return one + (dup.includes(slot.key) ? one : '');
+    }
+    css += `[data-c="${slot.key}"]{box-sizing:border-box;display:inline-block;padding:10px;background:${e.fill};border-radius:${radius}}[data-c="${slot.key}"] .et-pb-icon{display:block;width:20px;height:20px;line-height:20px;font-size:16px;color:${e.glyph};background:none}`;
+    const one = `<div class="et_pb_module et_pb_icon" data-c="${slot.key}"><div class="et_pb_icon_wrap"><span class="et-pb-icon">&#9733;</span></div></div>`;
+    return `<div class="et_pb_module et_pb_group" style="display:block;padding:12px 0"><div class="et_pb_module et_pb_heading"><div class="et_pb_heading_container"><h3 style="margin:0">${slot.heading}</h3></div></div>${one}${dup.includes(slot.key) ? one : ''}</div>`;
+  };
+  const live = K.CHIP_SLOTS.filter((s) => !drop.includes(s.key));
+  const body = live.map((s) => piece(s, exps[K.CHIP_SLOTS.indexOf(s)])).join(''); // rendered first: building the pieces fills `css`
+  return `<style>body{margin:0;background:#faf7f2}.et_pb_row{width:90%;margin:0 auto}${css}${extraCss}</style><div class="et-l--post"><div class="et_pb_section"><div class="et_pb_row"><div class="et_pb_column" style="display:block">${body}</div></div></div></div>${extra}`;
+}
+
 (async () => {
   const browser = await chromium.launch();
   const run = async (html, width = 1280, before = null) => {
@@ -235,6 +301,182 @@ function mediaPageHtml({ exps = mediaExpects, extraCss = '', drop = false, dup =
   };
   const codes = (r) => r.problems.map((x) => x[0]);
   try {
+
+    // ---- the rules and the chips: the line as Divi draws it, the painted band, the corners, the frame, the fill and the glyph ----
+    const runRules = async (html, { width = 1280, exps = ruleExpects, before = null } = {}) => {
+      const p = await browser.newPage({ viewport: { width, height: 900 } });
+      await p.setContent(html);
+      if (before) await before(p);
+      const r = await checkRules(p, { width, expects: exps });
+      await p.close();
+      return r;
+    };
+    const runChips = async (html, { width = 1280, exps = chipExpects, before = null } = {}) => {
+      const p = await browser.newPage({ viewport: { width, height: 900 } });
+      await p.setContent(html);
+      if (before) await before(p);
+      const r = await checkChips(p, { width, expects: exps, hairline: HAIRLINE });
+      await p.close();
+      return r;
+    };
+    const rc = (r) => [...new Set(r.problems.map((x) => x[0]))];
+    const rokay = await runRules(rulePageHtml());
+    assert.deepStrictEqual(rokay.problems, [], JSON.stringify(rokay.problems));
+    assert.strictEqual(rokay.rulesChecked, NR);
+    assert.strictEqual(rokay.observations.length, NR);
+    assert.ok(rokay.observations.every((o) => o.band && o.contrast.line > 1), 'the painted band was sampled for every rule: ' + JSON.stringify(rokay.observations.slice(0, 2)));
+    assert.deepStrictEqual(rokay.observations.find((o) => o.key === 'rule-strong-group-bg').got, { borderTopWidth: '2px', borderTopStyle: 'solid', borderTopColor: 'rgb(28, 26, 23)' });
+    for (const w of [900, 400]) { const r = await runRules(rulePageHtml(), { width: w }); assert.deepStrictEqual(r.problems, [], w + ': ' + JSON.stringify(r.problems)); }
+    const DIV = '[data-r="rule-strong-divider-bg"]'; const GRP = '[data-r="rule-strong-group-bg"]';
+    // rule-style: a dashed line where the kit says solid (on a group, on a divider's ::before).
+    const rsGroup = await runRules(rulePageHtml({ extraCss: `${GRP}{border-top-style:dashed}` }));
+    assert.deepStrictEqual(rc(rsGroup), ['rule-style']);
+    assert.match(rsGroup.problems[0][1], /^rule-strong-group-bg rest: top line is dashed, expected solid/);
+    const rsDiv = await runRules(rulePageHtml({ extraCss: `${DIV}::before{border-top-style:dotted}` }));
+    assert.deepStrictEqual(rc(rsDiv), ['rule-style']);
+    assert.match(rsDiv.problems[0][1], /^rule-strong-divider-bg rest: top line is dotted, expected solid/);
+    // rule-width: a 1px line where the kit says 2px, on a group and on the divider's ::before; a stray side.
+    const rwGroup = await runRules(rulePageHtml({ extraCss: `${GRP}{border-top-width:1px}` }));
+    assert.deepStrictEqual(rc(rwGroup), ['rule-width']);
+    assert.match(rwGroup.problems[0][1], /^rule-strong-group-bg rest: top line is 1px, expected 2px/);
+    const rwDiv = await runRules(rulePageHtml({ extraCss: `${DIV}::before{border-top-width:1px}` }));
+    assert.deepStrictEqual(rc(rwDiv), ['rule-width']);
+    const rwSide = await runRules(rulePageHtml({ extraCss: `[data-r="rule-column-bg"]{border-bottom:2px solid #1c1a17}` }));
+    assert.deepStrictEqual(rc(rwSide), ['rule-width']);
+    assert.match(rwSide.problems[0][1], /^rule-column-bg rest: bottom side is 2px, expected 0px/);
+    // rule-colour: a wrong colour, and the alpha that should have been there.
+    const rcCol = await runRules(rulePageHtml({ extraCss: `${DIV}::before{border-top-color:#dc2626}` }));
+    assert.deepStrictEqual(rc(rcCol), ['rule-colour']);
+    assert.match(rcCol.problems[0][1], /^rule-strong-divider-bg rest: top line colour rgb\(220, 38, 38\), expected #1c1a17/);
+    const rcAlpha = await runRules(rulePageHtml({ extraCss: '[data-r="rule-group-dark"]{border-top-color:rgb(251, 246, 236)}' }));
+    assert.deepStrictEqual(rc(rcAlpha), ['rule-colour']);
+    // rule-contrast alone: the page agrees with its (faint) expectations, so only the painted-band rule can object. A quiet line under 1.1:1, a strong line at 2.5:1.
+    const faintQuiet = clone(ruleExpects); faintQuiet[0].top.color = '#f6f3ee';
+    const rcFaint = await runRules(rulePageHtml({ exps: faintQuiet }), { exps: faintQuiet });
+    assert.deepStrictEqual(rc(rcFaint), ['rule-contrast']);
+    assert.match(rcFaint.problems[0][1], /^rule-divider-bg rule line #f6f3ee on the band #faf7f2 is 1\.0[0-9]*:1, needs 1\.1/);
+    const weakStrong = clone(ruleExpects); weakStrong[3].top.color = '#a8a8a8';
+    const rcWeak = await runRules(rulePageHtml({ exps: weakStrong }), { exps: weakStrong });
+    assert.deepStrictEqual(rc(rcWeak), ['rule-contrast']);
+    assert.match(rcWeak.problems[0][1], /^rule-strong-group-bg rule-strong line #a8a8a8 on the band #faf7f2 is 2\.[0-9]+:1, needs 3/);
+    const weakDark = clone(ruleExpects); weakDark[9].top.color = '#3c352f';
+    const rcDark = await runRules(rulePageHtml({ exps: weakDark }), { exps: weakDark });
+    assert.deepStrictEqual(rc(rcDark), ['rule-contrast'], 'the dark band is sampled too: a strong line the colour of the band');
+    assert.match(rcDark.problems[0][1], /^rule-strong-group-dark rule-strong line /);
+    // A fixed bar scrolled over the first rule (the admin bar) must not disturb the painted sample, and is put back.
+    const rBar = await runRules(rulePageHtml({ extraCss: '#bar{position:fixed;top:0;left:0;right:0;height:900px;background:#cc0000;z-index:9;opacity:.999}' }), { before: (page) => page.evaluate(() => { const b = document.createElement('div'); b.id = 'bar'; document.body.appendChild(b); }) });
+    assert.deepStrictEqual(rBar.problems, [], 'a fixed element over the page is hidden for the samples: ' + JSON.stringify(rBar.problems.slice(0, 3)));
+    {
+      const pg = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+      await pg.setContent(rulePageHtml({ extraCss: '#bar{position:fixed;top:0;left:0;right:0;height:900px;background:#cc0000;z-index:9}' }));
+      await pg.evaluate(() => { const b = document.createElement('div'); b.id = 'bar'; document.body.appendChild(b); });
+      await checkRules(pg, { width: 1280, expects: ruleExpects });
+      const left = await pg.evaluate(() => ({ bar: getComputedStyle(document.getElementById('bar')).visibility, hidden: document.querySelectorAll('[data-aied-xv],[data-aied-xf],[data-aied-xt]').length, rules: [...document.querySelectorAll('[data-aied-rule]')].filter((n) => getComputedStyle(n).visibility !== 'visible').length }));
+      assert.deepStrictEqual(left, { bar: 'visible', hidden: 0, rules: 0 }, 'everything hidden for a sample is restored');
+      await pg.close();
+    }
+    // rule: a slot that is not on the page, one on it twice, and the early return that checks nothing else.
+    const rLost = await runRules(rulePageHtml({ drop: ['rule-column-bg'] }));
+    assert.deepStrictEqual(rc(rLost), ['rule']);
+    assert.match(rLost.problems[0][1], /^9 of 10 rules rendered as the sheet says: rule-column-bg is not in the page/);
+    assert.strictEqual(rLost.rulesChecked, 0, 'a page with a rule missing checks nothing else');
+    assert.deepStrictEqual(K.emptyRuleRunProblems({ rulesChecked: rLost.rulesChecked }), ['no rule was checked: the rule selection was empty']);
+    const rTwice = await runRules(rulePageHtml({ dup: ['rule-group-bg'] }));
+    assert.deepStrictEqual(rc(rTwice), ['rule']);
+    assert.match(rTwice.problems[0][1], /rule-group-bg is on the page 2 times, expected 1/);
+    // A divider with no line element under its heading is a missing rule, not a pass.
+    const rNoLine = await runRules(rulePageHtml({ extraCss: '' }).replace('<div class="et_pb_module et_pb_divider" data-r="rule-divider-bg"></div>', ''));
+    assert.deepStrictEqual(rc(rNoLine), ['rule']);
+    assert.match(rNoLine.problems[0][1], /rule-divider-bg is not in the page/);
+    // A null expectation never skips: an expectation with a hole is a finding even though the page is fine.
+    const holes = clone(ruleExpects); holes[1].top.width = null;
+    const rHole = await runRules(rulePageHtml(), { exps: holes });
+    assert.ok(rc(rHole).includes('rule-expectation'), rc(rHole).join());
+    // Overflow: a rule wider than the phone.
+    const rWide = await runRules(rulePageHtml({ extraCss: `${GRP}{width:900px}` }), { width: 400 });
+    assert.ok(rc(rWide).includes('overflow'), 'a rule wider than the phone: ' + rc(rWide).join());
+
+    const cokay = await runChips(chipPageHtml());
+    assert.deepStrictEqual(cokay.problems, [], JSON.stringify(cokay.problems));
+    assert.strictEqual(cokay.chipsChecked, NC);
+    assert.ok(cokay.observations.every((o) => o.band) && cokay.observations.find((o) => o.carrier === 'icon').fill === '#9a3b1f', 'the painted fill of the icon chip and the band were sampled: ' + JSON.stringify(cokay.observations));
+    for (const w of [900, 400]) { const r = await runChips(chipPageHtml(), { width: w }); assert.deepStrictEqual(r.problems, [], w + ': ' + JSON.stringify(r.problems)); }
+    // A 0px kit is checked too (four zeros are an expectation), and passes when the chips are square.
+    assert.deepStrictEqual(squareChipExpects[0].radius, [0, 0, 0, 0]);
+    const csq = await runChips(chipPageHtml({ exps: squareChipExpects }), { exps: squareChipExpects });
+    assert.deepStrictEqual(csq.problems, [], JSON.stringify(csq.problems));
+    assert.strictEqual(csq.chipsChecked, NC, 'a square chip counts as checked');
+    const TAG = '[data-c="chip-tag-bg"]'; const ICON = '[data-c="chip-icon-bg"]';
+    // chip-radius: a rounded chip on a 0px kit, and a square chip on a rounded kit.
+    const crRound = await runChips(chipPageHtml({ exps: squareChipExpects, extraCss: `${TAG},${ICON}{border-radius:12px}` }), { exps: squareChipExpects });
+    assert.deepStrictEqual(rc(crRound), ['chip-radius']);
+    assert.strictEqual(crRound.problems.length, 8, 'four corners of each chip');
+    assert.match(crRound.problems[0][1], /^chip-tag-bg rest: borderTopLeftRadius 12px, expected 0px/);
+    const crSquare = await runChips(chipPageHtml({ extraCss: `${ICON}{border-radius:0}` }));
+    assert.deepStrictEqual(rc(crSquare), ['chip-radius']);
+    // chip-frame: a missing tag frame, a dashed one where the kit says solid, a side of the wrong colour.
+    const cfNone = await runChips(chipPageHtml({ extraCss: `${TAG}{border:0 none}` }));
+    assert.deepStrictEqual(rc(cfNone), ['chip-frame']);
+    assert.match(cfNone.problems[0][1], /^chip-tag-bg rest: border-top width 0px, expected 1px/);
+    const cfDash = await runChips(chipPageHtml({ extraCss: `${TAG}{border-style:dashed}` }));
+    assert.deepStrictEqual(rc(cfDash), ['chip-frame']);
+    assert.match(cfDash.problems[0][1], /border-top style dashed, expected solid/);
+    const cfCol = await runChips(chipPageHtml({ extraCss: `${TAG}{border-left-color:#dc2626}` }));
+    assert.deepStrictEqual(rc(cfCol), ['chip-frame']);
+    // chip-fill: a filled tag, an icon fill equal to the band, a wrong glyph, a fill painted over a matching computed one.
+    const cfFilled = await runChips(chipPageHtml({ extraCss: `${TAG}{background:#9a3b1f}` }));
+    assert.deepStrictEqual(rc(cfFilled), ['chip-fill']);
+    assert.match(cfFilled.problems[0][1], /^chip-tag-bg rest: a tag has no fill/);
+    const cfBand = await runChips(chipPageHtml({ extraCss: `${ICON}{background:#faf7f2}` }));
+    assert.ok(rc(cfBand).includes('chip-fill'), rc(cfBand).join());
+    assert.match(cfBand.problems.find(([c]) => c === 'chip-fill')[1], /^chip-icon-bg rest: fill rgb\(250, 247, 242\), expected #9a3b1f/);
+    const cfGlyph = await runChips(chipPageHtml({ extraCss: `${ICON} .et-pb-icon{color:#000000}` }));
+    assert.deepStrictEqual(rc(cfGlyph), ['chip-fill']);
+    assert.match(cfGlyph.problems[0][1], /^chip-icon-bg rest: glyph colour rgb\(0, 0, 0\), expected #ffffff/);
+    const cfOver = await runChips(chipPageHtml({ extraCss: `${ICON}{position:relative}${ICON}::after{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:#336699;border-radius:inherit}` }));
+    assert.ok(rc(cfOver).includes('chip-fill'), 'a colour painted over the chip: ' + rc(cfOver).join());
+    assert.ok(cfOver.problems.some(([c, d]) => c === 'chip-fill' && /^chip-icon-bg painted fill #336699 differs from the computed rgb\(154, 59, 31\)/.test(d)), JSON.stringify(cfOver.problems));
+    // chip-contrast alone: the page agrees with its (unreadable) expectations. A glyph equal to its fill; an icon fill the colour of the band; a faint strong tag frame.
+    const sameGlyph = clone(chipExpects); sameGlyph[1].glyph = sameGlyph[1].fill;
+    const ccGlyph = await runChips(chipPageHtml({ exps: sameGlyph }), { exps: sameGlyph });
+    assert.deepStrictEqual(rc(ccGlyph), ['chip-contrast']);
+    assert.match(ccGlyph.problems[0][1], /^chip-icon-bg glyph #9a3b1f on the chip fill #9a3b1f is 1:1, needs 3/);
+    const bandIcon = clone(chipExpects); bandIcon[1].fill = '#faf7f2'; bandIcon[1].glyph = '#1c1a17';
+    const ccBand = await runChips(chipPageHtml({ exps: bandIcon }), { exps: bandIcon });
+    assert.deepStrictEqual(rc(ccBand), ['chip-contrast']);
+    assert.match(ccBand.problems[0][1], /^chip-icon-bg the chip fill #faf7f2 is the colour of the band #faf7f2/);
+    const faintTag = clone(chipExpects); faintTag[0].frame.color = '#f1ece2';
+    const ccTag = await runChips(chipPageHtml({ exps: faintTag }), { exps: faintTag });
+    assert.deepStrictEqual(rc(ccTag), ['chip-contrast'], 'a frame that is neither the hairline nor 3:1');
+    assert.match(ccTag.problems[0][1], /^chip-tag-bg frame top #f1ece2 on the band #faf7f2 is 1\.[0-9]+:1, needs 3/);
+    // chip: a chip that is not on the page or on it twice, an icon without its glyph; nothing else is then checked.
+    const cLost = await runChips(chipPageHtml({ drop: ['chip-icon-bg'] }));
+    assert.deepStrictEqual(rc(cLost), ['chip']);
+    assert.match(cLost.problems[0][1], /^1 of 2 chips rendered as the sheet says: chip-icon-bg is not in the page/);
+    assert.strictEqual(cLost.chipsChecked, 0);
+    assert.deepStrictEqual(K.emptyChipRunProblems({ chipsChecked: cLost.chipsChecked }), ['no chip was checked: the chip selection was empty']);
+    const cTwice = await runChips(chipPageHtml({ dup: ['chip-tag-bg'] }));
+    assert.deepStrictEqual(rc(cTwice), ['chip']);
+    assert.match(cTwice.problems[0][1], /chip-tag-bg is on the page 2 times, expected 1/);
+    const cNoGlyph = await runChips(chipPageHtml().replace('<span class="et-pb-icon">&#9733;</span>', ''));
+    assert.deepStrictEqual(rc(cNoGlyph), ['chip']);
+    assert.match(cNoGlyph.problems[0][1], /chip-icon-bg has no glyph/);
+    const cHole = clone(chipExpects); cHole[0].radius = [4, 4, 4];
+    assert.ok(rc(await runChips(chipPageHtml(), { exps: cHole })).includes('chip-expectation'), 'a null corner is a finding, never a skip');
+    const cWide = await runChips(chipPageHtml({ extraCss: `${TAG}{width:900px}` }), { width: 400 });
+    assert.ok(rc(cWide).includes('overflow'), 'a chip wider than the phone: ' + rc(cWide).join());
+    {
+      const pg = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+      await pg.setContent(chipPageHtml({ extraCss: '#bar{position:fixed;top:0;left:0;right:0;height:900px;background:#cc0000;z-index:9}' }));
+      await pg.evaluate(() => { const b = document.createElement('div'); b.id = 'bar'; document.body.appendChild(b); });
+      const r = await checkChips(pg, { width: 1280, expects: chipExpects, hairline: HAIRLINE });
+      assert.deepStrictEqual(r.problems, [], 'a fixed element over the page is hidden for the samples: ' + JSON.stringify(r.problems.slice(0, 3)));
+      const left = await pg.evaluate(() => ({ bar: getComputedStyle(document.getElementById('bar')).visibility, leftovers: document.querySelectorAll('[data-aied-xv],[data-aied-xf],[data-aied-xt],[data-aied-xc]').length, glyph: getComputedStyle(document.querySelector('.et-pb-icon')).visibility, chips: [...document.querySelectorAll('[data-aied-chip]')].filter((n) => getComputedStyle(n).visibility !== 'visible').length }));
+      assert.deepStrictEqual(left, { bar: 'visible', leftovers: 0, glyph: 'visible', chips: 0 }, 'everything hidden for a sample is restored');
+      await pg.close();
+    }
+    if (RULES_ONLY) { console.log('OK kit-rule-run in a real Chromium on synthetic pages (AIED_RULES_ONLY): a matching page passes at 1280, 900 and 400, a 0px chip kit is checked, every rule and chip departure is caught with its code'); return; }
+
     // ---- the image: the corners of the img, its wrapper and the module box, the clip, overflow and the count ----
     const runMedia = async (html, { width = 1280, exps = mediaExpects } = {}) => {
       const p = await browser.newPage({ viewport: { width, height: 900 } });
@@ -640,7 +882,7 @@ function mediaPageHtml({ exps = mediaExpects, extraCss = '', drop = false, dup =
       await pg.close();
     }
 
-    console.log('OK kit-card-run, kit-item-run, kit-form-run and kit-media-run in a real Chromium on synthetic pages: a matching page passes at 1280 and 400 (items: a real click opens a closed item and closes the open one; forms: a real hover on the submit; images: the img and its wrapper read, a square kit checked), every departure is caught (and a fixed bar over a card, an item or a field is not mistaken for one) with its code');
+    console.log('OK kit-card-run, kit-item-run, kit-form-run, kit-media-run and kit-rule-run in a real Chromium on synthetic pages: a matching page passes at 1280 and 400 (items: a real click opens a closed item and closes the open one; forms: a real hover on the submit; images: the img and its wrapper read, a square kit checked), every departure is caught (and a fixed bar over a card, an item or a field is not mistaken for one) with its code');
   } finally {
     await browser.close();
   }

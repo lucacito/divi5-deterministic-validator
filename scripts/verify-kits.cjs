@@ -4,7 +4,7 @@
  * of scripts/lib/kit-checks.cjs: a primary `control` and a secondary `control-secondary` button on each surface: light on a bg section, light
  * on a surface section, an accent band ("on":"accent") and a photo band with the overlay scrim ("on":"dark"); on the same four bands a `card`
  * and a `panel` (divi/group, each with a heading and a paragraph; the bg-band card and one zero-padding "clip" panel also hold an image),
- * plus a row of three `divi/column` cards on the bg band, and one `divi/image` on the bg band whose radius is the token `{{aied:kit:radius-media}}`; resolved in PHP exactly as SectionRecipes::recipe serves a recipe: ImageTokens with
+ * plus a row of three `divi/column` cards on the bg band, and one `divi/image` on the bg band whose radius is the token `{{aied:kit:radius-media}}`, plus 10 rules and 2 chips (see below); resolved in PHP exactly as SectionRecipes::recipe serves a recipe: ImageTokens with
  * the plugin's pack, KitResolver with the kit, RecipeTokens with the language), gates it through LayoutGate::check, saves it as a throwaway
  * DRAFT and opens it with the real Divi in Chromium at 1280, 900 and 400 px.
  *
@@ -96,6 +96,19 @@
  * and an img must not stick out of a non-clipping wrapper); and overflow also covers the picture, its wrapper and the module box (inside the column
  * and the window at 1280, 900 and 400). A cell whose image expectation has a hole stops at the gate before any browser work.
  *
+ * The 10 RULES and 2 CHIPS (scripts/lib/kit-rule-run.cjs, judged by the pure comparisons of kit-checks.cjs): on the bg band and on the photo band a `rule` and a
+ * `rule-strong` divider (a marked `divi/divider` under an unmarked wrapper group's heading) and top-rule group, on the bg band a `rule` column rule (a one-column row)
+ * and a `rule-strong` divider inside an inverted panel (`on:"panel"`); on the bg band a tag (a marked group holding a short text) and an icon chip (a marked
+ * `divi/icon`). Each is found by its unique heading or text and its expectation is read from the RESOLVED block tree, never a table here (a 0px chip kit is four
+ * zeros, which are checked). A divider is measured on its `::before` (`border-top-{width,style,color}`), a group or column on its own `border-top-*` with the other
+ * three sides at 0px, a tag on its group (four corners, four sides, no fill), an icon chip on the `.et_pb_icon` module box (four corners, fill) and the glyph colour on
+ * `span.et-pb-icon`. Codes: rule (a rule missing or on the page twice: nothing else is then checked; a run that checked no rule fails with `FAIL rule:`),
+ * rule-style, rule-width, rule-colour, rule-contrast (the line over the PAINTED band, the rule hidden for the sample: a strong rule >= 3.0, a quiet one >= 1.1); chip
+ * (the same for chips, `FAIL chip:`), chip-radius, chip-frame, chip-fill (a tag has none; an icon's computed and painted fill and its glyph colour are the resolved
+ * ones), chip-contrast (the glyph on the painted fill >= 3.0, the fill not the colour of the band, a tag frame against the painted band >= 3.0 or, for the
+ * language's `border` hairline, 1.1); overflow also covers every rule and chip. A cell whose rule or chip expectation has a hole stops at the gate before any
+ * browser work.
+ *
  * A sheet the gate or the
  * resolver refuses FAILs once as `<kit>/<language>/gate`. Problems in the script's own page handling are `render-error`. A preview that
  * comes back as a 404 or without the page content is retried once with a fresh login.
@@ -105,7 +118,7 @@
  * element, how far the card stands out from its band, whether the flush image corner is cut by the radius, the column row's layout at 900);
  * dist/kit-sheet/<kit>-<language>-<width>.png (the full page, cards included), dist/kit-sheet/observations.json,
  * dist/kit-sheet/card-observations.json (with the button-panel contrast and the featured card's prominence), dist/kit-sheet/item-observations.json (the painted fills
- * and the click of every item), dist/kit-sheet/form-observations.json (the painted fields, the contrast of every form), dist/kit-sheet/media-observations.json (the computed corners of the img, its wrapper and the module box) and dist/kit-sheet/index.html (one row per kit: editorial and glass-dark at 1280 and 400). dist/
+ * and the click of every item), dist/kit-sheet/form-observations.json (the painted fields, the contrast of every form), dist/kit-sheet/media-observations.json (the computed corners of the img, its wrapper and the module box), dist/kit-sheet/rule-observations.json and chip-observations.json (the computed lines and chips, the painted bands and the contrast) and dist/kit-sheet/index.html (one row per kit: editorial and glass-dark at 1280 and 400). dist/
  * is git-ignored; writing the sheet never fails the run.
  *
  * Dev site only (localhost). RUN ONE RUN AT A TIME. Every throwaway page is titled `aied kit <runToken> <kit> <language>`; the run deletes
@@ -154,6 +167,7 @@ const { checkCards, transitionMs } = require('./lib/kit-card-run.cjs');
 const { checkItems } = require('./lib/kit-item-run.cjs');
 const { checkForms } = require('./lib/kit-form-run.cjs');
 const { checkMedia } = require('./lib/kit-media-run.cjs');
+const { checkRules, checkChips } = require('./lib/kit-rule-run.cjs');
 
 const wp = makeWp(ROOT);
 const pages = throwawayPages(wp, K.TITLE_PREFIX, 'kit');
@@ -277,10 +291,14 @@ async function openPreview(ctx, id, state) {
   const itemObservations = [];
   const formObservations = [];
   const mediaObservations = [];
+  const ruleObservations = [];
+  const chipObservations = [];
   let cardsChecked = 0;
   let itemsChecked = 0;
   let formsChecked = 0;
   let mediaChecked = 0;
+  let rulesChecked = 0;
+  let chipsChecked = 0;
   const state = { cookies: null, token: null };
   cleanupOnSignals(run, sweep, pages.runPrefix);
   let cells = [];
@@ -353,6 +371,20 @@ async function openPreview(ctx, id, state) {
         const mediaExpects = mediaBlocks.map((b) => K.expectMediaFromAttrs(b.attrs));
         const mediaMissing = mediaExpects.flatMap((e, i) => K.missingMediaExpectations(e).map((f) => `${mediaBlocks[i].slot.key} ${f}`));
         if (mediaMissing.length) { report(kit, lang, 'gate', [['gate', 'image expectation missing (the radius token did not resolve to four corners): ' + mediaMissing.join(', ')]]); continue; }
+        // The rules (dividers, group and column top rules) and the chips (a tag, an icon chip): found in the resolved sheet by the unique heading or text they sit
+        // with, with complete expectations (a hole is a gate failure, never a skipped check).
+        const ruleBlocks = K.ruleAttrs(page.markup);
+        const ruleAbsent = ruleBlocks.filter((b) => !b.attrs).map((b) => b.slot.key);
+        if (ruleAbsent.length) { report(kit, lang, 'gate', [['gate', 'rules not found in the resolved sheet (by their heading): ' + ruleAbsent.join(', ')]]); continue; }
+        const ruleExpects = ruleBlocks.map((b) => K.expectRuleFromAttrs(b.attrs, b.slot.carrier));
+        const ruleMissing = ruleExpects.flatMap((e, i) => K.missingRuleExpectations(e).map((f) => `${ruleBlocks[i].slot.key} ${f}`));
+        if (ruleMissing.length) { report(kit, lang, 'gate', [['gate', 'rule expectation missing (an adapter attribute path drifted): ' + ruleMissing.slice(0, 6).join(', ') + (ruleMissing.length > 6 ? ` and ${ruleMissing.length - 6} more` : '')]]); continue; }
+        const chipBlocks = K.chipAttrs(page.markup);
+        const chipAbsent = chipBlocks.filter((b) => !b.attrs).map((b) => b.slot.key);
+        if (chipAbsent.length) { report(kit, lang, 'gate', [['gate', 'chips not found in the resolved sheet (by their text or heading): ' + chipAbsent.join(', ')]]); continue; }
+        const chipExpects = chipBlocks.map((b) => K.expectChipFromAttrs(b.attrs, b.slot.carrier));
+        const chipMissing = chipExpects.flatMap((e, i) => K.missingChipExpectations(e).map((f) => `${chipBlocks[i].slot.key} ${f}`));
+        if (chipMissing.length) { report(kit, lang, 'gate', [['gate', 'chip expectation missing (an adapter attribute path drifted): ' + chipMissing.slice(0, 6).join(', ') + (chipMissing.length > 6 ? ` and ${chipMissing.length - 6} more` : '')]]); continue; }
         for (const width of WIDTHS) {
           const ctx = await browser.newContext({ viewport: { width, height: 900 } });
           const problems = [];
@@ -437,6 +469,18 @@ async function openPreview(ctx, id, state) {
               for (const pr of mr.problems) problems.push(pr);
               for (const o of mr.observations) mediaObservations.push({ kit, language: lang, ...o });
             }
+            if (m.hasRoot) {
+              const rr = await checkRules(p, { width, expects: ruleExpects });
+              rulesChecked += rr.rulesChecked;
+              for (const pr of rr.problems) problems.push(pr);
+              for (const o of rr.observations) ruleObservations.push({ kit, language: lang, ...o });
+            }
+            if (m.hasRoot) {
+              const hr = await checkChips(p, { width, expects: chipExpects, hairline: hairlines[lang] });
+              chipsChecked += hr.chipsChecked;
+              for (const pr of hr.problems) problems.push(pr);
+              for (const o of hr.observations) chipObservations.push({ kit, language: lang, ...o });
+            }
             if (consoleErrors.length) problems.push(['console-error', [...new Set(consoleErrors)].slice(0, 3).join(' | ')]);
             await p.close();
           } catch (e) {
@@ -458,11 +502,15 @@ async function openPreview(ctx, id, state) {
     try { fs.writeFileSync(path.join(OUT_DIR, 'item-observations.json'), JSON.stringify(itemObservations, null, 1)); } catch (e) { console.log('WARNING could not write item-observations.json'); }
     try { fs.writeFileSync(path.join(OUT_DIR, 'form-observations.json'), JSON.stringify(formObservations, null, 1)); } catch (e) { console.log('WARNING could not write form-observations.json'); }
     try { fs.writeFileSync(path.join(OUT_DIR, 'media-observations.json'), JSON.stringify(mediaObservations, null, 1)); } catch (e) { console.log('WARNING could not write media-observations.json'); }
+    try { fs.writeFileSync(path.join(OUT_DIR, 'rule-observations.json'), JSON.stringify(ruleObservations, null, 1)); } catch (e) { console.log('WARNING could not write rule-observations.json'); }
+    try { fs.writeFileSync(path.join(OUT_DIR, 'chip-observations.json'), JSON.stringify(chipObservations, null, 1)); } catch (e) { console.log('WARNING could not write chip-observations.json'); }
     printNotes(observations);
     printCardNotes(cardObservations);
     printItemNotes(itemObservations);
     printFormNotes(formObservations);
     printMediaNotes(mediaObservations);
+    printRuleNotes(ruleObservations);
+    printChipNotes(chipObservations);
     writeSheet(status, cells);
   } catch (e) {
     console.log('ERROR script: ' + (e && e.message ? e.message : e));
@@ -478,6 +526,8 @@ async function openPreview(ctx, id, state) {
   for (const why of K.emptyRunProblems({ checked: passes + failures, cardsChecked, itemsChecked })) { failures++; console.log('FAIL ' + why); }
   for (const why of K.emptyFormRunProblems({ formsChecked })) { failures++; console.log('FAIL form: ' + why); }
   for (const why of K.emptyMediaRunProblems({ mediaChecked })) { failures++; console.log('FAIL media: ' + why); }
+  for (const why of K.emptyRuleRunProblems({ rulesChecked })) { failures++; console.log('FAIL rule: ' + why); }
+  for (const why of K.emptyChipRunProblems({ chipsChecked })) { failures++; console.log('FAIL chip: ' + why); }
   console.log(`\n${passes} PASS, ${failures} FAIL (cell/width lines) over ${cells.length} kit/language cell(s)`);
   console.log(failures ? 'FAILED' : 'Every selected kit renders as it says on the real Divi.');
   process.exit(failures ? 1 : 0);
@@ -551,5 +601,26 @@ function printFormNotes(obs) {
 function printMediaNotes(obs) {
   for (const o of obs.filter((x) => x.width === 1280)) {
     console.log(`NOTE media ${o.kit}/${o.language}: expected ${o.expected[0]}px; img ${o.img ? o.img[0] : 'n/a'}, wrapper ${o.wrapper ? o.wrapper[0] : 'none'} (overflow ${o.wrapperOverflow || 'n/a'}), module ${o.module ? o.module[0] : 'none'}; picture ${o.box ? o.box.join('x') : 'n/a'} ${o.loaded ? 'loaded' : 'NOT loaded'}`);
+  }
+}
+
+/** NOTE lines for the rules, one per kit/language at 1280 px: the line each role draws (style and width) and the weakest and strongest contrast against the painted band. */
+function printRuleNotes(obs) {
+  const groups = new Map();
+  for (const o of obs.filter((x) => x.width === 1280)) { const k = o.kit + '/' + o.language; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(o); }
+  const range = (v) => { const n = v.filter((x) => typeof x === 'number'); return n.length ? `${Math.min(...n)}..${Math.max(...n)}` : 'n/a'; };
+  for (const [k, list] of groups) {
+    const look = (role) => [...new Set(list.filter((o) => o.role === role && o.expected).map((o) => o.expected.width + 'px ' + o.expected.style))].join(' / ');
+    console.log(`NOTE rules ${k}: ${list.length} rules; quiet ${look('rule') || 'n/a'}, strong ${look('rule-strong') || 'n/a'}; quiet line vs band ${range(list.filter((o) => o.role === 'rule').map((o) => o.contrast.line))}:1, strong ${range(list.filter((o) => o.role === 'rule-strong').map((o) => o.contrast.line))}:1`);
+  }
+}
+
+/** NOTE lines for the chips, one per kit/language at 1280 px: the corner each chip drew, the tag's frame, the icon's glyph on its painted fill. */
+function printChipNotes(obs) {
+  const groups = new Map();
+  for (const o of obs.filter((x) => x.width === 1280)) { const k = o.kit + '/' + o.language; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(o); }
+  for (const [k, list] of groups) {
+    const tag = list.find((o) => o.carrier === 'group'); const icon = list.find((o) => o.carrier === 'icon');
+    console.log(`NOTE chips ${k}: tag radius ${tag ? tag.radius : 'n/a'} frame ${tag && tag.frame ? tag.frame : 'n/a'} (vs band ${tag && tag.contrast.top !== undefined ? tag.contrast.top : 'n/a'}:1); icon radius ${icon ? icon.radius : 'n/a'}, glyph on fill ${icon && icon.contrast.glyph !== undefined ? icon.contrast.glyph : 'n/a'}:1, fill vs band ${icon && icon.contrast.fillOnBand !== undefined ? icon.contrast.fillOnBand : 'n/a'}:1`);
   }
 }
