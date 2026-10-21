@@ -235,7 +235,8 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( 4301, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules as it was before the image radius pass (no block takes the media radius)' );
         // Image radius pass (Task 1): the Images paragraph replaces the "recorded but unused" clause: +291 B net (plan bound: 4,301 + 400).
         $this->assertSame( 4607, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
-        $this->assertSame( 8439, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter, 8,453 with it; 14 B less since "image radius" left the not-applied sentence)' );
+        // Rules and chips adapter Step 0 (plan 2026-10-21): the catalog's fixed prose was reworded to reclaim headroom BEFORE the applied sentence gains its rules and chips tail: 8,439 -> 8,325 B (50-kit projection 9,923 -> 9,809 B).
+        $this->assertSame( 8325, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter, 8,453 with it, 8,439 at image radius; 8,325 after the Step 0 rewording)' );
     }
 
     public function testTheGroundSentenceNamesTheAdaptersFillsAndFailsClosed(): void

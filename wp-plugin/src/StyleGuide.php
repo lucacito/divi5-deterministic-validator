@@ -180,16 +180,16 @@ final class StyleGuide
         $defaults[] = '- Every other kit: no design language starts with it; ask for it with `style_kit`.';
 
         return "# Style kits: one shape for every control\n\n"
-            . "A style kit is a bundle of decisions applied to a module so that every module of that kind on the page matches: border width, style and sides (a full frame or an underline), corner radius, filled or outline, shadow, hover behaviour (a colour change or a lift), label capitalization, weight and letter spacing, padding. "
-            . "Colour and font are NOT part of a kit: they always come from the page's design language, so one kit looks different in every language and stays readable in all of them.\n\n"
-            . "Every design language has a default kit (named in its brief). `get_section_recipes` takes `style_kit` together with `name` to serve one recipe in another kit; without it the recipe uses the language's own kit.\n\n"
+            . "A style kit is a bundle of decisions applied to a module so that every module of that kind on the page matches: border width, style and sides (a full frame or an underline), corner radius, filled or outline, shadow, hover (a colour change or a lift), label capitalization, weight and letter spacing, padding. "
+            . "Colour and font are not part of a kit: they come from the page's design language, so one kit looks different in every language and stays readable in all of them.\n\n"
+            . "Every design language has a default kit. `get_section_recipes` takes `style_kit` with `name` to serve a recipe in another kit; without it the recipe uses the language's own kit.\n\n"
             . "## The kits\n\n" . $catalog . "\n"
-            . "Each kit in full, with ready-made blocks: topic=style-kit:<id> with any id listed above. What each module takes from a kit: topic=kit-rules.\n\n"
+            . "Each kit in full, with ready-made blocks: topic=style-kit:<id> with any id listed above. What each module takes: topic=kit-rules.\n\n"
             . "## Default kit of each design language\n\n" . implode( "\n", $defaults ) . "\n\n"
             . "## How to choose\n\n"
-            . "- Start from the design language you picked and use its default kit; change kit only when the brief asks for another feel.\n"
-            . "- Match the kit to the language: its corner radius family (tight or soft) and its weight (outline and thin against filled and heavy) should read like the rest of the page.\n"
-            . "- One kit per page. Don't mix kits on one page: a soft filled button next to a tight outline one looks like two designs.\n\n"
+            . "- Start from your design language's default kit; change it only when the brief asks for another feel.\n"
+            . "- Match the kit to the language: its corners (tight or soft) and weight (outline and thin, or filled and heavy) should read like the rest of the page.\n"
+            . "- One kit per page. Don't mix kits: a soft filled button next to a tight outline one looks like two designs.\n\n"
             . "## What is kit-driven today\n\n"
             . self::appliedSentence() . ' ' . self::notAppliedSentence() . ' '
             . "To build one without a recipe, copy the block from the kit's topic and swap its colours for your design language's roles.\n";

@@ -584,7 +584,8 @@ class StyleGuideKitTopicsTest extends TestCase
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide changed only by the new topic name' );
         // Re-pinned deliberately (forms adapter T2): +30 B, the form named in the kit-driven sentence and "Forms, " dropped from the not-applied one.
         // Re-pinned deliberately (image radius pass): -14 B, ", image radius" left the not-applied sentence.
-        $this->assertSame( 8439, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog topic (8,464 before kit-rules, 8,423 before the form adapter, 8,453 after it)' );
+        // Rules and chips adapter Step 0 (plan 2026-10-21): fixed prose reworded to reclaim headroom for the new applied-sentence tail: 8,439 -> 8,325 B.
+        $this->assertSame( 8325, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog topic (8,464 before kit-rules, 8,423 before the form adapter, 8,453 after it, 8,439 at image radius, 8,325 after the Step 0 rewording)' );
     }
 
     /** @return list<array{0:string,1:array<string,mixed>}> block comment text and its decoded attributes, in document order */
