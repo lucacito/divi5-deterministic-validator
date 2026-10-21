@@ -1,6 +1,6 @@
 # Token usage of the AI Editor for Divi 5 (free plugin)
 
-Measured 2026-10-20 by `scripts/measure-tokens.php`. Tokens are ESTIMATED as bytes / 4; the real count depends on the model.
+Measured 2026-10-21 by `scripts/measure-tokens.php`. Tokens are ESTIMATED as bytes / 4; the real count depends on the model.
 
 Checking a layout runs in PHP on your server and costs **0 tokens**. What costs tokens is what the assistant has to read.
 
@@ -39,12 +39,12 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic layout-sizing | get_style_guide with topic "layout-sizing", only when asked for | 9,972 | 2,493 |
 | The style guide, topic typography | get_style_guide with topic "typography", only when asked for | 7,496 | 1,874 |
 | The style guide, topic imagery | get_style_guide with topic "imagery", only when asked for | 6,506 | 1,627 |
-| The style guide, topic controls | get_style_guide with topic "controls", only when asked for | 8,123 | 2,031 |
+| The style guide, topic controls | get_style_guide with topic "controls", only when asked for | 8,331 | 2,083 |
 | The style guide, topic toggles | get_style_guide with topic "toggles", only when asked for | 5,834 | 1,459 |
 | The style guide, topic forms | get_style_guide with topic "forms", only when asked for | 6,474 | 1,619 |
 | The style guide, topic composition | get_style_guide with topic "composition", only when asked for | 8,589 | 2,148 |
-| The style guide, topic style-kits | get_style_guide with topic "style-kits", only when asked for | 8,439 | 2,110 |
-| The style guide, topic kit-rules | get_style_guide with topic "kit-rules", only when asked for | 4,607 | 1,152 |
+| The style guide, topic style-kits | get_style_guide with topic "style-kits", only when asked for | 8,444 | 2,111 |
+| The style guide, topic kit-rules | get_style_guide with topic "kit-rules", only when asked for | 5,255 | 1,314 |
 | The style guide, topic style-kit:quiet-solid | get_style_guide with topic "style-kit:quiet-solid", only when asked for | 8,232 | 2,058 |
 | The style guide, topic style-kit:glass-edge | get_style_guide with topic "style-kit:glass-edge", only when asked for | 8,230 | 2,058 |
 | The style guide, topic style-kit:warm-pill | get_style_guide with topic "style-kit:warm-pill", only when asked for | 8,255 | 2,064 |
@@ -86,7 +86,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic style-kit:pressable | get_style_guide with topic "style-kit:pressable", only when asked for | 9,575 | 2,394 |
 | The style guide, topic style-kit:hairline-halo | get_style_guide with topic "style-kit:hairline-halo", only when asked for | 9,294 | 2,324 |
 | The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 6,258 | 1,565 |
-| The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 3,920 | 980 |
+| The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 3,915 | 979 |
 | A served recipe (hero-cta, default look) | get_section_recipes with name "hero-cta" and no design_language | 3,397 | 850 |
 | A served recipe (hero-cta, glass-dark) | the same recipe with design_language "glass-dark" (tokens filled in; the size is the markup alone) | 3,374 | 844 |
 

@@ -214,7 +214,10 @@ require_once __DIR__ . '/StyleKits.php';
  *   a quiet rule on accent, dark and panel takes the strong colour. `group-top-in-card` (a rule group inside a card) is pinned and
  *   taught (when false) but changes no patch.
  * - Proofs: KitRuleAdapterTest (every leaf a probed PASS path ON its carrier, the width table, the colour table, the planted
- *   unproven branches, the real-layout gate), the contrast proof over every kit x language x band x role (Task 4).
+ *   unproven branches, the real-layout gate), the contrast proof over every kit x language x band x role (4,000 cells, zero
+ *   exceptions, QUIET_RULE_FLOOR 1.1 measured from the shipped library: fixtures/shapes/rule-floor.md), the golden
+ *   tests/golden/kit-rule-patches.json and the 6 distinct rule looks pinned in StyleKitsTest (no pair list). The accent
+ *   dividers, step badges, timeline dots, the [Most popular] badge and the counters are shape decisions and stay literal.
  *
  * Chip table (role `chip` on `divi/group` as a tag and on `divi/icon` as an icon chip; probe fixtures/shapes/kit-chip-vocabulary.md:
  * 20 candidates, every decision PASSED ON its carrier). Bands (CHIP_BANDS): `light` | `surface` | `accent` | `dark`; no `panel`, no
@@ -229,6 +232,8 @@ require_once __DIR__ . '/StyleKits.php';
  *   `icon.advanced.color.desktop.value`; on an `accent` band the button's accent treatment (fill `surface`, glyph `text`), and if
  *   `icon-fill` or `icon-glyph` is not proven the chip is refused on an accent band. A decision that is false writes nothing.
  * - Not probed: any hover on a chip, a chip fill on a tag, the chip's own padding.
+ * - Proofs: KitChipAdapterTest (1,600 contrast cells, zero exceptions), tests/golden/kit-chip-patches.json, the shrink-only
+ *   fixtures/shapes/chip-near-duplicates.txt (46 of 780 kit pairs).
  *
  * Pure and deterministic: no site access.
  */
