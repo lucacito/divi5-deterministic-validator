@@ -92,3 +92,28 @@
 ### Task 4: Docs and live gates (controller)
 
 - [ ] Append the Outcome to the spec: what changed, the byte sizes before/after (`php scripts/measure-tokens.php`, `docs/token-usage.md`), pure test count, live gate numbers, the dogfood re-run on dotted-pill, the findings left for a separate guide pass (Ruling 4), and update the "Rules and chips adapter" paragraph of `CLAUDE.md` (known limits).
+
+
+---
+
+### Task 5: Round 3 wording (the second dogfood round: freehand underlined-label/glass-dark and soft-rounded/organic-warm, and an edit of a glass-edge page)
+
+**Files:**
+- Modify: `wp-plugin/src/StyleGuide.php` (the generated kit-rules text: `ruleChipRules()` / `ruleChipShapes`-style helper, the Reusing section, the Items paragraph), `tests/StyleGuideKitRulesTest.php`
+- Do not modify: `KitAdapters.php`, `KitResolver.php`, data, goldens, recipes, fixtures
+
+**Interfaces:**
+- Consumes: the merged guide polish (kit-rules 7,864 B); `KitAdapters::RULE_BANDS`, `CHIP_BANDS`, `RULE_COLOUR`, `chipPatch()` (the tag frame colour is `RULE_COLOUR['rule'][on]` when the kit's frame role is `border`, else `RULE_COLOUR['rule-strong'][on]`); the probe fact in `fixtures/shapes/kit-rule-vocabulary.md` section "Guide-only fact" (a top edge on a block that already has a frame: keep `styles.all`, write only `styles.top`); shipped recipes for the accordion-item shape and the glyph codes.
+- Produces: reworded served text; `kit-rules` at most 9,000 B (a deliberate raise of the 7,900 B pin, real bound 10,000); default guide exactly 28,975 B; everything else byte-identical.
+
+- [ ] **Step 1: Write the failing tests** (names are the assertions; each conditional clause also gets a planted-false-map test asserting ABSENT):
+  - `testTheTopEdgeClauseSaysHowToRuleABlockThatAlreadyHasAFrame`: the shapes passage says: on a block that already has a frame keep `styles.all` and write only `styles.top` (width, style, colour); the `all` 0px form is for a block without a frame; only while a group or column rule carrier is offered.
+  - `testTheRulesPassageSaysThereIsNoSideEdge`: one sentence: there is no left or right edge, so side-by-side columns are not separated by a vertical rule; use the top edge or a divider line.
+  - `testTheBandsAreDefinedOnce`: one sentence defining `on`: `light` is the language's own page colour (also in a dark language), `surface` its surface band, `accent` the accent band, `dark` a photo or overlay band, `panel` the inside of an inverted card; the sentence names only bands in `KitAdapters::RULE_BANDS` / `CHIP_BANDS`.
+  - `testTheTagFrameColourAndTheChipSizeAreStated`: the tag clause gives the frame colour (the quiet hairline colour for a kit whose border colour is `same` or `border`, the strong ink otherwise, per `chipPatch()`; check against `chipPatch()` for several kits and bands) and the icon-chip clause says its size is the glyph size (`icon.advanced.size.desktop.value`) plus the module padding (`module.decoration.spacing.desktop.value.padding`), the glyph box being yours to size.
+  - `testTheAccordionItemShapeIsTaught`: the Items paragraph (only while the accordion answers an item role) gives the item shape: `title.innerContent.desktop.value`, `content.innerContent.desktop.value` and `module.advanced.open.desktop.value` "on" for the open item, as the shipped recipes write it (verify against faq-accordion's markup).
+  - `testTheGlyphCodesAreTheOnesTheShippedRecipesRender`: the icon-chip clause lists glyph codes, each present in the shipped recipes' `divi/icon` blocks with type `fa` weight `900` (derive the allowed set from `section-recipes.json`; a planted code outside the set fails); at most 12 codes with their usual names only where certain (f00c check, f00d close, f005 star, f017 clock, f0e7 bolt, f201 chart, f3c5 pin, f0e0 envelope, f095 phone, f013 gear, f10d quote).
+  - `testTheBudgetsOfRound3`: default guide exactly 28,975; `kit-rules <= 9000` (comment: deliberate raise, real bound 10,000); controls (8,331), forms (6,474), composition (8,706), catalog (8,444), the 40 kit topics (largest 9,599) and `topicParameterDescription()` (258) unchanged; no served topic contains `aied`.
+- [ ] **Step 2: Run** `php -d memory_limit=-1 vendor/bin/phpunit --filter 'StyleGuide'`; expect the new tests FAIL.
+- [ ] **Step 3: Implement** the wording (terse; each clause gated like the existing ones; if `kit-rules` would pass 9,000 B drop the glyph-code clause first and say so in the report).
+- [ ] **Step 4: Run** the focused tests, the free suite and the Pro suite; commit.
