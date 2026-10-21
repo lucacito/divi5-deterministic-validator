@@ -748,6 +748,42 @@ function chipPageHtml({ exps = chipExpects, extraCss = '', drop = [], dup = [], 
       assert.ok(unreadable.problems.some(([c, d]) => c === 'panel-button' && /^panel-buttons-bg:0 .*label/.test(d)), 'a label that is unreadable on the inverted panel: ' + JSON.stringify(unreadable.problems));
       const hoverColours = await run(pageHtml({ extraCss: '[data-kb="panel-buttons-surface:1"]:hover{background:#c00000}' }));
       assert.ok(hoverColours.problems.some(([c, d]) => c === 'panel-button' && /hover: background-color/.test(d)), 'hover colours that are not the resolved ones: ' + JSON.stringify(hoverColours.problems));
+      // The one bounded hover retry (a timing miss must not fail a cell, a persistent defect must). lateHover moves the page's own :hover rule
+      // of one element into a script that applies the same declarations 800 ms after the pointer enters, while a 400 ms opacity transition makes
+      // the runner wait 550 ms the first time and 1100 ms the second: the first measurement misses, the retry lands.
+      const lateHover = (attr, key, ms) => (page) => page.evaluate(([a, k, d]) => {
+        const sel = `[${a}="${k}"]:hover`; const decl = [];
+        for (const sheet of document.styleSheets) for (let i = sheet.cssRules.length - 1; i >= 0; i--) {
+          const r = sheet.cssRules[i];
+          if (r.selectorText === sel) { for (const prop of r.style) decl.push([prop, r.style.getPropertyValue(prop)]); sheet.deleteRule(i); }
+        }
+        if (!decl.length) throw new Error('no :hover rule for ' + sel);
+        const el = document.querySelector(`[${a}="${k}"]`); let timer = null;
+        el.addEventListener('mouseenter', () => { clearTimeout(timer); timer = setTimeout(() => decl.forEach(([pr, v]) => el.style.setProperty(pr, v)), d); });
+        el.addEventListener('mouseleave', () => { clearTimeout(timer); decl.forEach(([pr]) => el.style.removeProperty(pr)); });
+      }, [attr, key, ms]);
+      const OPACITY = (attr, key) => `[${attr}="${key}"]{transition:opacity 400ms}`;
+      const lateButton = await run(pageHtml({ extraCss: OPACITY('data-kb', 'panel-buttons-surface:1') }), 1280, lateHover('data-kb', 'panel-buttons-surface:1', 800));
+      assert.deepStrictEqual(lateButton.problems, [], 'a panel button whose hover lands after the first wait passes after the retry: ' + JSON.stringify(lateButton.problems));
+      const lateCard = await run(pageHtml({ extraCss: OPACITY('data-k', 'card-bg') }), 1280, lateHover('data-k', 'card-bg', 800));
+      assert.deepStrictEqual(lateCard.problems, [], 'a card whose hover lands after the first wait passes after the retry: ' + JSON.stringify(lateCard.problems));
+      // A hover that never lands still fails, with the same code and both observations in the text.
+      const neverButton = await run(pageHtml({ extraCss: OPACITY('data-kb', 'panel-buttons-surface:1') }), 1280, lateHover('data-kb', 'panel-buttons-surface:1', 60000));
+      assert.ok(neverButton.problems.length > 0 && neverButton.problems.every(([c]) => c === 'panel-button' || c === 'contrast' || c === 'lift' || c === 'shadow'), 'a button that never changes on hover: ' + JSON.stringify(neverButton.problems));
+      assert.ok(neverButton.problems.some(([c, d]) => /^panel-buttons-surface:1 hover: .*\(retried once: first hover: .*, second hover: .*\)$/.test(d)), 'both attempts are named: ' + JSON.stringify(neverButton.problems));
+      const neverCard = await run(pageHtml({ extraCss: OPACITY('data-k', 'card-bg') }), 1280, lateHover('data-k', 'card-bg', 60000));
+      assert.ok(neverCard.problems.some(([c, d]) => c === 'card-hover' && /^card-bg hover: translateY .*\(retried once: first hover: translateY .*, second hover: translateY /.test(d)), 'a card that never lifts: ' + JSON.stringify(neverCard.problems));
+      // An overflow that shows only on the FIRST (missed) hover attempt is not hidden by a clean retry: the comparison is forgiven, the overflow is reported once.
+      const firstOnlyOverflow = await run(pageHtml({ extraCss: OPACITY('data-k', 'card-bg') }), 1280, async (page) => {
+        await lateHover('data-k', 'card-bg', 800)(page);
+        await page.evaluate(() => { const el = document.querySelector('[data-k="card-bg"]'); let used = false; el.addEventListener('mouseenter', () => { if (!used) { used = true; el.style.marginLeft = '-60px'; } }); el.addEventListener('mouseleave', () => { el.style.marginLeft = ''; }); });
+      });
+      const overflows = firstOnlyOverflow.problems.filter(([c]) => c === 'overflow');
+      assert.strictEqual(overflows.length, 1, 'the first attempt\'s overflow is reported once: ' + JSON.stringify(firstOnlyOverflow.problems));
+      assert.match(overflows[0][1], /^card-bg hover: card .* outside its container/);
+      assert.strictEqual(firstOnlyOverflow.problems.length, 1, 'the hover comparison itself is forgiven by the retry: ' + JSON.stringify(firstOnlyOverflow.problems));
+      // A wrong hover colour (the page's own :hover rule, unlike the removed ones above) fails the same way, retried once.
+      assert.ok(hoverColours.problems.some(([c, d]) => c === 'panel-button' && /hover: background-color .*\(retried once: first hover: .*, second hover: /.test(d)), 'a wrong hover colour names both attempts: ' + JSON.stringify(hoverColours.problems));
       const invisibleBorder = await run(pageHtml({ extraCss: '[data-kb="panel-buttons-bg:1"]{border-width:2px;border-color:#1c1a17}' }));
       assert.ok(invisibleBorder.problems.some(([c, d]) => c === 'panel-button' && /^panel-buttons-bg:1 rest: border-top .* is 1:1, needs 3/.test(d)), 'a transparent button whose drawn border is the panel colour: ' + JSON.stringify(invisibleBorder.problems));
       const flatFeatured = await run(pageHtml({ extraCss: '[data-k="column-2"]{background:#ffffff}' }));

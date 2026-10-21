@@ -20,6 +20,33 @@ function transitionMs(st) {
 
 const slotArgs = () => K.CARD_SLOTS.map((s) => ({ key: s.key, heading: s.heading, carrier: s.carrier }));
 
+const firstLine = (e) => (e && e.message ? e.message : String(e)).split('\n')[0];
+
+/**
+ * ONE hover measurement with ONE bounded retry (a pointer that did not land or a transition that had not finished is a timing miss, a real
+ * defect is not). `hoverOnce(wait)` hovers the element with the real pointer, waits `wait` ms and returns the measurement (it may throw);
+ * `judge(measurement|null)` returns the problem list for it. The pointer is parked off the element after every attempt. When the first
+ * judgement carries a hover problem, the pointer has left the element, hovers it again, waits K.hoverRetryWait(wait) and judges again; K.settleHover
+ * reports a problem only if the second judgement disagrees too, and then names both observations. Rest-state problems are never retried.
+ * `extras(measurement)` = the non-comparison problems of a hover measurement (overflow): those of BOTH attempts are reported, de-duplicated, so an
+ * overflow seen only on the first attempt is not hidden by a clean retry.
+ * Returns { measurement (the last attempt's), problems, extras, error (the last attempt's hover failure message, or null), retried }.
+ */
+async function hoverJudged(p, { width, wait, hoverOnce, judge, extras = () => [], code }) {
+  const attempt = async (ms) => {
+    let measurement = null; let error = null;
+    try { measurement = await hoverOnce(ms); } catch (e) { error = firstLine(e); } finally {
+      await p.mouse.move(Math.max(0, width - 2), 450); // parked at the right edge: (0,0) would open the admin bar's menu
+      await p.waitForTimeout(ms);
+    }
+    return { measurement, error, problems: judge(measurement), extras: measurement ? extras(measurement) : [] };
+  };
+  const first = await attempt(wait);
+  if (!K.needsHoverRetry(first.problems)) return { measurement: first.measurement, problems: first.problems, extras: first.extras, error: first.error, retried: false };
+  const second = await attempt(K.hoverRetryWait(wait));
+  const settled = K.settleHoverRun(first, second, code);
+  return { measurement: second.measurement, problems: settled.problems, extras: settled.extras, error: second.error, retried: true };
+}
 /**
  * @param {import('playwright').Page} p the opened sheet page
  * @param {{ width:number, expects:Array<object>, buttonExpects:Array<Array<object>>, hairline:?string }} o expects = K.expectCardFromAttrs of
@@ -82,26 +109,29 @@ async function checkCards(p, { width, expects, buttonExpects, hairline }) {
     const exp = expects[i];
     const c = rest.cards[i];
     const wait = Math.min(2000, transitionMs(c.el)) + 150;
-    let hovAll = null; let hov = null;
-    try {
-      await p.locator(`[data-aied-card="${slot.key}"]`).first().hover({ timeout: 8000 });
-      await p.waitForTimeout(wait);
-      hovAll = await p.evaluate(K.measureCards, arg);
-      hov = hovAll.cards[i];
-    } catch (e) {
-      problems.push(['card-hover', `${slot.key} could not be hovered: ${(e && e.message ? e.message : String(e)).split('\n')[0]}`]);
-    } finally {
-      await p.mouse.move(Math.max(0, width - 2), 450); // parked at the right edge: (0,0) would open the admin bar's menu
-      await p.waitForTimeout(wait);
-    }
-    const cmp = K.compareCard(exp, slot.role, { rest: { el: c.el }, hover: hov && hov.found ? { el: hov.el } : null }, slot.ground);
+    const judgeCard = (all) => {
+      const h = all ? all.cards[i] : null;
+      return K.compareCard(exp, slot.role, { rest: { el: c.el }, hover: h && h.found ? { el: h.el } : null }, slot.ground).problems;
+    };
+    const hoveredCard = await hoverJudged(p, {
+      width, wait, code: 'card-hover', judge: judgeCard,
+      extras: (all) => (all.cards[i] && all.cards[i].found ? K.cardOverflowProblems(all.cards[i], 'hover', all) : []),
+      hoverOnce: async (ms) => {
+        await p.locator(`[data-aied-card="${slot.key}"]`).first().hover({ timeout: 8000 });
+        await p.waitForTimeout(ms);
+        return p.evaluate(K.measureCards, arg);
+      },
+    });
+    const hovAll = hoveredCard.measurement; const hov = hovAll ? hovAll.cards[i] : null;
+    if (hoveredCard.error) problems.push(['card-hover', `${slot.key} could not be hovered: ${hoveredCard.error}`]);
+    const cmp = { problems: hoveredCard.problems };
     const fill = fills[i];
     const contrast = K.cardContrastProblems(c, fill, hairline, slot.ground);
     // A ground is judged against the fill the RESOLVED markup says (ground-fill); a plain card against its own computed fill (card-fill).
     const painted = slot.ground ? K.groundFillProblems(exp, fill) : K.paintedFillProblems(c.el, fill);
     const clip = K.cardClipProblems(slot, exp, c);
     // The page-wide scrollWidth finding is the same for every card: report it once (with the first card), not once per card.
-    const ov = [...K.cardOverflowProblems(c, 'rest', rest), ...(hov && hov.found ? K.cardOverflowProblems(hov, 'hover', hovAll) : [])].filter(([, d]) => i === 0 || !/scrollWidth/.test(d));
+    const ov = [...K.cardOverflowProblems(c, 'rest', rest), ...hoveredCard.extras].filter(([, d]) => i === 0 || !/scrollWidth/.test(d));
     for (const [code, detail] of [...cmp.problems, ...contrast.problems, ...painted, ...clip.problems, ...ov]) problems.push([code, `${slot.key} ${detail}`]);
 
     // The kit buttons inside the card (a button panel): each hovered with the real pointer, judged on the painted panel.
@@ -114,20 +144,24 @@ async function checkCards(p, { width, expects, buttonExpects, hairline }) {
         for (let j = 0; j < c.buttons.length; j++) {
           const b = c.buttons[j];
           const bw = Math.min(2000, Math.max(transitionMs(b.el), transitionMs(b.wrap))) + 150;
-          let hb = null; let hAll = null;
-          try {
-            await p.locator(`[data-aied-pb="${slot.key}:${j}"]`).first().hover({ timeout: 8000 });
-            await p.waitForTimeout(bw);
-            hAll = await p.evaluate(K.measureCards, arg);
-            hb = hAll.cards[i].found ? hAll.cards[i].buttons[j] : null;
-          } catch (e) {
-            problems.push(['panel-button', `${slot.key}:${j} could not be hovered: ${(e && e.message ? e.message : String(e)).split('\n')[0]}`]);
-          } finally {
-            await p.mouse.move(Math.max(0, width - 2), 450);
-            await p.waitForTimeout(bw);
-          }
-          const res = K.panelButtonProblems(bx[j], { rest: { el: b.el, wrap: b.wrap }, hover: hb ? { el: hb.el, wrap: hb.wrap } : null }, fill);
-          const bov = [...K.overflowProblems(b, 'rest', rest), ...(hb ? K.overflowProblems(hb, 'hover', hAll) : [])].filter(([, d]) => !/scrollWidth/.test(d));
+          const judgeButton = (all) => {
+            const hb0 = all && all.cards[i].found ? all.cards[i].buttons[j] : null;
+            return K.panelButtonProblems(bx[j], { rest: { el: b.el, wrap: b.wrap }, hover: hb0 ? { el: hb0.el, wrap: hb0.wrap } : null }, fill);
+          };
+          const hoveredButton = await hoverJudged(p, {
+            width, wait: bw, code: 'panel-button',
+            extras: (all) => (all.cards[i].found && all.cards[i].buttons[j] ? K.overflowProblems(all.cards[i].buttons[j], 'hover', all) : []),
+            judge: (all) => judgeButton(all).problems,
+            hoverOnce: async (ms) => {
+              await p.locator(`[data-aied-pb="${slot.key}:${j}"]`).first().hover({ timeout: 8000 });
+              await p.waitForTimeout(ms);
+              return p.evaluate(K.measureCards, arg);
+            },
+          });
+          const hAll = hoveredButton.measurement;
+          if (hoveredButton.error) problems.push(['panel-button', `${slot.key}:${j} could not be hovered: ${hoveredButton.error}`]);
+          const res = { problems: hoveredButton.problems, info: judgeButton(hAll).info };
+          const bov = [...K.overflowProblems(b, 'rest', rest), ...hoveredButton.extras].filter(([, d]) => !/scrollWidth/.test(d));
           for (const [code, detail] of [...res.problems, ...bov]) problems.push([code, `${slot.key}:${j} ${detail}`]);
           buttonInfo.push({ index: j, contrast: res.info });
         }
