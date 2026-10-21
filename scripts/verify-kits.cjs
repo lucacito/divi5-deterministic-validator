@@ -4,7 +4,7 @@
  * of scripts/lib/kit-checks.cjs: a primary `control` and a secondary `control-secondary` button on each surface: light on a bg section, light
  * on a surface section, an accent band ("on":"accent") and a photo band with the overlay scrim ("on":"dark"); on the same four bands a `card`
  * and a `panel` (divi/group, each with a heading and a paragraph; the bg-band card and one zero-padding "clip" panel also hold an image),
- * plus a row of three `divi/column` cards on the bg band, and one `divi/image` on the bg band whose radius is the token `{{aied:kit:radius-media}}`, plus 10 rules and 2 chips (see below); resolved in PHP exactly as SectionRecipes::recipe serves a recipe: ImageTokens with
+ * plus a row of three `divi/column` cards on the bg band, and one `divi/image` on the bg band whose radius is the token `{{aied:kit:radius-media}}`, plus 16 rules and 5 chips (see below); resolved in PHP exactly as SectionRecipes::recipe serves a recipe: ImageTokens with
  * the plugin's pack, KitResolver with the kit, RecipeTokens with the language), gates it through LayoutGate::check, saves it as a throwaway
  * DRAFT and opens it with the real Divi in Chromium at 1280, 900 and 400 px.
  *
@@ -96,17 +96,20 @@
  * and an img must not stick out of a non-clipping wrapper); and overflow also covers the picture, its wrapper and the module box (inside the column
  * and the window at 1280, 900 and 400). A cell whose image expectation has a hole stops at the gate before any browser work.
  *
- * The 10 RULES and 2 CHIPS (scripts/lib/kit-rule-run.cjs, judged by the pure comparisons of kit-checks.cjs): on the bg band and on the photo band a `rule` and a
+ * The 16 RULES and 5 CHIPS (scripts/lib/kit-rule-run.cjs, judged by the pure comparisons of kit-checks.cjs): on the bg band and on the photo band a `rule` and a
  * `rule-strong` divider (a marked `divi/divider` under an unmarked wrapper group's heading) and top-rule group, on the bg band a `rule` column rule (a one-column row)
- * and a `rule-strong` divider inside an inverted panel (`on:"panel"`); on the bg band a tag (a marked group holding a short text) and an icon chip (a marked
- * `divi/icon`). Each is found by its unique heading or text and its expectation is read from the RESOLVED block tree, never a table here (a 0px chip kit is four
+ * and a `rule-strong` divider inside an inverted panel (`on:"panel"`); since the guide polish also a `rule` and a `rule-strong` divider on the surface band
+ * (`on:"surface"`) and on the accent band (`on:"accent"`: accent-text at 40% / accent-text) and a `rule` and a `rule-strong` top-rule GROUP inside the inverted
+ * panel (`on:"panel"`: bg at 40% / bg; the marked group is the innermost group that holds its heading); on the bg band a tag (a marked group holding a short text) and
+ * an icon chip (a marked `divi/icon`), and since the guide polish a tag on the surface band, a tag on the photo band (`on:"dark"`, quiet frame = the 40% inverse) and an
+ * icon chip on the accent band (`on:"accent"`: fill `surface`, glyph `text`). Each is found by its unique heading or text and its expectation is read from the RESOLVED block tree, never a table here (a 0px chip kit is four
  * zeros, which are checked). A divider is measured on its `::before` (`border-top-{width,style,color}`), a group or column on its own `border-top-*` with the other
  * three sides at 0px, a tag on its group (four corners, four sides, no fill), an icon chip on the `.et_pb_icon` module box (four corners, fill) and the glyph colour on
  * `span.et-pb-icon`. Codes: rule (a rule missing or on the page twice: nothing else is then checked; a run that checked no rule fails with `FAIL rule:`),
  * rule-style, rule-width, rule-colour, rule-contrast (the line over the PAINTED band, the rule hidden for the sample: a strong rule >= 3.0, a quiet one >= 1.1); chip
  * (the same for chips, `FAIL chip:`), chip-radius, chip-frame, chip-fill (a tag has none; an icon's computed and painted fill and its glyph colour are the resolved
  * ones), chip-contrast (the glyph on the painted fill >= 3.0, the fill not the colour of the band, a tag frame against the painted band >= 3.0 or, for the
- * language's `border` hairline, 1.1); overflow also covers every rule and chip. A cell whose rule or chip expectation has a hole stops at the gate before any
+ * language's `border` hairline or any alpha frame colour, 1.1: the PHP proof's isQuiet); overflow also covers every rule and chip. A cell whose rule or chip expectation has a hole stops at the gate before any
  * browser work.
  *
  * A sheet the gate or the
@@ -612,6 +615,12 @@ function printRuleNotes(obs) {
   for (const [k, list] of groups) {
     const look = (role) => [...new Set(list.filter((o) => o.role === role && o.expected).map((o) => o.expected.width + 'px ' + o.expected.style))].join(' / ');
     console.log(`NOTE rules ${k}: ${list.length} rules; quiet ${look('rule') || 'n/a'}, strong ${look('rule-strong') || 'n/a'}; quiet line vs band ${range(list.filter((o) => o.role === 'rule').map((o) => o.contrast.line))}:1, strong ${range(list.filter((o) => o.role === 'rule-strong').map((o) => o.contrast.line))}:1`);
+    // The bands the first gate never rendered, one segment each: the weakest quiet and strong line on that band.
+    const byBand = ['surface', 'accent', 'panel'].map((on) => {
+      const here = list.filter((o) => o.on === on);
+      return here.length ? `${on} quiet ${range(here.filter((o) => o.role === 'rule').map((o) => o.contrast.line))}:1 strong ${range(here.filter((o) => o.role === 'rule-strong').map((o) => o.contrast.line))}:1` : null;
+    }).filter(Boolean);
+    if (byBand.length) console.log(`NOTE rules ${k}: ${byBand.join('; ')}`);
   }
 }
 
@@ -622,5 +631,9 @@ function printChipNotes(obs) {
   for (const [k, list] of groups) {
     const tag = list.find((o) => o.carrier === 'group'); const icon = list.find((o) => o.carrier === 'icon');
     console.log(`NOTE chips ${k}: tag radius ${tag ? tag.radius : 'n/a'} frame ${tag && tag.frame ? tag.frame : 'n/a'} (vs band ${tag && tag.contrast.top !== undefined ? tag.contrast.top : 'n/a'}:1); icon radius ${icon ? icon.radius : 'n/a'}, glyph on fill ${icon && icon.contrast.glyph !== undefined ? icon.contrast.glyph : 'n/a'}:1, fill vs band ${icon && icon.contrast.fillOnBand !== undefined ? icon.contrast.fillOnBand : 'n/a'}:1`);
+    // The chips the first gate never rendered: a tag on the surface and photo bands, an icon chip on the accent band.
+    const seg = (key, text) => { const o = list.find((x) => x.key === key); return o ? text(o) : `${key} n/a`; };
+    const tagSeg = (label) => (o) => `${label} tag frame ${o.frame || 'n/a'} (vs band ${o.contrast.top !== undefined ? o.contrast.top : 'n/a'}:1)`;
+    console.log(`NOTE chips ${k}: ${seg('chip-tag-surface', tagSeg('surface'))}; ${seg('chip-tag-dark', tagSeg('dark'))}; ${seg('chip-icon-accent', (o) => `accent icon radius ${o.radius}, glyph on fill ${o.contrast.glyph !== undefined ? o.contrast.glyph : 'n/a'}:1, fill vs band ${o.contrast.fillOnBand !== undefined ? o.contrast.fillOnBand : 'n/a'}:1`)}`);
   }
 }

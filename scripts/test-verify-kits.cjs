@@ -1472,25 +1472,37 @@ const qg = rexp(RROWS.quiet, 'rule-group-bg'); const sg = rexp(RROWS.quiet, 'rul
 const qc = rexp(RROWS.quiet, 'rule-column-bg'); const qdark = rexp(RROWS.quiet, 'rule-divider-dark');
 const dashedG = rexp(RROWS.dashed, 'rule-strong-group-bg'); const dblD = rexp(RROWS.dbl, 'rule-divider-bg');
 
-t('the sheet carries 10 rule blocks (a divider and a top-rule group of each role on the bg and photo bands, a column rule, a divider in an inverted panel) and 2 chips, each found again by a unique heading or text', () => {
+t('the sheet carries 16 rule blocks (the old 10 plus a divider of each role on the surface and accent bands and a top-rule group of each role in an inverted panel) and 5 chips (the old 2 plus a tag on the surface and photo bands and an icon chip on the accent band), each found again by a unique heading or text', () => {
   const m = K.sheetMarkup();
-  assert.deepStrictEqual(K.RULE_SLOTS.map((s) => s.key), ['rule-divider-bg', 'rule-group-bg', 'rule-strong-divider-bg', 'rule-strong-group-bg', 'rule-column-bg', 'rule-strong-divider-panel-bg', 'rule-divider-dark', 'rule-group-dark', 'rule-strong-divider-dark', 'rule-strong-group-dark']);
-  assert.deepStrictEqual(K.RULE_SLOTS.map((s) => [s.role, s.carrier, s.on]), [['rule', 'divider', 'light'], ['rule', 'group', 'light'], ['rule-strong', 'divider', 'light'], ['rule-strong', 'group', 'light'], ['rule', 'column', 'light'], ['rule-strong', 'divider', 'panel'], ['rule', 'divider', 'dark'], ['rule', 'group', 'dark'], ['rule-strong', 'divider', 'dark'], ['rule-strong', 'group', 'dark']]);
+  const OLD_RULES = ['rule-divider-bg', 'rule-group-bg', 'rule-strong-divider-bg', 'rule-strong-group-bg', 'rule-column-bg', 'rule-strong-divider-panel-bg', 'rule-divider-dark', 'rule-group-dark', 'rule-strong-divider-dark', 'rule-strong-group-dark'];
+  const NEW_RULES = ['rule-divider-surface', 'rule-strong-divider-surface', 'rule-divider-accent', 'rule-strong-divider-accent', 'rule-group-panel-bg', 'rule-strong-group-panel-bg'];
+  assert.deepStrictEqual(K.RULE_SLOTS.map((s) => s.key), [...OLD_RULES, ...NEW_RULES], 'the old slots keep their keys and order; the new ones follow');
+  assert.deepStrictEqual(K.RULE_SLOTS.map((s) => [s.role, s.carrier, s.on]), [['rule', 'divider', 'light'], ['rule', 'group', 'light'], ['rule-strong', 'divider', 'light'], ['rule-strong', 'group', 'light'], ['rule', 'column', 'light'], ['rule-strong', 'divider', 'panel'], ['rule', 'divider', 'dark'], ['rule', 'group', 'dark'], ['rule-strong', 'divider', 'dark'], ['rule-strong', 'group', 'dark'],
+    ['rule', 'divider', 'surface'], ['rule-strong', 'divider', 'surface'], ['rule', 'divider', 'accent'], ['rule-strong', 'divider', 'accent'], ['rule', 'group', 'panel'], ['rule-strong', 'group', 'panel']]);
   assert.strictEqual(new Set(K.RULE_SLOTS.map((s) => s.heading)).size, K.RULE_SLOTS.length, 'unique headings');
-  assert.deepStrictEqual(K.CHIP_SLOTS.map((s) => [s.key, s.carrier, s.on]), [['chip-tag-bg', 'group', 'light'], ['chip-icon-bg', 'icon', 'light']]);
+  assert.strictEqual(new Set(K.RULE_SLOTS.map((s) => s.key)).size, K.RULE_SLOTS.length, 'unique keys');
+  assert.deepStrictEqual(K.CHIP_SLOTS.map((s) => [s.key, s.carrier, s.on]), [['chip-tag-bg', 'group', 'light'], ['chip-icon-bg', 'icon', 'light'], ['chip-tag-surface', 'group', 'surface'], ['chip-tag-dark', 'group', 'dark'], ['chip-icon-accent', 'icon', 'accent']]);
+  assert.strictEqual(new Set(K.CHIP_SLOTS.map((s) => s.text || s.heading)).size, K.CHIP_SLOTS.length, 'unique chip texts or headings');
   const found = K.ruleAttrs(m);
-  assert.strictEqual(found.length, 10);
+  assert.strictEqual(found.length, 16);
   found.forEach((f) => assert.ok(f.attrs, f.slot.key + ' is in the sheet'));
   // Before the resolver: a marker names the role (and the band, omitted for light); a divider and an icon carry no line or radius of their own.
   assert.deepStrictEqual(found.map((f) => f.attrs.aied), K.RULE_SLOTS.map((s) => (s.on === 'light' ? { kit: s.role } : { kit: s.role, on: s.on })));
   found.filter((f) => f.slot.carrier === 'divider').forEach((f) => assert.strictEqual(f.attrs.divider, undefined, f.slot.key + ' the kit supplies the line'));
   found.filter((f) => f.slot.carrier !== 'divider').forEach((f) => assert.strictEqual(JSON.stringify(f.attrs).includes('border'), false, f.slot.key + ' the kit supplies the top edge'));
+  // A panel group rule is the INNERMOST group that holds its heading (the wrapper around it is the unmarked text-filled panel).
+  found.filter((f) => f.slot.carrier === 'group' && f.slot.panel).forEach((f) => assert.ok(f.attrs.aied && f.attrs.aied.on === 'panel', f.slot.key + ' is the marked inner group, not the unmarked panel around it'));
   const chips = K.chipAttrs(m);
-  assert.deepStrictEqual(chips.map((c) => c.attrs.aied), [{ kit: 'chip' }, { kit: 'chip' }]);
-  assert.strictEqual(JSON.stringify(chips[0].attrs).includes('border'), false, 'a tag carries no frame or radius of its own');
-  assert.strictEqual(JSON.stringify(chips[1].attrs).includes('border') || JSON.stringify(chips[1].attrs).includes('"background"'), false, 'an icon chip carries no radius or fill of its own');
+  assert.strictEqual(chips.length, 5);
+  assert.deepStrictEqual(chips.map((c) => c.attrs.aied), K.CHIP_SLOTS.map((s) => (s.on === 'light' ? { kit: 'chip' } : { kit: 'chip', on: s.on })));
+  chips.filter((c) => c.slot.carrier === 'group').forEach((c) => assert.strictEqual(JSON.stringify(c.attrs).includes('border'), false, c.slot.key + ' a tag carries no frame or radius of its own'));
+  chips.filter((c) => c.slot.carrier === 'icon').forEach((c) => assert.strictEqual(JSON.stringify(c.attrs).includes('border') || JSON.stringify(c.attrs).includes('"background"'), false, c.slot.key + ' an icon chip carries no radius or fill of its own'));
   assert.deepStrictEqual(K.ruleAttrs('<!-- wp:divi/text {} /-->').map((x) => x.attrs).filter(Boolean), [], 'a rule that is not in the markup is reported as absent');
   assert.ok(K.chipAttrs('<!-- wp:divi/text {} /-->').every((x) => x.attrs === null));
+  // The panel around a panel group rule is a plain text-filled group and the heading and paragraph inside it are in the band's panel ink (bg), never the page's text colour.
+  const panelGroup = m.slice(m.indexOf('Quiet group rule in panel on bg') - 600, m.indexOf('Quiet group rule in panel on bg') + 700);
+  assert.match(panelGroup, /"background":\{"desktop":\{"value":\{"color":"\{\{aied:color:text\}\}"\}\}\}/, 'the wrapper is filled with text');
+  assert.strictEqual((panelGroup.match(/\{\{aied:color:bg\}\}/g) || []).length >= 2, true, 'heading and paragraph are in the bg ink');
   // The earlier blocks of the sheet are unchanged by the new ones.
   assert.strictEqual(K.pageButtonAttrs(m).length, 8);
   assert.strictEqual(K.cardAttrs(m).filter((c) => c.attrs).length, 20);
@@ -1598,10 +1610,10 @@ t('rule overflow, rule count (code rule) and a run that checked no rule', () => 
   assert.deepStrictEqual(K.ruleCountProblems(all, K.RULE_SLOTS), []);
   const gone = K.ruleCountProblems(all.map((m, i) => (i === 3 ? { key: m.key, found: false, count: 0 } : m)), K.RULE_SLOTS);
   assert.deepStrictEqual(gone.map((x) => x[0]), ['rule']);
-  assert.match(gone[0][1], /^9 of 10 rules rendered as the sheet says: rule-strong-group-bg is not in the page/);
+  assert.match(gone[0][1], /^15 of 16 rules rendered as the sheet says: rule-strong-group-bg is not in the page/);
   assert.match(K.ruleCountProblems(all.map((m, i) => (i === 0 ? { key: m.key, found: true, count: 2 } : m)), K.RULE_SLOTS)[0][1], /rule-divider-bg is on the page 2 times, expected 1/);
-  assert.match(K.ruleCountProblems([...all, all[0]], K.RULE_SLOTS)[0][1], /11 rules measured for 10 slots/);
-  assert.match(K.ruleCountProblems([], K.RULE_SLOTS)[0][1], /^0 of 10 rules rendered/);
+  assert.match(K.ruleCountProblems([...all, all[0]], K.RULE_SLOTS)[0][1], /17 rules measured for 16 slots/);
+  assert.match(K.ruleCountProblems([], K.RULE_SLOTS)[0][1], /^0 of 16 rules rendered/);
   assert.throws(() => K.ruleCountProblems([], []), /no rule slots/);
   assert.deepStrictEqual(K.emptyRuleRunProblems({ rulesChecked: 30 }), []);
   assert.deepStrictEqual(K.emptyRuleRunProblems({ rulesChecked: 0 }), ['no rule was checked: the rule selection was empty']);
@@ -1614,9 +1626,10 @@ const tagQ = cexp(RROWS.quiet, 'chip-tag-bg'); const iconQ = cexp(RROWS.quiet, '
 const tagRaw = cexp(RROWS.raw, 'chip-tag-bg'); const iconRaw = cexp(RROWS.raw, 'chip-icon-bg');
 const tagPill = cexp(RROWS.dotted, 'chip-tag-bg'); const tagDbl = cexp(RROWS.dbl, 'chip-tag-bg'); const tagDash = cexp(RROWS.dashed, 'chip-tag-bg');
 /** What measureChips returns for a chip that agrees with its expectation (a tag: the frame on all four sides and no fill; an icon chip: the fill on the module box and the glyph colour). */
+const cssOf = (c) => { const x = K.colour(c); return x.a < 1 ? `rgba(${x.r}, ${x.g}, ${x.b}, ${x.a})` : `rgb(${x.r}, ${x.g}, ${x.b})`; };
 function mchip(exp, o = {}) {
   const radius = Object.assign({}, ...CORNER_KEYS.map((k, i) => ({ [k]: exp.radius[i] + 'px' })));
-  const fr = exp.kind === 'tag' ? Object.assign({}, ...['Top', 'Right', 'Bottom', 'Left'].map((c) => ({ [`border${c}Width`]: exp.frame.width + 'px', [`border${c}Style`]: exp.frame.style, [`border${c}Color`]: rgbOf(exp.frame.color) }))) : Object.assign({}, ...['Top', 'Right', 'Bottom', 'Left'].map((c) => ({ [`border${c}Width`]: '0px', [`border${c}Style`]: 'none', [`border${c}Color`]: 'rgb(0, 0, 0)' })));
+  const fr = exp.kind === 'tag' ? Object.assign({}, ...['Top', 'Right', 'Bottom', 'Left'].map((c) => ({ [`border${c}Width`]: exp.frame.width + 'px', [`border${c}Style`]: exp.frame.style, [`border${c}Color`]: cssOf(exp.frame.color) }))) : Object.assign({}, ...['Top', 'Right', 'Bottom', 'Left'].map((c) => ({ [`border${c}Width`]: '0px', [`border${c}Style`]: 'none', [`border${c}Color`]: 'rgb(0, 0, 0)' })));
   const fill = exp.kind === 'icon' ? rgbOf(exp.fill) : 'rgba(0, 0, 0, 0)';
   return Object.assign({ key: 'k', found: true, count: 1, carrier: exp.kind === 'tag' ? 'group' : 'icon', el: Object.assign({}, radius, fr, { backgroundColor: fill }), glyph: exp.kind === 'icon' ? { color: rgbOf(exp.glyph) } : null, rect: R(40, 100, 140, 130), parentRect: R(20, 80, 380, 400) }, o);
 }
@@ -1715,17 +1728,195 @@ t('chip painted fill, overflow, count (code chip) and a run that checked no chip
   assert.match(K.chipOverflowProblems(mchip(iconQ, { rect: R(40, 100, 420, 130) }), 'rest', page)[0][1], /^rest: chip 40\.\.420 outside its container/);
   const all = K.CHIP_SLOTS.map((s) => ({ key: s.key, found: true, count: 1, glyph: s.carrier === 'icon' ? { color: '#fff' } : null }));
   assert.deepStrictEqual(K.chipCountProblems(all, K.CHIP_SLOTS), []);
-  const gone = K.chipCountProblems([all[0], { key: 'chip-icon-bg', found: false, count: 0 }], K.CHIP_SLOTS);
+  const gone = K.chipCountProblems(all.map((m, i) => (K.CHIP_SLOTS[i].key === 'chip-icon-bg' ? { key: m.key, found: false, count: 0 } : m)), K.CHIP_SLOTS);
   assert.deepStrictEqual(gone.map((x) => x[0]), ['chip']);
-  assert.match(gone[0][1], /^1 of 2 chips rendered as the sheet says: chip-icon-bg is not in the page/);
-  assert.match(K.chipCountProblems([{ key: 'chip-tag-bg', found: true, count: 2 }, all[1]], K.CHIP_SLOTS)[0][1], /chip-tag-bg is on the page 2 times, expected 1/);
-  assert.match(K.chipCountProblems([all[0], { key: 'chip-icon-bg', found: true, count: 1, glyph: null }], K.CHIP_SLOTS)[0][1], /chip-icon-bg has no glyph/);
-  assert.match(K.chipCountProblems([...all, all[0]], K.CHIP_SLOTS)[0][1], /3 chips measured for 2 slots/);
+  assert.match(gone[0][1], /^4 of 5 chips rendered as the sheet says: chip-icon-bg is not in the page/);
+  assert.match(K.chipCountProblems(all.map((m, i) => (i === 0 ? { key: m.key, found: true, count: 2 } : m)), K.CHIP_SLOTS)[0][1], /chip-tag-bg is on the page 2 times, expected 1/);
+  assert.match(K.chipCountProblems(all.map((m, i) => (K.CHIP_SLOTS[i].key === 'chip-icon-bg' ? { key: m.key, found: true, count: 1, glyph: null } : m)), K.CHIP_SLOTS)[0][1], /chip-icon-bg has no glyph/);
+  assert.match(K.chipCountProblems([...all, all[0]], K.CHIP_SLOTS)[0][1], /6 chips measured for 5 slots/);
   assert.throws(() => K.chipCountProblems([], []), /no chip slots/);
   assert.deepStrictEqual(K.emptyChipRunProblems({ chipsChecked: 6 }), []);
   assert.deepStrictEqual(K.emptyChipRunProblems({ chipsChecked: 0 }), ['no chip was checked: the chip selection was empty']);
   assert.deepStrictEqual(K.emptyChipRunProblems({}), ['no chip was checked: the chip selection was empty'], 'a caller that forgets the chip count fails, never skips');
   assert.deepStrictEqual(K.emptyRuleRunProblems({ rulesChecked: 4 }), [], 'the rule run check is unchanged');
+});
+
+// ---- the branches the first rules-and-chips gate never rendered (guide polish Task 2): dividers on the surface and accent bands, a top-rule group in an inverted
+// panel, a tag on the surface and photo bands, an icon chip on the accent band ----
+const NEW_RULE_KEYS = ['rule-divider-surface', 'rule-strong-divider-surface', 'rule-divider-accent', 'rule-strong-divider-accent', 'rule-group-panel-bg', 'rule-strong-group-panel-bg'];
+const NEW_CHIP_KEYS = ['chip-tag-surface', 'chip-tag-dark', 'chip-icon-accent'];
+const nq = Object.fromEntries(NEW_RULE_KEYS.map((k) => [k, rexp(RROWS.quiet, k)]));
+const nr = Object.fromEntries(NEW_RULE_KEYS.map((k) => [k, rexp(RROWS.raw, k)]));
+const ncq = Object.fromEntries(NEW_CHIP_KEYS.map((k) => [k, cexp(RROWS.quiet, k)]));
+const ncr = Object.fromEntries(NEW_CHIP_KEYS.map((k) => [k, cexp(RROWS.raw, k)]));
+const newRuleSlot = (key) => K.RULE_SLOTS.find((x) => x.key === key);
+const newChipSlot = (key) => K.CHIP_SLOTS.find((x) => x.key === key);
+
+t('new rule slots: expectations are read from the RESOLVED markup per band (surface = the light colours, accent = accent-text and its 40% alpha form, panel = the bg ink and its alpha form)', () => {
+  assert.deepStrictEqual(nq['rule-divider-surface'].top, { width: 1, style: 'solid', color: '#e3dccf' }, 'a quiet divider on the surface band is the language hairline');
+  assert.deepStrictEqual(nq['rule-strong-divider-surface'].top, { width: 2, style: 'solid', color: '#1c1a17' });
+  assert.deepStrictEqual(nq['rule-divider-accent'].top, { width: 1, style: 'solid', color: 'rgba(255,255,255,0.4)' }, 'a quiet rule on the accent band is accent-text at 40% (the alpha form)');
+  assert.deepStrictEqual(nq['rule-strong-divider-accent'].top, { width: 2, style: 'solid', color: '#ffffff' });
+  assert.deepStrictEqual(nq['rule-group-panel-bg'].top, { width: 1, style: 'solid', color: 'rgba(250,247,242,0.4)' }, 'a quiet group rule inside an inverted panel is bg at 40%');
+  assert.deepStrictEqual(nq['rule-strong-group-panel-bg'].top, { width: 2, style: 'solid', color: '#faf7f2' });
+  for (const k of ['rule-group-panel-bg', 'rule-strong-group-panel-bg']) assert.deepStrictEqual(nq[k].others, { right: 0, bottom: 0, left: 0 }, k + ' only the top edge');
+  for (const k of ['rule-divider-surface', 'rule-strong-divider-surface', 'rule-divider-accent', 'rule-strong-divider-accent']) assert.strictEqual(nq[k].others, null, k + ' a divider has no other sides');
+  // The widths follow the kit through the new bands as they do on the old ones (raw-frame 4px: a strong rule 4px, a quiet one 2px).
+  assert.deepStrictEqual([nr['rule-strong-divider-accent'].top.width, nr['rule-divider-accent'].top.width, nr['rule-strong-group-panel-bg'].top.width, nr['rule-group-panel-bg'].top.width], [4, 2, 4, 2]);
+  assert.deepStrictEqual(rexp(RROWS.dbl, 'rule-strong-divider-surface').top.style, 'double');
+  assert.ok(rexp(RROWS.dbl, 'rule-group-panel-bg').top.width >= 3, 'a double is at least 3px on the panel too');
+  for (const k of NEW_RULE_KEYS) { assert.deepStrictEqual(K.missingRuleExpectations(nq[k]), [], k); assert.deepStrictEqual(K.missingRuleExpectations(nr[k]), [], k); }
+});
+
+t('new rule slots: a rule that agrees passes; a wrong style, width, colour (alpha included) or a stray side fails with its own code on EVERY new slot', () => {
+  for (const k of NEW_RULE_KEYS) {
+    for (const exp of [nq[k], nr[k], rexp(RROWS.dashed, k), rexp(RROWS.dbl, k)]) assert.deepStrictEqual(K.compareRule(exp, mrule(exp)), [], k + ' ' + exp.top.width + exp.top.style);
+    const e = nq[k]; const col = mrule(e).line.borderTopColor;
+    const swapStyle = e.top.style === 'dashed' ? 'dotted' : 'dashed';
+    assert.deepStrictEqual(fcodes(K.compareRule(e, mrule(e, { line: lineOf(e.top.width, swapStyle, col) }))), ['rule-style'], k + ' a wrong style');
+    assert.deepStrictEqual(fcodes(K.compareRule(e, mrule(e, { line: lineOf(e.top.width + 1, e.top.style, col) }))), ['rule-width'], k + ' a wrong width');
+    assert.deepStrictEqual(fcodes(K.compareRule(e, mrule(e, { line: lineOf(e.top.width, e.top.style, 'rgb(220, 38, 38)') }))), ['rule-colour'], k + ' a wrong colour');
+    assert.strictEqual(K.colour(e.top.color).a < 1, /accent|panel/.test(k) && !/strong/.test(k), k + ' the alpha form is exactly the quiet rule on accent and panel');
+    if (K.colour(e.top.color).a < 1) assert.deepStrictEqual(fcodes(K.compareRule(e, mrule(e, { line: lineOf(e.top.width, e.top.style, rgbOf(e.top.color)) }))), ['rule-colour'], k + ' the 40% alpha is part of the colour');
+    if (e.carrier === 'group') {
+      const stray = K.compareRule(e, mrule(e, { el: Object.assign({}, mrule(e).el, { borderBottomWidth: '2px' }) }));
+      assert.deepStrictEqual(fcodes(stray), ['rule-width'], k + ' a stray side');
+    }
+  }
+});
+
+t('new rule slots: contrast on the PAINTED band with the existing floors (strong 3.0, quiet 1.1) - accent, surface and the panel', () => {
+  const accent = { r: 154, g: 59, b: 31 }; const surface = { r: 255, g: 255, b: 255 }; const panel = { r: 28, g: 26, b: 23 };
+  // The shipped values pass on the band they are printed on.
+  assert.deepStrictEqual(K.ruleContrastProblems(mrule(nq['rule-divider-accent']), accent, 'rule').problems, [], 'accent-text at 40% over the accent band is above 1.1');
+  assert.deepStrictEqual(K.ruleContrastProblems(mrule(nq['rule-strong-divider-accent']), accent, 'rule-strong').problems, []);
+  assert.deepStrictEqual(K.ruleContrastProblems(mrule(nq['rule-divider-surface']), surface, 'rule').problems, []);
+  assert.deepStrictEqual(K.ruleContrastProblems(mrule(nq['rule-strong-divider-surface']), surface, 'rule-strong').problems, []);
+  assert.deepStrictEqual(K.ruleContrastProblems(mrule(nq['rule-group-panel-bg']), panel, 'rule').problems, [], 'bg at 40% over the text-filled panel');
+  assert.deepStrictEqual(K.ruleContrastProblems(mrule(nq['rule-strong-group-panel-bg']), panel, 'rule-strong').problems, []);
+  // A faint quiet line on the panel (the line almost the panel colour) and one the colour of the accent band fail; so do weak strong lines.
+  const faintPanel = Object.assign({}, nq['rule-group-panel-bg'], { top: Object.assign({}, nq['rule-group-panel-bg'].top, { color: 'rgba(28,26,23,0.05)' }) });
+  const fp = K.ruleContrastProblems(mrule(faintPanel), panel, 'rule');
+  assert.deepStrictEqual(fp.problems.map((x) => x[0]), ['rule-contrast']);
+  assert.match(fp.problems[0][1], /^rule line #[0-9a-f]{6} on the band #1c1a17 is 1(\.0[0-9]*)?:1, needs 1\.1$/);
+  const sameAsAccent = Object.assign({}, nq['rule-strong-divider-accent'], { top: Object.assign({}, nq['rule-strong-divider-accent'].top, { color: '#9a3b1f' }) });
+  assert.deepStrictEqual(K.ruleContrastProblems(mrule(sameAsAccent), accent, 'rule-strong').problems.map((x) => x[0]), ['rule-contrast'], 'a strong line the colour of the accent band');
+  const weakPanel = Object.assign({}, nq['rule-strong-group-panel-bg'], { top: Object.assign({}, nq['rule-strong-group-panel-bg'].top, { color: '#4a4540' }) });
+  assert.deepStrictEqual(K.ruleContrastProblems(mrule(weakPanel), panel, 'rule-strong').problems.map((x) => x[0]), ['rule-contrast'], 'a strong line under 3.0:1 on the panel');
+  // The floors are the PHP proof's: strong = shape 3.0, quiet = RuleChipAudit::QUIET_RULE_FLOOR (read from the source, never copied).
+  const audit = fs.readFileSync(path.join(ROOT, 'tests', 'Support', 'RuleChipAudit.php'), 'utf8');
+  assert.strictEqual(parseFloat(/QUIET_RULE_FLOOR\s*=\s*([0-9.]+);/.exec(audit)[1]), K.RULE_QUIET_MIN);
+  assert.strictEqual(K.RULE_STRONG_MIN, 3.0);
+  assert.strictEqual(K.CONTRAST_SHAPE, 3.0);
+  // A missing band sample and an unreadable line fail on every new slot (nothing is skipped).
+  for (const k of NEW_RULE_KEYS) {
+    const role = newRuleSlot(k).role;
+    assert.deepStrictEqual(K.ruleContrastProblems(mrule(nq[k]), null, role).problems.map((x) => x[0]), ['rule-contrast'], k);
+    assert.deepStrictEqual(K.ruleContrastProblems(mrule(nq[k], { line: undefined }), panel, role).problems.map((x) => x[0]), ['rule-contrast'], k);
+  }
+});
+
+t('new rule slots: a missing slot, a doubled one, a null expectation and an empty selection each fail (never skip)', () => {
+  const all = K.RULE_SLOTS.map((s) => ({ key: s.key, found: true, count: 1 }));
+  assert.deepStrictEqual(K.ruleCountProblems(all, K.RULE_SLOTS), []);
+  for (const key of NEW_RULE_KEYS) {
+    const gone = K.ruleCountProblems(all.map((m) => (m.key === key ? { key, found: false, count: 0 } : m)), K.RULE_SLOTS);
+    assert.deepStrictEqual(gone.map((x) => x[0]), ['rule'], key);
+    assert.match(gone[0][1], new RegExp(`^15 of 16 rules rendered as the sheet says: ${key} is not in the page`));
+    const twice = K.ruleCountProblems(all.map((m) => (m.key === key ? { key, found: true, count: 2 } : m)), K.RULE_SLOTS);
+    assert.match(twice[0][1], new RegExp(`${key} is on the page 2 times, expected 1`));
+    // A null expectation and one with a hole fail with rule-expectation, never an empty problem list.
+    assert.deepStrictEqual(fcodes(K.compareRule(null, mrule(nq[key]))), ['rule-expectation'], key + ' null expectation');
+    assert.deepStrictEqual(fcodes(K.compareRule(K.expectRuleFromAttrs({}, newRuleSlot(key).carrier), mrule(nq[key]))), ['rule-expectation'], key + ' empty attributes');
+    // An unmeasured rule fails too.
+    assert.ok(K.compareRule(nq[key], mrule(nq[key], { line: undefined })).length > 0, key + ' unmeasured');
+  }
+  // An empty selection: no slot at all throws; a measurement with nothing found names every slot; a run that checked nothing fails.
+  assert.throws(() => K.ruleCountProblems([], []), /no rule slots/);
+  const newSlots = K.RULE_SLOTS.filter((s) => NEW_RULE_KEYS.includes(s.key));
+  const none = K.ruleCountProblems([], newSlots);
+  assert.match(none[0][1], /^0 of 6 rules rendered as the sheet says: rule-divider-surface is not in the page; rule-strong-divider-surface is not in the page/);
+  assert.deepStrictEqual(K.emptyRuleRunProblems({ rulesChecked: 0 }), ['no rule was checked: the rule selection was empty']);
+  // A rule that is not in the resolved markup is attrs null (the gate in verify-kits stops on it).
+  const without = K.ruleAttrs(K.sheetMarkup().replace(/Quiet group rule in panel on bg/g, 'Renamed'));
+  assert.strictEqual(without.find((x) => x.slot.key === 'rule-group-panel-bg').attrs, null);
+  assert.ok(without.find((x) => x.slot.key === 'rule-strong-group-panel-bg').attrs);
+});
+
+t('new chip slots: expectations from the RESOLVED markup (a tag frame on the surface and photo bands, an icon chip on the accent band takes fill surface and glyph text)', () => {
+  assert.deepStrictEqual(ncq['chip-tag-surface'], { kind: 'tag', radius: [4, 4, 4, 4], frame: { width: 1, style: 'solid', color: '#e3dccf' } }, 'the hairline frame of a hairline kit on the surface band');
+  assert.deepStrictEqual(ncq['chip-tag-dark'], { kind: 'tag', radius: [4, 4, 4, 4], frame: { width: 1, style: 'solid', color: 'rgba(251,246,236,0.4)' } }, 'on the photo band the quiet frame is the 40% bone');
+  assert.deepStrictEqual(ncq['chip-icon-accent'], { kind: 'icon', radius: [4, 4, 4, 4], fill: '#ffffff', glyph: '#1c1a17' }, 'on the accent band the chip is a surface-coloured box with a text glyph');
+  assert.strictEqual(ncr['chip-tag-dark'].frame.color, '#fbf6ec', 'a strong frame on the photo band is the inverse ink');
+  assert.strictEqual(ncr['chip-tag-surface'].frame.color, '#1c1a17');
+  assert.deepStrictEqual(ncr['chip-icon-accent'].radius, [0, 0, 0, 0], 'a 0px kit is four zeros on the accent chip too');
+  assert.strictEqual(cexp(RROWS.dotted, 'chip-tag-dark').frame.style, 'dotted');
+  assert.ok(cexp(RROWS.dbl, 'chip-tag-surface').frame.width >= 3, 'a double frame is at least 3px on the surface band');
+  for (const k of NEW_CHIP_KEYS) { assert.deepStrictEqual(K.missingChipExpectations(ncq[k]), [], k); assert.deepStrictEqual(K.missingChipExpectations(ncr[k]), [], k); }
+});
+
+t('new chip slots: a chip that agrees passes; a wrong corner, frame side, fill (an icon fill equal to the accent band) or glyph fails with its own code; a null expectation and a missing slot fail', () => {
+  for (const k of NEW_CHIP_KEYS) {
+    for (const e of [ncq[k], ncr[k]]) assert.deepStrictEqual(K.compareChip(e, mchip(e)), [], k);
+    const e = ncq[k];
+    const corner = K.compareChip(e, mchip(e, { el: Object.assign({}, mchip(e).el, { borderTopLeftRadius: '20px' }) }));
+    assert.deepStrictEqual(fcodes(corner), ['chip-radius'], k);
+    assert.deepStrictEqual(fcodes(K.compareChip(null, mchip(e))), ['chip-expectation'], k + ' null expectation');
+    assert.deepStrictEqual(fcodes(K.compareChip(K.expectChipFromAttrs({}, newChipSlot(k).carrier), mchip(e))), ['chip-expectation'], k + ' empty attributes');
+    assert.deepStrictEqual(fcodes(K.compareChip(e, mchip(e, { el: undefined }))), ['chip'], k + ' unmeasured');
+  }
+  const dark = ncq['chip-tag-dark'];
+  assert.deepStrictEqual(fcodes(K.compareChip(dark, mchip(dark, { el: Object.assign({}, mchip(dark).el, { borderLeftColor: 'rgb(251, 246, 236)' }) }))), ['chip-frame'], 'the 40% alpha is part of the frame colour');
+  assert.deepStrictEqual(fcodes(K.compareChip(dark, mchip(dark, { el: Object.assign({}, mchip(dark).el, { borderTopStyle: 'dashed' }) }))), ['chip-frame']);
+  const icon = ncq['chip-icon-accent'];
+  assert.deepStrictEqual(fcodes(K.compareChip(icon, mchip(icon, { el: Object.assign({}, mchip(icon).el, { backgroundColor: 'rgb(154, 59, 31)' }) }))), ['chip-fill'], 'an icon fill the accent colour of the band instead of surface');
+  assert.deepStrictEqual(fcodes(K.compareChip(icon, mchip(icon, { glyph: { color: 'rgb(255, 255, 255)' } }))), ['chip-fill'], 'a glyph in the fill colour');
+});
+
+t('new chip slots: contrast on the PAINTED band - a quiet (alpha or hairline) frame needs 1.1, a strong one 3.0; the accent chip fill must not be the colour of the band and the glyph needs 3.0 on it', () => {
+  const darkBand = { r: 30, g: 40, b: 50 }; const surface = { r: 255, g: 255, b: 255 }; const accent = { r: 154, g: 59, b: 31 };
+  // The 40% frame on the photo band is the QUIET kind although it is not the language hairline: the PHP proof (isQuiet) treats every alpha form so.
+  assert.deepStrictEqual(K.chipContrastProblems(ncq['chip-tag-dark'], mchip(ncq['chip-tag-dark']), { band: darkBand }, '#e3dccf').problems, [], 'alpha frame, quiet floor');
+  assert.deepStrictEqual(K.chipContrastProblems(ncq['chip-tag-dark'], mchip(ncq['chip-tag-dark']), { band: darkBand }, null).problems, [], 'alpha frame, no hairline');
+  const midBand = { r: 90, g: 90, b: 100 }; // the 40% bone over it is about 2.5:1: above the quiet floor, under the strong one
+  assert.deepStrictEqual(K.chipContrastProblems(ncq['chip-tag-dark'], mchip(ncq['chip-tag-dark']), { band: midBand }, null).problems, [], 'an alpha frame at about 2.5:1 passes the quiet floor even without a hairline');
+  assert.deepStrictEqual([...new Set(K.chipContrastProblems(ncr['chip-tag-dark'], mchip(ncr['chip-tag-dark'], { el: Object.assign({}, mchip(ncr['chip-tag-dark']).el, ...['Top', 'Right', 'Bottom', 'Left'].map((c) => ({ [`border${c}Color`]: 'rgb(150, 150, 160)' }))) }), { band: midBand }, null).problems.map((x) => x[0]))], ['chip-contrast'], 'the same contrast with an OPAQUE colour is a strong frame and needs 3.0');
+  assert.ok(K.chipContrastProblems(ncq['chip-tag-dark'], mchip(ncq['chip-tag-dark']), { band: { r: 245, g: 240, b: 230 } }, null).problems.length > 0, 'a 40% bone frame on a pale band vanishes');
+  // An OPAQUE frame that is not the hairline still needs 3.0 on the dark band.
+  const faintOpaque = mchip(ncr['chip-tag-dark'], { el: Object.assign({}, mchip(ncr['chip-tag-dark']).el, ...['Top', 'Right', 'Bottom', 'Left'].map((c) => ({ [`border${c}Color`]: 'rgb(60, 70, 80)' }))) });
+  assert.deepStrictEqual([...new Set(K.chipContrastProblems(ncr['chip-tag-dark'], faintOpaque, { band: darkBand }, null).problems.map((x) => x[0]))], ['chip-contrast']);
+  assert.deepStrictEqual(K.chipContrastProblems(ncr['chip-tag-dark'], mchip(ncr['chip-tag-dark']), { band: darkBand }, null).problems, [], 'the strong frame is the inverse ink');
+  assert.deepStrictEqual(K.chipContrastProblems(ncq['chip-tag-surface'], mchip(ncq['chip-tag-surface']), { band: surface }, '#e3dccf').problems, [], 'the hairline frame on the surface band');
+  assert.strictEqual(K.chipContrastProblems(ncq['chip-tag-surface'], mchip(ncq['chip-tag-surface']), { band: surface }, null).problems.length, 4, 'without the hairline the same frame would need 3.0');
+  // The icon chip on the accent band: surface fill, text glyph.
+  const ok = K.chipContrastProblems(ncq['chip-icon-accent'], mchip(ncq['chip-icon-accent']), { fill: surface, band: accent });
+  assert.deepStrictEqual(ok.problems, []);
+  assert.ok(ok.info.glyph >= 3 && ok.info.fillOnBand > 1.02, JSON.stringify(ok.info));
+  const sameBand = K.chipContrastProblems(ncq['chip-icon-accent'], mchip(ncq['chip-icon-accent']), { fill: accent, band: accent });
+  assert.ok(sameBand.problems.some(([c, d]) => c === 'chip-contrast' && /is the colour of the band/.test(d)), 'an accent-band chip whose fill equals the band');
+  const sameGlyph = K.chipContrastProblems(ncq['chip-icon-accent'], mchip(ncq['chip-icon-accent'], { glyph: { color: 'rgb(255, 255, 255)' } }), { fill: surface, band: accent });
+  assert.match(sameGlyph.problems[0][1], /^glyph #ffffff on the chip fill #ffffff is 1:1, needs 3$/);
+  for (const k of NEW_CHIP_KEYS) {
+    assert.deepStrictEqual(K.chipContrastProblems(ncq[k], mchip(ncq[k]), { band: null }, null).problems.map((x) => x[0]), ['chip-contrast'], k + ' no band sample');
+  }
+  assert.deepStrictEqual(K.chipContrastProblems(ncq['chip-icon-accent'], mchip(ncq['chip-icon-accent']), { fill: null, band: accent }).problems.map((x) => x[0]), ['chip-contrast'], 'no painted fill sample');
+});
+
+t('new chip slots: count (a missing slot, a doubled one, an icon without its glyph), an empty selection and the empty run all fail', () => {
+  const all = K.CHIP_SLOTS.map((s) => ({ key: s.key, found: true, count: 1, glyph: s.carrier === 'icon' ? { color: '#fff' } : null }));
+  assert.deepStrictEqual(K.chipCountProblems(all, K.CHIP_SLOTS), []);
+  for (const key of NEW_CHIP_KEYS) {
+    const gone = K.chipCountProblems(all.map((m) => (m.key === key ? { key, found: false, count: 0 } : m)), K.CHIP_SLOTS);
+    assert.match(gone[0][1], new RegExp(`^4 of 5 chips rendered as the sheet says: ${key} is not in the page`), key);
+    assert.match(K.chipCountProblems(all.map((m) => (m.key === key ? { key, found: true, count: 2, glyph: m.glyph } : m)), K.CHIP_SLOTS)[0][1], new RegExp(`${key} is on the page 2 times, expected 1`));
+  }
+  assert.match(K.chipCountProblems(all.map((m) => (m.key === 'chip-icon-accent' ? { key: m.key, found: true, count: 1, glyph: null } : m)), K.CHIP_SLOTS)[0][1], /chip-icon-accent has no glyph/);
+  assert.throws(() => K.chipCountProblems([], []), /no chip slots/);
+  assert.match(K.chipCountProblems([], K.CHIP_SLOTS)[0][1], /^0 of 5 chips rendered/);
+  assert.deepStrictEqual(K.emptyChipRunProblems({ chipsChecked: 0 }), ['no chip was checked: the chip selection was empty']);
+  const without = K.chipAttrs(K.sheetMarkup().replace(/Tag chip on dark/g, 'Renamed'));
+  assert.strictEqual(without.find((x) => x.slot.key === 'chip-tag-dark').attrs, null);
+  assert.ok(without.find((x) => x.slot.key === 'chip-tag-surface').attrs);
 });
 
 // ---- the sheet through the REAL PHP pipeline, offline ----
@@ -1896,10 +2087,14 @@ t('every kit x every language: the sheet resolves with zero leftovers, passes La
       assert.deepStrictEqual(K.missingRuleExpectations(exp), [], where);
       if (slot.carrier !== 'divider') assert.deepStrictEqual(exp.others, { right: 0, bottom: 0, left: 0 }, where + ' only the top edge');
       if (exp.top.style === 'double') assert.ok(exp.top.width >= 3, where + ' a double is at least 3px');
-      const strongInk = { light: pal.text, dark: pal.inverse, panel: pal.bg }[slot.on];
+      const strongInk = { light: pal.text, surface: pal.text, accent: pal.accent_text, dark: pal.inverse, panel: pal.bg }[slot.on];
       if (slot.role === 'rule-strong') assert.ok(K.sameColour(exp.top.color, strongInk), `${where} strong colour ${exp.top.color} is not ${strongInk}`);
-      else if (slot.on === 'light') assert.ok(K.sameColour(exp.top.color, pal.border), `${where} quiet colour ${exp.top.color} is not ${pal.border}`);
-      else assert.ok(K.colour(exp.top.color).a < 1, `${where} the quiet rule on the photo band is the alpha form`);
+      else if (slot.on === 'light' || slot.on === 'surface') assert.ok(K.sameColour(exp.top.color, pal.border), `${where} quiet colour ${exp.top.color} is not ${pal.border}`);
+      else {
+        const q = K.colour(exp.top.color); const base = K.colour(strongInk);
+        assert.ok(q.a < 1, `${where} the quiet rule on the ${slot.on} band is the alpha form`);
+        assert.ok(['r', 'g', 'b'].every((c) => base[c] === q[c]) && Math.abs(q.a - 0.4) < 0.001, `${where} the quiet colour is the strong ink at 40% (${exp.top.color} vs ${strongInk})`);
+      }
     }
     const foundChips = K.chipAttrs(row.markup);
     assert.strictEqual(foundChips.length, K.CHIP_SLOTS.length);
@@ -1910,7 +2105,8 @@ t('every kit x every language: the sheet resolves with zero leftovers, passes La
       const exp = K.expectChipFromAttrs(attrs, slot.carrier);
       assert.deepStrictEqual(K.missingChipExpectations(exp), [], where);
       assert.deepStrictEqual(exp.radius, [0, 1, 2, 3].map(() => parseFloat(kitControl[row.kit])), `${where} radius ${exp.radius} is not the kit's control ${kitControl[row.kit]}`);
-      if (slot.carrier === 'icon') assert.ok(K.sameColour(exp.fill, pal.accent) && K.sameColour(exp.glyph, pal.accent_text), `${where} fill ${exp.fill} / glyph ${exp.glyph}`);
+      if (slot.carrier === 'icon' && slot.on === 'accent') assert.ok(K.sameColour(exp.fill, pal.surface) && K.sameColour(exp.glyph, pal.text), `${where} on the accent band the chip is surface with a text glyph: fill ${exp.fill} / glyph ${exp.glyph}`);
+      else if (slot.carrier === 'icon') assert.ok(K.sameColour(exp.fill, pal.accent) && K.sameColour(exp.glyph, pal.accent_text), `${where} fill ${exp.fill} / glyph ${exp.glyph}`);
       else assert.ok(exp.frame.width >= 1 && (exp.frame.style !== 'double' || exp.frame.width >= 3), `${where} frame ${JSON.stringify(exp.frame)}`);
     }
     // The featured middle card against the plain ones on the bg band, by FILL alone (frames, which only make a plain card stronger, are the live check).
