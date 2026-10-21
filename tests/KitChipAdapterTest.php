@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\KitAdapters;
 use AiEditorDivi5\WP\KitResolver;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\StyleKits;
+use Divi5Validator\Tests\Support\Colour;
 use Divi5Validator\Tests\Support\DeadOnModule;
+use Divi5Validator\Tests\Support\RuleChipAudit;
 use Divi5Validator\Tests\Support\ShapePaths;
 use Divi5Validator\Tests\Support\ShapeRegistry;
 use PHPUnit\Framework\TestCase;
@@ -27,6 +30,8 @@ require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
 require_once __DIR__ . '/Support/ShapePaths.php';
 require_once __DIR__ . '/Support/ShapeRegistry.php';
 require_once __DIR__ . '/Support/DeadOnModule.php';
+require_once __DIR__ . '/Support/Colour.php';
+require_once __DIR__ . '/Support/RuleChipAudit.php';
 
 /**
  * The chip adapter (rules and chips plan Task 3): role `chip` on `divi/group` (a tag: control radius and an outline frame in
@@ -444,5 +449,179 @@ class KitChipAdapterTest extends TestCase
         $this->assertContains( 'chip', KitAdapters::APPLIED['divi/group'] ?? [] );
         $this->assertNotContains( 'chip', KitAdapters::APPLIED['divi/column'] ?? [], 'a column is not a tag' );
         $this->assertSame( [ 'light', 'surface', 'accent', 'dark' ], KitAdapters::CHIP_BANDS );
+    }
+
+    /** The colour role of each band (the role the band is painted in), for the "chip never vanishes into its band" check. */
+    private const BAND_ROLE = [ 'light' => 'bg', 'surface' => 'surface', 'accent' => 'accent', 'dark' => 'overlay' ];
+
+    /** A colour token or value resolved by the real pipeline (alpha forms included) as an opaque hex over $ground. @param array<string,mixed> $lang */
+    private static function opaqueOn( string $value, array $lang, string $ground ): ?string
+    {
+        return Colour::opaque( RecipeTokens::resolve( $value, $lang ), $ground );
+    }
+
+    /** Whether a colour token is a QUIET colour: the `border` hairline or any alpha form. */
+    private static function isQuiet( string $token ): bool
+    {
+        return 1 === preg_match( '/^\{\{aied:color:(?:border|[a-z-]+:\d\d)\}\}$/', $token );
+    }
+
+    /**
+     * Contrast problems of one chip patch on band $on in one language ([] = fine), keyed "$where|<check>":
+     * - tag (`divi/group`): the frame colour against the band, at least RuleChipAudit::QUIET_RULE_FLOOR when it is a quiet
+     *   colour (`border` or an alpha form), at least 3.0 when strong (WCAG 1.4.11); the frame at least 1px, a double at
+     *   least 3px; no frame at all is a problem (a tag without a frame has no shape);
+     * - icon chip (`divi/icon`): the glyph on its painted fill at least 3.0 (non-text, 20 to 22px graphics); the fill is
+     *   never the band's own colour role and never paints the colour of the band (else the chip vanishes).
+     *
+     * @param array<string,mixed> $patch
+     * @param array<string,mixed> $lang
+     * @return array<string,string>
+     */
+    public static function chipContrastProblems( array $patch, string $blockName, string $on, array $lang, string $where ): array
+    {
+        $leaves = self::leaves( $patch );
+        $band   = KitRuleAdapterTest::bandOf( $on, $lang );
+        $out    = [];
+        if ( 'divi/group' === $blockName ) {
+            $p      = 'module.decoration.border.desktop.value.styles.all.';
+            $colour = isset( $leaves[ $p . 'color' ] ) ? (string) $leaves[ $p . 'color' ] : null;
+            if ( null === $colour ) {
+                return [ "$where|frame" => "$where: the tag has no frame colour" ];
+            }
+            $ink    = self::opaqueOn( $colour, $lang, $band );
+            $ratio  = null === $ink ? 0.0 : Colour::contrast( $ink, $band );
+            $need   = self::isQuiet( $colour ) ? RuleChipAudit::QUIET_RULE_FLOOR : 3.0;
+            if ( $ratio < $need ) {
+                $out[ "$where|frame" ] = sprintf( '%s: the tag frame (%s) on %s is %.3f:1, needs %.1f', $where, $colour, $band, $ratio, $need );
+            }
+            $width = (string) ( $leaves[ $p . 'width' ] ?? '' );
+            $px    = 1 === preg_match( '/^(\d+)px$/', $width, $m ) ? (int) $m[1] : 0;
+            if ( $px < 1 || ( 'double' === ( $leaves[ $p . 'style' ] ?? '' ) && $px < 3 ) ) {
+                $out[ "$where|width" ] = "$where: the tag frame width '$width' is not drawn (1px, a double 3px)";
+            }
+            return $out;
+        }
+        $fillToken  = isset( $leaves['module.decoration.background.desktop.value.color'] ) ? (string) $leaves['module.decoration.background.desktop.value.color'] : null;
+        $glyphToken = isset( $leaves['icon.advanced.color.desktop.value'] ) ? (string) $leaves['icon.advanced.color.desktop.value'] : null;
+        if ( null === $fillToken || null === $glyphToken ) {
+            return [ "$where|glyph" => "$where: the icon chip has no fill or no glyph colour" ];
+        }
+        if ( '{{aied:color:' . self::BAND_ROLE[ $on ] . '}}' === $fillToken ) {
+            $out[ "$where|fill" ] = "$where: the icon fill is the band's own colour role ($fillToken)";
+        }
+        $fill = self::opaqueOn( $fillToken, $lang, $band );
+        if ( null === $fill ) {
+            return $out + [ "$where|fill" => "$where: the icon fill $fillToken does not resolve" ];
+        }
+        if ( strtolower( $fill ) === strtolower( $band ) ) {
+            $out[ "$where|fill" ] = "$where: the icon fill paints $fill, the colour of the band";
+        }
+        $glyph = self::opaqueOn( $glyphToken, $lang, $fill );
+        $ratio = null === $glyph ? 0.0 : Colour::contrast( $glyph, $fill );
+        if ( $ratio < 3.0 ) {
+            $out[ "$where|glyph" ] = sprintf( '%s: the glyph (%s) on its fill %s is %.3f:1, needs 3.0', $where, $glyphToken, $fill, $ratio );
+        }
+        return $out;
+    }
+
+    public function testNoUnreadableChipInAnyKitLanguageBand(): void
+    {
+        $problems = [];
+        $checked  = 0;
+        foreach ( $this->shippedKits() as $id => $kit ) {
+            foreach ( DesignLanguages::ids() as $langId ) {
+                $lang = DesignLanguages::get( $langId );
+                $this->assertIsArray( $lang );
+                foreach ( self::BANDS as $on ) {
+                    foreach ( self::CARRIERS as $block ) {
+                        $problems = array_merge( $problems, self::chipContrastProblems( $this->patch( $block, $kit, $on ), $block, $on, $lang, "$id|$langId|$on|$block" ) );
+                    }
+                    ++$checked; // one cell = kit x language x band, judging the tag and the icon chip
+                }
+            }
+        }
+        $this->assertSame( 40 * 10 * 4, $checked );
+        $this->assertSame( 1600, $checked );
+        $this->assertSame( [], array_values( $problems ), "unreadable chips (fix the chip rules in KitAdapters::chipPatch() or RULE_COLOUR, never the floor; no exceptions):\n" . implode( "\n", array_slice( $problems, 0, 60 ) ) . "\n(" . count( $problems ) . ' problems)' );
+    }
+
+    public function testTheChipContrastCheckCatchesWhatItShould(): void
+    {
+        $organic = DesignLanguages::get( 'organic-warm' );
+        $this->assertIsArray( $organic );
+        $kit   = $this->shippedKits()['steady-solid'];
+        $judge = static fn ( array $p, string $block, string $on, ?array $lang = null ): array => self::chipContrastProblems( $p, $block, $on, $lang ?? $organic, 'x' );
+        foreach ( self::CARRIERS as $block ) {
+            foreach ( self::BANDS as $on ) {
+                $this->assertSame( [], $judge( $this->patch( $block, $kit, $on ), $block, $on ), "steady-solid chip on $block / $on is clean in organic-warm" );
+            }
+        }
+        $frame = 'module.decoration.border.desktop.value.styles.all.';
+
+        // A `text` tag frame on a dark band (a light language: the overlay is dark, so is text).
+        $bad = $this->patch( 'divi/group', $kit, 'dark' );
+        self::setLeaf( $bad, $frame . 'color', '{{aied:color:text}}' );
+        $this->assertArrayHasKey( 'x|frame', $judge( $bad, 'divi/group', 'dark' ), 'a text frame on a dark band is under 3:1' );
+        // A quiet frame in the band's own colour is under the quiet floor.
+        $bad = $this->patch( 'divi/group', $kit, 'light' );
+        self::setLeaf( $bad, $frame . 'color', '{{aied:color:bg}}' );
+        $this->assertArrayHasKey( 'x|frame', $judge( $bad, 'divi/group', 'light' ) );
+        // A strong frame must reach 3:1: border does not, once it is judged as strong ... and a quiet one passes its floor.
+        $bad = $this->patch( 'divi/group', $kit, 'light' );
+        self::setLeaf( $bad, $frame . 'color', '{{aied:color:muted:05}}' );
+        $this->assertArrayHasKey( 'x|frame', $judge( $bad, 'divi/group', 'light' ), 'a 5% frame' );
+        // A tag with no frame colour, and a frame that is not drawn.
+        $bad = $this->patch( 'divi/group', $kit, 'light' );
+        self::unsetLeaf( $bad, $frame . 'color' );
+        $this->assertArrayHasKey( 'x|frame', $judge( $bad, 'divi/group', 'light' ) );
+        $bad = $this->patch( 'divi/group', $kit, 'light' );
+        self::setLeaf( $bad, $frame . 'width', '0px' );
+        $this->assertArrayHasKey( 'x|width', $judge( $bad, 'divi/group', 'light' ) );
+
+        // An accent fill on an accent band: the chip vanishes.
+        $bad = $this->patch( 'divi/icon', $kit, 'accent' );
+        self::setLeaf( $bad, 'module.decoration.background.desktop.value.color', '{{aied:color:accent}}' );
+        $this->assertArrayHasKey( 'x|fill', $judge( $bad, 'divi/icon', 'accent' ) );
+        // A surface fill on a surface band, and a fill that paints the band's colour through another role.
+        $bad = $this->patch( 'divi/icon', $kit, 'surface' );
+        self::setLeaf( $bad, 'module.decoration.background.desktop.value.color', '{{aied:color:surface}}' );
+        $this->assertArrayHasKey( 'x|fill', $judge( $bad, 'divi/icon', 'surface' ) );
+        // A glyph equal to its fill.
+        $bad = $this->patch( 'divi/icon', $kit, 'light' );
+        self::setLeaf( $bad, 'icon.advanced.color.desktop.value', '{{aied:color:accent}}' );
+        $this->assertArrayHasKey( 'x|glyph', $judge( $bad, 'divi/icon', 'light' ) );
+        // A missing glyph or fill.
+        $bad = $this->patch( 'divi/icon', $kit, 'light' );
+        self::unsetLeaf( $bad, 'icon' );
+        $this->assertArrayHasKey( 'x|glyph', $judge( $bad, 'divi/icon', 'light' ) );
+    }
+
+    /** Set the dotted $path of $node to $value. @param array<string,mixed> $node */
+    private static function setLeaf( array &$node, string $path, mixed $value ): void
+    {
+        $ref = &$node;
+        foreach ( explode( '.', $path ) as $k ) {
+            if ( ! isset( $ref[ $k ] ) || ! is_array( $ref[ $k ] ) ) {
+                $ref[ $k ] = [];
+            }
+            $ref = &$ref[ $k ];
+        }
+        $ref = $value;
+    }
+
+    /** Remove the dotted $path of $node. @param array<string,mixed> $node */
+    private static function unsetLeaf( array &$node, string $path ): void
+    {
+        $keys = explode( '.', $path );
+        $last = array_pop( $keys );
+        $ref  = &$node;
+        foreach ( $keys as $k ) {
+            if ( ! isset( $ref[ $k ] ) || ! is_array( $ref[ $k ] ) ) {
+                return;
+            }
+            $ref = &$ref[ $k ];
+        }
+        unset( $ref[ $last ] );
     }
 }

@@ -681,6 +681,94 @@ class KitAdaptersTest extends TestCase
         $this->assertSame( [], $dead->violations( '<!-- wp:divi/button {"button":{"decoration":{"spacingX":{"a":"b"}}}} /-->' ) );
     }
 
+    /** Every carrier of the rules and chips adapter => the roles it takes and the bands each may sit on. */
+    private const THIN_CARRIERS = [
+        'divi/divider' => [ 'rule' => [ 'light', 'surface', 'accent', 'dark', 'panel' ], 'rule-strong' => [ 'light', 'surface', 'accent', 'dark', 'panel' ] ],
+        'divi/group'   => [ 'rule' => [ 'light', 'surface', 'accent', 'dark', 'panel' ], 'rule-strong' => [ 'light', 'surface', 'accent', 'dark', 'panel' ], 'chip' => [ 'light', 'surface', 'accent', 'dark' ] ],
+        'divi/column'  => [ 'rule' => [ 'light', 'surface', 'accent', 'dark', 'panel' ], 'rule-strong' => [ 'light', 'surface', 'accent', 'dark', 'panel' ] ],
+        'divi/icon'    => [ 'chip' => [ 'light', 'surface', 'accent', 'dark' ] ],
+    ];
+
+    public function testTheDeadOnModuleGuardCoversRulesAndChips(): void
+    {
+        $this->assertEqualsCanonicalizing( array_keys( self::THIN_CARRIERS ), array_keys( array_filter( KitAdapters::APPLIED, static fn ( array $roles ): bool => [] !== array_intersect( $roles, [ 'rule', 'rule-strong', 'chip' ] ) ) ), 'every carrier of a rule or chip role is walked' );
+        foreach ( self::THIN_CARRIERS as $block => $roles ) {
+            foreach ( $roles as $role => $bands ) {
+                $this->assertSame( array_values( array_intersect( KitAdapters::APPLIED[ $block ], [ 'rule', 'rule-strong', 'chip' ] ) ), array_keys( array_intersect_key( $roles, array_flip( KitAdapters::APPLIED[ $block ] ) ) ), "$block: the walked roles are the roles APPLIED names" );
+            }
+        }
+        $resolve = function ( string $block, string $role, string $on, array $kit ): string {
+            $markup = '<!-- ' . 'wp:' . $block . ' {"builderVersion":"5.15.1","aied":{"kit":"' . $role . '","on":"' . $on . '"}} /-->';
+            $out    = KitResolver::resolve( $markup, $kit );
+            $this->assertSame( [], KitResolver::leftovers( $out ), "$block $role on $on resolved" );
+            $this->assertStringNotContainsString( '"aied"', $out );
+            $this->assertStringContainsString( 'wp:' . $block . ' {', $out );
+            return $out;
+        };
+
+        // 1. The shipped list holds no rule or chip line (every path passed the probe ON its carrier): every resolved block is clean.
+        $kits    = $this->shippedKits();
+        $walked  = 0;
+        $markups = [];
+        foreach ( $kits as $kit ) {
+            foreach ( self::THIN_CARRIERS as $block => $roles ) {
+                foreach ( $roles as $role => $bands ) {
+                    foreach ( $bands as $on ) {
+                        $out = $resolve( $block, $role, $on, $kit );
+                        $this->assertSame( [], DeadOnModule::load()->violations( $out ), "{$kit['id']} $role on $block / $on" );
+                        if ( 'soft-solid' === $kit['id'] && 'light' === $on ) {
+                            $markups[ "$block|$role" ] = $out;
+                        }
+                        ++$walked;
+                    }
+                }
+            }
+        }
+        $this->assertSame( 40 * ( 3 * 2 * 5 + 2 * 4 ), $walked, 'rules: 3 carriers x 2 roles x 5 bands; chips: 2 carriers x 4 bands, per kit' );
+
+        // 2. Planted dead lines make exactly their own carrier's resolved patch fail. A breakpoint is `{bp}` in a path (a literal
+        //    `desktop` in a line would never match, which the last assertion pins).
+        $file = tempnam( sys_get_temp_dir(), 'dead' );
+        $this->assertIsString( $file );
+        file_put_contents( $file, "# planted\ndivi/divider|divider.advanced.line.{bp}.value.style|planted-divider-style|planted for the test\ndivi/icon|module.decoration.border|planted-icon-border|planted for the test\n" );
+        $literal = tempnam( sys_get_temp_dir(), 'dead' );
+        $this->assertIsString( $literal );
+        file_put_contents( $literal, "divi/divider|divider.advanced.line.desktop.value.style|planted-literal|a literal breakpoint never matches\n" );
+        try {
+            $planted = DeadOnModule::load( $file );
+            foreach ( $kits as $kit ) {
+                foreach ( self::THIN_CARRIERS as $block => $roles ) {
+                    foreach ( $roles as $role => $bands ) {
+                        foreach ( $bands as $on ) {
+                            $found = $planted->violations( $resolve( $block, $role, $on, $kit ) );
+                            $hit   = ( 'divi/divider' === $block ) || ( 'divi/icon' === $block );
+                            if ( $hit ) {
+                                $this->assertNotSame( [], $found, "{$kit['id']} $role on $block / $on: the planted dead path is reported" );
+                                $prefix   = 'divi/divider' === $block ? 'divi/divider: divider.advanced.line.{bp}.value.style' : 'divi/icon: module.decoration.border.{bp}.value.radius';
+                                $evidence = 'divi/divider' === $block ? '(dead: planted-divider-style)' : '(dead: planted-icon-border)';
+                                foreach ( $found as $v ) {
+                                    $this->assertStringStartsWith( $prefix, $v, "{$kit['id']} $role on $block / $on" );
+                                    $this->assertStringEndsWith( $evidence, $v );
+                                }
+                            } else {
+                                $this->assertSame( [], $found, "{$kit['id']} $role on $block / $on: the line is scoped to its own carrier" );
+                            }
+                        }
+                    }
+                }
+            }
+            // The same path text on another carrier is not reported (the group's tag has module.decoration.border too).
+            $this->assertStringContainsString( '"border"', $markups['divi/group|chip'] );
+            $this->assertSame( [], $planted->violations( $markups['divi/group|chip'] ) );
+            $this->assertSame( [], $planted->violations( str_replace( 'wp:divi/divider', 'wp:divi/text', $markups['divi/divider|rule'] ) ) );
+            // A literal `desktop` in a line matches nothing: lines for the thin carriers must use {bp}.
+            $this->assertSame( [], DeadOnModule::load( $literal )->violations( $markups['divi/divider|rule'] ) );
+        } finally {
+            unlink( $file );
+            unlink( $literal );
+        }
+    }
+
     public function testThePatchIsDeterministic(): void
     {
         foreach ( $this->shippedKits() as $kit ) {
