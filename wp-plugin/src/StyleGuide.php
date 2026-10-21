@@ -279,6 +279,55 @@ final class StyleGuide
     }
 
     /**
+     * The body of the `kit-rules` paragraph "Accordion and toggle items", generated from the role map: every sentence is said only
+     * while a carrier (`divi/accordion`, `divi/toggle`) answers the role it describes, and every path named is one
+     * KitAdapters::item() writes for that role (tests compare them with the adapter's real output for every kit). '' while no
+     * carrier answers an item role.
+     *
+     * @param array<string,list<string>> $applied
+     */
+    private static function itemRules( array $applied ): string
+    {
+        $accordion = array_values( array_intersect( [ 'item', 'item-rule' ], $applied['divi/accordion'] ?? [] ) );
+        $toggle    = array_values( array_intersect( [ 'item', 'item-rule' ], $applied['divi/toggle'] ?? [] ) );
+        $item      = in_array( 'item', $accordion, true ) || in_array( 'item', $toggle, true );
+        $rule      = in_array( 'item-rule', $accordion, true ) || in_array( 'item-rule', $toggle, true );
+        if ( ! $item && ! $rule ) {
+            return '';
+        }
+        $d = 'desktop.value';
+
+        $both = $item && $rule;
+        $what = $both ? 'An `item` is a boxed item and an `item-rule` a rule row' : ( $item ? 'An `item` is a boxed item' : 'An `item-rule` is a rule row' );
+        $s    = [
+            $what . ', on a `divi/accordion` (one accordion styles all its items, never one item alone) or a `divi/toggle`.',
+            ( $both ? 'Both: the' : 'The' ) . ' title in the text colour, open and closed; the answer in the muted colour; the icons in the text colour (an accordion has no open icon); every state is written, so none falls back to Divi\'s grey defaults; no hover.',
+        ];
+        if ( $item ) {
+            $s[] = 'An `item` is filled like a card (the surface colour, the bg colour on a surface band), the same in both states, and takes the card\'s frame, radius and rest shadow; on a toggle it also takes the card padding (an accordion keeps Divi\'s own item padding: its padding setting would pad the answer).';
+        }
+        if ( $rule ) {
+            $s[] = 'An `item-rule` (on a light or surface band only) is filled with the band colour, has square corners, only a bottom rule (the kit\'s width, at least 1px, and style, in the card frame colour) and no shadow; the recipe keeps its own padding.';
+        }
+        if ( [] !== $accordion ) {
+            $s[] = "On the accordion write all of it on the parent; each item gets it: fills at `openToggle.decoration.background.{$d}.color` and `closedToggle.decoration.background.{$d}.color`, titles at `openToggle.decoration.font.font.{$d}.color` and `closedToggle.decoration.font.font.{$d}.color`, the icon at `closedToggleIcon.decoration.icon.{$d}.color`, the answer at `content.decoration.bodyFont.body.font.{$d}.color`.";
+        }
+        if ( [] !== $toggle ) {
+            $s[] = [] !== $accordion
+                ? "A `divi/toggle` carries the look on itself, not on a parent, at the same paths except the closed title at `closedTitle.decoration.font.font.{$d}.color` (not `closedToggle`) and the open icon at `openToggleIcon.decoration.icon.{$d}.color`."
+                : "A `divi/toggle` carries the look on itself, not on a parent: fills at `openToggle.decoration.background.{$d}.color` and `closedToggle.decoration.background.{$d}.color`, the open title at `openToggle.decoration.font.font.{$d}.color`, the closed title at `closedTitle.decoration.font.font.{$d}.color` (not `closedToggle`), the icons at `closedToggleIcon.decoration.icon.{$d}.color` and `openToggleIcon.decoration.icon.{$d}.color`, the answer at `content.decoration.bodyFont.body.font.{$d}.color`.";
+        }
+        if ( $item ) {
+            $s[] = "An `item` also writes its frame and radius at `module.decoration.border.{$d}` and its shadow at `module.decoration.boxShadow.{$d}`" . ( in_array( 'item', $toggle, true ) ? ", and a toggle its padding at `module.decoration.spacing.{$d}.padding`" : '' ) . '.';
+        }
+        if ( $rule ) {
+            $s[] = "An `item-rule` writes only its bottom rule at `module.decoration.border.{$d}.styles.bottom` and square corners at `module.decoration.border.{$d}.radius`: no frame, no shadow.";
+        }
+
+        return implode( ' ', $s );
+    }
+
+    /**
      * Topic `kit-rules`: what each module takes from a kit, the same for every kit, said ONCE here instead of in every kit
      * topic. Generated from KitAdapters::APPLIED: a module's section is served only while an adapter answers its roles. At
      * most 10,000 bytes.
@@ -325,14 +374,9 @@ final class StyleGuide
                 . 'In a recipe served with a kit, a photo that the recipe rounds follows it (0px gives a square photo); a circle, a pill, an arch or a tiled grid keeps its own corners: those are shapes. '
                 . 'For your own image write all four corners at that radius at `image.decoration.border.desktop.value.radius`.' . "\n";
         }
-        if ( $has( 'item' ) ) {
-            $out .= "\n## Accordion and toggle items\n\n"
-                . 'An `item` is a boxed item and an `item-rule` a rule row, on a `divi/accordion` (one accordion styles all its items, never one item alone) or a `divi/toggle`. '
-                . 'Both: the title in the text colour, open and closed; the answer in the muted colour; the icons in the text colour (an accordion has no open icon); every state is written, so none falls back to Divi\'s grey defaults; no hover. '
-                . 'An `item` is filled like a card (the surface colour, the bg colour on a surface band), the same in both states, and takes the card\'s frame, radius and rest shadow; on a toggle it also takes the card padding (an accordion keeps Divi\'s own item padding: its padding setting would pad the answer). '
-                . 'An `item-rule` (on a light or surface band only) is filled with the band colour, has square corners, only a bottom rule (the kit\'s width, at least 1px, and style, in the card frame colour) and no shadow; the recipe keeps its own padding.'
-                . ( array_intersect( [ 'item', 'item-rule' ], $applied['divi/accordion'] ?? [] ) === [] ? '' : ' On the accordion write all of it on the parent; each item gets it: frame and radius at `module.decoration.border.desktop.value`, shadow at `module.decoration.boxShadow.desktop.value`, fills at `openToggle.decoration.background.desktop.value.color` and `closedToggle.decoration.background.desktop.value.color`, titles at `openToggle.decoration.font.font.desktop.value.color` and `closedToggle.decoration.font.font.desktop.value.color`, the icon at `closedToggleIcon.decoration.icon.desktop.value.color`, the answer at `content.decoration.bodyFont.body.font.desktop.value.color`.' )
-                . "\n";
+        $itemRules = self::itemRules( $applied );
+        if ( '' !== $itemRules ) {
+            $out .= "\n## Accordion and toggle items\n\n" . $itemRules . "\n";
         }
 
         if ( $has( 'form' ) ) {
