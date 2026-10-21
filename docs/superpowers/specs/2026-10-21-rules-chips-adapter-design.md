@@ -161,6 +161,8 @@ Current: default guide 28,975 B (ceiling 29,108), `kit-rules` 4,607 B (bound 10,
    a guessed number, and is never lowered afterwards. Cost if wrong: a failing cell changes the role table.
 6. *Step badges and timeline dots stay literal* (shape decisions, like arches). Cost if wrong: a later role can adopt them.
 7. *Blurb, testimonial and counters are out*: 13 blocks, 4 recipes, font and colour only.
+8. *The two accent dividers stay literal* (blog-feed and icon-values: a short accent bar on the site's own preset `1ep0co506u`): a brand mark, not a separator, and a `rule-strong` would turn it into a text-coloured line. So 57 rule blocks in 22 recipes migrate, not 59 in 23. Cost if wrong: add a `rule-accent` role later.
+9. *No pair list for rules*: a rule has only style and width, so the 40 kits give about 6 distinct looks; the proof pins that set of distinct looks instead of a 280-line near-duplicate list (the chips keep a pair list). Cost if wrong: none, it is a test shape.
 
 ### 8. Done means
 
