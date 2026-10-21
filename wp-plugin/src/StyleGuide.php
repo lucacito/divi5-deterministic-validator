@@ -303,7 +303,7 @@ final class StyleGuide
             . "Every block in a kit topic is real: resolved by the plugin's own pipeline for the `editorial` language on a light section, with placeholder text. "
             . "Put it inside a column. With another design language keep the structure and swap each colour for its role (listed beside the blocks as value = role(s)), not by its value: two roles can share one value; "
             . "and swap the font family for your language's body font. "
-            . "Where a design language's prose and the kit disagree about corners, borders, shadow or hover, the kit wins.\n";
+            . "Where a design language's prose and the kit disagree about the corners, borders, shadow or hover of a block a kit styles, the kit wins.\n";
         if ( $has( 'control' ) ) {
             $out .= "\n## Buttons\n\n"
                 . "A button takes the kit's control values: fill, border and its sides, control radius, shadow, hover and lift, text and control padding. "
@@ -476,7 +476,7 @@ final class StyleGuide
             }
             if ( [] !== $edges ) {
                 $parts[] = 'Top edge of a ' . implode( ' or ', $edges ) . ': `module.decoration.border.desktop.value.styles` with `all` = width `0px` plus the style and colour, and `top` = the rule width, the same style and colour; '
-                    . 'the other three sides stay 0; put it on each ' . implode( ' or ', $edges ) . ' itself, not a divider module above it.';
+                    . 'the other three sides stay 0; to rule the top of a specific ' . implode( ' or ', $edges ) . ' (for example between plan columns), write the edge on that block itself' . ( $divider ? '; a divider module is for a separate line between blocks.' : '.' );
             }
         }
 

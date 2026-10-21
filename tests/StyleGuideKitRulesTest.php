@@ -238,10 +238,10 @@ class StyleGuideKitRulesTest extends TestCase
         // Rules and chips adapter T3 (plan 2026-10-21), re-pinned deliberately: without the Images paragraph kit-rules was 4,301; the
         // applied sentence gained its tail (+119 B) and the Rules and chips paragraph (+529 B) arrived: 4,949.
         // Guide polish (plan 2026-10-21-guide-polish-rules-chips) re-pinned deliberately: + the shapes passage under Rules and chips, the
-        // "kit wins" sentence and the contact form's live-path clause: 4,949 -> 6,156 (and 5,255 -> 6,462 with the Images paragraph).
-        $this->assertSame( 6156, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph (4,301 before the rules and chips adapter)' );
+        // "kit wins" sentence and the contact form's live-path clause: 4,949 -> 6,289 (and 5,255 -> 6,595 with the Images paragraph; the review fix reworded two clauses, +133 B).
+        $this->assertSame( 6289, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph (4,301 before the rules and chips adapter)' );
         // Image radius pass (Task 1): the Images paragraph replaces the "recorded but unused" clause: +291 B net. Rules and chips T3: 4,607 -> 5,255 (plan bound: 4,607 + 650).
-        $this->assertSame( 6462, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        $this->assertSame( 6595, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         // Rules and chips adapter Step 0 (plan 2026-10-21): the catalog's fixed prose was reworded to reclaim headroom BEFORE the applied sentence gained its rules and chips tail: 8,439 -> 8,325 B (50-kit projection 9,923 -> 9,809 B); the tail then added 119 B: 8,444 B (9,928 B with 50 kits).
         $this->assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter, 8,453 with it, 8,439 at image radius; 8,325 after the Step 0 rewording, 8,444 with the rules and chips tail)' );
     }
@@ -513,7 +513,7 @@ class StyleGuideKitRulesTest extends TestCase
             '`rule` (quiet), `rule-strong`: a `divi/divider` (colour, weight, style) or the top edge of a `divi/group` or `divi/column`; `on`: light, surface, accent, dark or panel. Width from the kit: 1-2px quiet, 2-4px strong, 3px+ for a double. Quiet: hairline colour on light and surface, 40% ink elsewhere; strong: full ink. `chip`: tag (`divi/group`: control radius, outline frame) or icon (`divi/icon`: control radius, accent fill, accent-text glyph; surface/text on accent); `on`: light, surface, accent or dark.',
             $body
         );
-        $this->assertSame( 6462, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'the shipped kit-rules (5,255 before the guide polish)' );
+        $this->assertSame( 6595, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'the shipped kit-rules (5,255 before the guide polish)' );
 
         $yes    = KitAdapters::RULE_PROVEN;
         $cyes   = KitAdapters::CHIP_PROVEN;
@@ -740,7 +740,7 @@ class StyleGuideKitRulesTest extends TestCase
         $split     = (int) strpos( $paragraph, "\n\nWidth by hand:" );
         $this->assertGreaterThan( 0, $split, 'the shapes passage follows the paragraph' );
         $this->assertLessThanOrEqual( 525, strlen( trim( (string) substr( substr( $paragraph, 0, $split ), strlen( "## Rules and chips\n\n" ) ) ) ), 'the generated Rules and chips paragraph (ruleChipRules) is at most 525 B' );
-        $this->assertLessThanOrEqual( 1100, strlen( trim( substr( $paragraph, $split ) ) ), 'the shapes passage (ruleChipShapes) is at most 1,100 B' );
+        $this->assertLessThanOrEqual( 1200, strlen( trim( substr( $paragraph, $split ) ) ), 'the shapes passage (ruleChipShapes) is at most 1,200 B (1,100 before the review fix)' );
         $this->assertLessThanOrEqual( self::BUDGET, $rules );
         $max = 0;
         $this->assertCount( 40, self::KIT_TOPIC_SIZES_BEFORE );
@@ -841,7 +841,7 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertMatchesRegularExpression( '/`all` = width `0px`/', $para );
         $this->assertMatchesRegularExpression( '/`top` = the rule width, the same style and colour/', $para );
         $this->assertStringContainsString( 'the other three sides stay 0', $para );
-        $this->assertStringContainsString( 'put it on each group or column itself, not a divider module above it', $para );
+        $this->assertStringContainsString( 'to rule the top of a specific group or column (for example between plan columns), write the edge on that block itself; a divider module is for a separate line between blocks.', $para );
         // Tag.
         $this->assertMatchesRegularExpression( '/Tag: `module\.decoration\.border\.desktop\.value` with `radius`.*`styles\.all`/', $para );
         // Icon chip and its glyph.
@@ -880,13 +880,17 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertStringNotContainsString( 'divider.advanced.line', $off );
         $this->assertStringNotContainsString( 'Divider:', $off );
         $this->assertStringContainsString( '`module.decoration.border.desktop.value.styles`', $off, 'the top edge is still proven' );
+        $this->assertStringContainsString( 'write the edge on that block itself.', $off, 'no divider offered: the edge sentence does not mention a divider module' );
+        $this->assertStringNotContainsString( 'divider module', $off );
         // Top-edge shape: gone only when BOTH group-top and column-top are false.
         $oneEdge = $this->rulesParagraph( null, array_merge( $yes, [ 'group-top' => false ] ) );
         $this->assertStringContainsString( '`module.decoration.border.desktop.value.styles`', $oneEdge, 'the column still proves it' );
+        $this->assertStringContainsString( 'rule the top of a specific column (for example', $oneEdge );
         $noEdge = $this->rulesParagraph( null, array_merge( $yes, [ 'group-top' => false, 'column-top' => false ] ) );
         $this->assertStringNotContainsString( 'value.styles`', $noEdge );
         $this->assertStringNotContainsString( 'the other three sides', $noEdge );
-        $this->assertStringNotContainsString( 'divider module above', $noEdge );
+        $this->assertStringNotContainsString( 'write the edge on that block itself', $noEdge );
+        $this->assertStringNotContainsString( 'a divider module is for', $noEdge );
         $this->assertStringContainsString( 'divider.advanced.line', $noEdge );
         // No rule carrier at all: no width rule and no rule shape.
         $noRule = $this->rulesParagraph( null, array_merge( $yes, [ 'divider-line' => false, 'group-top' => false, 'column-top' => false ] ) );
@@ -934,7 +938,7 @@ class StyleGuideKitRulesTest extends TestCase
     {
         $text = StyleGuide::markdown( 'kit-rules' );
         $this->assertSame( 1, substr_count( $text, 'the kit wins' ) );
-        $this->assertStringContainsString( 'Where a design language\'s prose and the kit disagree about corners, borders, shadow or hover, the kit wins.', $text );
+        $this->assertStringContainsString( 'Where a design language\'s prose and the kit disagree about the corners, borders, shadow or hover of a block a kit styles, the kit wins.', $text );
         // It sits in the "Reusing" section, before the next heading.
         $reuse = substr( $text, (int) strpos( $text, "## Reusing a kit topic's blocks" ) );
         $reuse = substr( $reuse, 0, (int) strpos( $reuse, "\n## ", 4 ) );
