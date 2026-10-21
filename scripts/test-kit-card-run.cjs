@@ -240,7 +240,7 @@ function mediaPageHtml({ exps = mediaExpects, extraCss = '', drop = false, dup =
 
 
 /**
- * The rule page: every RULE_SLOT as Divi nests it, on the bg band and on a dark band, generated from the expectations. A divider is an `.et_pb_divider` inside
+ * The rule page: every RULE_SLOT as Divi nests it, on the bg, surface, accent and a dark band (a panel rule inside a `text`-filled wrapper on the bg band), generated from the expectations. A divider is an `.et_pb_divider` inside
  * a wrapper group whose line is the `::before`; a group rule carries its own `border-top`; the column rule is a `.et_pb_column` of its own row. `drop` leaves
  * a slot out, `dup` renders a slot's heading twice, `extra` is HTML added to the page.
  */
@@ -262,12 +262,12 @@ function rulePageHtml({ exps = ruleExpects, extraCss = '', drop = [], dup = [], 
   };
   const live = K.RULE_SLOTS.filter((s) => !drop.includes(s.key));
   const band = (b, bg) => `<div class="et_pb_section" style="background:${bg};padding:24px 0"><div class="et_pb_row"><div class="et_pb_column" style="display:block">${live.filter((s) => s.band === b && s.carrier !== 'column' && !s.panel).map((s) => piece(s, exps[K.RULE_SLOTS.indexOf(s)])).join('')}${live.filter((s) => s.band === b && s.panel).map((s) => `<div style="background:#1c1a17;padding:24px">${piece(s, exps[K.RULE_SLOTS.indexOf(s)])}</div>`).join('')}</div></div>${live.filter((s) => s.band === b && s.carrier === 'column').map((s) => piece(s, exps[K.RULE_SLOTS.indexOf(s)])).join('')}</div>`;
-  const body = `${band('bg', '#faf7f2')}${band('dark', '#26211d')}`; // rendered first: building the pieces fills `css`
+  const body = `${band('bg', EDITORIAL.bg)}${band('surface', EDITORIAL.surface)}${band('accent', EDITORIAL.accent)}${band('dark', '#26211d')}`; // rendered first: building the pieces fills `css`
   return `<style>body{margin:0;background:#faf7f2}.et_pb_row{width:90%;margin:0 auto}${css}${extraCss}</style><div class="et-l--post">${body}</div>${extra}`;
 }
 
 /**
- * The chip page: a tag (an `.et_pb_group` holding an `.et_pb_text`) and an icon chip (an `.et_pb_icon` module box holding `span.et-pb-icon`, under a wrapper
+ * The chip page (one section per band: bg, surface, accent, dark): a tag (an `.et_pb_group` holding an `.et_pb_text`) and an icon chip (an `.et_pb_icon` module box holding `span.et-pb-icon`, under a wrapper
  * group with its heading), generated from the expectations. `drop` leaves a chip out, `dup` renders it twice.
  */
 function chipPageHtml({ exps = chipExpects, extraCss = '', drop = [], dup = [], extra = '' } = {}) {
@@ -282,11 +282,14 @@ function chipPageHtml({ exps = chipExpects, extraCss = '', drop = [], dup = [], 
     }
     css += `[data-c="${slot.key}"]{box-sizing:border-box;display:inline-block;padding:10px;background:${e.fill};border-radius:${radius}}[data-c="${slot.key}"] .et-pb-icon{display:block;width:20px;height:20px;line-height:20px;font-size:16px;color:${e.glyph};background:none}`;
     const one = `<div class="et_pb_module et_pb_icon" data-c="${slot.key}"><div class="et_pb_icon_wrap"><span class="et-pb-icon">&#9733;</span></div></div>`;
-    return `<div class="et_pb_module et_pb_group" style="display:block;padding:12px 0"><div class="et_pb_module et_pb_heading"><div class="et_pb_heading_container"><h3 style="margin:0">${slot.heading}</h3></div></div>${one}${dup.includes(slot.key) ? one : ''}</div>`;
+    // A doubled icon chip is its whole wrapper (heading and icon) twice: the heading is what the gate counts.
+    const wrapper = `<div class="et_pb_module et_pb_group" style="display:block;padding:12px 0"><div class="et_pb_module et_pb_heading"><div class="et_pb_heading_container"><h3 style="margin:0">${slot.heading}</h3></div></div>${one}</div>`;
+    return wrapper + (dup.includes(slot.key) ? wrapper : '');
   };
   const live = K.CHIP_SLOTS.filter((s) => !drop.includes(s.key));
-  const body = live.map((s) => piece(s, exps[K.CHIP_SLOTS.indexOf(s)])).join(''); // rendered first: building the pieces fills `css`
-  return `<style>body{margin:0;background:#faf7f2}.et_pb_row{width:90%;margin:0 auto}${css}${extraCss}</style><div class="et-l--post"><div class="et_pb_section"><div class="et_pb_row"><div class="et_pb_column" style="display:block">${body}</div></div></div></div>${extra}`;
+  const BANDS = { bg: EDITORIAL.bg, surface: EDITORIAL.surface, accent: EDITORIAL.accent, dark: '#26211d' };
+  const bodies = Object.keys(BANDS).map((b) => `<div class="et_pb_section" style="background:${BANDS[b]};padding:24px 0"><div class="et_pb_row"><div class="et_pb_column" style="display:block">${live.filter((s) => s.band === b).map((s) => piece(s, exps[K.CHIP_SLOTS.indexOf(s)])).join('')}</div></div></div>`); // rendered first: building the pieces fills `css`
+  return `<style>body{margin:0;background:#faf7f2}.et_pb_row{width:90%;margin:0 auto}${css}${extraCss}</style><div class="et-l--post">${bodies.join('')}</div>${extra}`;
 }
 
 (async () => {
@@ -378,7 +381,7 @@ function chipPageHtml({ exps = chipExpects, extraCss = '', drop = [], dup = [], 
     // rule: a slot that is not on the page, one on it twice, and the early return that checks nothing else.
     const rLost = await runRules(rulePageHtml({ drop: ['rule-column-bg'] }));
     assert.deepStrictEqual(rc(rLost), ['rule']);
-    assert.match(rLost.problems[0][1], /^9 of 10 rules rendered as the sheet says: rule-column-bg is not in the page/);
+    assert.match(rLost.problems[0][1], /^15 of 16 rules rendered as the sheet says: rule-column-bg is not in the page/);
     assert.strictEqual(rLost.rulesChecked, 0, 'a page with a rule missing checks nothing else');
     assert.deepStrictEqual(K.emptyRuleRunProblems({ rulesChecked: rLost.rulesChecked }), ['no rule was checked: the rule selection was empty']);
     const rTwice = await runRules(rulePageHtml({ dup: ['rule-group-bg'] }));
@@ -452,7 +455,7 @@ function chipPageHtml({ exps = chipExpects, extraCss = '', drop = [], dup = [], 
     // chip: a chip that is not on the page or on it twice, an icon without its glyph; nothing else is then checked.
     const cLost = await runChips(chipPageHtml({ drop: ['chip-icon-bg'] }));
     assert.deepStrictEqual(rc(cLost), ['chip']);
-    assert.match(cLost.problems[0][1], /^1 of 2 chips rendered as the sheet says: chip-icon-bg is not in the page/);
+    assert.match(cLost.problems[0][1], /^4 of 5 chips rendered as the sheet says: chip-icon-bg is not in the page/);
     assert.strictEqual(cLost.chipsChecked, 0);
     assert.deepStrictEqual(K.emptyChipRunProblems({ chipsChecked: cLost.chipsChecked }), ['no chip was checked: the chip selection was empty']);
     const cTwice = await runChips(chipPageHtml({ dup: ['chip-tag-bg'] }));
@@ -475,6 +478,145 @@ function chipPageHtml({ exps = chipExpects, extraCss = '', drop = [], dup = [], 
       assert.deepStrictEqual(left, { bar: 'visible', leftovers: 0, glyph: 'visible', chips: 0 }, 'everything hidden for a sample is restored');
       await pg.close();
     }
+    // ---- the branches the first gate never rendered (guide polish Task 2): dividers on the surface and accent bands, a top-rule group in an inverted panel,
+    // a tag on the surface and photo bands, an icon chip on the accent band. Each new slot has its own departures, each caught with the right code. ----
+    const NEWR = ['rule-divider-surface', 'rule-strong-divider-surface', 'rule-divider-accent', 'rule-strong-divider-accent', 'rule-group-panel-bg', 'rule-strong-group-panel-bg'];
+    const NEWC = ['chip-tag-surface', 'chip-tag-dark', 'chip-icon-accent'];
+    const rexpOf = (key) => ruleExpects[K.RULE_SLOTS.findIndex((x) => x.key === key)];
+    const selOf = (key) => `[data-r="${key}"]` + (K.RULE_SLOTS.find((x) => x.key === key).carrier === 'divider' ? '::before' : '');
+    const withRule = (key, mut) => { const e = clone(ruleExpects); mut(e[K.RULE_SLOTS.findIndex((x) => x.key === key)]); return e; };
+    for (const w of [900, 400]) { const r = await runRules(rulePageHtml(), { width: w }); for (const [c] of r.problems) assert.notStrictEqual(c, 'rule', w); }
+    for (const key of NEWR) {
+      const e = rexpOf(key);
+      const o = rokay.observations.find((x) => x.key === key);
+      assert.ok(o && o.band && o.contrast.line > 1, `${key}: the new rule was measured and its painted band sampled: ${JSON.stringify(o)}`);
+      assert.strictEqual(o.got.borderTopWidth, e.top.width + 'px', `${key}: the computed line is the expected width`);
+      // rule-style: a different style on the line (the divider's ::before or the group's own top edge).
+      const style = e.top.style === 'dashed' ? 'dotted' : 'dashed';
+      const rs = await runRules(rulePageHtml({ extraCss: `${selOf(key)}{border-top-style:${style}}` }));
+      assert.deepStrictEqual(rc(rs), ['rule-style'], `${key}: ${rc(rs).join()}`);
+      assert.match(rs.problems[0][1], new RegExp(`^${key} rest: top line is ${style}, expected ${e.top.style}`));
+      // rule-width: a thicker line.
+      const rw = await runRules(rulePageHtml({ extraCss: `${selOf(key)}{border-top-width:${e.top.width + 2}px}` }));
+      assert.deepStrictEqual(rc(rw), ['rule-width'], `${key}: ${rc(rw).join()}`);
+      assert.match(rw.problems[0][1], new RegExp(`^${key} rest: top line is ${e.top.width + 2}px, expected ${e.top.width}px`));
+      // rule-colour: red where the kit says something else (the alpha is part of the colour: an opaque line fails where a 40% one is expected).
+      const wrongCol = /accent/.test(key) ? 'rgb(255, 230, 200)' : /panel/.test(key) ? 'rgb(255, 255, 255)' : 'rgb(0, 0, 0)'; // never the expected colour, always readable on the band (only rule-colour fires)
+      const rcol = await runRules(rulePageHtml({ extraCss: `${selOf(key)}{border-top-color:${wrongCol}}` }));
+      assert.deepStrictEqual(rc(rcol), ['rule-colour'], `${key}: ${rc(rcol).join()}`);
+      if (K.colour(e.top.color).a < 1) {
+        const solid = K.colour(e.top.color);
+        const ra = await runRules(rulePageHtml({ extraCss: `${selOf(key)}{border-top-color:rgb(${solid.r}, ${solid.g}, ${solid.b})}` }));
+        assert.deepStrictEqual(rc(ra), ['rule-colour'], `${key}: the 40% alpha is part of the colour: ${rc(ra).join()}`);
+      }
+      // rule: a slot that is not on the page, and one on it twice; nothing else is then checked.
+      const lost = await runRules(rulePageHtml({ drop: [key] }));
+      assert.deepStrictEqual(rc(lost), ['rule'], key);
+      assert.match(lost.problems[0][1], new RegExp(`^15 of 16 rules rendered as the sheet says: ${key} is not in the page`));
+      assert.strictEqual(lost.rulesChecked, 0, `${key}: a page with a rule missing checks nothing else`);
+      const twice = await runRules(rulePageHtml({ dup: [key] }));
+      assert.deepStrictEqual(rc(twice), ['rule'], key);
+      assert.match(twice.problems[0][1], new RegExp(`${key} is on the page 2 times, expected 1`));
+      // A null expectation is a finding, never a skip.
+      const hole = withRule(key, (x) => { x.top.width = null; });
+      assert.ok(rc(await runRules(rulePageHtml(), { exps: hole })).includes('rule-expectation'), `${key}: a hole in the expectation`);
+    }
+    // A stray side on the panel group rule (only the top edge is drawn).
+    const stray = await runRules(rulePageHtml({ extraCss: '[data-r="rule-strong-group-panel-bg"]{border-bottom:2px solid #faf7f2}' }));
+    assert.deepStrictEqual(rc(stray), ['rule-width']);
+    assert.match(stray.problems[0][1], /^rule-strong-group-panel-bg rest: bottom side is 2px, expected 0px/);
+    // rule-contrast alone, on the new bands: the page agrees with its own (faint) expectations, so only the painted-band rule can object.
+    const faintPanel = withRule('rule-group-panel-bg', (x) => { x.top.color = 'rgba(28,26,23,0.05)'; });
+    const rcFaintPanel = await runRules(rulePageHtml({ exps: faintPanel }), { exps: faintPanel });
+    assert.deepStrictEqual(rc(rcFaintPanel), ['rule-contrast'], 'a faint quiet line on the panel: ' + JSON.stringify(rcFaintPanel.problems));
+    assert.match(rcFaintPanel.problems[0][1], /^rule-group-panel-bg rule line #[0-9a-f]{6} on the band #1c1a17 is 1(\.0[0-9]*)?:1, needs 1\.1/);
+    const weakAccent = withRule('rule-strong-divider-accent', (x) => { x.top.color = '#a8462a'; });
+    const rcWeakAccent = await runRules(rulePageHtml({ exps: weakAccent }), { exps: weakAccent });
+    assert.deepStrictEqual(rc(rcWeakAccent), ['rule-contrast'], 'a strong line almost the colour of the accent band');
+    assert.match(rcWeakAccent.problems[0][1], /^rule-strong-divider-accent rule-strong line #a8462a on the band #9a3b1f is 1\.[0-9]+:1, needs 3/);
+    const sameAccent = withRule('rule-divider-accent', (x) => { x.top.color = EDITORIAL.accent; });
+    assert.deepStrictEqual(rc(await runRules(rulePageHtml({ exps: sameAccent }), { exps: sameAccent })), ['rule-contrast'], 'a quiet line the colour of the accent band');
+    const weakSurface = withRule('rule-strong-divider-surface', (x) => { x.top.color = '#d0d0d0'; });
+    const rcWeakSurface = await runRules(rulePageHtml({ exps: weakSurface }), { exps: weakSurface });
+    assert.deepStrictEqual(rc(rcWeakSurface), ['rule-contrast'], 'a strong line at about 1.5:1 on the surface band');
+    assert.match(rcWeakSurface.problems[0][1], /^rule-strong-divider-surface rule-strong line #d0d0d0 on the band #ffffff/);
+    // The new rules are hidden for the sample and put back, even on the panel.
+    {
+      const pg = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+      await pg.setContent(rulePageHtml({ extraCss: '#bar{position:fixed;top:0;left:0;right:0;height:900px;background:#cc0000;z-index:9}' }));
+      await pg.evaluate(() => { const b = document.createElement('div'); b.id = 'bar'; document.body.appendChild(b); });
+      const r = await checkRules(pg, { width: 1280, expects: ruleExpects });
+      assert.deepStrictEqual(r.problems, [], 'a fixed bar over the page is hidden for the new samples too: ' + JSON.stringify(r.problems.slice(0, 3)));
+      assert.ok(r.observations.filter((o) => NEWR.includes(o.key)).every((o) => o.band !== '#cc0000'), 'no new rule was sampled over the bar');
+      await pg.close();
+    }
+    // A run that checked no rule fails (the empty selection), whatever the new slots say.
+    assert.deepStrictEqual(K.emptyRuleRunProblems({ rulesChecked: (await runRules(rulePageHtml({ drop: NEWR }))).rulesChecked }), ['no rule was checked: the rule selection was empty']);
+
+    const cexpOf = (key) => chipExpects[K.CHIP_SLOTS.findIndex((x) => x.key === key)];
+    const withChip = (key, mut) => { const e = clone(chipExpects); mut(e[K.CHIP_SLOTS.findIndex((x) => x.key === key)]); return e; };
+    for (const key of NEWC) {
+      const e = cexpOf(key);
+      const o = cokay.observations.find((x) => x.key === key);
+      assert.ok(o && o.band, `${key}: the new chip was measured and its painted band sampled: ${JSON.stringify(o)}`);
+      // chip-radius: one rounder corner set than the kit's.
+      const rr = await runChips(chipPageHtml({ extraCss: `[data-c="${key}"]{border-radius:37px}` }));
+      assert.deepStrictEqual(rc(rr), ['chip-radius'], `${key}: ${rc(rr).join()}`);
+      // chip: not on the page, or on it twice; nothing else is then checked.
+      const lost = await runChips(chipPageHtml({ drop: [key] }));
+      assert.deepStrictEqual(rc(lost), ['chip'], key);
+      assert.match(lost.problems[0][1], new RegExp(`^4 of 5 chips rendered as the sheet says: ${key} is not in the page`));
+      assert.strictEqual(lost.chipsChecked, 0, `${key}: a page with a chip missing checks nothing else`);
+      const twice = await runChips(chipPageHtml({ dup: [key] }));
+      assert.deepStrictEqual(rc(twice), ['chip'], key);
+      assert.match(twice.problems[0][1], new RegExp(`${key} is on the page 2 times, expected 1`));
+      // A null corner is a finding, never a skip.
+      const hole = withChip(key, (x) => { x.radius = [4, 4, 4]; });
+      assert.ok(rc(await runChips(chipPageHtml(), { exps: hole })).includes('chip-expectation'), `${key}: a hole in the expectation`);
+    }
+    // chip-frame on the new tags: a dashed frame where the kit says solid; on the photo band an OPAQUE frame where the kit says 40%.
+    const cfSurf = await runChips(chipPageHtml({ extraCss: '[data-c="chip-tag-surface"]{border-style:dashed}' }));
+    assert.deepStrictEqual(rc(cfSurf), ['chip-frame']);
+    assert.match(cfSurf.problems[0][1], /^chip-tag-surface rest: border-top style dashed, expected solid/);
+    const darkFrame = cexpOf('chip-tag-dark').frame.color; const dk = K.colour(darkFrame);
+    assert.ok(dk.a < 1, 'the photo-band frame of this kit is the 40% alpha form: ' + darkFrame);
+    const cfDark = await runChips(chipPageHtml({ extraCss: `[data-c="chip-tag-dark"]{border-color:rgb(${dk.r}, ${dk.g}, ${dk.b})}` }));
+    assert.deepStrictEqual(rc(cfDark), ['chip-frame'], 'the 40% alpha is part of the frame colour: ' + rc(cfDark).join());
+    // chip-fill on the accent chip: the accent fill the bg-band chip has instead of `surface`; a glyph in the wrong colour; a colour painted over it.
+    const ICON_A = '[data-c="chip-icon-accent"]';
+    const cfAcc = await runChips(chipPageHtml({ extraCss: `${ICON_A}{background:${EDITORIAL.accent}}` }));
+    assert.ok(rc(cfAcc).includes('chip-fill'), 'the bg-band fill on the accent chip: ' + rc(cfAcc).join());
+    assert.match(cfAcc.problems.find(([c]) => c === 'chip-fill')[1], /^chip-icon-accent rest: fill rgb\(154, 59, 31\), expected #ffffff/);
+    const cfAccGlyph = await runChips(chipPageHtml({ extraCss: `${ICON_A} .et-pb-icon{color:#ffffff}` }));
+    assert.deepStrictEqual(rc(cfAccGlyph), ['chip-fill', 'chip-contrast'], 'a white glyph on the white accent-band chip: ' + rc(cfAccGlyph).join());
+    assert.match(cfAccGlyph.problems.find(([c]) => c === 'chip-fill')[1], /^chip-icon-accent rest: glyph colour rgb\(255, 255, 255\), expected #1c1a17/);
+    const cfAccOver = await runChips(chipPageHtml({ extraCss: `${ICON_A}{position:relative}${ICON_A}::after{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:#336699;border-radius:inherit}` }));
+    assert.ok(cfAccOver.problems.some(([c, d]) => c === 'chip-fill' && /^chip-icon-accent painted fill #336699 differs from the computed rgb\(255, 255, 255\)/.test(d)), JSON.stringify(cfAccOver.problems));
+    // chip-contrast alone, on the new bands: the page agrees with its (unreadable) expectations.
+    const fillIsBand = withChip('chip-icon-accent', (x) => { x.fill = EDITORIAL.accent; x.glyph = '#ffffff'; });
+    const ccFillBand = await runChips(chipPageHtml({ exps: fillIsBand }), { exps: fillIsBand });
+    assert.deepStrictEqual(rc(ccFillBand), ['chip-contrast'], 'an accent-band icon chip whose fill equals the band: ' + JSON.stringify(ccFillBand.problems));
+    assert.match(ccFillBand.problems[0][1], /^chip-icon-accent the chip fill #9a3b1f is the colour of the band #9a3b1f/);
+    const glyphIsFill = withChip('chip-icon-accent', (x) => { x.glyph = x.fill; });
+    const ccAccGlyph = await runChips(chipPageHtml({ exps: glyphIsFill }), { exps: glyphIsFill });
+    assert.deepStrictEqual(rc(ccAccGlyph), ['chip-contrast']);
+    assert.match(ccAccGlyph.problems[0][1], /^chip-icon-accent glyph #ffffff on the chip fill #ffffff is 1:1, needs 3/);
+    const faintDark = withChip('chip-tag-dark', (x) => { x.frame.color = 'rgba(38,33,29,0.05)'; });
+    const ccFaintDark = await runChips(chipPageHtml({ exps: faintDark }), { exps: faintDark });
+    assert.deepStrictEqual(rc(ccFaintDark), ['chip-contrast'], 'a quiet frame the colour of the photo band: ' + JSON.stringify(ccFaintDark.problems));
+    assert.match(ccFaintDark.problems[0][1], /^chip-tag-dark frame top #[0-9a-f]{6} on the band #26211d is 1(\.0[0-9]*)?:1, needs 1\.1/);
+    const faintOpaqueDark = withChip('chip-tag-dark', (x) => { x.frame.color = '#4a4540'; });
+    const ccOpaqueDark = await runChips(chipPageHtml({ exps: faintOpaqueDark }), { exps: faintOpaqueDark });
+    assert.deepStrictEqual(rc(ccOpaqueDark), ['chip-contrast'], 'an OPAQUE frame is a strong frame: it needs 3.0 on the photo band');
+    assert.match(ccOpaqueDark.problems[0][1], /^chip-tag-dark frame top #4a4540 on the band #26211d is 1\.[0-9]+:1, needs 3/);
+    const faintSurface = withChip('chip-tag-surface', (x) => { x.frame.color = '#fafafa'; });
+    assert.deepStrictEqual(rc(await runChips(chipPageHtml({ exps: faintSurface }), { exps: faintSurface })), ['chip-contrast'], 'a frame nearly the colour of the surface band');
+    // The 0px kit is checked on the new chips too (four zeros are expectations).
+    const sq = await runChips(chipPageHtml({ exps: squareChipExpects }), { exps: squareChipExpects });
+    assert.deepStrictEqual(sq.problems, [], JSON.stringify(sq.problems));
+    assert.deepStrictEqual(squareChipExpects.map((x) => x.radius.join()), K.CHIP_SLOTS.map(() => '0,0,0,0'));
+    assert.deepStrictEqual(K.emptyChipRunProblems({ chipsChecked: (await runChips(chipPageHtml({ drop: NEWC }))).chipsChecked }), ['no chip was checked: the chip selection was empty']);
+
     if (RULES_ONLY) { console.log('OK kit-rule-run in a real Chromium on synthetic pages (AIED_RULES_ONLY): a matching page passes at 1280, 900 and 400, a 0px chip kit is checked, every rule and chip departure is caught with its code'); return; }
 
     // ---- the image: the corners of the img, its wrapper and the module box, the clip, overflow and the count ----

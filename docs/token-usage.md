@@ -42,9 +42,9 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic controls | get_style_guide with topic "controls", only when asked for | 8,331 | 2,083 |
 | The style guide, topic toggles | get_style_guide with topic "toggles", only when asked for | 5,834 | 1,459 |
 | The style guide, topic forms | get_style_guide with topic "forms", only when asked for | 6,474 | 1,619 |
-| The style guide, topic composition | get_style_guide with topic "composition", only when asked for | 8,589 | 2,148 |
+| The style guide, topic composition | get_style_guide with topic "composition", only when asked for | 8,706 | 2,177 |
 | The style guide, topic style-kits | get_style_guide with topic "style-kits", only when asked for | 8,444 | 2,111 |
-| The style guide, topic kit-rules | get_style_guide with topic "kit-rules", only when asked for | 5,255 | 1,314 |
+| The style guide, topic kit-rules | get_style_guide with topic "kit-rules", only when asked for | 7,302 | 1,826 |
 | The style guide, topic style-kit:quiet-solid | get_style_guide with topic "style-kit:quiet-solid", only when asked for | 8,232 | 2,058 |
 | The style guide, topic style-kit:glass-edge | get_style_guide with topic "style-kit:glass-edge", only when asked for | 8,230 | 2,058 |
 | The style guide, topic style-kit:warm-pill | get_style_guide with topic "style-kit:warm-pill", only when asked for | 8,255 | 2,064 |
