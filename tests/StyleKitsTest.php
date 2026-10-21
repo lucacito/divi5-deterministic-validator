@@ -722,6 +722,232 @@ final class StyleKitsTest extends TestCase
         $this->assertTrue(self::sameForm($a, $i));
     }
 
+    /**
+     * What a kit's rules look like: the style and the two drawn widths the rule adapter gives it. A rule has only a style and a
+     * width (its colours are role tokens, equal for every kit), so the 40 kits give a handful of distinct looks by construction
+     * (Controller Ruling 9: a pair list of about 280 lines would only restate that). The look is read from the real divider patch
+     * of both roles on a light band, so it includes the double floor and any style fallback.
+     *
+     * @param array<string,mixed> $kit
+     * @return array{0:string,1:string,2:string} style, quiet width, strong width
+     */
+    private static function ruleLook(array $kit): array
+    {
+        $quiet  = KitAdapters::patch('divi/divider', 'rule', 'light', $kit);
+        $strong = KitAdapters::patch('divi/divider', 'rule-strong', 'light', $kit);
+        self::assertIsArray($quiet);
+        self::assertIsArray($strong);
+        $q = $quiet['divider']['advanced']['line']['desktop']['value'];
+        $s = $strong['divider']['advanced']['line']['desktop']['value'];
+        self::assertSame($q['style'], $s['style']);
+        return [ (string) $q['style'], (string) $q['weight'], (string) $s['weight'] ];
+    }
+
+    /**
+     * The distinct rule looks over the 40 shipped kits, pinned literally with the kits that give each: a kit that changes a
+     * look (or a new kit) must change this table on purpose. Triple (style, quiet width, strong width) => kit ids.
+     */
+    private const RULE_LOOKS = [
+        'dashed|1px|2px' => [ 'hairline-dashed' ],
+        'dotted|2px|3px' => [ 'dotted-pill' ],
+        'double|3px|4px' => [ 'double-frame' ],
+        'solid|1px|2px'  => [
+            'quiet-solid', 'glass-edge', 'warm-pill', 'hairline-mono', 'steady-solid', 'soft-rounded', 'gilt-hairline', 'soft-solid',
+            'warm-pill-soft', 'soft-lift', 'ghost-swap', 'hairline-frame-caps', 'soft-hairline-caps', 'flat-square', 'block-caps',
+            'pill-caps', 'raised-square', 'offset-block-caps', 'text-link', 'text-link-caps', 'pressable', 'hairline-halo',
+        ],
+        'solid|2px|3px'  => [ 'chunky-pill', 'outline-2', 'chunky-pill-offset', 'underline-link', 'offset-frame', 'rimmed-solid', 'outline-pill', 'outline-soft' ],
+        'solid|2px|4px'  => [ 'heavy-block', 'raw-frame', 'neo-brutal', 'thick-frame-caps', 'thick-rounded-caps', 'thick-frame', 'underlined-label' ],
+    ];
+
+    /** @param array<string,array<string,mixed>> $kits id => kit @return array<string,list<string>> look key => kit ids, in the kits' order */
+    private static function ruleLooks(array $kits): array
+    {
+        $out = [];
+        foreach ($kits as $id => $kit) {
+            $out[implode('|', self::ruleLook($kit))][] = (string) $id;
+        }
+        ksort($out);
+        return $out;
+    }
+
+    public function testTheKitsGiveTheseDistinctRuleLooks(): void
+    {
+        $kits = [];
+        foreach (StyleKits::ids() as $id) {
+            $kits[$id] = (array) StyleKits::get($id);
+        }
+        $this->assertCount(40, $kits);
+        $looks = self::ruleLooks($kits);
+        $this->assertCount(6, $looks, 'six distinct rule looks over the 40 kits');
+        $expected = self::RULE_LOOKS;
+        ksort($expected);
+        $this->assertSame(array_keys($expected), array_keys($looks), 'the set of distinct (style, quiet width, strong width) triples is pinned');
+        foreach ($expected as $key => $ids) {
+            $this->assertEqualsCanonicalizing($ids, $looks[$key], "the kits that give the look $key are pinned (change the pin on purpose when a kit changes its look)");
+        }
+        $this->assertSame(40, array_sum(array_map('count', $expected)));
+    }
+
+    public function testTheRuleLookPinCatchesWhatItShould(): void
+    {
+        $a = (array) StyleKits::get('soft-solid');
+        $this->assertSame([ 'solid', '1px', '2px' ], self::ruleLook($a));
+
+        // Two kits with the same look collapse to one triple: everything but the border style and width is invisible to a rule.
+        $b = $a;
+        $b['id']                    = 'planted-twin';
+        $b['fill']                  = 'outline';
+        $b['color']                 = 'text';
+        $b['radius']                = [ 'control' => '30px', 'card' => '30px', 'media' => '30px' ];
+        $b['shadow']                = [ 'rest' => 'soft', 'hover' => 'soft' ];
+        $b['hover']                 = 'lift';
+        $b['text']['capitalization'] = 'uppercase';
+        $b['space']['card']         = '60px';
+        $b['border']['color']       = 'text';
+        $this->assertSame([], StyleKits::problems($b));
+        $this->assertSame(self::ruleLook($a), self::ruleLook($b));
+        $looks = self::ruleLooks([ 'soft-solid' => $a, 'planted-twin' => $b ]);
+        $this->assertSame([ 'solid|1px|2px' => [ 'soft-solid', 'planted-twin' ] ], $looks, 'two kits with the same look are one triple');
+
+        // 0px and 1px give the same rule (the 1px floor), 3px and 4px too (the caps); 2px differs from both.
+        $widths = [];
+        foreach ([ '0px', '1px', '2px', '3px', '4px' ] as $w) {
+            $c                  = $a;
+            $c['border']['width'] = $w;
+            $this->assertSame([], StyleKits::problems($c), $w);
+            $widths[$w] = implode('|', self::ruleLook($c));
+        }
+        $this->assertSame($widths['0px'], $widths['1px']);
+        $this->assertSame('solid|2px|3px', $widths['2px']);
+        $this->assertSame('solid|2px|4px', $widths['3px']);
+        $this->assertSame('solid|2px|4px', $widths['4px']);
+        $this->assertCount(3, array_unique($widths), 'five widths, three looks');
+
+        // A different style or a double is a different look; a pin that misses a look is caught by the key comparison.
+        foreach ([ 'dashed', 'dotted', 'double' ] as $style) {
+            $d                    = $a;
+            $d['border']['style'] = $style;
+            $this->assertSame([], StyleKits::problems($d), $style);
+            $this->assertNotSame(self::ruleLook($a), self::ruleLook($d), "a $style rule is another look");
+        }
+        // A planted kit with a look nobody ships (a 3px dotted rule) is a look outside the pinned set, so the pin would fail.
+        $e                    = $a;
+        $e['border']['style'] = 'dotted';
+        $e['border']['width'] = '3px';
+        $this->assertSame([], StyleKits::problems($e));
+        $this->assertSame('dotted|2px|4px', implode('|', self::ruleLook($e)));
+        $this->assertArrayNotHasKey('dotted|2px|4px', self::RULE_LOOKS);
+    }
+
+    /** The chip near-duplicate pairs measured in Task 4 of the rules and chips plan (46 of 780). It may only be LOWERED, never raised. */
+    private const CHIP_NEAR_DUPLICATES_CAP = 46;
+
+    private const CHIP_NEAR_DUPLICATES = __DIR__ . '/../fixtures/shapes/chip-near-duplicates.txt';
+
+    /**
+     * What a kit's chip looks like, from the chip adapter's patches on a light band: the control radius in px (from the kit's
+     * value the whole-value token resolves to), the tag's frame (width, style, colour role of `styles.all`) and the icon chip's
+     * whole patch (fill, glyph and the radius token; the same for every kit today). One fixed language is the patch itself
+     * (colours are role tokens).
+     *
+     * @param array<string,mixed> $kit
+     * @return array{radius:int,frame:string,icon:string}
+     */
+    private static function chipLook(array $kit): array
+    {
+        $tag  = KitAdapters::patch('divi/group', 'chip', 'light', $kit);
+        $icon = KitAdapters::patch('divi/icon', 'chip', 'light', $kit);
+        self::assertIsArray($tag);
+        self::assertIsArray($icon);
+        self::assertSame('{{aied:kit:radius-control}}', $tag['module']['decoration']['border']['desktop']['value']['radius']);
+        return [
+            'radius' => (int) $kit['radius']['control'],
+            'frame'  => (string) json_encode($tag['module']['decoration']['border']['desktop']['value']['styles']),
+            'icon'   => (string) json_encode($icon),
+        ];
+    }
+
+    /** Two kits make the same chip: control radius < 4px apart, tag frame and icon chip equal. */
+    private static function sameChip(array $a, array $b): bool
+    {
+        $x = self::chipLook($a);
+        $y = self::chipLook($b);
+        return abs($x['radius'] - $y['radius']) < 4 && $x['frame'] === $y['frame'] && $x['icon'] === $y['icon'];
+    }
+
+    public function testEveryKitHasAVisiblyDifferentChip(): void
+    {
+        $kits = [];
+        foreach (StyleKits::ids() as $id) {
+            $kits[$id] = (array) StyleKits::get($id);
+        }
+        $ids   = array_keys($kits);
+        $found = [];
+        $pairs = 0;
+        for ($i = 0; $i < count($ids); $i++) {
+            for ($j = $i + 1; $j < count($ids); $j++) {
+                ++$pairs;
+                if (self::sameChip($kits[$ids[$i]], $kits[$ids[$j]])) {
+                    $found[] = $ids[$i] . '|' . $ids[$j];
+                }
+            }
+        }
+        $this->assertSame(780, $pairs);
+        $listed = [];
+        foreach ((array) file(self::CHIP_NEAR_DUPLICATES, FILE_IGNORE_NEW_LINES) as $line) {
+            $line = trim((string) $line);
+            if ('' !== $line && '#' !== $line[0]) {
+                $listed[] = $line;
+            }
+        }
+        $this->assertSame($listed, $found, 'fixtures/shapes/chip-near-duplicates.txt is exactly the set of kit pairs with the same chip (remove a pair that no longer is one; a new kit must not add one)');
+        $this->assertLessThanOrEqual(self::CHIP_NEAR_DUPLICATES_CAP, count($listed), 'shrink-only by test: the chip near-duplicate list can never grow past the pairs measured in Task 4 of the rules and chips plan');
+        $this->assertLessThanOrEqual(60, count($listed), 'more than 60 pairs would mean the look function is wrong');
+    }
+
+    public function testTheSameChipRuleCatchesWhatItShould(): void
+    {
+        $a = (array) StyleKits::get('soft-solid');
+        $a['border']['width'] = '1px';
+        $this->assertSame([], StyleKits::problems($a));
+        $b = $a;
+        $b['radius']['control'] = ((int) $a['radius']['control'] + 3) . 'px';
+        $this->assertSame([], StyleKits::problems($b));
+        $this->assertTrue(self::sameChip($a, $b), '3px of radius is the same chip');
+        $c = $b;
+        $c['radius']['control'] = ((int) $a['radius']['control'] + 4) . 'px';
+        $this->assertFalse(self::sameChip($a, $c), '4px of radius is visible');
+        foreach ([ [ 'border', 'style', 'dashed' ], [ 'border', 'width', '2px' ], [ 'border', 'color', 'text' ] ] as [ $g, $k, $v ]) {
+            $e = $a;
+            $e[$g][$k] = $v;
+            $this->assertSame([], StyleKits::problems($e), "$g.$k");
+            $this->assertFalse(self::sameChip($a, $e), "a different tag frame $k is visible");
+        }
+        // The tag frame has a 1px floor: a 0px kit border draws the same tag as a 1px one.
+        $z = $a;
+        $z['border']['width'] = '0px';
+        $this->assertSame([], StyleKits::problems($z));
+        $this->assertTrue(self::sameChip($a, $z), '0px and 1px give the same tag');
+        // The underline form never reaches a tag (a tag is an outline pill).
+        $u = $a;
+        $u['border']['sides'] = 'bottom';
+        $u['hover']           = 'none';
+        $this->assertSame([], StyleKits::problems($u));
+        $this->assertTrue(self::sameChip($a, $u), 'the underline form does not change a tag');
+        // Fill, hover, shadow, text, card radius, media radius and spacing never reach a chip.
+        $h = $a;
+        $h['fill']                    = 'outline';
+        $h['hover']                   = 'lift';
+        $h['shadow']                  = [ 'rest' => 'soft', 'hover' => 'soft' ];
+        $h['text']['capitalization']  = 'uppercase';
+        $h['radius']['card']          = '40px';
+        $h['radius']['media']         = '40px';
+        $h['space']['card']           = '60px';
+        $this->assertSame([], StyleKits::problems($h));
+        $this->assertTrue(self::sameChip($a, $h));
+    }
+
     public function testParseOfCorruptTextIsEmpty(): void
     {
         $this->assertSame([], StyleKits::parse(''));

@@ -21142,3 +21142,1178 @@ Candidates from `kit-form.json` that were measured and are not taught, with the 
 Not measured, therefore not taught as proven (from `fixtures/shapes/not-taught-kit-form.json`):
 
 - divi/contact-form: module.decoration.boxShadow, module.decoration.transform and module.decoration.spacing as the SUBMIT BUTTON's shadow, lift and padding: Measured on the real Divi 5.15.1 (scratch check after the kit-form probe: a form with a red hard shadow, 14px 28px padding and a hover lift at module.decoration.*): all three land on div.et_pb_contact_form_container, the whole form, never on the submit button (button: box-shadow none, padding 6px 20px, transform none, rest and hover; container: the shadow, padding 14px 28px, and on hover matrix(1, 0, 0, 1, 0, -4)). The probe saw only a stylesheet difference (css-only, nothing inside the form changed) for the shadow and lift, and a narrower form for the padding. The button's own button.decoration.boxShadow, button.decoration.transform and button.decoration.spacing are the paths that reach it (kf-button-shadow-element-*, kf-button-lift-element, kf-button-padding-element PASS): the opposite of divi/button. Note on evidence: the finding that these module-level values land on the form container rests on a one-off manual ancestor-by-ancestor check of computed styles in a real browser (a scratch script, not committed), not on a committed probe; the committed probe results show only the css-only / narrower-form symptoms.
+
+## kr-divider-control
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.color` = `"#dc2626"`
+- `divider.advanced.line.desktop.value.weight` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:::before:border-block-start-color: rgb(17, 24, 39) -> rgb(220, 38, 38)` |
+| 900 px | yes | 8 | yes | `0:div:::before:border-block-start-color: rgb(17, 24, 39) -> rgb(220, 38, 38)` |
+| 400 px | yes | 8 | yes | `0:div:::before:border-block-start-color: rgb(17, 24, 39) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `::before:border-block-start-color`, `::before:border-block-start-width`, `::before:border-top-color`, `::before:border-top-width`, `::before:bottom`, `::before:inset-block-end`, `::before:perspective-origin`, `::before:transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: colour and weight on a divider module, the controls topic shape.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-divider-style-dashed
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dashed` |
+| 900 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dashed` |
+| 400 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dashed` |
+
+Properties that changed (any width): `::before:border-block-start-style`, `::before:border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider line style dashed over a solid base at 3px (kit width 3px double / dashed etc).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-divider-style-dotted
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dotted` |
+| 900 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dotted` |
+| 400 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dotted` |
+
+Properties that changed (any width): `::before:border-block-start-style`, `::before:border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider line style dotted over a solid base at 3px (kit width 3px double / dashed etc).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-divider-style-double
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.style` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> double` |
+| 900 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> double` |
+| 400 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> double` |
+
+Properties that changed (any width): `::before:border-block-start-style`, `::before:border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider line style double over a solid base at 3px (kit width 3px double / dashed etc).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-divider-style-solid
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:::before:border-block-start-style: dashed -> solid` |
+| 900 px | yes | 2 | yes | `0:div:::before:border-block-start-style: dashed -> solid` |
+| 400 px | yes | 2 | yes | `0:div:::before:border-block-start-style: dashed -> solid` |
+
+Properties that changed (any width): `::before:border-block-start-style`, `::before:border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider line style solid over a dashed base.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-divider-weight-1px
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.weight` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 3px -> 1px` |
+| 900 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 3px -> 1px` |
+| 400 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 3px -> 1px` |
+
+Properties that changed (any width): `::before:border-block-start-width`, `::before:border-top-width`, `::before:bottom`, `::before:inset-block-end`, `::before:perspective-origin`, `::before:transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider weight 1px over a 3px base.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-divider-weight-2px
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.weight` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 3px -> 2px` |
+| 900 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 3px -> 2px` |
+| 400 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 3px -> 2px` |
+
+Properties that changed (any width): `::before:border-block-start-width`, `::before:border-top-width`, `::before:bottom`, `::before:inset-block-end`, `::before:perspective-origin`, `::before:transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider weight 2px over a 3px base.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-divider-weight-4px
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.weight` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 3px -> 4px` |
+| 900 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 3px -> 4px` |
+| 400 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 3px -> 4px` |
+
+Properties that changed (any width): `::before:border-block-start-width`, `::before:border-top-width`, `::before:bottom`, `::before:inset-block-end`, `::before:perspective-origin`, `::before:transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider weight 4px over a 3px base.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-divider-weight-3px
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.weight` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 1px -> 3px` |
+| 900 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 1px -> 3px` |
+| 400 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 1px -> 3px` |
+
+Properties that changed (any width): `::before:border-block-start-width`, `::before:border-top-width`, `::before:bottom`, `::before:inset-block-end`, `::before:perspective-origin`, `::before:transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider weight 3px over a 1px base.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-divider-colour-alpha
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.color` = `"rgba(17,24,39,0.4)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:::before:border-block-start-color: rgb(17, 24, 39) -> rgba(17, 24, 39, 0.4)` |
+| 900 px | yes | 2 | yes | `0:div:::before:border-block-start-color: rgb(17, 24, 39) -> rgba(17, 24, 39, 0.4)` |
+| 400 px | yes | 2 | yes | `0:div:::before:border-block-start-color: rgb(17, 24, 39) -> rgba(17, 24, 39, 0.4)` |
+
+Properties that changed (any width): `::before:border-block-start-color`, `::before:border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Divider colour as the resolved alpha form rgba(r,g,b,a) over an opaque hex.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-divider-double-1px
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.style` = `"double"`
+- `divider.advanced.line.desktop.value.weight` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:::before:border-block-start-style: solid -> double` |
+| 900 px | yes | 8 | yes | `0:div:::before:border-block-start-style: solid -> double` |
+| 400 px | yes | 8 | yes | `0:div:::before:border-block-start-style: solid -> double` |
+
+Properties that changed (any width): `::before:border-block-start-style`, `::before:border-block-start-width`, `::before:border-top-style`, `::before:border-top-width`, `::before:bottom`, `::before:inset-block-end`, `::before:perspective-origin`, `::before:transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Style double at 1px: the computed style reports double; CSS paints it solid below 3px (painted look NOT measured).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-divider-double-3px
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.style` = `"double"`
+- `divider.advanced.line.desktop.value.weight` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:::before:border-block-start-style: solid -> double` |
+| 900 px | yes | 8 | yes | `0:div:::before:border-block-start-style: solid -> double` |
+| 400 px | yes | 8 | yes | `0:div:::before:border-block-start-style: solid -> double` |
+
+Properties that changed (any width): `::before:border-block-start-style`, `::before:border-block-start-width`, `::before:border-top-style`, `::before:border-top-width`, `::before:bottom`, `::before:inset-block-end`, `::before:perspective-origin`, `::before:transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Style double at 3px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-divider-in-panel
+
+Block: `divider`, placed inside a `group`, with base settings on its wrapper(s) `group`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.color` = `"#ffffff"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:::before:border-block-start-color: rgb(17, 24, 39) -> rgb(255, 255, 255)` |
+| 900 px | yes | 2 | yes | `0:div:::before:border-block-start-color: rgb(17, 24, 39) -> rgb(255, 255, 255)` |
+| 400 px | yes | 2 | yes | `0:div:::before:border-block-start-color: rgb(17, 24, 39) -> rgb(255, 255, 255)` |
+
+Properties that changed (any width): `::before:border-block-start-color`, `::before:border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: A divider inside a text-coloured panel group: the line colour takes effect inside a group (the panel band).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-group-control
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 23.7969px -> 25.7969px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 23.7969px -> 25.7969px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 23.7969px -> 25.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: the library form, styles.all 0px plus styles.top.width 2px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-group-top-solid
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge style solid (all and top written together, as the adapter does) over a dashed base at 3px.
+
+Registered paths added:
+
+- `module.decoration.border.{bp}.value.styles.top.style`
+
+## kr-group-top-dashed
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge style dashed (all and top written together, as the adapter does) over a solid base at 3px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-group-top-dotted
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dotted"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge style dotted (all and top written together, as the adapter does) over a solid base at 3px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-group-top-double
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"double"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge style double (all and top written together, as the adapter does) over a solid base at 3px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-group-top-width-1px
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 26.7969px -> 24.7969px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 26.7969px -> 24.7969px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 26.7969px -> 24.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge width 1px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-group-top-width-2px
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 26.7969px -> 25.7969px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 26.7969px -> 25.7969px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 26.7969px -> 25.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge width 2px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-group-top-width-3px
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 24.7969px -> 26.7969px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 24.7969px -> 26.7969px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 24.7969px -> 26.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge width 3px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-group-top-width-4px
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 26.7969px -> 27.7969px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 26.7969px -> 27.7969px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 26.7969px -> 27.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge width 4px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-group-top-colour-alpha
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.color` = `"rgba(17,24,39,0.4)"`
+- `module.decoration.border.desktop.value.styles.top.color` = `"rgba(17,24,39,0.4)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgba(17, 24, 39, 0.4)` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgba(17, 24, 39, 0.4)` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgba(17, 24, 39, 0.4)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge colour as the resolved alpha form over an opaque hex.
+
+Registered paths added:
+
+- `module.decoration.border.{bp}.value.styles.top.color`
+
+## kr-column-control
+
+Block: `column`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 40px -> 42px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 40px -> 42px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 40px -> 42px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: the library form, styles.all 0px plus styles.top.width 2px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-column-top-solid
+
+Block: `column`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge style solid (all and top written together, as the adapter does) over a dashed base at 3px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-column-top-dashed
+
+Block: `column`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge style dashed (all and top written together, as the adapter does) over a solid base at 3px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-column-top-dotted
+
+Block: `column`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dotted"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge style dotted (all and top written together, as the adapter does) over a solid base at 3px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-column-top-double
+
+Block: `column`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"double"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge style double (all and top written together, as the adapter does) over a solid base at 3px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-column-top-width-1px
+
+Block: `column`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 43px -> 41px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 43px -> 41px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 43px -> 41px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge width 1px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-column-top-width-4px
+
+Block: `column`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 43px -> 44px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 43px -> 44px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 43px -> 44px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge width 4px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-column-top-colour-alpha
+
+Block: `column`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.color` = `"rgba(17,24,39,0.4)"`
+- `module.decoration.border.desktop.value.styles.top.color` = `"rgba(17,24,39,0.4)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgba(17, 24, 39, 0.4)` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgba(17, 24, 39, 0.4)` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgba(17, 24, 39, 0.4)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Top edge colour as the resolved alpha form over an opaque hex.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-group-top-in-card
+
+Block: `group`, placed inside a `group`, holding `text`, with base settings on its wrapper(s) `group`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 24.7969px -> 26.7969px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 24.7969px -> 26.7969px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 24.7969px -> 26.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: A top rule group nested in a card group: the rule is the inner group top edge.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-group-other-sides-zero
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 24.7969px -> 26.7969px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 24.7969px -> 26.7969px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 24.7969px -> 26.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Control form again; the detail records computed border-right/bottom/left-width stay 0 (read in the vocabulary).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (kit-rule)
+
+Candidates from `kit-rule.json` that were measured and are not taught, with the reason:
+
+- `kr-divider-dead-position-top`: no effect (dead). Default-value check (not a dead path): position top is Divi's default, so nothing changes.
+- `kr-group-dead-all-0px`: no effect (dead). Default-value check (not a dead path): all.width 0px alone changes nothing.
+- `kr-column-dead-all-0px`: no effect (dead). Default-value check (not a dead path): all.width 0px alone changes nothing.
+
+## kch-icon-control
+
+Block: `icon`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.color` = `"#2563eb"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-color: rgb(245, 158, 11) -> rgb(37, 99, 235)` |
+| 900 px | yes | 1 | yes | `0:div:background-color: rgb(245, 158, 11) -> rgb(37, 99, 235)` |
+| 400 px | yes | 1 | yes | `0:div:background-color: rgb(245, 158, 11) -> rgb(37, 99, 235)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: the icon module background.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-icon-radius-0px
+
+Block: `icon`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"0px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"0px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"0px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"0px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 8px -> 0px` |
+| 900 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 8px -> 0px` |
+| 400 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 8px -> 0px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon chip module border radius 0px (four corners, as the kit token resolves) over an 8px base: which element rounds is read from changedElements.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-icon-radius-4px
+
+Block: `icon`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"4px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"4px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"4px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 8px -> 4px` |
+| 900 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 8px -> 4px` |
+| 400 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 8px -> 4px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon chip module border radius 4px (four corners, as the kit token resolves) over an 8px base: which element rounds is read from changedElements.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-icon-radius-12px
+
+Block: `icon`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"12px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"12px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"12px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"12px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 8px -> 12px` |
+| 900 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 8px -> 12px` |
+| 400 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 8px -> 12px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon chip module border radius 12px (four corners, as the kit token resolves) over an 8px base: which element rounds is read from changedElements.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-icon-radius-999px
+
+Block: `icon`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"999px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"999px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"999px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"999px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 8px -> 999px` |
+| 900 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 8px -> 999px` |
+| 400 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 8px -> 999px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon chip module border radius 999px (four corners, as the kit token resolves) over an 8px base: which element rounds is read from changedElements.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-icon-fill
+
+Block: `icon`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.color` = `"#16a34a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-color: rgb(245, 158, 11) -> rgb(22, 163, 74)` |
+| 900 px | yes | 1 | yes | `0:div:background-color: rgb(245, 158, 11) -> rgb(22, 163, 74)` |
+| 400 px | yes | 1 | yes | `0:div:background-color: rgb(245, 158, 11) -> rgb(22, 163, 74)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon chip fill: module.decoration.background colour.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-icon-glyph
+
+Block: `icon`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `icon.advanced.color.desktop.value` = `"#ffffff"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 34 | yes | `2:span:border-block-end-color: rgb(17, 24, 39) -> rgb(255, 255, 255)` |
+| 900 px | yes | 34 | yes | `2:span:border-block-end-color: rgb(17, 24, 39) -> rgb(255, 255, 255)` |
+| 400 px | yes | 34 | yes | `2:span:border-block-end-color: rgb(17, 24, 39) -> rgb(255, 255, 255)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `::before:-webkit-text-fill-color`, `::before:-webkit-text-stroke-color`, `::before:border-block-end-color`, `::before:border-block-start-color`, `::before:border-bottom-color`, `::before:border-inline-end-color`, `::before:border-inline-start-color`, `::before:border-left-color`, `::before:border-right-color`, `::before:border-top-color`, `::before:caret-color`, `::before:color`, `::before:column-rule-color`, `::before:outline-color`, `::before:row-rule-color`, `::before:text-decoration-color`, `::before:text-emphasis-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon chip glyph colour: icon.advanced.color.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-tag-control
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 25.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 25.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 23.7969px -> 25.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: the tag frame width.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-tag-radius-0px
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"0px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"0px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"0px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"0px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 12px -> 0px` |
+| 900 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 12px -> 0px` |
+| 400 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 12px -> 0px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Tag group radius 0px over 12px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-tag-radius-999px
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"999px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"999px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"999px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"999px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 12px -> 999px` |
+| 900 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 12px -> 999px` |
+| 400 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 12px -> 999px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Tag group radius 999px over 12px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-tag-radius-12px
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"12px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"12px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"12px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"12px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 12px` |
+| 900 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 12px` |
+| 400 px | yes | 12 | yes | `0:div:border-bottom-left-radius: 0px -> 12px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Tag group radius 12px over 0px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-tag-frame-1px
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 37.7969px -> 33.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 37.7969px -> 33.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 37.7969px -> 33.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Tag frame width 1px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-tag-frame-2px
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 37.7969px -> 35.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 37.7969px -> 35.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 37.7969px -> 35.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Tag frame width 2px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-tag-frame-4px
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:block-size: 37.7969px -> 39.7969px` |
+| 900 px | yes | 24 | yes | `0:div:block-size: 37.7969px -> 39.7969px` |
+| 400 px | yes | 24 | yes | `0:div:block-size: 37.7969px -> 39.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-width`, `border-block-start-width`, `border-bottom-width`, `border-inline-end-width`, `border-inline-start-width`, `border-left-width`, `border-right-width`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Tag frame width 4px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-tag-style-dashed
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Tag frame style dashed at 3px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-tag-style-dotted
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Tag frame style dotted at 3px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-tag-style-double
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"double"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> double` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Tag frame style double at 3px.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kch-tag-frame-colour
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(71, 85, 105) -> rgb(220, 38, 38)` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(71, 85, 105) -> rgb(220, 38, 38)` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(71, 85, 105) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Tag frame colour.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (kit-chip)
+
+Candidates from `kit-chip.json` that were measured and are not taught, with the reason:
+
+- `kch-icon-dead-align-center`: no effect (dead). Default-value check (not a dead path): align center is Divi's default (typography probe ty-ic-align-center).
+- `kch-tag-dead-all-0px`: no effect (dead). Default-value check (not a dead path).

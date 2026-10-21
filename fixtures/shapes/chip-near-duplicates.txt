@@ -1,0 +1,56 @@
+# Pairs of shipped style kits whose CHIP (the chip adapter's patches for the tag on `divi/group` and the icon chip on `divi/icon`,
+# on a light band) is the same chip by StyleKitsTest::testEveryKitHasAVisiblyDifferentChip: the control radius differs by
+# less than 4px and the tag frame (width with a 1px floor, 3px for a double, style, colour role) and the icon chip patch are
+# equal. The icon chip is the same for every kit apart from the radius token, so the pairs are driven by the control radius
+# and the tag frame. Measured in Task 4 of the rules and chips adapter plan (46 of 780 pairs). The pairs are not transitive:
+# the tolerance sits on the radius. The kits differ as buttons, cards and forms, which is what they were made for, and are
+# never changed to pass this list.
+#
+# Shrink-only: the test asserts this file is exactly the set found and that it never holds more than 46 pairs. A pair that
+# stops being the same chip must be removed; a new kit must not add one.
+quiet-solid|hairline-mono
+quiet-solid|steady-solid
+quiet-solid|gilt-hairline
+quiet-solid|pressable
+glass-edge|soft-rounded
+glass-edge|soft-lift
+warm-pill|warm-pill-soft
+warm-pill|pill-caps
+hairline-mono|gilt-hairline
+hairline-mono|flat-square
+hairline-mono|block-caps
+hairline-mono|raised-square
+hairline-mono|offset-block-caps
+hairline-mono|pressable
+chunky-pill|chunky-pill-offset
+chunky-pill|outline-pill
+steady-solid|soft-solid
+steady-solid|pressable
+soft-rounded|soft-lift
+raw-frame|thick-frame-caps
+raw-frame|thick-frame
+gilt-hairline|flat-square
+gilt-hairline|block-caps
+gilt-hairline|raised-square
+gilt-hairline|offset-block-caps
+gilt-hairline|pressable
+warm-pill-soft|pill-caps
+chunky-pill-offset|outline-pill
+underline-link|offset-frame
+underline-link|rimmed-solid
+neo-brutal|underlined-label
+ghost-swap|soft-hairline-caps
+hairline-frame-caps|text-link
+hairline-frame-caps|text-link-caps
+hairline-frame-caps|hairline-halo
+offset-frame|rimmed-solid
+thick-frame-caps|thick-frame
+flat-square|block-caps
+flat-square|raised-square
+flat-square|offset-block-caps
+block-caps|raised-square
+block-caps|offset-block-caps
+raised-square|offset-block-caps
+text-link|text-link-caps
+text-link|hairline-halo
+text-link-caps|hairline-halo

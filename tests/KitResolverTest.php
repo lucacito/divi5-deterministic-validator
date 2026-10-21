@@ -739,4 +739,108 @@ class KitResolverTest extends TestCase
             $this->assertSame( [ KitResolver::LEFT_MARKER ], KitResolver::leftovers( $out ), "$label: reported" );
         }
     }
+
+    private function divider( string $marker ): string
+    {
+        return '<!-- wp:divi/divider {"builderVersion":"5.15.1"' . $marker . '} /-->';
+    }
+
+    private function column( string $marker ): string
+    {
+        return '<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.15.1"' . $marker . '} --><!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>x</p>"}}}} /--><!-- /wp:divi/column -->';
+    }
+
+    private function icon( string $marker ): string
+    {
+        return '<!-- wp:divi/icon {"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"10px","bottom":"10px","left":"10px","right":"10px"}}}}}},"icon":{"advanced":{"size":{"desktop":{"value":"20px"}}}},"builderVersion":"5.15.1"' . $marker . '} /-->';
+    }
+
+    public function testRuleMarkersResolveAndAreStrippedOnADividerAGroupAndAColumn(): void
+    {
+        $kit = $this->shipped( 'soft-solid' );
+        foreach ( [ 'rule', 'rule-strong' ] as $role ) {
+            foreach ( [ 'light', 'surface', 'accent', 'dark', 'panel' ] as $on ) {
+                foreach ( [ 'divider' => $this->divider( ',"aied":{"on":"' . $on . '","kit":"' . $role . '"}' ), 'group' => $this->group( ',"aied":{"kit":"' . $role . '","on":"' . $on . '"}' ), 'column' => $this->column( ',"aied":{"kit":"' . $role . '","on":"' . $on . '"}' ) ] as $block => $markup ) {
+                    $out   = $this->noWarnings( fn() => KitResolver::resolve( $markup, $kit ) );
+                    $attrs = json_decode( $this->comments( $out )[0], true );
+                    $this->assertIsArray( $attrs );
+                    $this->assertArrayNotHasKey( 'aied', $attrs, "$role on $block / $on: the marker is stripped" );
+                    $this->assertSame( [], KitResolver::leftovers( $out ), "$role on $block / $on" );
+                    if ( 'divider' === $block ) {
+                        $this->assertArrayHasKey( 'weight', $attrs['divider']['advanced']['line']['desktop']['value'] );
+                        $this->assertArrayNotHasKey( 'module', $attrs, 'a divider rule never writes module.decoration' );
+                    } else {
+                        $top = $attrs['module']['decoration']['border']['desktop']['value']['styles']['top'];
+                        $this->assertSame( 'rule' === $role ? '1px' : '2px', $top['width'], "$role $block / $on: soft-solid is a 0px kit" );
+                        $this->assertSame( '0px', $attrs['module']['decoration']['border']['desktop']['value']['styles']['all']['width'] );
+                    }
+                    if ( 'group' === $block ) {
+                        $this->assertSame( 'column', $attrs['module']['decoration']['layout']['desktop']['value']['flexDirection'], 'the recipe layout survives the merge' );
+                        $this->assertStringContainsString( '<!-- wp:divi/text', $out, 'the child stays' );
+                    }
+                }
+            }
+        }
+        $this->assertSame(
+            KitResolver::resolve( $this->divider( ',"aied":{"kit":"rule","on":"light"}' ), $kit ),
+            KitResolver::resolve( $this->divider( ',"aied":{"kit":"rule"}' ), $kit ),
+            'no `on` is a light band'
+        );
+    }
+
+    public function testAChipMarkerResolvesAndIsStrippedOnAGroupAndAnIcon(): void
+    {
+        $kit = $this->shipped( 'soft-solid' );
+        foreach ( [ 'light', 'surface', 'accent', 'dark' ] as $on ) {
+            foreach ( [ 'group' => $this->group( ',"aied":{"on":"' . $on . '","kit":"chip"}' ), 'icon' => $this->icon( ',"aied":{"kit":"chip","on":"' . $on . '"}' ) ] as $block => $markup ) {
+                $out   = $this->noWarnings( fn() => KitResolver::resolve( $markup, $kit ) );
+                $attrs = json_decode( $this->comments( $out )[0], true );
+                $this->assertIsArray( $attrs );
+                $this->assertArrayNotHasKey( 'aied', $attrs, "chip on $block / $on: the marker is stripped" );
+                $this->assertSame( [], KitResolver::leftovers( $out ), "chip on $block / $on" );
+                $this->assertSame( '8px', $attrs['module']['decoration']['border']['desktop']['value']['radius']['topLeft'], "chip on $block / $on: the radius token is resolved in the same pass" );
+            }
+        }
+        $icon = json_decode( $this->comments( KitResolver::resolve( $this->icon( ',"aied":{"kit":"chip","on":"accent"}' ), $kit ) )[0], true );
+        $this->assertSame( '{{aied:color:surface}}', $icon['module']['decoration']['background']['desktop']['value']['color'] );
+        $this->assertSame( '{{aied:color:text}}', $icon['icon']['advanced']['color']['desktop']['value'] );
+        $this->assertSame( '20px', $icon['icon']['advanced']['size']['desktop']['value'], 'the recipe icon size survives' );
+        $this->assertSame( '10px', $icon['module']['decoration']['spacing']['desktop']['value']['padding']['top'], 'the recipe padding is the chip size' );
+        $this->assertSame(
+            KitResolver::resolve( $this->icon( ',"aied":{"kit":"chip","on":"light"}' ), $kit ),
+            KitResolver::resolve( $this->icon( ',"aied":{"kit":"chip"}' ), $kit ),
+            'no `on` is a light band'
+        );
+    }
+
+    public function testRuleAndChipMarkersTheResolverDoesNotKnowAreLeftAndReported(): void
+    {
+        $kit   = $this->shipped( 'soft-solid' );
+        $cases = [
+            'chip on a divider'          => $this->divider( ',"aied":{"kit":"chip"}' ),
+            'chip on a column'           => $this->column( ',"aied":{"kit":"chip"}' ),
+            'rule on an icon'            => $this->icon( ',"aied":{"kit":"rule"}' ),
+            'rule-strong on an icon'     => $this->icon( ',"aied":{"kit":"rule-strong"}' ),
+            'card on an icon'            => $this->icon( ',"aied":{"kit":"card"}' ),
+            'rule on a button'           => $this->button( ',"aied":{"kit":"rule"}' ),
+            'rule on a toggle'           => $this->toggle( ',"aied":{"kit":"rule"}' ),
+            'rule on a contact form'     => $this->contactForm( ',"aied":{"kit":"rule-strong"}' ),
+            'rule on photo'              => $this->divider( ',"aied":{"kit":"rule","on":"photo"}' ),
+            'rule on inverted'           => $this->group( ',"aied":{"kit":"rule","on":"inverted"}' ),
+            'chip on panel'              => $this->group( ',"aied":{"kit":"chip","on":"panel"}' ),
+            'icon chip on panel'         => $this->icon( ',"aied":{"kit":"chip","on":"panel"}' ),
+            'a ground on a rule'         => $this->group( ',"aied":{"kit":"rule","on":"light","ground":"inverted"}' ),
+            'a ground on a column rule'  => $this->column( ',"aied":{"kit":"rule-strong","on":"surface","ground":"accent"}' ),
+            'a ground on a chip'         => $this->group( ',"aied":{"kit":"chip","on":"light","ground":"accent"}' ),
+            'extra key on a rule'        => $this->divider( ',"aied":{"kit":"rule","on":"light","x":1}' ),
+            'extra key on a chip'        => $this->icon( ',"aied":{"kit":"chip","on":"light","x":1}' ),
+            'non-string role'            => $this->divider( ',"aied":{"kit":["rule"]}' ),
+            'non-string band'            => $this->icon( ',"aied":{"kit":"chip","on":1}' ),
+        ];
+        foreach ( $cases as $label => $markup ) {
+            $out = $this->noWarnings( fn() => KitResolver::resolve( $markup, $kit ) );
+            $this->assertSame( $markup, $out, "$label: left untouched, nothing guessed" );
+            $this->assertSame( [ KitResolver::LEFT_MARKER ], KitResolver::leftovers( $out ), "$label: reported" );
+        }
+    }
 }

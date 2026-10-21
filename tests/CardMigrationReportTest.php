@@ -156,6 +156,22 @@ class CardMigrationReportTest extends TestCase
         $this->assertStringContainsString( 'MARKED=card', \CardReport::render( $rows, false ) );
     }
 
+    public function test_a_rule_or_chip_marker_is_reported_as_marked(): void
+    {
+        $rule  = $this->block( 'column', [ 'aied' => [ 'kit' => 'rule-strong', 'on' => 'surface' ], 'module' => [ 'decoration' => [ 'spacing' => [ 'desktop' => [ 'value' => [ 'padding' => [ 'top' => '28px' ] ] ] ] ] ] ] );
+        $quiet = $this->block( 'group', [ 'aied' => [ 'kit' => 'rule', 'on' => 'light' ], 'module' => [ 'decoration' => $this->padding() ] ] );
+        $tag   = $this->block( 'group', [ 'aied' => [ 'kit' => 'chip', 'on' => 'light' ], 'module' => [ 'decoration' => $this->padding() ] ] );
+        $dots  = $this->block( 'group', [ 'aied' => [ 'kit' => 'control', 'on' => 'light' ] ] );
+        $rows  = \CardReport::classify( [ [ 'name' => 'planted-thin', 'markup' => $this->block( 'section', [], $this->block( 'row', [], $rule . $this->block( 'column', [], $quiet . $tag . $dots ) ) ) ] ] );
+        $this->assertSame( [ 'rule-strong', 'rule', 'chip', null ], array_column( $rows, 'marked' ) );
+        $this->assertSame( [ 'padded-wrapper', 'padded-wrapper', 'padded-wrapper', 'wrapper' ], array_column( $rows, 'class' ), 'a marked block is classified by the decoration it has left' );
+        $text = \CardReport::render( $rows, false );
+        $this->assertStringContainsString( 'MARKED=rule-strong', $text );
+        $this->assertStringContainsString( 'MARKED=chip', $text );
+        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 0 blocks', $text );
+        $this->assertStringContainsString( 'marked as a rule or a chip (rule, rule-strong, chip): 3 blocks', $text );
+    }
+
     public function test_an_unclassifiable_group_fails_loudly(): void
     {
         $this->expectException( \RuntimeException::class );
@@ -195,8 +211,11 @@ class CardMigrationReportTest extends TestCase
             // Task 1 added 3 unmarked wrapper groups (the tilt of hero-gradient-stats' three stat cards): 356 -> 359 groups,
             // 221 -> 224 wrappers, nothing else changed. Kit-limits Task 5 marked the four grounds (the inverted panels of
             // compare-two-panels and pricing-two-plan-highlight keep their padding: padded wrappers; the two bento tiles
-            // lose theirs: wrappers), so no inverted group is left.
-            [ 'chip' => 14, 'grid-cell' => 40, 'padded-wrapper' => 53, 'rule' => 26, 'wrapper' => 226 ],
+            // lose theirs: wrappers), so no inverted group is left. Rules and chips Task 5 marked the 26 top-rule groups (rule: their border
+            // is gone, padding stays: padded wrappers, MARKED=rule|rule-strong) and the 5 portfolio tags (chip: padded wrappers, MARKED=chip),
+            // so 53 -> 84 padded wrappers, no `rule` group and 14 -> 9 chips are left (the 4 step badges, 4 timeline dots and the
+            // filled "[Most popular]" badge: shape decisions that stay literal).
+            [ 'chip' => 9, 'grid-cell' => 40, 'padded-wrapper' => 84, 'wrapper' => 226 ],
             $groups
         );
     }
@@ -214,7 +233,7 @@ class CardMigrationReportTest extends TestCase
             [
                 'icon-values'              => [ 'wrapper', 'wrapper', 'wrapper' ], // marked (Task 9): classified by the decoration they have left
                 'pricing-three-tier'       => [ 'wrapper', 'wrapper', 'wrapper' ], // marked: #2 is the featured plan, an accent ground (kit-limits Task 6)
-                'proof-press-quotes'       => [ 'rule', 'rule', 'rule' ], // a 2px top rule, no fill: a divider, like the group rules
+                'proof-press-quotes'       => [ 'padded-wrapper', 'padded-wrapper', 'padded-wrapper' ], // marked rule-strong (rules and chips Task 5): the top rule is the kit's, the 28px padding stays
                 'testimonials-avatar-grid' => [ 'wrapper', 'wrapper', 'wrapper' ],
             ],
             $byRecipe
@@ -224,8 +243,15 @@ class CardMigrationReportTest extends TestCase
     public function test_the_marked_blocks_are_counted_and_fill_only_columns_are_unlisted(): void
     {
         $rows = $this->shipped();
-        $this->assertSame( 32, count( array_filter( $rows, fn ( $r ) => null !== $r['marked'] ) ), 'the blocks migrated so far (card plan Tasks 7, 8 and 9, kit-limits Tasks 5 and 6)' );
+        $this->assertSame( 32, count( array_filter( $rows, fn ( $r ) => in_array( $r['marked'], [ 'card', 'panel' ], true ) ) ), 'the blocks migrated so far (card plan Tasks 7, 8 and 9, kit-limits Tasks 5 and 6)' );
         $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 32 blocks', \CardReport::render( $rows, false ) );
+        // Rules and chips Task 5: the 26 top-rule groups (rule or rule-strong), the 3 top-rule columns of proof-press-quotes (rule-strong)
+        // and the 5 portfolio tags (chip) are reported too, the icon chips and the dividers are not group/column blocks.
+        $this->assertSame( 34, count( array_filter( $rows, fn ( $r ) => in_array( $r['marked'], [ 'rule', 'rule-strong', 'chip' ], true ) ) ) );
+        $this->assertStringContainsString( 'marked as a rule or a chip (rule, rule-strong, chip): 34 blocks', \CardReport::render( $rows, false ) );
+        $byRole = array_count_values( array_filter( array_column( $rows, 'marked' ), fn ( $m ) => in_array( $m, [ 'rule', 'rule-strong', 'chip' ], true ) ) );
+        ksort( $byRole );
+        $this->assertSame( [ 'chip' => 5, 'rule' => 7, 'rule-strong' => 22 ], $byRole, '7 quiet and 22 strong rules (the group and column rules of the 57), 5 tags' );
         $listed = array_map( fn ( $r ) => $r['recipe'] . ' ' . $r['block'] . '#' . $r['index'], $rows );
         $this->assertNotContains( 'hero-cta divi/column#0', $listed, 'a surface fill with padding and no frame: nothing for a kit to restyle' );
         $this->assertNotContains( 'split-image-text divi/column#0', $listed );
@@ -235,7 +261,7 @@ class CardMigrationReportTest extends TestCase
     {
         $got = [];
         foreach ( $this->shipped() as $r ) {
-            if ( null !== $r['marked'] ) {
+            if ( in_array( $r['marked'], [ 'card', 'panel' ], true ) ) {
                 $got[] = $r['recipe'] . ' ' . $r['block'] . '#' . $r['index'] . ' marked ' . $r['marked'];
             } elseif ( in_array( $r['class'], [ 'card', 'panel', 'inverted' ], true ) ) {
                 $got[] = $r['recipe'] . ' ' . $r['block'] . '#' . $r['index'] . ' ' . $r['class'];

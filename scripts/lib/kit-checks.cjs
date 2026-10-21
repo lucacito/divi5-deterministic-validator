@@ -18,6 +18,10 @@
  *  - and for the IMAGE (the media radius): MEDIA_SLOTS, one `divi/image` that carries the whole-value token `{{aied:kit:radius-media}}`; the expectation
  *    is the four corners of the RESOLVED markup, the comparison reads the img, its wrapper (`.et_pb_image_wrap`, where Divi prints the radius and
  *    overflow:hidden) and the module box, the clip, overflow and the count.
+ *  - and for the RULES and CHIPS (roles rule, rule-strong and chip): RULE_SLOTS (a divider and a top-rule group of each role on the bg and photo bands, a
+ *    column rule, a divider in an inverted panel) and CHIP_SLOTS (a tag chip, an icon chip), expectations read from the resolved block tree, the comparison
+ *    with the line as Divi draws it (a divider's `::before`, a group or column's own `border-top-*`), the chip's radius, frame, fill and glyph, the
+ *    contrast of the line (or the frame, or the glyph) against the PAINTED band (or fill), overflow and the count.
  */
 const zlib = require('zlib');
 const { parseColor, over, ratioOf } = require('./recipe-checks.cjs');
@@ -152,6 +156,74 @@ function mediaMarkup(slot) {
   return blockOf('image', attrs, null);
 }
 
+/**
+ * The rules of the sheet (Task 6 of the rules-and-chips plan). Every slot is found again by the UNIQUE text of the heading it sits with, never by its
+ * marker (the resolver strips it): a `divider` slot is a marked `divi/divider` inside an UNMARKED wrapper group that holds the heading (on the `panel`
+ * slot the wrapper is a plain `text`-filled group, the inverted panel the divider sits in); a `group` slot is a marked `divi/group` that holds its own
+ * heading and a paragraph; the `column` slot is a marked `divi/column` of its own one-column row. `on` is the band the marker names (`light` is omitted
+ * from the marker), `ink` the colour role of the heading and paragraph.
+ */
+const RULE_SLOTS = [];
+for (const b of [{ band: 'bg', on: 'light', ink: 'text' }, { band: 'dark', on: 'dark', ink: 'inverse' }]) {
+  for (const role of ['rule', 'rule-strong']) {
+    const word = role === 'rule' ? 'Quiet' : 'Strong';
+    RULE_SLOTS.push({ key: `${role}-divider-${b.band}`, role, carrier: 'divider', band: b.band, on: b.on, ink: b.ink, panel: false, heading: `${word} divider on ${b.band}` });
+    RULE_SLOTS.push({ key: `${role}-group-${b.band}`, role, carrier: 'group', band: b.band, on: b.on, ink: b.ink, panel: false, heading: `${word} group rule on ${b.band}` });
+  }
+  if (b.band === 'bg') {
+    RULE_SLOTS.push({ key: 'rule-column-bg', role: 'rule', carrier: 'column', band: 'bg', on: 'light', ink: 'text', panel: false, heading: 'Quiet column rule on bg' });
+    RULE_SLOTS.push({ key: 'rule-strong-divider-panel-bg', role: 'rule-strong', carrier: 'divider', band: 'bg', on: 'panel', ink: 'bg', panel: true, heading: 'Strong divider in panel on bg' });
+  }
+}
+/**
+ * The chips of the sheet, on the bg band: a tag (a marked `divi/group` that holds a short text, found by that text) and an icon chip (a marked
+ * `divi/icon` in an unmarked wrapper group that holds the heading).
+ */
+const CHIP_SLOTS = [
+  { key: 'chip-tag-bg', carrier: 'group', band: 'bg', on: 'light', ink: 'text', text: 'Tag chip on bg', heading: null },
+  { key: 'chip-icon-bg', carrier: 'icon', band: 'bg', on: 'light', ink: 'text', text: null, heading: 'Icon chip on bg' },
+];
+
+const RULE_COLUMN = { flexDirection: 'column', rowGap: '12px' };
+const markerOf = (role, on) => (on === 'light' ? { kit: role } : { kit: role, on });
+const headingMarkup = (text, ink) => blockOf('heading', { title: { innerContent: { desktop: { value: text } }, decoration: { font: { font: { desktop: { value: { headingLevel: 'h3', color: `{{aied:color:${ink}}}`, family: '{{aied:font:display}}', size: '20px' } } } } } }, builderVersion: '5.8.0' }, null);
+const paragraphMarkup = (html, ink) => blockOf('text', { content: { innerContent: { desktop: { value: html } }, decoration: { bodyFont: { body: { font: { desktop: { value: { color: `{{aied:color:${ink}}}`, family: '{{aied:font:body}}', size: '16px', lineHeight: '1.5em' } } } } } } }, builderVersion: '5.8.0' }, null);
+
+/**
+ * One rule slot as markup. The recipe's own keys only (structure and ink): the kit supplies the line (a divider's colour, weight and style; a group or
+ * column's `styles.all` at 0px and `styles.top`). A column slot is a whole one-column row (K.sheetMarkup puts it after the card row of its band).
+ */
+function ruleMarkup(slot) {
+  const marker = markerOf(slot.role, slot.on);
+  const layout = { layout: { desktop: { value: RULE_COLUMN } } };
+  if (slot.carrier === 'divider') {
+    const wrap = slot.panel
+      ? { layout: layout.layout, background: { desktop: { value: { color: '{{aied:color:text}}' } } }, spacing: { desktop: { value: { padding: { top: '24px', right: '24px', bottom: '24px', left: '24px' } } } } }
+      : layout;
+    return blockOf('group', { module: { decoration: wrap }, builderVersion: '5.8.0' }, [headingMarkup(slot.heading, slot.ink), blockOf('divider', { builderVersion: '5.8.0', aied: marker }, null)].join('\n'));
+  }
+  const body = [headingMarkup(slot.heading, slot.ink), paragraphMarkup('<p>Placeholder copy under a rule: one short sentence that the surrounding colours must keep readable.</p>', slot.ink === 'inverse' ? 'inverse' : 'muted')].join('\n');
+  if (slot.carrier === 'column') {
+    const column = blockOf('column', { module: { advanced: { type: { desktop: { value: '4_4' } } }, decoration: layout }, builderVersion: '5.8.0', aied: marker }, body);
+    return blockOf('row', { module: { advanced: { columnStructure: { desktop: { value: '4_4' } } } }, builderVersion: '5.8.0' }, column);
+  }
+  const spacing = { spacing: { desktop: { value: { padding: { top: '16px', right: '0px', bottom: '16px', left: '0px' } } } } };
+  return blockOf('group', { module: { decoration: Object.assign({}, layout, spacing) }, builderVersion: '5.8.0', aied: marker }, body);
+}
+
+/** One chip slot as markup: a marked tag group holding a short text, or a marked icon (a Font Awesome star, the size and padding of the library's icon chips) under a heading. */
+function chipMarkup(slot) {
+  const marker = markerOf('chip', slot.on);
+  if (slot.carrier === 'group') {
+    const text = blockOf('text', { content: { innerContent: { desktop: { value: `<p>${slot.text}</p>` } }, decoration: { bodyFont: { body: { font: { desktop: { value: { color: `{{aied:color:${slot.ink}}}`, family: '{{aied:font:body}}', size: '13px', lineHeight: '1.4em' } } } } } } }, builderVersion: '5.8.0' }, null);
+    const padding = { top: '4px', right: '10px', bottom: '4px', left: '10px' };
+    return blockOf('group', { module: { decoration: { layout: { desktop: { value: RULE_COLUMN } }, spacing: { desktop: { value: { padding } } } } }, builderVersion: '5.8.0', aied: marker }, text);
+  }
+  const padding = { top: '10px', right: '10px', bottom: '10px', left: '10px' };
+  const icon = blockOf('icon', { module: { decoration: { spacing: { desktop: { value: { padding } } } } }, icon: { innerContent: { desktop: { value: { unicode: '&#xf005;', type: 'fa', weight: '900' } } }, advanced: { size: { desktop: { value: '20px' } } } }, builderVersion: '5.8.0', aied: marker }, null).replace(/&/g, '\\u0026');
+  return blockOf('group', { module: { decoration: { layout: { desktop: { value: RULE_COLUMN } } } }, builderVersion: '5.8.0' }, [headingMarkup(slot.heading, slot.ink), icon].join('\n'));
+}
+
 /** The kit buttons a button slot holds, in order: [{ role, text }]. */
 const PANEL_BUTTONS = [{ role: 'control', text: 'Primary action' }, { role: 'control-secondary', text: 'Secondary action' }];
 /** One button block of the sheet: the marker names the surface (`on`, omitted for light). */
@@ -178,12 +250,13 @@ function cardMarkup(slot) {
   return blockOf('group', { module: { decoration }, builderVersion: '5.8.0', aied: marker }, body);
 }
 
-/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS), inside the two button panels 4 more buttons, 10 item blocks (ITEM_SLOTS: 4 accordions, 6 toggles), 2 forms (FORM_SLOTS: one on the bg band, one on the surface band) and 1 image carrying the media-radius token (MEDIA_SLOTS). */
+/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS), inside the two button panels 4 more buttons, 10 item blocks (ITEM_SLOTS: 4 accordions, 6 toggles), 2 forms (FORM_SLOTS: one on the bg band, one on the surface band) 1 image carrying the media-radius token (MEDIA_SLOTS), 10 rule blocks (RULE_SLOTS) and 2 chips (CHIP_SLOTS). */
 function sheetMarkup() {
   const v = V;
   const sections = SURFACES.map((s) => {
     const buttons = ROLES.map((r) => buttonBlock(r.role, r.text, s.on)).join('\n');
-    const cards = [...CARD_SLOTS.filter((c) => c.band === s.key && !c.row).map(cardMarkup), ...ITEM_SLOTS.filter((c) => c.band === s.key).map(itemMarkup), ...FORM_SLOTS.filter((c) => c.band === s.key).map(formMarkup), ...MEDIA_SLOTS.filter((c) => c.band === s.key).map(mediaMarkup)].join('\n');
+    const cards = [...CARD_SLOTS.filter((c) => c.band === s.key && !c.row).map(cardMarkup), ...ITEM_SLOTS.filter((c) => c.band === s.key).map(itemMarkup), ...FORM_SLOTS.filter((c) => c.band === s.key).map(formMarkup), ...MEDIA_SLOTS.filter((c) => c.band === s.key).map(mediaMarkup), ...RULE_SLOTS.filter((c) => c.band === s.key && c.carrier !== 'column').map(ruleMarkup), ...CHIP_SLOTS.filter((c) => c.band === s.key).map(chipMarkup)].join('\n');
+    const columnRules = RULE_SLOTS.filter((c) => c.band === s.key && c.carrier === 'column').map(ruleMarkup).join('\n');
     return `<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":${s.bg}}},"spacing":{"desktop":{"value":{"padding":{"top":"64px","bottom":"64px"}}}}}},${v}} -->
 <!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},${v}} -->
 <!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},${v}} -->
@@ -195,7 +268,7 @@ ${buttons}
 <!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"layout":{"desktop":{"value":{"flexDirection":"column","rowGap":"24px"}}}}},${v}} -->
 ${cards}
 <!-- /wp:divi/column -->
-<!-- /wp:divi/row -->
+<!-- /wp:divi/row -->${columnRules ? '\n' + columnRules : ''}
 <!-- /wp:divi/section -->`;
   });
   // The multi-column check: a row of three columns that ARE the cards (the real proof-press-quotes row shape), on the bg band.
@@ -1525,6 +1598,303 @@ function emptyMediaRunProblems({ mediaChecked }) {
   return mediaChecked ? [] : ['no image was checked: the image selection was empty'];
 }
 
+// ---- rules and chips -------------------------------------------------------------------------------------------------
+/** The least a rule may stand out from the band behind it: a `rule-strong` line (a shape) 3.0:1, a quiet hairline 1.1:1 (the measured quiet-rule floor of RuleChipAudit::QUIET_RULE_FLOOR). */
+const RULE_STRONG_MIN = CONTRAST_SHAPE;
+const RULE_QUIET_MIN = 1.1;
+const RULE_STYLES = ['solid', 'dashed', 'dotted', 'double'];
+
+/** The first node under `nodes` (depth first, parents before children) whose block is `name` and whose first heading is `heading`, or null. */
+function nodeByHeading(nodes, name, heading) {
+  for (const n of nodes) {
+    if (n.name === name && firstHeading(n) === heading) return n;
+    const inner = nodeByHeading(n.children, name, heading);
+    if (inner) return inner;
+  }
+  return null;
+}
+
+/**
+ * The block that carries the rule of each sheet slot in the RESOLVED markup (the marker is gone, so a slot is found by the unique heading it sits with):
+ * [{ slot, attrs }] in RULE_SLOTS order; attrs is the `divi/divider` (the first one under the wrapper group that holds the heading), the `divi/group` or
+ * the `divi/column`, and null when the slot is not in the markup.
+ */
+function ruleAttrs(markup, slots = RULE_SLOTS) {
+  const tree = blockTree(markup);
+  return slots.map((slot) => {
+    if (slot.carrier === 'divider') {
+      const wrap = nodeByHeading(tree, 'divi/group', slot.heading);
+      const divider = wrap ? descendants(wrap).find((x) => x.name === 'divi/divider') : null;
+      return { slot, attrs: divider ? divider.attrs : null };
+    }
+    const node = nodeByHeading(tree, `divi/${slot.carrier}`, slot.heading);
+    return { slot, attrs: node ? node.attrs : null };
+  });
+}
+
+/**
+ * What the kit says about one rule, read ONLY from its resolved attributes: { carrier, top: { width, style, color }, others: { right, bottom, left } (widths in px; null for a divider) }.
+ * A divider's line is `divider.advanced.line.desktop.value.{weight,style,color}`; a group or column's top edge is `module.decoration.border.desktop.value.styles.top` over `styles.all`.
+ * A width that is absent is null and one that is not a length is NaN; both are holes (missingRuleExpectations), never a check that quietly stops.
+ */
+function expectRuleFromAttrs(attrs, carrier) {
+  const len = (v) => (v !== undefined && v !== null && v !== '' ? parseFloat(v) : null);
+  if (carrier === 'divider') {
+    const line = dig(attrs, 'divider', 'advanced', 'line', 'desktop', 'value') || {};
+    return { carrier, top: { width: len(line.weight), style: line.style || null, color: line.color || null }, others: null };
+  }
+  const styles = dig(attrs, 'module', 'decoration', 'border', 'desktop', 'value', 'styles') || {};
+  const all = styles.all || {};
+  const side = (k) => { const e = Object.assign({}, all, styles[k] || {}); return { width: len(e.width), style: e.style || null, color: e.color || null }; };
+  return { carrier, top: side('top'), others: { right: side('right').width, bottom: side('bottom').width, left: side('left').width } };
+}
+
+/** The expectation fields that are missing although the rule adapter ALWAYS writes them (a top width above 0, a known style, a readable colour, and for a group or column the other three sides at 0). A non-empty list is a `gate` failure and compareRule refuses to compare. */
+function missingRuleExpectations(exp) {
+  if (!exp || !exp.top) return ['top'];
+  const out = [];
+  if (!(typeof exp.top.width === 'number' && Number.isFinite(exp.top.width) && exp.top.width > 0)) out.push('top.width');
+  if (!RULE_STYLES.includes(exp.top.style)) out.push('top.style');
+  if (!colour(exp.top.color)) out.push('top.color');
+  if (exp.carrier !== 'divider') {
+    for (const k of ['right', 'bottom', 'left']) if (!(exp.others && typeof exp.others[k] === 'number' && Number.isFinite(exp.others[k]))) out.push('others.' + k);
+  }
+  return out;
+}
+
+/**
+ * Every disagreement ([code, detail]) of one measured rule with its expectation. m = measureRules(...).rules[i]: `m.line` = the computed top line (a divider's
+ * `::before`, else the block's own `border-top-*`) and `m.el` the four sides of a group or column. rule-style, rule-width (the top line, and for a group or
+ * column every other side must be 0px: only the top edge is drawn) and rule-colour (alpha included). An expectation with a hole is one `rule-expectation`
+ * finding, never a skipped check; a rule that was not measured fails too.
+ */
+function compareRule(exp, m) {
+  const miss = missingRuleExpectations(exp);
+  if (miss.length) return [['rule-expectation', 'expectation missing (the rule adapter wrote no complete line): ' + miss.join(', ')]];
+  const out = [];
+  if (!m || !m.line) return [['rule-width', 'the rule line was not measured']];
+  const wantW = exp.top.width;
+  const gotW = px(m.line.borderTopWidth);
+  if (!(Math.abs(gotW - wantW) <= BORDER_TOLERANCE)) out.push(['rule-width', `rest: top line is ${m.line.borderTopWidth}, expected ${wantW}px`]);
+  if (gotW > 0 || wantW > 0) {
+    if (m.line.borderTopStyle !== exp.top.style) out.push(['rule-style', `rest: top line is ${m.line.borderTopStyle}, expected ${exp.top.style}`]);
+  }
+  if (!sameColour(m.line.borderTopColor, exp.top.color)) out.push(['rule-colour', `rest: top line colour ${m.line.borderTopColor}, expected ${exp.top.color}`]);
+  if (exp.carrier !== 'divider') {
+    for (const [k, cap] of [['right', 'Right'], ['bottom', 'Bottom'], ['left', 'Left']]) {
+      const w = m.el ? px(m.el[`border${cap}Width`]) : NaN;
+      if (!(Math.abs(w - exp.others[k]) <= BORDER_TOLERANCE)) out.push(['rule-width', `rest: ${k} side is ${m.el ? m.el[`border${cap}Width`] : 'unmeasured'}, expected ${exp.others[k]}px (only the top edge is drawn)`]);
+    }
+  }
+  return out;
+}
+
+/**
+ * Contrast of one measured rule against the PAINTED band behind it (a screenshot mean with the rule hidden): the line colour as painted over the band, a
+ * `rule-strong` line at least RULE_STRONG_MIN, a quiet `rule` at least RULE_QUIET_MIN. Code rule-contrast. A missing band sample, an unreadable colour or a
+ * line that is not drawn fails; nothing is skipped. m = { line }, band = { r, g, b } | null, role = 'rule' | 'rule-strong'.
+ */
+function ruleContrastProblems(m, band, role) {
+  const need = role === 'rule-strong' ? RULE_STRONG_MIN : RULE_QUIET_MIN;
+  if (!band) return { problems: [['rule-contrast', 'the painted band behind the rule was not sampled']], info: {} };
+  if (!m || !m.line) return { problems: [['rule-contrast', 'the rule line was not measured']], info: {} };
+  const c = colour(m.line.borderTopColor);
+  if (!c) return { problems: [['rule-contrast', `unreadable line colour ${m.line.borderTopColor}`]], info: {} };
+  if (!(px(m.line.borderTopWidth) > 0) || m.line.borderTopStyle === 'none') return { problems: [['rule-contrast', `no line is drawn (${m.line.borderTopStyle} ${m.line.borderTopWidth})`]], info: {} };
+  const base = { r: band.r, g: band.g, b: band.b, a: 1 };
+  const painted = over(c, base);
+  const exact = ratioOf(painted, base);
+  const ratio = round2(exact);
+  return { problems: exact < need ? [['rule-contrast', `${role} line ${hex(painted)} on the band ${hex(base)} is ${ratio}:1, needs ${need}`]] : [], info: { line: ratio, need } };
+}
+
+/** Overflow of one measured rule: its line element beyond its container (1px) or the window, or the page wider than the window. */
+function ruleOverflowProblems(m, state, page, noun = 'rule') {
+  const out = [];
+  const r = m.rect; const c = m.parentRect;
+  if (r.left < c.left - 1 || r.right > c.right + 1) out.push(['overflow', `${state}: ${noun} ${Math.round(r.left)}..${Math.round(r.right)} outside its container ${Math.round(c.left)}..${Math.round(c.right)}`]);
+  if (r.right > page.innerWidth + 1 || r.left < -1) out.push(['overflow', `${state}: ${noun} ${Math.round(r.left)}..${Math.round(r.right)} outside the window (${page.innerWidth})`]);
+  if (page.scrollWidth > page.innerWidth) out.push(['overflow', `${state}: scrollWidth ${page.scrollWidth} > innerWidth ${page.innerWidth}`]);
+  return out;
+}
+
+/** Problems of the rule count (code rule): every sheet rule on the page exactly once, its line element found. An empty slot list is an error. */
+function ruleCountProblems(measured, slots = RULE_SLOTS) {
+  if (!slots.length) throw new Error('no rule slots: nothing would be checked');
+  const bad = [];
+  slots.forEach((slot, i) => {
+    const m = measured[i];
+    if (!m || !m.found) { bad.push(`${slot.key} is not in the page`); return; }
+    if (m.count !== 1) bad.push(`${slot.key} is on the page ${m.count} times, expected 1`);
+  });
+  if (measured.length > slots.length) bad.push(`${measured.length} rules measured for ${slots.length} slots`);
+  if (!bad.length) return [];
+  const found = slots.filter((s, i) => measured[i] && measured[i].found).length;
+  return [['rule', `${found} of ${slots.length} rules rendered as the sheet says: ${bad.slice(0, 6).join('; ')}${bad.length > 6 ? ` and ${bad.length - 6} more` : ''}`]];
+}
+
+/** What a finished run must have checked as to rules: at least one (an empty selection fails the run with the code rule). */
+function emptyRuleRunProblems({ rulesChecked }) {
+  return rulesChecked ? [] : ['no rule was checked: the rule selection was empty'];
+}
+
+/** The chip blocks of the RESOLVED markup: [{ slot, attrs }] in CHIP_SLOTS order. A tag is the `divi/group` that holds the unique text, an icon chip the first `divi/icon` under the wrapper group that holds the heading; attrs is null when absent. */
+function chipAttrs(markup, slots = CHIP_SLOTS) {
+  const tree = blockTree(markup);
+  const textOf = (n) => { const v = dig(n.attrs, 'content', 'innerContent', 'desktop', 'value'); return typeof v === 'string' ? v.replace(/<[^>]+>/g, '').trim() : null; };
+  const findTag = (nodes, text) => {
+    for (const n of nodes) {
+      if (n.name === 'divi/group' && n.children.some((c) => c.name === 'divi/text' && textOf(c) === text)) return n;
+      const inner = findTag(n.children, text);
+      if (inner) return inner;
+    }
+    return null;
+  };
+  return slots.map((slot) => {
+    if (slot.carrier === 'group') { const g = findTag(tree, slot.text); return { slot, attrs: g ? g.attrs : null }; }
+    const wrap = nodeByHeading(tree, 'divi/group', slot.heading);
+    const icon = wrap ? descendants(wrap).find((x) => x.name === 'divi/icon') : null;
+    return { slot, attrs: icon ? icon.attrs : null };
+  });
+}
+
+/**
+ * What the kit says about one chip, read ONLY from its resolved attributes. A tag: { kind: 'tag', radius: [4], frame: { width, style, color } } (the
+ * frame is `styles.all`; a tag has no fill). An icon chip: { kind: 'icon', radius: [4], fill, glyph }. A 0px kit gives four zeros, which ARE expectations.
+ * A value that is absent is null and one that is not a length is NaN; both are holes (missingChipExpectations).
+ */
+function expectChipFromAttrs(attrs, carrier) {
+  const md = dig(attrs, 'module', 'decoration') || {};
+  const r = dig(md, 'border', 'desktop', 'value', 'radius');
+  const rr = r && typeof r === 'object' ? r : {};
+  const radius = CORNERS.map((k) => (rr[k] !== undefined ? parseFloat(rr[k]) : null));
+  if (carrier === 'icon') {
+    return { kind: 'icon', radius, fill: dig(md, 'background', 'desktop', 'value', 'color') || null, glyph: dig(attrs, 'icon', 'advanced', 'color', 'desktop', 'value') || null };
+  }
+  const all = dig(md, 'border', 'desktop', 'value', 'styles', 'all') || {};
+  return { kind: 'tag', radius, frame: { width: all.width !== undefined && all.width !== '' ? parseFloat(all.width) : null, style: all.style || null, color: all.color || null } };
+}
+
+/** The chip expectation fields that are missing although the chip adapter ALWAYS writes them (four radii; a tag's frame width above 0, a known style and colour; an icon's fill and glyph). A non-empty list is a `gate` failure. */
+function missingChipExpectations(exp) {
+  if (!exp) return ['chip'];
+  const out = [];
+  if (!(Array.isArray(exp.radius) && exp.radius.length === 4 && exp.radius.every((v) => typeof v === 'number' && Number.isFinite(v)))) out.push('radius');
+  if (exp.kind === 'icon') {
+    if (!colour(exp.fill)) out.push('fill');
+    if (!colour(exp.glyph)) out.push('glyph');
+  } else {
+    if (!exp.frame) return [...out, 'frame'];
+    if (!(typeof exp.frame.width === 'number' && Number.isFinite(exp.frame.width) && exp.frame.width > 0)) out.push('frame.width');
+    if (!RULE_STYLES.includes(exp.frame.style)) out.push('frame.style');
+    if (!colour(exp.frame.color)) out.push('frame.color');
+  }
+  return out;
+}
+
+/**
+ * Every disagreement ([code, detail]) of one measured chip with its expectation. m = measureChips(...).chips[i]: `m.el` = the chip element's computed fields (a
+ * tag: the group; an icon chip: the `.et_pb_icon` module box), `m.glyph` = { color } of the icon's glyph span.
+ *  - chip-radius: each of the four corners (a 0px kit expects four zeros);
+ *  - chip-frame (a tag): width, style and colour of EACH of the four sides;
+ *  - chip-fill: a tag has no fill (a transparent background); an icon chip's computed fill and its glyph colour are the resolved ones.
+ * An expectation with a hole is one `chip-expectation` finding, never a skipped check.
+ */
+function compareChip(exp, m) {
+  const miss = missingChipExpectations(exp);
+  if (miss.length) return [['chip-expectation', 'expectation missing (the chip adapter wrote no complete chip): ' + miss.join(', ')]];
+  if (!m || !m.el) return [['chip', 'the chip was not measured']];
+  const out = [];
+  CORNER_PROPS.forEach((k, i) => { if (!near(px(m.el[k]), exp.radius[i])) out.push(['chip-radius', `rest: ${k} ${m.el[k]}, expected ${exp.radius[i]}px`]); });
+  if (exp.kind === 'tag') {
+    for (const [side, cap] of SIDES) {
+      const w = px(m.el[`border${cap}Width`]);
+      if (!(Math.abs(w - exp.frame.width) <= BORDER_TOLERANCE)) { out.push(['chip-frame', `rest: border-${side} width ${m.el[`border${cap}Width`]}, expected ${exp.frame.width}px`]); continue; }
+      if (m.el[`border${cap}Style`] !== exp.frame.style) out.push(['chip-frame', `rest: border-${side} style ${m.el[`border${cap}Style`]}, expected ${exp.frame.style}`]);
+      if (!sameColour(m.el[`border${cap}Color`], exp.frame.color)) out.push(['chip-frame', `rest: border-${side} colour ${m.el[`border${cap}Color`]}, expected ${exp.frame.color}`]);
+    }
+    const bg = colour(m.el.backgroundColor);
+    if (!bg || bg.a > 0.005) out.push(['chip-fill', `rest: a tag has no fill, background is ${m.el.backgroundColor}`]);
+  } else {
+    if (!sameColour(m.el.backgroundColor, exp.fill)) out.push(['chip-fill', `rest: fill ${m.el.backgroundColor}, expected ${exp.fill}`]);
+    if (!m.glyph) out.push(['chip-fill', 'rest: the glyph (span.et-pb-icon) was not found']);
+    else if (!sameColour(m.glyph.color, exp.glyph)) out.push(['chip-fill', `rest: glyph colour ${m.glyph.color}, expected ${exp.glyph}`]);
+  }
+  return out;
+}
+
+/** The painted fill of an icon chip (a screenshot mean of its inner box with the glyph hidden) against the computed one: chip-fill when they differ by more than 4 per channel (something is drawn over the chip). */
+function chipPaintedFillProblems(m, fill) {
+  const c = colour(m && m.el ? m.el.backgroundColor : null);
+  if (!c || c.a < 0.999) return [];
+  if (!fill) return [['chip-fill', 'the painted fill was not sampled']];
+  const d = Math.max(Math.abs(c.r - fill.r), Math.abs(c.g - fill.g), Math.abs(c.b - fill.b));
+  return d > 4 ? [['chip-fill', `painted fill ${hex(fill)} differs from the computed ${m.el.backgroundColor} by ${Math.round(d)} (something is drawn over the chip)`]] : [];
+}
+
+/**
+ * Contrast of one measured chip. An icon chip: the glyph against its PAINTED fill >= 3.0 (an icon is a shape), and the fill must not be the colour of the
+ * band behind it (under 1.02:1 the chip is invisible). A tag: every drawn frame side against the PAINTED band >= 3.0, or RULE_QUIET_MIN where it is the
+ * language's decorative `border` hairline (the quiet frame of a hairline kit). Code chip-contrast; a missing sample fails, nothing is skipped.
+ * `samples` = { fill, band } ({ r, g, b } | null).
+ */
+function chipContrastProblems(exp, m, samples, hairline = null) {
+  const out = []; const info = {};
+  if (!samples || !samples.band) return { problems: [['chip-contrast', 'the painted band behind the chip was not sampled']], info };
+  const band = { r: samples.band.r, g: samples.band.g, b: samples.band.b, a: 1 };
+  if (exp.kind === 'icon') {
+    if (!samples.fill) return { problems: [['chip-contrast', 'the painted fill of the chip was not sampled']], info };
+    const fill = { r: samples.fill.r, g: samples.fill.g, b: samples.fill.b, a: 1 };
+    const g = m && m.glyph ? colour(m.glyph.color) : null;
+    if (!g) return { problems: [['chip-contrast', `unreadable glyph colour ${m && m.glyph ? m.glyph.color : 'no glyph'}`]], info };
+    const glyphExact = ratioOf(over(g, fill), fill);
+    const fillExact = ratioOf(fill, band);
+    info.glyph = round2(glyphExact);
+    info.fillOnBand = round2(fillExact);
+    if (glyphExact < CONTRAST_SHAPE) out.push(['chip-contrast', `glyph ${hex(over(g, fill))} on the chip fill ${hex(fill)} is ${info.glyph}:1, needs ${CONTRAST_SHAPE}`]);
+    if (fillExact < 1.02) out.push(['chip-contrast', `the chip fill ${hex(fill)} is the colour of the band ${hex(band)} (${info.fillOnBand}:1): the chip cannot be seen`]);
+    return { problems: out, info };
+  }
+  for (const [side, cap] of SIDES) {
+    if (!(px(m.el[`border${cap}Width`]) > 0)) continue;
+    const raw = m.el[`border${cap}Color`];
+    const bc = colour(raw);
+    if (!bc) { out.push(['chip-contrast', `border-${side}: unreadable colour ${raw}`]); continue; }
+    const exact = ratioOf(over(bc, band), band);
+    const r = round2(exact);
+    info[side] = r;
+    const need = hairline && sameColour(hairline, raw) ? RULE_QUIET_MIN : CONTRAST_SHAPE;
+    if (exact < need) out.push(['chip-contrast', `frame ${side} ${hex(over(bc, band))} on the band ${hex(band)} is ${r}:1, needs ${need}`]);
+  }
+  return { problems: out, info };
+}
+
+/** Overflow of one measured chip (the same finding as a rule). */
+function chipOverflowProblems(m, state, page) {
+  return ruleOverflowProblems(m, state, page, 'chip');
+}
+
+/** Problems of the chip count (code chip): every sheet chip on the page exactly once and, for an icon chip, its glyph found. An empty slot list is an error. */
+function chipCountProblems(measured, slots = CHIP_SLOTS) {
+  if (!slots.length) throw new Error('no chip slots: nothing would be checked');
+  const bad = [];
+  slots.forEach((slot, i) => {
+    const m = measured[i];
+    if (!m || !m.found) { bad.push(`${slot.key} is not in the page`); return; }
+    if (m.count !== 1) bad.push(`${slot.key} is on the page ${m.count} times, expected 1`);
+    if (slot.carrier === 'icon' && !m.glyph) bad.push(`${slot.key} has no glyph (span.et-pb-icon)`);
+  });
+  if (measured.length > slots.length) bad.push(`${measured.length} chips measured for ${slots.length} slots`);
+  if (!bad.length) return [];
+  const found = slots.filter((s, i) => measured[i] && measured[i].found).length;
+  return [['chip', `${found} of ${slots.length} chips rendered as the sheet says: ${bad.slice(0, 6).join('; ')}${bad.length > 6 ? ` and ${bad.length - 6} more` : ''}`]];
+}
+
+/** What a finished run must have checked as to chips: at least one (an empty selection fails the run with the code chip). */
+function emptyChipRunProblems({ chipsChecked }) {
+  return chipsChecked ? [] : ['no chip was checked: the chip selection was empty'];
+}
+
 // ---- PNG (screenshots) ---------------------------------------------------------------------------------------------
 /** Decodes an 8-bit, non-interlaced RGB or RGBA PNG (what Chromium writes) to { width, height, data: RGBA bytes }. */
 function decodePng(buf) {
@@ -1761,6 +2131,79 @@ function measureMedia(slots) {
   };
 }
 
+/**
+ * Runs IN THE PAGE (self-contained). For each slot ({ key, heading, carrier }) the rendered rule: found by the `.et_pb_heading` that holds the slot's unique
+ * text. A divider is the `.et_pb_divider` under the heading's wrapper group (its line is the `::before`, read as `line`), a group rule the `.et_pb_group` that
+ * holds the heading and a column rule the `.et_pb_column`; the latter two read `line` from their own `border-top-*`. The line element is tagged
+ * `data-aied-rule="<key>"` so the script can hide it, and carries `el` (the four sides' width, style and colour), its rect and its container's.
+ */
+function measureRules(slots) {
+  const root = document.querySelector('.et-l--post');
+  const SIDE = ['Top', 'Right', 'Bottom', 'Left'];
+  const sides = (cs) => { const o = {}; for (const s of SIDE) { o[`border${s}Width`] = cs[`border${s}Width`]; o[`border${s}Style`] = cs[`border${s}Style`]; o[`border${s}Color`] = cs[`border${s}Color`]; } return o; };
+  const top = (cs) => ({ borderTopWidth: cs.borderTopWidth, borderTopStyle: cs.borderTopStyle, borderTopColor: cs.borderTopColor });
+  const box = (n) => { const r = n.getBoundingClientRect(); return { left: r.left + window.scrollX, right: r.right + window.scrollX, top: r.top + window.scrollY, bottom: r.bottom + window.scrollY, width: r.width, height: r.height }; };
+  const headings = root ? [...root.querySelectorAll('.et_pb_heading')] : [];
+  return {
+    hasRoot: !!root,
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth: window.innerWidth,
+    rules: slots.map((s) => {
+      const hits = headings.filter((n) => (n.textContent || '').trim() === s.heading);
+      const h = hits[0];
+      if (!h) return { key: s.key, found: false, count: 0 };
+      let line = null;
+      if (s.carrier === 'divider') { const wrap = h.closest('.et_pb_group'); line = wrap ? wrap.querySelector('.et_pb_divider') : null; }
+      else line = h.closest(s.carrier === 'column' ? '.et_pb_column' : '.et_pb_group');
+      if (!line) return { key: s.key, found: false, count: hits.length };
+      line.setAttribute('data-aied-rule', s.key);
+      const cs = getComputedStyle(line);
+      const container = line.parentElement || line;
+      return {
+        key: s.key, found: true, count: hits.length, carrier: s.carrier, el: sides(cs), line: s.carrier === 'divider' ? top(getComputedStyle(line, '::before')) : top(cs),
+        rect: box(line), parentRect: box(container),
+      };
+    }),
+  };
+}
+
+/**
+ * Runs IN THE PAGE (self-contained). For each slot ({ key, carrier, text, heading }) the rendered chip: a tag is the `.et_pb_group` that holds the
+ * `.et_pb_text` with the slot's unique text, an icon chip the `.et_pb_icon` module box under the wrapper group that holds the heading (the radius
+ * rounds that box, the fill is its background, the glyph colour is on its `span.et-pb-icon`). The chip is tagged `data-aied-chip="<key>"` so the
+ * script can hide it; `el` carries the four corners, the four sides, the fill, its rect and its container's.
+ */
+function measureChips(slots) {
+  const root = document.querySelector('.et-l--post');
+  const SIDE = ['Top', 'Right', 'Bottom', 'Left'];
+  const pick = (cs) => { const o = { borderTopLeftRadius: cs.borderTopLeftRadius, borderTopRightRadius: cs.borderTopRightRadius, borderBottomRightRadius: cs.borderBottomRightRadius, borderBottomLeftRadius: cs.borderBottomLeftRadius, backgroundColor: cs.backgroundColor }; for (const s of SIDE) { o[`border${s}Width`] = cs[`border${s}Width`]; o[`border${s}Style`] = cs[`border${s}Style`]; o[`border${s}Color`] = cs[`border${s}Color`]; } return o; };
+  const box = (n) => { const r = n.getBoundingClientRect(); return { left: r.left + window.scrollX, right: r.right + window.scrollX, top: r.top + window.scrollY, bottom: r.bottom + window.scrollY, width: r.width, height: r.height }; };
+  const headings = root ? [...root.querySelectorAll('.et_pb_heading')] : [];
+  const texts = root ? [...root.querySelectorAll('.et_pb_text')] : [];
+  return {
+    hasRoot: !!root,
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth: window.innerWidth,
+    chips: slots.map((s) => {
+      let chip = null; let glyph = null; let hits = [];
+      if (s.carrier === 'group') {
+        hits = texts.filter((n) => (n.textContent || '').trim() === s.text);
+        chip = hits[0] ? hits[0].closest('.et_pb_group') : null;
+      } else {
+        hits = headings.filter((n) => (n.textContent || '').trim() === s.heading);
+        const wrap = hits[0] ? hits[0].closest('.et_pb_group') : null;
+        chip = wrap ? wrap.querySelector('.et_pb_icon') : null;
+        const g = chip ? chip.querySelector('.et-pb-icon') : null;
+        glyph = g ? { color: getComputedStyle(g).color } : null;
+      }
+      if (!chip) return { key: s.key, found: false, count: hits.length };
+      chip.setAttribute('data-aied-chip', s.key);
+      const container = chip.parentElement || chip;
+      return { key: s.key, found: true, count: hits.length, carrier: s.carrier, el: pick(getComputedStyle(chip)), glyph, rect: box(chip), parentRect: box(container) };
+    }),
+  };
+}
+
 module.exports = {
   SURFACES, ROLES, SLOTS, sheetMarkup, TITLE_PREFIX, runTitle, parseRunTitle, selectCells, buttonAttrs, expectFromAttrs, missingExpectations, BORDER_TOLERANCE,
   colour, sameColour, parseShadows, translateY, matrix2d, sameTransform, shadowProblems, compareButton, contrastProblems, overflowProblems,
@@ -1773,4 +2216,7 @@ module.exports = {
   FORM_SLOTS, formMarkup, formAttrs, expectFormFromAttrs, missingFormExpectations, compareFormField, compareForm, formContainerProblems, formCaptchaProblems,
   formButtonProblems, formPaintedFillProblems, formContrastProblems, formClipProblems, formOverflowProblems, formCountProblems, emptyFormRunProblems, measureForms,
   CORNER_PROPS_LIST: CORNER_PROPS, MEDIA_SLOTS, mediaMarkup, mediaAttrs, expectMediaFromAttrs, missingMediaExpectations, compareMedia, mediaOverflowProblems, mediaCountProblems, emptyMediaRunProblems, measureMedia,
+  RULE_SLOTS, CHIP_SLOTS, RULE_STRONG_MIN, RULE_QUIET_MIN, ruleMarkup, chipMarkup, ruleAttrs, expectRuleFromAttrs, missingRuleExpectations, compareRule, ruleContrastProblems, ruleOverflowProblems,
+  ruleCountProblems, emptyRuleRunProblems, measureRules, chipAttrs, expectChipFromAttrs, missingChipExpectations, compareChip, chipPaintedFillProblems, chipContrastProblems,
+  chipOverflowProblems, chipCountProblems, emptyChipRunProblems, measureChips,
 };
