@@ -1138,7 +1138,8 @@ class RecipeLibraryTest extends TestCase
         $decorated = [];
         $marked    = 0;
         foreach ( $rows as $key => $r ) {
-            if ( null !== $r['marked'] ) {
+            // Only a card or panel marker counts here: the report also lists rule and chip markers (rules and chips Task 5).
+            if ( in_array( $r['marked'], [ 'card', 'panel' ], true ) ) {
                 ++$marked;
                 if ( in_array( $r['class'], $surface, true ) ) {
                     $decorated[] = "$key ({$r['class']})";
@@ -1153,7 +1154,7 @@ class RecipeLibraryTest extends TestCase
         foreach ( array_keys( $listed ) as $key ) {
             if ( ! isset( $rows[ $key ] ) ) {
                 $stale[] = "$key is not a block of the recipes";
-            } elseif ( null !== $rows[ $key ]['marked'] ) {
+            } elseif ( in_array( $rows[ $key ]['marked'], [ 'card', 'panel' ], true ) ) {
                 $stale[] = "$key carries a card marker";
             } elseif ( ! in_array( $rows[ $key ]['class'], $surface, true ) ) {
                 $stale[] = "$key is a {$rows[ $key ]['class']}, not a card surface";
@@ -1334,10 +1335,11 @@ class RecipeLibraryTest extends TestCase
         if ( str_contains( $column, '{{aied:color:accent}}' ) ) {
             $out[] = 'the plan holds an accent colour of its own: the kit writes the accent body';
         }
-        // The divider rules sit on the accent body: their colour is an accent-text alpha form (the `border` hairline would vanish there).
-        preg_match_all( '/"all":\{"width":"0px","color":"(\{\{aied:color:[a-z-]+(?::[1-9][0-9]?)?\}\})"/', $column, $rules );
-        if ( [] === $rules[1] || [] !== array_filter( $rules[1], static fn ( string $c ): bool => 1 !== preg_match( '/^\{\{aied:color:accent-text:[1-9][0-9]?\}\}$/', $c ) ) ) {
-            $out[] = 'the divider rules must be an accent-text alpha form (accent-text:NN), found ' . ( [] === $rules[1] ? 'none' : implode( ',', $rules[1] ) );
+        // The divider rules sit on the accent body: they are quiet rule markers on the accent band (the kit writes their colour: the
+        // accent-text alpha form, since the `border` hairline would vanish there), never a literal edge (rules and chips Task 5).
+        $quiet = substr_count( $column, '"aied":{"kit":"rule","on":"accent"}' );
+        if ( 0 === $quiet || str_contains( $column, '"kit":"rule-strong"' ) || str_contains( $column, '"styles":{"all":{"width":"0px"' ) ) {
+            $out[] = 'the divider rules must be quiet rule markers on the accent band (kit "rule", on "accent"), found ' . $quiet . ( str_contains( $column, '"kit":"rule-strong"' ) ? ' and a strong one' : '' );
         }
         if ( 1 !== substr_count( $column, '"aied":{"kit":"control","on":"accent"}' ) || str_contains( $column, 'control-secondary' ) ) {
             $out[] = 'the plan\'s button must be one kit primary on the accent ground';
@@ -1358,8 +1360,10 @@ class RecipeLibraryTest extends TestCase
         $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '{{aied:color:surface}}"}}},"border"', '{{aied:color:accent}}"}}},"border"', $column ) ), 'an accent chip' );
         $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '"kit":"control"', '"kit":"control-secondary"', $column ) ), 'a secondary button' );
         $this->assertNotSame( [], self::featuredPlanProblems( str_replace( ',"ground":"accent"', '', $column ) ), 'no ground' );
-        $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '{{aied:color:accent-text:40}}', '{{aied:color:border}}', $column ) ), 'the border hairline on the accent body' );
-        $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '{{aied:color:accent-text:40}}', '{{aied:color:accent-text}}', $column ) ), 'a solid rule colour is not the alpha form' );
+        $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '"kit":"rule","on":"accent"', '"kit":"rule-strong","on":"accent"', $column ) ), 'a strong rule is not the quiet alpha form' );
+        $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '"kit":"rule","on":"accent"', '"kit":"control","on":"accent"', $column ) ), 'a lost rule marker' );
+        $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '"kit":"rule","on":"accent"', '"kit":"rule","on":"surface"', $column ) ), 'the quiet rule on the wrong band: the old test planted the border hairline on the accent body' );
+        $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '"aied":{"kit":"rule","on":"accent"}', '"module":{"decoration":{"border":{"desktop":{"value":{"styles":{"all":{"width":"0px","color":"{{aied:color:border}}"}}}}}}},"aied":{"kit":"rule","on":"accent"}', $column ) ), 'a literal edge back on the accent body' );
         $this->assertNotSame( [], self::featuredPlanProblems( str_replace( '"on":"accent"}', '"on":"light"}', $column ) ), 'a button on the wrong band' );
     }
 
@@ -1783,7 +1787,9 @@ class RecipeLibraryTest extends TestCase
         // and icon-values, testimonials-avatar-grid (Task 9; pricing-three-tier already has kit-driven buttons), plus the three
         // recipes whose only kit marker is an item: faq-accordion, features-accordion-image, faq-toggle-list (accordion adapter Task 6),
         // plus contact-form, whose only kit marker is its form (forms adapter Task 4; the other three recipe forms already count above).
-        $this->assertSame( 33, $checked, 'the recipes with a kit marker (button, card, item or form)' );
+        // plus the 24 recipes that carry rules or chips: the 21 rule recipes and the 3 chip recipes, 45 minus the 12 that already counted
+        // for another marker (rules and chips Task 5; icon-values is both a card and a chip recipe).
+        $this->assertSame( 45, $checked, 'the recipes with a kit marker (button, card, item, form, rule or chip)' );
     }
 
     public function testRecipesWithoutPairsAreOnlyTheFrozenBaselineAndItOnlyShrinks(): void
