@@ -2360,7 +2360,7 @@ real Divi 5 exports; do not invent attribute keys.
 
 ## Structure (nesting)
 ```
-divi/placeholder              (optional root wrapper)
+divi/placeholder              (root wrapper, optional)
   divi/section                (a section; may also hold a column directly)
     divi/row
       divi/column             (holds modules; may also hold a nested row)
@@ -2369,7 +2369,6 @@ divi/placeholder              (optional root wrapper)
           divi/column-inner   (same children as divi/column)
             [modules]
 ```
-Start with `divi/placeholder` (Divi's own exports) or directly with `divi/section` (the worked examples); both validate.
 **A `divi/column` can NEVER directly contain another `divi/column`** (doing so is
 rejected with UNEXPECTED_CHILD_TYPE). To nest columns inside a column, go through a
 row: **column → `divi/row-inner` → `divi/column-inner`** (or a plain `divi/row` →

@@ -581,8 +581,7 @@ class StyleGuideKitTopicsTest extends TestCase
         // Re-pinned deliberately (accordion plan T2+T4): 9,992 before; the shared prose moved to kit-rules and a toggle was added.
         $this->assertSame( 9599, $max, 'the largest kit topic today (neo-brutal; was 8124 before the inverted panel, 9992 before kit-rules)' );
         // The default guide grew only by ", kit-rules" in its topic line (Ruling 19: the line names every topic): 28,964 + 11.
-        // Guide polish second pass (spec Ruling 5), re-pinned deliberately: +120 B, the Structure block says the root wrapper is optional (ceiling 29,108).
-        $this->assertSame( 29095, strlen( StyleGuide::markdown() ), 'the default guide changed only by the new topic name and the second pass' );
+        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide changed only by the new topic name' );
         // Re-pinned deliberately (forms adapter T2): +30 B, the form named in the kit-driven sentence and "Forms, " dropped from the not-applied one.
         // Re-pinned deliberately (image radius pass): -14 B, ", image radius" left the not-applied sentence.
         // Rules and chips adapter Step 0 (plan 2026-10-21): fixed prose reworded to reclaim headroom for the new applied-sentence tail: 8,439 -> 8,325 B.

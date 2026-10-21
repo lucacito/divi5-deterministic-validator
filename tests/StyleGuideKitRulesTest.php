@@ -35,9 +35,6 @@ class StyleGuideKitRulesTest extends TestCase
 {
     private const BUDGET = 10000;
 
-    /** The default guide after the second pass (spec Ruling 5): 28,975 + the Structure block's root-wrapper sentence. */
-    private const DEFAULT_GUIDE_BYTES = 29095;
-
     /** The prose that moved: each must be in `kit-rules` once and in no kit topic. */
     private const MOVED = [
         'The fill is always the language\'s surface colour (the `surface` role; the `bg` role on a surface-coloured band), never transparent.',
@@ -132,7 +129,7 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertLessThanOrEqual( 7600, strlen( $text ) );
         $this->assertLessThanOrEqual( self::BUDGET, strlen( $text ) );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
-        $this->assertSame( self::DEFAULT_GUIDE_BYTES, strlen( StyleGuide::markdown() ), 'the default guide (29,095 since the second pass: 28,975 + the Structure sentence)' );
+        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
     }
 
     public function testTheRepeatedProseIsSaidOnceInKitRulesAndInNoKitTopic(): void
@@ -341,7 +338,7 @@ class StyleGuideKitRulesTest extends TestCase
 
     public function testTheDefaultGuideAndTheBudgetsOfTheFormAdapter(): void
     {
-        $this->assertSame( self::DEFAULT_GUIDE_BYTES, strlen( StyleGuide::markdown() ), 'the default guide (only the second pass moved it)' );
+        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
         // The 700 B planned for kit-rules growth became 776 B: the accent-band clause of the field frame and the path clause
         // (`button.decoration.*`, not `module.decoration`) were added after review. The bound below is the real one, the cap is 10,000 B.
         // Re-bounded deliberately (rules and chips adapter T3): + the applied tail and the Rules and chips paragraph (648 B in all; the bound is 650).
@@ -736,7 +733,7 @@ class StyleGuideKitRulesTest extends TestCase
 
     public function testTheBudgetsOfTheRulesAndChipsAdapter(): void
     {
-        $this->assertSame( self::DEFAULT_GUIDE_BYTES, strlen( StyleGuide::markdown() ), 'the default guide (only the second pass moved it)' );
+        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ), 'no topic name was added' );
         $rules = strlen( StyleGuide::markdown( 'kit-rules' ) );
         $this->assertLessThanOrEqual( 7600, $rules, 'kit-rules (guide polish replaced the 4,607 + 650 pin; the real bound is 10,000 B)' );
@@ -1009,15 +1006,11 @@ class StyleGuideKitRulesTest extends TestCase
     public function testTheStructureBlockSaysTheRootWrapperIsOptional(): void
     {
         $text = StyleGuide::markdown();
-        $this->assertStringNotContainsString( 'root wrapper, required', $text );
-        $this->assertStringNotContainsString( 'required)', substr( $text, (int) strpos( $text, '## Structure (nesting)' ), 400 ) );
-        $block = substr( $text, (int) strpos( $text, '## Structure (nesting)' ) );
-        $block = substr( $block, 0, (int) strpos( $block, '**A `divi/column` can NEVER' ) );
-        $this->assertStringContainsString( '`divi/placeholder`', $block );
-        $this->assertStringContainsString( 'Divi\'s own exports', $block );
-        $this->assertStringContainsString( 'directly with `divi/section`', $block );
-        $this->assertStringContainsString( 'the worked examples', $block );
-        $this->assertStringContainsString( 'both validate', $block );
+        $this->assertStringNotContainsString( '(root wrapper, required)', $text );
+        $this->assertStringContainsString( 'divi/placeholder              (root wrapper, optional)', $text );
+        // Size-neutral by owner rule: "optional" and "required" are both 8 characters; the default guide does not grow.
+        $this->assertSame( 28975, strlen( $text ) );
+        $this->assertLessThanOrEqual( 29108, strlen( $text ) );
         // The claim is the validator's own: both roots are accepted.
         foreach ( [ 'divi/placeholder', 'divi/section' ] as $root ) {
             $layout = '<!-- wp:' . $root . ' {"builderVersion":"5.8.0"} /-->';
@@ -1111,10 +1104,9 @@ class StyleGuideKitRulesTest extends TestCase
     public function testTheBudgetsOfTheSecondPass(): void
     {
         $size = strlen( StyleGuide::markdown() );
-        // Re-pinned deliberately (guide polish second pass, spec Ruling 5): the Structure block now says the root wrapper is optional.
-        $this->assertSame( self::DEFAULT_GUIDE_BYTES, $size, 'the default guide, pinned exactly' );
+        // The default guide does not grow (owner rule): the Structure fix is size-neutral.
+        $this->assertSame( 28975, $size, 'the default guide, pinned exactly' );
         $this->assertLessThanOrEqual( 29108, $size, 'Ruling 5 ceiling' );
-        $this->assertGreaterThan( 28975, $size );
         $this->assertLessThanOrEqual( 7600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (spec Ruling 5 raised the 7,000 B pin to 7,600 B; the real bound is 10,000 B)' );
         $this->assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
@@ -1132,7 +1124,7 @@ class StyleGuideKitRulesTest extends TestCase
 
     public function testTheBudgetsOfTheGuidePolish(): void
     {
-        $this->assertSame( self::DEFAULT_GUIDE_BYTES, strlen( StyleGuide::markdown() ), 'the default guide (only the second pass moved it)' );
+        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
         $this->assertLessThanOrEqual( 7600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (plan 2026-10-21-guide-polish-rules-chips; the real bound is 10,000 B)' );
         $this->assertLessThanOrEqual( 9500, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'composition' ) ) );
