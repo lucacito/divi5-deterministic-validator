@@ -196,6 +196,12 @@ final class StyleGuide
     }
 
     /** The ink (colour role) a child uses on a ground of the given fill role: the one pairing KitAdapters::ON also uses for a filled button's label (pinned equal by a test). */
+    /**
+     * The glyph codes the icon chip clause lists (Font Awesome, type "fa", weight "900"): each is one the shipped recipes render in a
+     * `divi/icon` block (StyleGuideKitRulesTest derives the allowed set from data/section-recipes.json), with the name only where it is certain.
+     */
+    private const GLYPHS = 'f00c check, f00d close, f005 star, f017 clock, f0e7 bolt, f201 chart, f3c5 pin, f0e0 envelope, f095 phone, f013 gear, f10d quote';
+
     private const GROUND_INK = [ 'accent' => 'accent-text', 'text' => 'bg' ];
 
     /** What the sentence names, per marker role: a plain noun. A role without an entry is named by its id. */
@@ -312,6 +318,10 @@ final class StyleGuide
         if ( [] !== $accordion ) {
             $s[] = "On the accordion write all of it on the parent; each item gets it: fills at `openToggle.decoration.background.{$d}.color` and `closedToggle.decoration.background.{$d}.color`, titles at `openToggle.decoration.font.font.{$d}.color` and `closedToggle.decoration.font.font.{$d}.color`, the icon at `closedToggleIcon.decoration.icon.{$d}.color`, the answer at `content.decoration.bodyFont.body.font.{$d}.color`.";
         }
+        if ( [] !== $accordion ) {
+            $s[] = "An item is a `divi/accordion-item`: `title.innerContent.{$d}` (the question), `content.innerContent.{$d}` (the answer, `<p>` HTML) and `module.advanced.open.{$d}` = \"on\" on the open item"
+                . ( [] !== $toggle ? '; a `divi/toggle` takes the same three.' : '.' );
+        }
         if ( [] !== $toggle ) {
             $s[] = [] !== $accordion
                 ? "A `divi/toggle` carries the look on itself, not on a parent, at the same paths except the closed title at `closedTitle.decoration.font.font.{$d}.color` (not `closedToggle`) and the open icon at `openToggleIcon.decoration.icon.{$d}.color`."
@@ -325,6 +335,34 @@ final class StyleGuide
         }
 
         return implode( ' ', $s );
+    }
+
+    /**
+     * The one sentence that defines `on`, the band a kit block sits on (round 3 of the guide polish: four of six dogfood runs
+     * could not tell which band a dark language is). Generated from the bands the adapters accept (KitAdapters::RULE_BANDS and
+     * CHIP_BANDS, which cover the button, card, item and form bands too): a band is described only if it is accepted and a band
+     * without a description here is never named.
+     *
+     * @param list<string>|null $bands defaults to the union of the two constants (a parameter only so a test can prove the sentence follows them)
+     */
+    public static function bandSentence( ?array $bands = null ): string
+    {
+        $bands ??= array_values( array_unique( array_merge( KitAdapters::RULE_BANDS, KitAdapters::CHIP_BANDS ) ) );
+        $says    = [
+            'light'   => "is the language's own page colour (a dark language's too)",
+            'surface' => 'its surface',
+            'accent'  => 'the accent',
+            'dark'    => 'a photo or overlay',
+            'panel'   => 'the inside of an inverted card',
+        ];
+        $parts = [];
+        foreach ( $bands as $band ) {
+            if ( isset( $says[ $band ] ) ) {
+                $parts[] = '`' . $band . '` ' . $says[ $band ];
+            }
+        }
+
+        return [] === $parts ? '' : ' `on` is the band a block sits on: ' . implode( ', ', $parts ) . '.';
     }
 
     /**
@@ -352,7 +390,8 @@ final class StyleGuide
             . "Every block in a kit topic is real: resolved by the plugin's own pipeline for the `editorial` language on a light section, with placeholder text. "
             . "Put it inside a column. With another design language keep the structure and swap each colour for its role (listed beside the blocks as value = role(s)), not by its value: two roles can share one value; "
             . "and swap the font family for your language's body font. "
-            . "Where a design language's prose and the kit disagree about the corners, borders, shadow or hover of a block a kit styles, the kit wins.\n";
+            . "Where a design language's prose and the kit disagree about the corners, borders, shadow or hover of a block a kit styles, the kit wins."
+            . self::bandSentence() . "\n";
         if ( $has( 'control' ) ) {
             $out .= "\n## Buttons\n\n"
                 . "A button takes the kit's control values: fill, border and its sides, control radius, shadow, hover and lift, text and control padding. "
@@ -523,6 +562,9 @@ final class StyleGuide
             if ( [] !== $edges ) {
                 $parts[] = 'Top edge of a ' . implode( ' or ', $edges ) . ': `module.decoration.border.desktop.value.styles` with `all` = width `0px` plus the style and colour, and `top` = the rule width, the same style and colour; '
                     . 'the other three sides stay 0; to rule the top of a specific ' . implode( ' or ', $edges ) . ' (for example between plan columns), write the edge on that block itself' . ( $divider ? '; a divider module is for a separate line between blocks.' : '.' );
+                // Round 3, probed on both carriers (kit-rule-vocabulary.md "Guide-only fact"): a framed block keeps its frame.
+                $parts[] = 'A ' . implode( ' or ', $edges ) . ' that already has a frame keeps `styles.all` and gets only `styles.top` (width, style, colour); the `all` 0px form is for a block without a frame.';
+                $parts[] = 'A kit rule has no left or right edge, so side-by-side columns get no vertical rule: use the top edge' . ( $divider ? ' or a divider line.' : '.' );
             }
         }
 
@@ -531,7 +573,8 @@ final class StyleGuide
                 $is( $chipProven, 'tag-radius' ) ? '`radius` (the four corners, the kit\'s control radius)' : '',
                 $is( $chipProven, 'tag-frame' ) ? '`styles.all` (width, style, colour; 1px at least)' : '',
             ] ) );
-            $parts[] = 'Tag: `module.decoration.border.desktop.value` with ' . implode( ' and ', $tag ) . '. Its fill stays transparent; its padding and size are yours.';
+            $parts[] = 'Tag: `module.decoration.border.desktop.value` with ' . implode( ' and ', $tag ) . '. Its fill stays transparent; its padding and size are yours.'
+                . ( $is( $chipProven, 'tag-frame' ) ? ' Frame colour: the quiet colour when the kit\'s border colour is `border` or `same`, else the strong one.' : '' );
         }
 
         if ( $roleOf( 'divi/icon', 'chip' ) && ( $is( $chipProven, 'icon-radius' ) || $is( $chipProven, 'icon-fill' ) || $is( $chipProven, 'icon-glyph' ) ) ) {
@@ -543,9 +586,9 @@ final class StyleGuide
             $text = 'Icon chip: ' . implode( ', ', $icon );
             if ( $is( $chipProven, 'icon-fill' ) || $is( $chipProven, 'icon-glyph' ) ) {
                 // The glyph character itself (a real export: unicode, type and weight go together).
-                $text .= '; the glyph itself is `icon.innerContent.desktop.value` with `unicode`, `type`, `weight` (e.g. "&#xf10d;", "fa", "900")';
+                $text .= '; the glyph is `icon.innerContent.desktop.value` with `unicode` (e.g. "&#xf00c;"), `type` "fa", `weight` "900"; codes: ' . self::GLYPHS;
             }
-            $parts[] = $text . '.';
+            $parts[] = $text . '. Its size: glyph size at `icon.advanced.size.desktop.value` plus the padding at `module.decoration.spacing.desktop.value.padding` (e.g. 20px with 10px).';
         }
 
         return implode( ' ', $parts );

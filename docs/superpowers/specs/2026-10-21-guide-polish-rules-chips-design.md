@@ -96,3 +96,14 @@ Built on branch `feat/guide-polish-rules-chips` (spec 1f7d15f, plan ca82351 from
 - **Items wording** (branch `feat/left-guide-items`, 9c9f6ce): the accordion clause now attributes frame, radius and shadow to the `item` role only and states the rule row's bottom rule, and a toggle clause names the toggle leaves (the closed title is `closedTitle`; "the same paths except" the closed title and open icon). `kit-rules` 7,302 -> 7,864 B (pin raised to 7,900 B on purpose, real bound 10,000); every other served topic byte-identical. Findings left: "its shadow" reads as unconditional (the adapter writes a shadow for 32 of 160 `item` patches; "when the kit has one" fits in 36 B), and the role sentences are per role, not per carrier (unreachable with the shipped symmetric map).
 - **Release draft** `docs/release-4.14.0-draft.md` (changelog entry, upgrade notice, owner checklist): NOT applied.
 - Still open from the dogfood runs: `row` versus `row-inner` nesting taught both ways, band names for dark languages and tints, only two Font Awesome glyph codes taught, a tag that must shrink to its text.
+
+## Round 3 (second dogfood round, 2026-10-21, before the 4.14.0 release)
+
+Three more assistants (a freehand page for underlined-label with glass-dark, one for soft-rounded with organic-warm, and an edit of a glass-edge
+page built from recipes) reported, again across runs: no definition of which band a dark language is (4 of 6 runs over both rounds), no word on a rule
+for a block that already has a frame (the editing assistant kept the plan cards' frame and wrote only a `top` side, which the guide's `all` 0px
+recipe would have removed: now PROBED, 2 of 2 PASS, `fixtures/shapes/kit-rule-vocabulary.md` "Guide-only fact"), no side edges (columns cannot
+get a vertical rule), no tag frame colour, no icon-chip size, no accordion-item shape (3 of 3 runs, grounded in the shipped recipes), only two glyph
+codes taught. All pages validated and rendered without overflow and followed their kit (underlined-label: quiet 2px and strong 4px top edges for the
+3px kit, square chips, bottom-edge cards; soft-rounded: 12px chips, 16px cards). Task 5 words these; `kit-rules` pin raised to 9,000 B (real bound
+10,000 B). No adapter change.
