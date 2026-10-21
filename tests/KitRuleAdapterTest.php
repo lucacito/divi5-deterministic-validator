@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\KitAdapters;
 use AiEditorDivi5\WP\KitResolver;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\StyleKits;
+use Divi5Validator\Tests\Support\Colour;
 use Divi5Validator\Tests\Support\DeadOnModule;
+use Divi5Validator\Tests\Support\RuleChipAudit;
 use Divi5Validator\Tests\Support\ShapePaths;
 use Divi5Validator\Tests\Support\ShapeRegistry;
 use PHPUnit\Framework\TestCase;
@@ -27,6 +30,8 @@ require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
 require_once __DIR__ . '/Support/ShapePaths.php';
 require_once __DIR__ . '/Support/ShapeRegistry.php';
 require_once __DIR__ . '/Support/DeadOnModule.php';
+require_once __DIR__ . '/Support/Colour.php';
+require_once __DIR__ . '/Support/RuleChipAudit.php';
 
 /**
  * The rule adapter (rules and chips plan Task 3): a kit's decisions become the attributes of a thin line. Roles `rule` (quiet)
@@ -540,5 +545,204 @@ class KitRuleAdapterTest extends TestCase
             $this->assertArrayNotHasKey( $block, KitAdapters::APPLIED, "$block is not a rule carrier" );
         }
         $this->assertSame( [ 'light', 'surface', 'accent', 'dark', 'panel' ], KitAdapters::RULE_BANDS );
+    }
+
+    /**
+     * The `dark` band is modelled exactly as the button and form proofs model it: the language's `overlay` composited over a
+     * mid grey. KitAdaptersTest::PHOTO_GREY is private, so its value is asserted equal here and in RuleChipAudit.
+     */
+    private const PHOTO_GREY = '#808080';
+
+    public function testThePhotoModelIsTheButtonProofs(): void
+    {
+        $this->assertSame( ( new \ReflectionClassConstant( KitAdaptersTest::class, 'PHOTO_GREY' ) )->getValue(), self::PHOTO_GREY );
+        $this->assertSame( self::PHOTO_GREY, RuleChipAudit::PHOTO_GREY );
+    }
+
+    /** A colour token or value resolved by the real pipeline (alpha forms included) as an opaque hex over $ground. @param array<string,mixed> $lang */
+    private static function opaqueOn( string $value, array $lang, string $ground ): ?string
+    {
+        return Colour::opaque( RecipeTokens::resolve( $value, $lang ), $ground );
+    }
+
+    /** The opaque colour of band $on in $lang: what a rule on that band is drawn against. @param array<string,mixed> $lang */
+    public static function bandOf( string $on, array $lang ): string
+    {
+        $c = (array) $lang['colors'];
+        return match ( $on ) {
+            'light'   => (string) Colour::opaque( (string) $c['bg'], '#ffffff' ),
+            'surface' => (string) Colour::opaque( (string) $c['surface'], (string) $c['bg'] ),
+            'accent'  => (string) Colour::opaque( (string) $c['accent'], (string) $c['bg'] ),
+            'panel'   => (string) Colour::opaque( (string) $c['text'], (string) $c['bg'] ),
+            default   => (string) Colour::opaque( (string) $c['overlay'], self::PHOTO_GREY ),
+        };
+    }
+
+    /** Dotted path of the colour, weight and style of the line a carrier draws. @return array{0:string,1:string,2:string} */
+    private static function linePaths( string $blockName ): array
+    {
+        if ( 'divi/divider' === $blockName ) {
+            $p = 'divider.advanced.line.desktop.value.';
+            return [ $p . 'color', $p . 'weight', $p . 'style' ];
+        }
+        $p = 'module.decoration.border.desktop.value.styles.top.';
+        return [ $p . 'color', $p . 'width', $p . 'style' ];
+    }
+
+    /**
+     * Contrast problems of one rule patch of $role on band $on in one language ([] = fine), keyed "$where|<check>":
+     * - colour: the line colour (alpha composited, as painted) against the band: `rule-strong` at least 3.0 (WCAG 1.4.11
+     *   reading), `rule` at least RuleChipAudit::QUIET_RULE_FLOOR; an unresolved colour is 0:1;
+     * - width: the drawn width at least 1px, and a `double` at least 3px (thinner paints as solid);
+     * - style: one of the border styles a kit may carry;
+     * - sides: on a group or column the other three sides are 0px (`all` 0px, no side key beyond `top`).
+     *
+     * @param array<string,mixed> $patch
+     * @param array<string,mixed> $lang
+     * @return array<string,string>
+     */
+    public static function ruleContrastProblems( array $patch, string $blockName, string $role, string $on, array $lang, string $where ): array
+    {
+        $leaves = self::leaves( $patch );
+        [ $colourPath, $widthPath, $stylePath ] = self::linePaths( $blockName );
+        $out    = [];
+        $band   = self::bandOf( $on, $lang );
+        $colour = isset( $leaves[ $colourPath ] ) ? (string) $leaves[ $colourPath ] : null;
+        $ink    = null === $colour ? null : self::opaqueOn( $colour, $lang, $band );
+        $ratio  = null === $ink ? 0.0 : Colour::contrast( $ink, $band );
+        $need   = 'rule-strong' === $role ? 3.0 : RuleChipAudit::QUIET_RULE_FLOOR;
+        if ( $ratio < $need ) {
+            $out[ "$where|colour" ] = sprintf( '%s: the %s colour (%s) on %s is %.3f:1, needs %.1f', $where, $role, (string) $colour, $band, $ratio, $need );
+        }
+        $width = isset( $leaves[ $widthPath ] ) ? (string) $leaves[ $widthPath ] : '';
+        $style = isset( $leaves[ $stylePath ] ) ? (string) $leaves[ $stylePath ] : '';
+        $px    = 1 === preg_match( '/^(\d+)px$/', $width, $m ) ? (int) $m[1] : 0;
+        if ( $px < 1 ) {
+            $out[ "$where|width" ] = "$where: the drawn width '$width' is under 1px";
+        } elseif ( 'double' === $style && $px < 3 ) {
+            $out[ "$where|width" ] = "$where: a double of $width paints as solid (needs 3px)";
+        }
+        if ( ! in_array( $style, StyleKits::BORDER_STYLES, true ) ) {
+            $out[ "$where|style" ] = "$where: the style '$style' is not a kit border style";
+        }
+        if ( 'divi/divider' !== $blockName ) {
+            $p = 'module.decoration.border.desktop.value.styles.';
+            if ( ( $leaves[ $p . 'all.width' ] ?? null ) !== '0px' ) {
+                $out[ "$where|sides" ] = "$where: the other three sides are not 0px";
+            }
+            foreach ( [ 'bottom', 'left', 'right' ] as $side ) {
+                if ( isset( $leaves[ $p . $side . '.width' ] ) && '0px' !== $leaves[ $p . $side . '.width' ] ) {
+                    $out[ "$where|sides" ] = "$where: the $side side is drawn";
+                }
+            }
+        }
+        return $out;
+    }
+
+    public function testNoInvisibleRuleInAnyKitLanguageBandRole(): void
+    {
+        $problems = [];
+        $checked  = 0;
+        foreach ( $this->shippedKits() as $id => $kit ) {
+            foreach ( DesignLanguages::ids() as $langId ) {
+                $lang = DesignLanguages::get( $langId );
+                $this->assertIsArray( $lang );
+                foreach ( self::BANDS as $on ) {
+                    foreach ( self::ROLES as $role ) {
+                        foreach ( self::CARRIERS as $block ) {
+                            $problems = array_merge( $problems, self::ruleContrastProblems( $this->patch( $block, $role, $kit, $on ), $block, $role, $on, $lang, "$id|$langId|$on|$role|$block" ) );
+                        }
+                        ++$checked; // one cell = kit x language x band x role, judging the divider, group and column patch
+                    }
+                }
+            }
+        }
+        $this->assertSame( 40 * 10 * 5 * 2, $checked );
+        $this->assertSame( 4000, $checked );
+        $this->assertSame( [], array_values( $problems ), "invisible rules (fix KitAdapters::RULE_COLOUR or the width table, never the floor; no exceptions):\n" . implode( "\n", array_slice( $problems, 0, 60 ) ) . "\n(" . count( $problems ) . ' problems)' );
+    }
+
+    public function testTheRuleContrastCheckCatchesWhatItShould(): void
+    {
+        $lang = DesignLanguages::get( 'organic-warm' );
+        $this->assertIsArray( $lang );
+        $kit   = $this->shippedKits()['steady-solid'];
+        $judge = static fn ( array $p, string $block, string $role, string $on ): array => self::ruleContrastProblems( $p, $block, $role, $on, $lang, 'x' );
+        $c     = 'module.decoration.border.desktop.value.styles.';
+
+        foreach ( self::CARRIERS as $block ) {
+            foreach ( self::ROLES as $role ) {
+                foreach ( self::BANDS as $on ) {
+                    $this->assertSame( [], $judge( $this->patch( $block, $role, $kit, $on ), $block, $role, $on ), "steady-solid $role $block on $on is clean in organic-warm" );
+                }
+            }
+        }
+
+        // A quiet rule in the band's own colour is invisible (1:1 under the 1.1 floor).
+        $bad = $this->patch( 'divi/divider', 'rule', $kit, 'light' );
+        self::setLeaf( $bad, 'divider.advanced.line.desktop.value.color', '{{aied:color:bg}}' );
+        $this->assertArrayHasKey( 'x|colour', $judge( $bad, 'divi/divider', 'rule', 'light' ), 'a quiet rule in bg on a light band' );
+        // A strong rule in `border` does not reach 3:1.
+        $bad = $this->patch( 'divi/divider', 'rule-strong', $kit, 'light' );
+        self::setLeaf( $bad, 'divider.advanced.line.desktop.value.color', '{{aied:color:border}}' );
+        $this->assertArrayHasKey( 'x|colour', $judge( $bad, 'divi/divider', 'rule-strong', 'light' ), 'a strong rule in border' );
+        // A strong rule at 5% alpha of text is nearly invisible; and a token the pipeline cannot resolve is 0:1.
+        $bad = $this->patch( 'divi/group', 'rule-strong', $kit, 'light' );
+        self::setLeaf( $bad, $c . 'top.color', '{{aied:color:text:05}}' );
+        $this->assertArrayHasKey( 'x|colour', $judge( $bad, 'divi/group', 'rule-strong', 'light' ), 'text at 5% on light' );
+        self::setLeaf( $bad, $c . 'top.color', '{{aied:color:text:5}}' );
+        $this->assertArrayHasKey( 'x|colour', $judge( $bad, 'divi/group', 'rule-strong', 'light' ), 'an unresolved colour' );
+        // A top rule with no top side: the colour and width are missing.
+        $bad = $this->patch( 'divi/column', 'rule', $kit, 'surface' );
+        self::unsetLeaf( $bad, $c . 'top' );
+        $found = $judge( $bad, 'divi/column', 'rule', 'surface' );
+        $this->assertArrayHasKey( 'x|colour', $found );
+        $this->assertArrayHasKey( 'x|width', $found );
+        // A divider with weight 0px, and a double thinner than 3px.
+        $bad = $this->patch( 'divi/divider', 'rule', $kit, 'light' );
+        self::setLeaf( $bad, 'divider.advanced.line.desktop.value.weight', '0px' );
+        $this->assertArrayHasKey( 'x|width', $judge( $bad, 'divi/divider', 'rule', 'light' ) );
+        self::setLeaf( $bad, 'divider.advanced.line.desktop.value.weight', '2px' );
+        self::setLeaf( $bad, 'divider.advanced.line.desktop.value.style', 'double' );
+        $this->assertArrayHasKey( 'x|width', $judge( $bad, 'divi/divider', 'rule', 'light' ), 'a 2px double paints as solid' );
+        // A side other than the top drawn, and `all` not 0px.
+        $bad = $this->patch( 'divi/group', 'rule', $kit, 'light' );
+        self::setLeaf( $bad, $c . 'bottom.width', '2px' );
+        $this->assertArrayHasKey( 'x|sides', $judge( $bad, 'divi/group', 'rule', 'light' ) );
+        $bad = $this->patch( 'divi/group', 'rule', $kit, 'light' );
+        self::setLeaf( $bad, $c . 'all.width', '1px' );
+        $this->assertArrayHasKey( 'x|sides', $judge( $bad, 'divi/group', 'rule', 'light' ) );
+        // The dark and panel bands are judged against their own ground: a text rule on a text panel vanishes.
+        $bad = $this->patch( 'divi/divider', 'rule-strong', $kit, 'panel' );
+        self::setLeaf( $bad, 'divider.advanced.line.desktop.value.color', '{{aied:color:text}}' );
+        $this->assertArrayHasKey( 'x|colour', $judge( $bad, 'divi/divider', 'rule-strong', 'panel' ), 'text on a text panel' );
+    }
+
+    /** Set the dotted $path of $node to $value. @param array<string,mixed> $node */
+    private static function setLeaf( array &$node, string $path, mixed $value ): void
+    {
+        $ref = &$node;
+        foreach ( explode( '.', $path ) as $k ) {
+            if ( ! isset( $ref[ $k ] ) || ! is_array( $ref[ $k ] ) ) {
+                $ref[ $k ] = [];
+            }
+            $ref = &$ref[ $k ];
+        }
+        $ref = $value;
+    }
+
+    /** Remove the dotted $path of $node. @param array<string,mixed> $node */
+    private static function unsetLeaf( array &$node, string $path ): void
+    {
+        $keys = explode( '.', $path );
+        $last = array_pop( $keys );
+        $ref  = &$node;
+        foreach ( $keys as $k ) {
+            if ( ! isset( $ref[ $k ] ) || ! is_array( $ref[ $k ] ) ) {
+                return;
+            }
+            $ref = &$ref[ $k ];
+        }
+        unset( $ref[ $last ] );
     }
 }
