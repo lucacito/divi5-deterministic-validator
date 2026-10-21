@@ -371,11 +371,21 @@ final class StyleGuide
             if ( [] !== $edges ) {
                 $what[] = 'the top edge of a ' . implode( ' or ', array_map( static fn ( string $b ): string => '`' . $b . '`', $edges ) );
             }
-            $text = '`rule` (quiet), `rule-strong`: ' . implode( ' or ', $what ) . '; `on`: ' . $bands( KitAdapters::RULE_BANDS ) . '. '
-                . 'Width from the kit: 1-2px quiet, 2-4px strong, 3px+ for a double. '
-                . 'Quiet: hairline colour on light and surface, 40% ink elsewhere; strong: full ink. ';
             $names   = [ 'divider-' => '`divi/divider`', 'group-top-' => '`divi/group`', 'column-top-' => '`divi/column`' ];
             $present = [ 'divider-' => $divider, 'group-top-' => in_array( 'divi/group', $edges, true ), 'column-top-' => in_array( 'divi/column', $edges, true ) ];
+            // A clause is said only while at least one present carrier proves the form it describes (a carrier that does not is
+            // named in the fallback sentences below).
+            $anyProven = static function ( string $suffix ) use ( $names, $present, $is, $ruleProven ): bool {
+                foreach ( array_keys( $names ) as $prefix ) {
+                    if ( $present[ $prefix ] && $is( $ruleProven, $prefix . $suffix ) ) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+            $text = '`rule` (quiet), `rule-strong`: ' . implode( ' or ', $what ) . '; `on`: ' . $bands( KitAdapters::RULE_BANDS ) . '. '
+                . 'Width from the kit: 1-2px quiet, 2-4px strong' . ( $anyProven( 'double' ) ? ', 3px+ for a double' : '' ) . '. '
+                . 'Quiet: hairline colour on light and surface' . ( $anyProven( 'alpha' ) ? ', 40% ink elsewhere' : '' ) . '; strong: full ink. ';
             foreach ( $names as $prefix => $name ) {
                 if ( ! $present[ $prefix ] ) {
                     continue;
@@ -397,13 +407,23 @@ final class StyleGuide
 
         // Chips.
         $tag  = $roleOf( 'divi/group', 'chip' ) && ( $is( $chipProven, 'tag-radius' ) || $is( $chipProven, 'tag-frame' ) );
-        $icon = $roleOf( 'divi/icon', 'chip' );
+        $icon = $roleOf( 'divi/icon', 'chip' ) && ( $is( $chipProven, 'icon-radius' ) || $is( $chipProven, 'icon-fill' ) || $is( $chipProven, 'icon-glyph' ) );
         if ( $tag || $icon ) {
             $what = [];
             if ( $tag ) {
                 $tagParts = array_values( array_filter( [ $is( $chipProven, 'tag-radius' ) ? 'control radius' : '', $is( $chipProven, 'tag-frame' ) ? 'outline frame' : '' ] ) );
                 $styles   = array_values( array_filter( [ 'dashed', 'dotted', 'double' ], static fn ( string $style ): bool => ! $is( $chipProven, 'tag-' . $style ) ) );
-                $what[]   = 'tag (`divi/group`: ' . implode( ', ', $tagParts ) . ( [] !== $styles && $is( $chipProven, 'tag-frame' ) ? '; ' . implode( ' or ', $styles ) . ' is drawn as solid' : '' ) . ')';
+                $tagNotes = [];
+                if ( $is( $chipProven, 'tag-frame' ) ) {
+                    if ( [] !== $styles ) {
+                        $tagNotes[] = implode( ' or ', $styles ) . ' is drawn as solid';
+                    }
+                    if ( ! $is( $ruleProven, 'group-top-alpha' ) ) {
+                        // The tag frame reuses the group rule's 40% colour (KitAdapters::chipPatch): same fallback.
+                        $tagNotes[] = 'on accent and dark the frame is the strong colour';
+                    }
+                }
+                $what[]   = 'tag (`divi/group`: ' . implode( ', ', $tagParts ) . ( [] !== $tagNotes ? '; ' . implode( '; ', $tagNotes ) : '' ) . ')';
             }
             if ( $icon ) {
                 $iconParts = array_values( array_filter( [ $is( $chipProven, 'icon-radius' ) ? 'control radius' : '', $is( $chipProven, 'icon-fill' ) ? 'accent fill' : '', $is( $chipProven, 'icon-glyph' ) ? 'accent-text glyph' : '' ] ) );
@@ -1843,11 +1863,16 @@ MD;
             return '';
         }
 
-        $names = array_map( static fn ( string $r ): string => '`' . $r . '`', array_values( array_unique( $roles ) ) );
+        $ticks = static fn ( array $names ): string => implode( ' or ', array_map( static fn ( string $r ): string => '`' . $r . '`', $names ) );
+        $parts = [];
+        if ( isset( $applied['divi/divider'] ) ) {
+            $parts[] = 'with a ' . $ticks( $applied['divi/divider'] ) . ' marker a divider takes the kit\'s width and style';
+        }
+        if ( isset( $applied['divi/icon'] ) ) {
+            $parts[] = 'with a ' . $ticks( $applied['divi/icon'] ) . ' marker an icon takes the kit\'s corners';
+        }
 
-        return "\n\n## Style kits\n\nA divider or an icon chip can take the page's style kit with a "
-            . ( count( $names ) > 1 ? implode( ', ', array_slice( $names, 0, -1 ) ) . ' or ' . end( $names ) : $names[0] )
-            . ' marker (width, colour and corners follow the kit); the rules are in topic=kit-rules.';
+        return "\n\n## Style kits\n\n" . ucfirst( implode( ', ', $parts ) ) . '; colours come from the design language (topic=kit-rules).';
     }
 
     private static function controlsTopicText(): string

@@ -497,6 +497,90 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( StyleGuide::kitRules( $noThin ), StyleGuide::kitRules( $noThin, null, null, array_map( static fn ( bool $v ): bool => false, $yes ), array_map( static fn ( bool $v ): bool => false, $cyes ) ) );
     }
 
+    public function testTheRulesAndChipsParagraphSaysNothingTheDecisionsDoNotProve(): void
+    {
+        // Review fix (rules and chips T3): the all-true text is byte-identical to what shipped in 2b3dc4a.
+        $body = trim( (string) substr( $this->rulesParagraph(), strlen( "## Rules and chips\n\n" ) ) );
+        $this->assertSame(
+            '`rule` (quiet), `rule-strong`: a `divi/divider` (colour, weight, style) or the top edge of a `divi/group` or `divi/column`; `on`: light, surface, accent, dark or panel. Width from the kit: 1-2px quiet, 2-4px strong, 3px+ for a double. Quiet: hairline colour on light and surface, 40% ink elsewhere; strong: full ink. `chip`: tag (`divi/group`: control radius, outline frame) or icon (`divi/icon`: control radius, accent fill, accent-text glyph; surface/text on accent); `on`: light, surface, accent or dark.',
+            $body
+        );
+        $this->assertSame( 5255, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'the shipped kit-rules did not move' );
+
+        $yes    = KitAdapters::RULE_PROVEN;
+        $cyes   = KitAdapters::CHIP_PROVEN;
+        $prefix = [ 'divider-', 'group-top-', 'column-top-' ];
+
+        // (a) alpha: said while any present carrier proves it; gone (with its fallback stated) when none does.
+        $none = $yes;
+        foreach ( $prefix as $p ) {
+            $none[ $p . 'alpha' ] = false;
+        }
+        $off = $this->rulesParagraph( null, $none );
+        $this->assertStringNotContainsString( '40% ink', $off, 'no carrier proves the 40% colour: not claimed' );
+        $this->assertStringContainsString( 'Quiet: hairline colour on light and surface; strong: full ink.', $off );
+        $this->assertStringContainsString( 'takes the strong colour', $off );
+        $some = $this->rulesParagraph( null, array_merge( $yes, [ 'divider-alpha' => false ] ) );
+        $this->assertStringContainsString( '40% ink elsewhere', $some, 'one carrier still proves it: said, and the other is named in the fallback' );
+        $this->assertStringContainsString( '`divi/divider`', substr( $some, (int) strpos( $some, 'takes the strong colour' ) - 40 ) );
+        // A carrier that is not offered does not count: only the divider is present and its alpha is false.
+        $dividerOnly = [ 'divi/divider' => [ 'rule', 'rule-strong' ] ];
+        $this->assertStringNotContainsString( '40% ink', $this->rulesParagraph( $dividerOnly, array_merge( $yes, [ 'divider-alpha' => false ] ) ) );
+        $this->assertStringContainsString( '40% ink', $this->rulesParagraph( $dividerOnly, array_merge( $yes, [ 'group-top-alpha' => false ] ) ), 'a group decision does not touch a divider-only map' );
+
+        // (b) double: the "3px+" clause only while a present carrier draws a double.
+        $noDouble = $yes;
+        foreach ( $prefix as $p ) {
+            $noDouble[ $p . 'double' ] = false;
+        }
+        $off = $this->rulesParagraph( null, $noDouble );
+        $this->assertStringNotContainsString( '3px', $off, 'a double is drawn solid on every carrier: no 3px double floor claimed' );
+        $this->assertStringContainsString( 'Width from the kit: 1-2px quiet, 2-4px strong. ', $off );
+        $this->assertStringContainsString( 'double is drawn as solid', $off );
+        $this->assertStringContainsString( '3px+ for a double', $this->rulesParagraph( null, array_merge( $yes, [ 'column-top-double' => false ] ) ), 'two carriers still draw a double' );
+        $this->assertStringNotContainsString( '3px', $this->rulesParagraph( $dividerOnly, array_merge( $yes, [ 'divider-double' => false ] ) ) );
+
+        // (c) icon: with no proven icon decision there is no icon chip offer and nothing malformed.
+        $noIcon = array_merge( $cyes, [ 'icon-radius' => false, 'icon-fill' => false, 'icon-glyph' => false ] );
+        $off    = $this->rulesParagraph( null, null, $noIcon );
+        $this->assertStringNotContainsString( 'divi/icon', $off );
+        $this->assertStringNotContainsString( '(`divi/icon`', $off );
+        $this->assertStringNotContainsString( ': ;', $off );
+        $this->assertStringNotContainsString( ' or icon', $off );
+        $this->assertStringContainsString( '`chip`: tag (`divi/group`:', $off, 'the tag is still offered' );
+        $allNo = array_map( static fn ( bool $v ): bool => false, $cyes );
+        $off   = $this->rulesParagraph( null, null, $allNo );
+        $this->assertStringNotContainsString( '`chip`', $off, 'nothing proven for a chip: no chip sentence at all' );
+        $this->assertStringNotContainsString( '(`divi/icon`: ;', $off );
+        // One proven icon decision: well formed, accent band refused.
+        $onlyRadius = $this->rulesParagraph( null, null, array_merge( $allNo, [ 'icon-radius' => true ] ) );
+        $this->assertStringContainsString( 'icon (`divi/icon`: control radius; not offered on an accent band)', $onlyRadius );
+        $this->assertStringNotContainsString( ': ;', $onlyRadius );
+    }
+
+    public function testTheTagFallbackFollowsTheGroupAlphaDecision(): void
+    {
+        $kit = (array) StyleKits::get( 'soft-solid' );
+        $this->assertSame( 'same', $kit['border']['color'], 'a hairline-frame kit: the tag frame is a quiet rule colour' );
+        $planted = array_merge( KitAdapters::RULE_PROVEN, [ 'group-top-alpha' => false ] );
+        $colour  = static fn ( array $patch ): string => $patch['module']['decoration']['border']['desktop']['value']['styles']['all']['color'];
+        foreach ( [ 'accent' => 'accent-text', 'dark' => 'inverse' ] as $on => $strong ) {
+            $this->assertSame( '{{aied:color:' . $strong . ':40}}', $colour( KitAdapters::chipPatch( 'divi/group', $on, $kit ) ), "$on: the 40% form while proven" );
+            $this->assertSame( '{{aied:color:' . $strong . '}}', $colour( KitAdapters::chipPatch( 'divi/group', $on, $kit, KitAdapters::CHIP_PROVEN, $planted ) ), "$on: group-top-alpha unproven, the strong colour" );
+        }
+        foreach ( [ 'light' => 'border', 'surface' => 'border' ] as $on => $role ) {
+            $this->assertSame( '{{aied:color:' . $role . '}}', $colour( KitAdapters::chipPatch( 'divi/group', $on, $kit, KitAdapters::CHIP_PROVEN, $planted ) ), "$on: a plain hairline needs no alpha" );
+        }
+        $this->assertSame( KitAdapters::chipPatch( 'divi/group', 'dark', $kit ), KitAdapters::chipPatch( 'divi/group', 'dark', $kit, KitAdapters::CHIP_PROVEN, KitAdapters::RULE_PROVEN ), 'the default is the shipped decisions' );
+        // The guide states the tag fallback only when that decision is false.
+        $on  = $this->rulesParagraph();
+        $off = $this->rulesParagraph( null, $planted );
+        $this->assertStringNotContainsString( 'the frame is the strong colour', $on );
+        $this->assertStringContainsString( 'tag (`divi/group`: control radius, outline frame; on accent and dark the frame is the strong colour)', $off );
+        // And not when the tag has no frame to colour.
+        $this->assertStringNotContainsString( 'the frame is the strong colour', $this->rulesParagraph( null, $planted, array_merge( KitAdapters::CHIP_PROVEN, [ 'tag-frame' => false ] ) ) );
+    }
+
     public function testTheRulesAndChipsParagraphNamesTheBandsAndTheWidthRule(): void
     {
         $para = $this->rulesParagraph();
@@ -553,6 +637,16 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertStringContainsString( '`chip`', $iconOnly );
         $this->assertStringNotContainsString( '`rule`', $iconOnly );
         $this->assertLessThanOrEqual( 9500, strlen( StyleGuide::markdown( 'controls' ) ), 'StyleGuideRecipeVocabularyTopicTest keeps controls <= 9,500' );
+        // Review fix: re-pinned deliberately (8,317 -> 8,331): the sentence says what really follows the kit (width, style, corners)
+        // and that colours come from the design language, and names only the carriers in the map.
+        $this->assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ) );
+        $this->assertStringContainsString( 'colours come from the design language', $sentence );
+        $this->assertStringNotContainsString( 'colour and corners follow the kit', $sentence );
+        $this->assertStringNotContainsString( 'A divider or an icon chip', $sentence );
+        $this->assertStringNotContainsString( 'icon', $dividerOnly, 'no icon adapter, no icon claim' );
+        $this->assertStringNotContainsString( 'divider', $iconOnly, 'no divider adapter, no divider claim' );
+        $this->assertStringContainsString( 'a divider takes the kit\'s width and style', $dividerOnly );
+        $this->assertStringContainsString( 'an icon takes the kit\'s corners', $iconOnly );
     }
 
     public function testTheAppliedSentenceGroupsByNoun(): void

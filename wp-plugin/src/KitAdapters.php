@@ -502,9 +502,10 @@ final class KitAdapters
      *
      * @param array<string,mixed> $kit    a valid kit
      * @param array<string,bool>  $proven decision => proven on its carrier (defaults to CHIP_PROVEN)
+     * @param array<string,bool>  $ruleProven the rule decisions the tag reuses (`group-top-alpha`: the 40% frame colour on a group); defaults to RULE_PROVEN
      * @return array<string,mixed>
      */
-    public static function chipPatch( string $blockName, string $on, array $kit, array $proven = self::CHIP_PROVEN ): array
+    public static function chipPatch( string $blockName, string $on, array $kit, array $proven = self::CHIP_PROVEN, array $ruleProven = self::RULE_PROVEN ): array
     {
         $is = static fn ( string $decision ): bool => true === ( $proven[ $decision ] ?? false );
         if ( ! in_array( $on, self::CHIP_BANDS, true ) ) {
@@ -530,7 +531,7 @@ final class KitAdapters
                 // A hairline kit frame is a quiet rule colour, any other frame the strong one (Spec issue 7); the frame is
                 // never the underline form: a tag is an outline pill.
                 $colourRole = self::RULE_COLOUR['border' === self::cardFrameRole( $border ) ? 'rule' : 'rule-strong'][ $on ];
-                if ( str_contains( $colourRole, ':' ) && true !== ( self::RULE_PROVEN['group-top-alpha'] ?? false ) ) {
+                if ( str_contains( $colourRole, ':' ) && true !== ( $ruleProven['group-top-alpha'] ?? false ) ) {
                     // The 40% colour on a group's border is a rule decision (group-top-alpha).
                     $colourRole = self::RULE_COLOUR['rule-strong'][ $on ];
                 }
