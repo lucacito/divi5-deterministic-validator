@@ -773,7 +773,16 @@ function chipPageHtml({ exps = chipExpects, extraCss = '', drop = [], dup = [], 
       assert.ok(neverButton.problems.some(([c, d]) => /^panel-buttons-surface:1 hover: .*\(retried once: first hover: .*, second hover: .*\)$/.test(d)), 'both attempts are named: ' + JSON.stringify(neverButton.problems));
       const neverCard = await run(pageHtml({ extraCss: OPACITY('data-k', 'card-bg') }), 1280, lateHover('data-k', 'card-bg', 60000));
       assert.ok(neverCard.problems.some(([c, d]) => c === 'card-hover' && /^card-bg hover: translateY .*\(retried once: first hover: translateY .*, second hover: translateY /.test(d)), 'a card that never lifts: ' + JSON.stringify(neverCard.problems));
-      // A button with no hover rule at all (never changes) and a wrong hover colour fail the same way, retried once.
+      // An overflow that shows only on the FIRST (missed) hover attempt is not hidden by a clean retry: the comparison is forgiven, the overflow is reported once.
+      const firstOnlyOverflow = await run(pageHtml({ extraCss: OPACITY('data-k', 'card-bg') }), 1280, async (page) => {
+        await lateHover('data-k', 'card-bg', 800)(page);
+        await page.evaluate(() => { const el = document.querySelector('[data-k="card-bg"]'); let used = false; el.addEventListener('mouseenter', () => { if (!used) { used = true; el.style.marginLeft = '-60px'; } }); el.addEventListener('mouseleave', () => { el.style.marginLeft = ''; }); });
+      });
+      const overflows = firstOnlyOverflow.problems.filter(([c]) => c === 'overflow');
+      assert.strictEqual(overflows.length, 1, 'the first attempt\'s overflow is reported once: ' + JSON.stringify(firstOnlyOverflow.problems));
+      assert.match(overflows[0][1], /^card-bg hover: card .* outside its container/);
+      assert.strictEqual(firstOnlyOverflow.problems.length, 1, 'the hover comparison itself is forgiven by the retry: ' + JSON.stringify(firstOnlyOverflow.problems));
+      // A wrong hover colour (the page's own :hover rule, unlike the removed ones above) fails the same way, retried once.
       assert.ok(hoverColours.problems.some(([c, d]) => c === 'panel-button' && /hover: background-color .*\(retried once: first hover: .*, second hover: /.test(d)), 'a wrong hover colour names both attempts: ' + JSON.stringify(hoverColours.problems));
       const invisibleBorder = await run(pageHtml({ extraCss: '[data-kb="panel-buttons-bg:1"]{border-width:2px;border-color:#1c1a17}' }));
       assert.ok(invisibleBorder.problems.some(([c, d]) => c === 'panel-button' && /^panel-buttons-bg:1 rest: border-top .* is 1:1, needs 3/.test(d)), 'a transparent button whose drawn border is the panel colour: ' + JSON.stringify(invisibleBorder.problems));

@@ -2249,6 +2249,27 @@ t('hover retry: a null measurement fails, never passes', () => {
   assert.match(lost.problems[0][1], /retry measurement missing/);
   assert.strictEqual(lost.retried, true);
 });
+t('hover retry: an overflow seen only on the first attempt is still reported, once; the comparison keeps the retry semantics', () => {
+  const rect = (l, r) => ({ left: l, right: r, top: 0, bottom: 10, width: r - l, height: 10 });
+  const page = { innerWidth: 1280, scrollWidth: 1280 };
+  const spill = K.cardOverflowProblems({ rect: rect(100, 450), parentRect: rect(0, 400) }, 'hover', page); // first attempt: sticks out right
+  const clean = K.cardOverflowProblems({ rect: rect(0, 400), parentRect: rect(0, 400) }, 'hover', page);
+  assert.strictEqual(spill.length, 1);
+  assert.deepStrictEqual(clean, []);
+  // First: hover mismatch + overflow. Second: matching and no overflow. The mismatch is forgiven, the overflow is not.
+  const r = K.settleHoverRun({ problems: [HP(BG)], extras: spill }, { problems: [], extras: clean }, 'panel-button');
+  assert.deepStrictEqual(r, { problems: [], extras: spill, retried: true });
+  // The same overflow on both attempts is reported once.
+  assert.deepStrictEqual(K.settleHoverRun({ problems: [HP(BG)], extras: spill }, { problems: [], extras: spill }).extras, spill);
+  // A different overflow on each is both reported; a persistent mismatch still fails with both observations.
+  const other = K.cardOverflowProblems({ rect: rect(0, 500), parentRect: rect(0, 400) }, 'hover', page);
+  const both = K.settleHoverRun({ problems: [HP(BG)], extras: spill }, { problems: [HP(BG)], extras: other });
+  assert.strictEqual(both.extras.length, 2);
+  assert.match(both.problems[0][1], /retried once/);
+  // No retry taken: the single attempt's extras, nothing else.
+  assert.deepStrictEqual(K.settleHoverRun({ problems: [], extras: spill }, null), { problems: [], extras: spill, retried: false });
+  assert.deepStrictEqual(K.unionProblems([['a', '1'], ['b', '2']], [['a', '1'], ['a', '2']], null), [['a', '1'], ['b', '2'], ['a', '2']]);
+});
 t('hover retry: the second wait is twice the first, capped at 2000 ms, never shorter', () => {
   assert.strictEqual(K.hoverRetryWait(150), 300);
   assert.strictEqual(K.hoverRetryWait(450), 900);

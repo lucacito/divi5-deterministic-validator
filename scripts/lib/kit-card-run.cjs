@@ -28,24 +28,25 @@ const firstLine = (e) => (e && e.message ? e.message : String(e)).split('\n')[0]
  * `judge(measurement|null)` returns the problem list for it. The pointer is parked off the element after every attempt. When the first
  * judgement carries a hover problem, the pointer has left the element, hovers it again, waits K.hoverRetryWait(wait) and judges again; K.settleHover
  * reports a problem only if the second judgement disagrees too, and then names both observations. Rest-state problems are never retried.
- * Returns { measurement, problems, error } (error = the last attempt's hover failure message, or null).
+ * `extras(measurement)` = the non-comparison problems of a hover measurement (overflow): those of BOTH attempts are reported, de-duplicated, so an
+ * overflow seen only on the first attempt is not hidden by a clean retry.
+ * Returns { measurement (the last attempt's), problems, extras, error (the last attempt's hover failure message, or null), retried }.
  */
-async function hoverJudged(p, { width, wait, hoverOnce, judge, code }) {
+async function hoverJudged(p, { width, wait, hoverOnce, judge, extras = () => [], code }) {
   const attempt = async (ms) => {
     let measurement = null; let error = null;
     try { measurement = await hoverOnce(ms); } catch (e) { error = firstLine(e); } finally {
       await p.mouse.move(Math.max(0, width - 2), 450); // parked at the right edge: (0,0) would open the admin bar's menu
       await p.waitForTimeout(ms);
     }
-    return { measurement, error, problems: judge(measurement) };
+    return { measurement, error, problems: judge(measurement), extras: measurement ? extras(measurement) : [] };
   };
   const first = await attempt(wait);
-  if (!K.needsHoverRetry(first.problems)) return { measurement: first.measurement, problems: first.problems, error: first.error };
+  if (!K.needsHoverRetry(first.problems)) return { measurement: first.measurement, problems: first.problems, extras: first.extras, error: first.error, retried: false };
   const second = await attempt(K.hoverRetryWait(wait));
-  const settled = K.settleHover(first.problems, second.problems, code);
-  return { measurement: second.measurement, problems: settled.problems, error: second.error };
+  const settled = K.settleHoverRun(first, second, code);
+  return { measurement: second.measurement, problems: settled.problems, extras: settled.extras, error: second.error, retried: true };
 }
-
 /**
  * @param {import('playwright').Page} p the opened sheet page
  * @param {{ width:number, expects:Array<object>, buttonExpects:Array<Array<object>>, hairline:?string }} o expects = K.expectCardFromAttrs of
@@ -114,6 +115,7 @@ async function checkCards(p, { width, expects, buttonExpects, hairline }) {
     };
     const hoveredCard = await hoverJudged(p, {
       width, wait, code: 'card-hover', judge: judgeCard,
+      extras: (all) => (all.cards[i] && all.cards[i].found ? K.cardOverflowProblems(all.cards[i], 'hover', all) : []),
       hoverOnce: async (ms) => {
         await p.locator(`[data-aied-card="${slot.key}"]`).first().hover({ timeout: 8000 });
         await p.waitForTimeout(ms);
@@ -129,7 +131,7 @@ async function checkCards(p, { width, expects, buttonExpects, hairline }) {
     const painted = slot.ground ? K.groundFillProblems(exp, fill) : K.paintedFillProblems(c.el, fill);
     const clip = K.cardClipProblems(slot, exp, c);
     // The page-wide scrollWidth finding is the same for every card: report it once (with the first card), not once per card.
-    const ov = [...K.cardOverflowProblems(c, 'rest', rest), ...(hov && hov.found ? K.cardOverflowProblems(hov, 'hover', hovAll) : [])].filter(([, d]) => i === 0 || !/scrollWidth/.test(d));
+    const ov = [...K.cardOverflowProblems(c, 'rest', rest), ...hoveredCard.extras].filter(([, d]) => i === 0 || !/scrollWidth/.test(d));
     for (const [code, detail] of [...cmp.problems, ...contrast.problems, ...painted, ...clip.problems, ...ov]) problems.push([code, `${slot.key} ${detail}`]);
 
     // The kit buttons inside the card (a button panel): each hovered with the real pointer, judged on the painted panel.
@@ -148,6 +150,7 @@ async function checkCards(p, { width, expects, buttonExpects, hairline }) {
           };
           const hoveredButton = await hoverJudged(p, {
             width, wait: bw, code: 'panel-button',
+            extras: (all) => (all.cards[i].found && all.cards[i].buttons[j] ? K.overflowProblems(all.cards[i].buttons[j], 'hover', all) : []),
             judge: (all) => judgeButton(all).problems,
             hoverOnce: async (ms) => {
               await p.locator(`[data-aied-pb="${slot.key}:${j}"]`).first().hover({ timeout: 8000 });
@@ -156,10 +159,9 @@ async function checkCards(p, { width, expects, buttonExpects, hairline }) {
             },
           });
           const hAll = hoveredButton.measurement;
-          const hb = hAll && hAll.cards[i].found ? hAll.cards[i].buttons[j] : null;
           if (hoveredButton.error) problems.push(['panel-button', `${slot.key}:${j} could not be hovered: ${hoveredButton.error}`]);
           const res = { problems: hoveredButton.problems, info: judgeButton(hAll).info };
-          const bov = [...K.overflowProblems(b, 'rest', rest), ...(hb ? K.overflowProblems(hb, 'hover', hAll) : [])].filter(([, d]) => !/scrollWidth/.test(d));
+          const bov = [...K.overflowProblems(b, 'rest', rest), ...hoveredButton.extras].filter(([, d]) => !/scrollWidth/.test(d));
           for (const [code, detail] of [...res.problems, ...bov]) problems.push([code, `${slot.key}:${j} ${detail}`]);
           buttonInfo.push({ index: j, contrast: res.info });
         }

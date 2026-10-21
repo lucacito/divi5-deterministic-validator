@@ -2262,7 +2262,26 @@ function settleHover(first, second, code = 'hover') {
   };
 }
 
+/** The union of several problem lists, a problem ([code, detail]) with the same code and detail reported once, in first-seen order. */
+function unionProblems(...lists) {
+  const seen = new Set(); const out = [];
+  for (const list of lists) for (const pr of list || []) { const key = `${pr[0]}\u0000${pr[1]}`; if (!seen.has(key)) { seen.add(key); out.push(pr); } }
+  return out;
+}
+
+/**
+ * settleHover for a whole hover run. Each attempt = { problems, extras }: `problems` = the hover-state comparison (retry semantics of
+ * settleHover), `extras` = everything else the hover measurement can show (overflow beyond the container or the window). The extras
+ * of EVERY attempt taken are reported, de-duplicated: an overflow seen only on the first attempt is a real finding, never hidden by a clean
+ * retry. `second` = null when no retry was made. Returns { problems, extras, retried }.
+ */
+function settleHoverRun(first, second, code = 'hover') {
+  const settled = settleHover(first ? first.problems : null, second ? second.problems : null, code);
+  return { problems: settled.problems, extras: unionProblems(first ? first.extras : [], second ? second.extras : []), retried: settled.retried };
+}
+
 module.exports = {
+  unionProblems, settleHoverRun,
   HOVER_RETRY_CAP_MS, isHoverProblem, needsHoverRetry, hoverRetryWait, settleHover,
   SURFACES, ROLES, SLOTS, sheetMarkup, TITLE_PREFIX, runTitle, parseRunTitle, selectCells, buttonAttrs, expectFromAttrs, missingExpectations, BORDER_TOLERANCE,
   colour, sameColour, parseShadows, translateY, matrix2d, sameTransform, shadowProblems, compareButton, contrastProblems, overflowProblems,
