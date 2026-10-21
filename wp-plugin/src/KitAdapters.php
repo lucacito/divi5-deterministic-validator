@@ -18,7 +18,9 @@ require_once __DIR__ . '/StyleKits.php';
  * bands (`light` a bg band, `surface` a surface band, `accent`, `dark`), optionally on a ground (`inverted` or `accent`,
  * on a light or surface band only), and the items, `divi/accordion` (one marker styles every item) and `divi/toggle`, in two
  * roles (`item` on four bands, `item-rule` on `light` and `surface` only), and the contact form, `divi/contact-form` in one
- * role (`form`) on four bands; see the card, ground, item and form tables at the end.
+ * role (`form`) on four bands, and the thin things: rules (`divi/divider`, `divi/group`, `divi/column` in two roles, `rule` and
+ * `rule-strong`, on five bands) and chips (a tag on `divi/group`, an icon chip on `divi/icon`, one role `chip`, on four bands);
+ * see the card, ground, item, form, rule and chip tables at the end.
  *
  * The button patch writes only `button.decoration.{background,border,font}` and `module.decoration.spacing` at
  * `desktop`, plus `module.decoration.boxShadow` when the kit has a shadow and `module.decoration.transform` when its hover
@@ -193,6 +195,41 @@ require_once __DIR__ . '/StyleKits.php';
  * - Captcha ink: the band's ink, `text` on light and surface, `accent-text` on accent, `inverse` on dark. The captcha is the one
  *   element printed straight on the container; family and size stay the recipe's.
  *
+ * Rule table (roles `rule` = quiet and `rule-strong`, on `divi/divider`, `divi/group`, `divi/column`; spec
+ * 2026-10-21-rules-chips-adapter-design.md, probe fixtures/shapes/kit-rule-vocabulary.md: 36 candidates, every decision PASSED ON
+ * each carrier, the three `*-dead-*` controls are default-value checks, so fixtures/shapes/dead-on-module.txt gains nothing).
+ * Bands (RULE_BANDS): `light` | `surface` | `accent` | `dark` | `panel` (inside an inverted, `text`-filled panel). No ground.
+ * - `divi/divider`: ONLY `divider.advanced.line.desktop.value.{color,weight,style}` (the line is drawn on `.et_pb_divider::before`);
+ *   never `position`, `show` (the first is Divi's default, kr-divider-dead-position-top) or any `module.decoration`.
+ * - `divi/group` and `divi/column`: ONLY the top edge, `module.decoration.border.desktop.value.styles.{all,top}.{width,style,color}`
+ *   with `all.width` 0px and `top` at the rule width (Ruling 3: always the top, so the kit's `sides` underline does not change
+ *   a rule); never radius, padding, layout or sizing, so the recipe's structure survives the merge.
+ * - Width (ruleWidth(); Rulings 1 and 2): `rule` = max(1, min(2, w)) px, `rule-strong` = max(2, min(4, w + 1)) px for a kit
+ *   border of w px, and a `double` is at least 3px in both roles (the double floor wins over the quiet cap; CSS paints a thinner
+ *   double as solid, and the painted look at 1px was not measured). 0px -> 1px / 2px, 1px -> 1px / 2px, 2px -> 2px / 3px, 3px ->
+ *   2px / 4px, 4px -> 2px / 4px, 4px double -> 3px / 4px.
+ * - Style: the kit's border style, replaced by `solid` on a carrier whose `<carrier>-<style>` decision (RULE_PROVEN) is false.
+ * - Colour (RULE_COLOUR, written as `{{aied:color:<role>[:NN]}}`): quiet `border` on light and surface, `accent-text:40` on accent,
+ *   `inverse:40` on dark, `bg:40` on panel; strong `text`, `text`, `accent-text`, `inverse`, `bg`. When `<carrier>-alpha` is false
+ *   a quiet rule on accent, dark and panel takes the strong colour. `group-top-in-card` (a rule group inside a card) is pinned and
+ *   taught (when false) but changes no patch.
+ * - Proofs: KitRuleAdapterTest (every leaf a probed PASS path ON its carrier, the width table, the colour table, the planted
+ *   unproven branches, the real-layout gate), the contrast proof over every kit x language x band x role (Task 4).
+ *
+ * Chip table (role `chip` on `divi/group` as a tag and on `divi/icon` as an icon chip; probe fixtures/shapes/kit-chip-vocabulary.md:
+ * 20 candidates, every decision PASSED ON its carrier). Bands (CHIP_BANDS): `light` | `surface` | `accent` | `dark`; no `panel`, no
+ * ground. No hover, no padding anywhere: the recipe's padding is the chip's size.
+ * - Tag (`divi/group`): `module.decoration.border.desktop.value` = radius `{{aied:kit:radius-control}}` (the whole-value token, so no
+ *   corner key or `sync` stays beside it) plus `styles.all` from frameStyles(): the kit's width with a 1px floor (3px for a
+ *   `double`), the kit's style (`solid` where `tag-<style>` is false), never the underline form (a tag is an outline pill),
+ *   colour = the quiet rule colour of the band when the kit's frame is the `border` hairline (cardFrameRole()), else the strong
+ *   rule colour; a quiet 40% colour falls back to the strong one when `group-top-alpha` is not proven. No fill key.
+ * - Icon chip (`divi/icon`): the control radius token at `module.decoration.border.desktop.value.radius` (it rounds the module box
+ *   `.et_pb_icon`, kch-icon-radius-*), fill `accent` at `module.decoration.background.desktop.value.color`, glyph `accent-text` at
+ *   `icon.advanced.color.desktop.value`; on an `accent` band the button's accent treatment (fill `surface`, glyph `text`), and if
+ *   `icon-fill` or `icon-glyph` is not proven the chip is refused on an accent band. A decision that is false writes nothing.
+ * - Not probed: any hover on a chip, a chip fill on a tag, the chip's own padding.
+ *
  * Pure and deterministic: no site access.
  */
 final class KitAdapters
@@ -210,11 +247,13 @@ final class KitAdapters
      */
     public const APPLIED = [
         'divi/button'    => [ 'control', 'control-secondary' ],
-        'divi/group'     => [ 'card', 'panel' ],
-        'divi/column'    => [ 'card', 'panel' ],
+        'divi/group'     => [ 'card', 'panel', 'rule', 'rule-strong', 'chip' ],
+        'divi/column'    => [ 'card', 'panel', 'rule', 'rule-strong' ],
         'divi/accordion' => [ 'item', 'item-rule' ],
         'divi/toggle'    => [ 'item', 'item-rule' ],
         'divi/contact-form' => [ 'form' ],
+        'divi/divider'   => [ 'rule', 'rule-strong' ],
+        'divi/icon'      => [ 'chip' ],
     ];
 
     /**
@@ -242,6 +281,72 @@ final class KitAdapters
         'field-padding'   => true,
         'button-underline' => true,
     ];
+
+    /**
+     * The sixteen conditional rule decisions => whether the effect probe proved them ON their carrier (the "Adapter decisions"
+     * table of fixtures/shapes/kit-rule-vocabulary.md, in its order; a test pins this constant to that table). `<carrier>-line`
+     * / `-top` are the base (the divider's own line, the top edge of a group or column), `<carrier>-<style>` a non-solid style
+     * on that carrier, `<carrier>-alpha` the 40% colour on it, `group-top-in-card` the top rule on a group inside a card. A
+     * decision is written only when true and only at the path the probe measured; the generated guide wording follows the
+     * same constant.
+     *
+     * @var array<string,bool>
+     */
+    public const RULE_PROVEN = [
+        'divider-line'      => true,
+        'divider-dashed'    => true,
+        'divider-dotted'    => true,
+        'divider-double'    => true,
+        'divider-alpha'     => true,
+        'group-top'         => true,
+        'group-top-dashed'  => true,
+        'group-top-dotted'  => true,
+        'group-top-double'  => true,
+        'group-top-alpha'   => true,
+        'group-top-in-card' => true,
+        'column-top'        => true,
+        'column-top-dashed' => true,
+        'column-top-dotted' => true,
+        'column-top-double' => true,
+        'column-top-alpha'  => true,
+    ];
+
+    /**
+     * The eight conditional chip decisions => whether the probe proved them ON their carrier (the "Adapter decisions" table of
+     * fixtures/shapes/kit-chip-vocabulary.md, in its order; pinned by a test). `icon-*` are on `divi/icon`, `tag-*` on a small
+     * `divi/group`.
+     *
+     * @var array<string,bool>
+     */
+    public const CHIP_PROVEN = [
+        'icon-radius' => true,
+        'icon-fill'   => true,
+        'icon-glyph'  => true,
+        'tag-radius'  => true,
+        'tag-frame'   => true,
+        'tag-dashed'  => true,
+        'tag-dotted'  => true,
+        'tag-double'  => true,
+    ];
+
+    /**
+     * The colour role of a rule by band, as `{{aied:color:<role>[:NN]}}` (`NN` = the alpha form, RecipeTokens): role =>
+     * band => colour role[:alpha]. Proven readable in every kit x language x band by the contrast proof (Task 4), with the
+     * quiet floor of RuleChipAudit::QUIET_RULE_FLOOR.
+     *
+     * @var array<string,array<string,string>>
+     */
+    public const RULE_COLOUR = [
+        'rule'        => [ 'light' => 'border', 'surface' => 'border', 'accent' => 'accent-text:40', 'dark' => 'inverse:40', 'panel' => 'bg:40' ],
+        'rule-strong' => [ 'light' => 'text', 'surface' => 'text', 'accent' => 'accent-text', 'dark' => 'inverse', 'panel' => 'bg' ],
+    ];
+
+    /** The bands a rule may sit on (`panel`: inside an inverted, `text`-filled panel) and the bands a chip may sit on. */
+    public const RULE_BANDS = [ 'light', 'surface', 'accent', 'dark', 'panel' ];
+    public const CHIP_BANDS = [ 'light', 'surface', 'accent', 'dark' ];
+
+    /** The rule carriers => the prefix of their RULE_PROVEN keys. */
+    private const RULE_CARRIERS = [ 'divi/divider' => 'divider', 'divi/group' => 'group-top', 'divi/column' => 'column-top' ];
 
     /** The bands a button may sit on (`panel`: inside an inverted, `text`-filled panel). */
     private const SURFACES = [ 'light', 'accent', 'dark', 'panel' ];
@@ -302,6 +407,14 @@ final class KitAdapters
         if ( ! in_array( $role, self::APPLIED[ $blockName ] ?? [], true ) ) {
             return null;
         }
+        if ( 'rule' === $role || 'rule-strong' === $role || 'chip' === $role ) {
+            // The thin things: a rule (quiet or strong) or a chip. No ground; an empty answer means the decision is not proven.
+            if ( null !== $ground || ! in_array( $on, 'chip' === $role ? self::CHIP_BANDS : self::RULE_BANDS, true ) || [] !== StyleKits::problems( $kit ) ) {
+                return null;
+            }
+            $thin = 'chip' === $role ? self::chipPatch( $blockName, $on, $kit ) : self::rulePatch( $blockName, $role, $on, $kit );
+            return [] === $thin ? null : $thin;
+        }
         $card = in_array( $role, self::CARD_ROLES, true );
         $item = isset( self::ITEM_BANDS[ $role ] );
         $form = 'form' === $role;
@@ -321,6 +434,135 @@ final class KitAdapters
             return self::item( $blockName, $role, $on, $kit );
         }
         return $card ? self::card( $role, $on, $kit, $ground ) : self::button( $role, $on, $kit );
+    }
+
+    /**
+     * The width of a rule for a kit border (Rulings 1 and 2): `rule` = max(1, min(2, w)) px, `rule-strong` = max(2, min(4,
+     * w + 1)) px, and a `double` style is at least 3px in both roles (CSS paints a double thinner than 3px as solid; the
+     * double floor wins over the quiet cap). $border carries the style that is actually written (after the probe fallback).
+     *
+     * @param array<string,mixed> $border a kit border (`width` like `2px`, `style`)
+     */
+    public static function ruleWidth( string $role, array $border ): string
+    {
+        $w   = (int) ( $border['width'] ?? 0 );
+        $out = 'rule' === $role ? max( 1, min( 2, $w ) ) : max( 2, min( 4, $w + 1 ) );
+        if ( 'double' === ( $border['style'] ?? '' ) ) {
+            $out = max( 3, $out );
+        }
+        return $out . 'px';
+    }
+
+    /**
+     * The rule patch (roles `rule` and `rule-strong`, on `divi/divider`, `divi/group`, `divi/column`): see the class docblock's
+     * rule table. [] when the carrier's base decision is not proven (patch() then answers null). Public only so a test can
+     * prove each conditional decision's branch with a planted $proven map; callers go through patch().
+     *
+     * @param array<string,mixed> $kit    a valid kit
+     * @param array<string,bool>  $proven decision => proven on its carrier (defaults to RULE_PROVEN)
+     * @return array<string,mixed>
+     */
+    public static function rulePatch( string $blockName, string $role, string $on, array $kit, array $proven = self::RULE_PROVEN ): array
+    {
+        $prefix = self::RULE_CARRIERS[ $blockName ] ?? null;
+        $is     = static fn ( string $decision ): bool => true === ( $proven[ $decision ] ?? false );
+        if ( null === $prefix || ! isset( self::RULE_COLOUR[ $role ][ $on ] ) || ! $is( 'divider' === $prefix ? 'divider-line' : $prefix ) ) {
+            return [];
+        }
+
+        $border = (array) $kit['border'];
+        $style  = (string) $border['style'];
+        if ( 'solid' !== $style && ! $is( $prefix . '-' . $style ) ) {
+            $style = 'solid';
+        }
+        $colourRole = self::RULE_COLOUR[ $role ][ $on ];
+        if ( 'rule' === $role && str_contains( $colourRole, ':' ) && ! $is( $prefix . '-alpha' ) ) {
+            // The alpha form is not proven on this carrier: the quiet rule takes the strong colour.
+            $colourRole = self::RULE_COLOUR['rule-strong'][ $on ];
+        }
+        $colour = self::colour( $colourRole );
+        $width  = self::ruleWidth( $role, array_merge( $border, [ 'style' => $style ] ) );
+
+        if ( 'divider' === $prefix ) {
+            // The divider's own line, and nothing else (never `position`, `show` or any `module.decoration`).
+            return [ 'divider' => [ 'advanced' => [ 'line' => [ 'desktop' => [ 'value' => [ 'color' => $colour, 'weight' => $width, 'style' => $style ] ] ] ] ] ];
+        }
+
+        // The top edge: every side at 0px, then the top at the rule width, all in one style and colour (the library form).
+        return [ 'module' => [ 'decoration' => [ 'border' => [ 'desktop' => [ 'value' => [ 'styles' => [
+            'all' => [ 'width' => '0px', 'style' => $style, 'color' => $colour ],
+            'top' => [ 'width' => $width, 'style' => $style, 'color' => $colour ],
+        ] ] ] ] ] ] ];
+    }
+
+    /**
+     * The chip patch (role `chip`, on `divi/group` as a tag and on `divi/icon` as an icon chip): see the class docblock's chip
+     * table. [] when nothing is proven for the carrier or the band (patch() then answers null). Public only so a test can
+     * plant a $proven map; callers go through patch().
+     *
+     * @param array<string,mixed> $kit    a valid kit
+     * @param array<string,bool>  $proven decision => proven on its carrier (defaults to CHIP_PROVEN)
+     * @param array<string,bool>  $ruleProven the rule decisions the tag reuses (`group-top-alpha`: the 40% frame colour on a group); defaults to RULE_PROVEN
+     * @return array<string,mixed>
+     */
+    public static function chipPatch( string $blockName, string $on, array $kit, array $proven = self::CHIP_PROVEN, array $ruleProven = self::RULE_PROVEN ): array
+    {
+        $is = static fn ( string $decision ): bool => true === ( $proven[ $decision ] ?? false );
+        if ( ! in_array( $on, self::CHIP_BANDS, true ) ) {
+            return [];
+        }
+
+        if ( 'divi/group' === $blockName ) {
+            $border = (array) $kit['border'];
+            $value  = [];
+            if ( $is( 'tag-radius' ) ) {
+                $value['radius'] = '{{aied:kit:radius-control}}';
+            }
+            if ( $is( 'tag-frame' ) ) {
+                $style = (string) $border['style'];
+                if ( 'solid' !== $style && ! $is( 'tag-' . $style ) ) {
+                    $style = 'solid';
+                }
+                $width = (int) $border['width'];
+                if ( 'double' === $style && $width < 3 ) {
+                    // CSS paints a double thinner than 3px as solid (the rule floor).
+                    $border['width'] = '3px';
+                }
+                // A hairline kit frame is a quiet rule colour, any other frame the strong one (Spec issue 7); the frame is
+                // never the underline form: a tag is an outline pill.
+                $colourRole = self::RULE_COLOUR['border' === self::cardFrameRole( $border ) ? 'rule' : 'rule-strong'][ $on ];
+                if ( str_contains( $colourRole, ':' ) && true !== ( $ruleProven['group-top-alpha'] ?? false ) ) {
+                    // The 40% colour on a group's border is a rule decision (group-top-alpha).
+                    $colourRole = self::RULE_COLOUR['rule-strong'][ $on ];
+                }
+                $value['styles'] = self::frameStyles( array_merge( $border, [ 'style' => $style ] ), $colourRole, false );
+            }
+            return [] === $value ? [] : [ 'module' => [ 'decoration' => [ 'border' => [ 'desktop' => [ 'value' => $value ] ] ] ] ];
+        }
+
+        if ( 'divi/icon' === $blockName ) {
+            if ( 'accent' === $on && ( ! $is( 'icon-fill' ) || ! $is( 'icon-glyph' ) ) ) {
+                // On an accent band the chip needs both its own fill and its own glyph colour to stay readable.
+                return [];
+            }
+            $module = [];
+            if ( $is( 'icon-radius' ) ) {
+                $module['border'] = [ 'desktop' => [ 'value' => [ 'radius' => '{{aied:kit:radius-control}}' ] ] ];
+            }
+            if ( $is( 'icon-fill' ) ) {
+                $module['background'] = [ 'desktop' => [ 'value' => [ 'color' => self::colour( 'accent' === $on ? 'surface' : 'accent' ) ] ] ];
+            }
+            $patch = [];
+            if ( [] !== $module ) {
+                $patch['module'] = [ 'decoration' => $module ];
+            }
+            if ( $is( 'icon-glyph' ) ) {
+                $patch['icon'] = [ 'advanced' => [ 'color' => [ 'desktop' => [ 'value' => self::colour( 'accent' === $on ? 'text' : 'accent-text' ) ] ] ] ];
+            }
+            return $patch;
+        }
+
+        return [];
     }
 
     /**
