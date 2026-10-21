@@ -19,7 +19,9 @@
  *    is the four corners of the RESOLVED markup, the comparison reads the img, its wrapper (`.et_pb_image_wrap`, where Divi prints the radius and
  *    overflow:hidden) and the module box, the clip, overflow and the count.
  *  - and for the RULES and CHIPS (roles rule, rule-strong and chip): RULE_SLOTS (a divider and a top-rule group of each role on the bg and photo bands, a
- *    column rule, a divider in an inverted panel) and CHIP_SLOTS (a tag chip, an icon chip), expectations read from the resolved block tree, the comparison
+ *    column rule, a divider in an inverted panel, and, since the guide polish, a divider of each role on the surface and accent bands and a top-rule group of
+ *    each role in an inverted panel) and CHIP_SLOTS (a tag chip and an icon chip on the bg band, and a tag on the surface and photo bands and an icon chip on
+ *    the accent band), expectations read from the resolved block tree, the comparison
  *    with the line as Divi draws it (a divider's `::before`, a group or column's own `border-top-*`), the chip's radius, frame, fill and glyph, the
  *    contrast of the line (or the frame, or the glyph) against the PAINTED band (or fill), overflow and the count.
  */
@@ -175,6 +177,13 @@ for (const b of [{ band: 'bg', on: 'light', ink: 'text' }, { band: 'dark', on: '
     RULE_SLOTS.push({ key: 'rule-strong-divider-panel-bg', role: 'rule-strong', carrier: 'divider', band: 'bg', on: 'panel', ink: 'bg', panel: true, heading: 'Strong divider in panel on bg' });
   }
 }
+// The branches the first gate never rendered (guide polish Task 2). A divider of each role on the surface and accent bands (`on:"surface"` / `on:"accent"`: the
+// quiet line is the language hairline on surface and accent-text at 40% on accent, the strong line text / accent-text), appended after the first ten so their keys
+// and order stay; and a top-rule GROUP of each role inside an inverted, `text`-filled panel (`on:"panel"`: bg at 40% / bg), whose heading and paragraph are in the bg ink.
+for (const b of [{ band: 'surface', on: 'surface', ink: 'text' }, { band: 'accent', on: 'accent', ink: 'accent-text' }]) {
+  for (const role of ['rule', 'rule-strong']) RULE_SLOTS.push({ key: `${role}-divider-${b.band}`, role, carrier: 'divider', band: b.band, on: b.on, ink: b.ink, panel: false, heading: `${role === 'rule' ? 'Quiet' : 'Strong'} divider on ${b.band}` });
+}
+for (const role of ['rule', 'rule-strong']) RULE_SLOTS.push({ key: `${role}-group-panel-bg`, role, carrier: 'group', band: 'bg', on: 'panel', ink: 'bg', panel: true, heading: `${role === 'rule' ? 'Quiet' : 'Strong'} group rule in panel on bg` });
 /**
  * The chips of the sheet, on the bg band: a tag (a marked `divi/group` that holds a short text, found by that text) and an icon chip (a marked
  * `divi/icon` in an unmarked wrapper group that holds the heading).
@@ -182,6 +191,11 @@ for (const b of [{ band: 'bg', on: 'light', ink: 'text' }, { band: 'dark', on: '
 const CHIP_SLOTS = [
   { key: 'chip-tag-bg', carrier: 'group', band: 'bg', on: 'light', ink: 'text', text: 'Tag chip on bg', heading: null },
   { key: 'chip-icon-bg', carrier: 'icon', band: 'bg', on: 'light', ink: 'text', text: null, heading: 'Icon chip on bg' },
+  // Guide polish Task 2: a tag on the surface band and on the dark photo band (`on:"dark"`: its quiet frame is the 40% inverse), and an icon chip on the accent band
+  // (`on:"accent"`: the button's accent treatment, fill `surface` and glyph `text`).
+  { key: 'chip-tag-surface', carrier: 'group', band: 'surface', on: 'surface', ink: 'text', text: 'Tag chip on surface', heading: null },
+  { key: 'chip-tag-dark', carrier: 'group', band: 'dark', on: 'dark', ink: 'inverse', text: 'Tag chip on dark', heading: null },
+  { key: 'chip-icon-accent', carrier: 'icon', band: 'accent', on: 'accent', ink: 'accent-text', text: null, heading: 'Icon chip on accent' },
 ];
 
 const RULE_COLUMN = { flexDirection: 'column', rowGap: '12px' };
@@ -196,19 +210,22 @@ const paragraphMarkup = (html, ink) => blockOf('text', { content: { innerContent
 function ruleMarkup(slot) {
   const marker = markerOf(slot.role, slot.on);
   const layout = { layout: { desktop: { value: RULE_COLUMN } } };
+  // The inverted panel a `panel` rule sits in: a plain (unmarked) group filled with the `text` colour.
+  const panelWrap = { layout: layout.layout, background: { desktop: { value: { color: '{{aied:color:text}}' } } }, spacing: { desktop: { value: { padding: { top: '24px', right: '24px', bottom: '24px', left: '24px' } } } } };
   if (slot.carrier === 'divider') {
-    const wrap = slot.panel
-      ? { layout: layout.layout, background: { desktop: { value: { color: '{{aied:color:text}}' } } }, spacing: { desktop: { value: { padding: { top: '24px', right: '24px', bottom: '24px', left: '24px' } } } } }
-      : layout;
+    const wrap = slot.panel ? panelWrap : layout;
     return blockOf('group', { module: { decoration: wrap }, builderVersion: '5.8.0' }, [headingMarkup(slot.heading, slot.ink), blockOf('divider', { builderVersion: '5.8.0', aied: marker }, null)].join('\n'));
   }
-  const body = [headingMarkup(slot.heading, slot.ink), paragraphMarkup('<p>Placeholder copy under a rule: one short sentence that the surrounding colours must keep readable.</p>', slot.ink === 'inverse' ? 'inverse' : 'muted')].join('\n');
+  // The paragraph is in the heading's ink except on the plain `text` ink, where it is `muted` (a rule on the bg and surface bands).
+  const body = [headingMarkup(slot.heading, slot.ink), paragraphMarkup('<p>Placeholder copy under a rule: one short sentence that the surrounding colours must keep readable.</p>', slot.ink === 'text' ? 'muted' : slot.ink)].join('\n');
   if (slot.carrier === 'column') {
     const column = blockOf('column', { module: { advanced: { type: { desktop: { value: '4_4' } } }, decoration: layout }, builderVersion: '5.8.0', aied: marker }, body);
     return blockOf('row', { module: { advanced: { columnStructure: { desktop: { value: '4_4' } } } }, builderVersion: '5.8.0' }, column);
   }
   const spacing = { spacing: { desktop: { value: { padding: { top: '16px', right: '0px', bottom: '16px', left: '0px' } } } } };
-  return blockOf('group', { module: { decoration: Object.assign({}, layout, spacing) }, builderVersion: '5.8.0', aied: marker }, body);
+  const group = blockOf('group', { module: { decoration: Object.assign({}, layout, spacing) }, builderVersion: '5.8.0', aied: marker }, body);
+  // A group rule in a panel is the marked group INSIDE the unmarked text-filled panel (the rule is the inner group's own top edge).
+  return slot.panel ? blockOf('group', { module: { decoration: panelWrap }, builderVersion: '5.8.0' }, group) : group;
 }
 
 /** One chip slot as markup: a marked tag group holding a short text, or a marked icon (a Font Awesome star, the size and padding of the library's icon chips) under a heading. */
@@ -250,7 +267,7 @@ function cardMarkup(slot) {
   return blockOf('group', { module: { decoration }, builderVersion: '5.8.0', aied: marker }, body);
 }
 
-/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS), inside the two button panels 4 more buttons, 10 item blocks (ITEM_SLOTS: 4 accordions, 6 toggles), 2 forms (FORM_SLOTS: one on the bg band, one on the surface band) 1 image carrying the media-radius token (MEDIA_SLOTS), 10 rule blocks (RULE_SLOTS) and 2 chips (CHIP_SLOTS). */
+/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS), inside the two button panels 4 more buttons, 10 item blocks (ITEM_SLOTS: 4 accordions, 6 toggles), 2 forms (FORM_SLOTS: one on the bg band, one on the surface band) 1 image carrying the media-radius token (MEDIA_SLOTS), 16 rule blocks (RULE_SLOTS) and 5 chips (CHIP_SLOTS). */
 function sheetMarkup() {
   const v = V;
   const sections = SURFACES.map((s) => {
@@ -1605,10 +1622,10 @@ const RULE_QUIET_MIN = 1.1;
 const RULE_STYLES = ['solid', 'dashed', 'dotted', 'double'];
 
 /** The first node under `nodes` (depth first, parents before children) whose block is `name` and whose first heading is `heading`, or null. */
-function nodeByHeading(nodes, name, heading) {
+function nodeByHeading(nodes, name, heading, deepest = false) {
   for (const n of nodes) {
-    if (n.name === name && firstHeading(n) === heading) return n;
-    const inner = nodeByHeading(n.children, name, heading);
+    const inner = nodeByHeading(n.children, name, heading, deepest);
+    if (n.name === name && firstHeading(n) === heading) return deepest && inner ? inner : n;
     if (inner) return inner;
   }
   return null;
@@ -1627,7 +1644,8 @@ function ruleAttrs(markup, slots = RULE_SLOTS) {
       const divider = wrap ? descendants(wrap).find((x) => x.name === 'divi/divider') : null;
       return { slot, attrs: divider ? divider.attrs : null };
     }
-    const node = nodeByHeading(tree, `divi/${slot.carrier}`, slot.heading);
+    // A `panel` group rule sits inside an unmarked panel group that also holds the heading: the rule is the INNERMOST group that holds it.
+    const node = nodeByHeading(tree, `divi/${slot.carrier}`, slot.heading, slot.carrier === 'group');
     return { slot, attrs: node ? node.attrs : null };
   });
 }
@@ -1835,7 +1853,7 @@ function chipPaintedFillProblems(m, fill) {
 /**
  * Contrast of one measured chip. An icon chip: the glyph against its PAINTED fill >= 3.0 (an icon is a shape), and the fill must not be the colour of the
  * band behind it (under 1.02:1 the chip is invisible). A tag: every drawn frame side against the PAINTED band >= 3.0, or RULE_QUIET_MIN where it is the
- * language's decorative `border` hairline (the quiet frame of a hairline kit). Code chip-contrast; a missing sample fails, nothing is skipped.
+ * language's decorative `border` hairline (the quiet frame of a hairline kit) or an alpha colour (the 40% quiet frame on the accent, photo and panel bands). Code chip-contrast; a missing sample fails, nothing is skipped.
  * `samples` = { fill, band } ({ r, g, b } | null).
  */
 function chipContrastProblems(exp, m, samples, hairline = null) {
@@ -1863,7 +1881,8 @@ function chipContrastProblems(exp, m, samples, hairline = null) {
     const exact = ratioOf(over(bc, band), band);
     const r = round2(exact);
     info[side] = r;
-    const need = hairline && sameColour(hairline, raw) ? RULE_QUIET_MIN : CONTRAST_SHAPE;
+    // A quiet frame: the language's `border` hairline, or any alpha form (a 40% frame on the accent, photo and panel bands): the PHP proof's isQuiet().
+    const need = (hairline && sameColour(hairline, raw)) || bc.a < 1 ? RULE_QUIET_MIN : CONTRAST_SHAPE;
     if (exact < need) out.push(['chip-contrast', `frame ${side} ${hex(over(bc, band))} on the band ${hex(band)} is ${r}:1, needs ${need}`]);
   }
   return { problems: out, info };

@@ -4,10 +4,10 @@
  * and kit-media-run.cjs) so a real Chromium can run it against a synthetic page without the dev site (scripts/test-kit-card-run.cjs). It takes a Playwright
  * `page` showing the kit sheet and
  *  - checkRules: for each rule of the sheet (K.RULE_SLOTS: a divider and a top-rule group of each role on the bg and photo bands, a column rule, a divider
- *    in an inverted panel) measures the line as Divi draws it (a divider's `::before`, a group or column's own `border-top-*` with the other three sides
+ *    in an inverted panel, a divider of each role on the surface and accent bands and a top-rule group of each role in the inverted panel) measures the line as Divi draws it (a divider's `::before`, a group or column's own `border-top-*` with the other three sides
  *    at 0), samples the PAINTED band behind it (the rule hidden, the WordPress admin bar and every fixed or sticky element hidden too) and lets the pure
  *    comparisons of scripts/lib/kit-checks.cjs judge (rule, rule-style|width|colour|contrast, overflow);
- *  - checkChips: for each chip (K.CHIP_SLOTS: a tag, an icon chip) measures the corners, the frame (a tag), the fill and the glyph colour (an icon chip),
+ *  - checkChips: for each chip (K.CHIP_SLOTS: a tag and an icon chip on the bg band, a tag on the surface and photo bands, an icon chip on the accent band) measures the corners, the frame (a tag), the fill and the glyph colour (an icon chip),
  *    samples the painted fill of the icon (its glyph hidden) and the painted band, and judges (chip, chip-radius|frame|fill|contrast, overflow).
  * It only reads the page (everything hidden for a sample is restored).
  */

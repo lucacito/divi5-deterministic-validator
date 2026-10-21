@@ -9,8 +9,9 @@
  * the 10 item blocks (the `item` accordions on every band, the boxed and rule toggles on the two light ones: every state colour, frame and radius)
  * and the 2 contact forms (a `form` on the bg band and one on the surface band: the field fill, frame, radius, ink, padding and placeholder, the submit button and the captcha ink)
  * and the 1 image (a `divi/image` on the bg band whose radius token `{{aied:kit:radius-media}}` resolves to the kit's four media corners, its picture to a site-local pack URL).
- * and the 10 rules (a `rule` and a `rule-strong` divider and top-rule group on the bg and photo bands, a column rule, a divider in an inverted panel: the line's width, style and colour) and the
- * 2 chips (a tag group and an icon chip: the control radius, the tag frame, the icon fill and glyph) of the rules-and-chips adapter.
+ * and the 16 rules (a `rule` and a `rule-strong` divider and top-rule group on the bg and photo bands, a column rule, a divider in an inverted panel, a divider of each role on the
+ * surface and accent bands and a top-rule group of each role in the inverted panel: the line's width, style and colour) and the 5 chips (a tag group and an icon chip on the bg band, a
+ * tag on the surface and photo bands and an icon chip on the accent band: the control radius, the tag frame, the icon fill and glyph) of the rules-and-chips adapter.
  *
  * Usage: node -e '...' | php scripts/lib/kit-sheet-offline.php [--kit id] [--language id] [--no-markup]
  */
