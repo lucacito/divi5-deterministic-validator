@@ -1,0 +1,1343 @@
+[
+ {
+  "id": "kr-divider-control",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "3px"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.color": "#dc2626",
+   "divider.advanced.line.desktop.value.weight": "2px"
+  },
+  "note": "Control: colour and weight on a divider module, the controls topic shape."
+ },
+ {
+  "id": "kr-divider-dead-position-top",
+  "block": "divider",
+  "expect": "DEAD",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "3px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.position": "top"
+  },
+  "note": "Default-value check (not a dead path): position top is Divi's default, so nothing changes."
+ },
+ {
+  "id": "kr-divider-style-dashed",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "3px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.style": "dashed"
+  },
+  "note": "Divider line style dashed over a solid base at 3px (kit width 3px double / dashed etc)."
+ },
+ {
+  "id": "kr-divider-style-dotted",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "3px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.style": "dotted"
+  },
+  "note": "Divider line style dotted over a solid base at 3px (kit width 3px double / dashed etc)."
+ },
+ {
+  "id": "kr-divider-style-double",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "3px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.style": "double"
+  },
+  "note": "Divider line style double over a solid base at 3px (kit width 3px double / dashed etc)."
+ },
+ {
+  "id": "kr-divider-style-solid",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "3px",
+        "style": "dashed"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.style": "solid"
+  },
+  "note": "Divider line style solid over a dashed base."
+ },
+ {
+  "id": "kr-divider-weight-1px",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "3px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.weight": "1px"
+  },
+  "note": "Divider weight 1px over a 3px base."
+ },
+ {
+  "id": "kr-divider-weight-2px",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "3px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.weight": "2px"
+  },
+  "note": "Divider weight 2px over a 3px base."
+ },
+ {
+  "id": "kr-divider-weight-4px",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "3px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.weight": "4px"
+  },
+  "note": "Divider weight 4px over a 3px base."
+ },
+ {
+  "id": "kr-divider-weight-3px",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "1px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.weight": "3px"
+  },
+  "note": "Divider weight 3px over a 1px base."
+ },
+ {
+  "id": "kr-divider-colour-alpha",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "3px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.color": "rgba(17,24,39,0.4)"
+  },
+  "note": "Divider colour as the resolved alpha form rgba(r,g,b,a) over an opaque hex."
+ },
+ {
+  "id": "kr-divider-double-1px",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "3px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.style": "double",
+   "divider.advanced.line.desktop.value.weight": "1px"
+  },
+  "note": "Style double at 1px: the computed style reports double; CSS paints it solid below 3px (painted look NOT measured)."
+ },
+ {
+  "id": "kr-divider-double-3px",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "1px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.style": "double",
+   "divider.advanced.line.desktop.value.weight": "3px"
+  },
+  "note": "Style double at 3px."
+ },
+ {
+  "id": "kr-divider-in-panel",
+  "block": "divider",
+  "expect": "PASS",
+  "pseudo": [
+   "::before"
+  ],
+  "parent": "group",
+  "wrapperBase": {
+   "group": {
+    "module": {
+     "decoration": {
+      "background": {
+       "desktop": {
+        "value": {
+         "color": "#111827"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "3px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.color": "#ffffff"
+  },
+  "note": "A divider inside a text-coloured panel group: the line colour takes effect inside a group (the panel band)."
+ },
+ {
+  "id": "kr-group-control",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.top.width": "2px"
+  },
+  "note": "Control: the library form, styles.all 0px plus styles.top.width 2px.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "kr-group-dead-all-0px",
+  "block": "group",
+  "expect": "DEAD",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.width": "0px"
+  },
+  "note": "Default-value check (not a dead path): all.width 0px alone changes nothing.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "kr-group-top-solid",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "dashed",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "dashed",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.style": "solid",
+   "module.decoration.border.desktop.value.styles.top.style": "solid"
+  },
+  "note": "Top edge style solid (all and top written together, as the adapter does) over a dashed base at 3px.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "kr-group-top-dashed",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.style": "dashed",
+   "module.decoration.border.desktop.value.styles.top.style": "dashed"
+  },
+  "note": "Top edge style dashed (all and top written together, as the adapter does) over a solid base at 3px.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "kr-group-top-dotted",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.style": "dotted",
+   "module.decoration.border.desktop.value.styles.top.style": "dotted"
+  },
+  "note": "Top edge style dotted (all and top written together, as the adapter does) over a solid base at 3px.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "kr-group-top-double",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.style": "double",
+   "module.decoration.border.desktop.value.styles.top.style": "double"
+  },
+  "note": "Top edge style double (all and top written together, as the adapter does) over a solid base at 3px.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "kr-group-top-width-1px",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.top.width": "1px"
+  },
+  "note": "Top edge width 1px.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "kr-group-top-width-2px",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.top.width": "2px"
+  },
+  "note": "Top edge width 2px.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "kr-group-top-width-3px",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "1px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.top.width": "3px"
+  },
+  "note": "Top edge width 3px.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "kr-group-top-width-4px",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.top.width": "4px"
+  },
+  "note": "Top edge width 4px.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "kr-group-top-colour-alpha",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "2px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.color": "rgba(17,24,39,0.4)",
+   "module.decoration.border.desktop.value.styles.top.color": "rgba(17,24,39,0.4)"
+  },
+  "note": "Top edge colour as the resolved alpha form over an opaque hex.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "kr-column-control",
+  "block": "column",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.top.width": "2px"
+  },
+  "note": "Control: the library form, styles.all 0px plus styles.top.width 2px."
+ },
+ {
+  "id": "kr-column-dead-all-0px",
+  "block": "column",
+  "expect": "DEAD",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.width": "0px"
+  },
+  "note": "Default-value check (not a dead path): all.width 0px alone changes nothing."
+ },
+ {
+  "id": "kr-column-top-solid",
+  "block": "column",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "dashed",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "dashed",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.style": "solid",
+   "module.decoration.border.desktop.value.styles.top.style": "solid"
+  },
+  "note": "Top edge style solid (all and top written together, as the adapter does) over a dashed base at 3px."
+ },
+ {
+  "id": "kr-column-top-dashed",
+  "block": "column",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.style": "dashed",
+   "module.decoration.border.desktop.value.styles.top.style": "dashed"
+  },
+  "note": "Top edge style dashed (all and top written together, as the adapter does) over a solid base at 3px."
+ },
+ {
+  "id": "kr-column-top-dotted",
+  "block": "column",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.style": "dotted",
+   "module.decoration.border.desktop.value.styles.top.style": "dotted"
+  },
+  "note": "Top edge style dotted (all and top written together, as the adapter does) over a solid base at 3px."
+ },
+ {
+  "id": "kr-column-top-double",
+  "block": "column",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.style": "double",
+   "module.decoration.border.desktop.value.styles.top.style": "double"
+  },
+  "note": "Top edge style double (all and top written together, as the adapter does) over a solid base at 3px."
+ },
+ {
+  "id": "kr-column-top-width-1px",
+  "block": "column",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.top.width": "1px"
+  },
+  "note": "Top edge width 1px."
+ },
+ {
+  "id": "kr-column-top-width-4px",
+  "block": "column",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.top.width": "4px"
+  },
+  "note": "Top edge width 4px."
+ },
+ {
+  "id": "kr-column-top-colour-alpha",
+  "block": "column",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "2px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.color": "rgba(17,24,39,0.4)",
+   "module.decoration.border.desktop.value.styles.top.color": "rgba(17,24,39,0.4)"
+  },
+  "note": "Top edge colour as the resolved alpha form over an opaque hex."
+ },
+ {
+  "id": "kr-group-top-in-card",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "1px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.top.width": "3px"
+  },
+  "note": "A top rule group nested in a card group: the rule is the inner group top edge.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "parent": "group",
+  "wrapperBase": {
+   "group": {
+    "module": {
+     "decoration": {
+      "background": {
+       "desktop": {
+        "value": {
+         "color": "#f1f5f9"
+        }
+       }
+      },
+      "border": {
+       "desktop": {
+        "value": {
+         "styles": {
+          "all": {
+           "width": "1px",
+           "style": "solid",
+           "color": "#cbd5e1"
+          }
+         },
+         "radius": {
+          "topLeft": "16px",
+          "topRight": "16px",
+          "bottomRight": "16px",
+          "bottomLeft": "16px"
+         }
+        }
+       }
+      },
+      "spacing": {
+       "desktop": {
+        "value": {
+         "padding": {
+          "top": "24px",
+          "bottom": "24px",
+          "left": "24px",
+          "right": "24px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ {
+  "id": "kr-group-other-sides-zero",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         },
+         "top": {
+          "width": "1px",
+          "style": "solid",
+          "color": "#1e3a8a"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.top.width": "3px"
+  },
+  "note": "Control form again; the detail records computed border-right/bottom/left-width stay 0 (read in the vocabulary).",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Rule probe text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ }
+]

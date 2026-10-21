@@ -1,0 +1,1283 @@
+[
+ {
+  "id": "kch-icon-control",
+  "block": "icon",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f59e0b"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "10px",
+         "bottom": "10px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     },
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "8px",
+         "topRight": "8px",
+         "bottomRight": "8px",
+         "bottomLeft": "8px"
+        }
+       }
+      }
+     }
+    }
+   },
+   "icon": {
+    "advanced": {
+     "size": {
+      "desktop": {
+       "value": "20px"
+      }
+     },
+     "color": {
+      "desktop": {
+       "value": "#111827"
+      }
+     }
+    },
+    "innerContent": {
+     "desktop": {
+      "value": {
+       "unicode": "&#xf005;",
+       "type": "fa",
+       "weight": "900"
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.background.desktop.value.color": "#2563eb"
+  },
+  "note": "Control: the icon module background.",
+  "pseudo": [
+   "::before"
+  ]
+ },
+ {
+  "id": "kch-icon-dead-align-center",
+  "block": "icon",
+  "expect": "DEAD",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f59e0b"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "10px",
+         "bottom": "10px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     },
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "8px",
+         "topRight": "8px",
+         "bottomRight": "8px",
+         "bottomLeft": "8px"
+        }
+       }
+      }
+     }
+    }
+   },
+   "icon": {
+    "advanced": {
+     "size": {
+      "desktop": {
+       "value": "20px"
+      }
+     },
+     "color": {
+      "desktop": {
+       "value": "#111827"
+      }
+     }
+    },
+    "innerContent": {
+     "desktop": {
+      "value": {
+       "unicode": "&#xf005;",
+       "type": "fa",
+       "weight": "900"
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "icon.advanced.align.desktop.value": "center"
+  },
+  "note": "Default-value check (not a dead path): align center is Divi's default (typography probe ty-ic-align-center).",
+  "pseudo": [
+   "::before"
+  ]
+ },
+ {
+  "id": "kch-icon-radius-0px",
+  "block": "icon",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f59e0b"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "10px",
+         "bottom": "10px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     },
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "8px",
+         "topRight": "8px",
+         "bottomRight": "8px",
+         "bottomLeft": "8px"
+        }
+       }
+      }
+     }
+    }
+   },
+   "icon": {
+    "advanced": {
+     "size": {
+      "desktop": {
+       "value": "20px"
+      }
+     },
+     "color": {
+      "desktop": {
+       "value": "#111827"
+      }
+     }
+    },
+    "innerContent": {
+     "desktop": {
+      "value": {
+       "unicode": "&#xf005;",
+       "type": "fa",
+       "weight": "900"
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.radius.topLeft": "0px",
+   "module.decoration.border.desktop.value.radius.topRight": "0px",
+   "module.decoration.border.desktop.value.radius.bottomRight": "0px",
+   "module.decoration.border.desktop.value.radius.bottomLeft": "0px"
+  },
+  "note": "Icon chip module border radius 0px (four corners, as the kit token resolves) over an 8px base: which element rounds is read from changedElements.",
+  "pseudo": [
+   "::before"
+  ]
+ },
+ {
+  "id": "kch-icon-radius-4px",
+  "block": "icon",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f59e0b"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "10px",
+         "bottom": "10px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     },
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "8px",
+         "topRight": "8px",
+         "bottomRight": "8px",
+         "bottomLeft": "8px"
+        }
+       }
+      }
+     }
+    }
+   },
+   "icon": {
+    "advanced": {
+     "size": {
+      "desktop": {
+       "value": "20px"
+      }
+     },
+     "color": {
+      "desktop": {
+       "value": "#111827"
+      }
+     }
+    },
+    "innerContent": {
+     "desktop": {
+      "value": {
+       "unicode": "&#xf005;",
+       "type": "fa",
+       "weight": "900"
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.radius.topLeft": "4px",
+   "module.decoration.border.desktop.value.radius.topRight": "4px",
+   "module.decoration.border.desktop.value.radius.bottomRight": "4px",
+   "module.decoration.border.desktop.value.radius.bottomLeft": "4px"
+  },
+  "note": "Icon chip module border radius 4px (four corners, as the kit token resolves) over an 8px base: which element rounds is read from changedElements.",
+  "pseudo": [
+   "::before"
+  ]
+ },
+ {
+  "id": "kch-icon-radius-12px",
+  "block": "icon",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f59e0b"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "10px",
+         "bottom": "10px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     },
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "8px",
+         "topRight": "8px",
+         "bottomRight": "8px",
+         "bottomLeft": "8px"
+        }
+       }
+      }
+     }
+    }
+   },
+   "icon": {
+    "advanced": {
+     "size": {
+      "desktop": {
+       "value": "20px"
+      }
+     },
+     "color": {
+      "desktop": {
+       "value": "#111827"
+      }
+     }
+    },
+    "innerContent": {
+     "desktop": {
+      "value": {
+       "unicode": "&#xf005;",
+       "type": "fa",
+       "weight": "900"
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.radius.topLeft": "12px",
+   "module.decoration.border.desktop.value.radius.topRight": "12px",
+   "module.decoration.border.desktop.value.radius.bottomRight": "12px",
+   "module.decoration.border.desktop.value.radius.bottomLeft": "12px"
+  },
+  "note": "Icon chip module border radius 12px (four corners, as the kit token resolves) over an 8px base: which element rounds is read from changedElements.",
+  "pseudo": [
+   "::before"
+  ]
+ },
+ {
+  "id": "kch-icon-radius-999px",
+  "block": "icon",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f59e0b"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "10px",
+         "bottom": "10px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     },
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "8px",
+         "topRight": "8px",
+         "bottomRight": "8px",
+         "bottomLeft": "8px"
+        }
+       }
+      }
+     }
+    }
+   },
+   "icon": {
+    "advanced": {
+     "size": {
+      "desktop": {
+       "value": "20px"
+      }
+     },
+     "color": {
+      "desktop": {
+       "value": "#111827"
+      }
+     }
+    },
+    "innerContent": {
+     "desktop": {
+      "value": {
+       "unicode": "&#xf005;",
+       "type": "fa",
+       "weight": "900"
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.radius.topLeft": "999px",
+   "module.decoration.border.desktop.value.radius.topRight": "999px",
+   "module.decoration.border.desktop.value.radius.bottomRight": "999px",
+   "module.decoration.border.desktop.value.radius.bottomLeft": "999px"
+  },
+  "note": "Icon chip module border radius 999px (four corners, as the kit token resolves) over an 8px base: which element rounds is read from changedElements.",
+  "pseudo": [
+   "::before"
+  ]
+ },
+ {
+  "id": "kch-icon-fill",
+  "block": "icon",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f59e0b"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "10px",
+         "bottom": "10px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     },
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "8px",
+         "topRight": "8px",
+         "bottomRight": "8px",
+         "bottomLeft": "8px"
+        }
+       }
+      }
+     }
+    }
+   },
+   "icon": {
+    "advanced": {
+     "size": {
+      "desktop": {
+       "value": "20px"
+      }
+     },
+     "color": {
+      "desktop": {
+       "value": "#111827"
+      }
+     }
+    },
+    "innerContent": {
+     "desktop": {
+      "value": {
+       "unicode": "&#xf005;",
+       "type": "fa",
+       "weight": "900"
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.background.desktop.value.color": "#16a34a"
+  },
+  "note": "Icon chip fill: module.decoration.background colour.",
+  "pseudo": [
+   "::before"
+  ]
+ },
+ {
+  "id": "kch-icon-glyph",
+  "block": "icon",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f59e0b"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "10px",
+         "bottom": "10px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     },
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "8px",
+         "topRight": "8px",
+         "bottomRight": "8px",
+         "bottomLeft": "8px"
+        }
+       }
+      }
+     }
+    }
+   },
+   "icon": {
+    "advanced": {
+     "size": {
+      "desktop": {
+       "value": "20px"
+      }
+     },
+     "color": {
+      "desktop": {
+       "value": "#111827"
+      }
+     }
+    },
+    "innerContent": {
+     "desktop": {
+      "value": {
+       "unicode": "&#xf005;",
+       "type": "fa",
+       "weight": "900"
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "icon.advanced.color.desktop.value": "#ffffff"
+  },
+  "note": "Icon chip glyph colour: icon.advanced.color.",
+  "pseudo": [
+   "::before"
+  ]
+ },
+ {
+  "id": "kch-tag-control",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#475569"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.width": "1px"
+  },
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Tag</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "note": "Control: the tag frame width."
+ },
+ {
+  "id": "kch-tag-dead-all-0px",
+  "block": "group",
+  "expect": "DEAD",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "0px",
+          "style": "solid",
+          "color": "#475569"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.width": "0px"
+  },
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Tag</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "note": "Default-value check (not a dead path)."
+ },
+ {
+  "id": "kch-tag-radius-0px",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "12px",
+         "topRight": "12px",
+         "bottomRight": "12px",
+         "bottomLeft": "12px"
+        },
+        "styles": {
+         "all": {
+          "width": "1px",
+          "style": "solid",
+          "color": "#475569"
+         }
+        }
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "4px",
+         "bottom": "4px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.radius.topLeft": "0px",
+   "module.decoration.border.desktop.value.radius.topRight": "0px",
+   "module.decoration.border.desktop.value.radius.bottomRight": "0px",
+   "module.decoration.border.desktop.value.radius.bottomLeft": "0px"
+  },
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Tag</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "note": "Tag group radius 0px over 12px."
+ },
+ {
+  "id": "kch-tag-radius-999px",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "12px",
+         "topRight": "12px",
+         "bottomRight": "12px",
+         "bottomLeft": "12px"
+        },
+        "styles": {
+         "all": {
+          "width": "1px",
+          "style": "solid",
+          "color": "#475569"
+         }
+        }
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "4px",
+         "bottom": "4px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.radius.topLeft": "999px",
+   "module.decoration.border.desktop.value.radius.topRight": "999px",
+   "module.decoration.border.desktop.value.radius.bottomRight": "999px",
+   "module.decoration.border.desktop.value.radius.bottomLeft": "999px"
+  },
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Tag</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "note": "Tag group radius 999px over 12px."
+ },
+ {
+  "id": "kch-tag-radius-12px",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "0px",
+         "topRight": "0px",
+         "bottomRight": "0px",
+         "bottomLeft": "0px"
+        },
+        "styles": {
+         "all": {
+          "width": "1px",
+          "style": "solid",
+          "color": "#475569"
+         }
+        }
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "4px",
+         "bottom": "4px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.radius.topLeft": "12px",
+   "module.decoration.border.desktop.value.radius.topRight": "12px",
+   "module.decoration.border.desktop.value.radius.bottomRight": "12px",
+   "module.decoration.border.desktop.value.radius.bottomLeft": "12px"
+  },
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Tag</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "note": "Tag group radius 12px over 0px."
+ },
+ {
+  "id": "kch-tag-frame-1px",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "12px",
+         "topRight": "12px",
+         "bottomRight": "12px",
+         "bottomLeft": "12px"
+        },
+        "styles": {
+         "all": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#475569"
+         }
+        }
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "4px",
+         "bottom": "4px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.width": "1px"
+  },
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Tag</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "note": "Tag frame width 1px."
+ },
+ {
+  "id": "kch-tag-frame-2px",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "12px",
+         "topRight": "12px",
+         "bottomRight": "12px",
+         "bottomLeft": "12px"
+        },
+        "styles": {
+         "all": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#475569"
+         }
+        }
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "4px",
+         "bottom": "4px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.width": "2px"
+  },
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Tag</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "note": "Tag frame width 2px."
+ },
+ {
+  "id": "kch-tag-frame-4px",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "12px",
+         "topRight": "12px",
+         "bottomRight": "12px",
+         "bottomLeft": "12px"
+        },
+        "styles": {
+         "all": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#475569"
+         }
+        }
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "4px",
+         "bottom": "4px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.width": "4px"
+  },
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Tag</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "note": "Tag frame width 4px."
+ },
+ {
+  "id": "kch-tag-style-dashed",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "12px",
+         "topRight": "12px",
+         "bottomRight": "12px",
+         "bottomLeft": "12px"
+        },
+        "styles": {
+         "all": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#475569"
+         }
+        }
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "4px",
+         "bottom": "4px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.style": "dashed"
+  },
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Tag</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "note": "Tag frame style dashed at 3px."
+ },
+ {
+  "id": "kch-tag-style-dotted",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "12px",
+         "topRight": "12px",
+         "bottomRight": "12px",
+         "bottomLeft": "12px"
+        },
+        "styles": {
+         "all": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#475569"
+         }
+        }
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "4px",
+         "bottom": "4px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.style": "dotted"
+  },
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Tag</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "note": "Tag frame style dotted at 3px."
+ },
+ {
+  "id": "kch-tag-style-double",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "12px",
+         "topRight": "12px",
+         "bottomRight": "12px",
+         "bottomLeft": "12px"
+        },
+        "styles": {
+         "all": {
+          "width": "3px",
+          "style": "solid",
+          "color": "#475569"
+         }
+        }
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "4px",
+         "bottom": "4px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.style": "double"
+  },
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Tag</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "note": "Tag frame style double at 3px."
+ },
+ {
+  "id": "kch-tag-frame-colour",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "12px",
+         "topRight": "12px",
+         "bottomRight": "12px",
+         "bottomLeft": "12px"
+        },
+        "styles": {
+         "all": {
+          "width": "1px",
+          "style": "solid",
+          "color": "#475569"
+         }
+        }
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "4px",
+         "bottom": "4px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.all.color": "#dc2626"
+  },
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Tag</p>"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "note": "Tag frame colour."
+ }
+]
