@@ -22317,3 +22317,51 @@ Candidates from `kit-chip.json` that were measured and are not taught, with the 
 
 - `kch-icon-dead-align-center`: no effect (dead). Default-value check (not a dead path): align center is Divi's default (typography probe ty-ic-align-center).
 - `kch-tag-dead-all-0px`: no effect (dead). Default-value check (not a dead path).
+
+## kr-group-top-on-framed
+
+Block: `group`, holding `text`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"3px"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.top.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 25.7969px -> 27.7969px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 25.7969px -> 27.7969px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 25.7969px -> 27.7969px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-color`, `border-block-start-width`, `border-top-color`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: A top side written on a group that already has an all-sides 1px frame and a 16px radius: the top edge changes; the other three sides must stay 1px (read from changedProps: no right/bottom/left width change) and the radius must not change.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kr-column-top-on-framed
+
+Block: `column`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"3px"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.top.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 42px -> 44px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 42px -> 44px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 42px -> 44px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-color`, `border-block-start-width`, `border-top-color`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: A top side written on a column that already has an all-sides 1px frame and a 16px radius: the top edge changes; the other three sides must stay 1px (read from changedProps: no right/bottom/left width change) and the radius must not change.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).

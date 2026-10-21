@@ -1,0 +1,102 @@
+[
+ {
+  "id": "kr-group-top-on-framed",
+  "block": "group",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "1px",
+          "style": "solid",
+          "color": "#cbd5e1"
+         }
+        },
+        "radius": {
+         "topLeft": "16px",
+         "topRight": "16px",
+         "bottomRight": "16px",
+         "bottomLeft": "16px"
+        }
+       }
+      }
+     },
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.top.width": "3px",
+   "module.decoration.border.desktop.value.styles.top.style": "solid",
+   "module.decoration.border.desktop.value.styles.top.color": "#111827"
+  },
+  "note": "A top side written on a group that already has an all-sides 1px frame and a 16px radius: the top edge changes; the other three sides must stay 1px (read from changedProps: no right/bottom/left width change) and the radius must not change.",
+  "children": [
+   {
+    "block": "text",
+    "base": {
+     "content": {
+      "innerContent": {
+       "desktop": {
+        "value": "<p>Framed block text.</p>"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "kr-column-top-on-framed",
+  "block": "column",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "border": {
+      "desktop": {
+       "value": {
+        "styles": {
+         "all": {
+          "width": "1px",
+          "style": "solid",
+          "color": "#cbd5e1"
+         }
+        },
+        "radius": {
+         "topLeft": "16px",
+         "topRight": "16px",
+         "bottomRight": "16px",
+         "bottomLeft": "16px"
+        }
+       }
+      }
+     },
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.border.desktop.value.styles.top.width": "3px",
+   "module.decoration.border.desktop.value.styles.top.style": "solid",
+   "module.decoration.border.desktop.value.styles.top.color": "#111827"
+  },
+  "note": "A top side written on a column that already has an all-sides 1px frame and a 16px radius: the top edge changes; the other three sides must stay 1px (read from changedProps: no right/bottom/left width change) and the radius must not change."
+ }
+]

@@ -40,6 +40,16 @@ painted; the other three stay `0px` (kr-group-other-sides-zero, kr-column-top-*)
 Hover on a rule, a bottom, left or right rule, a rule on a row or section, `divider.advanced.line.position` and `show` (never
 written), a rule's own spacing or length, a painted double line (the render gate checks the computed width, not the pixels).
 
+## Guide-only fact: a top edge on a block that already has a frame (probe 2026-10-21, kit-rule-framed.json)
+
+Found by a dogfood run (an assistant editing a page kept the plan cards' 1px frame and added only a `styles.top` side instead of the
+adapter's `all` 0px form). Probed ON the carriers: `kr-group-top-on-framed` and `kr-column-top-on-framed` (a block with an all-sides 1px solid
+frame, a 16px radius and a fill; set `styles.top.width` 3px, `styles.top.style` solid and `styles.top.color`): 2 candidates, 2 PASS, no overflow.
+The computed difference is the top edge only (`border-top-width` 1px -> 3px and `border-top-color`); the right, bottom and left widths and
+the radius do not change. So a rule on a framed block may keep `styles.all` and write only `styles.top`. This is NOT an adapter decision (the
+adapter writes the `all` 0px form for an unframed rule block and has no framed-rule role), so it is not a row of the table below and not in
+`KitAdapters::RULE_PROVEN`; it is taught by the guide and pinned by `StyleGuideKitRulesTest`.
+
 ## Adapter decisions
 
 T3's constant `KitAdapters::RULE_PROVEN` and its tests read this table: a decision is written by the adapter only when its
