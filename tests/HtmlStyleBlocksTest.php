@@ -194,6 +194,17 @@ final class HtmlStyleBlocksTest extends HtmlTestCase
         $this->assertSame( 1, $b['ignored']['generic_font'] );
     }
 
+    public function testAGenericKeywordEndsTheFamilySearch(): void
+    {
+        [ $b ] = $this->blocks( self::page( 'p{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif} h1{font-family:sans-serif, Roboto} h2{font-family:Inter, sans-serif}',
+            '<section><h1>A</h1></section><section><p>B</p></section><section><h2>C</h2></section>' ) );
+        $this->assertNull( self::module( $b, 0 )['family'] );
+        $this->assertNull( self::module( $b, 1 )['family'] );
+        $this->assertSame( 'Inter', self::module( $b, 2 )['family'] );
+        $this->assertSame( 2, $b['ignored']['generic_font'] );
+        $this->assertSame( [ [ 'source' => 'Inter', 'action' => 'carried' ] ], $b['fonts'] );
+    }
+
     public function testImagesAndDividersAreNeutral(): void
     {
         [ $b ] = $this->blocks( self::page( '', '<section style="background:#000"><img src="/a.png" alt="A"><hr><p style="color:#fff">T</p></section>' ) );
