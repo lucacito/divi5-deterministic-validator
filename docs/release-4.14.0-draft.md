@@ -1,4 +1,4 @@
-# Free 4.14.0 release draft (NOT applied: no version bump, no zip rebuild, nothing pushed)
+# Free 4.14.0 release draft (APPLIED to readme.txt and the version on 2026-10-22 at the owner's go-ahead)
 
 Prepared 2026-10-21 from main after the rules and chips adapter, its guide polish and the small follow-ups. Applying it is the
 owner's call (CLAUDE.md: no version bump, zip rebuild, push or release without the owner's say-so).

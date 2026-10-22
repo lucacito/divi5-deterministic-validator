@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi 5, divi, mcp, claude, chatgpt
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.13.0
+Stable tag:        4.14.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -79,7 +79,7 @@ Edit and create:
 * `edit_page_content`: change one piece of text (an email, phone number, price or sentence) without rebuilding the page or Divi Project. Add `dry_run` to preview the change without saving it.
 * `update_page_layout`: save a new layout for a page or Divi Project, after the checker approves it. Add `dry_run` to preview what would change without saving it.
 * `create_page`: create a new page. It is always saved as a draft for you to review and publish.
-* `html_to_divi`: turn HTML you already have (a page your assistant or another tool wrote) into a Divi 5 layout: the structure, all the copy, the links and the images. It previews by default and saves a new draft only when asked. Scripts, forms, embeds and site navigation are never converted and are listed in a report; colors and fonts are not converted yet (available over MCP and the REST API, not in the ChatGPT Action).
+* `html_to_divi`: turn HTML you already have (a page your assistant or another tool wrote) into a Divi 5 layout: the structure, all the copy, the links and the images, plus the basic colors, fonts and spacing where Divi can show them and the text stays readable. It previews by default and saves a new draft only when asked. Scripts, forms, embeds and site navigation are never converted and are listed in a report (available over MCP and the REST API, not in the ChatGPT Action).
 
 Undo:
 
@@ -243,7 +243,7 @@ Yes. On the Settings screen, turn on sign-in for Claude and copy the address it 
 
 = Can it turn my HTML page into a Divi page? =
 
-Yes, for the content. Give your assistant the HTML (for example a page it wrote for you) and it can convert it with `html_to_divi`: the structure (sections, columns for card grids, headings, text, buttons, images), every word and every link. It previews first and tells you what was not converted; with one more step it saves a draft. Scripts, forms, embedded videos, site navigation and CSS are never converted, colors and fonts are not converted yet, and images become placeholders for you to replace with your own. It does not fetch web addresses. For a pixel-accurate copy of a live web page you need a dedicated URL-to-Divi converter instead.
+Yes, for the content. Give your assistant the HTML (for example a page it wrote for you) and it can convert it with `html_to_divi`: the structure (sections, columns for card grids, headings, text, buttons, images), every word and every link. It previews first and tells you what was not converted; with one more step it saves a draft. Scripts, forms, embedded videos, site navigation and CSS code are never converted; it carries the basic colors, fonts and spacing of the HTML where Divi can show them, and never a color that would make text hard to read; linked stylesheets are not fetched, so a page that keeps its styling in an external file comes out plainer; and images become placeholders for you to replace with your own. It does not fetch web addresses. For a pixel-accurate copy of a live web page you need a dedicated URL-to-Divi converter instead.
 
 = Can the AI change a page's title? =
 
@@ -271,6 +271,14 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.14.0 =
+* New: style kits now also set the look of divider lines, the rules between list items and price columns, small tag labels and icon badges (line style, width and corners), so a dashed, dotted or heavy kit reads as one design all the way down.
+* Improved: the guide now tells your assistant exactly how to write those by hand (widths, which settings to use, and that the kit wins when a design language says something different). Found by having fresh assistants build pages from the guide alone.
+* Improved: in the built-in section patterns the thin rules and the icon badges follow the chosen kit. With the default look some lines are a little heavier and icon badges are squarer.
+* New: `html_to_divi` now carries the HTML's basic colors, fonts, sizes, alignment, backgrounds and spacing (and a button's colors and corners) where Divi can show them, and drops any color that would make text hard to read. The report lists what was carried and what was left out.
+* Fixed: `html_to_divi` could lose content or structure in a few HTML shapes: HTML5 sections placed after a stylesheet link, `<meta>` or `<style>` (the page was refused as empty or the first section was dropped), content after the closing `</html>` tag, a section following loose text at the start of a fragment, a section following loose text after the closing `</body>` tag, a section, header, footer or other block right after a paragraph that was never closed, and a script whose code contains `</body>`, `</html>` or another closing tag (its code showed up as page text). In the last four a heading could turn into bold text. The word and link checks now see all of it.
+* Improved: verified on Divi 5.15.1.
 
 = 4.13.0 =
 * New: ask your assistant to rebuild a page from a screenshot, the address of a page or its HTML. It writes a Divi 5 layout as a draft and the checker tests it before it is saved. Your assistant, not the plugin, looks at the picture or reads the page.
@@ -383,6 +391,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 4.14.0 =
+Style kits now also style divider lines, rules, tag labels and icon badges, so a page keeps one look. In the default look a few lines are slightly heavier and icon badges squarer. Nothing changes unless your assistant uses them.
 
 = 4.13.0 =
 Your assistant can rebuild a page from a screenshot or a web page, and gets many more section patterns, ten design languages and 40 style kits to keep a page looking consistent. Nothing changes unless your assistant uses them.

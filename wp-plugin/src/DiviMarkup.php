@@ -323,7 +323,7 @@ final class DiviMarkup
     {
         foreach ( $style as $key => $value ) {
             if ( ! in_array( $key, $allowed, true ) ) {
-                throw new \InvalidArgumentException( 'DiviMarkup: unknown ' . $kind . ' style key ' . var_export( $key, true ) );
+                throw new \InvalidArgumentException( esc_html( 'DiviMarkup: unknown ' . $kind . ' style key ' . self::shown( $key ) ) );
             }
             switch ( $key ) {
                 case 'color':
@@ -360,11 +360,21 @@ final class DiviMarkup
                     $ok = false;
             }
             if ( ! $ok ) {
-                throw new \InvalidArgumentException( 'DiviMarkup: the ' . $kind . ' style ' . $key . ' has a value outside its form: ' . substr( var_export( $value, true ), 0, 80 ) );
+                throw new \InvalidArgumentException( esc_html( 'DiviMarkup: the ' . $kind . ' style ' . $key . ' has a value outside its form: ' . self::shown( $value ) ) );
             }
         }
 
         return $style;
+    }
+
+    /** A short, printable form of a value for an error message (at most 80 characters; arrays and objects by type only). */
+    private static function shown( mixed $v ): string
+    {
+        if ( null === $v || is_scalar( $v ) ) {
+            return substr( (string) wp_json_encode( $v ), 0, 80 );
+        }
+
+        return gettype( $v );
     }
 
     private static function isColour( mixed $v ): bool

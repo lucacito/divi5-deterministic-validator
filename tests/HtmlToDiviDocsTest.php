@@ -9,9 +9,8 @@ use PHPUnit\Framework\TestCase;
 /**
  * html_to_divi phase 2 carries colors, fonts and spacing, so no place that describes the tool may still say styles are not converted.
  *
- * `wp-plugin/readme.txt` is EXCLUDED on purpose: it still says so on lines 82, 246 and 302 until the owner applies the release-time
- * wording proposed in `docs/release-4.14.0-draft.md` (the readme, the plugin header and the zip are changed only at a release, never by
- * a feature branch). When the owner has applied it, add `wp-plugin/readme.txt` to this list.
+ * `wp-plugin/readme.txt` is checked separately: since the 4.14.0 release commit its feature list and FAQ no longer say so, and the one
+ * remaining mention is the historical 4.10.0 changelog entry, which was true when written and stays as history.
  */
 final class HtmlToDiviDocsTest extends TestCase
 {
@@ -36,28 +35,28 @@ final class HtmlToDiviDocsTest extends TestCase
         }
     }
 
-    public function testTheListedFilesExistAndTheReadmeIsLeftOutOnPurpose(): void
+    public function testTheListedFilesExist(): void
     {
-        $this->assertNotContains( 'wp-plugin/readme.txt', self::FILES );
         foreach ( self::FILES as $file ) {
             $this->assertFileExists( __DIR__ . '/../' . $file );
         }
     }
 
-    /** The release draft names the three readme lines the owner has to change, so they cannot be forgotten. */
-    public function testTheReleaseDraftListsTheReadmeLinesStillToChange(): void
+    /** The readme says styles are not converted only inside the 4.10.0 changelog entry (history), nowhere else. */
+    public function testTheReadmeOnlyKeepsTheClaimInTheTenZeroHistory(): void
     {
-        $draft  = (string) file_get_contents( __DIR__ . '/../docs/release-4.14.0-draft.md' );
-        $readme = file( __DIR__ . '/../wp-plugin/readme.txt' ) ?: [];
-        $stale  = [];
-        foreach ( $readme as $i => $line ) {
+        $readme  = file( __DIR__ . '/../wp-plugin/readme.txt' ) ?: [];
+        $version = '';
+        $stale   = 0;
+        foreach ( $readme as $line ) {
+            if ( 1 === preg_match( '/^= (\d+\.\d+\.\d+) =/', $line, $m ) ) {
+                $version = $m[1];
+            }
             if ( false !== stripos( $line, 'not converted yet' ) ) {
-                $stale[] = $i + 1;
+                ++$stale;
+                $this->assertSame( '4.10.0', $version, 'readme.txt says styles are not converted outside the 4.10.0 history entry: ' . trim( $line ) );
             }
         }
-        // Either the readme is already updated (nothing stale) or every stale line number is named in the draft.
-        foreach ( $stale as $n ) {
-            $this->assertStringContainsString( 'line ' . $n, $draft, 'readme.txt line ' . $n . ' says styles are not converted and the release draft does not list it' );
-        }
+        $this->assertLessThanOrEqual( 1, $stale );
     }
 }
