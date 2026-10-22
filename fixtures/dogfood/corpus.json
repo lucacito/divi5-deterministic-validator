@@ -1,0 +1,346 @@
+[
+    {
+        "name": "hairline-dashed",
+        "kit": "hairline-dashed",
+        "language": "tech-mono",
+        "task": "freehand",
+        "page": "hairline-dashed/page.html",
+        "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the 4.14.0 style guide before round 1 of the polish, so before the round 3 wording.",
+        "scores": {
+            "button": [
+                22,
+                22
+            ],
+            "rule": [
+                33,
+                33
+            ],
+            "chip": [
+                32,
+                27
+            ],
+            "framed": [
+                20,
+                20
+            ],
+            "item": [
+                4,
+                4
+            ],
+            "form": [
+                8,
+                8
+            ],
+            "image": [
+                0,
+                0
+            ],
+            "overall": [
+                119,
+                114
+            ]
+        },
+        "unclassified": 0
+    },
+    {
+        "name": "heavy-block",
+        "kit": "heavy-block",
+        "language": "bold-vibrant",
+        "task": "freehand",
+        "page": "heavy-block/page.html",
+        "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the 4.14.0 style guide before round 1 of the polish, so before the round 3 wording.",
+        "scores": {
+            "button": [
+                22,
+                22
+            ],
+            "rule": [
+                18,
+                12
+            ],
+            "chip": [
+                32,
+                32
+            ],
+            "framed": [
+                20,
+                20
+            ],
+            "item": [
+                4,
+                4
+            ],
+            "form": [
+                8,
+                8
+            ],
+            "image": [
+                0,
+                0
+            ],
+            "overall": [
+                104,
+                98
+            ]
+        },
+        "unclassified": 0
+    },
+    {
+        "name": "dotted-pill",
+        "kit": "dotted-pill",
+        "language": "playful-pastel",
+        "task": "freehand",
+        "page": "dotted-pill/page.html",
+        "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the guide after round 1 of the polish, so before the round 3 wording.",
+        "scores": {
+            "button": [
+                7,
+                7
+            ],
+            "rule": [
+                12,
+                12
+            ],
+            "chip": [
+                32,
+                32
+            ],
+            "framed": [
+                19,
+                18
+            ],
+            "item": [
+                4,
+                4
+            ],
+            "form": [
+                7,
+                7
+            ],
+            "image": [
+                0,
+                0
+            ],
+            "overall": [
+                81,
+                80
+            ]
+        },
+        "unclassified": 0
+    },
+    {
+        "name": "underlined-label",
+        "kit": "underlined-label",
+        "language": "glass-dark",
+        "task": "freehand",
+        "page": "underlined-label/page.html",
+        "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the guide after round 2 of the polish, so before the round 3 wording.",
+        "scores": {
+            "button": [
+                17,
+                17
+            ],
+            "rule": [
+                12,
+                12
+            ],
+            "chip": [
+                32,
+                27
+            ],
+            "framed": [
+                19,
+                18
+            ],
+            "item": [
+                4,
+                4
+            ],
+            "form": [
+                7,
+                7
+            ],
+            "image": [
+                0,
+                0
+            ],
+            "overall": [
+                91,
+                85
+            ]
+        },
+        "unclassified": 0
+    },
+    {
+        "name": "soft-rounded",
+        "kit": "soft-rounded",
+        "language": "organic-warm",
+        "task": "freehand",
+        "page": "soft-rounded/page.html",
+        "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the guide after round 2 of the polish, so before the round 3 wording.",
+        "scores": {
+            "button": [
+                22,
+                22
+            ],
+            "rule": [
+                12,
+                12
+            ],
+            "chip": [
+                32,
+                27
+            ],
+            "framed": [
+                20,
+                20
+            ],
+            "item": [
+                4,
+                4
+            ],
+            "form": [
+                8,
+                8
+            ],
+            "image": [
+                0,
+                0
+            ],
+            "overall": [
+                98,
+                93
+            ]
+        },
+        "unclassified": 0
+    },
+    {
+        "name": "gilt-hairline",
+        "kit": "gilt-hairline",
+        "language": "luxe",
+        "task": "freehand",
+        "page": "gilt-hairline/page.html",
+        "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the guide after round 3 of the polish.",
+        "scores": {
+            "button": [
+                22,
+                22
+            ],
+            "rule": [
+                15,
+                15
+            ],
+            "chip": [
+                32,
+                32
+            ],
+            "framed": [
+                20,
+                20
+            ],
+            "item": [
+                4,
+                4
+            ],
+            "form": [
+                8,
+                8
+            ],
+            "image": [
+                0,
+                0
+            ],
+            "overall": [
+                101,
+                101
+            ]
+        },
+        "unclassified": 0
+    },
+    {
+        "name": "edit-glass-edge-base",
+        "kit": "glass-edge",
+        "language": "glass-dark",
+        "task": "edit-base",
+        "page": "edit-glass-edge/page.html",
+        "provenance": "The recipe-built base page for the edit task (Prepare::editBase glass-edge / glass-dark), as served to the assistant on 2026-10-21; kit-built, so it scores full marks. Guide revision: the guide after round 2 of the polish.",
+        "scores": {
+            "button": [
+                23,
+                23
+            ],
+            "rule": [
+                21,
+                21
+            ],
+            "chip": [
+                0,
+                0
+            ],
+            "framed": [
+                15,
+                15
+            ],
+            "item": [
+                4,
+                4
+            ],
+            "form": [
+                8,
+                8
+            ],
+            "image": [
+                6,
+                6
+            ],
+            "overall": [
+                77,
+                77
+            ]
+        },
+        "unclassified": 2
+    },
+    {
+        "name": "edit-glass-edge",
+        "kit": "glass-edge",
+        "language": "glass-dark",
+        "task": "edit",
+        "page": "edit-glass-edge/page-edited.html",
+        "provenance": "The edit-glass-edge base page as edited on 2026-10-21 by a fresh assistant from the served guide only; it saw the guide after round 2 of the polish.",
+        "scores": {
+            "button": [
+                23,
+                23
+            ],
+            "rule": [
+                24,
+                24
+            ],
+            "chip": [
+                28,
+                28
+            ],
+            "framed": [
+                18,
+                18
+            ],
+            "item": [
+                4,
+                4
+            ],
+            "form": [
+                8,
+                8
+            ],
+            "image": [
+                6,
+                6
+            ],
+            "overall": [
+                111,
+                111
+            ]
+        },
+        "unclassified": 2
+    }
+]
