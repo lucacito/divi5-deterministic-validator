@@ -30,7 +30,7 @@ your global colors do that part).
 | Not converted | Why | What happens |
 |---|---|---|
 | Scripts, `onclick` and other handlers, `javascript:` links | The plugin never saves custom code | Removed and listed in the report |
-| CSS (`<style>`, `style=""`, classes) | Same; and the styles are not converted yet | Removed; colors, fonts and spacing need the style guide afterwards |
+| CSS code (`<style>`, `style=""`, classes) | Same: CSS is read, never copied | With `styles=basic` (the default) the basic colors, fonts, sizes, alignment, padding and widths are carried where Divi can show them and the text stays readable; `report.styles` lists what was carried and what was left out. Finish the look with the style guide |
 | Forms, iframes, embedded video/audio, SVG graphics | Divi needs its own module or a form plugin | Removed and listed; the assistant tells you what to add |
 | Navigation menus | The site owner sets menus in WordPress | Listed in the report |
 | Images | A third-party address never reaches the layout | Every image becomes a built-in placeholder; the report lists the original so it can be replaced with your own |

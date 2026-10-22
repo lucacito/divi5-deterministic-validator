@@ -132,10 +132,27 @@ final class HtmlToDiviTest extends HtmlTestCase
         $this->assertLessThan( strpos( $r['layout'], 'John Roe' ), strpos( $r['layout'], 'Jane Doe' ), 'order is kept' );
     }
 
-    /** @return array<string,array{0:string}> */
-    public static function goldens(): array
+    /** @return array<string,array{0:string}> the three phase-1 pages (no CSS: the same file in both modes) */
+    public static function phaseOneGoldens(): array
     {
         return [ '01-landing' => [ '01-landing' ], '03-pricing-cards' => [ '03-pricing-cards' ], '13-images' => [ '13-images' ] ];
+    }
+
+    /** @return array<string,array{0:string}> the six styled pages */
+    public static function styledFixtures(): array
+    {
+        $out = [];
+        foreach ( [ 'inline', 'classes', 'dark', 'backgrounds', 'fonts', 'hostile' ] as $n ) {
+            $out[ '14-styled-' . $n ] = [ '14-styled-' . $n ];
+        }
+
+        return $out;
+    }
+
+    /** @return array<string,array{0:string}> the phase-1 pages plus the six styled pages (default mode: styles=basic) */
+    public static function goldens(): array
+    {
+        return self::phaseOneGoldens() + self::styledFixtures();
     }
 
     /**
@@ -202,7 +219,7 @@ final class HtmlToDiviTest extends HtmlTestCase
     }
 
     /** These pages have no CSS: the default (basic) and none give the very same file. */
-    #[DataProvider('goldens')]
+    #[DataProvider('phaseOneGoldens')]
     public function testThePhaseOneGoldensAreTheSameInBothModes( string $name ): void
     {
         $html = (string) file_get_contents( self::FIXTURES . '/' . $name . '.html' );
@@ -335,11 +352,285 @@ final class HtmlToDiviTest extends HtmlTestCase
         $this->assertGreaterThan( 0, $r['report']['elements']['sections'] );
     }
 
-    public function testTheStyleNoteIsOnlyThereWhenStylesAreAskedFor(): void
+    public function testTheStylesReportIsOnlyThereWhenStylesAreAskedFor(): void
     {
-        $html = '<h1>Hi</h1><p>x</p>';
-        $this->assertNotEmpty( array_filter( $this->convert( $html )['report']['notes'], static fn( $n ) => str_contains( $n, 'not converted yet' ) ) );
-        $this->assertSame( [], array_filter( $this->convert( $html, [ 'styles' => 'none' ] )['report']['notes'], static fn( $n ) => str_contains( $n, 'not converted yet' ) ) );
+        $html  = '<h1>Hi</h1><p>x</p>';
+        $basic = $this->convert( $html )['report'];
+        $none  = $this->convert( $html, [ 'styles' => 'none' ] )['report'];
+        $this->assertSame( [ 'carried', 'ignored', 'dropped_unreadable', 'dropped_total', 'fonts', 'clamped', 'notes', 'external' ], array_keys( $basic['styles'] ), 'the internal pass count is not handed over' );
+        $this->assertArrayNotHasKey( 'styles', $none, 'styles=none is the phase-1 report exactly' );
+        foreach ( [ $basic, $none ] as $report ) {
+            $this->assertSame( [], array_filter( $report['notes'], static fn( $n ) => str_contains( $n, 'not converted yet' ) ) );
+        }
+        $this->assertSame( array_keys( $none ), array_values( array_diff( array_keys( $basic ), [ 'styles' ] ) ), 'the rest of the report is the same in both modes' );
+    }
+
+    /** report.styles.ignored is the sorted union of every layer's counters: HtmlCss and HtmlStyles plus HtmlStyleBlocks and HtmlReadability. */
+    public function testTheIgnoredCountersOfEveryLayerAreAddedUp(): void
+    {
+        $s = $this->convert( (string) file_get_contents( self::FIXTURES . '/14-styled-hostile.html' ) )['report']['styles'];
+        $keys = array_keys( $s['ignored'] );
+        $sorted = $keys;
+        sort( $sorted );
+        $this->assertSame( $sorted, $keys );
+        $this->assertArrayHasKey( 'media', $s['ignored'], 'a cascade counter (HtmlStyles)' );
+        $this->assertArrayHasKey( 'pseudo_state', $s['ignored'], 'a CSS reader counter (HtmlCss)' );
+        $this->assertArrayHasKey( 'unknown_background', $s['ignored'], 'a readability counter (HtmlReadability)' );
+        $this->assertSame( 2, $s['dropped_total'] );
+        $this->assertCount( 2, $s['dropped_unreadable'] );
+    }
+
+    /** The skipped <style> elements and the linked stylesheets are flagged only with styles=basic; the generic entry never doubles them. */
+    public function testStyleFlagsJoinTheReportOnlyForBasic(): void
+    {
+        $html  = '<!DOCTYPE html><html><head><link rel="stylesheet" href="/a.css"><style>@import url("/b.css"); p{color:#111111}</style></head><body><section><h1>Hi</h1>'
+            . '<style>p{color:#222222}</style><style media="print">h1{color:#ff0000}</style><p>x</p></section></body></html>';
+        $basic = $this->convert( $html )['report'];
+        $none  = $this->convert( $html, [ 'styles' => 'none' ] )['report'];
+
+        $this->assertSame( [ 'style', 'style' ], array_column( $none['flagged'], 'type' ), 'styles=none: the phase-1 entries, one per <style> in the body' );
+        $this->assertSame( [ 'style', 'link' ], array_column( $basic['flagged'], 'type' ), 'basic: the print <style> and the link, each once; the read <style> is in report.styles' );
+        $this->assertStringContainsString( 'media attribute', $basic['flagged'][0]['reason'] );
+        $this->assertStringContainsString( '1 linked stylesheet was not read', $basic['flagged'][1]['reason'] );
+        $this->assertSame( count( $basic['flagged'] ), $basic['flagged_count'] );
+        $this->assertSame( 2, $basic['styles']['external'], 'the link and the @import' );
+        $this->assertContains( '2 external stylesheet(s) not read: the converter never fetches CSS, so colours and fonts may differ.', $basic['styles']['notes'] );
+        $this->assertSame( 0, $this->convert( '<h1>Hi</h1>' )['report']['styles']['external'] );
+        $this->assertSame( [], $this->convert( '<h1>Hi</h1>' )['report']['styles']['notes'] );
+    }
+
+    /** Every string of report.styles is valid UTF-8 and at most 200 characters (a font name comes from the source CSS). */
+    public function testReportStringsAreCappedAndValidUtf8(): void
+    {
+        $cap = new \ReflectionMethod( HtmlToDivi::class, 'cap' );
+        $this->assertSame( 200, mb_strlen( (string) $cap->invoke( null, str_repeat( 'é', 300 ) ) ) );
+        $this->assertTrue( mb_check_encoding( (string) $cap->invoke( null, "Brand\xff\xfe Sans" ), 'UTF-8' ) );
+        $this->assertSame( 'Inter', $cap->invoke( null, 'Inter' ) );
+
+        foreach ( self::styledFixtures() as [ $name ] ) {
+            $styles = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $name . '.html' ) )['report']['styles'];
+            $this->assertNotFalse( json_encode( $styles ), $name );
+            array_walk_recursive( $styles, function ( mixed $v ) use ( $name ): void {
+                if ( is_string( $v ) ) {
+                    $this->assertLessThanOrEqual( 200, mb_strlen( $v ), $name );
+                    $this->assertTrue( mb_check_encoding( $v, 'UTF-8' ), $name );
+                }
+            } );
+            $this->assertLessThanOrEqual( 20, count( $styles['fonts'] ) );
+            $this->assertSame( count( $styles['fonts'] ), count( array_unique( array_column( $styles['fonts'], 'source' ) ) ), 'fonts are unique by source' );
+        }
+    }
+
+    /**
+     * Review M4: a cards chunk of more than four cards becomes several Divi rows. The writer takes padding per side, so the row's top
+     * padding goes on the first Divi row only and its bottom padding on the last only; left, right, background and max width repeat.
+     */
+    public function testACardsRowSplitIntoSeveralRowsPadsOnlyItsOuterEdges(): void
+    {
+        $card = static fn( int $i ): string => '<div class="card"><h3>Card ' . $i . '</h3><p>Text of card number ' . $i . ' here.</p></div>';
+        $html = '<!DOCTYPE html><html><body><section style="background:#ffffff"><div class="grid" style="padding:10px 20px 30px 40px; max-width:900px">'
+            . implode( '', array_map( $card, range( 1, 6 ) ) ) . '</div></section></body></html>';
+        $root = ( new \Divi5Validator\BlockParser() )->parse( $this->convert( $html )['layout'] )->root();
+        $this->assertNotNull( $root );
+        $rows = [];
+        $root->walk( static function ( \Divi5Validator\Block $b ) use ( &$rows ): void {
+            if ( 'divi/row' === $b->name() ) {
+                $rows[] = $b;
+            }
+        } );
+        $this->assertCount( 2, $rows, 'six cards: two rows of three' );
+        $pad = static fn( \Divi5Validator\Block $r ): array => (array) ( $r->attr( 'module.decoration.spacing.desktop.value.padding' ) ?? [] );
+        $this->assertSame( [ 'top' => '10px', 'right' => '20px', 'left' => '40px' ], $pad( $rows[0] ) );
+        $this->assertSame( [ 'right' => '20px', 'bottom' => '30px', 'left' => '40px' ], $pad( $rows[1] ) );
+        foreach ( $rows as $r ) {
+            $this->assertSame( '900px', $r->attr( 'module.decoration.sizing.desktop.value.maxWidth' ) );
+        }
+    }
+
+    /** The colour paths of the writer, per module (DiviMarkup). */
+    private const INK = [ 'divi/heading' => 'title.decoration.font.font.desktop.value.color', 'divi/text' => 'content.decoration.bodyFont.body.font.desktop.value.color' ];
+    private const PAINT = 'module.decoration.background.desktop.value.color';
+
+    /**
+     * A minimal output-only oracle for rules (1) and (2) of the plan's StyledLayoutOracle (Task 10 replaces it with the class):
+     * (1) ink only on paint: every heading or text colour has a painted section, row or column around it;
+     * (2) paint implies ink: every heading or text under a painted block has a colour.
+     *
+     * @return list<string>
+     */
+    private static function inkPaintProblems( string $layout ): array
+    {
+        $root = ( new \Divi5Validator\BlockParser() )->parse( $layout )->root();
+        if ( null === $root ) {
+            return [ 'the layout does not parse' ];
+        }
+        $out  = [];
+        $seen = 0;
+        $walk = static function ( \Divi5Validator\Block $b, bool $painted ) use ( &$walk, &$out, &$seen ): void {
+            $name = $b->name();
+            if ( in_array( $name, [ 'divi/section', 'divi/row', 'divi/column' ], true ) && null !== $b->attr( self::PAINT ) ) {
+                $painted = true;
+            }
+            if ( isset( self::INK[ $name ] ) ) {
+                $ink = $b->attr( self::INK[ $name ] );
+                ++$seen;
+                if ( null !== $ink && ! $painted ) {
+                    $out[] = "$name #$seen: ink $ink without paint";
+                }
+                if ( null === $ink && $painted ) {
+                    $out[] = "$name #$seen: on paint without ink";
+                }
+            }
+            foreach ( $b->children() as $c ) {
+                $walk( $c, $painted );
+            }
+        };
+        $walk( $root, false );
+
+        return $out;
+    }
+
+    #[DataProvider('styledFixtures')]
+    public function testEveryStyledFixtureMeetsTheOracle( string $name ): void
+    {
+        $r = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $name . '.html' ) );
+        $this->assertTrue( $r['ok'] );
+        $this->assertSame( [], self::inkPaintProblems( $r['layout'] ), $name );
+    }
+
+    public function testTheInlineOracleCatchesBothFaults(): void
+    {
+        $text = \AiEditorDivi5\WP\DiviMarkup::text( '<p>x</p>', [ 'color' => '#111111' ] );
+        $bare = \AiEditorDivi5\WP\DiviMarkup::text( '<p>x</p>' );
+        $page = static fn( string $mod, array $sectionStyle ): string => \AiEditorDivi5\WP\DiviMarkup::page( [ \AiEditorDivi5\WP\DiviMarkup::section( '', \AiEditorDivi5\WP\DiviMarkup::row( [ $mod ] ), $sectionStyle ) ] );
+        $this->assertSame( [ 'divi/text #1: ink #111111 without paint' ], self::inkPaintProblems( $page( $text, [] ) ) );
+        $this->assertSame( [ 'divi/text #1: on paint without ink' ], self::inkPaintProblems( $page( $bare, [ 'background' => '#ffffff' ] ) ) );
+        $this->assertSame( [], self::inkPaintProblems( $page( $text, [ 'background' => '#ffffff' ] ) ) );
+    }
+
+    /** @return array<string,mixed> sections, rows, columns and modules (lists of \Divi5Validator\Block, document order), report, layout */
+    private function blocks( string $name ): array
+    {
+        $r = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $name . '.html' ) );
+        $this->assertTrue( $r['ok'] );
+        $root = ( new \Divi5Validator\BlockParser() )->parse( $r['layout'] )->root();
+        $this->assertNotNull( $root );
+        $out = [ 'sections' => [], 'rows' => [], 'columns' => [], 'modules' => [], 'report' => $r['report'], 'layout' => $r['layout'] ];
+        $root->walk( static function ( \Divi5Validator\Block $b ) use ( &$out ): void {
+            $k = match ( $b->name() ) {
+                'divi/section' => 'sections',
+                'divi/row'     => 'rows',
+                'divi/column'  => 'columns',
+                'divi/placeholder' => null,
+                default        => 'modules',
+            };
+            if ( null !== $k ) {
+                $out[ $k ][] = $b;
+            }
+        } );
+
+        return $out;
+    }
+
+    /** The first module whose attributes contain $text. */
+    private function module( array $blocks, string $text ): \Divi5Validator\Block
+    {
+        foreach ( $blocks['modules'] as $m ) {
+            if ( str_contains( (string) json_encode( $m->attrs(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ), $text ) ) {
+                return $m;
+            }
+        }
+        $this->fail( 'no module holds ' . $text );
+    }
+
+    private const H = 'title.decoration.font.font.';
+    private const T = 'content.decoration.bodyFont.body.font.';
+    private const B = 'button.decoration.';
+
+    /**
+     * What each styled page must carry, read from its HTML (every fact was checked against the fixture's own CSS before it was pinned).
+     */
+    public function testTheStyledFixturesCarryWhatTheyShould(): void
+    {
+        // inline: a dark hero with a white 56px / 800 centred h1, a button pair, and a 720px row with 40px padding.
+        $b  = $this->blocks( '14-styled-inline' );
+        $h1 = $this->module( $b, 'Small-batch coffee' );
+        $this->assertSame( '#0f172a', $b['sections'][0]->attr( self::PAINT ) );
+        $this->assertSame( [ '#ffffff', '56px', '800', 'center' ], [ $h1->attr( self::H . 'desktop.value.color' ), $h1->attr( self::H . 'desktop.value.size' ), $h1->attr( self::H . 'desktop.value.weight' ), $h1->attr( self::H . 'desktop.value.textAlign' ) ] );
+        $lead = $this->module( $b, 'Order by Sunday' );
+        $this->assertSame( [ '#cbd5e1', '20px', 'center' ], [ $lead->attr( self::T . 'desktop.value.color' ), $lead->attr( self::T . 'desktop.value.size' ), $lead->attr( 'module.advanced.text.text.desktop.value.orientation' ) ] );
+        $btn = $this->module( $b, '/shop' );
+        $this->assertSame( [ '#f59e0b', '#111827', '999px' ], [ $btn->attr( self::B . 'background.desktop.value.color' ), $btn->attr( self::B . 'font.font.desktop.value.color' ), $btn->attr( self::B . 'border.desktop.value.radius.topLeft' ) ] );
+        $this->assertSame( '720px', $b['rows'][1]->attr( 'module.decoration.sizing.desktop.value.maxWidth' ) );
+        $this->assertSame( [ 'top' => '40px', 'right' => '40px', 'bottom' => '40px', 'left' => '40px' ], $b['rows'][1]->attr( 'module.decoration.spacing.desktop.value.padding' ) );
+        // The deliberate mixed run (one unstyled and one styled <p> in one text module) drops the second section's canvas, so its h2 colour goes too.
+        $this->assertNull( $b['sections'][1]->attr( self::PAINT ) );
+        $this->assertNull( $this->module( $b, 'How we roast' )->attr( self::H . 'desktop.value.color' ) );
+        $this->assertSame( 'paint_dropped', $b['report']['styles']['dropped_unreadable'][0]['reason'] );
+
+        // classes: #intro beats .lead, the inline colour beats .accent, h2 2em of 18px = 36/27/20, three white cards on #f3f4f6, Inter.
+        $b = $this->blocks( '14-styled-classes' );
+        $this->assertSame( '#ffffff', $b['sections'][0]->attr( self::PAINT ), 'the canvas under declared colours' );
+        $this->assertSame( '#0f766e', $this->module( $b, 'Drop it off' )->attr( self::T . 'desktop.value.color' ) );
+        $this->assertSame( '#6b7280', $this->module( $b, 'nine thousand' )->attr( self::T . 'desktop.value.color' ) );
+        $this->assertSame( '#7c3aed', $this->module( $b, 'Free safety check' )->attr( self::T . 'desktop.value.color' ) );
+        $this->assertSame( '#1f2937', $this->module( $b, 'Walk-ins' )->attr( self::T . 'desktop.value.color' ), 'the later of two equal p rules' );
+        $h2 = $this->module( $b, 'What we fix' );
+        $this->assertSame( [ '36px', '27px', '20px' ], [ $h2->attr( self::H . 'desktop.value.size' ), $h2->attr( self::H . 'tablet.value.size' ), $h2->attr( self::H . 'phone.value.size' ) ] );
+        $this->assertNull( $this->module( $b, 'Our record' )->attr( self::H . 'desktop.value.size' ), 'an h3 takes its size only from its own rules' );
+        $this->assertSame( '#f3f4f6', $b['sections'][1]->attr( self::PAINT ) );
+        $cards = array_slice( $b['columns'], -3 );
+        foreach ( $cards as $c ) {
+            $this->assertSame( '#ffffff', $c->attr( self::PAINT ) );
+            $this->assertSame( '24px', $c->attr( 'module.decoration.spacing.desktop.value.padding.top' ) );
+        }
+        $this->assertSame( 'Inter', $this->module( $b, 'Tune-ups' )->attr( self::H . 'desktop.value.family' ) );
+        $this->assertSame( [ [ 'source' => 'Inter', 'action' => 'carried' ] ], $b['report']['styles']['fonts'] );
+
+        // dark: the page background reaches three sections; the fine print (2.48:1 on #0b1120) leaves its section unpainted and is listed.
+        $b = $this->blocks( '14-styled-dark' );
+        $this->assertSame( [ '#0b1120', '#1e293b', '#0b1120', null ], array_map( static fn( $s ) => $s->attr( self::PAINT ), $b['sections'] ) );
+        $this->assertNull( $this->module( $b, 'Prices exclude VAT' )->attr( self::T . 'desktop.value.color' ) );
+        $this->assertSame( [ 'reason' => 'unreadable', 'color' => '#475569', 'background' => '#0b1120', 'ratio' => '2.48' ], array_intersect_key( $b['report']['styles']['dropped_unreadable'][0], array_flip( [ 'reason', 'color', 'background', 'ratio' ] ) ) );
+        $this->assertSame( [ '#a78bfa', '#0b1120' ], [ $this->module( $b, '/rates' )->attr( self::B . 'background.desktop.value.color' ), $this->module( $b, '/rates' )->attr( self::B . 'font.font.desktop.value.color' ) ] );
+
+        // backgrounds: only the solid #123456 section is painted; the gradient, the image and the rgba() sections are not, nor is the
+        // light section whose last paragraph has its own black background (a background between the text and its section).
+        $b = $this->blocks( '14-styled-backgrounds' );
+        $this->assertSame( [ null, null, '#123456', null, null ], array_map( static fn( $s ) => $s->attr( self::PAINT ), $b['sections'] ) );
+        $this->assertSame( '#e0f2fe', $this->module( $b, 'Lightweight shelters' )->attr( self::H . 'desktop.value.color' ) );
+        $this->assertNull( $this->module( $b, 'Gear that goes higher' )->attr( self::H . 'desktop.value.color' ) );
+        $this->assertSame( '120px', $b['sections'][1]->attr( 'module.decoration.spacing.desktop.value.padding.top' ), 'padding is layout: it is carried even where the paint is not' );
+        $this->assertStringNotContainsString( '#000000', $b['layout'] );
+
+        // fonts: Playfair Display on the headings that ask for it, Inter (after Brand Sans) on the text, Georgia, nothing on the pre.
+        $b = $this->blocks( '14-styled-fonts' );
+        $this->assertSame( 'Playfair Display', $this->module( $b, 'Letters worth keeping' )->attr( self::H . 'desktop.value.family' ) );
+        $this->assertSame( 'Playfair Display', $this->module( $b, 'Our paper' )->attr( self::H . 'desktop.value.family' ) );
+        $this->assertSame( 'Inter', $this->module( $b, 'fountain pens' )->attr( self::T . 'desktop.value.family' ) );
+        $this->assertSame( 'Georgia', $this->module( $b, 'cotton rag' )->attr( self::T . 'desktop.value.family' ) );
+        $this->assertNull( $this->module( $b, 'Ships worldwide' )->attr( self::T . 'desktop.value.family' ), 'system-ui is a generic family' );
+        $this->assertNull( $this->module( $b, 'iron gall' )->attr( self::T . 'desktop.value.family' ), 'a pre takes its family only from its own rules' );
+        $this->assertSame( [ 'Playfair Display', 'Brand Sans', 'Inter', 'Georgia' ], array_column( $b['report']['styles']['fonts'], 'source' ) );
+        $this->assertSame( 1, $b['report']['styles']['external'], 'the @import is counted; the CSS in the page is still carried' );
+
+        // hostile: the h1's size (@media) and colour (.hero h1) are unresolved, 900px is clamped to 200px, the inline button pair wins,
+        // the opacity section is not painted, and RebeccaPurple (a p's own background) is never written.
+        $b  = $this->blocks( '14-styled-hostile' );
+        $h1 = $this->module( $b, 'Styles that fight back' );
+        $this->assertNull( $h1->attr( self::H . 'desktop.value.size' ) );
+        $this->assertNull( $h1->attr( self::H . 'desktop.value.color' ) );
+        $this->assertSame( '200px', $this->module( $b, 'Enormous heading' )->attr( self::H . 'desktop.value.size' ) );
+        $this->assertSame( 1, $b['report']['styles']['clamped'] );
+        $go = $this->module( $b, '/go' );
+        $this->assertSame( [ '#000000', '#ffffff', null ], [ $go->attr( self::B . 'background.desktop.value.color' ), $go->attr( self::B . 'font.font.desktop.value.color' ), $go->attr( self::B . 'border.desktop.value.radius.topLeft' ) ] );
+        $this->assertNull( $b['sections'][0]->attr( self::PAINT ) );
+        $this->assertStringNotContainsString( '#663399', strtolower( $b['layout'] ) );
+        $this->assertStringNotContainsString( 'rebeccapurple', strtolower( $b['layout'] ) );
+        $this->assertSame( [ 'reason' => 'unknown_background', 'color' => '#aabbcc' ], array_intersect_key( $b['report']['styles']['dropped_unreadable'][0], array_flip( [ 'reason', 'color' ] ) ) );
+        foreach ( [ 'var(', 'calc(', 'clamp(', '#ff0000', '#ff00ff', '#00aa00', '#00ff00' ] as $never ) {
+            $this->assertStringNotContainsString( $never, strtolower( $b['layout'] ) );
+        }
     }
 
     public function testImagesAreReportedWithWhatHappenedToThem(): void
