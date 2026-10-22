@@ -250,6 +250,12 @@ final class HtmlSourceTest extends HtmlTestCase
         $this->assertSame( [ '/html/body/p' => 'color:green' ], $s['inline'] );
     }
 
+    /** The seam and the CSS reader must agree on the cap, or the reader would never see that the text was cut. */
+    public function testTheSeamAndTheCssReaderShareTheSameByteCap(): void
+    {
+        $this->assertSame( \AiEditorDivi5\WP\HtmlCss::MAX_CSS_BYTES, HtmlSource::MAX_CSS_BYTES );
+    }
+
     public function testTheStyleTextIsHandedOverOneByteOverTheCapSoTheReaderSeesItWasCut(): void
     {
         $s = $this->parse( '<style>' . str_repeat( 'é', 60000 ) . '</style><p>x</p>' );
