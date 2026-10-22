@@ -51,7 +51,7 @@ Blurb, testimonial and counter adapters; a `rule-accent` role; heading and text 
 
 Built on `feat/dogfood-and-html-styles`; spec and Outcome `docs/superpowers/specs/2026-10-22-html-to-divi-styles-design.md`; owner-facing description `docs/html-to-divi-workflow.md`.
 The two changelog lines above (New: styles, Fixed: parser) are the user-facing wording. Telling the owner plainly: the fixes cover bugs that were already published in 4.10.0 to 4.13.0
-(HTML5 elements after head content, content after `</html>`, loose text at the start of a fragment, and, if it is in the branch when you apply this, loose text after `</body>`; see the
+(HTML5 elements after head content, content after `</html>`, loose text at the start of a fragment, and loose text after `</body>`; see the
 Outcome of the spec for the state of the last one). The word check used to say "equal" in these cases because the lost content was never counted.
 
 ### Lines of `wp-plugin/readme.txt` that still say colors and fonts are not converted (change them in the release commit)

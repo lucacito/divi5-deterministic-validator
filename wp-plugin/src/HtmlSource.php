@@ -736,7 +736,8 @@ final class HtmlSource
      * children of an extra <html>'s <body>, its other non-head elements and text, and loose elements, text and comments after the first
      * <html>. Head elements of an extra <html> stay where they are (the first <title> stays the title); doctype and processing
      * instructions stay. Nothing is dropped, so the text check counts the moved text; no repair note, because the result is the
-     * browser's tree.
+     * browser's tree. Since the stray </body> and </html> end tags are removed before parsing (strayEndTags), this handles only the inputs
+     * that function leaves alone (a markup shape it does not model, or content that is only white space and comments).
      */
     private static function relocateContentAfterHtml( \DOMDocument $doc ): void
     {
