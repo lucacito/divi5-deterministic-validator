@@ -298,6 +298,50 @@ class DogfoodScorerMutationTest extends TestCase
         $this->assertSame( array_column( $before, 'check' ), array_column( $scorer->details( $mutated ), 'check' ), 'the same checks run' );
     }
 
+    /** @return array<string,array{0:string,1:string,2:string,3:bool}> kit, language, block with the border removed, whether the 0px-kit expectation is violated */
+    public static function bordersRemoved(): array
+    {
+        return [
+            'quiet-solid: a hero button'     => [ 'quiet-solid', 'editorial', 'divi/button#0', true ],
+            'quiet-solid: the form submit'   => [ 'quiet-solid', 'editorial', 'divi/contact-form#0', true ],
+            'outline-2: the first control'   => [ 'outline-2', 'editorial', 'control', false ],
+            'outline-2: the form submit'     => [ 'outline-2', 'editorial', 'divi/contact-form#0', false ],
+        ];
+    }
+
+    /**
+     * Divi draws `.et_pb_button{border:2px solid}` (the contact form's submit is one), so a button or submit with NO border
+     * written is a 2px solid one. Under a 0px kit (the adapter writes `width: 0px`) that is a defect; under a 2px kit it is right.
+     */
+    #[DataProvider( 'bordersRemoved' )]
+    public function testAButtonWithoutABorderIsDivisDefault( string $kit, string $language, string $block, bool $fails ): void
+    {
+        $page   = Prepare::editBase( $kit, $language );
+        $scorer = new Scorer( $kit, $language );
+        if ( 'control' === $block ) { // the first button the scorer judges as the kit's primary control
+            foreach ( $scorer->details( $page ) as $row ) {
+                if ( 'button.edge' === $row['check'] && 'control' === $row['role'] ) {
+                    $block = $row['block'];
+                    break;
+                }
+            }
+            $this->assertStringStartsWith( 'divi/button#', $block );
+        }
+        $this->assertSame( [], $scorer->score( $page )['failures'], 'the base page is conformant' );
+        $path    = 'button.decoration.border.desktop.value.styles';
+        $mutated = Mutate::remove( $page, $block, $path );
+        $report  = $scorer->score( $mutated );
+        if ( $fails ) {
+            $check = 'divi/contact-form#0' === $block ? 'form.button-edge' : 'button.edge';
+            $this->assertSame( [ $check ], array_column( $report['failures'], 'check' ) );
+            $this->assertSame( $block, $report['failures'][0]['block'] );
+            $this->assertSame( '0px', $report['failures'][0]['expected'] );
+            $this->assertSame( '2px', $report['failures'][0]['observed'] );
+        } else {
+            $this->assertSame( [], $report['failures'], 'a 2px kit: no border written is the same border' );
+        }
+    }
+
     public function testTheMutationRowsCoverEveryMutationOnGlassEdge(): void
     {
         $rows = self::mutationRows();

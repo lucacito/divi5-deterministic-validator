@@ -461,6 +461,101 @@ class DogfoodScorerTest extends TestCase
         $this->assertArrayNotHasKey( 'surface_glass', self::language( 'editorial' )['colors'] );
     }
 
+    public function testAButtonGradientIsFilledWithAColourThatCannotBeJudged(): void
+    {
+        $grad = [ 'enabled' => 'on', 'stops' => [ [ 'position' => 0, 'color' => '#ff00ff' ], [ 'position' => 100, 'color' => '#00ff00' ] ] ];
+        $F    = 'button.decoration.background.desktop.value';
+        // a kit that fills its button: filled passes, the colour fails
+        $btn  = self::without( self::expected()->attrs( 'divi/button', 'control', 'light' ), $F . '.color' );
+        $btn  = self::with( $btn, $F . '.gradient', $grad );
+        $rep  = self::report( self::page( self::leaf( 'divi/button', $btn ) ) );
+        $this->assertSame( [ 'button.fill-colour' ], array_column( $rep['failures'], 'check' ) );
+        $this->assertSame( 'gradient', $rep['failures'][0]['observed'] );
+        // a kit whose button is transparent: the gradient is a fill the kit does not draw
+        $o2  = self::with( self::expected( 'outline-2', 'editorial' )->attrs( 'divi/button', 'control', 'light' ), $F . '.gradient', $grad );
+        $rep = self::report( self::page( self::leaf( 'divi/button', $o2 ), null, 'editorial' ), 'outline-2', 'editorial' );
+        $this->assertSame( [ 'button.fill' ], array_column( $rep['failures'], 'check' ) );
+        // the form's submit
+        $form = self::with( self::without( self::expected()->attrs( 'divi/contact-form', 'form', 'light' ), $F . '.color' ), $F . '.gradient', $grad );
+        $rep  = self::report( self::page( self::leaf( 'divi/contact-form', $form ) ) );
+        $this->assertSame( [ 'form.button-fill-colour' ], array_column( $rep['failures'], 'check' ) );
+        // a disabled gradient is not one
+        $off = self::with( self::expected()->attrs( 'divi/button', 'control', 'light' ), $F . '.gradient', [ 'enabled' => 'off' ] );
+        $this->assertSame( [], self::report( self::page( self::leaf( 'divi/button', $off ) ) )['failures'] );
+    }
+
+    public function testATagFrameColourIsJudgedOnTheVisibleSides(): void
+    {
+        $e   = self::expected();
+        $M   = 'module.decoration.border.desktop.value.styles';
+        $tag = $e->attrs( 'divi/group', 'chip', 'light' );
+        $all = self::arr( self::at( $tag, $M . '.all' ) );
+        $txt = self::leaf( 'divi/text', [ 'content' => [ 'innerContent' => [ 'desktop' => [ 'value' => '<p>New</p>' ] ] ] ] );
+        $fails = static function ( array $attrs ) use ( $txt ): array {
+            return array_column( self::report( self::page( self::block( 'divi/group', $attrs, $txt ) ) )['failures'], 'check' );
+        };
+        // all four sides overridden with a wrong colour while `all` keeps the right one: the sides are what is drawn
+        $wrong = $tag;
+        foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
+            $wrong = self::with( $wrong, $M . '.' . $side . '.color', '#ff00ff' );
+        }
+        $this->assertSame( [ 'chip.frame-colour' ], $fails( $wrong ) );
+        // the right colours written per side with no `all` at all pass every check
+        $perSide = self::with( $tag, $M, [ 'top' => $all, 'right' => $all, 'bottom' => $all, 'left' => $all ] );
+        $this->assertSame( [], $fails( $perSide ) );
+    }
+
+    public function testAButtonWithNoBorderWrittenReadsDivisDefault(): void
+    {
+        // Divi draws `.et_pb_button{border:2px solid}`: no width written is 2px, no style is solid
+        $B = 'button.decoration.border.desktop.value.styles';
+        foreach ( [ [ 'quiet-solid', 'editorial', true ], [ 'outline-2', 'editorial', false ] ] as [ $kit, $lang, $fails ] ) {
+            $e   = self::expected( $kit, $lang );
+            $btn = self::without( $e->attrs( 'divi/button', 'control', 'light' ), $B );
+            $sub = self::without( $e->attrs( 'divi/contact-form', 'form', 'light' ), $B );
+            $r1  = self::report( self::page( self::leaf( 'divi/button', $btn ), null, $lang ), $kit, $lang );
+            $r2  = self::report( self::page( self::leaf( 'divi/contact-form', $sub ), null, $lang ), $kit, $lang );
+            $this->assertSame( $fails ? [ 'button.edge' ] : [], array_column( $r1['failures'], 'check' ), "$kit: a button with no border written" );
+            $this->assertSame( $fails ? [ 'form.button-edge' ] : [], array_column( $r2['failures'], 'check' ), "$kit: a submit with no border written" );
+            if ( $fails ) {
+                $this->assertSame( '0px', $r1['failures'][0]['expected'] );
+                $this->assertSame( '2px', $r1['failures'][0]['observed'] );
+            }
+        }
+    }
+
+    public function testAnUnplaceableBandIsReportedAsItIsWithANote(): void
+    {
+        $e    = self::expected();
+        $tag  = $e->attrs( 'divi/group', 'chip', 'light' );
+        $text = self::leaf( 'divi/text', [ 'content' => [ 'innerContent' => [ 'desktop' => [ 'value' => '<p>New</p>' ] ] ] ] );
+        $lang = self::language( self::LANG );
+        $in   = static function ( string $colour, array $attrs ) use ( $text ): string {
+            return self::block( 'divi/section', self::bg( $colour ), self::block( 'divi/group', self::bg( $colour ), self::block( 'divi/group', $attrs, $text ) ) );
+        };
+        $scorer = new Scorer( self::KIT, self::LANG );
+        $wrong  = self::with( $tag, 'module.decoration.border.desktop.value.styles.all.color', '#123456' );
+        // a tag on an inverted panel: a known band the chip role does not take
+        $page = '<!-- wp:divi/placeholder -->' . $in( (string) $lang['colors']['text'], $wrong ) . '<!-- /wp:divi/placeholder -->';
+        $rows = $scorer->details( $page );
+        $this->assertSame( 'panel', $rows[0]['band'], 'the real band, not "unknown"' );
+        $this->assertStringContainsString( 'does not take the panel band', $rows[0]['note'] );
+        $f = $scorer->score( $page )['failures'];
+        $this->assertSame( [ 'chip.frame-colour' ], array_column( $f, 'check' ) );
+        $this->assertSame( 'panel', $f[0]['band'] );
+        $this->assertStringContainsString( 'union', $f[0]['note'] );
+        $this->assertStringContainsString( '[chip does not take the panel band', Scorer::text( $scorer->score( $page ) ) );
+        // an unknown band keeps its name and says why it was judged leniently
+        $rows = $scorer->details( '<!-- wp:divi/placeholder -->' . $in( '#123456', $tag ) . '<!-- /wp:divi/placeholder -->' );
+        $this->assertSame( 'unknown', $rows[0]['band'] );
+        $this->assertStringContainsString( 'the band is unknown', $rows[0]['note'] );
+        // a taken band, and a button on a surface band (the adapter's substitution), carry no note
+        foreach ( $scorer->details( self::page( $text . self::leaf( 'divi/button', $e->attrs( 'divi/button', 'control', 'light' ) ), (string) $lang['colors']['surface'] ) ) as $row ) {
+            $this->assertArrayNotHasKey( 'note', $row );
+            $this->assertSame( 'surface', $row['band'] );
+        }
+    }
+
     // ---------------------------------------------------------------------------------------------------------
     // Classification
     // ---------------------------------------------------------------------------------------------------------

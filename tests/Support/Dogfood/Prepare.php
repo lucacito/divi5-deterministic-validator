@@ -115,7 +115,9 @@ final class Prepare
      * its old `files` map (the guide files, and page.html only if the earlier run was an edit prepare) may be overwritten. Any
      * other existing target with DIFFERENT content (the assistant's page.html or page-edited.html of a freehand dir, a same-name
      * foreign file, or anything in a directory without a valid prepare.json) is refused before anything is written
-     * (\RuntimeException, nothing written). Identical content is simply rewritten. A directory in the way of a target is refused too.
+     * (\RuntimeException, nothing written). A directory prepared for a DIFFERENT kit or language is refused as well (a refresh
+     * would leave a page of one design under the guide of another); the task (freehand or edit) may differ. Identical content is
+     * simply rewritten. A directory in the way of a target is refused too.
      *
      * @param array<string,string> $files
      * @return list<string> the written paths
@@ -124,6 +126,18 @@ final class Prepare
     {
         $outDir = rtrim( $outDir, '/' );
         $ours   = self::oursIn( $outDir );
+        $has    = self::preparedFor( $outDir );
+        $new    = isset( $files['prepare.json'] ) ? json_decode( $files['prepare.json'], true ) : null;
+        if ( null !== $has && is_array( $new ) && ( $has['kit'] !== ( $new['kit'] ?? null ) || $has['language'] !== ( $new['language'] ?? null ) ) ) {
+            throw new \RuntimeException( sprintf(
+                '%s was prepared for kit "%s" and language "%s"; this run is for kit "%s" and language "%s". Nothing was written: the guide files would no longer match the page there. Use another --out directory (or remove this one).',
+                $outDir,
+                $has['kit'],
+                $has['language'],
+                (string) ( $new['kit'] ?? '' ),
+                (string) ( $new['language'] ?? '' )
+            ) );
+        }
         foreach ( $files as $name => $content ) {
             $path = $outDir . '/' . $name;
             if ( is_dir( $path ) ) {
@@ -146,6 +160,22 @@ final class Prepare
         }
 
         return $paths;
+    }
+
+    /**
+     * The kit and language an earlier run prepared $outDir for, or null when there is no valid prepare.json there.
+     *
+     * @return ?array{kit:string,language:string}
+     */
+    private static function preparedFor( string $outDir ): ?array
+    {
+        $path = $outDir . '/prepare.json';
+        $json = is_file( $path ) ? json_decode( (string) file_get_contents( $path ), true ) : null;
+        if ( ! is_array( $json ) || ! is_string( $json['kit'] ?? null ) || ! is_string( $json['language'] ?? null ) || ! is_string( $json['task'] ?? null ) || ! is_array( $json['files'] ?? null ) ) {
+            return null;
+        }
+
+        return [ 'kit' => $json['kit'], 'language' => $json['language'] ];
     }
 
     /**

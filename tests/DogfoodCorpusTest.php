@@ -44,11 +44,26 @@ class DogfoodCorpusTest extends TestCase
             array_column( self::corpus(), 'name' )
         );
         foreach ( self::corpus() as $e ) {
-            $this->assertSame( [ 'name', 'kit', 'language', 'task', 'page', 'provenance', 'scores', 'unclassified' ], array_keys( $e ) );
+            $keys = [ 'name', 'kit', 'language', 'task', 'page', 'sha256', 'provenance', 'scores', 'unclassified' ];
+            if ( 'freehand' !== $e['task'] ) {
+                $keys[] = 'note'; // the two unclassified blocks of the edit pair are explained
+                $this->assertStringContainsString( 'divi/column#0', $e['note'] );
+                $this->assertStringContainsString( 'divi/group#10', $e['note'] );
+            }
+            $this->assertSame( $keys, array_keys( $e ) );
             $this->assertContains( $e['task'], [ 'freehand', 'edit-base', 'edit' ] );
             $this->assertStringContainsString( '2026-10-21', $e['provenance'] );
             $this->assertSame( [ ...Scorer::CATEGORIES, 'overall' ], array_keys( $e['scores'] ), $e['name'] );
         }
+    }
+
+    public function testTheCorpusPagesArePinnedByteForByte(): void
+    {
+        foreach ( self::corpus() as $e ) {
+            $this->assertMatchesRegularExpression( '/^[0-9a-f]{64}$/', $e['sha256'], $e['name'] );
+            $this->assertSame( $e['sha256'], hash( 'sha256', self::page( $e ) ), $e['name'] . ': the page was changed (a corpus page is never tidied)' );
+        }
+        $this->assertCount( 8, array_unique( array_column( self::corpus(), 'sha256' ) ), 'eight different pages' );
     }
 
     public function testTheCorpusScoresArePinned(): void

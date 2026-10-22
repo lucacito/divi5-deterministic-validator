@@ -116,4 +116,17 @@ function summarize(results) {
   return { ok, lines };
 }
 
-module.exports = { TITLE_PREFIX, USAGE, WIDTHS, MAX_ERROR, shorten, parseArgs, outName, runTitle, summarize };
+/**
+ * The content of render.json: page, title, valid, widths, cleanupOk, plus `verdict` (the validator's codes or the save error,
+ * cut to MAX_ERROR) when the layout was not valid and `error` (the script's own failure, cut the same way) when it failed.
+ * Both keys are absent on a clean run, so the file says nothing it does not know.
+ */
+function renderJson(results) {
+  const r = results || {};
+  const out = { page: r.page, title: r.title, valid: r.valid === true, widths: r.widths || {}, cleanupOk: r.cleanupOk === true };
+  if (!out.valid && r.verdict) out.verdict = shorten(r.verdict);
+  if (r.error) out.error = shorten(r.error);
+  return out;
+}
+
+module.exports = { TITLE_PREFIX, USAGE, WIDTHS, MAX_ERROR, shorten, parseArgs, outName, runTitle, summarize, renderJson };

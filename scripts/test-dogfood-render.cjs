@@ -162,4 +162,18 @@ t('idsWithPrefix: run prefix, bare prefix, a non-numeric id', () => {
   assert.strictEqual(calls.filter((c) => c[1] === 'delete').length, 1, 'foreignCount deleted nothing');
 });
 
+t('render.json carries the verdict and the error only when there is one', () => {
+  const base = { page: 'p.html', title: 'aied dogfood x p', valid: true, verdict: 'valid', widths: { 1280: { overflow: 0, errors: [], phpError: null } }, cleanupOk: true };
+  assert.deepStrictEqual(Object.keys(D.renderJson(base)), ['page', 'title', 'valid', 'widths', 'cleanupOk']);
+  const invalid = D.renderJson({ ...base, valid: false, verdict: 'INVALID MISSING_X,BAD_Y', widths: {} });
+  assert.strictEqual(invalid.valid, false);
+  assert.strictEqual(invalid.verdict, 'INVALID MISSING_X,BAD_Y');
+  assert.ok(!('error' in invalid));
+  const failed = D.renderJson({ ...base, valid: false, verdict: '', error: new Error('x'.repeat(D.MAX_ERROR + 50)), cleanupOk: false });
+  assert.ok(typeof failed.error === 'string' && failed.error.length <= D.MAX_ERROR + 3, 'the error is cut');
+  assert.ok(!('verdict' in failed), 'no verdict to report');
+  assert.strictEqual(failed.cleanupOk, false);
+  assert.deepStrictEqual(D.renderJson(undefined).widths, {});
+});
+
 console.log(`${n} pure dogfood-render tests passed`);

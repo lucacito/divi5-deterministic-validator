@@ -138,7 +138,7 @@ function clearOldShots(dir) {
   const summary = D.summarize(results);
   try {
     fs.mkdirSync(OUT_DIR, { recursive: true });
-    fs.writeFileSync(path.join(OUT_DIR, 'render.json'), JSON.stringify({ page: results.page, title: results.title, valid: results.valid, widths: results.widths, cleanupOk: results.cleanupOk }, null, 2) + '\n');
+    fs.writeFileSync(path.join(OUT_DIR, 'render.json'), JSON.stringify(D.renderJson(results), null, 2) + '\n');
   } catch (e) {
     console.log('WARNING could not write render.json: ' + (e && e.message ? e.message : e));
   }

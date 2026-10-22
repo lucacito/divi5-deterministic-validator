@@ -5,7 +5,8 @@
         "language": "tech-mono",
         "task": "freehand",
         "page": "hairline-dashed/page.html",
-        "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the 4.14.0 style guide before round 1 of the polish, so before the round 3 wording.",
+        "sha256": "cacc434af642bfc0d84caf63ed09f21c80b37c3867a672f188380b16c6231cd3",
+        "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the guide as it was before round 1 of the guide rounds before the planned 4.14.0 release, so before the round 3 wording.",
         "scores": {
             "button": [
                 22,
@@ -48,7 +49,8 @@
         "language": "bold-vibrant",
         "task": "freehand",
         "page": "heavy-block/page.html",
-        "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the 4.14.0 style guide before round 1 of the polish, so before the round 3 wording.",
+        "sha256": "a06b77f2fc3d219ad96254fc67c82e93f792ff153afbedf8fa075d442cca5741",
+        "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the guide as it was before round 1 of the guide rounds before the planned 4.14.0 release, so before the round 3 wording.",
         "scores": {
             "button": [
                 22,
@@ -91,6 +93,7 @@
         "language": "playful-pastel",
         "task": "freehand",
         "page": "dotted-pill/page.html",
+        "sha256": "ad8171738c9378adbca11d718c53ad07bdecfbda56a86e99294c26d695ca1c45",
         "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the guide after round 1 of the polish, so before the round 3 wording.",
         "scores": {
             "button": [
@@ -134,6 +137,7 @@
         "language": "glass-dark",
         "task": "freehand",
         "page": "underlined-label/page.html",
+        "sha256": "7e8a61c425b136ded6fa2bd7e7e67172e4d9043ec214115c451843a48b6ab690",
         "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the guide after round 2 of the polish, so before the round 3 wording.",
         "scores": {
             "button": [
@@ -177,6 +181,7 @@
         "language": "organic-warm",
         "task": "freehand",
         "page": "soft-rounded/page.html",
+        "sha256": "f72779788b8efd7462bffdd270ac972bcedfa56371079bf92892afa86ea4a901",
         "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the guide after round 2 of the polish, so before the round 3 wording.",
         "scores": {
             "button": [
@@ -220,6 +225,7 @@
         "language": "luxe",
         "task": "freehand",
         "page": "gilt-hairline/page.html",
+        "sha256": "80fe0b77f0e45159b75ff07c5fd105c2d8388935040642e92843bc97a88e657d",
         "provenance": "Built on 2026-10-21 by a fresh assistant from the served guide only; it saw the guide after round 3 of the polish.",
         "scores": {
             "button": [
@@ -263,6 +269,7 @@
         "language": "glass-dark",
         "task": "edit-base",
         "page": "edit-glass-edge/page.html",
+        "sha256": "31a20120028f79be6b5a71640b9e45bc9397a9822d024a6d2913016d2efee2bf",
         "provenance": "The recipe-built base page for the edit task (Prepare::editBase glass-edge / glass-dark), as served to the assistant on 2026-10-21; kit-built, so it scores full marks. Guide revision: the guide after round 2 of the polish.",
         "scores": {
             "button": [
@@ -298,7 +305,8 @@
                 77
             ]
         },
-        "unclassified": 2
+        "unclassified": 2,
+        "note": "Two blocks are unclassified on purpose: divi/column#0 (the hero column: a background and a heading, no frame and no radius) and divi/group#10 (the pricing [Most popular] badge: a background and a radius, no heading or button); both are shape or brand decisions of the recipes, not kit roles."
     },
     {
         "name": "edit-glass-edge",
@@ -306,6 +314,7 @@
         "language": "glass-dark",
         "task": "edit",
         "page": "edit-glass-edge/page-edited.html",
+        "sha256": "6ede4ec8a6760f463f0ad99eb9231d49c0966f9054907779f121c6d098b3af21",
         "provenance": "The edit-glass-edge base page as edited on 2026-10-21 by a fresh assistant from the served guide only; it saw the guide after round 2 of the polish.",
         "scores": {
             "button": [
@@ -341,6 +350,7 @@
                 111
             ]
         },
-        "unclassified": 2
+        "unclassified": 2,
+        "note": "Two blocks are unclassified on purpose: divi/column#0 (the hero column: a background and a heading, no frame and no radius) and divi/group#10 (the pricing [Most popular] badge: a background and a radius, no heading or button); both are shape or brand decisions of the recipes, not kit roles."
     }
 ]
