@@ -78,11 +78,8 @@ final class HtmlToDiviTest extends HtmlTestCase
     {
         $doc  = new \DOMDocument();
         $prev = libxml_use_internal_errors( true );
-        // The body starts where a browser starts it (as HtmlSource::parse does), or libxml2's implied <p> would be written out as a real one.
-        $at = \AiEditorDivi5\WP\HtmlSource::bodyStart( $html );
-        if ( null !== $at ) {
-            $html = substr( $html, 0, $at ) . '<body>' . substr( $html, $at );
-        }
+        // The body is where a browser has it (as HtmlSource::parse does), or libxml2's implied <p> would be written out as a real one.
+        $html = \AiEditorDivi5\WP\HtmlSource::browserBody( $html );
         $doc->loadHTML( '<?xml encoding="UTF-8">' . $html, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_HTML_NODEFDTD );
         libxml_clear_errors();
         libxml_use_internal_errors( $prev );
@@ -367,6 +364,75 @@ final class HtmlToDiviTest extends HtmlTestCase
 
     #[DataProvider('leadingFiles')]
     public function testLeadingGoldenLayout( string $file ): void
+    {
+        $name = basename( $file, '.html' );
+        $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => 'none' ] );
+        $gold = __DIR__ . '/golden/html-to-divi/' . $name . '.none.layout.txt';
+        if ( false !== getenv( 'AIED_UPDATE_GOLDEN' ) && ! is_file( $gold ) ) {
+            file_put_contents( $gold, $r['layout'] . "\n" );
+        }
+        $this->assertFileExists( $gold );
+        $this->assertSame( rtrim( (string) file_get_contents( $gold ), "\n" ), $r['layout'] );
+    }
+
+    /** @return array<string,array{0:string,1:list<string>,2:list<string>,3:int}> file => the words, the headings, the sections */
+    public static function afterBodyFiles(): array
+    {
+        return [
+            '18-after-body-loose-section.html'     => [ '18-after-body-loose-section.html', [ 'Cut every morning at six', 'Loose words after the body tag', 'Delivered on Fridays' ], [ 'Fresh flowers', 'Weekly bunches' ], 3 ],
+            '18-after-body-html-text-section.html' => [ '18-after-body-html-text-section.html', [ 'Tools for every trade', 'Loose words after the html tag', 'Bring it in, we fix it' ], [ 'Our workshop', 'Repairs' ], 3 ],
+            '18-after-body-inline.html'            => [ '18-after-body-inline.html', [ 'Open from ten', 'Call us on', '0123 456', 'write to us', 'today', 'Baked in the back' ], [ 'Tea room', 'Cakes' ], 3 ],
+            '18-after-body-two-bodies.html'        => [ '18-after-body-two-bodies.html', [ 'The first body text', 'Loose words in the second body', 'The second body text' ], [ 'First body', 'Second body' ], 3 ],
+            '18-after-body-lookalikes.html'        => [ '18-after-body-lookalikes.html', [ 'link', 'and a comment', 'Loose words after the real end tag', 'Only the real end tag counts' ], [ 'Look alikes', 'Still a section' ], 3 ],
+        ];
+    }
+
+    /**
+     * Loose text after </body> or </html>, then a section: libxml2 wrapped the text in an implied <p> that swallowed the section, so its
+     * heading became bold text in a paragraph. A browser ignores those end tags. Every heading must stay a heading module, every word must
+     * be counted, and the loose text must be a section of its own between the two.
+     */
+    #[DataProvider('afterBodyFiles')]
+    public function testContentAfterTheBodyEndKeepsTheHeadingsAndSections( string $file, array $words, array $headings, int $sections ): void
+    {
+        $html = (string) file_get_contents( self::FIXTURES . '/' . $file );
+        foreach ( [ 'none', 'basic' ] as $styles ) {
+            $r = $this->convert( $html, [ 'styles' => $styles ] );
+            $this->assertTrue( $r['ok'], $file . ' ' . $styles . ': ' . (string) ( $r['error'] ?? '' ) );
+            foreach ( $words as $w ) {
+                $this->assertStringContainsString( $w, $r['layout'], $file . ' ' . $styles );
+            }
+            foreach ( $headings as $h ) {
+                $this->assertStringContainsString( '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"' . $h . '"}}', $r['layout'], $h . ' stays a heading module (' . $styles . ')' );
+                $this->assertStringNotContainsString( '<strong>' . $h, $r['layout'], $file . ' ' . $styles );
+            }
+            $this->assertSame( $sections, substr_count( $r['layout'], '<!-- wp:divi/section ' ), $file . ' ' . $styles );
+            $this->assertTrue( $r['report']['text_check']['equal'] );
+        }
+        $this->assertStringNotContainsString( '&lt;/body', $this->convert( $html, [ 'styles' => 'none' ] )['layout'], 'a look-alike in an attribute is never shown as text' );
+    }
+
+    /**
+     * The style reader (phase 2) reads the same tree: a page whose </body> comes before loose text and a styled section converts with
+     * styles exactly like the same page with its </body> at the end (what a browser builds), and the style reader sees the section after the end tag inside the body.
+     */
+    public function testStylesAfterTheBodyEndReadTheBrowsersTree(): void
+    {
+        $tail  = 'Loose words.<section style="background-color:#204060"><h2 style="color:#fafafa">Second</h2><p>Two.</p></section>';
+        $early = '<!DOCTYPE html><html><head><style>h2{color:#333333}</style></head><body><section><h2>First</h2><p>One.</p></section></body>' . $tail . '</html>';
+        $late  = '<!DOCTYPE html><html><head><style>h2{color:#333333}</style></head><body><section><h2>First</h2><p>One.</p></section>' . $tail . '</body></html>';
+        $got   = $this->convert( $early, [ 'styles' => 'basic' ] );
+        $want  = $this->convert( $late, [ 'styles' => 'basic' ] );
+        $this->assertTrue( $got['ok'] );
+        $this->assertSame( $want['layout'], $got['layout'] );
+        $this->assertSame( $want['report'], $got['report'], 'the same style report' );
+        $this->assertSame( 3, $got['report']['styles']['carried']['color'] + $got['report']['styles']['carried']['background'], 'the style reader saw the section after </body>' );
+        $this->assertSame( '/html/body/section[2]/h2', $got['report']['styles']['dropped_unreadable'][0]['path'], 'at its path inside the body' );
+        $this->assertSame( 3, substr_count( $got['layout'], '<!-- wp:divi/section ' ) );
+    }
+
+    #[DataProvider('afterBodyFiles')]
+    public function testAfterBodyGoldenLayout( string $file ): void
     {
         $name = basename( $file, '.html' );
         $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => 'none' ] );

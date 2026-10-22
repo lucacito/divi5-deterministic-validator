@@ -593,6 +593,8 @@ final class HtmlSourceTest extends HtmlTestCase
                 // The 16-after-html fixtures carry content after the end of the document: the scan keeps its note (styles stay failed closed).
                 if ( str_starts_with( basename( $file ), '16-after-html' ) ) {
                     $this->assertContains( $s['repaired'], [ [], [ HtmlSource::REPAIRS['after'] ] ], basename( $file ) );
+                } elseif ( '18-after-body-html-text-section.html' === basename( $file ) ) {
+                    $this->assertSame( [ HtmlSource::REPAIRS['after'] ], $s['repaired'], 'content after </html>: the note stays' );
                 } else {
                     $this->assertSame( [], $s['repaired'], basename( $file ) );
                 }
@@ -942,5 +944,85 @@ final class HtmlSourceTest extends HtmlTestCase
         $this->assertNull( HtmlSource::bodyStart( '<style>a</b></style>Loose' ), 'raw text libxml2 may end early: not modelled, left alone' );
         $this->assertNull( HtmlSource::bodyStart( '<!-->Loose' ), 'a comment the parsers end differently: left alone' );
         $this->assertNull( HtmlSource::bodyStart( '<frameset></frameset>' ) );
+    }
+
+    /**
+     * Content after </body> or </html>: libxml2 closed everything at the end tag and opened an implied <p> for loose text after it, which
+     * swallowed the next HTML5 section. A browser processes what follows "in body" with the open elements unchanged. The trees below are
+     * Chromium's (DOMParser, 2026-10-22), written out by hand.
+     */
+    public function testContentAfterABodyOrHtmlEndIsTheBrowsersTree(): void
+    {
+        $cases = [
+            '<body><section>A</section></body>Loose<section>B</section>'                                   => '<body><section>A</section>Loose<section>B</section></body>',
+            '<html><body><section>A</section></body></html>Loose<section>B</section>'                      => '<body><section>A</section>Loose<section>B</section></body>',
+            '<body><section>A</section></html>Loose<section>B</section>'                                   => '<body><section>A</section>Loose<section>B</section></body>',
+            '<body><p>A</p></body>Loose <b>bold</b> tail'                                                   => '<body><p>A</p>Loose <b>bold</b> tail</body>',
+            '<body><section>A</section></body><body>Loose<section>B</section></body>'                      => '<body><section>A</section>Loose<section>B</section></body>',
+            '<body><div>A</body>B'                                                                         => '<body><div>AB</div></body>',
+            '<body><table><tr><td>A</body>B</td></tr></table>'                                             => '<body><table><tr><td>AB</td></tr></table></body>',
+            '<body><p>A</body><span>y</span>'                                                              => '<body><p>A<span>y</span></p></body>',
+            '<body><p title="</body>">A</p><!-- </body> --></body>Loose<section>B</section>'                => '<body><p>A</p>Loose<section>B</section></body>', // Chromium keeps the title and the comment; the cleaner drops both
+        ];
+        foreach ( $cases as $html => $want ) {
+            $s = HtmlSource::parse( $html );
+            $this->assertNull( $s['error'], $html );
+            $this->assertSame( $want, $this->bodyHtml( $s ), $html );
+            $this->assertSame( 1, $s['body']->ownerDocument->getElementsByTagName( 'body' )->length, $html );
+        }
+    }
+
+    /** The scan's note for content after </html> stays (styles stay failed closed there); content after </body> alone never had one. */
+    public function testTheAfterNoteIsUnchanged(): void
+    {
+        $this->assertSame( [ HtmlSource::REPAIRS['after'] ], HtmlSource::parse( '<body><section>A</section></html>Loose<section>B</section>' )['repaired'] );
+        $this->assertSame( [], HtmlSource::parse( '<body><section>A</section></body>Loose<section>B</section>' )['repaired'] );
+        $this->assertSame( [ HtmlSource::REPAIRS['twice'] ], HtmlSource::parse( '<body><p>A</p></body><body class="x"><p>B</p></body>' )['repaired'] );
+    }
+
+    /** The end tags removed before parsing: only real ones in markup context, and only when content follows them. */
+    public function testOnlyRealEndTagsThatContentFollowsAreStray(): void
+    {
+        $this->assertSame( [ [ 26, 7 ] ], HtmlSource::strayEndTags( '<body><section>A</section></body>Loose' ) );
+        $this->assertSame( [ [ 8, 7 ], [ 15, 7 ] ], HtmlSource::strayEndTags( '<p>A</p></body></html><p>B</p>' ) );
+        $this->assertSame( [ [ 8, 7 ] ], HtmlSource::strayEndTags( '<p>A</p></body><b>x</b></html>  ' ), 'the trailing </html> stays' );
+        $this->assertSame( [ [ 8, 15 ] ], HtmlSource::strayEndTags( '<p>A</p></BODY class=x>B' ), 'any case, attributes on an end tag' );
+        $this->assertSame( [ [ 38, 7 ] ], HtmlSource::strayEndTags( '<p title="</body>">A</p><!--</body>--></body>B' ), 'an attribute value and a comment are not markup' );
+        $this->assertSame( [ [ 27, 7 ] ], HtmlSource::strayEndTags( '<style>p{color:red}</style></body>B' ), 'raw text skipped' );
+        $this->assertNull( HtmlSource::strayEndTags( "<html><body><p>A</p></body></html>\n" ), 'nothing after: the HTML stays as given' );
+        $this->assertNull( HtmlSource::strayEndTags( '<p>A</p></body><!-- c --></html> ' ), 'only a comment after' );
+        $this->assertNull( HtmlSource::strayEndTags( '<p>A</p></body></html><html><head></head><body></body></html>' ), 'only empty document tags after' );
+        $this->assertNull( HtmlSource::strayEndTags( '<p>A</p>' ) );
+        // Fail closed: anything the two parsers might tokenize differently leaves the HTML as given.
+        $this->assertNull( HtmlSource::strayEndTags( '<script>var s="</body>"</script></body>B' ), 'raw text with an end-tag-like run' );
+        $this->assertNull( HtmlSource::strayEndTags( '<textarea></body></textarea></body>B' ) );
+        $this->assertNull( HtmlSource::strayEndTags( '<title></html></title></body>B' ) );
+        $this->assertNull( HtmlSource::strayEndTags( '<noscript></body></noscript></body>B' ) );
+        $this->assertNull( HtmlSource::strayEndTags( '<script/></body>B' ), 'a self-closing raw-text tag' );
+        $this->assertNull( HtmlSource::strayEndTags( '<svg></body></svg>B' ), 'an end tag inside svg' );
+        $this->assertNull( HtmlSource::strayEndTags( '<svg><style>x</style></svg></body>B' ), 'raw text inside svg' );
+        $this->assertNull( HtmlSource::strayEndTags( '<!-->x</body>B' ), 'an odd comment' );
+        $this->assertNull( HtmlSource::strayEndTags( '<![CDATA[</body>]]>B' ) );
+        $this->assertNull( HtmlSource::strayEndTags( '<?x </body> ?>B' ) );
+        $this->assertNull( HtmlSource::strayEndTags( '<xmp></body></xmp>B' ) );
+        $this->assertNull( HtmlSource::strayEndTags( '<p>A</p></body/>B' ), 'a self-closing end tag' );
+        $this->assertNull( HtmlSource::strayEndTags( '<p a=1 a=2>A</p></body>B' ), 'a tag the scan does not model' );
+        $this->assertSame( [ [ 14, 7 ] ], HtmlSource::strayEndTags( '<svg></svg><p></body>B' ), 'svg closed before' );
+    }
+
+    /** Markup that only looks like </body> (a comment, a script, an attribute) is never touched: the page parses as before. */
+    public function testEndTagLookalikesAreLeftAlone(): void
+    {
+        foreach ( [
+            '<body><p>A</p><!-- </body> --><p>B</p></body>',
+            '<body><p data-x="</body>">A</p><p>B</p></body>',
+            '<body><p>A</p><script>if(a</body>)x()</script><p>B</p></body>',
+            "<body><p>A</p><textarea>\n</html>\n</textarea><p>B</p></body>",
+        ] as $html ) {
+            $this->assertNull( HtmlSource::strayEndTags( $html ), $html );
+            $s = HtmlSource::parse( $html );
+            $this->assertNull( $s['error'], $html );
+            $this->assertStringContainsString( 'B</p></body>', $this->bodyHtml( $s ), $html );
+        }
     }
 }
