@@ -21,16 +21,23 @@ final class HtmlSource
     public const MAX_ELEMENTS = 5000;
     public const MAX_DEPTH    = 50;
     /**
-     * The collected <style> text is cut at this many bytes (the same cap HtmlCss reads: HtmlCss::MAX_CSS_BYTES; a test keeps the two equal
-     * once HtmlCss exists). The rest of a longer stylesheet is never read.
+     * The collected <style> text is handed over cut at MAX_CSS_BYTES + 1 bytes (plain substr, possibly inside a character): one byte MORE than
+     * the cap HtmlCss reads (HtmlCss::MAX_CSS_BYTES, kept equal by a test), so the CSS reader sees a text longer than its cap, counts `css_cap`
+     * and poisons what the cut-off tail might have set, instead of reading a last rule that the cut shortened (#123456 -> #123).
      */
     public const MAX_CSS_BYTES = 100000;
 
     /**
-     * Presentational attributes that style an element in browsers (HTML 3/4 leftovers). They are never kept in the DOM; their NAMES are
-     * handed over per element, in this order, so the style reader knows a value there might be set by something it cannot read.
+     * Attributes that browsers still map to colour, background, font or alignment (HTML 3/4 leftovers): bgcolor and background (body, table,
+     * tr, td, th), text, link, vlink and alink (body colours), color, face and size (font), align and valign (blocks, tables, cells ...).
+     * Width, height, border, cellpadding and the like are NOT here: they restyle nothing a colour, font or alignment reader looks at. They are
+     * never kept in the DOM; their NAMES are handed over per element, in this order, so the style reader knows a value there might be set by
+     * something it cannot read.
      */
-    private const PRESENTATIONAL = [ 'bgcolor', 'align', 'color', 'text', 'face' ];
+    private const PRESENTATIONAL = [ 'bgcolor', 'background', 'color', 'text', 'link', 'vlink', 'alink', 'face', 'size', 'align', 'valign' ];
+
+    /** A <style> (or <link>) inside one of these is inert in a browser (template, scripting-on noscript, text-only elements): it is not read. */
+    private const INERT_ANCESTORS = [ 'template', 'noscript', 'textarea', 'title', 'iframe', 'noembed', 'noframes', 'xmp', 'plaintext' ];
 
     /** Removed with their content. tag => why it is not converted (plain English, shown to the owner). */
     private const DROP = [
@@ -79,20 +86,33 @@ final class HtmlSource
     ];
 
     /**
-     * Besides the cleaned body, three keys hand over what the cleaning removed so a style reader can use it (the `style` attribute and the
+     * Besides the cleaned body, these keys hand over what the cleaning removed so a style reader can use it (the `style` attribute and the
      * presentational attributes are NEVER left in the DOM):
-     *   css            every <style> element's text of the whole document (head and body), in document order, joined with "\n",
-     *                  read before the elements are removed, cut at MAX_CSS_BYTES
+     *   css            the text of the <style> elements of the whole document (head and body) that apply in a screen browser, in document
+     *                  order, joined with "\n", read before the elements are removed, cut at MAX_CSS_BYTES + 1 bytes (see MAX_CSS_BYTES).
+     *                  A <style> is SKIPPED (and written down in style_flags) when it sits inside template, noscript, textarea, title, iframe,
+     *                  noembed, noframes, xmp or plaintext, has a media attribute other than empty, "all" or "screen", a type other than
+     *                  empty or "text/css", or the disabled attribute. This is conservative: it can cost a style, never carry a false one.
+     *                  A <style> inside svg, form, object, video or canvas fallback content is kept (it applies).
      *   inline         DOMNode::getNodePath() => the text of the style attribute, for <html>, <body> and every kept element
-     *   presentational DOMNode::getNodePath() => the names (bgcolor, align, color, text, face) of the presentational attributes it had
+     *   presentational DOMNode::getNodePath() => the names (see PRESENTATIONAL) of the presentational attributes it had
+     *   external_css   int, the number of <link rel=stylesheet> elements (any href; "alternate" ones and inert ones do not count): the converter
+     *                  never fetches them, so colours and fonts may differ
+     *   style_flags    list of flagged entries (type, reason, path) about CSS that was not read: the skipped <style> elements and, when
+     *                  external_css > 0, one entry for the linked stylesheets. Kept apart from `flagged` so the styles=none report
+     *                  stays byte-identical to phase 1; the styles=basic report merges them.
      * The paths are computed after every removal and move, so they are the paths of the returned DOM. An element that was removed (or
      * sits inside a removed one) hands over nothing.
      *
-     * @return array{error:?string, body:?\DOMElement, flagged:list<array{type:string,reason:string,path:string}>, title:string, h1s:list<string>, stats:array<string,int>, css:string, inline:array<string,string>, presentational:array<string,list<string>>}
+     * Limit for a selector reader: the DOM keeps only class, id, role and a few per-tag attributes, and dropped elements (script, form, svg ...)
+     * are removed, so attribute selectors and structural selectors (:nth-child, :first-child, sibling combinators) would be evaluated on a pruned
+     * tree. A reader must treat them as unreadable (poison), not evaluate them.
+     *
+     * @return array{error:?string, body:?\DOMElement, flagged:list<array{type:string,reason:string,path:string}>, title:string, h1s:list<string>, stats:array<string,int>, css:string, inline:array<string,string>, presentational:array<string,list<string>>, external_css:int, style_flags:list<array{type:string,reason:string,path:string}>}
      */
     public static function parse( string $html ): array
     {
-        $out = [ 'error' => null, 'body' => null, 'flagged' => [], 'title' => '', 'h1s' => [], 'stats' => [ 'elements' => 0, 'removed' => 0, 'urls_dropped' => 0 ], 'css' => '', 'inline' => [], 'presentational' => [] ];
+        $out = [ 'error' => null, 'body' => null, 'flagged' => [], 'title' => '', 'h1s' => [], 'stats' => [ 'elements' => 0, 'removed' => 0, 'urls_dropped' => 0 ], 'css' => '', 'inline' => [], 'presentational' => [], 'external_css' => 0, 'style_flags' => [] ];
 
         if ( '' === trim( $html ) ) {
             $out['error'] = 'The HTML is empty.';
@@ -146,7 +166,7 @@ final class HtmlSource
         $titleNode = $doc->getElementsByTagName( 'title' )->item( 0 );
         $out['title'] = $titleNode instanceof \DOMNode ? self::collapse( $titleNode->textContent ) : '';
 
-        $out['css'] = self::collectCss( $doc );
+        self::collectCss( $doc, $out );
 
         // Style and presentational attributes are read from the node BEFORE they are removed; the paths are taken at the end.
         $handOver = [];
@@ -227,25 +247,88 @@ final class HtmlSource
         return array() === $parts ? 'body' : implode( ' > ', array_slice( $parts, -4 ) );
     }
 
-    /** Every <style> element's text of the document in document order, joined with a newline and cut at MAX_CSS_BYTES (never inside a character). */
-    private static function collectCss( \DOMDocument $doc ): string
+    /**
+     * Fills $out['css'], $out['external_css'] and $out['style_flags'] (see parse()).
+     *
+     * @param array<string,mixed> $out
+     */
+    private static function collectCss( \DOMDocument $doc, array &$out ): void
     {
         $parts = [];
         $bytes = 0;
-        foreach ( $doc->getElementsByTagName( 'style' ) as $style ) {
+        foreach ( iterator_to_array( $doc->getElementsByTagName( 'style' ) ) as $style ) {
+            $why = self::whyStyleIsSkipped( $style );
+            if ( null !== $why ) {
+                if ( count( $out['style_flags'] ) < 100 ) {
+                    $out['style_flags'][] = [ 'type' => 'style', 'reason' => 'A CSS block was not read: ' . $why . '.', 'path' => self::path( $style ) ];
+                }
+                continue;
+            }
+            if ( $bytes > self::MAX_CSS_BYTES ) {
+                continue; // already over the cap: keep scanning only so every skipped block is still written down
+            }
             $text = trim( $style->textContent );
             if ( '' === $text ) {
                 continue;
             }
             $parts[] = $text;
             $bytes  += strlen( $text ) + 1;
-            if ( $bytes > self::MAX_CSS_BYTES ) {
-                break;
-            }
         }
         $css = implode( "\n", $parts );
+        $out['css'] = strlen( $css ) > self::MAX_CSS_BYTES + 1 ? substr( $css, 0, self::MAX_CSS_BYTES + 1 ) : $css;
 
-        return strlen( $css ) > self::MAX_CSS_BYTES ? mb_strcut( $css, 0, self::MAX_CSS_BYTES, 'UTF-8' ) : $css;
+        $links = 0;
+        $first = null;
+        foreach ( iterator_to_array( $doc->getElementsByTagName( 'link' ) ) as $link ) {
+            $rel = preg_split( '/\s+/', strtolower( trim( $link->getAttribute( 'rel' ) ) ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+            if ( in_array( 'stylesheet', $rel, true ) && ! in_array( 'alternate', $rel, true ) && null === self::inertAncestor( $link ) ) {
+                ++$links;
+                $first ??= $link;
+            }
+        }
+        $out['external_css'] = $links;
+        if ( $links > 0 && $first instanceof \DOMElement ) {
+            $out['style_flags'][] = [
+                'type'   => 'link',
+                'reason' => 1 === $links ? '1 linked stylesheet was not read: colours and fonts may differ.' : $links . ' linked stylesheets were not read: colours and fonts may differ.',
+                'path'   => self::path( $first ),
+            ];
+        }
+    }
+
+    /** Plain-English reason a <style> element is not read, or null when it is. */
+    private static function whyStyleIsSkipped( \DOMElement $style ): ?string
+    {
+        $inert = self::inertAncestor( $style );
+        if ( null !== $inert ) {
+            return 'it sits inside <' . $inert . '>, which a browser does not apply';
+        }
+        $media = strtolower( trim( $style->getAttribute( 'media' ) ) );
+        if ( ! in_array( $media, [ '', 'all', 'screen' ], true ) ) {
+            return 'it is only for media other than screens';
+        }
+        $type = strtolower( trim( $style->getAttribute( 'type' ) ) );
+        if ( '' !== $type && 'text/css' !== $type ) {
+            return 'it is not plain CSS';
+        }
+        if ( $style->hasAttribute( 'disabled' ) ) {
+            return 'it is disabled';
+        }
+
+        return null;
+    }
+
+    /** The tag name of the nearest ancestor that makes a <style>/<link> inert, or null. */
+    private static function inertAncestor( \DOMNode $node ): ?string
+    {
+        for ( $p = $node->parentNode; $p instanceof \DOMElement; $p = $p->parentNode ) {
+            $tag = strtolower( $p->tagName );
+            if ( in_array( $tag, self::INERT_ANCESTORS, true ) ) {
+                return $tag;
+            }
+        }
+
+        return null;
     }
 
     /**

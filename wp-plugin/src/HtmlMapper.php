@@ -58,14 +58,20 @@ final class HtmlMapper
 
     /**
      * With $sources = true ONLY, the plan also says which source elements it came from (paths from DOMNode::getNodePath(), the same paths
-     * HtmlSource hands its style text over by), and nothing else changes:
-     *   section       src ?string (the section element; null for a run of loose nodes), ctx string (src, or the parent of the loose run's first node)
-     *   cards chunk   src string (the parent of the cards: the run's parent or the <ul>/<ol> of a card group),
-     *                 column_src list<string> (one per entry of 'columns', same order)
-     *   heading/button module  src list<string> (the h*, a or button), container list<string> (its parent)
-     *   text module   src list<string> (one per merged piece: the block element, or for a run of inline nodes the run's parent),
-     *                 container list<string> (the same, with a block element replaced by its parent: the element the text sits in)
-     * image and divider modules get nothing.
+     * HtmlSource hands its style text over by), and nothing else changes. The key is `from` (a path string, or a list of paths for merged
+     * runs), NEVER `src`: an image module's `src` is its URL, and downstream never reads $module['src'] as a path.
+     *   section       from ?string (the section element; null for a run of loose nodes), ctx string (from, or the parent of the loose run's
+     *                 first node), ctxs list<string> (every distinct parent of the loose nodes in document order; [from] for an element section)
+     *   cards chunk   from string (the PARENT of the cards: the run's parent or the <ul>/<ol> of a card group; its background belongs to the
+     *                 wrapper, it must not be applied to the row), column_src list<string> (one path per entry of 'columns', same order)
+     *   heading/button module  from list<string> (the h*, a or button), container list<string> (its parent)
+     *   text module   from list<string> (one per merged piece: the block element, or for a run of inline nodes the run's PARENT),
+     *                 container list<string> (the same, with a block element replaced by its parent: the element the text sits in).
+     *                 A run's parent contributes only inherited text properties; its non-inherited box properties (background, padding,
+     *                 border) belong to a wrapper and must not be read as the text's style.
+     * Images and dividers get nothing: phase 2 styles neither.
+     * Wrappers that the mapper looks through (a lone div, main) are not recorded as such: downstream walks the DOM ancestors from `ctx`
+     * (or from a module's `container`) up to the body to find wrapper backgrounds and inherited text properties.
      *
      * @return array{sections:list<array{label:string,chunks:list<array<string,mixed>>}>, flagged:list<array{type:string,reason:string,path:string}>, notes:list<string>, counts:array<string,int>}
      */
@@ -116,8 +122,14 @@ final class HtmlMapper
             if ( array() !== $chunks ) {
                 $section = [ 'label' => $this->labelFor( null, $chunks, count( $sections ) + 1 ), 'chunks' => $chunks ];
                 if ( $this->sources ) {
-                    $section['src'] = null;
-                    $section['ctx'] = $this->pathOf( $loose[0]->parentNode ?? $body );
+                    $parents = [];
+                    foreach ( $loose as $l ) {
+                        $parents[] = $this->pathOf( $l->parentNode ?? $body );
+                    }
+                    $parents         = array_values( array_unique( $parents ) );
+                    $section['from'] = null;
+                    $section['ctx']  = $parents[0];
+                    $section['ctxs'] = $parents;
                 }
                 $sections[] = $section;
             }
@@ -136,8 +148,9 @@ final class HtmlMapper
                 if ( array() !== $chunks ) {
                     $section = [ 'label' => $this->labelFor( $node, $chunks, count( $sections ) + 1 ), 'chunks' => $chunks ];
                     if ( $this->sources ) {
-                        $section['src'] = $this->pathOf( $node );
-                        $section['ctx'] = $section['src'];
+                        $section['from'] = $this->pathOf( $node );
+                        $section['ctx']  = $section['from'];
+                        $section['ctxs'] = [ $section['from'] ];
                     }
                     $sections[] = $section;
                 }
@@ -505,7 +518,7 @@ final class HtmlMapper
         $this->count( 'cards' );
         $chunk = [ 'kind' => 'cards', 'columns' => $columns ];
         if ( $this->sources ) {
-            $chunk['src']        = $this->pathOf( $cards[0]->parentNode );
+            $chunk['from']       = $this->pathOf( $cards[0]->parentNode );
             $chunk['column_src'] = array_map( fn ( \DOMNode $card ): string => $this->pathOf( $card ), $cards );
         }
 
@@ -534,7 +547,7 @@ final class HtmlMapper
         }
         $module = [ 'type' => 'heading', 'level' => $level, 'text' => $text ];
         if ( $this->sources ) {
-            $module['src']       = [ $this->pathOf( $h ) ];
+            $module['from']      = [ $this->pathOf( $h ) ];
             $module['container'] = [ $this->pathOf( $h->parentNode ) ];
         }
         $current[] = $module;
@@ -560,7 +573,7 @@ final class HtmlMapper
         if ( null !== $last && 'text' === $last['type'] ) {
             $current[ count( $current ) - 1 ]['html'] .= $html;
             if ( $this->sources ) {
-                $current[ count( $current ) - 1 ]['src']       = array_merge( $current[ count( $current ) - 1 ]['src'] ?? [], $src );
+                $current[ count( $current ) - 1 ]['from']      = array_merge( $current[ count( $current ) - 1 ]['from'] ?? [], $src );
                 $current[ count( $current ) - 1 ]['container'] = array_merge( $current[ count( $current ) - 1 ]['container'] ?? [], $container );
             }
 
@@ -568,7 +581,7 @@ final class HtmlMapper
         }
         $module = [ 'type' => 'text', 'html' => $html ];
         if ( $this->sources ) {
-            $module['src']       = $src;
+            $module['from']      = $src;
             $module['container'] = $container;
         }
         $current[] = $module;
@@ -619,7 +632,7 @@ final class HtmlMapper
         }
         $module = [ 'type' => 'button', 'text' => $text, 'href' => '' === $href ? null : $href, 'newTab' => $newTab ];
         if ( $this->sources && null !== $from ) {
-            $module['src']       = [ $this->pathOf( $from ) ];
+            $module['from']      = [ $this->pathOf( $from ) ];
             $module['container'] = [ $this->pathOf( $from->parentNode ) ];
         }
         $current[] = $module;

@@ -260,13 +260,12 @@ final class HtmlMapperTest extends HtmlTestCase
         return $s['body'];
     }
 
-    /** The source keys removed. An image module's own `src` (its URL) is not one: a source key is an array (a module) or a section's. */
+    /** The source keys removed (an image module's own `src` is its URL and stays: the source key is `from`). */
     private static function withoutSources( array $v ): array
     {
         $out = [];
         foreach ( $v as $k => $x ) {
-            $isImageUrl = 'src' === $k && is_string( $x ) && 'image' === ( $v['type'] ?? '' );
-            if ( in_array( $k, [ 'src', 'ctx', 'column_src', 'container' ], true ) && ! $isImageUrl ) {
+            if ( in_array( $k, [ 'from', 'ctx', 'ctxs', 'column_src', 'container' ], true ) ) {
                 continue;
             }
             $out[ $k ] = is_array( $x ) ? self::withoutSources( $x ) : $x;
@@ -291,9 +290,10 @@ final class HtmlMapperTest extends HtmlTestCase
             $this->assertSame( $plain, self::withoutSources( $with ), basename( $file ) );
             if ( array() !== $with['sections'] ) {
                 ++$withSources;
-                $this->assertArrayHasKey( 'src', $with['sections'][0], basename( $file ) );
-                $this->assertArrayNotHasKey( 'src', $plain['sections'][0], basename( $file ) );
+                $this->assertArrayHasKey( 'from', $with['sections'][0], basename( $file ) );
+                $this->assertArrayNotHasKey( 'from', $plain['sections'][0], basename( $file ) );
                 $this->assertArrayNotHasKey( 'ctx', $plain['sections'][0], basename( $file ) );
+                $this->assertArrayNotHasKey( 'ctxs', $plain['sections'][0], basename( $file ) );
             }
         }
         $this->assertGreaterThan( 5, $withSources );
@@ -304,27 +304,28 @@ final class HtmlMapperTest extends HtmlTestCase
         $plan = HtmlMapper::map( $this->body( '<div><p>a</p>text <em>b</em><ul><li>c</li></ul></div>' ), true );
         $mods = $plan['sections'][0]['chunks'][0]['modules'];
         $this->assertCount( 1, $mods );
-        $this->assertSame( [ '/html/body/div/p', '/html/body/div', '/html/body/div/ul' ], $mods[0]['src'] );
+        $this->assertSame( [ '/html/body/div/p', '/html/body/div', '/html/body/div/ul' ], $mods[0]['from'] );
         $this->assertSame( [ '/html/body/div', '/html/body/div', '/html/body/div' ], $mods[0]['container'] );
     }
 
     public function testASectionAndItsModulesRecordTheirElements(): void
     {
         $plan = HtmlMapper::map( $this->body( '<section><h2>T</h2><a class="btn" href="/x">Go</a><img src="/a.png" alt="A"><hr></section><p>loose</p>' ), true );
-        $this->assertSame( '/html/body/section', $plan['sections'][0]['src'] );
+        $this->assertSame( '/html/body/section', $plan['sections'][0]['from'] );
         $this->assertSame( '/html/body/section', $plan['sections'][0]['ctx'] );
         $mods = $plan['sections'][0]['chunks'][0]['modules'];
         $this->assertSame( [ 'heading', 'button', 'image', 'divider' ], array_column( $mods, 'type' ) );
-        $this->assertSame( [ '/html/body/section/h2' ], $mods[0]['src'] );
+        $this->assertSame( [ '/html/body/section/h2' ], $mods[0]['from'] );
         $this->assertSame( [ '/html/body/section' ], $mods[0]['container'] );
-        $this->assertSame( [ '/html/body/section/a' ], $mods[1]['src'] );
+        $this->assertSame( [ '/html/body/section/a' ], $mods[1]['from'] );
         $this->assertSame( [ '/html/body/section' ], $mods[1]['container'] );
-        $this->assertSame( '/a.png', $mods[2]['src'], 'an image keeps its URL in src and gets no source' );
+        $this->assertSame( '/a.png', $mods[2]['src'], 'an image keeps its URL in src' );
+        $this->assertArrayNotHasKey( 'from', $mods[2], 'and gets no source' );
         $this->assertArrayNotHasKey( 'container', $mods[2] );
         $this->assertSame( [ 'type' => 'divider' ], $mods[3] );
-        $this->assertNull( $plan['sections'][1]['src'], 'a run of loose nodes has no section element' );
+        $this->assertNull( $plan['sections'][1]['from'], 'a run of loose nodes has no section element' );
         $this->assertSame( '/html/body', $plan['sections'][1]['ctx'] );
-        $this->assertSame( [ '/html/body/p' ], $plan['sections'][1]['chunks'][0]['modules'][0]['src'] );
+        $this->assertSame( [ '/html/body/p' ], $plan['sections'][1]['chunks'][0]['modules'][0]['from'] );
     }
 
     public function testCardsRecordTheirContainerAndEachCard(): void
@@ -333,7 +334,7 @@ final class HtmlMapperTest extends HtmlTestCase
         $plan = HtmlMapper::map( $this->body( $html ), true );
         $chunk = $plan['sections'][0]['chunks'][0];
         $this->assertSame( 'cards', $chunk['kind'] );
-        $this->assertSame( '/html/body/section/div', $chunk['src'] );
+        $this->assertSame( '/html/body/section/div', $chunk['from'] );
         $this->assertSame( [ '/html/body/section/div/div[1]', '/html/body/section/div/div[2]', '/html/body/section/div/div[3]' ], $chunk['column_src'] );
         $this->assertCount( count( $chunk['columns'] ), $chunk['column_src'] );
     }
@@ -344,7 +345,7 @@ final class HtmlMapperTest extends HtmlTestCase
         $plan = HtmlMapper::map( $this->body( $html ), true );
         $cards = array_values( array_filter( $plan['sections'][0]['chunks'], static fn ( array $c ): bool => 'cards' === $c['kind'] ) );
         $this->assertCount( 1, $cards );
-        $this->assertSame( '/html/body/section/ul', $cards[0]['src'] );
+        $this->assertSame( '/html/body/section/ul', $cards[0]['from'] );
         $this->assertSame( [ '/html/body/section/ul/li[1]', '/html/body/section/ul/li[2]' ], $cards[0]['column_src'] );
     }
 
@@ -366,19 +367,19 @@ final class HtmlMapperTest extends HtmlTestCase
             $paths = [];
             foreach ( $plan['sections'] as $sec ) {
                 $paths[] = $sec['ctx'];
-                if ( null !== $sec['src'] ) {
-                    $paths[] = $sec['src'];
+                if ( null !== $sec['from'] ) {
+                    $paths[] = $sec['from'];
                 }
                 foreach ( $sec['chunks'] as $chunk ) {
                     if ( 'cards' === $chunk['kind'] ) {
-                        $paths[] = $chunk['src'];
+                        $paths[] = $chunk['from'];
                         array_push( $paths, ...$chunk['column_src'] );
                         $mods = array_merge( ...$chunk['columns'] ?: [ [] ] );
                     } else {
                         $mods = $chunk['modules'];
                     }
                     foreach ( $mods as $m ) {
-                        array_push( $paths, ...( 'image' === $m['type'] ? [] : $m['src'] ), ...( $m['container'] ?? [] ) );
+                        array_push( $paths, ...( 'image' === $m['type'] ? [] : $m['from'] ), ...( $m['container'] ?? [] ) );
                     }
                 }
             }
@@ -425,16 +426,54 @@ final class HtmlMapperTest extends HtmlTestCase
             $this->assertSame( $plain, self::withoutSources( $with ), "case $n" );
             $planned += count( $with['sections'] );
             foreach ( $with['sections'] as $sec ) {
-                foreach ( array_filter( [ $sec['src'], $sec['ctx'] ] ) as $path ) {
+                foreach ( array_filter( [ $sec['from'], $sec['ctx'] ] ) as $path ) {
                     $this->assertSame( 1, $xp->query( $path )->length, "case $n section $path" );
                 }
                 foreach ( $sec['chunks'] as $chunk ) {
-                    foreach ( 'cards' === $chunk['kind'] ? array_merge( [ $chunk['src'] ], $chunk['column_src'] ) : [] as $path ) {
+                    foreach ( 'cards' === $chunk['kind'] ? array_merge( [ $chunk['from'] ], $chunk['column_src'] ) : [] as $path ) {
                         $this->assertSame( 1, $xp->query( $path )->length, "case $n cards $path" );
                     }
                 }
             }
         }
         $this->assertGreaterThan( 50, $planned );
+    }
+
+    public function testALooseRunRecordsEveryDistinctParentInOrder(): void
+    {
+        $plan = HtmlMapper::map( $this->body( '<p>a</p><main><p>b</p></main>' ), true );
+        $this->assertCount( 1, $plan['sections'] );
+        $this->assertNull( $plan['sections'][0]['from'] );
+        $this->assertSame( '/html/body', $plan['sections'][0]['ctx'] );
+        $this->assertSame( [ '/html/body', '/html/body/main' ], $plan['sections'][0]['ctxs'] );
+        $el = HtmlMapper::map( $this->body( '<section><h2>x</h2></section>' ), true );
+        $this->assertSame( [ '/html/body/section' ], $el['sections'][0]['ctxs'] );
+    }
+
+    public function testFromASectionsContextTheAncestorChainReachesTheWrappersAndTheirStyles(): void
+    {
+        $s = HtmlSource::parse( '<html><body style="background:#eee"><div id="outer" style="background:#000"><div style="color:red"><section><h2>A</h2></section><section><h2>B</h2></section></div></div></body></html>' );
+        $this->assertNull( $s['error'] );
+        $plan = HtmlMapper::map( $s['body'], true );
+        $this->assertCount( 2, $plan['sections'], 'the lone wrappers are looked through' );
+        $xp = new \DOMXPath( $s['body']->ownerDocument );
+        $chain = [];
+        for ( $n = $xp->query( $plan['sections'][0]['ctx'] )->item( 0 ); $n instanceof \DOMElement; $n = $n->parentNode ) {
+            $chain[] = $n->getNodePath();
+        }
+        $this->assertSame( [ '/html/body/div/div/section[1]', '/html/body/div/div', '/html/body/div', '/html/body', '/html' ], $chain );
+        $this->assertSame( 'color:red', $s['inline']['/html/body/div/div'] );
+        $this->assertSame( 'background:#000', $s['inline']['/html/body/div'] );
+        $this->assertSame( 'background:#eee', $s['inline']['/html/body'] );
+    }
+
+    public function testMergedRunsKeepTheirOwnContainerPerPiece(): void
+    {
+        $plan = HtmlMapper::map( $this->body( '<section><div><p>a</p></div>tail <b>x</b></section>' ), true );
+        foreach ( $plan['sections'][0]['chunks'] as $chunk ) {
+            foreach ( $chunk['modules'] ?? [] as $m ) {
+                $this->assertCount( count( $m['from'] ), $m['container'] );
+            }
+        }
     }
 }
