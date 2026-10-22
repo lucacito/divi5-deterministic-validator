@@ -25,4 +25,6 @@ Test fixtures for `html_to_divi` converter. Each tests a specific scenario:
 | 14-styled-fonts.html | `@import`, `@font-face`, Playfair Display headings, `"Brand Sans", Inter` body, Georgia, `system-ui`, and a `pre` | Only fonts Divi can load are carried; the rest are listed |
 | 14-styled-hostile.html | `!important`, `var()`, `calc()`, `clamp()`, `@media`, `a:hover`, `.hero h1`, `[data-x]`, an unclosed `{`, `900px`, negative padding, the `font` shorthand, `bgcolor`, `<center>`, upper-case hex, `RebeccaPurple`, `opacity` | Anything not readable with certainty is left out and reported, never guessed |
 
+`14-styled-inline.html`'s second section is the DELIBERATE mixed-style run: two consecutive `<p>` (one unstyled, one with its own colour and size) that the mapper merges into one text module (`14-styled-hostile`'s table plus `<center><p>` is another). Later tasks must carry only the style properties that are equal across every merged element, otherwise nothing for that property and a counted note "mixed"; `testTheMixedStyleRunStaysInTheInlineFixture` keeps the case from being fixed away.
+
 The `14-styled-*` goldens: `tests/golden/html-to-divi/14-styled-*.none.layout.txt` were recorded with `styles=none` on the converter before any style code existed (`AIED_UPDATE_NONE_GOLDEN=1`); they must never change.

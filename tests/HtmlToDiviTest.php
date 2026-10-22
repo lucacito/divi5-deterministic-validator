@@ -154,7 +154,14 @@ final class HtmlToDiviTest extends HtmlTestCase
         $this->assertSame( rtrim( (string) file_get_contents( $file ), "\n" ), $r['layout'] );
     }
 
-    /** @return array<string,array{0:string,1:string}> name => file under tests/golden/html-to-divi */
+    /**
+     * The mixed-style run is DELIBERATE: the second section of 14-styled-inline holds two consecutive <p> (one unstyled,
+     * one with its own colour and size) that the mapper merges into ONE divi/text. Later style tasks must satisfy it:
+     * a module carries only the style properties that are equal across all its merged elements; otherwise nothing for
+     * that property and a counted note "mixed". 14-styled-hostile (table + <center><p>) is a second such module.
+     *
+     * @return array<string,array{0:string,1:string}> name => file under tests/golden/html-to-divi
+     */
     public static function noneGoldens(): array
     {
         $out = [];
@@ -183,6 +190,15 @@ final class HtmlToDiviTest extends HtmlTestCase
         }
         $this->assertFileExists( $file );
         $this->assertSame( rtrim( (string) file_get_contents( $file ), "\n" ), $r['layout'] );
+    }
+
+    /** A later "fix" of the fixture must not remove the deliberate mixed-style run (see noneGoldens). */
+    public function testTheMixedStyleRunStaysInTheInlineFixture(): void
+    {
+        $html = (string) file_get_contents( self::FIXTURES . '/14-styled-inline.html' );
+        $this->assertMatchesRegularExpression( '/<p>We buy green[^<]*<\/p>\s*<p style="[^"]*color:#4b5563[^"]*">Every batch/', $html );
+        $golden = (string) file_get_contents( __DIR__ . '/golden/html-to-divi/14-styled-inline.none.layout.txt' );
+        $this->assertStringContainsString( 'kilos.\u003c/p\u003e\u003cp\u003eEvery batch', $golden, 'the two paragraphs are one text module' );
     }
 
     /** These pages have no CSS: the default (basic) and none give the very same file. */
