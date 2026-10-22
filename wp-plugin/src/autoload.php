@@ -79,6 +79,8 @@ require_once __DIR__ . '/HtmlStyles.php';
 require_once __DIR__ . '/DiviMarkup.php';
 require_once __DIR__ . '/HtmlImages.php';
 require_once __DIR__ . '/HtmlFonts.php';
+require_once __DIR__ . '/HtmlStyleBlocks.php';
+require_once __DIR__ . '/HtmlReadability.php';
 require_once __DIR__ . '/HtmlToDivi.php';
 require_once __DIR__ . '/HtmlToDiviService.php';
 require_once __DIR__ . '/LayoutDiff.php';
