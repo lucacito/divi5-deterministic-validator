@@ -29,8 +29,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *   with families()); or "inherit". "inherit" on an inherited property (color, font-family, font-size, font-weight,
  *   text-align) is a real candidate: it wins like any value and then takes the parent's computed value. Every other entry is
  *   a POISON: value null, poison = a REASONS entry.
- * - Two pseudo-properties are PRESENCE poisons (MARKERS), not values. `effect` (opacity, filter and its backdrop and -webkit spellings, mix-blend-mode,
- *   -webkit-text-fill-color, background-clip: text, color-scheme) means colours on the element AND ITS SUBTREE may look different
+ * - Two pseudo-properties are PRESENCE poisons (MARKERS), not values. `effect` (opacity, filter and its backdrop and -webkit spellings,
+ *   mix-blend-mode, -webkit-text-fill-color, background-clip: text, color-scheme, animation and animation-name, the whole mask family,
+ *   text-shadow and the text stroke properties; "none" or 0 emits nothing) means colours on the element AND ITS SUBTREE may look different
  *   from their computed values: the colour and background-colour paint there are unresolved. `background-image` (an image or
  *   gradient, or the background shorthand with one) means the element's background is not a flat colour. They are resolved
  *   separately from the value of color or background-color: they never compete with those entries in the cascade, so a more
@@ -52,6 +53,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *   element also makes the effective backdrop of its DESCENDANTS with a transparent background unresolved. `effect` applies to
  *   the element and its subtree; rules on html, :root and body count as ancestors of the converted fragment. With color-scheme
  *   the default canvas and initial colours are unknown: assume no white and no black.
+ * - How a subject matches an element: the tag is compared lowercase (null = any tag); ids and classes must be subsets of the element's
+ *   ids and classes, case-sensitive; identifiers are already escape-decoded, so compare them to the raw attribute tokens; `other` and
+ *   combinators are ignored, so a match means "could match".
  * - MAX_SPECIFICITY is compared lexicographically, never added to; any sentinel winner means unresolved.
  * - Concatenate every <style> block in document order into ONE stylesheet() call (one call per block restarts `order` and the caps).
  * - external > 0 means imported or linked sheets were not read: the caller must also count <link rel=stylesheet> under the same
@@ -344,7 +348,8 @@ final class HtmlCss
 
     /** Properties that change how colours look on an element and its subtree: they are the `effect` marker. */
     private const EFFECTS = [ 'opacity', 'filter', '-webkit-filter', 'backdrop-filter', '-webkit-backdrop-filter', 'mix-blend-mode', '-webkit-text-fill-color',
-        'background-clip', '-webkit-background-clip', 'color-scheme', 'animation', 'animation-name' ];
+        'background-clip', '-webkit-background-clip', 'color-scheme', 'animation', 'animation-name',
+        'text-shadow', 'text-stroke', '-webkit-text-stroke', '-webkit-text-stroke-width', '-webkit-text-stroke-color' ];
 
     // ---------------------------------------------------------------
     // Stylesheet
@@ -650,6 +655,7 @@ final class HtmlCss
             self::bump( $ctx['ignored'], 'selector' );
         }
         $parents = [];
+        $split   = $layer && $has ? self::splitImportant( $r['decls'] ) : null;
         foreach ( $sel['entries'] as $e ) {
             if ( $ctx['full'] ) {
                 return;
@@ -667,7 +673,7 @@ final class HtmlCss
                 if ( ! $sel['bad'] && ! $e['simple'] ) {
                     self::bump( $ctx['ignored'], 'selector' );
                 }
-                self::emitDecls( $ctx, $e, $r['decls'], $cond, $layer );
+                self::emitDecls( $ctx, $e, $r['decls'], $cond, $split );
             }
             self::emitUnsure( $ctx, $e['subject'], $r['unsure'] );
         }
@@ -756,10 +762,10 @@ final class HtmlCss
         return [ 'bad' => true, 'entries' => [ self::entryOf( self::universal(), self::MAX_SPECIFICITY, false, false, true ) ] ];
     }
 
-    /** @param array<string,mixed> $subject */
+    /** A collision-free key: serialize() keeps a null tag apart from '*' and an identifier that holds a comma or a bar apart from two. @param array<string,mixed> $subject */
     private static function subjectKey( array $subject ): string
     {
-        return ( $subject['tag'] ?? '*' ) . '|' . implode( ',', $subject['ids'] ) . '|' . implode( ',', $subject['classes'] ) . '|' . ( $subject['other'] ? '1' : '0' );
+        return serialize( [ $subject['tag'], $subject['ids'], $subject['classes'], $subject['other'] ] );
     }
 
     /** @param array<string,mixed> $subject @param list<int> $spec @return array{subject: array<string,mixed>, spec: list<int>, simple: bool, state: bool, force: bool} */
@@ -795,15 +801,25 @@ final class HtmlCss
      * @param array{subject: array<string,mixed>, spec: list<int>, simple: bool, state: bool, force: bool} $e
      * @param list<array<string,mixed>> $decls
      */
-    private static function emitDecls( array &$ctx, array $e, array $decls, bool $cond, bool $layer ): void
+    private static function emitDecls( array &$ctx, array $e, array $decls, bool $cond, ?array $split ): void
     {
-        $poison = $cond || ! $e['simple'] || $e['force'];
-        if ( ! $layer ) {
-            self::emit( $ctx, $e['subject'], $e['simple'], $e['spec'], $poison, $decls );
+        if ( null === $split ) {
+            self::emit( $ctx, $e['subject'], $e['simple'], $e['spec'], $cond || ! $e['simple'] || $e['force'], $decls );
 
             return;
         }
         // Inside @layer an !important declaration beats an unlayered !important one whatever the specificity.
+        if ( array() !== $split['normal'] ) {
+            self::emit( $ctx, $e['subject'], $e['simple'], $e['spec'], true, $split['normal'] );
+        }
+        if ( array() !== $split['important'] ) {
+            self::emit( $ctx, $e['subject'], false, self::MAX_SPECIFICITY, true, $split['important'] );
+        }
+    }
+
+    /** The declarations of a rule in an @layer, split once for all of its entries. @param list<array<string,mixed>> $decls @return array{normal: list<array<string,mixed>>, important: list<array<string,mixed>>} */
+    private static function splitImportant( array $decls ): array
+    {
         $normal    = [];
         $important = [];
         foreach ( $decls as $d ) {
@@ -813,12 +829,8 @@ final class HtmlCss
                 $normal[] = $d;
             }
         }
-        if ( array() !== $normal ) {
-            self::emit( $ctx, $e['subject'], $e['simple'], $e['spec'], true, $normal );
-        }
-        if ( array() !== $important ) {
-            self::emit( $ctx, $e['subject'], false, self::MAX_SPECIFICITY, true, $important );
-        }
+
+        return [ 'normal' => $normal, 'important' => $important ];
     }
 
     /** @param array<string,mixed> $ctx @param array<string,mixed> $subject @param list<string> $props */
@@ -860,9 +872,14 @@ final class HtmlCss
                 return;
             }
             self::bump( $ctx['ignored'], 'media', count( $r['decls'] ) );
-            $entries = [];
-            foreach ( $parents as $parent ) {
-                $entries[] = self::entryOf( $parent, self::MAX_SPECIFICITY, false, false, true );
+            $ctx['subjects'] += count( $parents ); // the copies are work: they count against the stylesheet's budget
+            if ( $ctx['subjects'] > self::MAX_SUBJECTS_TOTAL ) {
+                $entries = self::fanOut( $ctx )['entries'];
+            } else {
+                $entries = [];
+                foreach ( $parents as $parent ) {
+                    $entries[] = self::entryOf( $parent, self::MAX_SPECIFICITY, false, false, true );
+                }
             }
             $layer = $layer || 'layer' === $name;
         } else {
@@ -1721,6 +1738,11 @@ final class HtmlCss
             return self::poisons( $logical, 'property', $important );
         }
 
+        if ( 1 === preg_match( '/^(?:-webkit-)?mask(?:-|$)/', $name ) || in_array( $name, [ 'text-shadow', 'text-stroke', '-webkit-text-stroke', '-webkit-text-stroke-width', '-webkit-text-stroke-color' ], true ) ) {
+            // A mask can hide text, a text shadow or stroke can make light text unreadable: the colour is no longer what it looks like.
+            return in_array( $lv, [ 'none', '0', '0px' ], true ) ? [] : [ self::entry( 'effect', null, $important, 'effect' ) ];
+        }
+
         switch ( $name ) {
             case 'all':
                 return self::poisons( self::ALL, 'unresolved', $important );
@@ -1832,6 +1854,12 @@ final class HtmlCss
         }
     }
 
+    /** The mask family and the EFFECTS list. */
+    private static function isEffect( string $name ): bool
+    {
+        return in_array( $name, self::EFFECTS, true ) || 1 === preg_match( '/^(?:-webkit-)?mask(?:-|$)/', $name );
+    }
+
     /** The read properties a property name sets (longhands expanded); [] when it sets none. @return list<string> */
     private static function propertiesOf( string $name ): array
     {
@@ -1852,7 +1880,7 @@ final class HtmlCss
         if ( in_array( $name, self::READ, true ) ) {
             return [ $name ];
         }
-        if ( in_array( $name, self::EFFECTS, true ) ) {
+        if ( self::isEffect( $name ) ) {
             return [ 'effect' ];
         }
 

@@ -651,6 +651,82 @@ final class HtmlCssTest extends HtmlTestCase
         $this->assertCount( HtmlCss::MAX_RULES + 1, $r['rules'] );
     }
 
+
+    // ---------------------------------------------------------------
+    // Round 3: subject keys, nested at-rule copies, @layer sharing, more markers
+    // ---------------------------------------------------------------
+
+    /** @return array<string,array{string,array,string}> */
+    public static function keyCollisionCases(): array
+    {
+        return [
+            'escaped comma vs two classes'     => [ 'span { color: blue } div { .a\\,b, .a.b { color: red } }', [ 'tag' => 'span', 'classes' => [ 'a,b' ] ], 'color' ],
+            'escaped comma, other order'       => [ 'span { color: blue } div { .a.b, .a\\,b { color: red } }', [ 'tag' => 'span', 'classes' => [ 'a,b' ] ], 'color' ],
+            'two classes (the other subject)'  => [ 'span { color: blue } div { .a\\,b, .a.b { color: red } }', [ 'tag' => 'span', 'classes' => [ 'a', 'b' ] ], 'color' ],
+            'tag * vs any tag'                 => [ 'p { color: blue } div { .c, \\*.c { color: red } }', [ 'tag' => 'p', 'classes' => [ 'c' ] ], 'color' ],
+            'id and class with an escaped bar' => [ 'p { color: blue } div { #x\\|.y, #x.\\|y { color: red } }', [ 'tag' => 'p', 'ids' => [ 'x|' ], 'classes' => [ 'y' ] ], 'color' ],
+            'id and class, other subject'      => [ 'p { color: blue } div { #x\\|.y, #x.\\|y { color: red } }', [ 'tag' => 'p', 'ids' => [ 'x' ], 'classes' => [ '|y' ] ], 'color' ],
+            'collision in the parents'         => [ 'p { color: blue } .a\\,b, .a.b { &.z { color: red } }', [ 'tag' => 'p', 'classes' => [ 'a,b', 'z' ] ], 'color' ],
+            'collision in the parents (2)'     => [ 'p { color: blue } .a\\,b, .a.b { &.z { color: red } }', [ 'tag' => 'p', 'classes' => [ 'a', 'b', 'z' ] ], 'color' ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'keyCollisionCases' )]
+    public function testDifferentSubjectsAreNeverMergedByTheirKey( string $css, array $element, string $property ): void
+    {
+        $this->assertStringStartsWith( 'POISON:', $this->winner( $css, $element, $property ), 'the lower value must not be carried' );
+    }
+
+    public function testKeyControlsOnlyTheRealSubjectPoisonsAndDuplicatesStillCollapse(): void
+    {
+        // Only .a\,b is poisoned: an element with the classes a and b (not "a,b") keeps the lower value.
+        $this->assertSame( '#0000ff', $this->winner( 'span { color: blue } div { .a\\,b { color: red } }', [ 'tag' => 'span', 'classes' => [ 'a', 'b' ] ], 'color' ) );
+        $this->assertSame( '#0000ff', $this->winner( 'p { color: blue } div { #x\\|.y { color: red } }', [ 'tag' => 'p', 'ids' => [ 'x' ], 'classes' => [ '|y' ] ], 'color' ) );
+        // Identical subjects collapse to one entry.
+        $r = HtmlCss::stylesheet( 'div { color: blue; .x, .x, .x { color: red } }' );
+        $this->assertCount( 2, $r['rules'] );
+        $r = HtmlCss::stylesheet( 'div, div { b { color: red } }' );
+        $this->assertCount( 1, $r['rules'] );
+    }
+
+    public function testNestedAtRulesUnderManyParentsStayCheap(): void
+    {
+        $list = static fn( string $p, int $n ): string => implode( ',', array_map( static fn( int $i ): string => $p . $i, range( 1, $n ) ) );
+        foreach ( [
+            $list( '.a', 2000 ) . '{' . str_repeat( '@media x{@media y{&{}}}', 1500 ) . '}',
+            $list( '.a', 2000 ) . '{' . str_repeat( str_repeat( '@media x{', 7 ) . '&{}' . str_repeat( '}', 7 ), 300 ) . '}',
+            $list( '.a', 2000 ) . '{' . str_repeat( '@media x{color:red}', 1500 ) . '}',
+        ] as $css ) {
+            [ $seconds, $megabytes, $r ] = $this->measure( $css );
+            $this->assertLessThan( 0.2, $seconds );
+            $this->assertLessThan( 20.0, $megabytes );
+            $this->assertLessThanOrEqual( HtmlCss::MAX_RULES + 1, count( $r['rules'] ) );
+        }
+    }
+
+    public function testALayerRuleSharesItsSplitAcrossEntries(): void
+    {
+        $list = implode( ',', array_map( static fn( int $i ): string => '.a' . $i, range( 1, 2000 ) ) );
+        $css  = '@layer x{' . $list . '{' . str_repeat( 'all:red;all:red!important;', 25 ) . '}}';
+        [ $seconds, $megabytes, $r ] = $this->measure( $css );
+        $this->assertLessThan( 8.0, $megabytes, 'peak memory' );
+        $this->assertLessThan( 0.2, $seconds );
+        $this->assertSame( 'POISON:unresolved', $this->winner( $css, [ 'tag' => 'p', 'classes' => [ 'a5' ] ], 'color' ) );
+    }
+
+    public function testMasksTextShadowsAndStrokesAreEffectMarkers(): void
+    {
+        foreach ( [ 'mask: url(a.svg)', '-webkit-mask: linear-gradient(red, blue)', 'mask-image: url(a.svg)', '-webkit-mask-image: url(a.svg)', 'mask-size: cover',
+            'text-shadow: 0 0 2px #fff', '-webkit-text-stroke: 2px red', '-webkit-text-stroke-width: 3px', '-webkit-text-stroke-color: #fff', 'text-shadow: inherit' ] as $css ) {
+            $this->assertSame( [ $this->decl( 'effect', null, false, 'effect' ) ], $this->block( $css ), $css );
+        }
+        foreach ( [ 'mask: none', 'mask-image: none', 'text-shadow: none', '-webkit-text-stroke-width: 0' ] as $css ) {
+            $this->assertSame( [], $this->block( $css ), $css );
+        }
+        $this->assertSame( [ $this->decl( 'effect', null, true, 'effect' ) ], $this->block( 'text-shadow: 0 0 1px red !important' ) );
+        $this->assertSame( 'POISON:effect', $this->winner( 'p { color: #fff; text-shadow: 0 0 3px #000 }', [ 'tag' => 'p' ], 'effect' ) );
+    }
+
     // ---------------------------------------------------------------
     // Caps
     // ---------------------------------------------------------------
@@ -775,7 +851,7 @@ final class HtmlCssTest extends HtmlTestCase
             'text-align', 'padding', 'padding-top', 'border-radius', 'max-width', 'opacity', 'all', '--x', 'margin', 'red', '#abc', '#12345678', 'rgb(', 'rgb(1,2,3)', 'rgba(1,2,3,.5)', 'hsl(0 0% 0%)',
             'var(--a)', 'calc(1px + 2px)', 'url(a.png)', 'linear-gradient(red,blue)', 'inherit', 'initial', '!important', '! important', '1px', '2.5rem', '150%', '-3px', '1e9', '"Open Sans"', 'serif',
             'bold', '900', 'center', 'h1', 'p', '.card', '#hero', 'a:hover', 'a:not(.x)', '::before', '&', '> ', '+ ', '~ ', '*', '@layer x {', '@layer a, b;', '@media all {', '@container (min-width: 1px) {', '@scope (.a) {', '.hero {', 'b {', '&:hover {', '&.x {', '& p {', 'a:is(:is(:is(#a)))', 'li:nth-child(odd of #a)', ':-webkit-any(p)', '::-moz-selection', '::selection',
-            'background-image', 'color-scheme', 'direction', 'opacity', '-webkit-text-fill-color', 'background-clip', 'text', 'filter', 'url(x.png)', 'col\\6f r', '!imp\\ortant', '@\\6d edia', '\\3a ', 'inherit, serif', 'default', "\xFF\xFE", "\xC3", 'é', '@', '.', '#', '|', '=', '!', "\r\n" ];
+            'mask-image', 'text-shadow', '-webkit-text-stroke', '.a\\,b', '\\*.c', '#x\\|.y', 'background-image', 'color-scheme', 'direction', 'opacity', '-webkit-text-fill-color', 'background-clip', 'text', 'filter', 'url(x.png)', 'col\\6f r', '!imp\\ortant', '@\\6d edia', '\\3a ', 'inherit, serif', 'default', "\xFF\xFE", "\xC3", 'é', '@', '.', '#', '|', '=', '!', "\r\n" ];
         $n     = count( $pieces );
         $out   = [];
         $state = 20261022;
