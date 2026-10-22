@@ -130,7 +130,10 @@ final class HtmlStyles
     /** The start of the report sentence for `repaired` (HtmlStyles::repairedNote). */
     public const REPAIRED_NOTE = 'the markup would be repaired by a browser in a way this converter does not model: styles were not carried: ';
 
-    /** Chromium's quirks-mode sheet: a table resets these (measured: it still inherits the colour). */
+    /**
+     * Chromium's quirks-mode sheet: a table resets these. Its colour is `-internal-quirk-inherit`: the BODY's colour, not its parent's,
+     * so in a page that may be in quirks mode a table without its own colour is unresolved unless its parent's colour is the body's.
+     */
     public const QUIRKS_OWN = [ 'table' => ['size','weight','align'] ];
 
     /** Elements whose UA family is exactly the generic monospace. */
@@ -196,6 +199,9 @@ final class HtmlStyles
     private bool $workCap = false;
     private int $steps = 0;
     private int $seq = 0;
+
+    /** @var ?array<string,mixed> the body's computed colour (for the quirks-mode table colour) */
+    private ?array $bodyColor = null;
 
     /** @var array<string,array<mixed>> */
     private array $pool = [];
@@ -570,7 +576,9 @@ final class HtmlStyles
 
         $childFrames   = $frames;
         $childFrames[] = (object) [ 'tag' => $tag, 'closed' => false ];
-        $forChildren   = $clone ? self::unknownParent( $rec ) : $rec;
+        // meter and progress show a UA shadow tree without a slot: their children are outside the flat tree and inherit nothing from them
+        // (measured: initial values), so they get an unknown parent.
+        $forChildren   = ( $clone || 'meter' === $tag || 'progress' === $tag ) ? self::unknownParent( $rec ) : $rec;
         $childTable    = 'table' === $tag ? $parent : $tableParent;
         foreach ( iterator_to_array( $el->childNodes ) as $child ) {
             if ( $child instanceof \DOMElement ) {
@@ -651,6 +659,13 @@ final class HtmlStyles
             $rec[ $prop ] = $this->inherited( $prop, $best[ $prop ] ?? null, $parent, in_array( $prop, $own, true ) );
         }
         $rec['size'] = $this->size( $best['size'] ?? null, $parent, in_array( 'size', $own, true ), $tag, 'html' === $tag && null !== $el, $rec['family'] );
+        if ( ! $this->standards && 'table' === $tag && null === ( $best['color'] ?? null )
+            && ( null === $this->bodyColor || $rec['color']['state'] !== $this->bodyColor['state'] || $rec['color']['value'] !== $this->bodyColor['value'] ) ) {
+            $rec['color'] = self::rec( 'unresolved', null, 'unresolved' ); // quirks: a table takes the body's colour, not its parent's
+        }
+        if ( 'body' === $tag && null !== $el ) {
+            $this->bodyColor = $rec['color'];
+        }
         if ( $effect ) {
             $rec['color'] = self::rec( 'unresolved', null, 'effect' );
         }

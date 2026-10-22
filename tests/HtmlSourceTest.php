@@ -448,7 +448,7 @@ final class HtmlSourceTest extends HtmlTestCase
         $r = 'style="color:#ff0000;font-size:30px"';
         return [
             // round 1, kept
-            'formatting end tag over a block' => [ '<b><p>x</b>y</p>', 'misnest' ],
+            'formatting end tag over a block' => [ '<b><p>x</b>y</p>', 'autoclose' ],
             'font over a paragraph'           => [ '<font color="red"><p>x</font>y</p>', 'misnest' ],
             'em over a div'                   => [ '<em><div>x</em>y</div>', 'misnest' ],
             'span closed inside a div'        => [ '<span><div>x</span>y</div>', 'misnest' ],
@@ -463,13 +463,13 @@ final class HtmlSourceTest extends HtmlTestCase
             'li through a div'                => [ '<ul><li>a<div><li>b</li></div></ul>', 'list' ],
             'second body with attributes'     => [ '<p>x</p><body style="color:red"><p>y</p>', 'twice' ],
             'second html with attributes'     => [ '<p>x</p><html style="color:red"></html>', 'twice' ],
-            'head in the body'                => [ '<div><head><span>y</span></div>', 'twice' ],
+            'head in the body'                => [ '<div><head><span>y</span></div>', 'head' ],
             'declarative shadow root'         => [ '<div><template shadowrootmode="open"><slot></slot></template>x</div>', 'shadow' ],
             'popover'                         => [ '<div popover>x</div>', 'popover' ],
             'style inside math'               => [ '<math><style>p{color:red}</style></math><p>x</p>', 'math' ],
             // (1) self-closing syntax on non-void elements
             'div/'                            => [ '<div ' . $r . '/><p>x</p>', 'selfclose' ],
-            'div / with a space'              => [ '<div ' . $r . ' / ><p>x</p>', 'syntax' ],
+            'div / with a space'              => [ '<div ' . $r . ' / ><p>x</p>', 'tag' ],
             'p/'                              => [ '<p ' . $r . '/><span>x</span>', 'selfclose' ],
             'span/'                           => [ '<span ' . $r . '/><span>x</span>', 'selfclose' ],
             'a/'                              => [ '<a href="#" ' . $r . '/><span>x</span>', 'selfclose' ],
@@ -477,11 +477,11 @@ final class HtmlSourceTest extends HtmlTestCase
             'li/'                             => [ '<ul><li ' . $r . '/><span>x</span></ul>', 'selfclose' ],
             'td/'                             => [ '<table><tr><td ' . $r . '/><span>x</span></td></tr></table>', 'selfclose' ],
             // (2) foreign content: a self-closed svg opens nothing, so what follows is still checked
-            'svg/ then a misnest'             => [ '<svg/><b ' . $r . '><p>x</b>y<span>s</span></p>', 'misnest' ],
-            'math/ then a misnest'            => [ '<math/><b ' . $r . '><p>x</b>y</p>', 'misnest' ],
-            'svg end tag in a comment'        => [ '<svg><!-- </svg> --></svg><b ' . $r . '><p>x</b>y</p>', 'misnest' ],
-            'svg in an attribute'             => [ '<p title="<svg>">a</p><b ' . $r . '><p>x</b>y</p>', 'misnest' ],
-            'svg in a script'                 => [ '<script>"<svg>"</script><b ' . $r . '><p>x</b>y</p>', 'misnest' ],
+            'svg/ then a misnest'             => [ '<svg/><b ' . $r . '><p>x</b>y<span>s</span></p>', 'autoclose' ],
+            'math/ then a misnest'            => [ '<math/><b ' . $r . '><p>x</b>y</p>', 'autoclose' ],
+            'svg end tag in a comment'        => [ '<svg><!-- </svg> --></svg><b ' . $r . '><p>x</b>y</p>', 'autoclose' ],
+            'svg in an attribute'             => [ '<p title="<svg>">a</p><b ' . $r . '><p>x</b>y</p>', 'autoclose' ],
+            'svg in a script'                 => [ '<script>"<svg>"</script><b ' . $r . '><p>x</b>y</p>', 'autoclose' ],
             'b breaks out of svg'             => [ '<div><svg><b ' . $r . '></svg><p>x</p></div>', 'foreign' ],
             'p breaks out of svg'             => [ '<div ' . $r . '><svg><p>x</p></svg></div>', 'foreign' ],
             'span breaks out of svg'          => [ '<svg><span ' . $r . '></svg><p>x</p>', 'foreign' ],
@@ -511,19 +511,38 @@ final class HtmlSourceTest extends HtmlTestCase
             'numeric in style'                => [ '<p style="color:&#35;ff0000">x</p>', 'entity' ],
             'no semicolon'                    => [ '<p style="color:#ff0000;font-size:30px&ampx">x</p>', 'entity' ],
             // tokenizer corners
-            'abrupt comment'                  => [ '<!--><div ' . $r . '><p>x</p></div><!-- -->', 'syntax' ],
-            'bang comment end'                => [ '<!-- a --!><div ' . $r . '><p>x</p></div><!-- -->', 'syntax' ],
-            'cdata'                           => [ '<![CDATA[ <div ' . $r . '> ]]><p>x</p>', 'syntax' ],
-            'processing instruction'          => [ '<?x <div ' . $r . '> ?><p>x</p>', 'syntax' ],
-            'unquoted lt'                     => [ '<div title=a<b ' . $r . '><p>x</p></div>', 'syntax' ],
-            'slash between attributes'        => [ '<p/role="k1"/style="color:#ff0000">x</p>', 'syntax' ],
-            'glued name'                      => [ '<pstyle="color:#ff0000">x</p>', 'syntax' ],
+            'abrupt comment'                  => [ '<!--><div ' . $r . '><p>x</p></div><!-- -->', 'comment' ],
+            'bang comment end'                => [ '<!-- a --!><div ' . $r . '><p>x</p></div><!-- -->', 'comment' ],
+            'cdata'                           => [ '<![CDATA[ <div ' . $r . '> ]]><p>x</p>', 'bogus' ],
+            'processing instruction'          => [ '<?x <div ' . $r . '> ?><p>x</p>', 'bogus' ],
+            'unquoted lt'                     => [ '<div title=a<b ' . $r . '><p>x</p></div>', 'tag' ],
+            'slash between attributes'        => [ '<p/role="k1"/style="color:#ff0000">x</p>', 'tag' ],
+            'glued name'                      => [ '<pstyle="color:#ff0000">x</p>', 'tag' ],
             'duplicate style'                 => [ '<p style="color:#ff0000" STYLE="color:#0000ff">x</p>', 'duplicate' ],
             'end tag inside a script'         => [ '<script>var s="</div><div ' . $r . '>";</script><p>y</p>', 'rawtext' ],
             'end tag inside a style'          => [ '<style>.q::after{content:"</p>"} p{color:#ff0000}</style><p>y</p>', 'rawtext' ],
             'end tag inside a title'          => [ '<title>a</b><div ' . $r . '></title><p>y</p>', 'rawtext' ],
             'end tag inside a textarea'       => [ '<textarea></b><div ' . $r . '></textarea><p>y</p>', 'rawtext' ],
             'content after html'              => [ '<div><p>x</p></div></body></html><div>y</div>', 'after' ],
+            // round 3: libxml2's HTML 4 auto-close (N1)
+            'b around a p'                    => [ '<b ' . $r . '><p>x</p></b>', 'autoclose' ],
+            'small around a p'                => [ '<small><p>x</p></small>', 'autoclose' ],
+            'font around a center'            => [ '<font color="red"><center>x</center></font>', 'autoclose' ],
+            'h2 around a p'                   => [ '<h2 ' . $r . '><p>x</p></h2>', 'autoclose' ],
+            'a around a table'                => [ '<a href="#"><table><tr><td>x</td></tr></table></a>', 'autoclose' ],
+            'ol directly in ul'               => [ '<ul><li>a</li><ol><li>b</li></ol></ul>', 'autoclose' ],
+            'ul in an address'                => [ '<address><ul><li>a</li></ul></address>', 'autoclose' ],
+            'ul in a pre'                     => [ '<pre><ul><li>a</li></ul></pre>', 'autoclose' ],
+            'dl in a dt'                      => [ '<dl><dt><dl><dt>a</dt></dl></dt></dl>', 'autoclose' ],
+            'span around a stray td'          => [ '<span><td>x</td></span>', 'autoclose' ],
+            // N4 noscript, N5 integration points, N6 dialog, attributes, BOM, head
+            'noscript end in an attribute'    => [ '<noscript><p title="</noscript>">x</p></noscript><p>y</p>', 'noscript' ],
+            'noscript end in a comment'       => [ '<noscript><!-- </noscript> --></noscript><p>y</p>', 'noscript' ],
+            'style in an svg title'           => [ '<svg><title><style>p{}</style></title></svg><p>x</p>', 'foreign' ],
+            'script in foreignObject'         => [ '<svg><foreignObject><script>a</script></foreignObject></svg>', 'foreign' ],
+            'dialog'                          => [ '<p>a<dialog>b</dialog>c</p>', 'dialog' ],
+            'too many attributes'             => [ '<p ' . implode( ' ', array_map( static fn ( int $i ): string => 'a' . $i, range( 1, 201 ) ) ) . '>x</p>', 'attrs' ],
+            'a doctype after content'         => [ '<p>x</p><!DOCTYPE html>', 'doctype' ],
         ];
     }
 
@@ -548,6 +567,12 @@ final class HtmlSourceTest extends HtmlTestCase
             'entities'           => [ '<p class="a" style="font-family:&quot;Open Sans&quot;" title="&copy; &colon;">a &amp; b &mdash; c</p>' ],
             'quoted brackets'    => [ '<p title="a > b < c" data-x=\'<b>\'>x</p>' ],
             'noscript'           => [ '<noscript><img src="a.png"></noscript>' ],
+            'gtm noscript'       => [ '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-X" height="0" width="0" style="display:none"></iframe></noscript>' ],
+            'svg style'          => [ '<svg viewBox="0 0 10 10"><defs><style>.cls-1{fill:#000}</style></defs><path class="cls-1" d="M0 0"/></svg>' ],
+            'b span p'           => [ '<b><span><p>x</p></span></b>' ],
+            'p closed by div'    => [ '<div><p>a<div>b</div></p></div>' ],
+            'cells in a table'   => [ '<table><tr><td><p>a<td><b>b<td>c</table>' ],
+            'nested list in li'  => [ '<ul><li>a<ol><li>b</li></ol></li></ul>' ],
             'empty'              => [ '' ],
         ];
     }
@@ -629,5 +654,82 @@ final class HtmlSourceTest extends HtmlTestCase
         }
         $this->assertSame( [], HtmlSource::parse( '' )['repaired'] );
         $this->assertSame( [ HtmlSource::REPAIRS['deep'] ], HtmlSource::repairs( str_repeat( 'a', HtmlSource::MAX_BYTES + 1 ), 20913 ) );
+    }
+
+    /** N3: control characters are removed for libxml2 but kept by a browser: reported; the doctype is read on the HTML as given. */
+    public function testControlCharactersAreReported(): void
+    {
+        $s = HtmlSource::parse( "<!DOCTYPE html><html><body><p class=\"a\x01b\">x</p></body></html>" );
+        $this->assertSame( [ HtmlSource::REPAIRS['control'] ], $s['repaired'] );
+        $v = HtmlSource::parse( "\x0b<!DOCTYPE html><html><body><p>x</p></body></html>" );
+        $this->assertFalse( $v['doctype'], 'a vertical tab first: quirks mode in a browser' );
+        $this->assertSame( [ HtmlSource::REPAIRS['control'] ], $v['repaired'] );
+    }
+
+    /** A byte order mark is skipped by the scan and the doctype check (a BOM-saved file keeps its styles); the parse is unchanged. */
+    public function testAByteOrderMarkIsNotContent(): void
+    {
+        $s = HtmlSource::parse( "\xEF\xBB\xBF<!DOCTYPE html>\n<html lang=\"en\"><body class=\"a\" style=\"color:red\"><p>x</p></body></html>" );
+        $this->assertNull( $s['error'] );
+        $this->assertTrue( $s['doctype'] );
+        $this->assertSame( [], $s['repaired'] );
+    }
+
+    /** libxml2's parse is quadratic in the attributes of one tag: beyond MAX_ATTRIBUTES the input is refused before it runs. */
+    public function testATagWithTooManyAttributesIsRefusedQuickly(): void
+    {
+        $attrs = implode( ' ', array_map( static fn ( int $i ): string => 'a' . $i, range( 1, 40000 ) ) );
+        $start = hrtime( true );
+        $s     = HtmlSource::parse( '<p ' . $attrs . '>x</p>' );
+        $this->assertLessThan( 300, ( hrtime( true ) - $start ) / 1e6 );
+        $this->assertStringContainsString( 'more than ' . HtmlSource::MAX_ATTRIBUTES . ' attributes', (string) $s['error'] );
+        $ok = HtmlSource::parse( '<p ' . implode( ' ', array_map( static fn ( int $i ): string => 'a' . $i, range( 1, 999 ) ) ) . ' title="x > y">x</p>' );
+        $this->assertNull( $ok['error'] );
+        $this->assertSame( [ HtmlSource::REPAIRS['attrs'] ], $ok['repaired'] );
+    }
+
+    /**
+     * N1: the pinned auto-close table is exactly what libxml2 does on THIS machine: every pinned pair is not nested by libxml2 (and gives
+     * the recorded tree), every other pair of the matrix's tags is nested; the recorded Chromium outcomes give the pinned classification.
+     */
+    public function testTheAutoCloseTableMatchesThisLibxmlAndTheRecordedBrowser(): void
+    {
+        $m     = require __DIR__ . '/Support/html-autoclose-matrix.php';
+        $table = ( new \ReflectionClassConstant( HtmlSource::class, 'AUTOCLOSE' ) )->getValue();
+        $void  = [ 'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr', 'param', 'keygen', 'frame', 'basefont', 'bgsound', 'image' ];
+        $parts = [ 'caption', 'col', 'colgroup', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr' ];
+        $pinned = 0;
+        foreach ( $m['tags'] as $x ) {
+            if ( in_array( $x, [ 'html', 'body', 'head' ], true ) || in_array( $x, $void, true ) || in_array( $x, $parts, true ) ) {
+                continue;
+            }
+            foreach ( $m['tags'] as $y ) {
+                if ( in_array( $y, [ 'html', 'body', 'head' ], true ) ) {
+                    continue;
+                }
+                $d = new \DOMDocument();
+                $prev = libxml_use_internal_errors( true );
+                $d->loadHTML( '<?xml encoding="UTF-8"><!DOCTYPE html><body><div id="r"><' . $x . ' id="a"><' . $y . ' id="b">t</' . $y . '>u</' . $x . '></div>', LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_COMPACT | LIBXML_HTML_NODEFDTD );
+                libxml_clear_errors();
+                libxml_use_internal_errors( $prev );
+                $b = $d->getElementById( 'b' );
+                $a = $d->getElementById( 'a' );
+                $got = ( $b ? $b->parentNode->nodeName . '#' . ( $b->parentNode instanceof \DOMElement ? $b->parentNode->getAttribute( 'id' ) : '' ) : 'MISSING' ) . '|' . ( $a ? $a->parentNode->nodeName : 'MISSING' );
+                $nests = str_starts_with( $got, $x . '#a|' );
+                $rec   = $m['pairs'][ $x . '>' . $y ] ?? null;
+                if ( $nests ) {
+                    $this->assertNull( $rec, $x . '>' . $y . ' nests in this libxml2 but is pinned' );
+                    $this->assertArrayNotHasKey( $y, $table[ $x ] ?? [], $x . '>' . $y );
+                    continue;
+                }
+                ++$pinned;
+                $this->assertNotNull( $rec, $x . '>' . $y . ' is not nested by this libxml2 but not pinned' );
+                $this->assertSame( $rec[0], $got, $x . '>' . $y . ': libxml2 changed' );
+                $want = $rec[1] !== $rec[0] ? 'flag' : ( $rec[2] !== $rec[0] ? 'quirks' : 'agree' );
+                $this->assertSame( $want, $table[ $x ][ $y ] ?? null, $x . '>' . $y );
+            }
+        }
+        $this->assertSame( 129, $pinned );
+        $this->assertSame( 129, array_sum( array_map( 'count', $table ) ) );
     }
 }

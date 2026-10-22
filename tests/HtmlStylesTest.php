@@ -550,7 +550,7 @@ final class HtmlStylesTest extends HtmlTestCase
     public function testRepairedMarkupResolvesNothing(): void
     {
         $r = $this->page( 'p{color:#111111;padding:4px} .b{background:#fff}', '<b><p class="b">x</b>y</p><p>z</p>' );
-        $this->assertSame( [ \AiEditorDivi5\WP\HtmlSource::REPAIRS['misnest'] ], $r['repaired'] );
+        $this->assertSame( [ \AiEditorDivi5\WP\HtmlSource::REPAIRS['autoclose'] ], $r['repaired'] );
         $this->assertTrue( $r['unread'] );
         foreach ( $r['nodes'] as $path => $rec ) {
             foreach ( [ 'color', 'family', 'size', 'weight', 'align' ] as $prop ) {
@@ -681,5 +681,31 @@ final class HtmlStylesTest extends HtmlTestCase
         unset( $r );
         $this->assertSame( $hash, md5( serialize( HtmlStyles::resolve( $s['body'], $s['css'], $s['inline'], $s['presentational'], HtmlStyles::document( $s ) ) ) ) );
         $this->assertFalse( $this->page( '.a{color:#000}', '<p class="a">x</p>' )['work_cap'] );
+    }
+
+    /** N2: in a page that may be in quirks mode a table takes the body's colour (-internal-quirk-inherit), not its parent's. */
+    public function testAQuirksTableTakesTheBodysColour(): void
+    {
+        $body = '<body style="color:#00ff00"><div style="color:#ff0000"><table><tr><td>a</td></tr></table></div><table><tr><td>b<table><tr><td>c</td></tr></table></td></tr></table><div style="color:#ff0000"><table style="color:#0000ff"><tr><td>d</td></tr></table></div></body>';
+        foreach ( [ '', '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">', '<!DOCTYPE html foo>' ] as $doctype ) {
+            $r = $this->styles( $doctype . '<html>' . $body . '</html>' );
+            $this->assertUnresolved( $r['nodes']['/html/body/div[1]/table/tr/td']['color'], null, $doctype . ' under a red div' );
+            $this->assertSet( '#00ff00', $r['nodes']['/html/body/table/tr/td']['color'], $doctype . ' directly in the body' );
+            $this->assertSet( '#00ff00', $r['nodes']['/html/body/table/tr/td/table/tr/td']['color'], $doctype . ' a nested table' );
+            $this->assertSet( '#0000ff', $r['nodes']['/html/body/div[2]/table/tr/td']['color'], $doctype . ' its own colour' );
+        }
+        $r = $this->styles( '<!DOCTYPE html><html>' . $body . '</html>' );
+        $this->assertSet( '#ff0000', $r['nodes']['/html/body/div[1]/table/tr/td']['color'], 'standards mode: the parent' );
+    }
+
+    /** The children of meter and progress are not rendered and inherit nothing from them (Chromium: initial values); own values still count. */
+    public function testMeterAndProgressChildrenHaveAnUnknownParent(): void
+    {
+        foreach ( [ 'meter', 'progress' ] as $tag ) {
+            $r = $this->page( '', '<div style="color:#ff0000;font-size:30px"><' . $tag . ' style="color:#00ff00;font-size:20px"><span>x</span><b style="color:#0000ff">y</b></' . $tag . '></div>' );
+            $this->assertUnresolved( $r['nodes'][ '/html/body/div/' . $tag . '/span' ]['color'], null, $tag );
+            $this->assertUnresolved( $r['nodes'][ '/html/body/div/' . $tag . '/span' ]['size'], null, $tag );
+            $this->assertSet( '#0000ff', $r['nodes'][ '/html/body/div/' . $tag . '/b' ]['color'], $tag );
+        }
     }
 }

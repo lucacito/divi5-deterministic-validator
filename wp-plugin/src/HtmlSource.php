@@ -53,7 +53,13 @@ final class HtmlSource
         'nobr'      => 'a nobr inside a nobr',
         'a'         => 'a link inside a link',
         'list'      => 'a list item closed through another element',
-        'twice'     => 'a second body, html or head tag',
+        'twice'     => 'a second body or html tag with attributes',
+        'head'      => 'a head tag after the page content started',
+        'autoclose' => 'an element that libxml2 closes early where a browser keeps it open (for example a b or an h2 around a paragraph, a list directly inside a list)',
+        'noscript'  => 'a noscript element whose end a browser finds somewhere else',
+        'dialog'    => 'a dialog element (it changes the elements around it)',
+        'control'   => 'control characters a browser keeps and this converter removes',
+        'attrs'     => 'a tag with more than 200 attributes',
         'shadow'    => 'a declarative shadow root',
         'popover'   => 'a popover',
         'math'      => 'a style element inside math',
@@ -62,7 +68,10 @@ final class HtmlSource
         'obsolete'  => 'an obsolete element browsers parse in their own way (image, xmp, noembed, noframes, plaintext, listing, isindex, marquee, nextid, bgsound, keygen, menuitem, frameset, frame)',
         'entity'    => 'a character reference in a style, class, id, type, media or rel attribute',
         'rawtext'   => 'an end tag or comment opener inside script, style, title, textarea or iframe text',
-        'syntax'    => 'markup parsers tokenize differently (an unusual comment, CDATA, a processing instruction, an unusual tag or attribute)',
+        'comment'   => 'a comment written in a way parsers end differently (<!-->, <!--->, --!> or a comment that never ends)',
+        'bogus'     => 'CDATA, a processing instruction or another markup declaration that is not a doctype',
+        'doctype'   => 'a doctype that is not the first thing in the document',
+        'tag'       => 'an unusual tag or attribute (an unexpected character in a name, an unquoted value with quotes or <, a slash between attributes, a tag that never ends)',
         'duplicate' => 'an attribute written twice',
         'after'     => 'content after the end of the document',
         'deep'      => 'markup nested too deeply or too large to check',
@@ -106,6 +115,61 @@ final class HtmlSource
         'track', 'ul', 'wbr', 'xmp' ];
 
     private const MAX_SCAN_DEPTH = 600;
+
+    /** Attributes on one start tag: beyond this the scan reports `attrs` (libxml2's parse is quadratic in them). */
+    private const MAX_SCAN_ATTRIBUTES = 200;
+
+    /** Attributes on one start tag beyond which the INPUT is refused before libxml2 parses it (its cost grows with the square). */
+    public const MAX_ATTRIBUTES = 1000;
+
+    /**
+     * libxml2 2.9's HTML 4 start-tag auto-close (htmlAutoClose) against the HTML5 parser, pinned from the element-pair matrix of the Task 6
+     * review (round 3: '<div><X><Y>' for 98 x 98 tags, libxml2 2.9.13 loadHTML vs Chromium DOMParser; the data and its re-derivation on
+     * the current machine are in tests/Support/html-autoclose-matrix.php and HtmlSourceTest). Current element X => new start tag Y =>
+     *   'flag'   libxml2 closes X where the browser does not (the trees differ): reported as `autoclose`;
+     *   'quirks' the same, only in quirks mode (a table in an open p);
+     *   'agree'  libxml2 and the browser both close X: libxml2 then looks at the next open element, and so does the scan.
+     * Pairs not listed: libxml2 nests Y in X. Void elements and table parts as X are left out (they are never the current node on the scan's
+     * stack, or the resolver models them), and so are html, body and head as Y. A table part Y is looked up only outside a table.
+     */
+    private const AUTOCLOSE = [
+        'a' => [ 'a' => 'agree', 'fieldset' => 'flag', 'table' => 'flag', 'td' => 'flag', 'th' => 'flag' ],
+        'address' => [ 'dd' => 'flag', 'dl' => 'flag', 'dt' => 'flag', 'form' => 'flag', 'li' => 'flag', 'ul' => 'flag' ],
+        'b' => [ 'center' => 'flag', 'p' => 'flag', 'td' => 'flag', 'th' => 'flag' ],
+        'big' => [ 'p' => 'flag' ],
+        'dd' => [ 'dt' => 'agree' ],
+        'dir' => [ 'dd' => 'flag', 'dl' => 'flag', 'dt' => 'flag', 'form' => 'flag', 'ul' => 'flag' ],
+        'dl' => [ 'form' => 'flag', 'li' => 'flag' ],
+        'dt' => [ 'dd' => 'agree', 'dl' => 'flag' ],
+        'font' => [ 'center' => 'flag', 'td' => 'flag', 'th' => 'flag' ],
+        'form' => [ 'form' => 'flag' ],
+        'h1' => [ 'fieldset' => 'flag', 'form' => 'flag', 'li' => 'flag', 'p' => 'flag', 'table' => 'flag' ],
+        'h2' => [ 'fieldset' => 'flag', 'form' => 'flag', 'li' => 'flag', 'p' => 'flag', 'table' => 'flag' ],
+        'h3' => [ 'fieldset' => 'flag', 'form' => 'flag', 'li' => 'flag', 'p' => 'flag', 'table' => 'flag' ],
+        'h4' => [ 'fieldset' => 'flag', 'form' => 'flag', 'li' => 'flag', 'p' => 'flag', 'table' => 'flag' ],
+        'h5' => [ 'fieldset' => 'flag', 'form' => 'flag', 'li' => 'flag', 'p' => 'flag', 'table' => 'flag' ],
+        'h6' => [ 'fieldset' => 'flag', 'form' => 'flag', 'li' => 'flag', 'p' => 'flag', 'table' => 'flag' ],
+        'i' => [ 'center' => 'flag', 'p' => 'flag', 'td' => 'flag', 'th' => 'flag' ],
+        'legend' => [ 'fieldset' => 'flag' ],
+        'li' => [ 'li' => 'agree' ],
+        'menu' => [ 'dd' => 'flag', 'dl' => 'flag', 'dt' => 'flag', 'form' => 'flag', 'ul' => 'flag' ],
+        'ol' => [ 'form' => 'flag', 'ul' => 'flag' ],
+        'option' => [ 'optgroup' => 'agree', 'option' => 'agree' ],
+        'p' => [ 'address' => 'agree', 'blockquote' => 'agree', 'caption' => 'flag', 'center' => 'agree', 'col' => 'flag', 'colgroup' => 'flag', 'dd' => 'agree', 'dir' => 'agree', 'div' => 'agree', 'dl' => 'agree', 'dt' => 'agree', 'fieldset' => 'agree', 'form' => 'agree', 'h1' => 'agree', 'h2' => 'agree', 'h3' => 'agree', 'h4' => 'agree', 'h5' => 'agree', 'h6' => 'agree', 'hr' => 'agree', 'li' => 'agree', 'menu' => 'agree', 'ol' => 'agree', 'p' => 'agree', 'pre' => 'agree', 'table' => 'quirks', 'tbody' => 'flag', 'td' => 'flag', 'tfoot' => 'flag', 'th' => 'flag', 'tr' => 'flag', 'ul' => 'agree' ],
+        'pre' => [ 'dd' => 'flag', 'dl' => 'flag', 'dt' => 'flag', 'fieldset' => 'flag', 'form' => 'flag', 'li' => 'flag', 'table' => 'flag', 'ul' => 'flag' ],
+        's' => [ 'p' => 'flag' ],
+        'small' => [ 'p' => 'flag' ],
+        'span' => [ 'td' => 'flag', 'th' => 'flag' ],
+        'strike' => [ 'p' => 'flag' ],
+        'tt' => [ 'p' => 'flag' ],
+        'u' => [ 'p' => 'flag', 'td' => 'flag', 'th' => 'flag' ],
+        'ul' => [ 'address' => 'flag', 'form' => 'flag', 'menu' => 'flag', 'ol' => 'flag', 'pre' => 'flag' ],
+    ];
+
+    /** Foreign elements whose content libxml2 and a browser parse differently when it holds a raw-text tag (HTML integration points). */
+    private const INTEGRATION = [ 'title', 'desc', 'foreignobject', 'mi', 'mo', 'mn', 'ms', 'mtext' ];
+
+    private const TABLE_PARTS = [ 'caption', 'col', 'colgroup', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr' ];
 
     /** The scan's step budget (tags + attributes + raw-text checks), tied to the input cap: past it the markup is reported. */
     private const MAX_SCAN_STEPS = 2 * self::MAX_BYTES;
@@ -217,10 +281,16 @@ final class HtmlSource
 
             return $out;
         }
+        if ( self::maxAttributes( $html ) > self::MAX_ATTRIBUTES ) {
+            $out['error'] = 'A tag in the HTML has more than ' . self::MAX_ATTRIBUTES . ' attributes. Remove them or convert the page in parts.';
+
+            return $out;
+        }
+        // Read on the HTML as given (a browser keeps control characters), before they are removed for libxml2.
+        $standards = self::standards( $html );
+        $repaired  = self::repairs( $html, LIBXML_VERSION );
         // NUL bytes and other control characters have no place in a page; drop them before parsing.
         $html = (string) preg_replace( '/[\x00-\x08\x0b\x0c\x0e-\x1f]/', '', $html );
-        // Standards mode: <!DOCTYPE html> first. Nothing else is trusted (a comment first can hide text that a browser reads first).
-        $standards = 1 === preg_match( '/\A(?:\xEF\xBB\xBF)?[\t\n\f\r ]*<!doctype[\t\n\f\r ]+html[\t\n\f\r ]*>/i', $html );
 
         $doc  = new \DOMDocument();
         $prev = libxml_use_internal_errors( true );
@@ -257,7 +327,7 @@ final class HtmlSource
         $out['title'] = $titleNode instanceof \DOMNode ? self::collapse( $titleNode->textContent ) : '';
 
         self::collectCss( $doc, $out );
-        $out['repaired'] = self::repairs( $html, LIBXML_VERSION );
+        $out['repaired'] = $repaired;
         $out['doctype']      = $standards;
         $out['color_scheme'] = self::darkCapable( $doc );
 
@@ -439,20 +509,76 @@ final class HtmlSource
      */
     public static function repairs( string $html, int $libxml = LIBXML_VERSION ): array
     {
-        $key = $libxml > self::LIBXML_MAX_TESTED ? 'parser' : self::scan( $html );
+        if ( $libxml > self::LIBXML_MAX_TESTED ) {
+            $key = 'parser';
+        } elseif ( 1 === preg_match( '/[\x00-\x08\x0b\x0c\x0e-\x1f]/', $html ) ) {
+            $key = 'control'; // parse() removes them, a browser keeps them (a vertical tab first even changes the mode)
+        } else {
+            $key = self::scan( $html, self::standards( $html ) );
+        }
 
         return null === $key ? [] : [ self::REPAIRS[ $key ] ];
     }
 
+    /**
+     * The largest number of attributes on one start tag (a linear count: names outside quoted values, up to each tag's end). parse() refuses
+     * an input beyond MAX_ATTRIBUTES before libxml2 reads it.
+     */
+    private static function maxAttributes( string $h ): int
+    {
+        $n   = strlen( $h );
+        $max = 0;
+        $i   = 0;
+        while ( false !== ( $lt = strpos( $h, '<', $i ) ) ) {
+            $p = $lt + 1;
+            if ( $p >= $n || ! ctype_alpha( $h[ $p ] ) ) {
+                $i = $p;
+                continue;
+            }
+            $p    += strcspn( $h, self::WS . '/>', $p );
+            $count = 0;
+            while ( $p < $n && '>' !== $h[ $p ] ) {
+                $p += strspn( $h, self::WS . '/', $p );
+                if ( $p >= $n || '>' === $h[ $p ] ) {
+                    break;
+                }
+                ++$count;
+                $p += max( 1, strcspn( $h, self::WS . '/>=', $p ) );
+                $p += strspn( $h, self::WS, $p );
+                if ( $p < $n && '=' === $h[ $p ] ) {
+                    ++$p;
+                    $p += strspn( $h, self::WS, $p );
+                    if ( $p < $n && ( '"' === $h[ $p ] || "'" === $h[ $p ] ) ) {
+                        $e = strpos( $h, $h[ $p ], $p + 1 );
+                        $p = false === $e ? $n : $e + 1;
+                    } else {
+                        $p += strcspn( $h, self::WS . '>', $p );
+                    }
+                }
+            }
+            $max = max( $max, $count );
+            $i   = min( $n, $p + 1 );
+        }
+
+        return $max;
+    }
+
+    /** Standards mode: <!DOCTYPE html> first, after an optional byte order mark and white space (nothing else is trusted). */
+    public static function standards( string $html ): bool
+    {
+        return 1 === preg_match( '/\A(?:\xEF\xBB\xBF)?[\t\n\f\r ]*<!doctype[\t\n\f\r ]+html[\t\n\f\r ]*>/i', $html );
+    }
+
     /** @return ?string the REPAIRS key of the first construct that is not modelled, or null */
-    private static function scan( string $h ): ?string
+    private static function scan( string $h, bool $standards ): ?string
     {
         $n = strlen( $h );
         if ( $n > self::MAX_BYTES ) {
             return 'deep';
         }
-        $lh      = strtolower( $h ); // ASCII lower case, for tag and attribute names
-        $i       = 0;
+        $lh       = strtolower( $h ); // ASCII lower case, for tag and attribute names
+        $i        = 0 === strncmp( $h, "\xEF\xBB\xBF", 3 ) ? 3 : 0; // a byte order mark is not content (both parsers skip it)
+        $noscript = null;              // where a browser ends the open noscript (it is raw text with scripting on)
         $steps   = 0;
         $stack   = [];
         $open    = [];
@@ -481,32 +607,35 @@ final class HtmlSource
                 if ( 0 === substr_compare( $h, '<!--', $lt, 4 ) ) {
                     $j = $lt + 4;
                     if ( ( $j < $n && '>' === $h[ $j ] ) || 0 === substr_compare( $h, '->', $j, 2 ) ) {
-                        return 'syntax'; // <!--> and <!---> end at once in a browser
+                        return 'comment'; // <!--> and <!---> end at once in a browser
                     }
                     $e = strpos( $h, '-->', $j );
                     if ( false === $e ) {
-                        return 'syntax';
+                        return 'comment';
                     }
                     if ( false !== strpos( substr( $h, $j, $e - $j ), '--!>' ) ) {
-                        return 'syntax'; // --!> ends a comment in a browser
+                        return 'comment'; // --!> ends a comment in a browser
                     }
                     $i = $e + 3;
                     continue;
                 }
-                if ( 0 === substr_compare( $lh, '<!doctype', $lt, 9 ) && [] === $stack && ! $content ) {
+                if ( 0 === substr_compare( $lh, '<!doctype', $lt, 9 ) ) {
+                    if ( [] !== $stack || $content ) {
+                        return 'doctype';
+                    }
                     $e = strpos( $h, '>', $lt );
                     if ( false === $e ) {
-                        return 'syntax';
+                        return 'tag';
                     }
                     $i = $e + 1;
                     continue;
                 }
-                return 'syntax'; // CDATA, a bogus comment or a misplaced doctype
+                return 'bogus'; // CDATA or a bogus comment
             }
             if ( '?' === $c ) {
                 $e = strpos( $h, '>', $lt );
                 if ( false === $e || '?' !== $h[ $e - 1 ] ) {
-                    return 'syntax'; // a browser ends a processing instruction at the first >, libxml2 at the question mark and >
+                    return 'bogus'; // a browser ends a processing instruction at the first >, libxml2 at the question mark and >
                 }
                 $i = $e + 1;
                 continue;
@@ -515,7 +644,7 @@ final class HtmlSource
             $j   = $lt + ( $end ? 2 : 1 );
             if ( $j >= $n || ! ctype_alpha( $h[ $j ] ) ) {
                 if ( $end ) {
-                    return 'syntax'; // </> or a bogus comment
+                    return 'bogus'; // </> or a bogus comment
                 }
                 if ( $ended ) {
                     return 'after';
@@ -532,7 +661,13 @@ final class HtmlSource
 
             if ( $end ) {
                 if ( $selfClose ) {
-                    return 'syntax';
+                    return 'tag';
+                }
+                if ( 'noscript' === $name && [] === $foreign ) {
+                    if ( $noscript !== $lt ) {
+                        return 'noscript'; // the browser ended it somewhere else (inside an attribute, a comment ...)
+                    }
+                    $noscript = null;
                 }
                 if ( [] !== $foreign ) {
                     if ( end( $foreign ) !== $name ) {
@@ -582,6 +717,9 @@ final class HtmlSource
                 if ( 'style' === $name && in_array( 'math', $foreign, true ) ) {
                     return 'math';
                 }
+                if ( in_array( $name, self::RAW_TEXT, true ) && in_array( end( $foreign ), self::INTEGRATION, true ) ) {
+                    return 'foreign'; // HTML inside an integration point: libxml2 and a browser read the raw text differently
+                }
                 if ( ! $selfClose ) {
                     $foreign[] = $name;
                     if ( count( $foreign ) > self::MAX_SCAN_DEPTH ) {
@@ -592,6 +730,19 @@ final class HtmlSource
             }
             if ( in_array( $name, self::OBSOLETE, true ) ) {
                 return 'obsolete';
+            }
+            if ( 'dialog' === $name ) {
+                return 'dialog'; // removed before the style reader sees it, but it closes an open p in a browser
+            }
+            if ( 'noscript' === $name ) {
+                if ( null !== $noscript ) {
+                    return 'noscript';
+                }
+                $e        = strpos( $lh, '</noscript', $i );
+                $noscript = false === $e ? -1 : $e;
+                if ( -1 === $noscript ) {
+                    return 'noscript';
+                }
             }
             if ( $selfClose && ! in_array( $name, self::VOID, true ) && 'svg' !== $name && 'math' !== $name ) {
                 return 'selfclose'; // a browser ignores the slash, libxml2 closes the element
@@ -620,7 +771,7 @@ final class HtmlSource
             }
             if ( 'head' === $name ) {
                 if ( $content || $sawBody ) {
-                    return 'twice';
+                    return 'head';
                 }
                 continue;
             }
@@ -656,6 +807,34 @@ final class HtmlSource
             if ( ( 'button' === $name || 'nobr' === $name || 'a' === $name ) && ( $open[ $name ] ?? 0 ) > 0 ) {
                 return $name;
             }
+            // A new cell in a table: the browser closes the open cell and what is open in it; libxml2 closes the same elements when
+            // each of them auto-closes for the cell (AUTOCLOSE), so the scan does too. Otherwise the stack is left alone.
+            if ( ( 'td' === $name || 'th' === $name ) && ( $open['table'] ?? 0 ) > 0 ) {
+                for ( $x = count( $stack ) - 1; $x >= 0; $x-- ) {
+                    $t = $stack[ $x ];
+                    if ( 'td' === $t || 'th' === $t ) {
+                        while ( count( $stack ) > $x ) {
+                            --$open[ array_pop( $stack ) ];
+                        }
+                        break;
+                    }
+                    if ( ! isset( self::AUTOCLOSE[ $t ][ $name ] ) ) {
+                        break;
+                    }
+                }
+            }
+            // libxml2's HTML 4 auto-close: it closes the CURRENT node for some new tags, then looks at the next one (AUTOCLOSE).
+            if ( ! in_array( $name, self::TABLE_PARTS, true ) || ( $open['table'] ?? 0 ) < 1 ) {
+                for ( $x = count( $stack ) - 1; $x >= 0; $x-- ) {
+                    $rel = self::AUTOCLOSE[ $stack[ $x ] ][ $name ] ?? null;
+                    if ( null === $rel ) {
+                        break;
+                    }
+                    if ( 'flag' === $rel || ( 'quirks' === $rel && ! $standards ) ) {
+                        return 'autoclose';
+                    }
+                }
+            }
             if ( in_array( $name, [ 'li', 'dd', 'dt' ], true ) ) {
                 $match = 'li' === $name ? [ 'li' ] : [ 'dd', 'dt' ];
                 for ( $x = count( $stack ) - 1, $walk = 0; $x >= 0; $x--, $walk++ ) {
@@ -688,6 +867,10 @@ final class HtmlSource
             }
         }
 
+        if ( null !== $noscript ) {
+            return 'noscript'; // the browser's end of the noscript was never reached by the scan
+        }
+
         return null;
     }
 
@@ -702,7 +885,7 @@ final class HtmlSource
         $k    = $j + strcspn( $h, self::WS . '/>', $j );
         $name = substr( $lh, $j, $k - $j );
         if ( 1 !== preg_match( '/^[a-z][a-z0-9-]*$/D', $name ) ) {
-            return 'syntax';
+            return 'tag';
         }
         $attrs = [];
         $p     = $k;
@@ -712,7 +895,7 @@ final class HtmlSource
             }
             $p += strspn( $h, self::WS, $p );
             if ( $p >= $n ) {
-                return 'syntax'; // the tag never ends
+                return 'tag'; // the tag never ends
             }
             $ch = $h[ $p ];
             if ( '>' === $ch ) {
@@ -722,40 +905,43 @@ final class HtmlSource
                 if ( $p + 1 < $n && '>' === $h[ $p + 1 ] ) {
                     return [ $p + 2, $name, $attrs, true ];
                 }
-                return 'syntax'; // a slash between attributes
+                return 'tag'; // a slash between attributes
             }
             $q     = $p + strcspn( $h, self::WS . '/>=', $p );
             $aname = substr( $lh, $p, $q - $p );
             if ( 1 !== preg_match( '/^[a-z_][a-z0-9_.:-]*$/D', $aname ) ) {
-                return 'syntax';
+                return 'tag';
             }
             if ( isset( $attrs[ $aname ] ) ) {
                 return 'duplicate';
             }
             $attrs[ $aname ] = true;
+            if ( count( $attrs ) > self::MAX_SCAN_ATTRIBUTES ) {
+                return 'attrs';
+            }
             $p               = $q + strspn( $h, self::WS, $q );
             if ( $p < $n && '=' === $h[ $p ] ) {
                 ++$p;
                 $p += strspn( $h, self::WS, $p );
                 if ( $p >= $n ) {
-                    return 'syntax';
+                    return 'tag';
                 }
                 if ( '"' === $h[ $p ] || "'" === $h[ $p ] ) {
                     $e = strpos( $h, $h[ $p ], $p + 1 );
                     if ( false === $e ) {
-                        return 'syntax';
+                        return 'tag';
                     }
                     $value = substr( $h, $p + 1, $e - $p - 1 );
                     $p     = $e + 1;
                     if ( $p < $n && false === strpos( self::WS . '/>', $h[ $p ] ) ) {
-                        return 'syntax'; // no space between attributes
+                        return 'tag'; // no space between attributes
                     }
                 } else {
                     $q     = $p + strcspn( $h, self::WS . '>', $p );
                     $value = substr( $h, $p, $q - $p );
                     $p     = $q;
                     if ( false !== strpbrk( $value, "\"'<=`" ) ) {
-                        return 'syntax';
+                        return 'tag';
                     }
                 }
                 if ( in_array( $aname, self::READ_ATTRS, true ) && false !== strpos( $value, '&' ) && 1 === preg_match( '/&(?!(?:amp|lt|gt|quot|apos|nbsp);)/', $value ) ) {
