@@ -208,7 +208,7 @@ final class HtmlStyleBlocks
 
         return [
             'anchor'  => $anchor,
-            'paint'   => null === $anchor ? self::none() : $this->chainPaint( $anchor ),
+            'paint'   => null === $anchor ? self::none() : $this->chainPaint( $anchor, true ),
             'padding' => ( null === $from || $degraded ) ? [] : $this->padding( $from ),
             'rows'    => $rows,
         ];
@@ -247,7 +247,7 @@ final class HtmlStyleBlocks
                 $anchors   = [ 'column' => $col, 'row' => $anchor, 'section' => $sectionAnchor ];
                 $columns[] = [
                     'anchor'  => $col,
-                    'paint'   => null === $col ? self::none() : $this->ownPaint( $col ),
+                    'paint'   => null === $col ? self::none() : $this->ownPaint( $col, true ),
                     'padding' => null === $col ? [] : $this->padding( $col ),
                     'modules' => $this->modules( is_array( $mods ) ? $mods : [], $anchors, $degraded ),
                 ];
@@ -259,7 +259,7 @@ final class HtmlStyleBlocks
 
         return [
             'anchor'    => $anchor,
-            'paint'     => null === $anchor ? self::none() : $this->ownPaint( $anchor ),
+            'paint'     => null === $anchor ? self::none() : $this->ownPaint( $anchor, true ),
             'padding'   => null === $anchor ? [] : $this->padding( $anchor ),
             'max_width' => ( $degraded || null === ( $anchor ?? $sectionAnchor ) ) ? null : $this->maxWidth( (string) ( $anchor ?? $sectionAnchor ) ),
             'columns'   => $columns,
@@ -316,6 +316,11 @@ final class HtmlStyleBlocks
         }
 
         $rec = HtmlStyles::common( $this->nodes, 'text' === $type ? $from : [ $from[0] ], $this->ignored );
+        foreach ( 'button' === $type ? [ 'color' ] : [ 'color', 'size' ] as $prop ) {
+            if ( 'effect' === ( $rec[ $prop ]['reason'] ?? null ) ) {
+                $this->bump( 'effect' ); // made unresolved by an effect (opacity, filter ...) or a scale on the element or an ancestor
+            }
+        }
         foreach ( $from as $p ) {
             if ( null !== $this->value( $p, 'max_width' ) ) {
                 $this->bump( 'not_on_block' ); // plan D6
@@ -328,7 +333,7 @@ final class HtmlStyleBlocks
             foreach ( self::LEVELS as $level ) {
                 $base['between'][ $level ] = $this->between( [ $parent ], $anchors[ $level ] );
             }
-            $base['fill']       = $this->ownPaint( $from[0] );
+            $base['fill']       = $this->ownPaint( $from[0], true );
             $label              = self::ink( $rec['color'] );
             $base['label']      = 'set' === $label['state'] ? $label : [ 'state' => 'none', 'value' => null ];
             $parentRec          = HtmlStyles::common( $this->nodes, [ $parent ], $this->ignored );
@@ -450,7 +455,7 @@ final class HtmlStyleBlocks
             $family = null;
         }
         if ( null === $family ) {
-            $this->bump( array() === $choice['fonts'] ? 'generic_font' : 'font_unavailable' );
+            $this->bump( $choice['reason'] ?? 'font_unavailable' );
         }
 
         return $family;
@@ -538,14 +543,22 @@ final class HtmlStyleBlocks
     // Backgrounds and the tree
     // ---------------------------------------------------------------
 
-    /** @return array{state:string,value:?string} */
-    private function ownPaint( string $path ): array
+    /**
+     * The block's own paint. $count: this is the paint a block carries (counted once per block), so a background an effect made
+     * unknown is counted `effect` in the report (never silent).
+     *
+     * @return array{state:string,value:?string}
+     */
+    private function ownPaint( string $path, bool $count = false ): array
     {
         $bg = $this->value( $path, 'background' );
         if ( ! is_array( $bg ) ) {
             return [ 'state' => 'unknown', 'value' => null ]; // no record: nothing is known about it
         }
         $state = $bg['state'] ?? 'unknown';
+        if ( $count && 'unknown' === $state && 'effect' === ( $bg['reason'] ?? null ) ) {
+            $this->bump( 'effect' );
+        }
         if ( 'none' === $state ) {
             return self::none();
         }
@@ -557,10 +570,10 @@ final class HtmlStyleBlocks
     }
 
     /** The first background that is not none on [path, its ancestors up to html] (plan D3). @return array{state:string,value:?string} */
-    private function chainPaint( string $path ): array
+    private function chainPaint( string $path, bool $count = false ): array
     {
         for ( $p = $path; '' !== $p; $p = self::parentOf( $p ) ) {
-            $paint = $this->ownPaint( $p );
+            $paint = $this->ownPaint( $p, $count );
             if ( 'none' !== $paint['state'] ) {
                 return $paint;
             }

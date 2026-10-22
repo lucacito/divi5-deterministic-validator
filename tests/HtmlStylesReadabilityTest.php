@@ -148,7 +148,8 @@ final class HtmlStylesReadabilityTest extends HtmlTestCase
         $this->assertSame( [ 'background' => HtmlStyleBlocks::CANVAS ], $d['sections'][0]['style'] );
         $this->assertSame( [ [ 'color' => '#1d4ed8' ], [ 'color' => '#000000' ] ], self::moduleStyles( $d['sections'][0] ) );
         $this->assertSame( [], $d['report']['dropped_unreadable'] );
-        $this->assertSame( 1, $d['report']['carried']['background'] );
+        $this->assertSame( 1, $d['report']['carried']['canvas'] );
+        $this->assertArrayNotHasKey( 'background', $d['report']['carried'], 'the invented white canvas is not a carried source background' );
         $this->assertSame( 2, $d['report']['carried']['color'] );
     }
 

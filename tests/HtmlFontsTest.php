@@ -59,6 +59,7 @@ final class HtmlFontsTest extends TestCase
         $r = HtmlFonts::choose( [ 'sans-serif' ] );
         $this->assertNull( $r['family'] );
         $this->assertSame( [], $r['fonts'] );
+        $this->assertSame( 'generic_font', $r['reason'] );
 
         // The web-safe set is used only when its decision is proven.
         $off = HtmlFonts::choose( [ 'Georgia' ], false );
@@ -90,7 +91,44 @@ final class HtmlFontsTest extends TestCase
             [ 'source' => 'Brand Sans', 'action' => 'not available in Divi: kept the theme font' ],
             [ 'source' => 'Other Brand', 'action' => 'not available in Divi: kept the theme font' ],
         ], $r['fonts'] );
-        $this->assertSame( [ 'family' => null, 'fonts' => [] ], HtmlFonts::choose( [] ) );
+        $this->assertSame( 'generic_font', $r['reason'] );
+        $this->assertSame( [ 'family' => null, 'fonts' => [], 'reason' => 'generic_font' ], HtmlFonts::choose( [] ) );
+        $r = HtmlFonts::choose( [ 'Brand Sans' ] );
+        $this->assertSame( 'font_unavailable', $r['reason'] );
+    }
+
+    public function testAGenericOrSystemKeywordEndsTheSearch(): void
+    {
+        // A browser always matches a generic keyword (a system one on the systems that have it): a later family is never shown.
+        $bootstrap = HtmlFonts::choose( [ 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif' ], true );
+        $this->assertSame( [ 'family' => null, 'fonts' => [], 'reason' => 'generic_font' ], $bootstrap );
+        $this->assertSame( [ 'family' => null, 'fonts' => [], 'reason' => 'generic_font' ], HtmlFonts::choose( [ 'sans-serif', 'Roboto' ], true ) );
+        $this->assertSame( [ 'family' => null, 'fonts' => [], 'reason' => 'generic_font' ], HtmlFonts::choose( [ 'BlinkMacSystemFont', 'Inter' ] ) );
+        $r = HtmlFonts::choose( [ 'Brand Sans', 'serif', 'Montserrat' ] );
+        $this->assertNull( $r['family'] );
+        $this->assertSame( 'generic_font', $r['reason'] );
+        $this->assertSame( [ [ 'source' => 'Brand Sans', 'action' => 'not available in Divi: kept the theme font' ] ], $r['fonts'] );
+
+        // A loadable family BEFORE the keyword still wins, and so does the next loadable one after an unknown name.
+        $r = HtmlFonts::choose( [ 'Inter', 'sans-serif' ] );
+        $this->assertSame( 'Inter', $r['family'] );
+        $this->assertNull( $r['reason'] );
+        $r = HtmlFonts::choose( [ 'Brand Sans', 'Montserrat' ] );
+        $this->assertSame( 'Montserrat', $r['family'] );
+        $this->assertNull( $r['reason'] );
+    }
+
+    public function testACssWideKeywordIsUnresolvedNotAFamily(): void
+    {
+        foreach ( HtmlFonts::CSS_WIDE as $keyword ) {
+            foreach ( [ [ $keyword ], [ 'Inter', strtoupper( $keyword ) ], [ $keyword, 'Roboto' ] ] as $list ) {
+                $this->assertSame( [ 'family' => null, 'fonts' => [], 'reason' => 'unresolved' ], HtmlFonts::choose( $list, true ), json_encode( $list ) );
+            }
+        }
+        foreach ( [ 'inherit', 'initial', 'unset', 'revert', 'revert-layer' ] as $keyword ) {
+            $this->assertContains( $keyword, HtmlFonts::CSS_WIDE );
+            $this->assertNotContains( $keyword, HtmlFonts::GENERIC );
+        }
     }
 
     public function testTheFirstLoadableFamilyWinsAndLaterOnesAreNotListed(): void

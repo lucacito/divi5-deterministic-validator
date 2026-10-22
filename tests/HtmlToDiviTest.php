@@ -426,7 +426,7 @@ final class HtmlToDiviTest extends HtmlTestCase
         $this->assertTrue( $got['ok'] );
         $this->assertSame( $want['layout'], $got['layout'] );
         $this->assertSame( $want['report'], $got['report'], 'the same style report' );
-        $this->assertSame( 3, $got['report']['styles']['carried']['color'] + $got['report']['styles']['carried']['background'], 'the style reader saw the section after </body>' );
+        $this->assertSame( [ 'canvas' => 1, 'color' => 2 ], $got['report']['styles']['carried'], 'the first section on the canvas (not a source background)' );
         $this->assertSame( '/html/body/section[2]/h2', $got['report']['styles']['dropped_unreadable'][0]['path'], 'at its path inside the body' );
         $this->assertSame( 3, substr_count( $got['layout'], '<!-- wp:divi/section ' ) );
     }
@@ -793,6 +793,43 @@ final class HtmlToDiviTest extends HtmlTestCase
         $r = HtmlToDivi::convert( '<h1>T</h1><img src="https://mysite.test/wp-content/uploads/a.jpg" alt="Mine">', [ 'image_mode' => 'keep' ], \AiEditorDivi5\WP\ImagePack::manifest(), $site, [ self::class, 'resolve' ] );
         $this->assertStringContainsString( 'https://mysite.test/wp-content/uploads/a.jpg', $r['layout'] );
         $this->assertStringContainsString( 'Media Library', $r['report']['images'][0]['action'] );
+    }
+
+    public function testPropertiesAnEffectMadeUnresolvedAreCountedNotSilent(): void
+    {
+        $r = HtmlToDivi::convert( '<section style="background:#000;opacity:.2"><p style="color:#fff">Text</p></section>' );
+        $this->assertSame( [], $r['report']['styles']['carried'] );
+        $this->assertSame( 2, $r['report']['styles']['ignored']['effect'] ?? 0, 'the section background and the text colour' );
+        $this->assertStringNotContainsString( '#ffffff', $r['layout'] );
+        $this->assertStringNotContainsString( '#000000', $r['layout'] );
+    }
+
+    public function testASelfCheckThatRefusesAValueOnTheStylePathFallsBackToTheUnstyledConversion(): void
+    {
+        // An InvalidArgumentException is what a self-check of the converter or of DiviMarkup throws. Here it is raised from inside the
+        // basic run through the existing $isSiteImage parameter (the first call only), which no production caller makes throw.
+        $html  = '<section style="background:#0f172a"><h1 style="color:#ffffff">T</h1><img src="https://mysite.test/wp-content/uploads/a.jpg" alt="Mine"></section>';
+        $calls = 0;
+        $site  = static function ( string $u ) use ( &$calls ): bool {
+            if ( 1 === ++$calls ) {
+                throw new \InvalidArgumentException( 'raw <b>secret</b> message' );
+            }
+
+            return false;
+        };
+        $r    = HtmlToDivi::convert( $html, [ 'image_mode' => 'keep' ], \AiEditorDivi5\WP\ImagePack::manifest(), $site, [ self::class, 'resolve' ] );
+        $none = HtmlToDivi::convert( $html, [ 'image_mode' => 'keep', 'styles' => 'none' ], \AiEditorDivi5\WP\ImagePack::manifest(), static fn( string $u ): bool => false, [ self::class, 'resolve' ] );
+        $this->assertTrue( $r['ok'] );
+        $this->assertSame( $none['layout'], $r['layout'], 'exactly the styles=none layout' );
+        $this->assertSame( [ 'carried' => [], 'ignored' => [], 'dropped_unreadable' => [], 'dropped_total' => 0, 'fonts' => [], 'clamped' => 0, 'notes' => [ HtmlToDivi::NOTE_STYLES_FAILED ], 'external' => 0 ], $r['report']['styles'] );
+        $this->assertStringNotContainsString( 'secret', json_encode( $r ) );
+        unset( $r['report']['styles'] );
+        $this->assertSame( $none['report'], $r['report'] );
+
+        // styles=none has no fallback: the exception is not swallowed there.
+        $calls = 0;
+        $this->expectException( \InvalidArgumentException::class );
+        HtmlToDivi::convert( $html, [ 'image_mode' => 'keep', 'styles' => 'none' ], \AiEditorDivi5\WP\ImagePack::manifest(), $site, [ self::class, 'resolve' ] );
     }
 
     public function testUnknownOptionsFallBackToTheDefaults(): void

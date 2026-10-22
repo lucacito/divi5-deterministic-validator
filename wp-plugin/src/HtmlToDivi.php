@@ -25,6 +25,9 @@ final class HtmlToDivi
     /** report.styles.notes: the linked stylesheets and @imports that were not read (the converter never fetches CSS). */
     public const NOTE_EXTERNAL = '%d external stylesheet(s) not read: the converter never fetches CSS, so colours and fonts may differ.';
 
+    /** report.styles.notes when a self-check of the style path refused a value: the page is converted as with styles=none. */
+    public const NOTE_STYLES_FAILED = 'The styles of this page could not be written safely: the page was converted without styles.';
+
     /**
      * @param array{image_mode?:string, styles?:string} $options
      * @param ?array<string,mixed>                      $manifest    the image pack manifest (ImagePack::manifest())
@@ -34,9 +37,36 @@ final class HtmlToDivi
      */
     public static function convert( string $html, array $options = [], ?array $manifest = null, ?callable $isSiteImage = null, ?callable $resolve = null ): array
     {
-        $mode   = self::imageMode( (string) ( $options['image_mode'] ?? HtmlImages::MODE_PLACEHOLDER ) );
-        $styles = self::STYLES_NONE === ( $options['styles'] ?? self::STYLES_BASIC ) ? self::STYLES_NONE : self::STYLES_BASIC;
+        $mode = self::imageMode( (string) ( $options['image_mode'] ?? HtmlImages::MODE_PLACEHOLDER ) );
+        if ( self::STYLES_NONE === ( $options['styles'] ?? self::STYLES_BASIC ) ) {
+            return self::run( $html, $mode, false, $manifest, $isSiteImage, $resolve );
+        }
+        try {
+            return self::run( $html, $mode, true, $manifest, $isSiteImage, $resolve );
+        } catch ( \InvalidArgumentException ) {
+            // A self-check of the converter or the writer refused a value. Styles are an enhancement: the page is converted exactly as with
+            // styles=none and the report says so in one fixed sentence (the exception's message is never handed over).
+            $result = self::run( $html, $mode, false, $manifest, $isSiteImage, $resolve );
+            if ( true === ( $result['ok'] ?? false ) ) {
+                $result['report']['styles'] = [
+                    'carried'            => [],
+                    'ignored'            => [],
+                    'dropped_unreadable' => [],
+                    'dropped_total'      => 0,
+                    'fonts'              => [],
+                    'clamped'            => 0,
+                    'notes'              => [ self::NOTE_STYLES_FAILED ],
+                    'external'           => 0,
+                ];
+            }
 
+            return $result;
+        }
+    }
+
+    /** One conversion: $basic = styles=basic. @return array<string,mixed> */
+    private static function run( string $html, string $mode, bool $basic, ?array $manifest, ?callable $isSiteImage, ?callable $resolve ): array
+    {
         $source = HtmlSource::parse( $html );
         if ( null !== $source['error'] || ! $source['body'] instanceof \DOMElement ) {
             return [ 'ok' => false, 'error' => $source['error'] ?? 'The HTML has no content.', 'layout' => '', 'report' => self::emptyReport( $source ) ];
@@ -44,8 +74,7 @@ final class HtmlToDivi
         /** @var \DOMElement $body */
         $body = $source['body'];
 
-        $basic = self::STYLES_BASIC === $styles;
-        $plan  = HtmlMapper::map( $body, $basic );
+        $plan = HtmlMapper::map( $body, $basic );
         if ( array() === $plan['sections'] ) {
             return [ 'ok' => false, 'error' => 'Nothing to convert: the page has no visible text, images or links.', 'layout' => '', 'report' => self::emptyReport( $source ) + [ 'flagged' => $plan['flagged'] ] ];
         }

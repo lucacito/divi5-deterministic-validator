@@ -20,6 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * THE CANVAS (plan D2). A section whose paint is none (no background on its anchor chain) but whose headings or texts declare a colour is
  * painted with HtmlStyleBlocks::CANVAS (#ffffff): the canvas a browser paints such a page on. The assumption is the plain white canvas of
  * the source; a page that may be shown dark (color-scheme) has its colours unresolved upstream, so it never reaches this rule with a claim.
+ * A written canvas is counted `canvas` in `carried`, never `background` (it is not a background of the source).
  *
  * THE DECISION, per section, every pass judging all modules against the same kept set (a simultaneous update: the result does not depend
  * on the order of the modules), until a pass drops nothing:
@@ -193,7 +194,7 @@ final class HtmlReadability
         }
 
         // Write.
-        $sectionStyle = $this->box( $keep['s'] ? $levels['s']['paint']['value'] : null, $s['padding'] ?? [], DiviMarkup::STYLE_PROVEN['section-padding'] ?? false );
+        $sectionStyle = $this->box( $keep['s'] ? $levels['s']['paint']['value'] : null, $s['padding'] ?? [], DiviMarkup::STYLE_PROVEN['section-padding'] ?? false, $keep['s'] && $levels['s']['canvas'] );
         $outRows      = [];
         foreach ( $rows as $r => $row ) {
             // Row padding has no STYLE_PROVEN key on purpose: module.decoration.spacing.desktop.value.padding on divi/row is written by real
@@ -525,12 +526,12 @@ final class HtmlReadability
      * @param array<string,mixed> $padding side => int
      * @return array<string,mixed>
      */
-    private function box( ?string $background, array $padding, bool $paddingProven ): array
+    private function box( ?string $background, array $padding, bool $paddingProven, bool $canvas = false ): array
     {
         $style = [];
         if ( null !== $background ) {
             $style['background'] = $background;
-            $this->count( 'background' );
+            $this->count( $canvas ? 'canvas' : 'background' ); // the canvas (D2) is the converter's own white, not a source background
         }
         $pad = [];
         foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
