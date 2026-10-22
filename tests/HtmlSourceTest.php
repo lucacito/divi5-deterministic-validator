@@ -849,4 +849,98 @@ final class HtmlSourceTest extends HtmlTestCase
         $this->assertNull( $s['error'] );
         $this->assertStringContainsString( 'BBB', $this->bodyHtml( $s ) );
     }
+
+    /** Head content a fragment may start with (and the starts that put libxml2 in the same state: a comment, <html>, an empty head). */
+    private const LEADING = [
+        'style'          => '<style>p{color:#111111}</style>',
+        'link'           => '<link rel="stylesheet" href="x.css">',
+        'meta'           => '<meta charset="utf-8">',
+        'script'         => '<script>var a = 1;</script>',
+        'title'          => '<title>T</title>',
+        'base'           => '<base href="/">',
+        'noscript'       => '<noscript>n</noscript>',
+        'template'       => '<template><p>t</p></template>',
+        'comment'        => '<!-- c -->',
+        'html'           => '<html>',
+        'empty head'     => '<head></head>',
+        'head with style' => '<html><head><style>p{}</style></head>',
+        'several'        => "<meta charset=\"utf-8\">\n<title>T</title>\n<style>p{}</style>\n",
+    ];
+
+    /** Bodies with loose text, inline elements, references and comments between HTML5 blocks. */
+    private const LOOSE_BODIES = [
+        'text'     => '<section><h2>A</h2></section>Loose<section><h2>B</h2></section>',
+        'inline'   => '<section><h2>A</h2></section><b>x</b> tail<section><h2>B</h2></section>',
+        'comment'  => '<section><h2>A</h2></section><!--c-->Loose<section><h2>B</h2></section>',
+        'first'    => 'Loose first<section><h2>B</h2></section>',
+        'landmarks' => '<header>H</header>Loose<main><p>M</p></main>more<footer>F</footer>',
+        'entity'   => '<article><h2>A</h2></article> &amp; <aside>B</aside>',
+        'span'     => '<section>A</section><span>i</span><section>B</section>',
+        'divs'     => '<div><h2>A</h2></div>Loose<div><h2>B</h2></div>',
+    ];
+
+    /** @return array<string,array{0:string,1:string}> */
+    public static function leadingHeadContent(): array
+    {
+        $out = [];
+        foreach ( self::LEADING as $lead => $prefix ) {
+            foreach ( self::LOOSE_BODIES as $shape => $body ) {
+                $out[ $lead . ' + ' . $shape ] = [ $prefix, $body ];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * libxml2 stays in head mode after head content (and before any body tag), so the first loose text opened an implied <p> that swallowed
+     * the blocks after it (a section inside a p). A browser starts the body there and keeps the text a bare run. The page with its leading
+     * head content must give the same body as the page without it, with no <p> holding a block and no repair note of its own.
+     */
+    #[DataProvider('leadingHeadContent')]
+    public function testLeadingHeadContentKeepsTheBodysStructure( string $prefix, string $body ): void
+    {
+        $bare = HtmlSource::parse( $body );
+        $s    = HtmlSource::parse( $prefix . $body );
+        $this->assertNull( $s['error'], (string) $s['error'] );
+        $this->assertSame( $this->bodyHtml( $bare ), $this->bodyHtml( $s ) );
+        $this->assertSame( $bare['repaired'], $s['repaired'], 'no repair note: the result is the browser\'s tree' );
+        foreach ( iterator_to_array( $s['body']->getElementsByTagName( 'p' ) ) as $p ) {
+            foreach ( [ 'section', 'header', 'main', 'footer', 'article', 'aside', 'div', 'h2' ] as $block ) {
+                $this->assertSame( 0, $p->getElementsByTagName( $block )->length, 'no ' . $block . ' inside a p' );
+            }
+        }
+    }
+
+    /** The browser's tree (Chromium DOMParser, written out by hand): loose text is a bare run in the body, no block sits in a p. */
+    public function testLooseTextAfterHeadContentIsTheBrowsersTree(): void
+    {
+        $cases = [
+            '<style>p{}</style><section><h2>A</h2></section>Loose<section><h2>B</h2></section>' => '<body><section><h2>A</h2></section>Loose<section><h2>B</h2></section></body>',
+            'Loose first<section><h2>B</h2></section>'                                       => '<body>Loose first<section><h2>B</h2></section></body>',
+            '<!-- c -->Loose<header>H</header>'                                               => '<body>Loose<header>H</header></body>',
+            '<html><head><title>T</title></head>Loose<main>M</main></html>'                    => '<body>Loose<main>M</main></body>',
+            '<meta charset="utf-8"><section>A</section><b>x</b> tail<section>B</section>'     => '<body><section>A</section><b>x</b> tail<section>B</section></body>',
+        ];
+        foreach ( $cases as $html => $want ) {
+            $s = HtmlSource::parse( $html );
+            $this->assertSame( $want, $this->bodyHtml( $s ), $html );
+            $this->assertSame( [], $s['repaired'], $html );
+        }
+    }
+
+    /** The body offset helper: where a browser starts the body when libxml2 would still be in head, else null. */
+    public function testWhereTheBodyStartsIsFoundOnlyBeforeAnExplicitBody(): void
+    {
+        $this->assertSame( 15, HtmlSource::bodyStart( '<style></style>Loose' ) );
+        $this->assertSame( 18, HtmlSource::bodyStart( "<style></style>\n  Loose" ), 'white space stays in head' );
+        $this->assertSame( 24, HtmlSource::bodyStart( '<title>a</title><!--x--><section>' ), 'a comment stays in head, a section starts the body' );
+        $this->assertSame( 13, HtmlSource::bodyStart( '<head></head><p>x</p>' ) );
+        $this->assertSame( 0, HtmlSource::bodyStart( 'Loose' ) );
+        $this->assertNull( HtmlSource::bodyStart( '<style></style><body>Loose' ), 'an explicit body: libxml2 opens it itself' );
+        $this->assertNull( HtmlSource::bodyStart( "<style></style>\n" ), 'no content at all' );
+        $this->assertNull( HtmlSource::bodyStart( '<style>a</b></style>Loose' ), 'raw text libxml2 may end early: not modelled, left alone' );
+        $this->assertNull( HtmlSource::bodyStart( '<!-->Loose' ), 'a comment the parsers end differently: left alone' );
+        $this->assertNull( HtmlSource::bodyStart( '<frameset></frameset>' ) );
+    }
 }

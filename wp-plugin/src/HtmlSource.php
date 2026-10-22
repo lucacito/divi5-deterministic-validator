@@ -291,6 +291,11 @@ final class HtmlSource
         $repaired  = self::repairs( $html, LIBXML_VERSION );
         // NUL bytes and other control characters have no place in a page; drop them before parsing.
         $html = (string) preg_replace( '/[\x00-\x08\x0b\x0c\x0e-\x1f]/', '', $html );
+        // Where a browser starts the body but libxml2 would still be in head: an explicit <body> there (see bodyStart()).
+        $at = self::bodyStart( $html );
+        if ( null !== $at ) {
+            $html = substr( $html, 0, $at ) . '<body>' . substr( $html, $at );
+        }
 
         $doc  = new \DOMDocument();
         $prev = libxml_use_internal_errors( true );
@@ -394,6 +399,115 @@ final class HtmlSource
         }
 
         return $url;
+    }
+
+    /** Head elements whose content bodyStart() skips to their end tag (raw text, escapable raw text, or a template's content). */
+    private const HEAD_CONTENT = [ 'style', 'script', 'title', 'noscript', 'template' ];
+
+    /** In a template's content: anything with its own text rules, after which the first </template is not certainly the end. */
+    private const TEMPLATE_UNSURE = '#<(?:!|/?(?:script|style|textarea|title|template|iframe|xmp|noscript|noembed|noframes|plaintext|svg|math)[\s/>])#i';
+
+    /**
+     * The byte offset where a browser starts the body of a page that has no <body> tag before its first content, or null (an explicit
+     * <body> first, no content at all, or something this does not model). Public as a seam for tests.
+     *
+     * libxml2 2.9 (an HTML 4 parser) stays in head mode after head content (style, link, meta, script, title, base), after a comment, an
+     * <html> or an empty <head>, and also at the very start of a fragment. Loose text there makes it open an IMPLIED <p> (htmlCheckParagraph
+     * for a text node whose parent is nothing, html or head), and an element it does not know (section, header, main ...) does not close
+     * that p, so the p swallowed the blocks after the text: a section inside a paragraph, its h2 read as bold text. A browser ends the head
+     * at the first non-white-space text or at the first start tag that is not head content (or at </body>, </html>, </br>) and keeps the
+     * text a bare run in the body. parse() writes an explicit <body> at that offset, which every parser honours, so libxml2 builds the
+     * browser's tree. It is ONE forward pass: white space, comments and a doctype stay in head; html, head, meta, link and base tags and
+     * end tags a browser ignores there are skipped; style, script, title, noscript and template are skipped to their end tag. Anything the
+     * two parsers might end differently (an odd comment, raw text with an end-tag-like run, a template holding raw text or a comment, a tag
+     * the repairs scan does not model, a frameset) gives null, which leaves the HTML exactly as given (the phase-1 parse).
+     */
+    public static function bodyStart( string $h ): ?int
+    {
+        $n     = strlen( $h );
+        $lh    = strtolower( $h );
+        $i     = 0 === strncmp( $h, "\xEF\xBB\xBF", 3 ) ? 3 : 0;
+        $steps = 0;
+        while ( true ) {
+            if ( ++$steps > self::MAX_SCAN_STEPS ) {
+                return null;
+            }
+            $i += strspn( $h, self::WS, $i );
+            if ( $i >= $n ) {
+                return null;
+            }
+            if ( '<' !== $h[ $i ] ) {
+                return $i; // text (a character reference included) starts the body
+            }
+            $c = $i + 1 < $n ? $h[ $i + 1 ] : '';
+            if ( '!' === $c ) {
+                if ( 0 === substr_compare( $h, '<!--', $i, 4 ) ) {
+                    $j = $i + 4;
+                    $e = strpos( $h, '-->', $j );
+                    if ( ( $j < $n && '>' === $h[ $j ] ) || 0 === substr_compare( $h, '->', $j, 2 ) || false === $e || false !== strpos( substr( $h, $j, $e - $j ), '--!>' ) ) {
+                        return null;
+                    }
+                    $i = $e + 3;
+                    continue;
+                }
+                if ( 0 === substr_compare( $lh, '<!doctype', $i, 9 ) && false !== ( $e = strpos( $h, '>', $i ) ) ) {
+                    $i = $e + 1;
+                    continue;
+                }
+
+                return null;
+            }
+            if ( '?' === $c ) {
+                return null;
+            }
+            $end = '/' === $c;
+            $j   = $i + ( $end ? 2 : 1 );
+            if ( $j >= $n || ! ctype_alpha( $h[ $j ] ) ) {
+                return $end ? null : $i; // a lone < is text
+            }
+            $tag = self::tag( $h, $lh, $j, $n, $steps );
+            if ( is_string( $tag ) ) {
+                return null;
+            }
+            [ $next, $name, , $selfClose ] = $tag;
+            if ( $end ) {
+                if ( in_array( $name, [ 'body', 'html', 'br' ], true ) ) {
+                    return $i;
+                }
+                $i = $next; // </head>, or an end tag a browser ignores before the body
+                continue;
+            }
+            if ( 'body' === $name || 'frameset' === $name ) {
+                return null;
+            }
+            if ( in_array( $name, [ 'html', 'head', 'meta', 'link', 'base' ], true ) ) {
+                $i = $next;
+                continue;
+            }
+            if ( ! in_array( $name, self::HEAD_CONTENT, true ) ) {
+                return $i; // any other start tag starts the body
+            }
+            if ( $selfClose ) {
+                return null;
+            }
+            $e = strpos( $lh, '</' . $name, $next );
+            if ( false === $e ) {
+                return null;
+            }
+            $after = $e + 2 + strlen( $name );
+            if ( $after >= $n || false === strpos( self::WS . '/>', $h[ $after ] ) ) {
+                return null;
+            }
+            $text = substr( $h, $next, $e - $next );
+            if ( 'template' === $name ? 1 === preg_match( self::TEMPLATE_UNSURE, $text ) : ( 1 === preg_match( '#</[A-Za-z]#', $text ) || false !== strpos( $text, '<!--' ) ) ) {
+                return null;
+            }
+            $close = strpos( $h, '>', $after );
+            if ( false === $close ) {
+                return null;
+            }
+            $i = $close + 1;
+        }
     }
 
     /** Elements that belong in <head>; anything else a parser finds there is page content (see relocateHeadContent). */
