@@ -48,17 +48,31 @@ final class HtmlMapper
 
     private bool $h1Seen = false;
 
+    /** Whether the plan records the source elements (paths, DOMNode::getNodePath()) of what it builds. Off = today's plan, byte for byte. */
+    private bool $sources = false;
+
     private int $demotedH1 = 0;
 
     /** @var array<string,int> */
     private array $counts = [];
 
     /**
+     * With $sources = true ONLY, the plan also says which source elements it came from (paths from DOMNode::getNodePath(), the same paths
+     * HtmlSource hands its style text over by), and nothing else changes:
+     *   section       src ?string (the section element; null for a run of loose nodes), ctx string (src, or the parent of the loose run's first node)
+     *   cards chunk   src string (the parent of the cards: the run's parent or the <ul>/<ol> of a card group),
+     *                 column_src list<string> (one per entry of 'columns', same order)
+     *   heading/button module  src list<string> (the h*, a or button), container list<string> (its parent)
+     *   text module   src list<string> (one per merged piece: the block element, or for a run of inline nodes the run's parent),
+     *                 container list<string> (the same, with a block element replaced by its parent: the element the text sits in)
+     * image and divider modules get nothing.
+     *
      * @return array{sections:list<array{label:string,chunks:list<array<string,mixed>>}>, flagged:list<array{type:string,reason:string,path:string}>, notes:list<string>, counts:array<string,int>}
      */
-    public static function map( \DOMElement $body ): array
+    public static function map( \DOMElement $body, bool $sources = false ): array
     {
-        $m = new self();
+        $m          = new self();
+        $m->sources = $sources;
         $sections = $m->sections( $body );
 
         if ( $m->demotedH1 > 0 ) {
@@ -94,13 +108,18 @@ final class HtmlMapper
 
         $sections = [];
         $loose    = [];
-        $flush    = function () use ( &$loose, &$sections ): void {
+        $flush    = function () use ( &$loose, &$sections, $body ): void {
             if ( array() === $loose ) {
                 return;
             }
             $chunks = $this->chunks( $loose, true );
             if ( array() !== $chunks ) {
-                $sections[] = [ 'label' => $this->labelFor( null, $chunks, count( $sections ) + 1 ), 'chunks' => $chunks ];
+                $section = [ 'label' => $this->labelFor( null, $chunks, count( $sections ) + 1 ), 'chunks' => $chunks ];
+                if ( $this->sources ) {
+                    $section['src'] = null;
+                    $section['ctx'] = $this->pathOf( $loose[0]->parentNode ?? $body );
+                }
+                $sections[] = $section;
             }
             $loose = [];
         };
@@ -115,7 +134,12 @@ final class HtmlMapper
                 $flush();
                 $chunks = $this->chunks( $this->meaningful( $node ), true );
                 if ( array() !== $chunks ) {
-                    $sections[] = [ 'label' => $this->labelFor( $node, $chunks, count( $sections ) + 1 ), 'chunks' => $chunks ];
+                    $section = [ 'label' => $this->labelFor( $node, $chunks, count( $sections ) + 1 ), 'chunks' => $chunks ];
+                    if ( $this->sources ) {
+                        $section['src'] = $this->pathOf( $node );
+                        $section['ctx'] = $section['src'];
+                    }
+                    $sections[] = $section;
                 }
                 continue;
             }
@@ -234,10 +258,11 @@ final class HtmlMapper
             foreach ( $run as $n ) {
                 $html .= HtmlProse::html( $n, $this->notes );
             }
-            $run = [];
-            $html = trim( $html );
+            $nodes = $run;
+            $run   = [];
+            $html  = trim( $html );
             if ( '' !== HtmlSource::collapse( html_entity_decode( wp_strip_all_tags( $html ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) ) ) {
-                $this->addProse( $current, '<p>' . $html . '</p>' );
+                $this->addProse( $current, '<p>' . $html . '</p>', $nodes );
             }
         };
 
@@ -274,7 +299,7 @@ final class HtmlMapper
                 }
                 if ( $this->isButtonLike( $node, $nodes, (int) $i, $run ) ) {
                     $flushRun();
-                    $this->addButton( $current, $this->visibleText( $node ), $node->getAttribute( 'href' ), '_blank' === strtolower( $node->getAttribute( 'target' ) ) );
+                    $this->addButton( $current, $this->visibleText( $node ), $node->getAttribute( 'href' ), '_blank' === strtolower( $node->getAttribute( 'target' ) ), $node );
                     continue;
                 }
                 $run[] = $node;
@@ -299,7 +324,7 @@ final class HtmlMapper
             } elseif ( 'button' === $tag ) {
                 $text = $this->visibleText( $node );
                 if ( '' !== $text ) {
-                    $this->addButton( $current, $text, '', false );
+                    $this->addButton( $current, $text, '', false, $node );
                     $this->flag( 'button', 'This button had no link, so it was added without one. Set its link in Divi.', $node );
                 }
             } elseif ( 'nav' === $tag ) {
@@ -310,12 +335,12 @@ final class HtmlMapper
                     $this->closeSingle( $chunks, $current );
                     $chunks[] = $this->cardsChunk( $cards );
                 } else {
-                    $this->addProse( $current, HtmlProse::html( $node, $this->notes ) );
+                    $this->addProse( $current, HtmlProse::html( $node, $this->notes ), [ $node ] );
                 }
             } elseif ( 'p' === $tag && $this->isPlainParagraph( $node ) ) {
-                $this->addProse( $current, HtmlProse::html( $node, $this->notes ) );
+                $this->addProse( $current, HtmlProse::html( $node, $this->notes ), [ $node ] );
             } elseif ( in_array( $tag, self::PROSE, true ) && 'p' !== $tag ) {
-                $this->addProse( $current, HtmlProse::html( $node, $this->notes ) );
+                $this->addProse( $current, HtmlProse::html( $node, $this->notes ), [ $node ] );
             } else {
                 // A container (or a paragraph that holds images or buttons): look inside. A group of similar
                 // children is found by the run detection of the walk below.
@@ -478,8 +503,13 @@ final class HtmlMapper
             $columns[] = $modules;
         }
         $this->count( 'cards' );
+        $chunk = [ 'kind' => 'cards', 'columns' => $columns ];
+        if ( $this->sources ) {
+            $chunk['src']        = $this->pathOf( $cards[0]->parentNode );
+            $chunk['column_src'] = array_map( fn ( \DOMNode $card ): string => $this->pathOf( $card ), $cards );
+        }
 
-        return [ 'kind' => 'cards', 'columns' => $columns ];
+        return $chunk;
     }
 
     // ── modules ─────────────────────────────────────────────────────────────
@@ -502,25 +532,65 @@ final class HtmlMapper
         if ( $h->getElementsByTagName( 'a' )->length > 0 ) {
             $this->flag( 'link', 'A link inside a heading was kept as plain heading text. Add the link in Divi if you need it.', $h );
         }
-        $current[] = [ 'type' => 'heading', 'level' => $level, 'text' => $text ];
+        $module = [ 'type' => 'heading', 'level' => $level, 'text' => $text ];
+        if ( $this->sources ) {
+            $module['src']       = [ $this->pathOf( $h ) ];
+            $module['container'] = [ $this->pathOf( $h->parentNode ) ];
+        }
+        $current[] = $module;
         $this->count( 'heading' );
     }
 
-    /** @param list<array<string,mixed>> $current */
-    private function addProse( array &$current, string $html ): void
+    /**
+     * @param list<array<string,mixed>> $current
+     * @param list<\DOMNode>            $from    the source: one block element (p, ul, ol ...) or the nodes of a run of inline content
+     */
+    private function addProse( array &$current, string $html, array $from = [] ): void
     {
         $html = trim( $html );
         if ( '' === HtmlProse::plain( $html ) ) {
             return;
         }
+        $src       = [];
+        $container = [];
+        if ( $this->sources && array() !== $from ) {
+            [ $src, $container ] = $this->proseSources( $from );
+        }
         $last = array() === $current ? null : $current[ count( $current ) - 1 ];
         if ( null !== $last && 'text' === $last['type'] ) {
             $current[ count( $current ) - 1 ]['html'] .= $html;
+            if ( $this->sources ) {
+                $current[ count( $current ) - 1 ]['src']       = array_merge( $current[ count( $current ) - 1 ]['src'] ?? [], $src );
+                $current[ count( $current ) - 1 ]['container'] = array_merge( $current[ count( $current ) - 1 ]['container'] ?? [], $container );
+            }
 
             return;
         }
-        $current[] = [ 'type' => 'text', 'html' => $html ];
+        $module = [ 'type' => 'text', 'html' => $html ];
+        if ( $this->sources ) {
+            $module['src']       = $src;
+            $module['container'] = $container;
+        }
+        $current[] = $module;
         $this->count( 'text' );
+    }
+
+    /**
+     * The source piece of a text module: a lone block element is its own piece (the text sits directly in its parent); anything else is a
+     * run of inline nodes, whose piece is the run's parent.
+     *
+     * @param list<\DOMNode> $from
+     * @return array{0:list<string>,1:list<string>}
+     */
+    private function proseSources( array $from ): array
+    {
+        $first = $from[0];
+        if ( 1 === count( $from ) && $first instanceof \DOMElement && ! in_array( strtolower( $first->tagName ), self::INLINE, true ) ) {
+            return [ [ $this->pathOf( $first ) ], [ $this->pathOf( $first->parentNode ) ] ];
+        }
+        $parent = $this->pathOf( $first->parentNode );
+
+        return [ [ $parent ], [ $parent ] ];
     }
 
     /** @param list<array<string,mixed>> $current */
@@ -542,12 +612,17 @@ final class HtmlMapper
     }
 
     /** @param list<array<string,mixed>> $current */
-    private function addButton( array &$current, string $text, string $href, bool $newTab ): void
+    private function addButton( array &$current, string $text, string $href, bool $newTab, ?\DOMElement $from = null ): void
     {
         if ( '' === $text ) {
             return;
         }
-        $current[] = [ 'type' => 'button', 'text' => $text, 'href' => '' === $href ? null : $href, 'newTab' => $newTab ];
+        $module = [ 'type' => 'button', 'text' => $text, 'href' => '' === $href ? null : $href, 'newTab' => $newTab ];
+        if ( $this->sources && null !== $from ) {
+            $module['src']       = [ $this->pathOf( $from ) ];
+            $module['container'] = [ $this->pathOf( $from->parentNode ) ];
+        }
+        $current[] = $module;
         $this->count( 'button' );
     }
 
@@ -644,6 +719,12 @@ final class HtmlMapper
         if ( count( $this->flagged ) < 100 ) {
             $this->flagged[] = [ 'type' => $type, 'reason' => $reason, 'path' => HtmlSource::path( $at ) ];
         }
+    }
+
+    /** The path of a node in the DOM HtmlSource returned (DOMNode::getNodePath()); '' for no node. */
+    private function pathOf( ?\DOMNode $node ): string
+    {
+        return null === $node ? '' : (string) $node->getNodePath();
     }
 
     private function count( string $what ): void

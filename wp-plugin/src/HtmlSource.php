@@ -20,6 +20,17 @@ final class HtmlSource
     public const MAX_BYTES    = 400000;
     public const MAX_ELEMENTS = 5000;
     public const MAX_DEPTH    = 50;
+    /**
+     * The collected <style> text is cut at this many bytes (the same cap HtmlCss reads: HtmlCss::MAX_CSS_BYTES; a test keeps the two equal
+     * once HtmlCss exists). The rest of a longer stylesheet is never read.
+     */
+    public const MAX_CSS_BYTES = 100000;
+
+    /**
+     * Presentational attributes that style an element in browsers (HTML 3/4 leftovers). They are never kept in the DOM; their NAMES are
+     * handed over per element, in this order, so the style reader knows a value there might be set by something it cannot read.
+     */
+    private const PRESENTATIONAL = [ 'bgcolor', 'align', 'color', 'text', 'face' ];
 
     /** Removed with their content. tag => why it is not converted (plain English, shown to the owner). */
     private const DROP = [
@@ -68,11 +79,20 @@ final class HtmlSource
     ];
 
     /**
-     * @return array{error:?string, body:?\DOMElement, flagged:list<array{type:string,reason:string,path:string}>, title:string, h1s:list<string>, stats:array<string,int>}
+     * Besides the cleaned body, three keys hand over what the cleaning removed so a style reader can use it (the `style` attribute and the
+     * presentational attributes are NEVER left in the DOM):
+     *   css            every <style> element's text of the whole document (head and body), in document order, joined with "\n",
+     *                  read before the elements are removed, cut at MAX_CSS_BYTES
+     *   inline         DOMNode::getNodePath() => the text of the style attribute, for <html>, <body> and every kept element
+     *   presentational DOMNode::getNodePath() => the names (bgcolor, align, color, text, face) of the presentational attributes it had
+     * The paths are computed after every removal and move, so they are the paths of the returned DOM. An element that was removed (or
+     * sits inside a removed one) hands over nothing.
+     *
+     * @return array{error:?string, body:?\DOMElement, flagged:list<array{type:string,reason:string,path:string}>, title:string, h1s:list<string>, stats:array<string,int>, css:string, inline:array<string,string>, presentational:array<string,list<string>>}
      */
     public static function parse( string $html ): array
     {
-        $out = [ 'error' => null, 'body' => null, 'flagged' => [], 'title' => '', 'h1s' => [], 'stats' => [ 'elements' => 0, 'removed' => 0, 'urls_dropped' => 0 ] ];
+        $out = [ 'error' => null, 'body' => null, 'flagged' => [], 'title' => '', 'h1s' => [], 'stats' => [ 'elements' => 0, 'removed' => 0, 'urls_dropped' => 0 ], 'css' => '', 'inline' => [], 'presentational' => [] ];
 
         if ( '' === trim( $html ) ) {
             $out['error'] = 'The HTML is empty.';
@@ -126,7 +146,32 @@ final class HtmlSource
         $titleNode = $doc->getElementsByTagName( 'title' )->item( 0 );
         $out['title'] = $titleNode instanceof \DOMNode ? self::collapse( $titleNode->textContent ) : '';
 
-        self::clean( $body, $out );
+        $out['css'] = self::collectCss( $doc );
+
+        // Style and presentational attributes are read from the node BEFORE they are removed; the paths are taken at the end.
+        $handOver = [];
+        $root     = $doc->documentElement;
+        if ( $root instanceof \DOMElement && $root !== $body ) {
+            self::takeStyleAttributes( $root, $handOver );
+        }
+        self::takeStyleAttributes( $body, $handOver );
+        self::cleanAttributes( $body, $out );
+        self::clean( $body, $out, $handOver );
+        foreach ( $handOver as [ $el, $style, $presentational ] ) {
+            if ( $el !== $root && $el !== $body && ! self::isInside( $el, $body ) ) {
+                continue;
+            }
+            $path = $el->getNodePath();
+            if ( null === $path ) {
+                continue;
+            }
+            if ( '' !== $style ) {
+                $out['inline'][ $path ] = $style;
+            }
+            if ( array() !== $presentational ) {
+                $out['presentational'][ $path ] = $presentational;
+            }
+        }
         foreach ( iterator_to_array( $body->getElementsByTagName( 'h1' ) ) as $h1 ) {
             $out['h1s'][] = self::collapse( $h1->textContent );
         }
@@ -182,8 +227,62 @@ final class HtmlSource
         return array() === $parts ? 'body' : implode( ' > ', array_slice( $parts, -4 ) );
     }
 
-    /** @param array<string,mixed> $out */
-    private static function clean( \DOMElement $body, array &$out ): void
+    /** Every <style> element's text of the document in document order, joined with a newline and cut at MAX_CSS_BYTES (never inside a character). */
+    private static function collectCss( \DOMDocument $doc ): string
+    {
+        $parts = [];
+        $bytes = 0;
+        foreach ( $doc->getElementsByTagName( 'style' ) as $style ) {
+            $text = trim( $style->textContent );
+            if ( '' === $text ) {
+                continue;
+            }
+            $parts[] = $text;
+            $bytes  += strlen( $text ) + 1;
+            if ( $bytes > self::MAX_CSS_BYTES ) {
+                break;
+            }
+        }
+        $css = implode( "\n", $parts );
+
+        return strlen( $css ) > self::MAX_CSS_BYTES ? mb_strcut( $css, 0, self::MAX_CSS_BYTES, 'UTF-8' ) : $css;
+    }
+
+    /**
+     * Writes down an element's style attribute text and presentational attribute names, in place of removing them unseen.
+     *
+     * @param list<array{0:\DOMElement,1:string,2:list<string>}> $handOver
+     */
+    private static function takeStyleAttributes( \DOMElement $el, array &$handOver ): void
+    {
+        $style = $el->hasAttribute( 'style' ) ? trim( $el->getAttribute( 'style' ) ) : '';
+        $names = [];
+        foreach ( self::PRESENTATIONAL as $name ) {
+            if ( $el->hasAttribute( $name ) ) {
+                $names[] = $name;
+            }
+        }
+        if ( '' !== $style || array() !== $names ) {
+            $handOver[] = [ $el, $style, $names ];
+        }
+    }
+
+    private static function isInside( \DOMNode $node, \DOMElement $root ): bool
+    {
+        for ( $p = $node->parentNode; null !== $p; $p = $p->parentNode ) {
+            if ( $p === $root ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<string,mixed>                                 $out
+     * @param list<array{0:\DOMElement,1:string,2:list<string>}> $handOver
+     */
+    private static function clean( \DOMElement $body, array &$out, array &$handOver ): void
     {
         // Collect first, change after: removing nodes while walking skips siblings.
         $remove  = [];
@@ -231,11 +330,16 @@ final class HtmlSource
             if ( null === $el->parentNode ) {
                 continue; // inside something that was removed
             }
+            self::takeStyleAttributes( $el, $handOver );
             self::cleanAttributes( $el, $out );
         }
     }
 
-    /** @param array<string,mixed> $out */
+    /**
+     * The style attributes must have been read (takeStyleAttributes) before this removes them.
+     *
+     * @param array<string,mixed> $out
+     */
     private static function cleanAttributes( \DOMElement $el, array &$out ): void
     {
         $tag   = strtolower( $el->tagName );

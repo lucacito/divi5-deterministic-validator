@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\HtmlMapper;
+use AiEditorDivi5\WP\HtmlSource;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /** The rules that decide sections, rows and columns. */
@@ -247,5 +248,193 @@ final class HtmlMapperTest extends HtmlTestCase
     {
         $html = '<section><h2>F</h2><div><h3>A</h3><p>a</p></div><div><h3>B</h3><p>b</p></div></section><footer><p>f</p></footer>';
         $this->assertSame( $this->plan( $html ), $this->plan( $html ) );
+    }
+
+    // ── sources (html_to_divi styles, task 4) ──────────────────────────────
+
+    private function body( string $bodyHtml ): \DOMElement
+    {
+        $s = HtmlSource::parse( '<html><body>' . $bodyHtml . '</body></html>' );
+        $this->assertNull( $s['error'], (string) $s['error'] );
+
+        return $s['body'];
+    }
+
+    /** The source keys removed. An image module's own `src` (its URL) is not one: a source key is an array (a module) or a section's. */
+    private static function withoutSources( array $v ): array
+    {
+        $out = [];
+        foreach ( $v as $k => $x ) {
+            $isImageUrl = 'src' === $k && is_string( $x ) && 'image' === ( $v['type'] ?? '' );
+            if ( in_array( $k, [ 'src', 'ctx', 'column_src', 'container' ], true ) && ! $isImageUrl ) {
+                continue;
+            }
+            $out[ $k ] = is_array( $x ) ? self::withoutSources( $x ) : $x;
+        }
+
+        return $out;
+    }
+
+    public function testSourcesAreOnlyAddedWhenAskedFor(): void
+    {
+        $files = glob( self::FIXTURES . '/*.html' );
+        $this->assertNotEmpty( $files );
+        $withSources = 0;
+        foreach ( $files as $file ) {
+            $s = HtmlSource::parse( (string) file_get_contents( $file ) );
+            if ( null !== $s['error'] ) {
+                continue;
+            }
+            $plain = HtmlMapper::map( $s['body'] );
+            $this->assertSame( $plain, HtmlMapper::map( $s['body'], false ), basename( $file ) );
+            $with = HtmlMapper::map( $s['body'], true );
+            $this->assertSame( $plain, self::withoutSources( $with ), basename( $file ) );
+            if ( array() !== $with['sections'] ) {
+                ++$withSources;
+                $this->assertArrayHasKey( 'src', $with['sections'][0], basename( $file ) );
+                $this->assertArrayNotHasKey( 'src', $plain['sections'][0], basename( $file ) );
+                $this->assertArrayNotHasKey( 'ctx', $plain['sections'][0], basename( $file ) );
+            }
+        }
+        $this->assertGreaterThan( 5, $withSources );
+    }
+
+    public function testTextModulesRecordEveryMergedPiece(): void
+    {
+        $plan = HtmlMapper::map( $this->body( '<div><p>a</p>text <em>b</em><ul><li>c</li></ul></div>' ), true );
+        $mods = $plan['sections'][0]['chunks'][0]['modules'];
+        $this->assertCount( 1, $mods );
+        $this->assertSame( [ '/html/body/div/p', '/html/body/div', '/html/body/div/ul' ], $mods[0]['src'] );
+        $this->assertSame( [ '/html/body/div', '/html/body/div', '/html/body/div' ], $mods[0]['container'] );
+    }
+
+    public function testASectionAndItsModulesRecordTheirElements(): void
+    {
+        $plan = HtmlMapper::map( $this->body( '<section><h2>T</h2><a class="btn" href="/x">Go</a><img src="/a.png" alt="A"><hr></section><p>loose</p>' ), true );
+        $this->assertSame( '/html/body/section', $plan['sections'][0]['src'] );
+        $this->assertSame( '/html/body/section', $plan['sections'][0]['ctx'] );
+        $mods = $plan['sections'][0]['chunks'][0]['modules'];
+        $this->assertSame( [ 'heading', 'button', 'image', 'divider' ], array_column( $mods, 'type' ) );
+        $this->assertSame( [ '/html/body/section/h2' ], $mods[0]['src'] );
+        $this->assertSame( [ '/html/body/section' ], $mods[0]['container'] );
+        $this->assertSame( [ '/html/body/section/a' ], $mods[1]['src'] );
+        $this->assertSame( [ '/html/body/section' ], $mods[1]['container'] );
+        $this->assertSame( '/a.png', $mods[2]['src'], 'an image keeps its URL in src and gets no source' );
+        $this->assertArrayNotHasKey( 'container', $mods[2] );
+        $this->assertSame( [ 'type' => 'divider' ], $mods[3] );
+        $this->assertNull( $plan['sections'][1]['src'], 'a run of loose nodes has no section element' );
+        $this->assertSame( '/html/body', $plan['sections'][1]['ctx'] );
+        $this->assertSame( [ '/html/body/p' ], $plan['sections'][1]['chunks'][0]['modules'][0]['src'] );
+    }
+
+    public function testCardsRecordTheirContainerAndEachCard(): void
+    {
+        $html = '<section><div class="grid"><div class="card"><h3>A</h3><p>a</p></div><div class="card"><h3>B</h3><p>b</p></div><div class="card"><h3>C</h3><p>c</p></div></div></section>';
+        $plan = HtmlMapper::map( $this->body( $html ), true );
+        $chunk = $plan['sections'][0]['chunks'][0];
+        $this->assertSame( 'cards', $chunk['kind'] );
+        $this->assertSame( '/html/body/section/div', $chunk['src'] );
+        $this->assertSame( [ '/html/body/section/div/div[1]', '/html/body/section/div/div[2]', '/html/body/section/div/div[3]' ], $chunk['column_src'] );
+        $this->assertCount( count( $chunk['columns'] ), $chunk['column_src'] );
+    }
+
+    public function testAListOfCardsRecordsTheListAsItsContainer(): void
+    {
+        $html = '<section><h2>P</h2><ul><li><h3>A</h3><p>a</p></li><li><h3>B</h3><p>b</p></li></ul></section>';
+        $plan = HtmlMapper::map( $this->body( $html ), true );
+        $cards = array_values( array_filter( $plan['sections'][0]['chunks'], static fn ( array $c ): bool => 'cards' === $c['kind'] ) );
+        $this->assertCount( 1, $cards );
+        $this->assertSame( '/html/body/section/ul', $cards[0]['src'] );
+        $this->assertSame( [ '/html/body/section/ul/li[1]', '/html/body/section/ul/li[2]' ], $cards[0]['column_src'] );
+    }
+
+    public function testSourcePathsAreDeterministic(): void
+    {
+        $html = '<header><h1>S</h1></header><section><h2>F</h2><div><h3>A</h3><p>a</p></div><div><h3>B</h3><p>b</p></div></section><footer><p>f <b>x</b></p></footer>Loose <i>run</i>';
+        $this->assertSame( HtmlMapper::map( $this->body( $html ), true ), HtmlMapper::map( $this->body( $html ), true ) );
+    }
+
+    public function testEveryRecordedPathResolvesToExactlyOneElement(): void
+    {
+        foreach ( glob( self::FIXTURES . '/*.html' ) as $file ) {
+            $s = HtmlSource::parse( (string) file_get_contents( $file ) );
+            if ( null !== $s['error'] ) {
+                continue;
+            }
+            $xp   = new \DOMXPath( $s['body']->ownerDocument );
+            $plan = HtmlMapper::map( $s['body'], true );
+            $paths = [];
+            foreach ( $plan['sections'] as $sec ) {
+                $paths[] = $sec['ctx'];
+                if ( null !== $sec['src'] ) {
+                    $paths[] = $sec['src'];
+                }
+                foreach ( $sec['chunks'] as $chunk ) {
+                    if ( 'cards' === $chunk['kind'] ) {
+                        $paths[] = $chunk['src'];
+                        array_push( $paths, ...$chunk['column_src'] );
+                        $mods = array_merge( ...$chunk['columns'] ?: [ [] ] );
+                    } else {
+                        $mods = $chunk['modules'];
+                    }
+                    foreach ( $mods as $m ) {
+                        array_push( $paths, ...( 'image' === $m['type'] ? [] : $m['src'] ), ...( $m['container'] ?? [] ) );
+                    }
+                }
+            }
+            foreach ( array_unique( $paths ) as $path ) {
+                $this->assertSame( 1, $xp->query( $path )->length, basename( $file ) . ' ' . $path );
+            }
+        }
+    }
+
+    /** Hostile, seeded pages: sources never change the plan, never throw, and every recorded path is one element of the returned DOM. */
+    public function testRandomPagesKeepThePlanAndTheirPathsHonest(): void
+    {
+        mt_srand( (int) ( getenv( 'AIED_SEED' ) ?: 20261022 ) );
+        $tags  = [ 'div', 'section', 'article', 'header', 'footer', 'main', 'p', 'span', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'img', 'button', 'hr', 'table', 'tr', 'td', 'figure', 'blockquote', 'pre', 'strong', 'em', 'br', 'form', 'script', 'style', 'embed', 'input', 'font', 'center', 'nav' ];
+        $attrs = [ 'class="btn"', 'class="card"', 'style="color:red"', 'style="a:b;;"', 'bgcolor="#000"', 'align="center"', 'color="red"', 'href="/a"', 'src="/i.png"', 'onclick="x()"' ];
+        $texts = [ 'Hello', 'Tom & Jerry', '1 < 2', '日本語', '-->', '' ];
+        $make  = static function ( int $depth ) use ( &$make, $tags, $attrs, $texts ): string {
+            $out = '';
+            for ( $i = mt_rand( 0, 4 ); $i > 0; $i-- ) {
+                if ( 0 === mt_rand( 0, 2 ) ) {
+                    $out .= $texts[ mt_rand( 0, count( $texts ) - 1 ) ];
+                    continue;
+                }
+                $t    = $tags[ mt_rand( 0, count( $tags ) - 1 ) ];
+                $a    = 0 === mt_rand( 0, 1 ) ? ' ' . $attrs[ mt_rand( 0, count( $attrs ) - 1 ) ] : '';
+                $out .= '<' . $t . $a . '>' . ( $depth > 0 ? $make( $depth - 1 ) : $texts[ mt_rand( 0, count( $texts ) - 1 ) ] ) . ( 0 === mt_rand( 0, 9 ) ? '' : '</' . $t . '>' );
+            }
+
+            return $out;
+        };
+
+        $planned = 0;
+        for ( $n = 0; $n < 150; $n++ ) {
+            $s = HtmlSource::parse( '<html><body style="color:#111">' . $make( 4 ) . '</body></html>' );
+            if ( null !== $s['error'] ) {
+                continue;
+            }
+            $xp = new \DOMXPath( $s['body']->ownerDocument );
+            foreach ( array_merge( array_keys( $s['inline'] ), array_keys( $s['presentational'] ) ) as $path ) {
+                $this->assertSame( 1, $xp->query( $path )->length, "case $n inline $path" );
+            }
+            $plain = HtmlMapper::map( $s['body'] );
+            $with  = HtmlMapper::map( $s['body'], true );
+            $this->assertSame( $plain, self::withoutSources( $with ), "case $n" );
+            $planned += count( $with['sections'] );
+            foreach ( $with['sections'] as $sec ) {
+                foreach ( array_filter( [ $sec['src'], $sec['ctx'] ] ) as $path ) {
+                    $this->assertSame( 1, $xp->query( $path )->length, "case $n section $path" );
+                }
+                foreach ( $sec['chunks'] as $chunk ) {
+                    foreach ( 'cards' === $chunk['kind'] ? array_merge( [ $chunk['src'] ], $chunk['column_src'] ) : [] as $path ) {
+                        $this->assertSame( 1, $xp->query( $path )->length, "case $n cards $path" );
+                    }
+                }
+            }
+        }
+        $this->assertGreaterThan( 50, $planned );
     }
 }

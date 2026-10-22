@@ -210,4 +210,74 @@ final class HtmlSourceTest extends HtmlTestCase
         $this->assertCount( 100, $s['flagged'] );
         $this->assertSame( 300, $s['stats']['removed'] );
     }
+
+    // ── styles hand-over (html_to_divi styles, task 4) ─────────────────────
+
+    public function testStyleTextAndInlineStylesAreHandedOverButNeverKeptInTheDom(): void
+    {
+        $s = HtmlSource::parse( '<html><head><style>h1{color:red}</style></head><body style="color:#111"><h1 style="font-size:40px">x</h1><style>p{}</style></body></html>' );
+        $this->assertNull( $s['error'] );
+        $this->assertSame( "h1{color:red}\np{}", $s['css'] );
+        $this->assertSame( 'color:#111', $s['inline']['/html/body'] );
+        $this->assertSame( 'font-size:40px', $s['inline']['/html/body/h1'] );
+        $this->assertStringNotContainsString( 'style=', $this->bodyHtml( $s ) );
+        // The paths belong to the returned DOM.
+        $xp = new \DOMXPath( $s['body']->ownerDocument );
+        $this->assertSame( 'x', $xp->query( '/html/body/h1' )->item( 0 )->textContent );
+    }
+
+    public function testTheHtmlElementsOwnStyleAndAttributesAreHandedOver(): void
+    {
+        $s = HtmlSource::parse( '<html style="color:#222" bgcolor="#fff"><body><p>x</p></body></html>' );
+        $this->assertSame( 'color:#222', $s['inline']['/html'] );
+        $this->assertSame( [ 'bgcolor' ], $s['presentational']['/html'] );
+    }
+
+    public function testPresentationalAttributesAreRecorded(): void
+    {
+        $s = $this->parse( '<table bgcolor="#000"><tr><td align="center">x</td></tr></table><font color="red" face="Arial">y</font>' );
+        $this->assertSame( [ 'bgcolor' ], $s['presentational']['/html/body/table'] );
+        $this->assertSame( [ 'align' ], $s['presentational']['/html/body/table/tr/td'] );
+        $this->assertSame( [ 'color', 'face' ], $s['presentational']['/html/body/font'] );
+        $this->assertStringNotContainsString( 'bgcolor', $this->bodyHtml( $s ) );
+        $this->assertStringNotContainsString( 'align', $this->bodyHtml( $s ) );
+        $this->assertStringNotContainsString( 'face', $this->bodyHtml( $s ) );
+    }
+
+    public function testAnInlineStyleOfARemovedElementIsNotHandedOver(): void
+    {
+        $s = $this->parse( '<form action="/x" style="color:red"><div style="color:blue">a</div></form><p style="color:green">keep</p>' );
+        $this->assertSame( [ '/html/body/p' => 'color:green' ], $s['inline'] );
+    }
+
+    public function testTheStyleTextIsCappedAndStaysValidUtf8(): void
+    {
+        $big = '<style>' . str_repeat( 'é', 60000 ) . '</style><p>x</p>';
+        $s   = $this->parse( $big );
+        $this->assertNull( $s['error'] );
+        $this->assertLessThanOrEqual( HtmlSource::MAX_CSS_BYTES, strlen( $s['css'] ) );
+        $this->assertTrue( mb_check_encoding( $s['css'], 'UTF-8' ) );
+        $this->assertGreaterThan( 90000, strlen( $s['css'] ) );
+    }
+
+    public function testNoStylesMeansEmptyHandOvers(): void
+    {
+        $s = $this->parse( '<p>x</p>' );
+        $this->assertSame( '', $s['css'] );
+        $this->assertSame( [], $s['inline'] );
+        $this->assertSame( [], $s['presentational'] );
+        $e = HtmlSource::parse( '' );
+        $this->assertSame( [ '', [], [] ], [ $e['css'], $e['inline'], $e['presentational'] ] );
+    }
+
+    public function testAMovedChildKeepsItsStyleUnderItsFinalPath(): void
+    {
+        // libxml2 may nest what follows a void <embed>; the children are moved out, so the path is read after the move.
+        $s  = $this->parse( '<div><embed src="x.swf"><p style="color:red">after</p></div>' );
+        $xp = new \DOMXPath( $s['body']->ownerDocument );
+        foreach ( array_keys( $s['inline'] ) as $path ) {
+            $this->assertSame( 1, $xp->query( $path )->length, $path );
+        }
+        $this->assertSame( [ 'color:red' ], array_values( $s['inline'] ) );
+    }
 }
