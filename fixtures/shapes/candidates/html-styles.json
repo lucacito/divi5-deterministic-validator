@@ -1,0 +1,297 @@
+[
+ {
+  "id": "hs-heading-color-control",
+  "block": "heading",
+  "expect": "PASS",
+  "set": {
+   "title.decoration.font.font.desktop.value.color": "#dc2626"
+  },
+  "note": "Control: a heading colour on divi/heading itself, over the theme's default heading colour (the path is served by the kit recipes; this proves the effect on a rendered heading, which the other heading candidates need as a reference)."
+ },
+ {
+  "id": "hs-text-orientation-center",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>This paragraph is long enough to wrap over at least three lines in a wide column, so that a text alignment is visible: left, centred, right or justified lines all look different once a line breaks. It keeps going with some more plain words, one after the other, until even a very wide desktop column has to break the text into several separate lines of roughly the same length.</p>"
+     }
+    }
+   }
+  },
+  "set": {
+   "module.advanced.text.text.desktop.value.orientation": "center"
+  },
+  "note": "Text alignment through the module's orientation (exported on divi/text 27 times, registered) = center, over Divi's default (left) on a wrapping paragraph. Decision text-align-orientation (with -right)."
+ },
+ {
+  "id": "hs-text-orientation-right",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>This paragraph is long enough to wrap over at least three lines in a wide column, so that a text alignment is visible: left, centred, right or justified lines all look different once a line breaks. It keeps going with some more plain words, one after the other, until even a very wide desktop column has to break the text into several separate lines of roughly the same length.</p>"
+     }
+    }
+   }
+  },
+  "set": {
+   "module.advanced.text.text.desktop.value.orientation": "right"
+  },
+  "note": "orientation = right over the default. Decision text-align-orientation (with -center)."
+ },
+ {
+  "id": "hs-text-orientation-justified",
+  "block": "text",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>This paragraph is long enough to wrap over at least three lines in a wide column, so that a text alignment is visible: left, centred, right or justified lines all look different once a line breaks. It keeps going with some more plain words, one after the other, until even a very wide desktop column has to break the text into several separate lines of roughly the same length.</p>"
+     }
+    }
+   }
+  },
+  "set": {
+   "module.advanced.text.text.desktop.value.orientation": "justified"
+  },
+  "note": "orientation = justified (Divi's value name for justify). Decision text-justify when text-align-orientation is PASS. Not expected either way."
+ },
+ {
+  "id": "hs-text-orientation-left",
+  "block": "text",
+  "expect": "DEAD",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>This paragraph is long enough to wrap over at least three lines in a wide column, so that a text alignment is visible: left, centred, right or justified lines all look different once a line breaks. It keeps going with some more plain words, one after the other, until even a very wide desktop column has to break the text into several separate lines of roughly the same length.</p>"
+     }
+    }
+   }
+  },
+  "set": {
+   "module.advanced.text.text.desktop.value.orientation": "left"
+  },
+  "note": "Default-value check (not a dead path): left is Divi's default orientation, so nothing changes. If this is NOT DEAD, left is not the default and the plan's D7 changes to write left when declared (the controller amends Task 7 before it starts)."
+ },
+ {
+  "id": "hs-text-bodyfont-align-center",
+  "block": "text",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>This paragraph is long enough to wrap over at least three lines in a wide column, so that a text alignment is visible: left, centred, right or justified lines all look different once a line breaks. It keeps going with some more plain words, one after the other, until even a very wide desktop column has to break the text into several separate lines of roughly the same length.</p>"
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.textAlign": "center"
+  },
+  "note": "Text alignment through the body font's textAlign = center on divi/text over the default (left). Decision text-align-bodyfont. Measured by make verify-guide-shapes before, but not in the registry and not on a candidate."
+ },
+ {
+  "id": "hs-text-bodyfont-align-justify",
+  "block": "text",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>This paragraph is long enough to wrap over at least three lines in a wide column, so that a text alignment is visible: left, centred, right or justified lines all look different once a line breaks. It keeps going with some more plain words, one after the other, until even a very wide desktop column has to break the text into several separate lines of roughly the same length.</p>"
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.textAlign": "justify"
+  },
+  "note": "bodyFont textAlign = justify. Decision text-justify only when text-align-orientation is NOT PASS."
+ },
+ {
+  "id": "hs-heading-align-justify",
+  "block": "heading",
+  "base": {
+   "title": {
+    "innerContent": {
+     "desktop": {
+      "value": "A long headline that is written to wrap over three lines on a phone screen so that justified alignment has something to stretch across the full width of the box"
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.textAlign": "justify"
+  },
+  "note": "Heading textAlign = justify over the default, on a headline that wraps over three lines at 400 px. Decision heading-justify."
+ },
+ {
+  "id": "hs-heading-family-georgia",
+  "block": "heading",
+  "set": {
+   "title.decoration.font.font.desktop.value.family": "Georgia"
+  },
+  "note": "Web-safe family Georgia on a heading (not a Google font, so Divi must print it as a plain family). Decision websafe-family."
+ },
+ {
+  "id": "hs-heading-family-courier",
+  "block": "heading",
+  "set": {
+   "title.decoration.font.font.desktop.value.family": "Courier New"
+  },
+  "note": "Web-safe family with a space, Courier New, on a heading. Decision websafe-family."
+ },
+ {
+  "id": "hs-text-family-georgia",
+  "block": "text",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>probe text</p>"
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.family": "Georgia"
+  },
+  "note": "Web-safe family Georgia on divi/text through the body font. Decision websafe-family."
+ },
+ {
+  "id": "hs-text-ink-ul",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<ul><li>One</li><li>Two</li></ul>"
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.color": "#dc2626"
+  },
+  "note": "Body font colour on a text module whose only content is an unordered list: the computed colour of the li must change (a list may not inherit the module's colour). Decision list-ink-ul."
+ },
+ {
+  "id": "hs-text-ink-ol",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<ol><li>One</li><li>Two</li></ol>"
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.color": "#dc2626"
+  },
+  "note": "The same on an ordered list. Decision list-ink-ol."
+ },
+ {
+  "id": "hs-text-ink-quote",
+  "block": "text",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<blockquote><p>Quoted</p></blockquote>"
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.color": "#dc2626"
+  },
+  "note": "The same on a blockquote (the theme may colour it itself): not expected either way. Decision quote-ink."
+ },
+ {
+  "id": "hs-row-max-width",
+  "block": "row",
+  "expect": "PASS",
+  "set": {
+   "module.decoration.sizing.desktop.value.maxWidth": "600px"
+  },
+  "geometry": true,
+  "note": "Row max width 600px (export-proven on rows only): the row must get narrower at 1280 and 900 and sit centred in its parent within 1 px (geometry). Decision row-max-width."
+ },
+ {
+  "id": "hs-row-background",
+  "block": "row",
+  "expect": "PASS",
+  "set": {
+   "module.decoration.background.desktop.value.color": "#1e293b"
+  },
+  "note": "Row background colour over no background. Decision row-background."
+ },
+ {
+  "id": "hs-column-background",
+  "block": "column",
+  "expect": "PASS",
+  "set": {
+   "module.decoration.background.desktop.value.color": "#1e293b"
+  },
+  "note": "Column background colour over no background. Decision column-background."
+ },
+ {
+  "id": "hs-column-padding",
+  "block": "column",
+  "expect": "PASS",
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "64px"
+  },
+  "note": "Column padding top 64px over the default. Decision column-padding."
+ },
+ {
+  "id": "hs-section-padding",
+  "block": "section",
+  "expect": "PASS",
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.left": "48px"
+  },
+  "note": "Section padding left 48px over the default. Decision section-padding."
+ },
+ {
+  "id": "hs-button-ghost",
+  "block": "button",
+  "expect": "PASS",
+  "base": {
+   "button": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#1e3a8a"
+       }
+      }
+     },
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "color": "#ffffff"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "button.decoration.background.desktop.value.color": "rgba(255,255,255,0)",
+   "button.decoration.font.font.desktop.value.color": "#e2e8f0"
+  },
+  "note": "A ghost button: a transparent fill (the value KitAdapters::TRANSPARENT writes) and a pale label over a navy fill with a white label, so the fill really changes (the same base kb-fill-transparent-rgba uses; a transparent fill over the site's default button could read DEAD). Used by the converter's unpaired-button rule (plan D1), no adapter decision."
+ }
+]
