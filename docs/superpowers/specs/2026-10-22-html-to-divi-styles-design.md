@@ -109,3 +109,83 @@ default are regenerated deliberately (`AIED_UPDATE_GOLDEN=1`) and reviewed.
 Free suite green (phase 1 + new); `styles=none` goldens byte-identical; styled goldens reviewed; `make verify-html-to-divi` green with the
 styled fixtures; `make verify-shapes` unchanged green; the plugin zip is NOT rebuilt; the Outcome records numbers; no CLAUDE.md claim stays
 that "styles are not converted yet".
+
+## Outcome (2026-10-22, written by Task 12)
+
+Built on `feat/dogfood-and-html-styles` with the subagent-driven plan `docs/superpowers/plans/2026-10-22-html-to-divi-styles.md`; NOT released, no version bump, no zip rebuild, `wp-plugin/readme.txt` and the plugin header untouched, `src/` and `wp-plugin/validator/` untouched, no new tool, route or OpenAPI operation (`HtmlToDiviLockstepTest` pins the schema). The text above is the approved design; where it differs from this Outcome, THIS SECTION WINS (the plan's "Controller rulings" section recorded the same changes before the build).
+
+### What was built
+
+Five new pure units in `wp-plugin/src/` and two seams in phase-1 code, as the plan said:
+
+- `HtmlCss` reads CSS text and values; everything it cannot evaluate becomes a poison marker (presence only), never a guess.
+- `HtmlStyles` is the cascade and inheritance. Soundness: a carried value always equals what a browser computes at desktop width; any construct that might change a property (combinators, compound selectors, `@media`/`@supports`/`@layer`/`@scope`, `var()`/`calc()`/`clamp()`, the `font` shorthand, effects such as `opacity`/`filter`/`transform`, presentational attributes, repaired markup) makes it unresolved. Checked against a real Chromium: 3,248 cases, 56,491 claimed values, all equal (residual non-blocking differences were MathML and `ruby` and were fixed in the last round).
+- `HtmlFonts` picks a family only from Divi's Google list (`wp-plugin/data/google-fonts-names.txt`, 1,945 names, byte-equal to `fixtures/shapes/google-fonts-names.txt`) or the proven web-safe list.
+- `HtmlStyleBlocks` builds the per-block candidates (anchors, padding, max width, sizes, per-device steps, clamps) and `HtmlReadability` decides colours under one rule.
+- Seams: `HtmlSource` hands over `css`, `inline`, `presentational`, `style_flags`, `external_css`, doctype/quirks and repair flags without keeping `style` in the DOM; `HtmlMapper::map($body, true)` records source paths (`from`, `ctx`, `column_src`). `false`, the default and the `styles=none` path, returns today's plan.
+- `DiviMarkup` stays the only writer: an optional trailing `$style` array per block and `STYLE_PROVEN` (13 keys, all PASS), pinned to `fixtures/shapes/html-styles-vocabulary.md` ("Adapter decisions"). `report.styles` has the keys `carried`, `ignored`, `dropped_unreadable` (at most 25, `dropped_total` counts all), `fonts`, `clamped`, `notes`, `external`; it exists only with `styles=basic`.
+
+### Decisions D1-D10 (as built)
+
+- D1 Paint and ink travel together: a heading or text module gets a colour only on a block the converter paints, and every module on a painted block gets one (its declared colour, or the CSS initial `#000000`); a module that cannot be inked readably drops the paint of every block that contains it; a button carries fill and label as a pair or not at all, and an unpaired button on paint becomes a ghost (transparent fill; it keeps its own label when it has one, else the parent's ink).
+- D2 Canvas paint: a section whose modules declare a text colour and that has no background on its anchor chain is painted `#ffffff`, the CSS initial canvas.
+- D3 Any carried wrapper, `body` or `html` background propagates to the sections (light or dark), so the readability check judges what is actually painted.
+- D4 Soundness / poison as above; user-action states and pseudo-elements never poison; an unparsable selector is dropped as a browser drops it.
+- D5 Headings and links do not inherit size, weight or colour (the browser's own sheet sets them); `pre code kbd samp tt` take a family only from their own rules; `center` contributes `text-align:center` at the lowest priority.
+- D6 Max width is written on rows only (no real export writes it on a section or a column).
+- D7 Text alignment on `divi/text` is `module.advanced.text.text.{bp}.value.orientation` for left/center/right (`left` is never written) and the body-font `textAlign` for justify.
+- D8 Values: colours lowercase `#rrggbb`; sizes, padding, max width and radius integer `"<n>px"`; weight `"100"`-`"900"`; clamps font size 8-120 px, padding 0-200, max width 200-2400, radius 0-999.
+- D9 No new note: `report.notes` lost the "colors and fonts" sentence; `report.styles.notes` carries the style notes (degrade reasons, "N external stylesheet(s) not read").
+- D10 Class names `HtmlCss`, `HtmlStyles`, `HtmlFonts`, `HtmlStyleBlocks`, `HtmlReadability`; test helper `tests/Support/StyledLayoutOracle.php`; probe candidates `hs-*`.
+
+One change to the text of the design: the font size ceiling is **120 px**, not 200. The first live run found the hostile fixture (a 900 px source heading) overflowing a phone at 400 px (456 px wide: written 200/150/110 px). Ruling: ceiling 200 -> 120, phone step 66 px (`DiviMarkup`, `HtmlStyleBlocks`, the oracle and the gate agree; one golden regenerated).
+
+### Task 1 verdicts (the probe, Divi 5.15.1, 1280/900/400)
+
+20 candidates, 19 PASS, 1 DEAD; all 13 `STYLE_PROVEN` decisions PASS. The one DEAD is a finding: `orientation: justified` does nothing on `divi/text` (left, center and right work), while the body-font `textAlign` = `justify` works, so justify uses that path. `title...textAlign` = `justify` works on `divi/heading`; `Georgia` and `Courier New` work as families on heading and text; list/quote ink (`ul`, `ol`, `blockquote` in a `divi/text`) works; the row max width centres the row; row and column background, column and section padding PASS; a ghost button (transparent fill) works. The first run had one wrong control (`orientation: left` is not a no-op: Divi writes an explicit `text-align: left`), corrected, nothing dropped.
+
+### Spec issues found by the plan and how the controller ruled (all eleven accepted as proposed)
+
+1. The font list trips `WpOrgComplianceTest` (`\bPro\b`: "Maven Pro", "Crimson Pro"): two narrow, justified entries (a `COMMERCIAL_EXCEPTIONS` row scoped to that one file and " Pro", and a `LOCAL_READS` row) plus `HtmlFontsTest` pinning the file to the fixture and its only hits to family names. Nothing loosened, nothing evaded.
+2. The phase-1 seam did not exist: added as the seams above (no rewrite of the mapper, byte identity of all phase-1 fixtures in both modes).
+3. `HtmlToDiviGroundingTest` created (registry plus per-block proof for every style path).
+4. "The theme colour wins" can print unreadable text: replaced by D1 and D2 (no assumption about the theme).
+5. The dark-page rule generalised to D3.
+6. A property an `@media` rule sets is not carried (the live gate compares at 1280 px): mobile-first CSS carries little.
+7. Max width on rows only (D6).
+8. Both text-align paths probed, orientation first (D7).
+9. Compound selectors (`p.lead`, `a.btn`) stay poison only.
+10. Headings and links do not inherit size, weight or colour (D5).
+11. Radius clamped 0-999 px.
+
+### Numbers
+
+- Free suite: 2,798 tests after Task 1 (2,782 on main at the last release draft) to **5,273 OK** (1 skipped by design; 5,270 before this task's three docs tests); most of the growth is data-provider datasets (the cascade's 320 pinned browser datasets, 104 head-content cases, the 200-case property test). Property seeds 1-40 pass (`--filter RandomStyled`), seeds 1-4 for `--filter Random`. Pro suite untouched.
+- Live gate on Divi 5.15.1: `make verify-html-to-divi` styled half **391 PASS, 0 FAIL** (first run 390 PASS, 1 FAIL: the 456 px overflow above; rerun after the ceiling change 34 s). The dark fixture's screenshot pair (`dist/html-to-divi/14-styled-dark.{source,divi}.png`) was reviewed: dark sections stay dark with readable text, buttons carried, the 2.48:1 fine print left unpainted on the white canvas, headings lighter than the browser's default bold (a weight is written only when the source sets one).
+- Tool definitions (`php scripts/measure-tokens.php`, `docs/token-usage.md`): 21,601 -> **21,883 bytes** (+282; 5,401 -> 5,471 estimated tokens). The `html_to_divi` description itself went 1,256 -> 1,368 bytes (+112) and the `styles` description to 285 characters (bound 300). The same re-measure refreshed the `kit-rules` row (7,302 -> 8,997 bytes, a change of the rules and chips polish, not of this work).
+- Mutation checks (Task 10): nine planted faults (contrast floor 1.0 and 3.0, ink without paint, paint without ink, half a button pair, large-text edge at the desktop size, styles on in `none`, no size clamp, a ghost never checked) were all caught by the oracle, the property test or the fixture tests.
+
+### Phase-1 bugs found and fixed on this branch (shipped in 4.10.0-4.13.0; TELL THE OWNER, they go into the release notes)
+
+Found by the styles work (the property test and the new fixtures); in every case `text_check` still said "equal" because the lost content was never counted as lost.
+
+- I4: HTML5 elements (`section`, `header`, `main`...) that follow head content (`<link>`, `<meta>`, `<style>`) were kept by libxml inside `<head>`, so the page was refused as "The HTML has no content" or the first section was silently dropped. Fix: `HtmlSource::relocateHeadContent` (fixtures `15-head-*`).
+- I5: content after `</html>` (a second `<html>` node, or a section between `</body>` and `</html>`) was silently lost. Fix: moved to the end of the body, as a browser does (fixtures `16-after-html-*`). Styles stay off on such a page (the repair note), by ruling: fail closed.
+- I6: a fragment that starts with head content (or with loose text) followed by loose text made libxml open an implied `<p>` that swallowed the next section (its heading became bold text, three sections became two). Fix: `HtmlSource::bodyStart` writes an explicit `<body>` where a browser starts it (fixtures `17-leading-*`).
+- I7: loose text after `</body>` (`<body><section>A</section></body>Loose<section>B</section>`) has the same implied-`<p>` swallow. State when this was written: OPEN (not in this branch's history; a fix with fixtures `18-after-body-*` was in progress in its own worktree). Until it lands the structure of such a page can still be lost, styles stay off there through the `after` repair note, and the word check does not see the loss; update this line when it merges.
+
+### Known limits (all reported by the converter, never silent)
+
+- Links inside text keep the theme's link colour; so do code, `mark`, `pre`, tables and definition lists in text (the text is not inked under paint, so its paint is dropped).
+- External stylesheets (`<link rel="stylesheet">`, `@import`) are not fetched. They are counted and the report says "N external stylesheet(s) not read"; inline and `<style>` CSS is still carried (switch `HtmlStyleBlocks::DEGRADE_ON_EXTERNAL`, default false, by ruling).
+- Compound and combinator selectors (`p.lead`, `a.btn`, `.hero h1`) are poison only: a property they might set is not carried. A mobile-first stylesheet carries little because its desktop values live in media queries.
+- Column and section max width are not written (rows only); a button's family, size and padding are not carried; a card grid's row padding goes on the first row (top) and the last row (bottom) when it is split.
+- No hover colours are written for buttons or ghost buttons (M5, ruled): a hover can differ from the source and could be less readable than the rest state.
+- A heading carries a weight only when the source sets it; a `rem`/`em` size is resolved against 16 px / the inherited size.
+- Content after the end of the document keeps styles off (repair note, fail closed); a second `<body>` or `<html>` start tag loses its attributes.
+- Only properties the converter carries are measured live (the gate does not judge what it does not write); alpha and opacity on ancestors are not modelled by `hs-contrast`.
+- The 10 parser-repair fixtures (`15-*`, `16-*`, `17-*`) were added after the live run; the PHP half of the gate converts all of them, run it once more before a release.
+
+### The owner's release-time readme changes (NOT applied)
+
+`wp-plugin/readme.txt` still says "colors and fonts are not converted yet" on lines 82, 246 and 302; `tests/HtmlToDiviDocsTest.php` excludes the readme on purpose and checks that `docs/release-4.14.0-draft.md` names each such line. The proposed replacement sentences and the changelog lines (styles and the parser fixes, in user-facing wording) are in that draft.

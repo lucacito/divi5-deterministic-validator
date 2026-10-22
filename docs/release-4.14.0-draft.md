@@ -10,6 +10,8 @@ owner's call (CLAUDE.md: no version bump, zip rebuild, push or release without t
 * New: style kits now also set the look of divider lines, the rules between list items and price columns, small tag labels and icon badges (line style, width and corners), so a dashed, dotted or heavy kit reads as one design all the way down.
 * Improved: the guide now tells your assistant exactly how to write those by hand (widths, which settings to use, and that the kit wins when a design language says something different). Found by having fresh assistants build pages from the guide alone.
 * Improved: in the built-in section patterns the thin rules and the icon badges follow the chosen kit. With the default look some lines are a little heavier and icon badges are squarer.
+* New: `html_to_divi` now carries the HTML's basic colors, fonts, sizes, alignment, backgrounds and spacing (and a button's colors and corners) where Divi can show them, and drops any color that would make text hard to read. The report lists what was carried and what was left out.
+* Fixed: `html_to_divi` could lose content in a few HTML shapes: HTML5 sections placed after a stylesheet link, `<meta>` or `<style>` (the page was refused as empty or the first section was dropped), content after the closing `</html>` tag, and a section following loose text at the start of a fragment (its heading turned into bold text). The word and link checks now see all of it.
 * Improved: verified on Divi 5.15.1.
 ```
 
@@ -44,3 +46,25 @@ Free suite 2782, Pro suite 2169, pure render-gate tests 114; Plugin Check on the
 ## Not in this release
 
 Blurb, testimonial and counter adapters; a `rule-accent` role; heading and text typography per kit; table-cell rules; `divi/signup`.
+
+## html_to_divi styles (phase 2) and the four parser fixes: what the owner has to do (NOT applied)
+
+Built on `feat/dogfood-and-html-styles`; spec and Outcome `docs/superpowers/specs/2026-10-22-html-to-divi-styles-design.md`; owner-facing description `docs/html-to-divi-workflow.md`.
+The two changelog lines above (New: styles, Fixed: parser) are the user-facing wording. Telling the owner plainly: the fixes cover bugs that were already published in 4.10.0 to 4.13.0
+(HTML5 elements after head content, content after `</html>`, loose text at the start of a fragment, and, if it is in the branch when you apply this, loose text after `</body>`; see the
+Outcome of the spec for the state of the last one). The word check used to say "equal" in these cases because the lost content was never counted.
+
+### Lines of `wp-plugin/readme.txt` that still say colors and fonts are not converted (change them in the release commit)
+
+`tests/HtmlToDiviDocsTest.php` excludes `readme.txt` on purpose and fails if one of these lines still says it and is not listed here. After applying, add the readme to that test.
+
+- line 82 (the tool bullet in the feature list). Proposed: "`html_to_divi`: turn HTML you already have (a page your assistant or another tool wrote) into a Divi 5 layout: the structure, all the copy, the links and the images, plus the basic colors, fonts and spacing where Divi can show them and the text stays readable. It previews by default and saves a new draft only when asked. Scripts, forms, embeds and site navigation are never converted and are listed in a report (available over MCP and the REST API, not in the ChatGPT Action)."
+- line 246 (FAQ "Can it turn my HTML page into a Divi page?"). Replace "Scripts, forms, embedded videos, site navigation and CSS are never converted, colors and fonts are not converted yet, and images become placeholders" with "Scripts, forms, embedded videos, site navigation and CSS code are never converted; it carries the basic colors, fonts and spacing of the HTML where Divi can show them, and never a color that would make text hard to read; images become placeholders". Optionally add: "Linked stylesheets are not fetched, so a page that keeps its styling in an external file comes out plainer."
+- line 302 (the 4.10.0 changelog entry): it was true when written. Leave the history as it is (preferred), or drop its last sentence "Colors and fonts are not converted yet." if you want no stale claim anywhere; the 4.14.0 entry above says what changed.
+
+### Before you release
+
+1. Run `make verify-html-to-divi` once more: the 10 parser-repair fixtures (`15-*`, `16-*`, `17-*`) were added after the last live styled run (391 PASS on Divi 5.15.1 with the 19 earlier samples).
+2. `HtmlToDiviLockstepTest` and `WpOrgComplianceTest` pin the descriptions, the schema and the font-list entries; the readme claims are re-read against them (checklist item 2 above).
+3. The font list `wp-plugin/data/google-fonts-names.txt` ships in the zip (1,945 names, a data file read locally); nothing remote, no new host.
+4. Known limits to keep out of any promise: links inside text keep the theme's link color, no hover colors for buttons, linked stylesheets are not read, a mobile-first stylesheet carries little.
