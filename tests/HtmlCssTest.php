@@ -138,18 +138,15 @@ final class HtmlCssTest extends HtmlTestCase
 
     public function testDeclarationsThatChangeWhatTheReaderCannotSeePoisonTheProperty(): void
     {
-        $this->assertSame( [ $this->decl( 'color', null, false, 'effect' ) ], $this->block( 'opacity: .5' ) );
+        $this->assertSame( [ $this->decl( 'effect', null, false, 'effect' ) ], $this->block( 'opacity: .5' ) );
         $this->assertSame( [], $this->block( 'opacity: 1' ) );
-        $this->assertSame( [ $this->decl( 'color', null, false, 'effect' ) ], $this->block( 'filter: blur(2px)' ) );
         $this->assertSame( [], $this->block( 'filter: none; mix-blend-mode: normal' ) );
-        $this->assertSame( [ $this->decl( 'color', null, false, 'effect' ) ], $this->block( '-webkit-text-fill-color: transparent' ) );
-        $this->assertSame( [ $this->decl( 'color', null, false, 'effect' ), $this->decl( 'background-color', null, false, 'effect' ) ], $this->block( 'background-clip: text' ) );
-        $this->assertSame( [ $this->decl( 'background-color', null, false, 'image_or_gradient' ) ], $this->block( 'background-image: url(a.png)' ) );
-        $this->assertSame( [], $this->block( 'background-image: none' ) );
         $this->assertSame( [ $this->decl( 'padding-left', null, false, 'property' ), $this->decl( 'padding-right', null, false, 'property' ) ], $this->block( 'padding-inline: 1px' ) );
         $this->assertSame( 4, count( $this->block( '-webkit-border-radius: 3px' ) ) );
-        $this->assertSame( 15, count( $this->block( 'all: unset' ) ) );
+        $this->assertSame( count( HtmlCss::ALL ), count( $this->block( 'all: unset' ) ) );
         $this->assertSame( [ $this->decl( 'max-width', null, false, 'property' ) ], $this->block( 'max-inline-size: 10px' ) );
+        $this->assertSame( [ $this->decl( 'background-image', null, false, 'image_or_gradient' ) ], $this->block( 'background-image: url(a.png)' ) );
+        $this->assertSame( [], $this->block( 'background-image: none' ) );
     }
 
     public function testCustomPropertiesAndUnknownPropertiesAreCountedNotReturned(): void
@@ -185,8 +182,10 @@ final class HtmlCssTest extends HtmlTestCase
         $this->assertSame( 'b', $r['rules'][1]['subject']['tag'] );
         $this->assertTrue( $r['rules'][1]['poison_only'] );
         $this->assertFalse( $r['rules'][1]['simple'] );
-        $this->assertSame( [ 'tag' => null, 'ids' => [], 'classes' => [], 'other' => true ], $r['rules'][2]['subject'], 'an & selector could match anything' );
-        $this->assertSame( [ 'tag' => null, 'ids' => [], 'classes' => [], 'other' => true ], $r['rules'][3]['subject'] );
+        $this->assertSame( [ 'tag' => null, 'ids' => [], 'classes' => [ 'card' ], 'other' => true ], $r['rules'][2]['subject'], 'an & compound is the parent plus its own parts' );
+        $this->assertSame( [ 'tag' => null, 'ids' => [], 'classes' => [ 'card' ], 'other' => false ], $r['rules'][3]['subject'], 'a nested at-rule is the parent' );
+        $this->assertSame( HtmlCss::MAX_SPECIFICITY, $r['rules'][1]['specificity'] );
+        $this->assertSame( HtmlCss::MAX_SPECIFICITY, $r['rules'][3]['specificity'] );
 
         // In an inline style a nested rule poisons what it sets, on the element.
         $out = $this->block( 'color: red; & p { color: blue; padding: 1px }' );
@@ -196,13 +195,17 @@ final class HtmlCssTest extends HtmlTestCase
     public function testASelectorListWithAnItemThatIsNotUnderstoodPoisonsEverywhere(): void
     {
         $universal = [ 'tag' => null, 'ids' => [], 'classes' => [], 'other' => true ];
-        foreach ( [ 'h1, a:made-up', 'h1, svg|a', 'p > ', 'h1, ', '.a..b', '#', 'a:-webkit-foo, h1' ] as $selector ) {
+        foreach ( [ 'h1, a:made-up', 'h1, svg|a', 'p > ', 'h1, ', '.a..b', '#' ] as $selector ) {
             $r = HtmlCss::stylesheet( $selector . ' { color: red }' );
             $this->assertCount( 1, $r['rules'], $selector );
             $this->assertSame( $universal, $r['rules'][0]['subject'], $selector );
             $this->assertTrue( $r['rules'][0]['poison_only'], $selector );
             $this->assertFalse( $r['rules'][0]['simple'], $selector );
         }
+        // A vendor pseudo beside a real selector: a browser may drop the list, so each real item only poisons.
+        $r = HtmlCss::stylesheet( 'a:-webkit-foo, h1 { color: red }' );
+        $this->assertSame( [ true, true ], array_column( $r['rules'], 'poison_only' ) );
+        $this->assertSame( [ 'a', 'h1' ], array_map( static fn( $x ) => $x['subject']['tag'], $r['rules'] ) );
         // An unclosed bracket swallows the rest of the text, as it does in a browser.
         $this->assertSame( [], HtmlCss::stylesheet( '[x { color: red }' )['rules'] );
         // Escapes are decoded; a vendor pseudo-element alone is simply a pseudo-element.
@@ -270,7 +273,7 @@ final class HtmlCssTest extends HtmlTestCase
 
         $this->assertSame( [ $this->decl( 'background-color', '#112233' ) ], $this->block( 'background: #123' ) );
         $this->assertSame( [ $this->decl( 'background-color', 'none' ) ], $this->block( 'background: none' ) );
-        $this->assertSame( [ $this->decl( 'background-color', null, false, 'image_or_gradient' ) ], $this->block( 'background: #fff url(a.png)' ) );
+        $this->assertSame( [ $this->decl( 'background-color', null, false, 'image_or_gradient' ), $this->decl( 'background-image', null, false, 'image_or_gradient' ) ], $this->block( 'background: #fff url(a.png)' ) );
     }
 
     public function testValueFormsLengths(): void
@@ -339,6 +342,181 @@ final class HtmlCssTest extends HtmlTestCase
     }
 
     // ---------------------------------------------------------------
+    // The cascade contract: a poison must never lose to a value a browser would not use
+    // ---------------------------------------------------------------
+
+    /**
+     * A miniature cascade over stylesheet() output, as HtmlStyles must do it: candidates are the rules whose subject could match the
+     * element; the winner has the highest (important, sentinel specificity, specificity, order); a later declaration in the same rule wins.
+     *
+     * @param array{tag:string,ids?:list<string>,classes?:list<string>} $el
+     * @return string the winning value, "POISON:<reason>" or "NONE"
+     */
+    private function winner( string $css, array $el, string $property ): string
+    {
+        $r    = HtmlCss::stylesheet( $css );
+        $best = null;
+        $key  = null;
+        foreach ( $r['rules'] as $rule ) {
+            $s = $rule['subject'];
+            if ( null !== $s['tag'] && $s['tag'] !== $el['tag'] ) {
+                continue;
+            }
+            if ( array() !== array_diff( $s['ids'], $el['ids'] ?? [] ) || array() !== array_diff( $s['classes'], $el['classes'] ?? [] ) ) {
+                continue;
+            }
+            foreach ( $rule['declarations'] as $i => $d ) {
+                if ( $d['property'] !== $property ) {
+                    continue;
+                }
+                $sentinel = HtmlCss::MAX_SPECIFICITY === $rule['specificity'] ? 1 : 0;
+                $k        = [ $d['important'] ? 1 : 0, $sentinel, $rule['specificity'][0], $rule['specificity'][1], $rule['specificity'][2], $rule['order'], $i ];
+                if ( null === $key || $k > $key ) {
+                    $key  = $k;
+                    $best = $rule['poison_only'] && null === $d['poison'] ? 'POISON:rule' : ( null !== $d['poison'] ? 'POISON:' . $d['poison'] : (string) $d['value'] );
+                }
+            }
+        }
+
+        return $best ?? 'NONE';
+    }
+
+    /** @return array<string,array{0:string,1:array,2:string}> */
+    public static function falseCarryCases(): array
+    {
+        return [
+            'nested rule'                 => [ '.hero { h1 { color: #fff } } .title { color: #111 }', [ 'tag' => 'h1', 'classes' => [ 'title' ] ], 'color' ],
+            'nested media in a rule'      => [ '#hero { color: blue } #hero { @media (min-width: 1px) { color: red } }', [ 'tag' => 'div', 'ids' => [ 'hero' ] ], 'color' ],
+            'vendor pseudo in a list'     => [ '#hero { color: blue } #hero:-webkit-any(p), .x { color: red }', [ 'tag' => 'p', 'ids' => [ 'hero' ] ], 'color' ],
+            'selector over the cap'       => [ '#hero { color: blue } #hero.' . str_repeat( 'a', 210 ) . ' { color: red }', [ 'tag' => 'div', 'ids' => [ 'hero' ] ], 'color' ],
+            'is() too deep'               => [ '#a { color: blue } :is(:is(:is(#a))) { color: red }', [ 'tag' => 'div', 'ids' => [ 'a' ] ], 'color' ],
+            'nth-child of S'              => [ '#a { color: blue } li:nth-child(odd of #a) { color: red }', [ 'tag' => 'li', 'ids' => [ 'a' ] ], 'color' ],
+            'important inside a layer'    => [ '@layer x { p { color: red !important } } #t { color: blue !important }', [ 'tag' => 'p', 'ids' => [ 't' ] ], 'color' ],
+            'media nested deeper than 8'  => [ 'p { color: blue }' . str_repeat( '@media all {', 9 ) . 'p { color: red }' . str_repeat( '}', 9 ), [ 'tag' => 'p' ], 'color' ],
+            'escaped property name'       => [ 'p { color: blue } p { col\\6f r: red }', [ 'tag' => 'p' ], 'color' ],
+            'escaped !important'          => [ '#t { color: blue } p { color: red !imp\\ortant }', [ 'tag' => 'p', 'ids' => [ 't' ] ], 'color' ],
+            'escaped at-rule name'        => [ 'p { color: blue } @\\6d edia all { p { color: red } }', [ 'tag' => 'p' ], 'color' ],
+            'more than 100 declarations'  => [ '#t { color: blue } p { ' . str_repeat( 'margin: 0;', 101 ) . ' color: red }', [ 'tag' => 'p', 'ids' => [ 't' ] ], 'color' ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'falseCarryCases' )]
+    public function testAPoisonOutranksTheLowerValueItMightOverride( string $css, array $element, string $property ): void
+    {
+        $this->assertStringStartsWith( 'POISON:', $this->winner( $css, $element, $property ), 'the lower value must not be carried' );
+    }
+
+    public function testASimpleRuleStillWinsWhereNothingUnreadableCouldApply(): void
+    {
+        $this->assertSame( '#111111', $this->winner( '.title { color: #111 } .hero { h1 { color: #fff } }', [ 'tag' => 'p', 'classes' => [ 'title' ] ], 'color' ) );
+        $this->assertSame( '#0000ff', $this->winner( 'a { color: blue; &:hover { color: red } }', [ 'tag' => 'a' ], 'color' ) );
+        $this->assertSame( '#ff0000', $this->winner( 'p { color: blue } p { color: red }', [ 'tag' => 'p' ], 'color' ) );
+        $this->assertSame( '#0000ff', $this->winner( '@layer x { p { color: red } } p { color: blue }', [ 'tag' => 'p' ], 'color' ), 'a layered normal declaration loses to an unlayered one' );
+    }
+
+    public function testTheSentinelSpecificityIsPublicAndRanksFirst(): void
+    {
+        $this->assertSame( [ PHP_INT_MAX, 0, 0 ], HtmlCss::MAX_SPECIFICITY );
+        $r = HtmlCss::stylesheet( '.hero { h1 { color: #fff } }' );
+        $this->assertSame( HtmlCss::MAX_SPECIFICITY, $r['rules'][0]['specificity'] );
+        $this->assertTrue( $r['rules'][0]['poison_only'] );
+        $this->assertSame( 'h1', $r['rules'][0]['subject']['tag'] );
+    }
+
+    public function testEffectsAndBackgroundImagesAreMarkersNotColourEntries(): void
+    {
+        $r = HtmlCss::stylesheet( 'p { opacity: .3 } .x { color: #000 }' );
+        $this->assertSame( [ $this->decl( 'effect', null, false, 'effect' ) ], $r['rules'][0]['declarations'] );
+        $this->assertSame( [ $this->decl( 'color', '#000000' ) ], $r['rules'][1]['declarations'] );
+        $this->assertSame( '#000000', $this->winner( 'p { opacity: .3 } .x { color: #000 }', [ 'tag' => 'p', 'classes' => [ 'x' ] ], 'color' ) );
+        $this->assertSame( 'POISON:effect', $this->winner( 'p { opacity: .3 } .x { color: #000 }', [ 'tag' => 'p', 'classes' => [ 'x' ] ], 'effect' ) );
+
+        $r = HtmlCss::stylesheet( '.hero { background-image: url(x.jpg) } #h { background-color: #123 }' );
+        $this->assertSame( [ $this->decl( 'background-image', null, false, 'image_or_gradient' ) ], $r['rules'][0]['declarations'] );
+        $this->assertSame( [ $this->decl( 'background-color', '#112233' ) ], $r['rules'][1]['declarations'] );
+
+        foreach ( [ 'filter: blur(1px)', 'mix-blend-mode: multiply', '-webkit-text-fill-color: red', 'background-clip: text', '-webkit-background-clip: text', 'color-scheme: dark', 'color-scheme: light dark' ] as $css ) {
+            $this->assertSame( [ $this->decl( 'effect', null, false, 'effect' ) ], $this->block( $css ), $css );
+        }
+        $this->assertSame( [], $this->block( 'background-clip: border-box; color-scheme: normal' ) );
+
+        // The background shorthand with an image is both: the colour is unknown and an image is present.
+        $this->assertSame( [ $this->decl( 'background-color', null, false, 'image_or_gradient' ), $this->decl( 'background-image', null, false, 'image_or_gradient' ) ], $this->block( 'background: #fff url(a.png)' ) );
+        $this->assertSame( [ $this->decl( 'background-color', null, false, 'alpha' ) ], $this->block( 'background: rgba(0,0,0,.5)' ) );
+        $this->assertSame( [ $this->decl( 'text-align', null, false, 'property' ) ], $this->block( 'direction: rtl' ) );
+        $this->assertContains( 'effect', HtmlCss::MARKERS );
+        $this->assertContains( 'background-image', HtmlCss::MARKERS );
+    }
+
+    public function testStatesAndPseudoElementsInANestedRuleOrAListAddNoPoison(): void
+    {
+        $r = HtmlCss::stylesheet( 'a { color: blue; &:hover { color: red } &::before { color: red } }' );
+        $this->assertCount( 1, $r['rules'] );
+        $this->assertSame( 2, $r['ignored']['pseudo_state'] );
+
+        $r = HtmlCss::stylesheet( '::-moz-selection, ::selection { color: #fff; background: #000 }' );
+        $this->assertSame( [], $r['rules'] );
+        $this->assertSame( [ 'pseudo_state' => 2 ], $r['ignored'] );
+
+        // A pseudo-element beside a real selector: the real part still poisons, with its own subject.
+        $r = HtmlCss::stylesheet( 'h1, ::-moz-selection { color: red }' );
+        $this->assertCount( 1, $r['rules'] );
+        $this->assertSame( 'h1', $r['rules'][0]['subject']['tag'] );
+        $this->assertTrue( $r['rules'][0]['poison_only'] );
+        $r = HtmlCss::stylesheet( 'h1, ::selection { color: red }' );
+        $this->assertTrue( $r['rules'][0]['simple'] && ! $r['rules'][0]['poison_only'], 'a standard pseudo-element beside h1 is no reason to doubt h1' );
+
+        // An & compound is the parent: &.x is the parent plus .x, and a nested rule under a hover-only parent adds nothing.
+        $r = HtmlCss::stylesheet( 'p.a { color: blue; &.x { color: red } } a:hover { b { color: red } }' );
+        $this->assertCount( 2, $r['rules'] );
+        $this->assertSame( [ 'tag' => 'p', 'ids' => [], 'classes' => [ 'a', 'x' ], 'other' => false ], $r['rules'][1]['subject'] );
+    }
+
+    public function testEscapesInANameAnAtRuleOrImportantAreUnknownAndPoisonEverythingTheyCouldSet(): void
+    {
+        $ignored = [];
+        $out     = HtmlCss::declarations( 'color: red; col\\6f r: blue', $ignored );
+        $this->assertSame( $this->decl( 'color', '#ff0000' ), $out[0] );
+        $this->assertCount( 1 + count( HtmlCss::ALL ), $out );
+        $this->assertSame( 'unresolved', $out[1]['poison'] );
+        $this->assertTrue( $out[1]['important'] );
+
+        $r = HtmlCss::stylesheet( 'p { color: red !imp\\ortant }' );
+        $this->assertCount( 1, $r['rules'] );
+        $this->assertSame( HtmlCss::MAX_SPECIFICITY, $r['rules'][0]['specificity'] );
+        $this->assertSame( [ $this->decl( 'color', null, true, 'unresolved' ) ], $r['rules'][0]['declarations'] );
+    }
+
+    public function testTheByteCapCutAppendsAnAllPropertiesPoisonAndImportDocumentsItself(): void
+    {
+        $css = str_repeat( ' ', HtmlCss::MAX_CSS_BYTES - 12 ) . 'p{color:#123456}';
+        $r   = HtmlCss::stylesheet( $css );
+        $this->assertSame( [ 'css_cap' => 1, 'selector' => 1 ], $r['ignored'], 'the cut rule is unclosed' );
+        $last = $r['rules'][ count( $r['rules'] ) - 1 ];
+        $this->assertSame( HtmlCss::MAX_SPECIFICITY, $last['specificity'] );
+        $this->assertTrue( $last['poison_only'] );
+        $this->assertCount( count( HtmlCss::ALL ), $last['declarations'] );
+        $this->assertSame( 'POISON:unresolved', $this->winner( $css, [ 'tag' => 'p' ], 'color' ) );
+
+        // @import is counted, not followed: the imported sheet is outside the text this reader is given (documented contract).
+        $r = HtmlCss::stylesheet( '@import url(a.css); p { color: red }' );
+        $this->assertSame( [ 'external' => 1 ], $r['ignored'] );
+        $this->assertCount( 1, $r['rules'] );
+    }
+
+    public function testFamilyNamesThatAreReservedWordsAreNotFamilies(): void
+    {
+        foreach ( [ 'Arial, inherit', 'default', 'DEFAULT', 'unset, serif', 'Arial, revert-layer', 'serif, initial' ] as $v ) {
+            $this->assertSame( [ $this->decl( 'font-family', null, false, 'unreadable' ) ], $this->block( 'font-family: ' . $v ), $v );
+            $this->assertSame( [], HtmlCss::families( $v ), $v );
+        }
+        $this->assertSame( [], HtmlCss::families( 'inherit' ) );
+        $this->assertSame( [ $this->decl( 'font-family', 'inherit' ) ], $this->block( 'font-family: inherit' ), 'the CSS-wide keyword on its own is not a family but a keyword' );
+        $this->assertSame( [ 'Open default' ], HtmlCss::families( 'Open default' ) );
+        $this->assertSame( [ 'default' ], HtmlCss::families( '"default"' ) );
+    }
+
+    // ---------------------------------------------------------------
     // Caps
     // ---------------------------------------------------------------
 
@@ -347,7 +525,8 @@ final class HtmlCssTest extends HtmlTestCase
         // Bytes: the rest is not read.
         $r = HtmlCss::stylesheet( 'p { color: red }' . str_repeat( ' ', HtmlCss::MAX_CSS_BYTES ) . 'h1 { color: blue }' );
         $this->assertSame( [ 'css_cap' => 1 ], $r['ignored'] );
-        $this->assertCount( 1, $r['rules'] );
+        $this->assertCount( 2, $r['rules'], 'the rule and the poison that covers the unseen rest' );
+        $this->assertSame( HtmlCss::MAX_SPECIFICITY, $r['rules'][1]['specificity'] );
 
         // Rules.
         $css = '';
@@ -377,7 +556,7 @@ final class HtmlCssTest extends HtmlTestCase
         $ignored = [];
         $out     = HtmlCss::declarations( str_repeat( 'color: red;', HtmlCss::MAX_DECLARATIONS + 1 ), $ignored );
         $this->assertSame( [ 'css_cap' => 1 ], $ignored );
-        $this->assertCount( HtmlCss::MAX_DECLARATIONS + count( HtmlCss::READ ), $out );
+        $this->assertCount( HtmlCss::MAX_DECLARATIONS + count( HtmlCss::ALL ), $out );
         $this->assertSame( 'unresolved', $out[ HtmlCss::MAX_DECLARATIONS ]['poison'] );
         $this->assertTrue( $out[ HtmlCss::MAX_DECLARATIONS ]['important'] );
         $ignored = [];
@@ -457,7 +636,8 @@ final class HtmlCssTest extends HtmlTestCase
             '@font-face {', '@keyframes k {', '@supports (x:y) {', '<!--', '-->', "\0", "\n", ' ', ' ', 'color', 'background', 'background-color', 'font', 'font-family', 'font-size', 'font-weight',
             'text-align', 'padding', 'padding-top', 'border-radius', 'max-width', 'opacity', 'all', '--x', 'margin', 'red', '#abc', '#12345678', 'rgb(', 'rgb(1,2,3)', 'rgba(1,2,3,.5)', 'hsl(0 0% 0%)',
             'var(--a)', 'calc(1px + 2px)', 'url(a.png)', 'linear-gradient(red,blue)', 'inherit', 'initial', '!important', '! important', '1px', '2.5rem', '150%', '-3px', '1e9', '"Open Sans"', 'serif',
-            'bold', '900', 'center', 'h1', 'p', '.card', '#hero', 'a:hover', 'a:not(.x)', '::before', '&', '> ', '+ ', '~ ', '*', "\xFF\xFE", "\xC3", 'é', '@', '.', '#', '|', '=', '!', "\r\n" ];
+            'bold', '900', 'center', 'h1', 'p', '.card', '#hero', 'a:hover', 'a:not(.x)', '::before', '&', '> ', '+ ', '~ ', '*', '@layer x {', '@layer a, b;', '@media all {', '@container (min-width: 1px) {', '@scope (.a) {', '.hero {', 'b {', '&:hover {', '&.x {', '& p {', 'a:is(:is(:is(#a)))', 'li:nth-child(odd of #a)', ':-webkit-any(p)', '::-moz-selection', '::selection',
+            'background-image', 'color-scheme', 'direction', 'opacity', '-webkit-text-fill-color', 'background-clip', 'text', 'filter', 'url(x.png)', 'col\\6f r', '!imp\\ortant', '@\\6d edia', '\\3a ', 'inherit, serif', 'default', "\xFF\xFE", "\xC3", 'é', '@', '.', '#', '|', '=', '!', "\r\n" ];
         $n     = count( $pieces );
         $out   = [];
         $state = 20261022;
@@ -493,6 +673,12 @@ final class HtmlCssTest extends HtmlTestCase
         $out[] = 'p{padding:' . str_repeat( '1px ', 20000 ) . '}';
         $out[] = 'p{color:' . str_repeat( ' ', 150000 ) . '!important}';
         $out[] = str_repeat( 'a:not(a:not(a:not(a:not(', 4000 );
+        $out[] = str_repeat( '@media all {', 20 ) . 'p { color: red }' . str_repeat( '}', 20 ) . ' p { color: blue }';
+        $out[] = str_repeat( '@layer x { p { color: red !important } } ', 900 );
+        $out[] = str_repeat( 'a { ', 12 ) . 'color: red;' . str_repeat( ' & b { color: blue }', 40 ) . str_repeat( ' }', 12 );
+        $out[] = str_repeat( '.a { & .b { @media (x) { &:hover { color: red } } } } ', 800 );
+        $out[] = str_repeat( 'p { col\\6f r: red; opacity: .5; color-scheme: dark } ', 1500 );
+        $out[] = str_repeat( ':is(', 3000 ) . 'p' . str_repeat( ')', 3000 ) . ' { color: red }';
         $out[] = str_repeat( '.a ', 60000 ) . '{color:red}';
 
         return $out;
@@ -501,7 +687,7 @@ final class HtmlCssTest extends HtmlTestCase
     private function assertNormalised( array $d, string $label ): void
     {
         $this->assertSame( [ 'property', 'value', 'important', 'poison' ], array_keys( $d ), $label );
-        $this->assertContains( $d['property'], HtmlCss::READ, $label );
+        $this->assertContains( $d['property'], HtmlCss::ALL, $label );
         $this->assertIsBool( $d['important'], $label );
         if ( null !== $d['poison'] ) {
             $this->assertNull( $d['value'], $label );
@@ -553,7 +739,7 @@ final class HtmlCssTest extends HtmlTestCase
     {
         $inputs = $this->garbage( 560 );
         $this->assertGreaterThanOrEqual( 500, count( $inputs ) );
-        $maxEntries = HtmlCss::MAX_DECLARATIONS * count( HtmlCss::READ ) + count( HtmlCss::READ );
+        $maxEntries = HtmlCss::MAX_DECLARATIONS * count( HtmlCss::ALL ) + count( HtmlCss::ALL );
         foreach ( $inputs as $k => $css ) {
             $label = 'input ' . $k . ' (' . strlen( $css ) . ' bytes)';
 
@@ -572,6 +758,11 @@ final class HtmlCssTest extends HtmlTestCase
                 $this->assertSame( [ 'tag', 'ids', 'classes', 'other' ], array_keys( $rule['subject'] ), $label );
                 $this->assertTrue( null === $rule['subject']['tag'] || is_string( $rule['subject']['tag'] ), $label );
                 $this->assertCount( 3, $rule['specificity'], $label );
+                if ( HtmlCss::MAX_SPECIFICITY === $rule['specificity'] ) {
+                    $this->assertTrue( $rule['poison_only'] && ! $rule['simple'], $label . ' a sentinel rule never applies' );
+                } else {
+                    $this->assertLessThan( 1000000, $rule['specificity'][0], $label );
+                }
                 $this->assertTrue( ! $rule['simple'] || ( 1 === count( $rule['subject']['ids'] ) + count( $rule['subject']['classes'] ) + ( null === $rule['subject']['tag'] ? 0 : 1 ) && ! $rule['subject']['other'] ), $label );
                 $this->assertNotSame( [], $rule['declarations'], $label );
                 $this->assertLessThanOrEqual( $maxEntries, count( $rule['declarations'] ), $label );
