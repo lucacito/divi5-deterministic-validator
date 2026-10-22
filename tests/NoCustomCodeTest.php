@@ -49,10 +49,21 @@ class NoCustomCodeTest extends TestCase
         return $out;
     }
 
+    /**
+     * Files that NAME a needle only to refuse or poison it, never to teach or write it (explicit, one needle each).
+     * HtmlCss reads CSS from a page the user supplied and must recognise the backdrop-filter property to mark a colour as
+     * unresolved; it never writes it anywhere (only normalised values and marker names leave the class; HtmlCssTest pins that).
+     */
+    private const NAMED_TO_BE_REFUSED = [ 'src/HtmlCss.php' => [ 'backdrop-filter' ] ];
+
     #[\PHPUnit\Framework\Attributes\DataProvider( 'shippedText' )]
     public function testNothingTeachesOrShipsCustomCss( string $rel ): void
     {
-        $this->assertNoTeaching( $rel, (string) file_get_contents( self::ROOT . '/' . $rel ) );
+        $text = (string) file_get_contents( self::ROOT . '/' . $rel );
+        foreach ( self::NAMED_TO_BE_REFUSED[ $rel ] ?? [] as $needle ) {
+            $text = str_ireplace( $needle, '', $text );
+        }
+        $this->assertNoTeaching( $rel, $text );
     }
 
     /** What the AI is actually handed (guides and every recipe), not just the source text. */

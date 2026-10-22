@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *   with families()); or "inherit". "inherit" on an inherited property (color, font-family, font-size, font-weight,
  *   text-align) is a real candidate: it wins like any value and then takes the parent's computed value. Every other entry is
  *   a POISON: value null, poison = a REASONS entry.
- * - Two pseudo-properties are PRESENCE poisons (MARKERS), not values. `effect` (opacity, filter, mix-blend-mode,
+ * - Two pseudo-properties are PRESENCE poisons (MARKERS), not values. `effect` (opacity, filter and its backdrop and -webkit spellings, mix-blend-mode,
  *   -webkit-text-fill-color, background-clip: text, color-scheme) means colours on the element AND ITS SUBTREE may look different
  *   from their computed values: the colour and background-colour paint there are unresolved. `background-image` (an image or
  *   gradient, or the background shorthand with one) means the element's background is not a flat colour. They are resolved
@@ -37,13 +37,30 @@ if ( ! defined( 'ABSPATH' ) ) {
  *   specific `color` rule does not hide them.
  * - `direction` poisons text-align (reason property). Logical and vendor spellings of a read property poison it (reason
  *   property). `all` poisons everything. A var()/env()/attr() in a shorthand poisons all its longhands (reason function).
- * - ignored['css_cap'] > 0 means rules or declarations were not seen because of a cap. For the byte cap and the per-block
- *   declaration cap this reader already appends the covering poison (a final rule of sentinel specificity with an important
- *   poison of every property, or the same entries after a block's declarations). For the rule cap (MAX_RULES) it does not:
- *   a caller that needs soundness treats every property as unresolved. ignored['external'] > 0 (@import) means an imported
- *   sheet that is NOT in the given text could set anything; this reader only counts it (appending a poison would drop all
- *   styling from every page that imports a web font), so the soundness of a result is relative to the text it was given; a
- *   caller may choose to treat it like css_cap.
+ * - ignored['css_cap'] > 0 means rules or declarations were not seen (or a list fanned out too far) because of a cap, and a covering
+ *   poison has ALREADY been appended, so a caller never has to special-case it: for the byte cap and the rule cap (MAX_RULES, also
+ *   counting nested rules, even empty ones) a final rule of sentinel specificity with an important poison of every property;
+ *   for the per-block declaration cap the same entries after the block's declarations; for a selector list that fans out past
+ *   MAX_SUBJECTS (items x parents of a nested rule, or MAX_SUBJECTS_TOTAL over the stylesheet) one universal sentinel subject.
+ *   The rules array therefore holds at most MAX_RULES + 1 rules. ignored['external'] (@import) means an imported sheet that is
+ *   NOT in the given text could set anything; this reader only counts it (appending a poison would drop all styling from every
+ *   page that imports a web font), so the soundness of a result is relative to the text it was given.
+ *
+ * TASK 6 CONTRACT (short):
+ * - Markers (`effect`, `background-image`): importance, specificity and order are irrelevant. Their presence in ANY rule that may
+ *   match the element (poison-only rules included) counts, and a later `none` does not clear one. `background-image` on an
+ *   element also makes the effective backdrop of its DESCENDANTS with a transparent background unresolved. `effect` applies to
+ *   the element and its subtree; rules on html, :root and body count as ancestors of the converted fragment. With color-scheme
+ *   the default canvas and initial colours are unknown: assume no white and no black.
+ * - MAX_SPECIFICITY is compared lexicographically, never added to; any sentinel winner means unresolved.
+ * - Concatenate every <style> block in document order into ONE stylesheet() call (one call per block restarts `order` and the caps).
+ * - external > 0 means imported or linked sheets were not read: the caller must also count <link rel=stylesheet> under the same
+ *   reason and warn.
+ * - HTML-level inputs this class never sees are the caller's job: the dir attribute and <bdo> (text-align), <meta name=color-scheme>,
+ *   presentational attributes (bgcolor, <font color>, align).
+ * - Animations: an animation or animation-name other than none is an `effect` marker (the animation rule is skipped and counted
+ *   at_rule, but it may change colours even over inline styles).
+ * - Counted reasons for unknowable declarations: an escaped name or an escaped !important bumps `unresolved`.
  *
  * Parsing rules: comments are removed first (strings are respected); "<!--" and "-->" are dropped; strings, parentheses,
  * square brackets and braces are respected when splitting on ";", "," and "{}" (a closer that does not match the open block is
@@ -269,6 +286,11 @@ final class HtmlCss
     ];
 
     private const MAX_DEPTH    = 8;
+
+    /** Selector subjects one rule may fan out to, and the total over a stylesheet (a nested list multiplies its parents). */
+    private const MAX_SUBJECTS       = 2000;
+    private const MAX_SUBJECTS_TOTAL = 20000;
+
     private const MAX_FAMILIES = 10;
 
     /** CSS-wide keywords. */
@@ -321,7 +343,8 @@ final class HtmlCss
     ];
 
     /** Properties that change how colours look on an element and its subtree: they are the `effect` marker. */
-    private const EFFECTS = [ 'opacity', 'filter', 'mix-blend-mode', '-webkit-text-fill-color', 'background-clip', '-webkit-background-clip', 'color-scheme' ];
+    private const EFFECTS = [ 'opacity', 'filter', '-webkit-filter', 'backdrop-filter', '-webkit-backdrop-filter', 'mix-blend-mode', '-webkit-text-fill-color',
+        'background-clip', '-webkit-background-clip', 'color-scheme', 'animation', 'animation-name' ];
 
     // ---------------------------------------------------------------
     // Stylesheet
@@ -342,17 +365,16 @@ final class HtmlCss
      */
     public static function stylesheet( string $css ): array
     {
-        $ctx    = [ 'rules' => [], 'ignored' => [], 'full' => false, 'limit' => self::MAX_RULES ];
+        $ctx    = [ 'rules' => [], 'ignored' => [], 'full' => false, 'limit' => self::MAX_RULES, 'visits' => 0, 'subjects' => 0, 'covered' => false ];
         $capped = strlen( $css ) > self::MAX_CSS_BYTES;
         if ( $capped ) {
             // The last rule may be cut inside a value (#123456 read as #123): a final all-properties poison covers it and the unseen rest.
-            $css          = substr( $css, 0, self::MAX_CSS_BYTES );
-            $ctx['limit'] = self::MAX_RULES - 1;
+            $css = substr( $css, 0, self::MAX_CSS_BYTES );
             self::bump( $ctx['ignored'], 'css_cap' );
         }
         self::ruleList( self::clean( $css ), $ctx, 0, false, false );
         if ( $capped ) {
-            self::push( $ctx, self::universal(), false, self::MAX_SPECIFICITY, true, self::allUnresolved() );
+            self::cover( $ctx );
         }
         ksort( $ctx['ignored'] );
 
@@ -619,8 +641,11 @@ final class HtmlCss
         if ( $cond ) {
             self::bump( $ctx['ignored'], 'media', count( $r['decls'] ) );
         }
-        $sel = self::selectors( $prelude, false, [] );
         $has = array() !== $r['decls'];
+        if ( ! $has && array() === $r['unsure'] && array() === $r['nested'] ) {
+            return;
+        }
+        $sel = self::selectors( $prelude, false, [], $ctx );
         if ( $sel['bad'] && ( $has || array() !== $r['unsure'] ) ) {
             self::bump( $ctx['ignored'], 'selector' );
         }
@@ -635,7 +660,9 @@ final class HtmlCss
                 }
                 continue;
             }
-            $parents[] = $e['subject'];
+            if ( array() !== $r['nested'] ) {
+                $parents[ self::subjectKey( $e['subject'] ) ] = $e['subject'];
+            }
             if ( $has ) {
                 if ( ! $sel['bad'] && ! $e['simple'] ) {
                     self::bump( $ctx['ignored'], 'selector' );
@@ -648,7 +675,7 @@ final class HtmlCss
             if ( $ctx['full'] ) {
                 return;
             }
-            self::nestedRule( $nested[0], $nested[1], $ctx, $depth + 1, $parents, $layer );
+            self::nestedRule( $nested[0], $nested[1], $ctx, $depth + 1, array_values( $parents ), $layer );
         }
     }
 
@@ -660,15 +687,23 @@ final class HtmlCss
      * An unreadable list is ONE universal entry with the sentinel specificity.
      *
      * @param list<array{tag:?string,ids:list<string>,classes:list<string>,other:bool}> $parents the subjects of the enclosing rule(s), for nested rules
+     * A list that fans out too far (items, or items x parents of a nested rule, past MAX_SUBJECTS or the stylesheet's total) is ONE
+     * universal entry with the sentinel specificity, counted css_cap.
+     *
+     * @param array<string,mixed> $ctx
      * @return array{bad: bool, entries: list<array{subject: array<string,mixed>, spec: list<int>, simple: bool, state: bool, force: bool}>}
      */
-    private static function selectors( string $prelude, bool $nested, array $parents ): array
+    private static function selectors( string $prelude, bool $nested, array $parents, array &$ctx ): array
     {
         if ( $nested && array() === $parents ) {
             return [ 'bad' => false, 'entries' => [] ];
         }
+        $items = self::splitTop( $prelude, ',' );
+        if ( count( $items ) > self::MAX_SUBJECTS || $ctx['subjects'] > self::MAX_SUBJECTS_TOTAL ) {
+            return self::fanOut( $ctx );
+        }
         $parsed = [];
-        foreach ( self::splitTop( $prelude, ',' ) as $item ) {
+        foreach ( $items as $item ) {
             $item = trim( $item );
             $p    = ( '' === $item || strlen( $item ) > self::MAX_SELECTOR ) ? null : self::parseSelector( $item, $nested, 0 );
             if ( null === $p ) {
@@ -694,13 +729,37 @@ final class HtmlCss
                 $entries[] = self::entryOf( $p['subject'], $p['spec'], $p['simple'], false, $force );
                 continue;
             }
+            $ctx['subjects'] += $p['amp'] ? count( $parents ) : 1; // work done, whatever it dedupes to
+            if ( $ctx['subjects'] > self::MAX_SUBJECTS_TOTAL ) {
+                return self::fanOut( $ctx );
+            }
             $subjects = $p['amp'] ? self::mergeParents( $p['subject'], $parents ) : [ $p['subject'] ];
             foreach ( $subjects as $sub ) {
-                $entries[] = self::entryOf( $sub, self::MAX_SPECIFICITY, false, false, true );
+                $entries[ self::subjectKey( $sub ) ] = self::entryOf( $sub, self::MAX_SPECIFICITY, false, false, true );
+                if ( count( $entries ) > self::MAX_SUBJECTS ) {
+                    return self::fanOut( $ctx );
+                }
             }
         }
+        if ( ! $nested ) {
+            $ctx['subjects'] += count( $entries );
+        }
 
-        return [ 'bad' => false, 'entries' => $entries ];
+        return [ 'bad' => false, 'entries' => array_values( $entries ) ];
+    }
+
+    /** @param array<string,mixed> $ctx @return array{bad: bool, entries: list<array<string,mixed>>} */
+    private static function fanOut( array &$ctx ): array
+    {
+        self::bump( $ctx['ignored'], 'css_cap' );
+
+        return [ 'bad' => true, 'entries' => [ self::entryOf( self::universal(), self::MAX_SPECIFICITY, false, false, true ) ] ];
+    }
+
+    /** @param array<string,mixed> $subject */
+    private static function subjectKey( array $subject ): string
+    {
+        return ( $subject['tag'] ?? '*' ) . '|' . implode( ',', $subject['ids'] ) . '|' . implode( ',', $subject['classes'] ) . '|' . ( $subject['other'] ? '1' : '0' );
     }
 
     /** @param array<string,mixed> $subject @param list<int> $spec @return array{subject: array<string,mixed>, spec: list<int>, simple: bool, state: bool, force: bool} */
@@ -782,7 +841,15 @@ final class HtmlCss
 
             return;
         }
-        $r       = self::readBody( $body, $ctx['ignored'] );
+        if ( ++$ctx['visits'] > self::MAX_RULES ) {
+            self::stop( $ctx ); // nested rules count against the rule budget even when they hold nothing
+
+            return;
+        }
+        $r = self::readBody( $body, $ctx['ignored'] );
+        if ( array() === $r['decls'] && array() === $r['unsure'] && array() === $r['nested'] ) {
+            return;
+        }
         $prelude = trim( $prelude );
         $bad     = false;
         if ( '' !== $prelude && '@' === $prelude[0] ) {
@@ -799,7 +866,7 @@ final class HtmlCss
             }
             $layer = $layer || 'layer' === $name;
         } else {
-            $sel     = self::selectors( $prelude, true, $parents );
+            $sel     = self::selectors( $prelude, true, $parents, $ctx );
             $bad     = $sel['bad'];
             $entries = $sel['entries'];
             if ( $bad ) {
@@ -818,7 +885,7 @@ final class HtmlCss
             if ( ! $bad && '@' !== ( $prelude[0] ?? '' ) ) {
                 self::bump( $ctx['ignored'], 'selector' );
             }
-            $subjects[] = $e['subject'];
+            $subjects[ self::subjectKey( $e['subject'] ) ] = $e['subject'];
             if ( array() !== $r['decls'] ) {
                 // The real rank of a nested rule includes its parent's specificity: it ranks above every normal rule.
                 self::emit( $ctx, $e['subject'], false, self::MAX_SPECIFICITY, true, $r['decls'] );
@@ -829,7 +896,7 @@ final class HtmlCss
             if ( $ctx['full'] ) {
                 return;
             }
-            self::nestedRule( $nested[0], $nested[1], $ctx, $depth + 1, $subjects, $layer );
+            self::nestedRule( $nested[0], $nested[1], $ctx, $depth + 1, array_values( $subjects ), $layer );
         }
     }
 
@@ -837,14 +904,30 @@ final class HtmlCss
     private static function emit( array &$ctx, array $subject, bool $simple, array $spec, bool $poison, array $decls ): void
     {
         if ( count( $ctx['rules'] ) >= $ctx['limit'] ) {
-            if ( ! $ctx['full'] ) {
-                $ctx['full'] = true;
-                self::bump( $ctx['ignored'], 'css_cap' );
-            }
+            self::stop( $ctx );
 
             return;
         }
         self::push( $ctx, $subject, $simple, $spec, $poison, $decls );
+    }
+
+    /** The rule or work budget is spent: nothing more is read, and a sentinel poison covers what was not seen. @param array<string,mixed> $ctx */
+    private static function stop( array &$ctx ): void
+    {
+        if ( ! $ctx['full'] ) {
+            $ctx['full'] = true;
+            self::bump( $ctx['ignored'], 'css_cap' );
+            self::cover( $ctx );
+        }
+    }
+
+    /** Appends (once) the rule that poisons every property at the sentinel specificity. @param array<string,mixed> $ctx */
+    private static function cover( array &$ctx ): void
+    {
+        if ( ! $ctx['covered'] ) {
+            $ctx['covered'] = true;
+            self::push( $ctx, self::universal(), false, self::MAX_SPECIFICITY, true, self::allUnresolved() );
+        }
     }
 
     /** @param array<string,mixed> $ctx @param list<int> $spec @param list<array<string,mixed>> $decls */
@@ -1440,7 +1523,9 @@ final class HtmlCss
                 $p = self::parseSelector( $arg, true, $depth + 1 );
                 if ( null === $p ) {
                     if ( 'is' === $name || 'matches' === $name ) {
-                        continue; // a forgiving list: an item that is not understood simply never matches
+                        $cur['unknown'] = true; // a forgiving list skips an item it cannot read, but a valid one may still count: the specificity is unknown
+
+                        continue;
                     }
 
                     return false;
@@ -1454,7 +1539,7 @@ final class HtmlCss
 
             return true;
         }
-        if ( null !== $args && in_array( $name, [ 'nth-child', 'nth-last-child' ], true ) && 1 === preg_match( '/\sof\s/i', $args ) ) {
+        if ( null !== $args && in_array( $name, [ 'nth-child', 'nth-last-child' ], true ) && 1 === preg_match( '/(?<![A-Za-z0-9_-])of(?![A-Za-z0-9_-])/i', $args ) ) {
             $cur['unknown'] = true; // :nth-child(... of S) adds the specificity of S
         }
         ++$cur['spec'][1];
@@ -1573,7 +1658,7 @@ final class HtmlCss
         $value = trim( substr( $text, $colon + 1 ) );
         if ( false !== strpos( $name, '\\' ) ) {
             // An escape can spell any property name (col\6f r is color): it could have set anything.
-            self::bump( $ignored, 'property' );
+            self::bump( $ignored, 'unresolved' );
             foreach ( self::ALL as $p ) {
                 $unsure[] = $p;
             }
@@ -1600,6 +1685,8 @@ final class HtmlCss
             $props = self::propertiesOf( $name );
             if ( array() === $props ) {
                 self::bump( $ignored, 'property' );
+            } else {
+                self::bump( $ignored, 'unresolved' );
             }
             foreach ( $props as $p ) {
                 $unsure[] = $p;
@@ -1642,6 +1729,11 @@ final class HtmlCss
             case 'opacity':
                 return in_array( $lv, [ '1', '1.0', '1.00', '100%' ], true ) ? [] : [ self::entry( 'effect', null, $important, 'effect' ) ];
             case 'filter':
+            case '-webkit-filter':
+            case 'backdrop-filter':
+            case '-webkit-backdrop-filter':
+            case 'animation':
+            case 'animation-name':
                 return 'none' === $lv ? [] : [ self::entry( 'effect', null, $important, 'effect' ) ];
             case 'mix-blend-mode':
                 return 'normal' === $lv ? [] : [ self::entry( 'effect', null, $important, 'effect' ) ];

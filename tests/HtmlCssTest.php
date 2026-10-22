@@ -516,6 +516,141 @@ final class HtmlCssTest extends HtmlTestCase
         $this->assertSame( [ 'default' ], HtmlCss::families( '"default"' ) );
     }
 
+
+    // ---------------------------------------------------------------
+    // Fan-out, budgets and the leftovers of the review
+    // ---------------------------------------------------------------
+
+    /** @return array{0:float,1:float,2:array} seconds, peak MB above the start, the result */
+    private function measure( string $css ): array
+    {
+        if ( function_exists( 'memory_reset_peak_usage' ) ) {
+            memory_reset_peak_usage();
+        }
+        $before = memory_get_peak_usage();
+        $t      = microtime( true );
+        $r      = HtmlCss::stylesheet( $css );
+
+        return [ microtime( true ) - $t, ( memory_get_peak_usage() - $before ) / 1048576, $r ];
+    }
+
+    /** @return array<string,array{string}> */
+    public static function fanOutInputs(): array
+    {
+        $list = static fn( string $prefix, int $n ): string => implode( ',', array_map( static fn( int $i ): string => $prefix . $i, range( 1, $n ) ) );
+        $six  = 'p,p,p,p,p,p';
+        $amp6 = '&,&,&,&,&,&';
+
+        return [
+            'six parents, six & items, 8 levels' => [ $six . '{' . str_repeat( $amp6 . '{', 7 ) . 'color:red' . str_repeat( '}', 8 ) ],
+            'six x six x six, 8 levels, distinct' => [ $list( '.a', 6 ) . '{' . str_repeat( '&.x,&.y,&.z,&.w,&.v,&.u{', 7 ) . 'color:red' . str_repeat( '}', 8 ) ],
+            '50 x 50 x 50'                        => [ $list( '.a', 50 ) . '{' . str_replace( ',', ',&', '&.' . $list( 'b', 50 ) ) . '{' . str_replace( ',', ',&', '&.' . $list( 'c', 50 ) ) . '{color:red}}}' ],
+            '50 x 50 x 50 x 50 x 50'              => [ $list( '.a', 50 ) . '{' . str_repeat( str_replace( ',', ',&', '&.' . $list( 'b', 50 ) ) . '{', 4 ) . 'color:red' . str_repeat( '}', 5 ) ],
+            'a thousand & spellings'              => [ 'p{' . implode( ',', array_map( static fn( int $i ): string => str_repeat( '&', $i ), range( 1, 300 ) ) ) . '{b{color:red}}}' ],
+            'a hundred thousand empty nested'     => [ 'a{' . str_repeat( 'b{}', 30000 ) . '}' ],
+            'empty nested levels with lists'      => [ str_repeat( $list( '.a', 40 ) . '{' . str_repeat( '&,', 40 ) . '&{', 2 ) . str_repeat( '}', 4 ) ],
+            'one huge list'                       => [ $list( '.a', 9000 ) . '{color:red}' ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'fanOutInputs' )]
+    public function testAListThatFansOutIsCappedInMemoryAndTime( string $css ): void
+    {
+        [ $seconds, $megabytes, $r ] = $this->measure( $css );
+        $this->assertLessThan( 20.0, $megabytes, 'peak memory above the start' );
+        $this->assertLessThan( 0.2, $seconds, 'seconds' );
+        $this->assertLessThanOrEqual( HtmlCss::MAX_RULES + 1, count( $r['rules'] ) );
+        $this->assertSame( $r, HtmlCss::stylesheet( $css ), 'deterministic' );
+    }
+
+    public function testTheTwoReportedFanOutInputsAreCappedAndPoisonWhatTheyCannotKeep(): void
+    {
+        // 109 bytes: six parents with six & items, 8 levels. Distinct subjects collapse to one: no growth, no cap.
+        $css = 'p,p,p,p,p,p{' . str_repeat( '&,&,&,&,&,&{', 7 ) . 'color:red' . str_repeat( '}', 8 );
+        [ , , $r ] = $this->measure( $css );
+        $this->assertCount( 1, $r['rules'] );
+        $this->assertSame( 'p', $r['rules'][0]['subject']['tag'] );
+
+        // 835 bytes: 50 x 50 x 50 distinct subjects. Past MAX_SUBJECTS the level falls back to one universal sentinel subject.
+        $list = static fn( string $prefix, int $n ): string => implode( ',', array_map( static fn( int $i ): string => $prefix . $i, range( 1, $n ) ) );
+        $css  = $list( '.a', 50 ) . '{&.' . str_replace( ',', ',&.', $list( 'b', 50 ) ) . '{&.' . str_replace( ',', ',&.', $list( 'c', 50 ) ) . '{color:red}}}';
+        $this->assertLessThan( 1000, strlen( $css ) );
+        [ , , $r ] = $this->measure( $css );
+        $this->assertSame( 1, $r['ignored']['css_cap'] );
+        $this->assertStringStartsWith( 'POISON:', $this->winner( '#x{color:blue}' . $css, [ 'tag' => 'p', 'ids' => [ 'x' ], 'classes' => [ 'a1', 'b1', 'c1' ] ], 'color' ) );
+    }
+
+    public function testNestedRulesCountAgainstTheRuleBudgetEvenWhenEmpty(): void
+    {
+        $r = HtmlCss::stylesheet( 'a{' . str_repeat( 'b{}', HtmlCss::MAX_RULES + 5 ) . 'color:red}' );
+        $this->assertSame( 1, $r['ignored']['css_cap'] );
+        $last = $r['rules'][ count( $r['rules'] ) - 1 ];
+        $this->assertSame( HtmlCss::MAX_SPECIFICITY, $last['specificity'] );
+        $this->assertCount( count( HtmlCss::ALL ), $last['declarations'] );
+    }
+
+    /** @return array<string,array{string,array,string}> */
+    public static function leftoverCases(): array
+    {
+        $a = [ 'tag' => 'li', 'ids' => [ 'a' ], 'classes' => [ 'x', 'y' ] ];
+
+        return [
+            'nth-child of, no space before #'  => [ '#a { color: blue } li:nth-child(odd of#a) { color: red }', $a, 'color' ],
+            'nth-child of, no space before .'  => [ '#a { color: blue } li:nth-child(odd of.x.y) { color: red }', $a, 'color' ],
+            'nth-child of, bracket'            => [ '#a { color: blue } li:nth-last-child(2n+1 of [id]) { color: red }', $a, 'color' ],
+            'nth-child of, star'               => [ '#a { color: blue } li:nth-child(odd of*) { color: red }', $a, 'color' ],
+            'forgiving :is with a bad item'    => [ '#a { color: blue } :is(*|p#a#b, li) { color: red }', $a, 'color' ],
+            'forgiving :matches bad item'      => [ '#a { color: blue } :matches(*|p#a#b, li) { color: red }', $a, 'color' ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'leftoverCases' )]
+    public function testASpecificityThisReaderCannotComputeIsTheSentinel( string $css, array $element, string $property ): void
+    {
+        $this->assertStringStartsWith( 'POISON:', $this->winner( $css, $element, $property ) );
+    }
+
+    public function testNthChildWithoutOfKeepsItsSpecificity(): void
+    {
+        $r = HtmlCss::stylesheet( 'li:nth-child(2n+1) { color: red } li:nth-child(odd) { color: red }' );
+        $this->assertSame( [ [ 0, 1, 1 ], [ 0, 1, 1 ] ], array_column( $r['rules'], 'specificity' ) );
+        $r = HtmlCss::stylesheet( ':is(h1, h2) { color: red }' );
+        $this->assertSame( [ 0, 0, 1 ], $r['rules'][0]['specificity'] );
+    }
+
+    public function testMoreEffectsAndAnimationsAreMarkers(): void
+    {
+        foreach ( [ '-webkit-filter: blur(1px)', 'backdrop-filter: blur(4px)', '-webkit-backdrop-filter: blur(4px)', 'animation: f 1ms forwards', 'animation-name: f' ] as $css ) {
+            $this->assertSame( [ $this->decl( 'effect', null, false, 'effect' ) ], $this->block( $css ), $css );
+        }
+        foreach ( [ '-webkit-filter: none', 'backdrop-filter: none', 'animation: none', 'animation-name: none' ] as $css ) {
+            $this->assertSame( [], $this->block( $css ), $css );
+        }
+        $css = '@keyframes f { to { color: red } } p { color: blue; animation: f 1ms forwards }';
+        $r   = HtmlCss::stylesheet( $css );
+        $this->assertCount( 1, $r['rules'] );
+        $this->assertSame( [ 'color', 'effect' ], array_column( $r['rules'][0]['declarations'], 'property' ) );
+        $this->assertSame( 'POISON:effect', $this->winner( $css, [ 'tag' => 'p' ], 'effect' ) );
+        $this->assertSame( 1, $r['ignored']['at_rule'] );
+    }
+
+    public function testAnEscapedImportantIsCountedAsUnresolved(): void
+    {
+        $r = HtmlCss::stylesheet( 'p { color: red !imp\\ortant }' );
+        $this->assertSame( [ 'unresolved' => 1 ], $r['ignored'] );
+        $ignored = [];
+        HtmlCss::declarations( 'col\\6f r: red', $ignored );
+        $this->assertSame( [ 'unresolved' => 1 ], $ignored );
+    }
+
+    public function testBothCapsCoverWithOneSentinel(): void
+    {
+        $css = str_repeat( '.c{color:red}', HtmlCss::MAX_RULES + 1 ) . str_repeat( ' ', HtmlCss::MAX_CSS_BYTES );
+        $r   = HtmlCss::stylesheet( $css );
+        $this->assertSame( 2, $r['ignored']['css_cap'] );
+        $this->assertCount( HtmlCss::MAX_RULES + 1, $r['rules'] );
+    }
+
     // ---------------------------------------------------------------
     // Caps
     // ---------------------------------------------------------------
@@ -534,8 +669,11 @@ final class HtmlCssTest extends HtmlTestCase
             $css .= '.c' . $i . '{color:red}';
         }
         $r = HtmlCss::stylesheet( $css );
-        $this->assertCount( HtmlCss::MAX_RULES, $r['rules'] );
+        $this->assertCount( HtmlCss::MAX_RULES + 1, $r['rules'], 'the rules kept and the poison that covers the unseen rest' );
         $this->assertSame( [ 'css_cap' => 1 ], $r['ignored'] );
+        $this->assertSame( HtmlCss::MAX_SPECIFICITY, $r['rules'][ HtmlCss::MAX_RULES ]['specificity'] );
+        $this->assertCount( count( HtmlCss::ALL ), $r['rules'][ HtmlCss::MAX_RULES ]['declarations'] );
+        $this->assertSame( 'POISON:unresolved', $this->winner( $css, [ 'tag' => 'p', 'classes' => [ 'c2000' ] ], 'color' ) );
         $this->assertSame( 'c1999', $r['rules'][ HtmlCss::MAX_RULES - 1 ]['subject']['classes'][0] );
         $this->assertSame( HtmlCss::MAX_RULES - 1, $r['rules'][ HtmlCss::MAX_RULES - 1 ]['order'] );
         $r = HtmlCss::stylesheet( substr( $css, 0, (int) strrpos( $css, '.c2000' ) ) );
@@ -679,6 +817,11 @@ final class HtmlCssTest extends HtmlTestCase
         $out[] = str_repeat( '.a { & .b { @media (x) { &:hover { color: red } } } } ', 800 );
         $out[] = str_repeat( 'p { col\\6f r: red; opacity: .5; color-scheme: dark } ', 1500 );
         $out[] = str_repeat( ':is(', 3000 ) . 'p' . str_repeat( ')', 3000 ) . ' { color: red }';
+        $out[] = 'p,p,p,p,p,p{' . str_repeat( '&,&,&,&,&,&{', 7 ) . 'color:red' . str_repeat( '}', 8 );
+        $out[] = str_repeat( '.a,', 600 ) . '.a{' . str_repeat( '&.b,&.c,&.d,&.e,&.f,&.g{', 8 ) . 'color:red' . str_repeat( '}', 9 );
+        $out[] = 'p{' . str_repeat( 'b{}', 40000 ) . '}';
+        $out[] = str_repeat( 'li:nth-child(odd of#a),:is(*|p#a),', 800 ) . 'p{color:red}';
+        $out[] = str_repeat( 'a{animation:f 1s;backdrop-filter:blur(1px);-webkit-filter:blur(1px)}', 1500 );
         $out[] = str_repeat( '.a ', 60000 ) . '{color:red}';
 
         return $out;
@@ -746,7 +889,7 @@ final class HtmlCssTest extends HtmlTestCase
             $first  = HtmlCss::stylesheet( $css );
             $second = HtmlCss::stylesheet( $css );
             $this->assertSame( $first, $second, $label . ' is deterministic' );
-            $this->assertLessThanOrEqual( HtmlCss::MAX_RULES, count( $first['rules'] ), $label );
+            $this->assertLessThanOrEqual( HtmlCss::MAX_RULES + 1, count( $first['rules'] ), $label );
             foreach ( $first['ignored'] as $reason => $count ) {
                 $this->assertContains( $reason, HtmlCss::REASONS, $label );
                 $this->assertIsInt( $count, $label );
