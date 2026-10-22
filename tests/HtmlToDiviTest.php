@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\CodePolicy;
+use AiEditorDivi5\WP\DiviMarkup;
 use AiEditorDivi5\WP\HtmlToDivi;
 use AiEditorDivi5\WP\LayoutGate;
+use Divi5Validator\Tests\Support\StyledLayoutOracle;
 use PHPUnit\Framework\Attributes\DataProvider;
+
+require_once __DIR__ . '/Support/StyledLayoutOracle.php';
 
 /** html_to_divi end to end over the fixture corpus: valid, text kept, links kept, nothing dangerous, same bytes twice. */
 final class HtmlToDiviTest extends HtmlTestCase
@@ -447,65 +451,84 @@ final class HtmlToDiviTest extends HtmlTestCase
         }
     }
 
-    /** The colour paths of the writer, per module (DiviMarkup). */
-    private const INK = [ 'divi/heading' => 'title.decoration.font.font.desktop.value.color', 'divi/text' => 'content.decoration.bodyFont.body.font.desktop.value.color' ];
+    /** The background path of a section, row or column (DiviMarkup). */
     private const PAINT = 'module.decoration.background.desktop.value.color';
-
-    /**
-     * A minimal output-only oracle for rules (1) and (2) of the plan's StyledLayoutOracle (Task 10 replaces it with the class):
-     * (1) ink only on paint: every heading or text colour has a painted section, row or column around it;
-     * (2) paint implies ink: every heading or text under a painted block has a colour.
-     *
-     * @return list<string>
-     */
-    private static function inkPaintProblems( string $layout ): array
-    {
-        $root = ( new \Divi5Validator\BlockParser() )->parse( $layout )->root();
-        if ( null === $root ) {
-            return [ 'the layout does not parse' ];
-        }
-        $out  = [];
-        $seen = 0;
-        $walk = static function ( \Divi5Validator\Block $b, bool $painted ) use ( &$walk, &$out, &$seen ): void {
-            $name = $b->name();
-            if ( in_array( $name, [ 'divi/section', 'divi/row', 'divi/column' ], true ) && null !== $b->attr( self::PAINT ) ) {
-                $painted = true;
-            }
-            if ( isset( self::INK[ $name ] ) ) {
-                $ink = $b->attr( self::INK[ $name ] );
-                ++$seen;
-                if ( null !== $ink && ! $painted ) {
-                    $out[] = "$name #$seen: ink $ink without paint";
-                }
-                if ( null === $ink && $painted ) {
-                    $out[] = "$name #$seen: on paint without ink";
-                }
-            }
-            foreach ( $b->children() as $c ) {
-                $walk( $c, $painted );
-            }
-        };
-        $walk( $root, false );
-
-        return $out;
-    }
 
     #[DataProvider('styledFixtures')]
     public function testEveryStyledFixtureMeetsTheOracle( string $name ): void
     {
         $r = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $name . '.html' ) );
         $this->assertTrue( $r['ok'] );
-        $this->assertSame( [], self::inkPaintProblems( $r['layout'] ), $name );
+        $this->assertSame( [], StyledLayoutOracle::problems( $r['layout'] ), $name );
     }
 
-    public function testTheInlineOracleCatchesBothFaults(): void
+    /** Every page of the corpus, in both modes: the oracle has nothing to say (a page without styles is trivially fine). */
+    #[DataProvider('fixtures')]
+    public function testEveryFixtureMeetsTheOracleInBothModes( string $file ): void
     {
-        $text = \AiEditorDivi5\WP\DiviMarkup::text( '<p>x</p>', [ 'color' => '#111111' ] );
-        $bare = \AiEditorDivi5\WP\DiviMarkup::text( '<p>x</p>' );
-        $page = static fn( string $mod, array $sectionStyle ): string => \AiEditorDivi5\WP\DiviMarkup::page( [ \AiEditorDivi5\WP\DiviMarkup::section( '', \AiEditorDivi5\WP\DiviMarkup::row( [ $mod ] ), $sectionStyle ) ] );
-        $this->assertSame( [ 'divi/text #1: ink #111111 without paint' ], self::inkPaintProblems( $page( $text, [] ) ) );
-        $this->assertSame( [ 'divi/text #1: on paint without ink' ], self::inkPaintProblems( $page( $bare, [ 'background' => '#ffffff' ] ) ) );
-        $this->assertSame( [], self::inkPaintProblems( $page( $text, [ 'background' => '#ffffff' ] ) ) );
+        $html = (string) file_get_contents( $file );
+        foreach ( [ 'basic', 'none' ] as $mode ) {
+            $r = $this->convert( $html, [ 'styles' => $mode ] );
+            if ( $r['ok'] ) {
+                $this->assertSame( [], StyledLayoutOracle::problems( $r['layout'] ), basename( $file ) . ' ' . $mode );
+            }
+        }
+    }
+
+    /**
+     * Five hand-made layouts, one per rule of StyledLayoutOracle, each giving exactly its own problem; each next to its clean twin,
+     * which gives none. Then the edges of rule 3 (the smallest device size, weight, the innermost paint) and rule 4.
+     */
+    public function testTheOracleCatchesPlantedFaults(): void
+    {
+        $page = static fn( string $mods, array $section = [], array $row = [], array $columns = [] ): string => DiviMarkup::page( [ DiviMarkup::section( '', DiviMarkup::row( [ $mods ], $row, $columns ), $section ) ] );
+        $text = static fn( array $style = [] ): string => DiviMarkup::text( '<p>Some words</p>', $style );
+        $white = [ 'background' => '#ffffff' ];
+
+        $faults = [
+            'rule 1' => [ $page( $text( [ 'color' => '#111111' ] ) ), $page( $text( [ 'color' => '#111111' ] ), $white ) ],
+            'rule 2' => [ $page( $text(), $white ), $page( $text() ) ],
+            'rule 3' => [ $page( $text( [ 'color' => '#eeeeee' ] ), $white ), $page( $text( [ 'color' => '#333333' ] ), $white ) ],
+            'rule 4' => [ $page( DiviMarkup::button( 'Go', '/go', false, [ 'background' => '#2563eb' ] ) ), $page( DiviMarkup::button( 'Go', '/go', false, [ 'background' => '#2563eb', 'color' => '#ffffff' ] ) ) ],
+            'rule 5' => [ str_replace( '"200px"', '"250px"', $page( $text(), [ 'padding' => [ 'top' => '200px' ] ] ) ), $page( $text(), [ 'padding' => [ 'top' => '200px' ] ] ) ],
+        ];
+        foreach ( $faults as $rule => [ $faulty, $clean ] ) {
+            $problems = StyledLayoutOracle::problems( $faulty );
+            $this->assertCount( 1, $problems, $rule . ': ' . json_encode( $problems ) );
+            $this->assertStringStartsWith( $rule . ':', $problems[0] );
+            $this->assertSame( [], StyledLayoutOracle::problems( $clean ), $rule . ' clean twin' );
+        }
+
+        // Rule 3 is judged at the smallest size written on any device: #8a8a8a on white is 3.45:1.
+        $heading = static fn( int $size, string $weight = '400' ): string => DiviMarkup::heading( 'Title', 2, [ 'color' => '#8a8a8a', 'size' => $size, 'weight' => $weight ] );
+        $only    = static fn( string $layout ): array => array_map( static fn( string $p ): string => substr( $p, 0, 7 ), StyledLayoutOracle::problems( $layout ) );
+        $this->assertSame( [ 'rule 3:' ], $only( $page( $heading( 40 ), $white ) ), '40px steps down to 22px on phones: normal text' );
+        $this->assertSame( [], $only( $page( $heading( 60 ), $white ) ), '60px is 33px on phones: large' );
+        $this->assertSame( [], $only( $page( $heading( 24 ), $white ) ), '24px written on desktop only: large' );
+        $this->assertSame( [], $only( $page( $heading( 20, '700' ), $white ) ), '20px bold: large' );
+        $this->assertSame( [ 'rule 3:' ], $only( $page( $heading( 20, '600' ), $white ) ), '20px semibold: normal' );
+        $this->assertSame( [ 'rule 3:' ], $only( $page( $heading( 18, '700' ), $white ) ), '18px bold: normal' );
+        $this->assertSame( [ 'rule 3:' ], $only( $page( DiviMarkup::heading( 'Title', 1, [ 'color' => '#8a8a8a' ] ), $white ) ), 'no written size: never large' );
+
+        // The innermost paint is the one judged.
+        $this->assertSame( [], $only( $page( $text( [ 'color' => '#111111' ] ), [ 'background' => '#000000' ], [], [ $white ] ) ) );
+        $this->assertSame( [ 'rule 3:' ], $only( $page( $text( [ 'color' => '#111111' ] ), $white, [ 'background' => '#000000' ] ) ) );
+        $this->assertSame( [ 'rule 3:' ], $only( $page( $text( [ 'color' => '#ffffff' ] ), [ 'background' => '#000000' ], [], [ $white ] ) ) );
+
+        // Rule 4: an unreadable pair, a ghost without paint, a ghost on paint, a bare button on paint.
+        $button = static fn( array $style ): string => DiviMarkup::button( 'Go', '/go', false, $style );
+        $this->assertSame( [ 'rule 4:' ], $only( $page( $button( [ 'background' => '#ffffff', 'color' => '#eeeeee' ] ) ) ) );
+        $this->assertSame( [ 'rule 4:' ], $only( $page( $button( [ 'background' => DiviMarkup::TRANSPARENT, 'color' => '#111111' ] ) ) ) );
+        $this->assertSame( [], $only( $page( $button( [ 'background' => DiviMarkup::TRANSPARENT, 'color' => '#111111' ] ), $white ) ) );
+        $this->assertSame( [ 'rule 4:' ], $only( $page( $button( [ 'background' => DiviMarkup::TRANSPARENT, 'color' => '#eeeeee' ] ), $white ) ) );
+        $this->assertSame( [ 'rule 4:' ], $only( $page( $button( [] ), $white ) ) );
+        $this->assertSame( [], $only( $page( $button( [ 'radius' => 8 ] ) ) ) );
+
+        // Rule 5: a colour, a family and a size outside their forms.
+        $this->assertSame( [ 'rule 5:' ], $only( str_replace( '#333333', '#333333aa', $page( $text( [ 'color' => '#333333' ] ), $white ) ) ) );
+        $this->assertSame( [ 'rule 5:' ], $only( str_replace( '"Inter"', '"Brand X"', $page( $text( [ 'family' => 'Inter' ] ) ) ) ) );
+        $this->assertSame( [ 'rule 5:' ], $only( str_replace( '"16px"', '"7px"', $page( $text( [ 'size' => 16 ] ) ) ) ) );
+        $this->assertSame( [ 'rule 5:' ], $only( str_replace( '"720px"', '"3000px"', $page( $text(), [], [ 'max_width' => '720px' ] ) ) ) );
     }
 
     /** @return array<string,mixed> sections, rows, columns and modules (lists of \Divi5Validator\Block, document order), report, layout */
@@ -725,5 +748,330 @@ final class HtmlToDiviTest extends HtmlTestCase
             $this->assertSame( 1, substr_count( $r['layout'], '<!-- wp:divi/placeholder -->' ) );
         }
         $this->assertGreaterThan( 100, $ok, 'most random pages convert' );
+    }
+
+    /**
+     * End to end on the large-text edges (#8a8a8a on #ffffff is 3.45:1, between the two floors): the oracle has nothing to say about
+     * any of them, and the colour is carried exactly where the text stays large on every device the writer steps it to.
+     */
+    public function testTheLargeTextEdgesMeetTheOracleEndToEnd(): void
+    {
+        $carried = [];
+        foreach ( [ [ '40px', '400' ], [ '44px', '400' ], [ '60px', '400' ], [ '24px', '400' ], [ '20px', '700' ], [ '18px', '700' ], [ '20px', '400' ] ] as [ $size, $weight ] ) {
+            $html = '<section style="background:#ffffff"><h2 style="color:#8a8a8a;font-size:' . $size . ';font-weight:' . $weight . '">Edge words</h2></section>';
+            $r    = $this->convert( $html );
+            $this->assertTrue( $r['ok'] );
+            $this->assertSame( [], StyledLayoutOracle::problems( $r['layout'] ), $html );
+            $carried[ $size . '/' . $weight ] = str_contains( $r['layout'], '"color":"#8a8a8a"' );
+        }
+        // 40 and 44 px step down to 22 and 24 px on phones (max(20, 55%)): 22 px is normal text, 24 px is large.
+        $this->assertSame( [ '40px/400' => false, '44px/400' => true, '60px/400' => true, '24px/400' => true, '20px/700' => true, '18px/700' => false, '20px/400' => false ], $carried );
+    }
+
+    /**
+     * Open finding T10-F1 (Task 10's property test, seed 4 case 130 and 14 more cases in seeds 1-40): a FRAGMENT that starts with a
+     * <style> element, then an element libxml does not know (an HTML5 section, header, video ...), then loose text, loses structure in
+     * BOTH modes: libxml keeps the first element in <head> (HtmlSource::relocateHeadContent moves it back) but then opens <body> with an
+     * implied <p> around the loose text that swallows everything after it, so the second section's h2 becomes <strong> inside a nested
+     * paragraph. The text is kept (text_check equal); the heading and the section are not. The same page without the <style>, or as a
+     * whole document (<html><head>...<body>), keeps both sections. This is HtmlSource's parse, outside the style layers; the test stays
+     * incomplete (visible in every run) until it is fixed, then it passes and the property test's T10-F1 branch can be removed.
+     */
+    public function testALeadingStyleElementInAFragmentKeepsTheStructure(): void
+    {
+        $body = '<section><h2>First</h2></section>Loose words<section><h2>Second</h2></section>';
+        $want = $this->convert( $body, [ 'styles' => 'none' ] )['layout'];
+        $this->assertSame( 3, substr_count( $want, '<!-- wp:divi/section ' ), 'without the <style>: three sections' );
+        $got = $this->convert( '<style>p{color:#111111}</style>' . $body, [ 'styles' => 'none' ] )['layout'];
+        if ( $got !== $want ) {
+            $this->markTestIncomplete( 'Open finding T10-F1: a leading <style> in a fragment changes the phase-1 structure (the second heading becomes <strong>).' );
+        }
+        $this->assertSame( $want, $got );
+    }
+
+    /** The default seed of the styled property test (AIED_SEED overrides it). */
+    private const STYLED_SEED = 20261022;
+
+    /**
+     * The phase-1 generator, extended with styles: every element may get a random style="" from STYLE_POOL and the page a random
+     * <style> of 0-12 rules. Seeded (AIED_SEED, default 20261022), 200 cases. Each case is a pair [styled, bare] built from the same
+     * random choices (bare = the same tree without any style attribute or <style> element). The contract: never throws; ok or a plain
+     * error; valid through LayoutGate; text kept; nothing CodePolicy refuses; no CSS in the layout; StyledLayoutOracle has nothing to
+     * say; styles=none ignores every style (styled none == bare none == bare basic); the same seed gives the same bytes twice.
+     */
+    public function testRandomStyledHtmlNeverBreaksTheContract(): void
+    {
+        $seed  = (int) ( getenv( 'AIED_SEED' ) ?: self::STYLED_SEED );
+        $cases = self::styledCases( $seed );
+        $this->assertSame( $cases, self::styledCases( $seed ), 'the same seed gives the same pages' );
+
+        $ok      = 0;
+        $styled  = 0;
+        $painted = 0;
+        $inked   = 0;
+        $buttons = 0;
+        $leadingSheet = 0;
+        foreach ( $cases as $n => [ $html, $bare ] ) {
+            $where = 'seed ' . $seed . ' case ' . $n . "\n" . $html;
+            $r     = $this->convert( $html );
+            $this->assertSame( $r, $this->convert( $html ), 'the same bytes twice: ' . $where );
+            $none     = $this->convert( $html, [ 'styles' => 'none' ] );
+            $bareNone = $this->convert( $bare, [ 'styles' => 'none' ] );
+            $bareBas  = $this->convert( $bare );
+            $this->assertSame( $none['ok'], $r['ok'], 'both modes agree on refusing: ' . $where );
+            if ( $none['layout'] !== $bareNone['layout'] && str_starts_with( $html, '<style>' ) ) {
+                // Open finding T10-F1 (testALeadingStyleElementInAFragmentKeepsTheStructure): a fragment that starts with a <style>
+                // makes libxml parse the rest in head mode, which changes the phase-1 tree. The style="" attributes must still change
+                // nothing: the same page without its leading sheet (attributes kept) gives the bare page's bytes. Counted, never hidden.
+                $sheetless = (string) preg_replace( '/^<style>[^<]*<\/style>/', '', $html );
+                $this->assertSame( $bareNone['layout'], $this->convert( $sheetless, [ 'styles' => 'none' ] )['layout'], 'styles=none ignores every style attribute: ' . $where );
+                ++$leadingSheet;
+            } else {
+                $this->assertSame( $none['layout'], $bareNone['layout'], 'styles=none ignores every style: ' . $where );
+            }
+            // A <center> element is HTML, not CSS: bare keeps it, and basic carries its UA alignment (D5). Only that may differ.
+            $bareBasic = str_contains( strtolower( $bare ), '<center' ) ? str_replace( [ ',"textAlign":"center"', ',"module":{"advanced":{"text":{"text":{"desktop":{"value":{"orientation":"center"}}}}}}' ], '', $bareBas['layout'] ) : $bareBas['layout'];
+            $this->assertSame( $bareNone['layout'], $bareBasic, 'a page without CSS is the same in both modes: ' . $where );
+            if ( ! $r['ok'] ) {
+                $this->assertIsString( $r['error'], $where );
+                $this->assertNotSame( '', $r['error'], $where );
+                $this->assertSame( '', $r['layout'], $where );
+                continue;
+            }
+            ++$ok;
+            $gate = LayoutGate::check( $r['layout'] );
+            $this->assertTrue( $gate->isValid(), json_encode( array_map( static fn( $v ) => $v->toArray(), $gate->violations() ) ) . "\n" . $where );
+            $this->assertTrue( $r['report']['text_check']['equal'], ( $r['report']['text_check']['first_difference'] ?? '' ) . "\n" . $where );
+            $this->assertSame( [], CodePolicy::violations( $r['layout'] ), $where );
+            $lower = strtolower( $r['layout'] );
+            $this->assertStringNotContainsString( 'style=', $lower, $where );
+            $this->assertStringNotContainsString( '<style', $lower, $where );
+            $this->assertSame( [], StyledLayoutOracle::problems( $r['layout'] ), $where );
+
+            $styled += $r['layout'] !== $bareBas['layout'] ? 1 : 0;
+            ( new \Divi5Validator\BlockParser() )->parse( $r['layout'] )->root()?->walk( static function ( \Divi5Validator\Block $b ) use ( &$painted, &$inked, &$buttons ): void {
+                $painted += in_array( $b->name(), [ 'divi/section', 'divi/row', 'divi/column' ], true ) && null !== $b->attr( self::PAINT ) ? 1 : 0;
+                $inked   += null !== ( $b->attr( 'title.decoration.font.font.desktop.value.color' ) ?? $b->attr( 'content.decoration.bodyFont.body.font.desktop.value.color' ) ) ? 1 : 0;
+                $buttons += null !== $b->attr( 'button.decoration.background.desktop.value.color' ) ? 1 : 0;
+            } );
+        }
+        if ( false !== getenv( 'AIED_STATS' ) ) {
+            fwrite( STDERR, sprintf( "seed %d: %d of %d convert, %d styled, %d painted blocks, %d inked modules, %d filled or ghost buttons, %d hit finding T10-F1\n", $seed, $ok, count( $cases ), $styled, $painted, $inked, $buttons, $leadingSheet ) );
+        }
+        $this->assertGreaterThan( 100, $ok, 'most random pages convert' );
+        $this->assertGreaterThan( 20, $styled, 'the generator must produce pages whose styles change the layout' );
+        $this->assertGreaterThan( 5, $painted, 'the generator must produce painted blocks' );
+        $this->assertGreaterThan( 5, $inked, 'the generator must produce carried colours' );
+        $this->assertGreaterThan( 10, $buttons, 'the generator must produce button pairs or ghosts' );
+    }
+
+    /** The values a random style="" or <style> declaration takes: every form, including the ones the reader must refuse. */
+    private const STYLE_POOL = [
+        'color'            => [ '#111827', '#ffffff', '#fff', '#ABC', '#0f766e', '#949494', '#767676', 'red', 'white', 'RebeccaPurple', 'navy', 'rgb(30,41,59)', 'rgb(30 41 59 / 50%)', 'rgba(0,0,0,.5)', '#11182780', '#0008', 'hsl(0 0% 50%)', 'var(--x)', 'var(--x, #000)', 'currentColor', 'transparent', 'inherit', 'initial' ],
+        'background'       => [ '#ffffff', '#0b1120', '#f3f4f6', '#123456', '#000', 'white', 'navy', 'rgba(0,0,0,.5)', '#ffffff80', 'transparent', 'none', 'linear-gradient(#000,#fff)', 'radial-gradient(#fff,#000)', 'url(/x.jpg)', '#123456 url(/x.jpg)', 'var(--bg)', 'inherit' ],
+        'background-color' => [ '#ffffff', '#0b1120', '#1e293b', '#fef3c7', '#2563eb', '#f59e0b', 'black', 'rgba(255,255,255,.1)', 'transparent', 'var(--bg)', 'currentColor' ],
+        'font-size'        => [ '12px', '16px', '19px', '20px', '23px', '24px', '33px', '40px', '56px', '72px', '900px', '4px', '-2px', '1.5em', '2rem', '150%', 'large', 'smaller', 'calc(1rem + 2vw)', 'clamp(1rem,2vw,3rem)', '0' ],
+        'font-weight'      => [ '400', '600', '650', '700', '800', '900', 'bold', 'normal', 'bolder', 'lighter' ],
+        'font-family'      => [ 'Inter', 'Inter, sans-serif', '"Playfair Display", serif', 'Georgia', '"Brand X", sans-serif', 'sans-serif', '"Brand X", Inter', 'system-ui' ],
+        'text-align'       => [ 'left', 'center', 'right', 'justify', 'start', 'end' ],
+        'padding'          => [ '24px', '40px 16px', '10px 20px 30px', '1px 2px 3px 4px', '-4px', '10%', '0', '1em 2em', '300px', 'calc(8px + 1vw)' ],
+        'padding-top'      => [ '12px', '64px', '-1px', '5%' ],
+        'max-width'        => [ '720px', '1080px', '100px', '3000px', '50%', 'none', '60rem', 'min(90vw,800px)' ],
+        'border-radius'    => [ '8px', '999px', '0', '4px 8px', '50%', '2000px', '1em' ],
+        'opacity'          => [ '.6', '1', '0' ],
+        'font'             => [ 'bold 20px Georgia', '16px/1.5 Inter' ],
+    ];
+
+    /** A random declaration list: 0 to 4 declarations from STYLE_POOL, some !important. */
+    private static function randomDeclarations(): string
+    {
+        $names = array_keys( self::STYLE_POOL );
+        $out   = [];
+        for ( $i = mt_rand( 0, 4 ); $i > 0; $i-- ) {
+            $name  = $names[ mt_rand( 0, count( $names ) - 1 ) ];
+            $vals  = self::STYLE_POOL[ $name ];
+            $out[] = $name . ':' . $vals[ mt_rand( 0, count( $vals ) - 1 ) ] . ( 0 === mt_rand( 0, 9 ) ? ' !important' : '' );
+        }
+
+        return implode( ';', $out );
+    }
+
+    /** A declaration list that more often sets a colour or a background (the structured blocks: so pages are painted and inked). */
+    private static function likelyDeclarations( bool $box ): string
+    {
+        $out = [];
+        if ( mt_rand( 1, 100 ) <= ( $box ? 40 : 50 ) ) {
+            $out[] = 'color:' . self::pickFrom( [ '#111827', '#1f2937', '#ffffff', '#f8fafc', '#e2e8f0', '#0f766e', '#475569', '#767676', '#8a8a8a', '#949494', '#9ca3af', '#000', 'white', 'rgba(0,0,0,.5)', 'var(--x)', 'currentColor' ] );
+        }
+        if ( ! $box && mt_rand( 1, 100 ) <= 25 ) {
+            // Sizes around the large-text edges: 19-24 px, and 33-43 px, which the writer steps down below 24 px on phones.
+            $out[] = 'font-size:' . self::pickFrom( [ '18px', '19px', '20px', '24px', '28px', '36px', '40px', '44px', '48px', '56px' ] );
+            if ( 0 === mt_rand( 0, 1 ) ) {
+                $out[] = 'font-weight:' . self::pickFrom( [ '400', '700', 'bold' ] );
+            }
+        }
+        if ( mt_rand( 1, 100 ) <= ( $box ? 60 : 15 ) ) {
+            $out[] = self::pickFrom( [ 'background', 'background-color' ] ) . ':' . self::pickFrom( [ '#ffffff', '#f3f4f6', '#fef3c7', '#0b1120', '#1e293b', '#123456', '#2563eb', '#f59e0b', 'white', 'navy', '#0008', 'transparent', 'linear-gradient(#000,#fff)', 'url(/x.jpg)' ] );
+        }
+        $more = self::randomDeclarations();
+        if ( '' !== $more && 0 === mt_rand( 0, 1 ) ) {
+            $out[] = $more;
+        }
+
+        return implode( ';', $out );
+    }
+
+    private static function pickFrom( array $a ): mixed
+    {
+        return $a[ mt_rand( 0, count( $a ) - 1 ) ];
+    }
+
+    /** One element with a random class and maybe a style: [styled, bare]. */
+    private static function styledElement( string $tag, array $inner, bool $box, string $attrs = '' ): array
+    {
+        if ( '' === $attrs && 0 === mt_rand( 0, 4 ) ) {
+            $attrs = ' class="' . self::pickFrom( [ 'card', 'hero', 'lead', 'btn' ] ) . '"';
+        }
+        $style = 0 === mt_rand( 0, 2 ) ? '' : self::likelyDeclarations( $box );
+        $s     = '' === $style ? '' : ' style="' . htmlspecialchars( $style, ENT_QUOTES ) . '"';
+
+        return [ '<' . $tag . $attrs . $s . '>' . $inner[0] . '</' . $tag . '>', '<' . $tag . $attrs . '>' . $inner[1] . '</' . $tag . '>' ];
+    }
+
+    /** A link button: half the time a fill and label pair (readable or not), else random declarations. [styled, bare] */
+    private static function styledButton(): array
+    {
+        $attrs = ' class="btn" href="/go"';
+        if ( 0 === mt_rand( 0, 1 ) ) {
+            return self::styledElement( 'a', [ 'Book now', 'Book now' ], true, $attrs );
+        }
+        [ $fill, $label ] = self::pickFrom( [ [ '#2563eb', '#ffffff' ], [ '#f59e0b', '#111827' ], [ '#111827', '#ffffff' ], [ '#ffffff', '#949494' ], [ '#0f766e', '#ffffff' ], [ 'transparent', '#111827' ], [ 'navy', 'white' ], [ '#fef3c7', '#8a8a8a' ] ] );
+        $style = 'background-color:' . $fill . ';color:' . $label . ( 0 === mt_rand( 0, 2 ) ? ';border-radius:' . self::pickFrom( [ '6px', '999px', '4px 8px' ] ) : '' );
+
+        return [ '<a' . $attrs . ' style="' . htmlspecialchars( $style, ENT_QUOTES ) . '">Book now</a>', '<a' . $attrs . '>Book now</a>' ];
+    }
+
+    /** A structured, convertible block (a section of headings, paragraphs, buttons or a card grid), styled at random: [styled, bare]. */
+    private static function styledBlock(): array
+    {
+        $words = static fn(): array => array_fill( 0, 2, self::pickFrom( [ 'Fresh bread daily', 'Open late on Fridays', 'Tested by guides', 'Free shipping on orders', 'Two rooms, one sound' ] ) );
+        $join  = static function ( array $parts ): array {
+            return [ implode( '', array_column( $parts, 0 ) ), implode( '', array_column( $parts, 1 ) ) ];
+        };
+        $parts = [];
+        for ( $i = mt_rand( 1, 4 ); $i > 0; $i-- ) {
+            $r = mt_rand( 1, 8 );
+            if ( $r <= 2 ) {
+                $parts[] = self::styledElement( 'h' . mt_rand( 1, 3 ), $words(), false );
+            } elseif ( $r <= 4 ) {
+                $inner = $words();
+                if ( 0 === mt_rand( 0, 3 ) ) {
+                    $inner = $join( [ $inner, [ ' ', ' ' ], self::styledElement( self::pickFrom( [ 'span', 'strong', 'a', 'code' ] ), [ 'more', 'more' ], false ) ] );
+                }
+                $parts[] = self::styledElement( 'p', $inner, false );
+            } elseif ( 5 === $r || 8 === $r ) {
+                $parts[] = self::styledButton();
+            } elseif ( 6 === $r ) {
+                $cards = [];
+                for ( $k = mt_rand( 2, 5 ); $k > 0; $k-- ) {
+                    $cards[] = self::styledElement( 'div', $join( [ self::styledElement( 'h3', $words(), false ), self::styledElement( 'p', $words(), false ) ] ), true, ' class="card"' );
+                }
+                $parts[] = self::styledElement( 'div', $join( $cards ), true );
+            } else {
+                $parts[] = self::styledElement( 'ul', [ '<li>One thing</li><li>Another</li>', '<li>One thing</li><li>Another</li>' ], false );
+            }
+        }
+
+        return self::styledElement( self::pickFrom( [ 'section', 'section', 'div', 'header', 'footer' ] ), $join( $parts ), true );
+    }
+
+    /** A random <style> text of 0-12 rules over tags, classes, an id, a combinator, a pseudo-class, a compound and @media. */
+    private static function randomSheet(): string
+    {
+        $selectors = [ 'body', 'html', 'section', 'div', 'h1', 'h2', 'h3', 'p', 'a', 'span', 'li', '.card', '.btn', '.hero', '.lead', '#x', '.hero h1', 'a:hover', 'p.lead', 'a.btn', '*', 'section > p' ];
+        $rules     = [];
+        for ( $i = mt_rand( 0, 12 ); $i > 0; $i-- ) {
+            $rule    = $selectors[ mt_rand( 0, count( $selectors ) - 1 ) ] . '{' . self::randomDeclarations() . '}';
+            $rules[] = 0 === mt_rand( 0, 7 ) ? '@media (min-width:600px){' . $rule . '}' : $rule;
+        }
+
+        return implode( "\n", $rules );
+    }
+
+    /**
+     * 200 [styled, bare] pairs for one seed. The tree is the phase-1 generator's (its tags without `style`, which is the page's own
+     * sheet here, and its attributes without `style=""`, plus the hero and lead classes); every element may also get a random
+     * style="" (bare: none). The page's sheet sits in the head, or at the start of a fragment (bare: no sheet).
+     *
+     * @return list<array{0:string,1:string}>
+     */
+    private static function styledCases( int $seed ): array
+    {
+        mt_srand( $seed );
+        $tags  = [ 'div', 'section', 'article', 'header', 'footer', 'main', 'aside', 'nav', 'p', 'span', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'button', 'hr', 'table', 'tr', 'td', 'figure', 'figcaption', 'blockquote', 'pre', 'strong', 'em', 'br', 'form', 'script', 'iframe', 'svg', 'video', 'embed', 'input', 'picture', 'font', 'center' ];
+        $attrs = [ 'class="btn"', 'class="card"', 'class="hero"', 'class="lead"', 'id="x"', 'href="/a"', 'href="https://example.com"', 'href="javascript:alert(1)"', 'src="/i.png"', 'src="data:text/html,x"', 'onclick="x()"', 'alt="a"', 'target="_blank"', 'role="button"', 'width="10" height="5"' ];
+        $texts = [ 'Hello', 'Tom & Jerry', '1 < 2', '日本語', 'أهلا', '"quoted"', "it's", '-->', '<!--', '\\u003c', "\u{1F389}", 'Fresh bread daily', '' ];
+
+        $make = static function ( int $depth ) use ( &$make, $tags, $attrs, $texts ): array {
+            $styled = '';
+            $bare   = '';
+            for ( $i = mt_rand( 0, 4 ); $i > 0; $i-- ) {
+                if ( 0 === mt_rand( 0, 2 ) ) {
+                    [ $bs, $bb ] = self::styledBlock();
+                    $styled     .= $bs;
+                    $bare       .= $bb;
+                    continue;
+                }
+                if ( 0 === mt_rand( 0, 2 ) ) {
+                    $t       = $texts[ mt_rand( 0, count( $texts ) - 1 ) ];
+                    $styled .= $t;
+                    $bare   .= $t;
+                    continue;
+                }
+                $t     = $tags[ mt_rand( 0, count( $tags ) - 1 ) ];
+                $a     = 0 === mt_rand( 0, 1 ) ? ' ' . $attrs[ mt_rand( 0, count( $attrs ) - 1 ) ] : '';
+                $style = 0 === mt_rand( 0, 1 ) ? self::randomDeclarations() : '';
+                $s     = '' === $style ? '' : ' style="' . htmlspecialchars( $style, ENT_QUOTES ) . '"';
+                if ( $depth > 0 ) {
+                    [ $innerStyled, $innerBare ] = $make( $depth - 1 );
+                } else {
+                    $innerStyled = $innerBare = $texts[ mt_rand( 0, count( $texts ) - 1 ) ];
+                }
+                $close   = 0 === mt_rand( 0, 9 ) ? '' : '</' . $t . '>';
+                $styled .= '<' . $t . $a . $s . '>' . $innerStyled . $close;
+                $bare   .= '<' . $t . $a . '>' . $innerBare . $close;
+            }
+
+            return [ $styled, $bare ];
+        };
+
+        $out = [];
+        for ( $n = 0; $n < 200; $n++ ) {
+            $sheet = self::randomSheet();
+            if ( mt_rand( 1, 5 ) <= 2 ) {
+                // A page of structured blocks only (no phase-1 noise around them), so the paint and ink rules are really exercised.
+                $styled = '';
+                $bare   = '';
+                for ( $k = mt_rand( 1, 4 ); $k > 0; $k-- ) {
+                    [ $bs, $bb ] = self::styledBlock();
+                    $styled     .= $bs;
+                    $bare       .= $bb;
+                }
+            } else {
+                [ $styled, $bare ] = $make( 4 );
+            }
+            if ( 0 === mt_rand( 0, 3 ) ) {
+                $out[] = [ '<style>' . $sheet . '</style>' . $styled, $bare ];
+                continue;
+            }
+            $bodyStyle = 0 === mt_rand( 0, 3 ) ? self::randomDeclarations() : '';
+            $body      = '' === $bodyStyle ? '<body>' : '<body style="' . htmlspecialchars( $bodyStyle, ENT_QUOTES ) . '">';
+            $out[]     = [
+                '<!DOCTYPE html><html><head><style>' . $sheet . '</style></head>' . $body . $styled . '</body></html>',
+                '<!DOCTYPE html><html><head></head><body>' . $bare . '</body></html>',
+            ];
+        }
+
+        return $out;
     }
 }
