@@ -1,0 +1,38 @@
+<!-- wp:divi/placeholder -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Bike repair you can trust"}}},"decoration":{"background":{"desktop":{"value":{"color":"#ffffff"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Bike repair you can trust"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h1","color":"#111827","family":"Inter"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eDrop it off in the morning and ride it home after work, tuned and safe.\u003c/p\u003e"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#0f766e","size":"22px","family":"Inter"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Our record"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3","color":"#111827","family":"Inter"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eOur mechanics have fixed more than nine thousand bikes since 2012.\u003c/p\u003e"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#6b7280","size":"22px","family":"Inter"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Peace of mind"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3","color":"#111827","family":"Inter"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eFree safety check with every service booking.\u003c/p\u003e"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#7c3aed","size":"22px","family":"Inter"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Opening hours"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3","color":"#111827","family":"Inter"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eWalk-ins are welcome from Monday to Saturday, and we keep loaner bikes for longer jobs.\u003c/p\u003e"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#1f2937","size":"18px","family":"Inter"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Book a service","linkUrl":"/book"}}},"decoration":{"background":{"desktop":{"value":{"color":"#2563eb"}}},"border":{"desktop":{"value":{"radius":{"topLeft":"8px","topRight":"8px","bottomRight":"8px","bottomLeft":"8px"}}}},"font":{"font":{"desktop":{"value":{"color":"#ffffff"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"What we fix"}}},"decoration":{"background":{"desktop":{"value":{"color":"#f3f4f6"}}},"spacing":{"desktop":{"value":{"padding":{"top":"48px","right":"24px","bottom":"48px","left":"24px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"What we fix"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2","color":"#111827","size":"36px","family":"Inter"}},"tablet":{"value":{"size":"27px"}},"phone":{"value":{"size":"20px"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"1_3,1_3,1_3"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_3"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}},"phone":{"value":{"flexWrap":"wrap"}},"phoneWide":{"value":{"flexWrap":"wrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"8_24"}},"phone":{"value":{"flexType":"24_24"}},"phoneWide":{"value":{"flexType":"24_24"}}},"background":{"desktop":{"value":{"color":"#ffffff"}}},"spacing":{"desktop":{"value":{"padding":{"top":"24px","right":"24px","bottom":"24px","left":"24px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Tune-ups"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3","color":"#111827","family":"Inter"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eGears, brakes and wheels adjusted and tested on the stand.\u003c/p\u003e"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#1f2937","size":"18px","family":"Inter"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"8_24"}},"phone":{"value":{"flexType":"24_24"}},"phoneWide":{"value":{"flexType":"24_24"}}},"background":{"desktop":{"value":{"color":"#ffffff"}}},"spacing":{"desktop":{"value":{"padding":{"top":"24px","right":"24px","bottom":"24px","left":"24px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Flat tyres"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3","color":"#111827","family":"Inter"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eTube or tubeless, patched or replaced while you wait.\u003c/p\u003e"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#1f2937","size":"18px","family":"Inter"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"1_3"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"8_24"}},"phone":{"value":{"flexType":"24_24"}},"phoneWide":{"value":{"flexType":"24_24"}}},"background":{"desktop":{"value":{"color":"#ffffff"}}},"spacing":{"desktop":{"value":{"padding":{"top":"24px","right":"24px","bottom":"24px","left":"24px"}}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"E-bike service"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3","color":"#111827","family":"Inter"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eBattery checks, motor diagnostics and firmware updates.\u003c/p\u003e"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#1f2937","size":"18px","family":"Inter"}}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- /wp:divi/placeholder -->

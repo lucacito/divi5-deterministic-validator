@@ -93,7 +93,8 @@ deterministically and checks the result with the same validator as every save.
 3. **Create**: call html_to_divi again with `create=true` and a `title` (the report suggests one). It saves one DRAFT.
 4. **Real images**: replace each placeholder with an image from `list_media_images`, using `edit_page_content`
    (`dry_run` first). Never use the source site's image addresses.
-5. **Make it look right**: colors, fonts and spacing are not converted. Style the draft with `get_style_guide` and
+5. **Make it look right**: the converter carries the HTML's basic colors, fonts and spacing where Divi can show them and
+   the text stays readable (`report.styles` lists what it left out). Finish the look with `get_style_guide` and
    `list_global_styles`, and use a section recipe for a hero or call to action where it fits.
 6. **Several pages**: one page per call, in the order of the plan above; then point internal links at the new page slugs.
 For a pixel-accurate copy of a live web page, use the separate URL-to-Divi converter instead.

@@ -228,4 +228,37 @@ final class HtmlToDiviLockstepTest extends TestCase
             $this->assertStringContainsString( $result, $src, 'the outcome ' . $result . ' is logged' );
         }
     }
+
+    /**
+     * The descriptions say what styles=basic carries (no "not converted yet"). Before the styles work the tool description was 1,256
+     * bytes; it may grow by at most 120 (it is 1,368 now: the new sentence is longer, and the rest was tightened to stay inside the bound).
+     */
+    public function testTheStylesDescriptionsSayWhatIsCarried(): void
+    {
+        $req   = new \WP_REST_Request( [ 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list' ] );
+        $tools = ( new McpHandler() )->handle( $req )->get_data()['result']['tools'];
+        $tool  = current( array_filter( $tools, static fn( $t ) => 'html_to_divi' === $t['name'] ) );
+        $desc  = (string) $tool['description'];
+        $style = (string) $tool['inputSchema']['properties']['styles']['description'];
+        foreach ( [ $desc, $style ] as $text ) {
+            $this->assertStringNotContainsString( 'not converted yet', $text );
+            $this->assertStringNotContainsString( 'only adds a reminder', $text );
+        }
+        $this->assertStringContainsString( 'report.styles', $desc );
+        $this->assertStringContainsString( 'get_style_guide', $desc );
+        $this->assertStringContainsString( 'none: structure and content only.', $style );
+        $this->assertLessThanOrEqual( 300, strlen( $style ) );
+        $this->assertLessThanOrEqual( 1256 + 120, strlen( $desc ) );
+        $this->assertSame( [ 'html', 'create', 'title', 'slug', 'image_mode', 'styles' ], array_keys( $tool['inputSchema']['properties'] ), 'no schema change' );
+        $this->assertSame( [ 'basic', 'none' ], $tool['inputSchema']['properties']['styles']['enum'] );
+        $this->assertStringNotContainsString( 'not converted yet', $this->src( 'SiteGuide.php' ) );
+        $this->assertStringNotContainsString( 'not converted yet', $this->src( 'HtmlToDivi.php' ) );
+
+        [ , $basic ] = $this->mcp( [ 'html' => self::HTML ] );
+        [ , $none ]  = $this->mcp( [ 'html' => self::HTML, 'styles' => 'none' ] );
+        [ , $rest ]  = $this->rest( [ 'html' => self::HTML ] );
+        $this->assertArrayHasKey( 'styles', $basic['report'], 'report.styles reaches the assistant' );
+        $this->assertSame( $basic['report']['styles'], $rest['report']['styles'] );
+        $this->assertArrayNotHasKey( 'styles', $none['report'] );
+    }
 }
