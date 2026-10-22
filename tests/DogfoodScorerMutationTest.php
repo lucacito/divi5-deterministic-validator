@@ -245,6 +245,59 @@ class DogfoodScorerMutationTest extends TestCase
         return $rows;
     }
 
+    /**
+     * label => [the check that judges the radius, the check that finds the block, the radius path, the kit radius that makes
+     * the removal visible (null = a button: strict, an absent radius always differs)].
+     */
+    private const RADIUS_SUBJECTS = [
+        'a button'        => [ 'button.radius', 'button.radius', 'button.decoration.border.desktop.value.radius', null ],
+        'a framed card'   => [ 'framed.radius', 'framed.radius', self::BORDER . '.radius', 'card' ],
+        'a tag'           => [ 'chip.radius', 'chip.frame', self::BORDER . '.radius', 'control' ],
+        'an icon chip'    => [ 'chip.radius', 'chip.fill-colour', self::BORDER . '.radius', 'control' ],
+        'the accordion'   => [ 'item.radius', 'item.radius', self::BORDER . '.radius', 'card' ],
+        'the form field'  => [ 'form.field-radius', 'form.field-radius', 'field.decoration.border.desktop.value.radius', 'control' ],
+        'the form submit' => [ 'form.button-radius', 'form.button-radius', 'button.decoration.border.desktop.value.radius', null ],
+    ];
+
+    /** @return array<string,array{0:string,1:string,2:string}> */
+    public static function radiusRemovalRows(): array
+    {
+        $rows = [];
+        foreach ( self::COMBOS as $kit => $language ) {
+            foreach ( array_keys( self::RADIUS_SUBJECTS ) as $label ) {
+                $rows[ "$kit/$language: $label" ] = [ $kit, $language, $label ];
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * An absent radius is Divi's square default (0px) except on a button: removing the radius flips the check only under a kit
+     * whose radius for that role is not 0px, and always on a button. Nothing else changes either way.
+     */
+    #[DataProvider( 'radiusRemovalRows' )]
+    public function testRemovingARadiusIsKitAware( string $kit, string $language, string $label ): void
+    {
+        [ $check, $needle, $path, $kitKey ] = self::RADIUS_SUBJECTS[ $label ];
+        $page    = self::conformance( $kit, $language );
+        $scorer  = new Scorer( $kit, $language );
+        $before  = $scorer->details( $page );
+        $key     = self::findBlock( $page, $before, $needle );
+        $this->assertNotNull( $key, "$label exists on the conformance page" );
+        $mutated = Mutate::remove( $page, $key, $path );
+        $report  = $scorer->score( $mutated );
+        $radius  = null === $kitKey ? null : (string) StyleKits::get( $kit )['radius'][ $kitKey ];
+        $flips   = null === $kitKey || '0px' !== $radius;
+        if ( $flips ) {
+            $this->assertSame( [ $check ], array_column( $report['failures'], 'check' ), "$label without a radius under a " . ( $radius ?? 'strict' ) . ' kit' );
+            $this->assertSame( $key, $report['failures'][0]['block'] );
+        } else {
+            $this->assertSame( [], $report['failures'], "$label without a radius under a 0px kit still passes" );
+        }
+        $this->assertSame( array_column( $before, 'check' ), array_column( $scorer->details( $mutated ), 'check' ), 'the same checks run' );
+    }
+
     public function testTheMutationRowsCoverEveryMutationOnGlassEdge(): void
     {
         $rows = self::mutationRows();

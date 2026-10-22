@@ -96,6 +96,24 @@ class DogfoodScorerTest extends TestCase
         return $attrs;
     }
 
+    /** The value at a dot path of an array (null when missing); an array is returned as an array. */
+    private static function at( array $a, string $path ): mixed
+    {
+        foreach ( explode( '.', $path ) as $k ) {
+            if ( ! is_array( $a ) || ! array_key_exists( $k, $a ) ) {
+                return null;
+            }
+            $a = $a[ $k ];
+        }
+
+        return $a;
+    }
+
+    private static function arr( mixed $v ): array
+    {
+        return is_array( $v ) ? $v : [];
+    }
+
     private static function corners( string $v ): array
     {
         return [ 'topLeft' => $v, 'topRight' => $v, 'bottomRight' => $v, 'bottomLeft' => $v ];
@@ -229,8 +247,9 @@ class DogfoodScorerTest extends TestCase
         $add( 'framed.frame-style', 'glass-edge', 'glass-dark', $wrapC( $card ), $wrapC( self::with( $card, $M . '.styles.all.style', 'dotted' ) ) );
         $add( 'framed.frame-colour', 'glass-edge', 'glass-dark', $wrapC( $card ), $wrapC( self::with( $card, $M . '.styles.all.color', '#123456' ) ) );
         $add( 'framed.fill-colour', 'glass-edge', 'glass-dark', $wrapC( $card ), $wrapC( self::with( $card, 'module.decoration.background.desktop.value.color', '#123456' ) ) );
-        $topRule = static fn ( string $w ): array => self::with( self::with( self::with( $card, $M . '.styles.top.width', $w ), $M . '.styles.top.style', 'solid' ), $M . '.styles.top.color', '#2a3558' );
-        $add( 'framed.top-rule', 'glass-edge', 'glass-dark', $wrapC( $topRule( '2px' ) ), $wrapC( $topRule( '7px' ) ) );
+        $strong  = self::arr( self::at( $g->attrs( 'divi/group', 'rule-strong', 'light' ), $M . '.styles.top' ) ); // the adapter's own top rule
+        $topRule = static fn ( string $w ): array => self::with( self::with( self::with( $card, $M . '.styles.top.width', $w ), $M . '.styles.top.style', $strong['style'] ), $M . '.styles.top.color', $strong['color'] );
+        $add( 'framed.top-rule', 'glass-edge', 'glass-dark', $wrapC( $topRule( $strong['width'] ) ), $wrapC( $topRule( '7px' ) ) );
 
         // item (an accordion)
         $acc  = $g->attrs( 'divi/accordion', 'item', 'light' );
@@ -254,8 +273,9 @@ class DogfoodScorerTest extends TestCase
         $add( 'form.button-fill-colour', 'glass-edge', 'glass-dark', $wrapF( $form ), $wrapF( self::with( $form, 'button.decoration.background.desktop.value.color', '#123456' ) ) );
 
         // image (the media radius, or flush)
+        $media = StyleKits::valueToken( StyleKits::get( 'glass-edge' ), 'radius-media' )['topLeft']; // the kit's media radius
         $wrapM = static fn ( string $r ): string => self::page( self::leaf( 'divi/image', [ 'image' => [ 'decoration' => [ 'border' => [ 'desktop' => [ 'value' => [ 'radius' => self::corners( $r ) ] ] ] ] ] ] ) );
-        $add( 'image.radius', 'glass-edge', 'glass-dark', $wrapM( '12px' ), $wrapM( '7px' ) );
+        $add( 'image.radius', 'glass-edge', 'glass-dark', $wrapM( $media ), $wrapM( '7px' ) );
 
         return $rows;
     }
@@ -287,6 +307,158 @@ class DogfoodScorerTest extends TestCase
         $this->assertNotNull( $row );
         $this->assertFalse( $row['pass'] );
         $this->assertNotSame( $row['expected'], $row['observed'], 'a failure says what was expected and what was seen' );
+    }
+
+    /** @param array<string,mixed> $attrs */
+    private static function without( array $attrs, string $path ): array
+    {
+        $parts = explode( '.', $path );
+        $last  = array_pop( $parts );
+        $node  = &$attrs;
+        foreach ( $parts as $part ) {
+            if ( ! isset( $node[ $part ] ) || ! is_array( $node[ $part ] ) ) {
+                self::fail( "no $path to remove" );
+            }
+            $node = &$node[ $part ];
+        }
+        self::assertArrayHasKey( $last, $node, "no $path to remove" );
+        unset( $node[ $last ] );
+
+        return $attrs;
+    }
+
+    /**
+     * Pages whose block has its corner radius REMOVED, per the check that judges it: label => [check, page].
+     *
+     * @return array<string,array{0:string,1:string}>
+     */
+    private static function radiusRemoved( string $kit, string $lang ): array
+    {
+        $e       = self::expected( $kit, $lang );
+        $M       = 'module.decoration.border.desktop.value.radius';
+        $heading = self::leaf( 'divi/heading', [ 'title' => [ 'innerContent' => [ 'desktop' => [ 'value' => 'Plan' ] ] ] ] );
+        $text    = self::leaf( 'divi/text', [ 'content' => [ 'innerContent' => [ 'desktop' => [ 'value' => '<p>New</p>' ] ] ] ] );
+        $form    = $e->attrs( 'divi/contact-form', 'form', 'light' );
+
+        return [
+            'a card'          => [ 'framed.radius', self::page( self::block( 'divi/group', self::without( $e->attrs( 'divi/group', 'card', 'light' ), $M ), $heading ), null, $lang ) ],
+            'a tag'           => [ 'chip.radius', self::page( self::block( 'divi/group', self::without( $e->attrs( 'divi/group', 'chip', 'light' ), $M ), $text ), null, $lang ) ],
+            'an icon chip'    => [ 'chip.radius', self::page( self::leaf( 'divi/icon', self::without( $e->attrs( 'divi/icon', 'chip', 'light' ), $M ) ), null, $lang ) ],
+            'an accordion'    => [ 'item.radius', self::page( self::leaf( 'divi/accordion', self::without( $e->attrs( 'divi/accordion', 'item', 'light' ), $M ) ), null, $lang ) ],
+            'a toggle'        => [ 'item.radius', self::page( self::leaf( 'divi/toggle', self::without( $e->attrs( 'divi/toggle', 'item', 'light' ), $M ) ), null, $lang ) ],
+            'a form field'    => [ 'form.field-radius', self::page( self::leaf( 'divi/contact-form', self::without( $form, 'field.decoration.border.desktop.value.radius' ) ), null, $lang ) ],
+        ];
+    }
+
+    public function testAnAbsentRadiusIsZeroExceptOnButtons(): void
+    {
+        // A kit with square corners: an absent radius is Divi's square default, so it passes.
+        $zero = new Scorer( 'raw-frame', 'brutalist-flat' );
+        foreach ( self::radiusRemoved( 'raw-frame', 'brutalist-flat' ) as $label => [ $check, $page ] ) {
+            $row = self::row( $zero->details( $page ), $check );
+            $this->assertNotNull( $row, "$label: $check is checked" );
+            $this->assertTrue( $row['pass'], "$label under a 0px kit: an absent radius passes" );
+            $this->assertSame( [], $zero->score( $page )['failures'], $label );
+        }
+        // A kit with rounded corners: an absent radius is square, so it fails (and only that check does).
+        $round = new Scorer( 'glass-edge', 'glass-dark' );
+        foreach ( self::radiusRemoved( 'glass-edge', 'glass-dark' ) as $label => [ $check, $page ] ) {
+            $this->assertSame( [ $check ], array_column( $round->score( $page )['failures'], 'check' ), "$label under a 12px kit: an absent radius fails" );
+        }
+        // Buttons stay strict: Divi's button has its own non-zero default, so an absent radius fails even under a 0px kit.
+        foreach ( [ [ 'raw-frame', 'brutalist-flat' ], [ 'glass-edge', 'glass-dark' ] ] as [ $kit, $lang ] ) {
+            $e   = self::expected( $kit, $lang );
+            $btn = self::without( $e->attrs( 'divi/button', 'control', 'light' ), 'button.decoration.border.desktop.value.radius' );
+            $this->assertSame( [ 'button.radius' ], array_column( ( new Scorer( $kit, $lang ) )->score( self::page( self::leaf( 'divi/button', $btn ), null, $lang ) )['failures'], 'check' ), "$kit: a button without a radius" );
+            $form = self::without( $e->attrs( 'divi/contact-form', 'form', 'light' ), 'button.decoration.border.desktop.value.radius' );
+            $this->assertSame( [ 'form.button-radius' ], array_column( ( new Scorer( $kit, $lang ) )->score( self::page( self::leaf( 'divi/contact-form', $form ), null, $lang ) )['failures'], 'check' ), "$kit: a submit without a radius" );
+        }
+    }
+
+    /** @return array<string,array{0:string,1:string}> */
+    public static function perSideKits(): array
+    {
+        $rows = [];
+        foreach ( [ 'heavy-block', 'glass-edge', 'raw-frame', 'double-frame', 'hairline-dashed', 'chunky-pill' ] as $kit ) {
+            $rows[ $kit ] = [ $kit, Scorer::defaultLanguage( $kit ) ];
+        }
+
+        return $rows;
+    }
+
+    #[DataProvider( 'perSideKits' )]
+    public function testAFrameWrittenPerSideIsNotATopRule( string $kit, string $lang ): void
+    {
+        $e       = self::expected( $kit, $lang );
+        $M       = 'module.decoration.border.desktop.value.styles';
+        $heading = self::leaf( 'divi/heading', [ 'title' => [ 'innerContent' => [ 'desktop' => [ 'value' => 'Plan' ] ] ] ] );
+        $card    = $e->attrs( 'divi/group', 'card', 'light' );
+        $all     = self::at( $card, $M . '.all' );
+        $this->assertIsArray( $all );
+        $perSide = self::with( $card, $M, [ 'top' => $all, 'right' => $all, 'bottom' => $all, 'left' => $all ] ); // replaces `styles`: no `all` key
+        $this->assertArrayNotHasKey( 'all', $perSide['module']['decoration']['border']['desktop']['value']['styles'] );
+        $scorer = new Scorer( $kit, $lang );
+        $form   = $scorer->details( self::page( self::block( 'divi/group', $card, $heading ), null, $lang ) );
+        $side   = $scorer->details( self::page( self::block( 'divi/group', $perSide, $heading ), null, $lang ) );
+        $this->assertSame( array_column( $form, 'check' ), array_column( $side, 'check' ), 'the same checks run for a frame written per side' );
+        $this->assertSame( array_column( $form, 'pass' ), array_column( $side, 'pass' ) );
+        $this->assertNotContains( 'framed.top-rule', array_column( $side, 'check' ) );
+        $this->assertNotContains( false, array_column( $side, 'pass' ), 'and they all pass' );
+
+        // a top that differs from the other sides, written per side, IS a rule and is judged as one
+        $strong = self::arr( self::at( $e->attrs( 'divi/group', 'rule-strong', 'light' ), $M . '.top' ) );
+        $ruled  = self::with( $perSide, $M . '.top', $strong );
+        $rows   = $scorer->details( self::page( self::block( 'divi/group', $ruled, $heading ), null, $lang ) );
+        $row    = self::row( $rows, 'framed.top-rule' );
+        if ( $strong['width'] !== $all['width'] ) {
+            $this->assertNotNull( $row, 'a different top is a top rule' );
+            $this->assertTrue( $row['pass'] );
+        }
+    }
+
+    public function testATransparentSubmitFailsWhereTheKitFillsIt(): void
+    {
+        $form = self::expected()->attrs( 'divi/contact-form', 'form', 'light' );
+        $this->assertFalse( Page::isClear( self::at( $form, 'button.decoration.background.desktop.value.color' ) ), 'glass-edge fills the submit' );
+        $page = self::page( self::leaf( 'divi/contact-form', self::without( $form, 'button.decoration.background' ) ) );
+        $this->assertSame( [ 'form.button-fill-colour' ], array_column( self::report( $page )['failures'], 'check' ), 'one defect, one check' );
+        // the same, written as an explicit transparent colour
+        $page = self::page( self::leaf( 'divi/contact-form', self::with( $form, 'button.decoration.background.desktop.value.color', 'rgba(255,255,255,0)' ) ) );
+        $this->assertSame( [ 'form.button-fill-colour' ], array_column( self::report( $page )['failures'], 'check' ) );
+        // a kit whose submit is transparent: a transparent submit is right, and nothing is checked for the colour
+        $o2   = self::expected( 'outline-2', 'editorial' )->attrs( 'divi/contact-form', 'form', 'light' );
+        $this->assertTrue( Page::isClear( self::at( $o2, 'button.decoration.background.desktop.value.color' ) ) );
+        $r = self::report( self::page( self::leaf( 'divi/contact-form', $o2 ), null, 'editorial' ), 'outline-2', 'editorial' );
+        $this->assertSame( [], $r['failures'] );
+    }
+
+    public function testSurfaceGlassIsTheSurfaceRoleInTheFillChecksOnly(): void
+    {
+        $lang  = self::language( self::LANG );
+        $glass = (string) $lang['colors']['surface_glass'];
+        $this->assertNotSame( $lang['colors']['surface'], $glass );
+        $e       = self::expected();
+        $M       = 'module.decoration.background.desktop.value.color';
+        $heading = self::leaf( 'divi/heading', [ 'title' => [ 'innerContent' => [ 'desktop' => [ 'value' => 'Plan' ] ] ] ] );
+        $card    = self::with( $e->attrs( 'divi/group', 'card', 'light' ), $M, $glass );
+
+        // pass: a card on a light band filled with the language's own card colour
+        $this->assertSame( [], self::report( self::page( self::block( 'divi/group', $card, $heading ) ) )['failures'] );
+        // fail: the same fill on a surface band, where the adapter expects `bg`
+        $page = self::page( self::block( 'divi/group', $card, $heading ), (string) $lang['colors']['surface'] );
+        $this->assertSame( [ 'framed.fill-colour' ], array_column( self::report( $page )['failures'], 'check' ) );
+        // items and form fields take it too
+        $acc = self::with( self::with( $e->attrs( 'divi/accordion', 'item', 'light' ), 'openToggle.decoration.background.desktop.value.color', $glass ), 'closedToggle.decoration.background.desktop.value.color', $glass );
+        $this->assertSame( [], self::report( self::page( self::leaf( 'divi/accordion', $acc ) ) )['failures'] );
+        $form = self::with( $e->attrs( 'divi/contact-form', 'form', 'light' ), 'field.decoration.background.desktop.value.color', $glass );
+        $this->assertSame( [], self::report( self::page( self::leaf( 'divi/contact-form', $form ) ) )['failures'] );
+        // not for buttons or chips
+        $btn = self::with( $e->attrs( 'divi/button', 'control', 'light' ), 'button.decoration.background.desktop.value.color', $glass );
+        $this->assertSame( [ 'button.fill-colour' ], array_column( self::report( self::page( self::leaf( 'divi/button', $btn ) ) )['failures'], 'check' ) );
+        $icon = self::with( $e->attrs( 'divi/icon', 'chip', 'light' ), $M, $glass );
+        $this->assertSame( [ 'chip.fill-colour' ], array_column( self::report( self::page( self::leaf( 'divi/icon', $icon ) ) )['failures'], 'check' ) );
+        // a language with no glass colour has no alias
+        $this->assertArrayNotHasKey( 'surface_glass', self::language( 'editorial' )['colors'] );
     }
 
     // ---------------------------------------------------------------------------------------------------------

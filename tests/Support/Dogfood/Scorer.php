@@ -70,6 +70,14 @@ final class Scorer
     private Expected $expected;
 
     /**
+     * Colour key of the `surface` role => the keys also accepted for it in the FILL checks of cards, items and form fields: the
+     * design language's own translucent card colour `surface_glass`, set only for glass languages and different from `surface`.
+     *
+     * @var array<string,list<string>>
+     */
+    private array $fillAliases = [];
+
+    /**
      * @throws \InvalidArgumentException on an unknown kit or language id (the message lists the valid ones)
      */
     public function __construct( private readonly string $kitId, private readonly string $languageId )
@@ -85,6 +93,12 @@ final class Scorer
         $this->kit      = $kit;
         $this->language = $language;
         $this->expected = new Expected( $kit, $language );
+        $colors         = is_array( $language['colors'] ?? null ) ? $language['colors'] : [];
+        $surface        = is_string( $colors['surface'] ?? null ) ? Page::colourKey( $colors['surface'] ) : null;
+        $glass          = is_string( $colors['surface_glass'] ?? null ) ? Page::colourKey( $colors['surface_glass'] ) : null;
+        if ( null !== $surface && null !== $glass && $surface !== $glass ) {
+            $this->fillAliases[ $surface ] = [ $glass ];
+        }
     }
 
     /** D6: the one language whose `kit` is the given kit, else `editorial`. */
@@ -463,7 +477,7 @@ final class Scorer
         $F   = 'button.decoration.background.desktop.value.color';
         $own = self::arr( self::at( $a, $B ) );
         $rows = [];
-        $rows[] = self::radiusRow( 'button.radius', $own, $patches, $B );
+        $rows[] = self::radiusRow( 'button.radius', $own, $patches, $B, true );
         $rows[] = self::edgeRow( 'button.edge', $own, $patches, $B );
         if ( self::anyVisible( self::sides( $own ) ) ) {
             $rows[] = self::styleRow( 'button.edge-style', $own, $patches, $B, self::SIDES );
@@ -569,8 +583,7 @@ final class Scorer
         $M      = 'module.decoration.border.desktop.value';
         $own    = self::arr( self::at( $a, $M ) );
         $styles = self::arr( $own['styles'] ?? null );
-        $rule   = isset( $styles['top'] ) && is_array( $styles['top'] )
-            && ! self::lenEq( self::len( self::eff( $styles, 'top', 'width' ) ) ?? 0.0, self::len( self::eff( $styles, 'all', 'width' ) ) ?? 0.0 );
+        $rule   = isset( $styles['top'] ) && is_array( $styles['top'] ) && self::isTopRule( $styles );
         $subset = $rule ? [ 'right', 'bottom', 'left' ] : self::SIDES;
         $sides  = self::sides( $own );
         $rows   = [
@@ -595,7 +608,7 @@ final class Scorer
             } );
         }
         $F      = 'module.decoration.background.desktop.value.color';
-        $rows[] = self::colourRow( 'framed.fill-colour', self::at( $a, $F ), $patches, $F );
+        $rows[] = self::colourRow( 'framed.fill-colour', self::at( $a, $F ), $patches, $F, $this->fillAliases );
         if ( $rule ) {
             $width = self::len( self::eff( $styles, 'top', 'width' ) );
             $style = self::str( self::eff( $styles, 'top', 'style' ) );
@@ -636,11 +649,12 @@ final class Scorer
         $closed = 'closedToggle.decoration.background.desktop.value.color';
         $oo     = self::at( $a, $open );
         $oc     = self::at( $a, $closed );
-        $rows[] = self::union( 'item.fill-colour', $patches, static function ( array $p ) use ( $open, $closed, $oo, $oc ): array {
+        $alias  = $this->fillAliases;
+        $rows[] = self::union( 'item.fill-colour', $patches, static function ( array $p ) use ( $open, $closed, $oo, $oc, $alias ): array {
             $eo = self::str( self::at( $p, $open ) );
             $ec = self::str( self::at( $p, $closed ) );
             return [
-                self::colourIn( $oo, [ $eo ] ) && self::colourIn( $oc, [ $ec ] ),
+                self::colourIn( $oo, [ $eo ], $alias ) && self::colourIn( $oc, [ $ec ], $alias ),
                 $eo === $ec ? ( $eo ?? 'absent' ) : 'open ' . ( $eo ?? 'absent' ) . ', closed ' . ( $ec ?? 'absent' ),
                 'open ' . self::colourText( $oo ) . ', closed ' . self::colourText( $oc ),
             ];
@@ -663,14 +677,18 @@ final class Scorer
         if ( self::anyVisible( self::sides( $fo ) ) ) {
             $rows[] = self::styleRow( 'form.field-frame-style', $fo, $patches, $FB, self::SIDES );
         }
-        $rows[] = self::colourRow( 'form.field-fill-colour', self::at( $a, 'field.decoration.background.desktop.value.color' ), $patches, 'field.decoration.background.desktop.value.color' );
-        $rows[] = self::radiusRow( 'form.button-radius', $bo, $patches, $BB );
+        $rows[] = self::colourRow( 'form.field-fill-colour', self::at( $a, 'field.decoration.background.desktop.value.color' ), $patches, 'field.decoration.background.desktop.value.color', $this->fillAliases );
+        $rows[] = self::radiusRow( 'form.button-radius', $bo, $patches, $BB, true );
         $rows[] = self::edgeRow( 'form.button-edge', $bo, $patches, $BB );
         if ( self::anyVisible( self::sides( $bo ) ) ) {
             $rows[] = self::styleRow( 'form.button-edge-style', $bo, $patches, $BB, self::SIDES );
         }
-        $F = 'button.decoration.background.desktop.value.color';
-        if ( ! Page::isClear( self::at( $a, $F ) ) ) {
+        $F     = 'button.decoration.background.desktop.value.color';
+        $fills = ! Page::isClear( self::at( $a, $F ) );
+        foreach ( $patches as $p ) {
+            $fills = $fills || ! Page::isClear( self::at( $p, $F ) ); // a transparent submit where the kit fills it fails here
+        }
+        if ( $fills ) {
             $rows[] = self::colourRow( 'form.button-fill-colour', self::at( $a, $F ), $patches, $F );
         }
 
@@ -737,12 +755,13 @@ final class Scorer
      *
      * @return array{0:string,1:bool,2:string,3:string}
      */
-    private static function radiusRow( string $check, array $own, array $patches, string $path ): array
+    private static function radiusRow( string $check, array $own, array $patches, string $path, bool $strict = false ): array
     {
-        $o = self::corners( $own['radius'] ?? null );
+        // An absent corner is 0px (Divi's square default) on everything but a button, which has a non-zero default of its own.
+        $o = self::corners( $own['radius'] ?? null, ! $strict );
 
-        return self::union( $check, $patches, static function ( array $p ) use ( $o, $path ): array {
-            $e = self::corners( self::at( $p, $path . '.radius' ) );
+        return self::union( $check, $patches, static function ( array $p ) use ( $o, $path, $strict ): array {
+            $e = self::corners( self::at( $p, $path . '.radius' ), ! $strict );
             $ok = true;
             foreach ( $e as $i => $v ) {
                 $ok = $ok && self::lenEq( $o[ $i ], $v );
@@ -804,16 +823,19 @@ final class Scorer
      *
      * @return array{0:string,1:bool,2:string,3:string}
      */
-    private static function colourRow( string $check, mixed $observed, array $patches, string $path ): array
+    private static function colourRow( string $check, mixed $observed, array $patches, string $path, array $aliases = [] ): array
     {
-        return self::union( $check, $patches, static function ( array $p ) use ( $observed, $path ): array {
+        return self::union( $check, $patches, static function ( array $p ) use ( $observed, $path, $aliases ): array {
             $e = self::str( self::at( $p, $path ) );
-            return [ self::colourIn( $observed, [ $e ] ), $e ?? 'absent', self::colourText( $observed ) ];
+            return [ self::colourIn( $observed, [ $e ], $aliases ), $e ?? 'absent', self::colourText( $observed ) ];
         } );
     }
 
-    /** @param list<?string> $expected */
-    private static function colourIn( mixed $observed, array $expected ): bool
+    /**
+     * @param list<?string>             $expected
+     * @param array<string,list<string>> $aliases expected colour key => other colour keys accepted for it
+     */
+    private static function colourIn( mixed $observed, array $expected, array $aliases = [] ): bool
     {
         if ( ! is_string( $observed ) ) {
             return false;
@@ -823,7 +845,8 @@ final class Scorer
             return false;
         }
         foreach ( $expected as $e ) {
-            if ( null !== $e && Page::colourKey( $e ) === $k ) {
+            $ek = null === $e ? null : Page::colourKey( $e );
+            if ( null !== $ek && ( $ek === $k || in_array( $k, $aliases[ $ek ] ?? [], true ) ) ) {
                 return true;
             }
         }
@@ -903,11 +926,12 @@ final class Scorer
     }
 
     /** @return list<float|string|null> topLeft, topRight, bottomRight, bottomLeft */
-    private static function corners( mixed $radius ): array
+    private static function corners( mixed $radius, bool $absentIsZero = false ): array
     {
-        $r = self::arr( $radius );
+        $r   = self::arr( $radius );
+        $out = [ self::len( $r['topLeft'] ?? null ), self::len( $r['topRight'] ?? null ), self::len( $r['bottomRight'] ?? null ), self::len( $r['bottomLeft'] ?? null ) ];
 
-        return [ self::len( $r['topLeft'] ?? null ), self::len( $r['topRight'] ?? null ), self::len( $r['bottomRight'] ?? null ), self::len( $r['bottomLeft'] ?? null ) ];
+        return $absentIsZero ? array_map( static fn ( $v ) => $v ?? 0.0, $out ) : $out;
     }
 
     /** @param list<float|string|null> $c */
@@ -940,6 +964,25 @@ final class Scorer
         }
 
         return false;
+    }
+
+    /**
+     * Is `styles.top` a rule on a framed block rather than one side of the frame? With `styles.all.width` present, a top that
+     * differs from it is a rule. Without it (a frame written per side) the top is a rule only when it differs from BOTH the
+     * right and the left side: a top equal to the other sides is the frame, and so is an underline's 0px top.
+     *
+     * @param array<string,mixed> $styles
+     */
+    private static function isTopRule( array $styles ): bool
+    {
+        $top = self::len( self::eff( $styles, 'top', 'width' ) ) ?? 0.0;
+        if ( null !== self::len( is_array( $styles['all'] ?? null ) ? ( $styles['all']['width'] ?? null ) : null ) ) {
+            return ! self::lenEq( $top, self::len( self::eff( $styles, 'all', 'width' ) ) ?? 0.0 );
+        }
+        $right = self::len( self::eff( $styles, 'right', 'width' ) ) ?? 0.0;
+        $left  = self::len( self::eff( $styles, 'left', 'width' ) ) ?? 0.0;
+
+        return ! self::lenEq( $top, $right ) && ! self::lenEq( $top, $left );
     }
 
     /** `styles.<side>.<key>` if present, else `styles.all.<key>`. */
