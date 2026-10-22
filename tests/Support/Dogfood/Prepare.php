@@ -61,9 +61,12 @@ final class Prepare
             $files['page.html'] = self::editBase( $kit, $language );
         }
 
+        // TASK.md is left out of the sizes: its length depends on the length of the out path, and prepare.json must not.
         $sizes = [];
         foreach ( $files as $name => $content ) {
-            $sizes[ $name ] = strlen( $content );
+            if ( 'TASK.md' !== $name ) {
+                $sizes[ $name ] = strlen( $content );
+            }
         }
         $guideBytes = 0;
         foreach ( array_keys( self::GUIDE_FILES ) as $name ) {
@@ -105,7 +108,9 @@ final class Prepare
     }
 
     /**
-     * Writes files() into $outDir (mkdir -p), only those names, never deletes anything.
+     * Writes files() into $outDir (mkdir -p), only those names, never deletes anything. A target that already exists with
+     * DIFFERENT content (a same-name foreign file, or output of another run) is refused before anything is written
+     * (\RuntimeException); identical content is simply rewritten.
      *
      * @param array<string,string> $files
      * @return list<string> the written paths
@@ -113,6 +118,12 @@ final class Prepare
     public static function write( array $files, string $outDir ): array
     {
         $outDir = rtrim( $outDir, '/' );
+        foreach ( $files as $name => $content ) {
+            $path = $outDir . '/' . $name;
+            if ( is_file( $path ) && (string) file_get_contents( $path ) !== $content ) {
+                throw new \RuntimeException( sprintf( '%s already exists with different content; nothing was written. Remove it or choose another --out directory.', $path ) );
+            }
+        }
         if ( ! is_dir( $outDir ) && ! mkdir( $outDir, 0777, true ) && ! is_dir( $outDir ) ) {
             throw new \RuntimeException( 'Could not create ' . $outDir );
         }

@@ -128,6 +128,9 @@ class DogfoodPrepareTest extends TestCase
             $this->assertStringContainsString( 'tech-mono', $task_md );
             $this->assertStringContainsString( '/some/out/' . $target, $task_md );
             $this->assertStringContainsString( 'Use ONLY these files', $task_md );
+            // The bias guards: without them the assistant may read the repository or the recipes and the run measures nothing.
+            $this->assertStringContainsString( 'do not look at the repository', $task_md, $task );
+            $this->assertStringContainsString( 'Do not use recipes', $task_md, $task );
             foreach ( [ '%KIT%', '%LANGUAGE%', '%OUT%' ] as $placeholder ) {
                 $this->assertStringNotContainsString( $placeholder, $task_md );
             }
@@ -189,7 +192,7 @@ class DogfoodPrepareTest extends TestCase
             $this->assertSame( $task, $json['task'] );
             $expect = [];
             foreach ( $files as $name => $content ) {
-                if ( 'prepare.json' !== $name ) {
+                if ( 'prepare.json' !== $name && 'TASK.md' !== $name ) {
                     $expect[ $name ] = strlen( $content );
                 }
             }
@@ -197,7 +200,51 @@ class DogfoodPrepareTest extends TestCase
             $this->assertSame( array_sum( array_map( static fn ( string $n ): int => strlen( $files[ $n ] ), self::GUIDE_NAMES ) ), $json['guide_bytes'] );
             $this->assertStringEndsWith( "}\n", $files['prepare.json'] );
             $this->assertStringNotContainsString( '/x', $files['prepare.json'] );
+            $this->assertArrayNotHasKey( 'TASK.md', $json['files'], 'its size depends on the out path' );
+            $this->assertSame( $files['prepare.json'], Prepare::files( 'glass-edge', 'glass-dark', $task, '/a/much/longer/out/directory/than/the/first' )['prepare.json'], 'prepare.json does not depend on --out' );
         }
+    }
+
+    public function testWriteRefusesAForeignFileOfTheSameNameAndWritesNothing(): void
+    {
+        $dir = $this->tmpDir();
+        mkdir( $dir, 0777, true );
+        $files = Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', $dir );
+        file_put_contents( $dir . '/05-controls.md', 'somebody else\'s notes' );
+        try {
+            Prepare::write( $files, $dir );
+            $this->fail( 'expected a RuntimeException' );
+        } catch ( \RuntimeException $e ) {
+            $this->assertStringContainsString( '05-controls.md', $e->getMessage() );
+            $this->assertStringContainsString( 'different content', $e->getMessage() );
+        }
+        $this->assertSame( 'somebody else\'s notes', file_get_contents( $dir . '/05-controls.md' ) );
+        $this->assertSame( [ $dir . '/05-controls.md' ], glob( $dir . '/*' ), 'nothing else was written, even the files before the clash' );
+
+        $root = dirname( __DIR__ );
+        [ $code, $out ] = $this->runScript( [ 'hairline-dashed', 'tech-mono', '--out', $dir ], $root );
+        $this->assertSame( 2, $code, $out );
+        $this->assertStringContainsString( 'different content', $out );
+        $this->assertSame( 'somebody else\'s notes', file_get_contents( $dir . '/05-controls.md' ) );
+
+        // Identical content may be rewritten: a second run into a clean dir twice is fine.
+        $clean = $this->tmpDir();
+        Prepare::write( Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', $clean ), $clean );
+        $again = Prepare::write( Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', $clean ), $clean );
+        $this->assertCount( 8, $again );
+    }
+
+    public function testAnOptionValueThatLooksLikeAnOptionIsRefused(): void
+    {
+        $root = dirname( __DIR__ );
+        $dir  = $this->tmpDir();
+        foreach ( [ [ '--out', '--task', 'edit' ], [ '--task', '--out', $dir ] ] as $tail ) {
+            [ $code, $out ] = $this->runScript( array_merge( [ 'hairline-dashed', 'tech-mono' ], $tail ), $root );
+            $this->assertSame( 2, $code, implode( ' ', $tail ) . ' ' . $out );
+            $this->assertStringContainsString( 'needs a value', $out );
+        }
+        $this->assertFalse( is_dir( '--task' ), 'no directory named after an option' );
+        $this->assertFalse( is_dir( $root . '/--task' ) );
     }
 
     public function testWriteWritesOnlyItsFilesAndDeletesNothing(): void

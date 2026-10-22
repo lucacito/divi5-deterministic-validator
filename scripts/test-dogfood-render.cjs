@@ -106,4 +106,60 @@ t('summary lists every reason, not only the first', () => {
   assert.strictEqual(fails.length, 4);
 });
 
+t('summary fails after an internal script error even when everything else looks clean', () => {
+  failsWith({ ...clean, error: 'boom' }, /^FAIL script error: boom$/);
+  const long = 'x'.repeat(50000);
+  const s = D.summarize({ ...clean, error: long });
+  assert.strictEqual(s.ok, false);
+  assert.strictEqual(s.lines[s.lines.length - 1], 'FAILED');
+  assert.ok(s.lines.every((l) => l.length < 400), 'no printed line is longer than the cap');
+  assert.strictEqual(D.shorten(long).length, D.MAX_ERROR + 3);
+  assert.strictEqual(D.shorten(new Error('multi\n  line   text')), 'multi line text');
+  assert.strictEqual(D.shorten('short'), 'short');
+});
+
+// idsWithPrefix and sweep of the shared throwaway-pages library, with a fake wp (no docker): the run prefix deletes only this run's pages.
+t('idsWithPrefix: run prefix, bare prefix, a non-numeric id', () => {
+  const { throwawayPages } = require('./lib/throwaway-pages.cjs');
+  const calls = [];
+  const rows = [
+    { ID: 11, post_title: 'aied dogfood 123-abcdef mine' },
+    { ID: 12, post_title: 'aied dogfood 124-abcdef theirs' },
+    { ID: 13, post_title: 'aied dogfood 123-abcdefg lookalike' },
+    { ID: 14, post_title: 'aied kit 123-abcdef other gate' },
+    { ID: 15, post_title: 'My aied dogfood page' },
+    { ID: 16, post_title: null },
+    { ID: 'x;rm', post_title: 'aied dogfood 123-abcdef evil id' },
+  ];
+  const fakeWp = (...a) => {
+    calls.push(a);
+    if (a[0] === 'post' && a[1] === 'list') return JSON.stringify(rows);
+    return '';
+  };
+  const pages = throwawayPages(fakeWp, D.TITLE_PREFIX, 'dogfood');
+  // The real run prefix has a random token; build the rows around it.
+  rows[0].post_title = pages.runPrefix + 'mine';
+  rows[2].post_title = pages.runPrefix.replace(/ $/, 'g ') + 'lookalike';
+  rows[6].post_title = pages.runPrefix + 'evil id';
+  assert.deepStrictEqual(pages.idsWithPrefix(rows, pages.runPrefix), ['11', 'x;rm']);
+  assert.deepStrictEqual(pages.idsWithPrefix(rows, D.TITLE_PREFIX), ['11', '12', '13', 'x;rm']);
+  assert.deepStrictEqual(pages.idsWithPrefix(rows, 'no such prefix'), []);
+  assert.deepStrictEqual(pages.idsWithPrefix([], D.TITLE_PREFIX), []);
+  assert.ok(pages.runPrefix.startsWith(D.TITLE_PREFIX) && pages.runPrefix.endsWith(' '));
+
+  // sweep deletes only this run's numeric ids, ignores the non-numeric one (and reports it), never another run's page.
+  const logs = [];
+  const log = console.log;
+  console.log = (...m) => logs.push(m.join(' '));
+  let ok;
+  try { ok = pages.sweep(); } finally { console.log = log; }
+  assert.strictEqual(ok, false, 'a non-numeric id makes the cleanup incomplete');
+  assert.ok(logs.some((l) => /ignoring non-numeric page id x;rm/.test(l)));
+  const deleted = calls.filter((c) => c[0] === 'post' && c[1] === 'delete').map((c) => c[2]);
+  assert.deepStrictEqual(deleted, ['11']);
+  assert.ok(calls.filter((c) => c[0] === 'post' && c[1] === 'delete').every((c) => c.includes('--force')));
+  assert.strictEqual(pages.foreignCount(), 4, 'bare prefix counts every run, never deletes');
+  assert.strictEqual(calls.filter((c) => c[1] === 'delete').length, 1, 'foreignCount deleted nothing');
+});
+
 console.log(`${n} pure dogfood-render tests passed`);
