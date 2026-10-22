@@ -27,6 +27,10 @@ pricing-two-plan-highlight 2, hero-image-scrim 1, quote-over-image 1, card-grid-
 quiet rule, and all nine icon chips take the kit's control radius (icon-values 5px to 4px; the round 999px badges of features-carousel-strip
 become 4px squares). The two accent dividers (blog-feed, icon-values), step badges and timeline dots are unchanged.
 
+## Already checked on main (2026-10-21)
+
+Free suite 2782, Pro suite 2169, pure render-gate tests 114; Plugin Check on the dev copy: no errors; all 71 recipes rendered under two looks: 426 PASS; full `make verify-kits` 263/264 (one hover-timing miss, hardened afterwards; smoke 30 PASS and 18 PASS); two dogfood rounds (six freehand pages and one edit) validated, rendered and followed their kit. Not done: Plugin Check on the extracted zip (needs the version bump and the zip build).
+
 ## Checklist (owner-run steps, in the order of the earlier releases)
 
 1. Version: `wp-plugin/jhmg-ai-editor-for-divi-5.php` (header + `AI_EDITOR_DIVI5_VERSION`) and `wp-plugin/readme.txt` (Stable tag, the two entries above) to 4.14.0. `Tested up to` only in readme.txt.
