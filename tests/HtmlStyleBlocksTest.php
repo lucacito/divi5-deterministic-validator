@@ -203,8 +203,9 @@ final class HtmlStyleBlocksTest extends HtmlTestCase
 
     public function testNothingIsReadWhenTheFeatureDegrades(): void
     {
-        [ $b ] = $this->blocks( '<!DOCTYPE html><html><head><link rel="stylesheet" href="/a.css"><style>.x{padding:8px}</style></head><body><section class="x" style="background:#000"><h1 style="color:#fff;font-size:40px">A</h1></section></body></html>' );
-        $this->assertSame( [ HtmlStyleBlocks::NOTE_EXTERNAL ], $b['notes'] );
+        [ $b ] = $this->blocks( '<!DOCTYPE html><html><head><style>.x{padding:8px}</style></head><body><section class="x" style="background:#000"><h1 style="color:#fff;font-size:40px">A</h1></section></div></body></html>' );
+        $this->assertCount( 1, $b['notes'] );
+        $this->assertStringStartsWith( HtmlStyles::REPAIRED_NOTE, $b['notes'][0] );
         $s = $b['sections'][0];
         $this->assertSame( [ null, [ 'state' => 'none', 'value' => null ], [] ], [ $s['anchor'], $s['paint'], $s['padding'] ] );
         $this->assertSame( [ null, 'unresolved' ], [ self::module( $b, 0 )['size'], self::module( $b, 0 )['ink']['state'] ] );

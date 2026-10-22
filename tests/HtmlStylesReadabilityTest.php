@@ -189,7 +189,8 @@ final class HtmlStylesReadabilityTest extends HtmlTestCase
         foreach ( self::moduleStyles( $d['sections'][1] ) as $m ) {
             $this->assertArrayNotHasKey( 'color', $m );
         }
-        // NOTE: the brief says "2.49"; the WCAG ratio of #475569 on #0b1120 is 2.4849, which rounds to 2.48 (tests/Support/Colour agrees).
+        // The WCAG ratio of #475569 on #0b1120 is 2.4849 (tests/Support/Colour agrees), reported rounded to two decimals: "2.48".
+        $this->assertSame( '2.48', sprintf( '%.2F', Colour::contrast( '#475569', '#0b1120' ) ) );
         $p = $this->droppedAt( $d, '/html/body/section[2]/p' );
         $this->assertSame( [ 'path' => '/html/body/section[2]/p', 'block' => 'text', 'reason' => 'unreadable', 'color' => '#475569', 'background' => '#0b1120', 'ratio' => '2.48' ], $p );
         $h = $this->droppedAt( $d, '/html/body/section[2]/h2' );
@@ -422,12 +423,10 @@ final class HtmlStylesReadabilityTest extends HtmlTestCase
         $this->assertSame( '#123456', $d['sections'][0]['style']['background'] );
     }
 
-    public function testNothingIsCarriedWhenTheCssCannotBeReadOrTheMarkupIsRepaired(): void
+    public function testNothingIsCarriedWhenTheMarkupIsRepairedOrTheCssIsCut(): void
     {
         $body = '<section style="background:#0b1120;padding:40px"><h1 style="color:#ffffff;font-size:48px">Hi</h1><p style="color:#e2e8f0">Text.</p></section>';
         $cases = [
-            'link'     => [ '<!DOCTYPE html><html><head><link rel="stylesheet" href="/x.css"></head><body>' . $body . '</body></html>', HtmlStyleBlocks::NOTE_EXTERNAL ],
-            'import'   => [ self::page( '@import url("/x.css");', $body ), HtmlStyleBlocks::NOTE_EXTERNAL ],
             'repaired' => [ '<!DOCTYPE html><html><body>' . $body . '</div></body></html>', HtmlStyles::REPAIRED_NOTE ],
             'css_cap'  => [ self::page( str_repeat( 'p{color:#111111}', 7000 ), $body ), HtmlStyleBlocks::NOTE_CSS_CAP ],
         ];
@@ -451,6 +450,42 @@ final class HtmlStylesReadabilityTest extends HtmlTestCase
         [ , $d ] = $this->pipeline( self::page( '', $body ) );
         $this->assertSame( [], $d['report']['notes'] );
         $this->assertSame( '#0b1120', $d['sections'][0]['style']['background'] );
+    }
+
+    public function testExternalStylesheetsAreCountedButDoNotTurnStylesOff(): void
+    {
+        // Controller ruling: a linked sheet or an @import is counted for the "N stylesheets not read" warning; the CSS in the HTML is still read.
+        $this->assertFalse( HtmlStyleBlocks::DEGRADE_ON_EXTERNAL );
+        $body  = '<section style="background:#0b1120;padding:40px"><h1 style="color:#ffffff;font-size:48px">Hi</h1><p style="color:#e2e8f0">Text.</p></section>';
+        $cases = [
+            'link'   => [ '<!DOCTYPE html><html><head><link rel="stylesheet" href="/x.css"></head><body>' . $body . '</body></html>', 1 ],
+            'import' => [ self::page( '@import url("/x.css");', $body ), 1 ],
+            'both'   => [ '<!DOCTYPE html><html><head><link rel="stylesheet" href="/a.css"><link rel="stylesheet" href="/b.css"><style>@import url("/c.css");</style></head><body>' . $body . '</body></html>', 3 ],
+            'none'   => [ self::page( '', $body ), 0 ],
+        ];
+        foreach ( $cases as $name => [ $html, $external ] ) {
+            [ $b, $d ] = $this->pipeline( $html );
+            $this->assertSame( $external, $b['external'], $name );
+            $this->assertSame( $external, $d['report']['external'], $name );
+            $this->assertSame( [], $d['report']['notes'], $name );
+            $this->assertSame( '#0b1120', $d['sections'][0]['style']['background'] ?? null, $name );
+            $this->assertSame( [ [ 'color' => '#ffffff', 'size' => 48 ], [ 'color' => '#e2e8f0' ] ], self::moduleStyles( $d['sections'][0] ), $name );
+        }
+    }
+
+    public function testTheFontsFixtureKeepsItsFontFacts(): void
+    {
+        // 14-styled-fonts imports a web font sheet: counted, and its own <style> is still read.
+        [ $b, $d ] = $this->pipeline( (string) file_get_contents( self::FIXTURES . '/14-styled-fonts.html' ) );
+        $this->assertSame( 1, $b['external'] );
+        $this->assertSame( [], $d['report']['notes'] );
+        $mods = self::moduleStyles( $d['sections'][0] );
+        $this->assertSame( 'Playfair Display', $mods[0]['family'] ?? null ); // h1
+        $this->assertSame( 'Playfair Display', $mods[2]['family'] ?? null ); // h2
+        $this->assertSame( 'Inter', $mods[1]['family'] ?? null );            // the first paragraph
+        $this->assertContains( [ 'source' => 'Brand Sans', 'action' => 'not available in Divi: used Inter, the next family in the list' ], $b['fonts'] );
+        $last = $mods[ count( $mods ) - 1 ];
+        $this->assertArrayNotHasKey( 'family', $last ); // the pre's text: its family is the UA sheet's
     }
 
     public function testTheListOfDroppedColoursIsCapped(): void

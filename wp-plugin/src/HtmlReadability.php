@@ -57,13 +57,14 @@ final class HtmlReadability
      *
      * @param array<string,mixed> $blocks HtmlStyleBlocks::build()
      * @return array{sections: list<array{style:array, rows: list<array{style:array, columns: list<array{style:array, modules: list<array>}>}>}>,
-     *               report: array{carried: array<string,int>, ignored: array<string,int>, dropped_unreadable: list<array>, clamped:int, notes: list<string>, passes:int}}
+     *               report: array{carried: array<string,int>, ignored: array<string,int>, dropped_unreadable: list<array>, clamped:int, notes: list<string>, external:int, passes:int}}
      *
      * Style records, exactly as DiviMarkup takes them: section {background?, padding?}; row {background?, padding?, max_width?};
      * column {background?, padding?}; heading and text {color?, size?, weight?, align?, family?}; button {color?, background?, radius?};
      * image and divider []. padding is side => '<n>px', max_width '<n>px'.
      * report.ignored = HtmlStyleBlocks' counters plus this class's (HtmlStyles' and HtmlCss' are added by the caller). report.notes are the
-     * fixed sentences of a page whose styles were not carried at all; `passes` (the largest pass count of a section) is internal and the
+     * fixed sentences of a page whose styles were not carried at all; `external` the number of stylesheets that were not read (linked or
+     * @import, from HtmlStyleBlocks) for Task 9's "N stylesheets not read" warning; `passes` (the largest pass count of a section) is internal and the
      * facade strips it.
      * dropped_unreadable entry: {path, block, reason, color, background, ratio}: path the module's first source element, block heading|text|
      * button, reason one of unreadable, unknown_background, paint_dropped, unproven, button_ghosted, color the colour that was not written,
@@ -91,6 +92,7 @@ final class HtmlReadability
                 'dropped_unreadable' => $self->dropped,
                 'clamped'            => is_int( $blocks['clamped'] ?? null ) ? $blocks['clamped'] : 0,
                 'notes'              => array_values( array_filter( is_array( $blocks['notes'] ?? null ) ? $blocks['notes'] : [], 'is_string' ) ),
+                'external'           => is_int( $blocks['external'] ?? null ) ? $blocks['external'] : 0,
                 'passes'             => $self->passes,
             ],
         ];

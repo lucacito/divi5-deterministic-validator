@@ -46,8 +46,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *   module (the result prints them in the module's ink, which the readability rule judges).
  *
  * FAIL CLOSED (the whole feature degrades to "no styles carried" with one fixed report sentence in `notes`, never silently): markup a
- * browser would repair differently (`repaired`), the work budget (`work_cap`), CSS not read: a linked stylesheet or an @import (`external`)
- * or the byte or rule cap (`css_cap`). Every block is then empty.
+ * browser would repair differently (`repaired`), the work budget (`work_cap`), or the byte or rule cap (`css_cap`). Every block is then
+ * empty. CSS that is not in the supplied HTML (a linked stylesheet, an @import) does not degrade (DEGRADE_ON_EXTERNAL): it is counted in
+ * `external` so the report can say how many stylesheets were not read.
  *
  * The output never holds raw CSS or attribute text: states, #rrggbb colours, ints, closed keywords, family names from HtmlFonts' list, and
  * the XPaths HtmlSource/HtmlMapper already use.
@@ -65,11 +66,12 @@ final class HtmlStyleBlocks
     public const CANVAS = '#ffffff';
 
     /**
-     * Whether CSS this converter cannot read (a linked stylesheet, an @import) turns the whole feature off (the review contract: such CSS
-     * could set any colour, so nothing is claimed). One switch, so the controller can rule otherwise (HtmlCss counts @import only, so a page
-     * that imports a web font would carry nothing; the 14-styled-fonts fixture is such a page).
+     * Whether CSS this converter cannot read (a linked stylesheet, an @import) turns the whole feature off. Controller ruling 2026-10-22
+     * (the Task 2 ruling stands): it does NOT. Such sheets are counted (`external` in the result, for Task 9's "N stylesheets not read"
+     * warning) and the styles read from the CSS in the supplied HTML are still carried, judged by the same readability rule. The switch
+     * stays so that ruling can be revisited in one place; true = every block empty plus NOTE_EXTERNAL.
      */
-    public const DEGRADE_ON_EXTERNAL = true;
+    public const DEGRADE_ON_EXTERNAL = false;
 
     /** Report sentences when nothing is carried (fixed text: never raw input). */
     public const NOTE_WORK_CAP = 'The page\'s CSS was too large to resolve in full: styles were not carried.';
@@ -111,7 +113,7 @@ final class HtmlStyleBlocks
      *
      * @param array<string,mixed> $plan     HtmlMapper::map( $body, true )
      * @param array<string,mixed> $computed HtmlStyles::resolve( ... )
-     * @return array{sections: list<array<string,mixed>>, clamped:int, ignored: array<string,int>, fonts: list<array{source:string,action:string}>, notes: list<string>}
+     * @return array{sections: list<array<string,mixed>>, clamped:int, ignored: array<string,int>, fonts: list<array{source:string,action:string}>, notes: list<string>, external:int}
      *
      * SectionC = {anchor:?string, paint: Paint, padding: array<side,int>, rows: list<RowC>}       one RowC per plan chunk
      * RowC     = {anchor:?string, paint: Paint, padding, max_width:?int, columns: list<ColumnC>}
@@ -139,7 +141,16 @@ final class HtmlStyleBlocks
             'ignored'  => $self->ignored,
             'fonts'    => array_values( $self->fonts ),
             'notes'    => $notes,
+            'external' => self::external( $computed ),
         ];
+    }
+
+    /** Linked stylesheets and @imports that were not read (HtmlStyles counts both under `external`). @param array<string,mixed> $computed */
+    private static function external( array $computed ): int
+    {
+        $n = $computed['ignored']['external'] ?? 0;
+
+        return is_int( $n ) && $n > 0 ? $n : 0;
     }
 
     /** @param array<string,mixed> $computed @return list<string> */
