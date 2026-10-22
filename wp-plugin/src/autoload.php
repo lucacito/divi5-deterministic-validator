@@ -73,6 +73,7 @@ require_once __DIR__ . '/TitleChange.php';
 require_once __DIR__ . '/DraftPage.php';
 require_once __DIR__ . '/HtmlSource.php';
 require_once __DIR__ . '/HtmlProse.php';
+require_once __DIR__ . '/HtmlCss.php';
 require_once __DIR__ . '/HtmlMapper.php';
 require_once __DIR__ . '/DiviMarkup.php';
 require_once __DIR__ . '/HtmlImages.php';

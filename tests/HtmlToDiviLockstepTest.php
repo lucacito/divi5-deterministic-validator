@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 require_once __DIR__ . '/FakeWpdb.php';
 require_once __DIR__ . '/WpRestShims.php';
 require_once __DIR__ . '/WpInsertPostShims.php';
-foreach ( [ 'UsageTracker', 'PageHistory', 'HistoryTable', 'HistoryStore', 'EditTarget', 'DiviCompat', 'HistoryService', 'PageEditor', 'DraftPage', 'LayoutDiff', 'CodePolicy', 'LayoutGate', 'DryRun', 'GlobalStyles', 'CustomFields', 'StyleReferences', 'ApprovalMode', 'StyleGuide', 'ImagePack', 'ImageTokens', 'HtmlSource', 'HtmlProse', 'HtmlMapper', 'DiviMarkup', 'HtmlImages', 'HtmlToDivi', 'HtmlToDiviService', 'OpenApiSpec', 'RestController', 'McpHandler' ] as $htmlLockstepClass ) {
+foreach ( [ 'UsageTracker', 'PageHistory', 'HistoryTable', 'HistoryStore', 'EditTarget', 'DiviCompat', 'HistoryService', 'PageEditor', 'DraftPage', 'LayoutDiff', 'CodePolicy', 'LayoutGate', 'DryRun', 'GlobalStyles', 'CustomFields', 'StyleReferences', 'ApprovalMode', 'StyleGuide', 'ImagePack', 'ImageTokens', 'HtmlSource', 'HtmlProse', 'HtmlCss', 'HtmlMapper', 'DiviMarkup', 'HtmlImages', 'HtmlToDivi', 'HtmlToDiviService', 'OpenApiSpec', 'RestController', 'McpHandler' ] as $htmlLockstepClass ) {
     require_once __DIR__ . '/../wp-plugin/src/' . $htmlLockstepClass . '.php';
 }
 
