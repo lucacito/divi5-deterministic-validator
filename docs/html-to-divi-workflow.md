@@ -88,6 +88,9 @@ Things to know:
   (an unusual tag between the paragraph and the block, a tag with the same attribute twice, a character reference like `&amp;` in a class
   or style value, an attribute such as `@click`, nesting deeper than 255 levels) the page is read the old way and a heading after an
   unclosed paragraph can still become bold text.
+- A very deep or very tangled page with many unclosed paragraphs is worked out only within a time limit; past it the rest of the page is
+  read the old way, styles are off and a repair note says so (such a page may then be converted even when a browser would nest it deeper
+  than the 50-level limit).
 - Use `styles=none` for the plain structure and copy only.
 
 ## Limits

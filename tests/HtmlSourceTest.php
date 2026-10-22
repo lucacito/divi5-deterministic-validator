@@ -1087,10 +1087,10 @@ final class HtmlSourceTest extends HtmlTestCase
     /** The </p> written before the block: only where a browser closes the p and libxml2 does not, as offsets into the HTML. */
     public function testParagraphEndsAreWrittenOnlyWhereABrowserClosesTheParagraph(): void
     {
-        $this->assertSame( [ 'ends' => [ 4 ], 'reopen' => false ], HtmlSource::paragraphEnds( '<p>a<section>b</section>' ) );
-        $this->assertSame( [ 'ends' => [ 11, 34 ], 'reopen' => false ], HtmlSource::paragraphEnds( '<p>a<span>b<div>c</div></span><p>d<nav>e</nav>' ) );
-        $this->assertSame( [ 'ends' => [ 8 ], 'reopen' => true ], HtmlSource::paragraphEnds( '<p>a<b>x<aside>s</aside>' ) );
-        $none = [ 'ends' => [], 'reopen' => false ];
+        $this->assertSame( [ 'ends' => [ 4 ], 'reopen' => false, 'bound' => false ], HtmlSource::paragraphEnds( '<p>a<section>b</section>' ) );
+        $this->assertSame( [ 'ends' => [ 11, 34 ], 'reopen' => false, 'bound' => false ], HtmlSource::paragraphEnds( '<p>a<span>b<div>c</div></span><p>d<nav>e</nav>' ) );
+        $this->assertSame( [ 'ends' => [ 8 ], 'reopen' => true, 'bound' => false ], HtmlSource::paragraphEnds( '<p>a<b>x<aside>s</aside>' ) );
+        $none = [ 'ends' => [], 'reopen' => false, 'bound' => false ];
         foreach ( [
             '<p>a<div>b</div>'                                   => 'libxml2 closes the p itself',
             '<p>a</p><section>b</section>'                       => 'nothing open',
@@ -1125,7 +1125,7 @@ final class HtmlSourceTest extends HtmlTestCase
         // A block still open at the page's own </p>: that </p> now matches nothing, so the block stays open (as in a browser) and the next
         // div lands in it; the first parse round could not foresee that, the second settles it (Chromium 149, the empty p left out).
         $html = '<section><p>Call us<search><h2>H</h2> after</p><div>d</div></search></section><section><p>Write<search><h2>K</h2> more</p><div>e</div></search></section>';
-        $this->assertSame( [ 'ends' => [ 19, 95 ], 'reopen' => false ], HtmlSource::paragraphEnds( $html ) );
+        $this->assertSame( [ 'ends' => [ 19, 95 ], 'reopen' => false, 'bound' => false ], HtmlSource::paragraphEnds( $html ) );
         $this->assertSame( '<body><section><p>Call us</p><search><h2>H</h2> after<div>d</div></search></section><section><p>Write</p><search><h2>K</h2> more<div>e</div></search></section></body>', $this->bodyHtml( HtmlSource::parse( $html ) ) );
     }
 
@@ -1151,10 +1151,36 @@ final class HtmlSourceTest extends HtmlTestCase
         $this->assertSame( [ HtmlSource::REPAIRS['rawtext'] ], $s['repaired'], 'the scan still reports the raw text: styles stay off' );
     }
 
+    /**
+     * Review round 1b: when paragraphEnds() stops at a work bound, the page is not silent: past the bound the tree is libxml2's, so it
+     * carries the `bound` note (styles off) and loses no text. An ordinary page never gets the note.
+     */
+    public function testAWorkBoundIsReported(): void
+    {
+        // Deep and long, but nothing else the scan reports: the open elements read from the markers run out (P_STEPS).
+        $html = str_repeat( '<div>', 44 ) . str_repeat( '<p>w<section>b</section>', 2400 );
+        $this->assertTrue( HtmlSource::paragraphEnds( $html )['bound'] );
+        $s = HtmlSource::parse( $html );
+        $this->assertNull( $s['error'] );
+        $this->assertSame( [ HtmlSource::REPAIRS['bound'] ], $s['repaired'] );
+        $this->assertSame( 2400, substr_count( $s['body']->textContent, 'w' ), 'no text lost' );
+        // The review's shape A: the bound is hit too; its stray </b> already gives the scan's own note (the first note is kept).
+        $html = str_repeat( '<blockquote>', 40 ) . str_repeat( '<p>w<p></b><b><nav>', 600 );
+        $this->assertTrue( HtmlSource::paragraphEnds( $html )['bound'] );
+        $s = HtmlSource::parse( $html );
+        $this->assertNull( $s['error'] );
+        $this->assertNotSame( [], $s['repaired'] );
+        $this->assertSame( 600, substr_count( $s['body']->textContent, 'w' ), 'no text lost' );
+        foreach ( glob( self::FIXTURES . '/*.html' ) ?: [] as $file ) {
+            $this->assertFalse( HtmlSource::paragraphEnds( HtmlSource::inertRawText( (string) file_get_contents( $file ) ) )['bound'], basename( $file ) );
+        }
+        $this->assertFalse( HtmlSource::paragraphEnds( str_repeat( '<p>Some words<section><h2>Head</h2>x</section>', 1650 ) )['bound'], 'many ordinary open paragraphs' );
+    }
+
     /** Review round 1: the marker text in the page does not switch the fix off (another marker is picked, the same one every time). */
     public function testTheMarkerTextInThePageIsNoObstacle(): void
     {
-        $this->assertSame( [ 'ends' => [ 15 ], 'reopen' => false ], HtmlSource::paragraphEnds( '<p>aied-p-end-0<section>c</section>' ) );
+        $this->assertSame( [ 'ends' => [ 15 ], 'reopen' => false, 'bound' => false ], HtmlSource::paragraphEnds( '<p>aied-p-end-0<section>c</section>' ) );
         $this->assertSame( '<body><p>aied-p-end-0 aied-p-end-x</p><section>c</section></body>', $this->bodyHtml( HtmlSource::parse( '<p>aied-p-end-0 aied-p-end-x<section>c</section>' ) ) );
     }
 

@@ -62,7 +62,8 @@ because the lost content was never counted or the structure was lost with every 
   CSS holds `</` and a letter, and a script whose `<!--` is followed by `<script` (styles off, repair note). Not reported: a list item or a
   table behind an open `<span>` in a paragraph, an unusual tag such as `<ruby>` in between, and pages the pre-parse step does not model
   (a duplicate attribute, a character reference in class or style, `@click`-style attribute names, nesting past 255 levels): those keep the old
-  reading (spec Outcome, known limits).
+  reading (spec Outcome, known limits). A very deep or tangled page that hits the time bound of the paragraph fix is read the old way past it
+  and carries a repair note (styles off).
 
 ### Lines of `wp-plugin/readme.txt` that still say colors and fonts are not converted (change them in the release commit)
 

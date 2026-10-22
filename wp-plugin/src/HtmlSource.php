@@ -76,6 +76,7 @@ final class HtmlSource
         'after'     => 'content after the end of the document',
         'deep'      => 'markup nested too deeply or too large to check',
         'reopen'    => 'a formatting tag (such as b, i or a link) still open where a block ends a paragraph (a browser opens it again inside the block)',
+        'bound'     => 'paragraphs left open before blocks in a way too tangled to work out within the time allowed (the rest of the page is read the older way)',
     ];
 
     /** Elements without an end tag. */
@@ -292,9 +293,12 @@ final class HtmlSource
         $repaired  = self::repairs( $html, LIBXML_VERSION );
         // NUL bytes and other control characters have no place in a page; drop them before parsing.
         $html = (string) preg_replace( '/[\x00-\x08\x0b\x0c\x0e-\x1f]/', '', $html );
-        $html = self::browserBody( $html, $reopen );
+        $html = self::browserBody( $html, $reopen, $bound );
         if ( $reopen && array() === $repaired ) {
             $repaired = [ self::REPAIRS['reopen'] ]; // the tree is the browser's except for the formatting elements it opens again
+        }
+        if ( $bound && array() === $repaired ) {
+            $repaired = [ self::REPAIRS['bound'] ]; // paragraphEnds() stopped at a work bound: past it the tree is libxml2's, not the browser's
         }
 
         $doc  = new \DOMDocument();
@@ -406,10 +410,10 @@ final class HtmlSource
      * where a browser starts it but libxml2 would still be in head (bodyStart()), then without the </body> and </html> end tags that
      * content follows (strayEndTags(), found on the HTML with that <body>), then with a </p> where a browser closes an open paragraph and
      * libxml2 does not (paragraphEnds()). Each step works on the result of the one before and leaves the HTML as given when it does not
-     * apply. $reopen is set when a browser opens a formatting element again after such a </p> (parse() then reports `reopen`). Public so
-     * a test helper can parse the same way.
+     * apply. $reopen is set when a browser opens a formatting element again after such a </p> (parse() then reports `reopen`), $bound
+     * when paragraphEnds() stopped at a work bound (parse() then reports `bound`). Public so a test helper can parse the same way.
      */
-    public static function browserBody( string $html, ?bool &$reopen = null ): string
+    public static function browserBody( string $html, ?bool &$reopen = null, ?bool &$bound = null ): string
     {
         $html = self::inertRawText( $html );
         $at   = self::bodyStart( $html );
@@ -424,6 +428,7 @@ final class HtmlSource
             $html = substr( $html, 0, $at ) . '</p>' . substr( $html, $at );
         }
         $reopen = $ends['reopen'];
+        $bound  = $ends['bound'];
 
         return $html;
     }
@@ -515,11 +520,14 @@ final class HtmlSource
      * element (b, em, a ...) among the popped ones is opened again by a browser inside the block (`reopen`), and the page's own </p> that
      * now matches nothing is ignored by libxml2 where a browser makes an empty p of it (the scan treats a div the same way).
      *
-     * @return array{ends:list<int>, reopen:bool}
+     * `bound` is true when a work bound (P_ROUNDS) stopped it before every candidate was settled: the page then carries the `bound` note.
+     *
+     * @return array{ends:list<int>, reopen:bool, bound:bool}
      */
     public static function paragraphEnds( string $h ): array
     {
-        $none  = [ 'ends' => [], 'reopen' => false ];
+        $none  = [ 'ends' => [], 'reopen' => false, 'bound' => false ];
+        $bound = false;
         $found = [];
         $seenP = false;
         $tags  = 0;
@@ -565,6 +573,7 @@ final class HtmlSource
                 }
                 $work += 2 * count( $chain ); // the climb of elementAfter() and isInside() is at most as long
                 if ( $work > self::P_STEPS ) {
+                    $bound = true;
                     break 2; // out of work: only the settled ones
                 }
                 $block = self::elementAfter( $mark );
@@ -612,6 +621,7 @@ final class HtmlSource
                 }
                 $work += count( $names );
                 if ( $work > self::P_STEPS ) {
+                    $bound = true;
                     break 2; // out of work: this round is not verified, only the settled ones
                 }
                 if ( $names !== $want ) {
@@ -637,15 +647,13 @@ final class HtmlSource
             }
             $from = $miss;
             if ( $rounds - 1 === $round ) {
+                $bound = true;
                 break; // out of rounds: only the settled ones (the rest of the page stays as libxml2 parses it)
             }
         }
-        if ( array() === $ends ) {
-            return $none;
-        }
         ksort( $ends );
 
-        return [ 'ends' => array_keys( $ends ), 'reopen' => in_array( true, $ends, true ) ];
+        return [ 'ends' => array_keys( $ends ), 'reopen' => in_array( true, $ends, true ), 'bound' => $bound ];
     }
 
     /** The first element after $node in document order that is not html, head or body (the element of the start tag after a mark). */
