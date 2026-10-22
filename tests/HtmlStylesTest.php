@@ -550,7 +550,7 @@ final class HtmlStylesTest extends HtmlTestCase
     public function testRepairedMarkupResolvesNothing(): void
     {
         $r = $this->page( 'p{color:#111111;padding:4px} .b{background:#fff}', '<b><p class="b">x</b>y</p><p>z</p>' );
-        $this->assertSame( [ 'tags that close out of order' ], $r['repaired'] );
+        $this->assertSame( [ \AiEditorDivi5\WP\HtmlSource::REPAIRS['misnest'] ], $r['repaired'] );
         $this->assertTrue( $r['unread'] );
         foreach ( $r['nodes'] as $path => $rec ) {
             foreach ( [ 'color', 'family', 'size', 'weight', 'align' ] as $prop ) {
@@ -581,9 +581,19 @@ final class HtmlStylesTest extends HtmlTestCase
         $this->assertSame( 'unresolved', $this->at( $r, '/html/body/p', 'padding' )['top'] );
         $this->assertSame( 'unresolved', $this->at( $r, '/html/body/p', 'max_width' ) );
         $this->assertSame( 'unresolved', $this->at( $r, '/html/body/p', 'radius' ) );
-        $r = $this->page( 'div{transform:scale(2)} p{font-size:20px} .t{transform:translateY(-50%)}', '<div><p>a</p></div><section class="t"><p>b</p></section>' );
-        $this->assertUnresolved( $this->at( $r, '/html/body/div/p', 'size' ), 'effect' );
-        $this->assertSet( 20.0, $this->at( $r, '/html/body/section/p', 'size' ), 'a translation does not scale' );
+        // Round 2: presence, whatever the value: no "safe" transform (the reviewer's table).
+        $p = '<p style="font-size:20px;padding:10px;max-width:200px;border-radius:4px">x</p>';
+        foreach ( [ '<div style="transform:scale(2)">' . $p . '</div>', '<div style="transform:rotateX(60deg)">' . $p . '</div>',
+            '<div style="transform:rotate3d(1,0,0,60deg)">' . $p . '</div>', '<div style="rotate:x 60deg">' . $p . '</div>',
+            '<div style="perspective:100px"><div style="transform:translateZ(50px)">' . $p . '</div></div>',
+            '<div style="perspective:100px"><div style="transform:translate3d(0,0,50px)">' . $p . '</div></div>',
+            '<div style="perspective:100px"><div style="translate:0 0 50px">' . $p . '</div></div>',
+            '<div style="transform:translateY(-50%)">' . $p . '</div>', '<div style="transform:none">' . $p . '</div>',
+            '<div style="font-size-adjust:1">' . $p . '</div>', '<p style="font-size:20px;font-size-adjust:1">x</p>' ] as $html ) {
+            $r    = $this->page( '', $html );
+            $path = array_key_last( $r['nodes'] );
+            $this->assertUnresolved( $r['nodes'][ $path ]['size'], 'effect', $html );
+        }
     }
 
     /**

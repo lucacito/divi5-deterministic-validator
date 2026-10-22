@@ -29,8 +29,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *   with families()); or "inherit". "inherit" on an inherited property (color, font-family, font-size, font-weight,
  *   text-align) is a real candidate: it wins like any value and then takes the parent's computed value. Every other entry is
  *   a POISON: value null, poison = a REASONS entry.
- * - `scale` (zoom other than 1, the scale property, a transform other than translate/rotate: Task 6 review I3) is a third PRESENCE
- *   marker: the text and boxes of the element and its subtree render at another size than their computed values say.
+ * - `scale` is a third PRESENCE marker (Task 6 review I3): any transform, rotate, translate, scale, perspective, zoom, font-size-adjust or
+ *   text-size-adjust (and their -webkit- spellings), whatever the value (none included), and an animation: the text and boxes of the
+ *   element and its subtree may render at another size than their computed values say.
  * - Two pseudo-properties are PRESENCE poisons (MARKERS), not values. `effect` (opacity, filter and its backdrop and -webkit spellings,
  *   mix-blend-mode, -webkit-text-fill-color, background-clip: text, color-scheme, animation and animation-name, the whole mask family,
  *   text-shadow and the text stroke properties; "none" or 0 emits nothing) means colours on the element AND ITS SUBTREE may look different
@@ -130,6 +131,10 @@ final class HtmlCss
     public const READ = [ 'color', 'background-color', 'font-family', 'font-size', 'font-weight', 'text-align',
         'padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'max-width',
         'border-top-left-radius', 'border-top-right-radius', 'border-bottom-right-radius', 'border-bottom-left-radius' ];
+
+    /** Properties whose mere presence emits the `scale` marker (rendered size may differ from the computed one). */
+    private const SCALES = [ 'transform', '-webkit-transform', 'rotate', 'translate', 'scale', 'perspective', '-webkit-perspective', 'zoom',
+        '-webkit-zoom', 'font-size-adjust', 'text-size-adjust', '-webkit-text-size-adjust' ];
 
     /** Generic family keywords: a browser computes them in lower case (an unquoted one is the keyword, a quoted one a family name). */
     private const GENERIC_FAMILIES = [ 'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui', 'ui-serif', 'ui-sans-serif',
@@ -1752,22 +1757,16 @@ final class HtmlCss
             return self::poisons( $logical, 'property', $important );
         }
 
+        if ( in_array( $name, self::SCALES, true ) ) {
+            // Presence, whatever the value (none included): the text and boxes may render at another size than computed (review I3).
+            return [ self::entry( 'scale', null, $important, 'effect' ) ];
+        }
         if ( 1 === preg_match( '/^(?:-webkit-)?mask(?:-|$)/', $name ) || in_array( $name, [ 'text-shadow', 'text-stroke', '-webkit-text-stroke', '-webkit-text-stroke-width', '-webkit-text-stroke-color' ], true ) ) {
             // A mask can hide text, a text shadow or stroke can make light text unreadable: the colour is no longer what it looks like.
             return in_array( $lv, [ 'none', '0', '0px' ], true ) ? [] : [ self::entry( 'effect', null, $important, 'effect' ) ];
         }
 
         switch ( $name ) {
-            case 'zoom':
-                return in_array( $lv, [ '1', '1.0', 'normal', '100%' ], true ) ? [] : [ self::entry( 'scale', null, $important, 'effect' ) ];
-            case 'scale':
-                return in_array( $lv, [ 'none', '1', '1 1', '1 1 1' ], true ) ? [] : [ self::entry( 'scale', null, $important, 'effect' ) ];
-            case 'transform':
-            case '-webkit-transform':
-                // translate and rotate change neither the size of the text nor of the box; anything else (scale, matrix, skew, perspective, var()) may.
-                $rest = trim( (string) preg_replace( '/(?:translate(?:x|y|z|3d)?|rotate(?:x|y|z|3d)?)\([^()]*\)/', '', $lv ) );
-
-                return ( 'none' === $lv || '' === $rest ) ? [] : [ self::entry( 'scale', null, $important, 'effect' ) ];
             case 'all':
                 return self::poisons( self::ALL, 'unresolved', $important );
             case 'font':
@@ -1778,9 +1777,11 @@ final class HtmlCss
             case '-webkit-filter':
             case 'backdrop-filter':
             case '-webkit-backdrop-filter':
+                return 'none' === $lv ? [] : [ self::entry( 'effect', null, $important, 'effect' ) ];
             case 'animation':
             case 'animation-name':
-                return 'none' === $lv ? [] : [ self::entry( 'effect', null, $important, 'effect' ) ];
+                // An animation may change colours and sizes (keyframes can scale or set font-size).
+                return 'none' === $lv ? [] : [ self::entry( 'effect', null, $important, 'effect' ), self::entry( 'scale', null, $important, 'effect' ) ];
             case 'mix-blend-mode':
                 return 'normal' === $lv ? [] : [ self::entry( 'effect', null, $important, 'effect' ) ];
             case '-webkit-text-fill-color':
@@ -1900,11 +1901,12 @@ final class HtmlCss
                 return [ 'font-size', 'font-weight', 'font-family' ];
             case 'all':
                 return self::ALL;
-            case 'zoom':
-            case 'scale':
-            case 'transform':
-            case '-webkit-transform':
-                return [ 'scale' ];
+            case 'animation':
+            case 'animation-name':
+                return [ 'effect', 'scale' ];
+        }
+        if ( in_array( $name, self::SCALES, true ) ) {
+            return [ 'scale' ];
         }
         if ( in_array( $name, self::READ, true ) ) {
             return [ $name ];

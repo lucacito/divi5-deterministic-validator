@@ -620,8 +620,11 @@ final class HtmlCssTest extends HtmlTestCase
 
     public function testMoreEffectsAndAnimationsAreMarkers(): void
     {
-        foreach ( [ '-webkit-filter: blur(1px)', 'backdrop-filter: blur(4px)', '-webkit-backdrop-filter: blur(4px)', 'animation: f 1ms forwards', 'animation-name: f' ] as $css ) {
+        foreach ( [ '-webkit-filter: blur(1px)', 'backdrop-filter: blur(4px)', '-webkit-backdrop-filter: blur(4px)' ] as $css ) {
             $this->assertSame( [ $this->decl( 'effect', null, false, 'effect' ) ], $this->block( $css ), $css );
+        }
+        foreach ( [ 'animation: f 1ms forwards', 'animation-name: f' ] as $css ) { // review round 2: an animation may also scale
+            $this->assertSame( [ $this->decl( 'effect', null, false, 'effect' ), $this->decl( 'scale', null, false, 'effect' ) ], $this->block( $css ), $css );
         }
         foreach ( [ '-webkit-filter: none', 'backdrop-filter: none', 'animation: none', 'animation-name: none' ] as $css ) {
             $this->assertSame( [], $this->block( $css ), $css );
@@ -629,7 +632,7 @@ final class HtmlCssTest extends HtmlTestCase
         $css = '@keyframes f { to { color: red } } p { color: blue; animation: f 1ms forwards }';
         $r   = HtmlCss::stylesheet( $css );
         $this->assertCount( 1, $r['rules'] );
-        $this->assertSame( [ 'color', 'effect' ], array_column( $r['rules'][0]['declarations'], 'property' ) );
+        $this->assertSame( [ 'color', 'effect', 'scale' ], array_column( $r['rules'][0]['declarations'], 'property' ) );
         $this->assertSame( 'POISON:effect', $this->winner( $css, [ 'tag' => 'p' ], 'effect' ) );
         $this->assertSame( 1, $r['ignored']['at_rule'] );
     }
@@ -750,17 +753,19 @@ final class HtmlCssTest extends HtmlTestCase
         $this->assertSame( [ 'SANS-SERIF' ], HtmlCss::families( '"SANS-SERIF"' ), 'a quoted name is a family name, not the keyword' );
     }
 
-    /** Task 6 review I3: zoom, scale and a transform that may scale make the rendered size differ from the computed one: a presence marker. */
+    /** Task 6 review I3 (round 2): presence, whatever the value: no "safe" transform (rotateX, translateZ under a perspective ... scale). */
     public function testZoomScaleAndTransformsAreScaleMarkers(): void
     {
         $this->assertContains( 'scale', HtmlCss::MARKERS );
-        foreach ( [ 'zoom: 1.5', 'zoom: 150%', 'scale: 2', 'transform: scale(2)', 'transform: matrix(2,0,0,2,0,0)', 'transform: translateX(1px) scale(1.1)', '-webkit-transform: scale(2)', 'transform: var(--t)', 'zoom: inherit' ] as $css ) {
+        foreach ( [ 'zoom: 1.5', 'zoom: 1', 'zoom: normal', 'scale: 2', 'scale: none', 'transform: scale(2)', 'transform: none', 'transform: translateY(-50%)',
+            'transform: rotateX(60deg)', 'transform: rotate3d(1,0,0,60deg)', 'transform: translateZ(50px)', 'transform: translate3d(0,0,50px)', 'rotate: x 60deg',
+            'translate: 0 0 50px', 'perspective: 100px', 'perspective: none', 'font-size-adjust: 1', 'font-size-adjust: none', '-webkit-transform: scale(2)',
+            '-webkit-zoom: 2', '-webkit-text-size-adjust: 200%', 'transform: var(--t)', 'zoom: inherit', 'TRANSFORM: SCALE(2)' ] as $css ) {
             $this->assertSame( [ $this->decl( 'scale', null, false, 'effect' ) ], $this->block( $css ), $css );
         }
-        foreach ( [ 'zoom: 1', 'zoom: normal', 'zoom: 100%', 'scale: none', 'scale: 1', 'transform: none', 'transform: translateY(-50%)', 'transform: rotate(3deg) translate(1px, 2px)' ] as $css ) {
-            $this->assertSame( [], $this->block( $css ), $css );
-        }
         $this->assertSame( [ $this->decl( 'scale', null, true, 'effect' ) ], $this->block( 'zoom: 2 !important' ) );
+        $this->assertSame( [ $this->decl( 'effect', null, false, 'effect' ), $this->decl( 'scale', null, false, 'effect' ) ], $this->block( 'animation: z 1s' ) );
+        $this->assertSame( [], $this->block( 'animation: none; transition: all 1s' ) );
     }
 
     // ---------------------------------------------------------------

@@ -440,40 +440,98 @@ final class HtmlSourceTest extends HtmlTestCase
         $this->assertSame( [ false, false, [], '' ], [ $e['doctype'], $e['color_scheme'], $e['cut_attrs'], $e['css_media'] ] );
     }
 
-    // ── markup a browser repairs differently from libxml2 (Task 6 review ruling) ──
+    // ── markup a browser repairs differently from libxml2 (Task 6 review rulings, round 2: fail closed) ──
 
-    /** @return array<string,array{0:string,1:string}> */
+    /** @return array<string,array{0:string,1:string}> body markup => the REPAIRS key reported */
     public static function repairedMarkup(): array
     {
+        $r = 'style="color:#ff0000;font-size:30px"';
         return [
-            'formatting end tag over a block' => [ '<b><p>x</b>y</p>', 'tags that close out of order' ],
-            'font over a paragraph'           => [ '<font color="red"><p>x</font>y</p>', 'tags that close out of order' ],
-            'em over a div'                   => [ '<em><div>x</em>y</div>', 'tags that close out of order' ],
-            'span closed inside a div'        => [ '<span><div>x</span>y</div>', 'tags that close out of order' ],
-            'an end tag that matches nothing' => [ '<div>x</section></div>', 'tags that close out of order' ],
-            'a div closed over a b'           => [ '<div><b>x</div>y', 'tags that close out of order' ],
-            'button in a button'              => [ '<button>a<button>b</button></button>', 'a button inside a button' ],
-            'nobr in a nobr'                  => [ '<nobr>a<nobr>b</nobr></nobr>', 'a nobr inside a nobr' ],
-            'link in a link'                  => [ '<a href="#">a<a href="#">b</a></a>', 'a link inside a link' ],
-            'dd through a div'                => [ '<dl><dt>a<div><dd>b</dd></div></dl>', 'a list item closed through another element' ],
-            'li through a div'                => [ '<ul><li>a<div><li>b</li></div></ul>', 'a list item closed through another element' ],
-            'second body with attributes'     => [ '<p>x</p><body style="color:red"><p>y</p>', 'a second body or html tag with attributes' ],
-            'second html with attributes'     => [ '<p>x</p><html style="color:red"></html>', 'a second body or html tag with attributes' ],
-            'declarative shadow root'         => [ '<div><template shadowrootmode="open"><slot></slot></template>x</div>', 'a declarative shadow root' ],
-            'popover'                         => [ '<div popover>x</div>', 'a popover' ],
-            'style inside math'               => [ '<math><style>p{color:red}</style></math><p>x</p>', 'a style element inside math' ],
+            // round 1, kept
+            'formatting end tag over a block' => [ '<b><p>x</b>y</p>', 'misnest' ],
+            'font over a paragraph'           => [ '<font color="red"><p>x</font>y</p>', 'misnest' ],
+            'em over a div'                   => [ '<em><div>x</em>y</div>', 'misnest' ],
+            'span closed inside a div'        => [ '<span><div>x</span>y</div>', 'misnest' ],
+            'an end tag that matches nothing' => [ '<div>x</section></div>', 'misnest' ],
+            'a stray end div'                 => [ '<div><p>x</p></div></div>', 'misnest' ],
+            'an img end tag'                  => [ '<div><img src="a.png"></img><p>x</p></div>', 'misnest' ],
+            'a div closed over a b'           => [ '<div><b>x</div>y', 'misnest' ],
+            'button in a button'              => [ '<button>a<button>b</button></button>', 'button' ],
+            'nobr in a nobr'                  => [ '<nobr>a<nobr>b</nobr></nobr>', 'nobr' ],
+            'link in a link'                  => [ '<a href="#">a<a href="#">b</a></a>', 'a' ],
+            'dd through a div'                => [ '<dl><dt>a<div><dd>b</dd></div></dl>', 'list' ],
+            'li through a div'                => [ '<ul><li>a<div><li>b</li></div></ul>', 'list' ],
+            'second body with attributes'     => [ '<p>x</p><body style="color:red"><p>y</p>', 'twice' ],
+            'second html with attributes'     => [ '<p>x</p><html style="color:red"></html>', 'twice' ],
+            'head in the body'                => [ '<div><head><span>y</span></div>', 'twice' ],
+            'declarative shadow root'         => [ '<div><template shadowrootmode="open"><slot></slot></template>x</div>', 'shadow' ],
+            'popover'                         => [ '<div popover>x</div>', 'popover' ],
+            'style inside math'               => [ '<math><style>p{color:red}</style></math><p>x</p>', 'math' ],
+            // (1) self-closing syntax on non-void elements
+            'div/'                            => [ '<div ' . $r . '/><p>x</p>', 'selfclose' ],
+            'div / with a space'              => [ '<div ' . $r . ' / ><p>x</p>', 'syntax' ],
+            'p/'                              => [ '<p ' . $r . '/><span>x</span>', 'selfclose' ],
+            'span/'                           => [ '<span ' . $r . '/><span>x</span>', 'selfclose' ],
+            'a/'                              => [ '<a href="#" ' . $r . '/><span>x</span>', 'selfclose' ],
+            'section/'                        => [ '<section ' . $r . '/><span>x</span>', 'selfclose' ],
+            'li/'                             => [ '<ul><li ' . $r . '/><span>x</span></ul>', 'selfclose' ],
+            'td/'                             => [ '<table><tr><td ' . $r . '/><span>x</span></td></tr></table>', 'selfclose' ],
+            // (2) foreign content: a self-closed svg opens nothing, so what follows is still checked
+            'svg/ then a misnest'             => [ '<svg/><b ' . $r . '><p>x</b>y<span>s</span></p>', 'misnest' ],
+            'math/ then a misnest'            => [ '<math/><b ' . $r . '><p>x</b>y</p>', 'misnest' ],
+            'svg end tag in a comment'        => [ '<svg><!-- </svg> --></svg><b ' . $r . '><p>x</b>y</p>', 'misnest' ],
+            'svg in an attribute'             => [ '<p title="<svg>">a</p><b ' . $r . '><p>x</b>y</p>', 'misnest' ],
+            'svg in a script'                 => [ '<script>"<svg>"</script><b ' . $r . '><p>x</b>y</p>', 'misnest' ],
+            'b breaks out of svg'             => [ '<div><svg><b ' . $r . '></svg><p>x</p></div>', 'foreign' ],
+            'p breaks out of svg'             => [ '<div ' . $r . '><svg><p>x</p></svg></div>', 'foreign' ],
+            'span breaks out of svg'          => [ '<svg><span ' . $r . '></svg><p>x</p>', 'foreign' ],
+            'font color breaks out of svg'    => [ '<div><svg><font color="#ff0000" size="7"></svg><p>x</p></div>', 'foreign' ],
+            'div breaks out of math'          => [ '<div><math><div ' . $r . '></math><p>x</p></div>', 'foreign' ],
+            'b breaks out of math'            => [ '<div><math><b ' . $r . '></math><p>x</p></div>', 'foreign' ],
+            'div in foreignObject'            => [ '<svg><foreignObject><div ' . $r . '></svg><p>x</p>', 'foreign' ],
+            'an html end tag in svg'          => [ '<div ' . $r . '><svg></div><p>x</p></svg>', 'foreign' ],
+            // (3) presence
+            'image'                           => [ '<image ' . $r . '><span>y</span>', 'obsolete' ],
+            'xmp'                             => [ '<xmp><div ' . $r . '></xmp><p>y</p>', 'obsolete' ],
+            'noembed'                         => [ '<noembed><div ' . $r . '></noembed><p>y</p>', 'obsolete' ],
+            'noframes'                        => [ '<noframes><div ' . $r . '></noframes><p>y</p>', 'obsolete' ],
+            'plaintext'                       => [ '<div><plaintext><p>y</p>', 'obsolete' ],
+            'listing'                         => [ '<listing ' . $r . '><span>y</span></listing>', 'obsolete' ],
+            'isindex'                         => [ '<div><isindex><span>y</span></div>', 'obsolete' ],
+            'marquee'                         => [ '<p><marquee><span>y</span></marquee></p>', 'obsolete' ],
+            'nextid, bgsound, keygen'         => [ '<div><bgsound src="a.wav"></div>', 'obsolete' ],
+            'menuitem'                        => [ '<menu><menuitem>a</menuitem></menu>', 'obsolete' ],
+            'frameset'                        => [ '<div><frameset></frameset><span>y</span></div>', 'obsolete' ],
+            // (4) character references libxml2 2.9 does not know, in an attribute the converter reads
+            'colon in style'                  => [ '<p style="color&colon;#ff0000">x</p>', 'entity' ],
+            'colon in class'                  => [ '<p class="a&colon;b">x</p>', 'entity' ],
+            'period in id'                    => [ '<p id="a&period;b">x</p>', 'entity' ],
+            'sol in type'                     => [ '<style type="text&sol;css">p{}</style><p>x</p>', 'entity' ],
+            'comma in media'                  => [ '<style media="print&comma;screen">p{}</style><p>x</p>', 'entity' ],
+            'numeric in style'                => [ '<p style="color:&#35;ff0000">x</p>', 'entity' ],
+            'no semicolon'                    => [ '<p style="color:#ff0000;font-size:30px&ampx">x</p>', 'entity' ],
+            // tokenizer corners
+            'abrupt comment'                  => [ '<!--><div ' . $r . '><p>x</p></div><!-- -->', 'syntax' ],
+            'bang comment end'                => [ '<!-- a --!><div ' . $r . '><p>x</p></div><!-- -->', 'syntax' ],
+            'cdata'                           => [ '<![CDATA[ <div ' . $r . '> ]]><p>x</p>', 'syntax' ],
+            'processing instruction'          => [ '<?x <div ' . $r . '> ?><p>x</p>', 'syntax' ],
+            'unquoted lt'                     => [ '<div title=a<b ' . $r . '><p>x</p></div>', 'syntax' ],
+            'slash between attributes'        => [ '<p/role="k1"/style="color:#ff0000">x</p>', 'syntax' ],
+            'glued name'                      => [ '<pstyle="color:#ff0000">x</p>', 'syntax' ],
+            'duplicate style'                 => [ '<p style="color:#ff0000" STYLE="color:#0000ff">x</p>', 'duplicate' ],
+            'end tag inside a script'         => [ '<script>var s="</div><div ' . $r . '>";</script><p>y</p>', 'rawtext' ],
+            'end tag inside a style'          => [ '<style>.q::after{content:"</p>"} p{color:#ff0000}</style><p>y</p>', 'rawtext' ],
+            'end tag inside a title'          => [ '<title>a</b><div ' . $r . '></title><p>y</p>', 'rawtext' ],
+            'end tag inside a textarea'       => [ '<textarea></b><div ' . $r . '></textarea><p>y</p>', 'rawtext' ],
+            'content after html'              => [ '<div><p>x</p></div></body></html><div>y</div>', 'after' ],
         ];
     }
 
     #[DataProvider('repairedMarkup')]
-    public function testMarkupABrowserRepairsDifferentlyIsReported( string $body, string $reason ): void
+    public function testMarkupABrowserRepairsDifferentlyIsReported( string $body, string $key ): void
     {
         $s = HtmlSource::parse( '<!DOCTYPE html><html><body>' . $body . '</body></html>' );
-        $this->assertNull( $s['error'] );
-        $this->assertContains( $reason, $s['repaired'] );
-        foreach ( $s['repaired'] as $r ) {
-            $this->assertContains( $r, HtmlSource::REPAIRS, 'a fixed sentence, never the input' );
-        }
+        $this->assertSame( [ HtmlSource::REPAIRS[ $key ] ], $s['repaired'], 'one fixed sentence, never the input' );
     }
 
     /** @return array<string,array{0:string}> */
@@ -483,11 +541,14 @@ final class HtmlSourceTest extends HtmlTestCase
             'implied ends'       => [ '<ul><li>a<li>b</ul><dl><dt>a<dd>b<dt>c</dl><p>a<p>b<table><tr><td>a<td>b<tr><th>c</table><select><option>a<option>b</select>' ],
             'nested lists'       => [ '<ul><li>a<ul><li>b</li></ul></li></ul>' ],
             'formatting in order'=> [ '<p><b>a <i>b</i></b> <a href="#">c <strong>d</strong></a></p><div><span>x</span></div>' ],
-            'voids and raw text' => [ '<p>a<br>b<img src="x.png" alt=""><hr><input></p><script>if (a < b) { document.write("</div>") }</script><textarea></b></textarea><style>p{}</style>' ],
-            'comments'           => [ '<!-- </div> <b> --><p>x</p><!---->' ],
-            'svg content'        => [ '<svg><g><path d="M0 0"/></g><style>.a{}</style></svg><p>x</p>' ],
+            'voids and raw text' => [ '<p>a<br>b<br/>c<img src="x.png" alt=""><hr/><input></p><script>if (a < b) { x = "<svg>" }</script><textarea>a < b</textarea><style>p{}</style>' ],
+            'comments'           => [ '<!-- <div> <b> --><p>x</p><!-- - -->' ],
+            'svg content'        => [ '<a href="#"><svg viewBox="0 0 10 10"><g><path d="M0 0"/></g><text>t</text><style>.a{}</style></svg> Go</a><svg/><math><mi>x</mi></math>' ],
             'p around a block'   => [ '<p>a<div>b</div></p>' ],
-            'first body attrs'   => [ '' ],
+            'entities'           => [ '<p class="a" style="font-family:&quot;Open Sans&quot;" title="&copy; &colon;">a &amp; b &mdash; c</p>' ],
+            'quoted brackets'    => [ '<p title="a > b < c" data-x=\'<b>\'>x</p>' ],
+            'noscript'           => [ '<noscript><img src="a.png"></noscript>' ],
+            'empty'              => [ '' ],
         ];
     }
 
@@ -509,20 +570,64 @@ final class HtmlSourceTest extends HtmlTestCase
         }
     }
 
-    public function testTheRepairScanIsLinearAndNeverThrows(): void
+    /** The analysis was built against libxml2 2.9.x; a newer parser (2.14 rewrote the tokenizer) is reported, injected through the seam. */
+    public function testANewerParserIsReported(): void
+    {
+        $this->assertSame( 21399, HtmlSource::LIBXML_MAX_TESTED );
+        $this->assertSame( [ HtmlSource::REPAIRS['parser'] ], HtmlSource::repairs( '<p>x</p>', 21400 ) );
+        $this->assertSame( [], HtmlSource::repairs( '<p>x</p>', 20913 ) );
+        $this->assertLessThanOrEqual( HtmlSource::LIBXML_MAX_TESTED, LIBXML_VERSION, 'this machine runs the tested parser' );
+    }
+
+    /** @return array<string,array{0:string}> the shapes that were quadratic, and other worst cases, at the 400 KB input cap */
+    public static function worstShapes(): array
+    {
+        $cap = 399000;
+        return [
+            'svg in an attribute'  => [ substr( '<svg></svg><p>x</p><svg><p title="' . str_repeat( '<svg', intdiv( $cap, 4 ) ) . '">y</p>', 0, $cap ) ],
+            'math in an attribute' => [ substr( '<math><p title="' . str_repeat( '<math', intdiv( $cap, 5 ) ) . '">y</p>', 0, $cap ) ],
+            'svg after html'       => [ substr( '<p>x</p></body></html>' . str_repeat( '<svg>', intdiv( $cap, 5 ) ), 0, $cap ) ],
+            'many closed math'     => [ str_repeat( '<math></math>', 4900 ) . '<p>' . str_repeat( 'x', $cap - 4900 * 13 - 20 ) . '</p>' ],
+            'many comments'        => [ substr( str_repeat( '<!-- a -->', intdiv( $cap, 10 ) ), 0, $cap ) . '<p>x</p>' ],
+            'many scripts'         => [ substr( str_repeat( '<script>a</script>', intdiv( $cap, 18 ) ), 0, $cap - 10 ) . '<p>x</p>' ],
+            'many attributes'      => [ '<p ' . str_repeat( 'a' . 'b ', intdiv( $cap, 3 ) - 5 ) . '>x</p>' ],
+            'lt soup'              => [ '<p>x</p>' . str_repeat( '<', $cap - 10 ) ],
+            'deep svg'             => [ '<svg>' . str_repeat( '<g>', 600 ) . str_repeat( '</g>', 600 ) . '</svg>' . str_repeat( '<p>x</p>', 40000 ) ],
+        ];
+    }
+
+    #[DataProvider('worstShapes')]
+    public function testTheRepairScanIsLinear( string $html ): void
     {
         $start = hrtime( true );
-        $s     = HtmlSource::parse( '<!DOCTYPE html><body>' . str_repeat( '<div><span>', 20 ) . str_repeat( '<li>x', 2400 ) . str_repeat( '<p><b>a</i></p>', 1200 ) . '</body>' );
-        $this->assertNull( $s['error'] );
-        $this->assertLessThan( 1500, ( hrtime( true ) - $start ) / 1e6 );
-        $this->assertSame( [ 'tags that close out of order' ], $s['repaired'] );
-        $big = HtmlSource::parse( '<!DOCTYPE html><body>' . str_repeat( '<p class="a" title="x > y">t <b>u</b> <!-- </p> --></p>', 2400 ) . '</body>' );
-        $this->assertNull( $big['error'] );
-        $this->assertSame( [], $big['repaired'] );
-        foreach ( [ '<', '</', '<a', '<a "', "<a b='", '<!--', '<math>', '<math><style>', '<svg', '<style>', '</ >', '<<<>>>', '<a/b c=d/>' ] as $garbage ) {
-            $g = HtmlSource::parse( '<p>x</p>' . $garbage );
-            $this->assertIsArray( $g['repaired'] );
+        $r     = HtmlSource::repairs( $html, 20913 );
+        $this->assertLessThan( 300, ( hrtime( true ) - $start ) / 1e6, 'scan' );
+        foreach ( $r as $sentence ) {
+            $this->assertContains( $sentence, HtmlSource::REPAIRS );
+        }
+        $start = hrtime( true );
+        $s     = HtmlSource::parse( $html );
+        if ( null === $s['error'] ) {
+            \AiEditorDivi5\WP\HtmlStyles::resolve( $s['body'], $s['css'], $s['inline'], $s['presentational'], \AiEditorDivi5\WP\HtmlStyles::document( $s ) );
+        }
+        $this->assertLessThan( 1500, ( hrtime( true ) - $start ) / 1e6, 'parse + resolve' );
+    }
+
+    public function testTheRepairScanNeverThrows(): void
+    {
+        $frag  = [ '<', '</', '<a', '"', "'", '=', '>', '/', '<!--', '-->', '--!>', '<math>', '</math>', '<svg>', '</svg>', '<svg/>', '<style>', '</style>', '<b>', '</b>',
+            '<p>', '</div>', '<li>', '<body x>', '<html y>', ' ', 'x', '&', '&colon;', '<!', '<?', '?>', '<textarea>', '<script>', '</script>', '<template shadowrootmode=open>', '<div popover>', '<image>', '<![CDATA[' ];
+        $state = 7;
+        for ( $k = 0; $k < 3000; $k++ ) {
+            $s = '';
+            for ( $j = 0, $len = 1 + $state % 40; $j < $len; $j++ ) {
+                $state = ( $state * 1103515245 + 12345 ) & 0x7fffffff;
+                $s    .= $frag[ $state % count( $frag ) ];
+            }
+            $r = HtmlSource::repairs( '<p>a</p>' . $s, 20913 );
+            $this->assertLessThanOrEqual( 1, count( $r ) );
         }
         $this->assertSame( [], HtmlSource::parse( '' )['repaired'] );
+        $this->assertSame( [ HtmlSource::REPAIRS['deep'] ], HtmlSource::repairs( str_repeat( 'a', HtmlSource::MAX_BYTES + 1 ), 20913 ) );
     }
 }

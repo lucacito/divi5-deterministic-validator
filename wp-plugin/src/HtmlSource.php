@@ -39,21 +39,33 @@ final class HtmlSource
     /** A <style> (or <link>) inside one of these is inert in a browser (template, scripting-on noscript, text-only elements): it is not read. */
     private const INERT_ANCESTORS = [ 'template', 'noscript', 'textarea', 'title', 'iframe', 'noembed', 'noframes', 'xmp', 'plaintext' ];
 
+    /** The newest libxml2 this analysis was built and verified against (2.9.x; 2.14 rewrote the HTML tokenizer). */
+    public const LIBXML_MAX_TESTED = 21399;
+
     /**
-     * The fixed reasons of `repaired` (never input text): markup a browser's HTML5 tree builder repairs in a way libxml2 does not, so the
-     * tree the style reader walks may not be the tree the browser styles.
+     * The fixed reasons of `repaired` (never input text): markup a browser's HTML5 parser builds differently from libxml2, so the tree the
+     * style reader walks may not be the tree the browser styles. The scan does not model these constructs: it reports them (fail closed).
      */
     public const REPAIRS = [
-        'misnest'  => 'tags that close out of order',
-        'button'   => 'a button inside a button',
-        'nobr'     => 'a nobr inside a nobr',
-        'a'        => 'a link inside a link',
-        'list'     => 'a list item closed through another element',
-        'twice'    => 'a second body or html tag with attributes',
-        'shadow'   => 'a declarative shadow root',
-        'popover'  => 'a popover',
-        'math'     => 'a style element inside math',
-        'deep'     => 'markup nested too deeply to check',
+        'parser'    => 'the HTML parser version is newer than the one this converter was tested with',
+        'misnest'   => 'tags that close out of order, or an end tag that matches nothing open (a stray </div>, </p>, </br>, </img> or </source> included)',
+        'button'    => 'a button inside a button',
+        'nobr'      => 'a nobr inside a nobr',
+        'a'         => 'a link inside a link',
+        'list'      => 'a list item closed through another element',
+        'twice'     => 'a second body, html or head tag',
+        'shadow'    => 'a declarative shadow root',
+        'popover'   => 'a popover',
+        'math'      => 'a style element inside math',
+        'selfclose' => 'self-closing syntax (/>) on an element that is not void',
+        'foreign'   => 'HTML inside svg or math that a browser moves out of it, or an end tag there that matches nothing',
+        'obsolete'  => 'an obsolete element browsers parse in their own way (image, xmp, noembed, noframes, plaintext, listing, isindex, marquee, nextid, bgsound, keygen, menuitem, frameset, frame)',
+        'entity'    => 'a character reference in a style, class, id, type, media or rel attribute',
+        'rawtext'   => 'an end tag or comment opener inside script, style, title, textarea or iframe text',
+        'syntax'    => 'markup parsers tokenize differently (an unusual comment, CDATA, a processing instruction, an unusual tag or attribute)',
+        'duplicate' => 'an attribute written twice',
+        'after'     => 'content after the end of the document',
+        'deep'      => 'markup nested too deeply or too large to check',
     ];
 
     /** Elements without an end tag. */
@@ -64,8 +76,20 @@ final class HtmlSource
     private const IMPLIED = [ 'p', 'li', 'dt', 'dd', 'tr', 'td', 'th', 'tbody', 'thead', 'tfoot', 'option', 'optgroup', 'colgroup', 'caption',
         'rt', 'rp', 'rb', 'rtc' ];
 
-    /** Elements whose content is raw text: skipped to their end tag. */
-    private const RAW_TEXT = [ 'script', 'style', 'textarea', 'title', 'xmp', 'iframe', 'noembed', 'noframes', 'noscript' ];
+    /** Elements whose content is raw text (or escapable raw text) in a browser. */
+    private const RAW_TEXT = [ 'script', 'style', 'textarea', 'title', 'iframe' ];
+
+    /** Present = reported (not modelled). */
+    private const OBSOLETE = [ 'image', 'xmp', 'noembed', 'noframes', 'plaintext', 'listing', 'isindex', 'marquee', 'nextid', 'bgsound', 'keygen',
+        'menuitem', 'frameset', 'frame' ];
+
+    /** HTML start tags that break out of svg and math content in a browser (and font with color, face or size). */
+    private const BREAKOUT = [ 'b', 'big', 'blockquote', 'body', 'br', 'center', 'code', 'dd', 'div', 'dl', 'dt', 'em', 'embed', 'h1', 'h2', 'h3',
+        'h4', 'h5', 'h6', 'head', 'hr', 'i', 'img', 'li', 'listing', 'menu', 'meta', 'nobr', 'ol', 'p', 'pre', 'ruby', 's', 'small', 'span', 'strong',
+        'strike', 'sub', 'sup', 'table', 'tt', 'u', 'ul', 'var' ];
+
+    /** The attributes the converter reads: a character reference in them may decode differently. */
+    private const READ_ATTRS = [ 'style', 'class', 'id', 'type', 'media', 'rel' ];
 
     /** Formatting elements (the adoption agency handles their end tags). */
     private const FORMATTING = [ 'a', 'b', 'big', 'code', 'em', 'font', 'i', 'nobr', 's', 'small', 'strike', 'strong', 'tt', 'u' ];
@@ -82,6 +106,11 @@ final class HtmlSource
         'track', 'ul', 'wbr', 'xmp' ];
 
     private const MAX_SCAN_DEPTH = 600;
+
+    /** The scan's step budget (tags + attributes + raw-text checks), tied to the input cap: past it the markup is reported. */
+    private const MAX_SCAN_STEPS = 2 * self::MAX_BYTES;
+
+    private const WS = " \t\n\f\r";
 
     /** Removed with their content. tag => why it is not converted (plain English, shown to the owner). */
     private const DROP = [
@@ -228,7 +257,7 @@ final class HtmlSource
         $out['title'] = $titleNode instanceof \DOMNode ? self::collapse( $titleNode->textContent ) : '';
 
         self::collectCss( $doc, $out );
-        $out['repaired'] = self::repairs( $html );
+        $out['repaired'] = self::repairs( $html, LIBXML_VERSION );
         $out['doctype']      = $standards;
         $out['color_scheme'] = self::darkCapable( $doc );
 
@@ -399,204 +428,249 @@ final class HtmlSource
     }
 
     /**
-     * The repairs scan (see `repaired` in parse()). One pass over the raw text with a small stack of open elements; linear (each byte is
-     * read a bounded number of times, every walk down the stack is bounded), never throws, returns only REPAIRS sentences.
+     * The repairs scan (see `repaired` in parse()), public as a seam for tests. ONE forward pass over the raw bytes, an explicit state
+     * machine: data, tag open (name, attributes with quoting), comment, raw text (script, style, textarea, title, iframe) and foreign content
+     * (svg/math depth) in the same pass. Every forward search starts where the scan is and the scan jumps past what it found, so the work is
+     * O(n) in the input bytes; a step budget (MAX_SCAN_STEPS) bounds it anyway. FAIL CLOSED: the first construct it does not model is
+     * reported and the scan stops; it never throws and returns only REPAIRS sentences.
      *
+     * @param int $libxml the libxml2 version (LIBXML_VERSION; a parameter so tests can inject one)
      * @return list<string>
      */
-    private static function repairs( string $h ): array
+    public static function repairs( string $html, int $libxml = LIBXML_VERSION ): array
     {
-        $n        = strlen( $h );
-        $i        = 0;
-        $stack    = [];
-        $open     = [];
-        $found    = [];
-        $stackOk  = true;
-        $content  = false; // something that makes a body has been seen
-        $sawHtml  = false;
-        $sawBody  = false;
-        $flag     = static function ( string $key ) use ( &$found ): void {
-            $found[ $key ] = true;
-        };
-        $pop      = static function () use ( &$stack, &$open ): void {
-            $t = array_pop( $stack );
-            if ( null !== $t ) {
-                --$open[ $t ];
-            }
-        };
+        $key = $libxml > self::LIBXML_MAX_TESTED ? 'parser' : self::scan( $html );
+
+        return null === $key ? [] : [ self::REPAIRS[ $key ] ];
+    }
+
+    /** @return ?string the REPAIRS key of the first construct that is not modelled, or null */
+    private static function scan( string $h ): ?string
+    {
+        $n = strlen( $h );
+        if ( $n > self::MAX_BYTES ) {
+            return 'deep';
+        }
+        $lh      = strtolower( $h ); // ASCII lower case, for tag and attribute names
+        $i       = 0;
+        $steps   = 0;
+        $stack   = [];
+        $open    = [];
+        $foreign = []; // the open svg/math elements (empty: HTML content)
+        $content = false;
+        $sawHtml = false;
+        $sawBody = false;
+        $ended   = false;
         while ( $i < $n ) {
-            $lt = strpos( $h, '<', $i );
-            if ( false === $lt ) {
-                $content = $content || strspn( $h, " \t\n\r\f", $i ) < $n - $i;
-                break;
+            if ( ++$steps > self::MAX_SCAN_STEPS ) {
+                return 'deep';
             }
-            if ( $lt > $i && strspn( $h, " \t\n\r\f", $i, $lt - $i ) < $lt - $i ) {
+            $lt   = strpos( $h, '<', $i );
+            $stop = false === $lt ? $n : $lt;
+            if ( $stop > $i && strspn( $h, self::WS, $i, $stop - $i ) < $stop - $i ) {
+                if ( $ended ) {
+                    return 'after';
+                }
                 $content = true;
             }
-            if ( 0 === substr_compare( $h, '<!--', $lt, 4 ) ) {
-                $e = strpos( $h, '-->', $lt + 4 );
-                $i = false === $e ? $n : $e + 3;
-                continue;
+            if ( false === $lt ) {
+                break;
             }
             $c = $lt + 1 < $n ? $h[ $lt + 1 ] : '';
-            if ( '!' === $c || '?' === $c ) {
+            if ( '!' === $c ) {
+                if ( 0 === substr_compare( $h, '<!--', $lt, 4 ) ) {
+                    $j = $lt + 4;
+                    if ( ( $j < $n && '>' === $h[ $j ] ) || 0 === substr_compare( $h, '->', $j, 2 ) ) {
+                        return 'syntax'; // <!--> and <!---> end at once in a browser
+                    }
+                    $e = strpos( $h, '-->', $j );
+                    if ( false === $e ) {
+                        return 'syntax';
+                    }
+                    if ( false !== strpos( substr( $h, $j, $e - $j ), '--!>' ) ) {
+                        return 'syntax'; // --!> ends a comment in a browser
+                    }
+                    $i = $e + 3;
+                    continue;
+                }
+                if ( 0 === substr_compare( $lh, '<!doctype', $lt, 9 ) && [] === $stack && ! $content ) {
+                    $e = strpos( $h, '>', $lt );
+                    if ( false === $e ) {
+                        return 'syntax';
+                    }
+                    $i = $e + 1;
+                    continue;
+                }
+                return 'syntax'; // CDATA, a bogus comment or a misplaced doctype
+            }
+            if ( '?' === $c ) {
                 $e = strpos( $h, '>', $lt );
-                $i = false === $e ? $n : $e + 1;
+                if ( false === $e || '?' !== $h[ $e - 1 ] ) {
+                    return 'syntax'; // a browser ends a processing instruction at the first >, libxml2 at the question mark and >
+                }
+                $i = $e + 1;
                 continue;
             }
             $end = '/' === $c;
             $j   = $lt + ( $end ? 2 : 1 );
             if ( $j >= $n || ! ctype_alpha( $h[ $j ] ) ) {
-                if ( $end ) { // </ followed by no letter: a bogus comment up to >
-                    $e = strpos( $h, '>', $lt );
-                    $i = false === $e ? $n : $e + 1;
-                } else {
-                    $content = true;
-                    $i       = $lt + 1;
+                if ( $end ) {
+                    return 'syntax'; // </> or a bogus comment
                 }
+                if ( $ended ) {
+                    return 'after';
+                }
+                $content = true;
+                $i       = $lt + 1;
                 continue;
             }
-            $k    = $j + strcspn( $h, " \t\n\r\f/>", $j );
-            $name = strtolower( substr( $h, $j, $k - $j ) );
-            // The attributes up to the closing > (quotes respected).
-            $attrs = [];
-            $p     = $k;
-            while ( $p < $n && '>' !== $h[ $p ] ) {
-                $p += strspn( $h, " \t\n\r\f/", $p );
-                if ( $p >= $n || '>' === $h[ $p ] ) {
-                    break;
-                }
-                $q       = $p + max( 1, strcspn( $h, " \t\n\r\f/>=", $p ) );
-                $attrs[] = strtolower( substr( $h, $p, min( 40, $q - $p ) ) );
-                $p       = $q + strspn( $h, " \t\n\r\f", $q );
-                if ( $p < $n && '=' === $h[ $p ] ) {
-                    ++$p;
-                    $p += strspn( $h, " \t\n\r\f", $p );
-                    if ( $p < $n && ( '"' === $h[ $p ] || "'" === $h[ $p ] ) ) {
-                        $e = strpos( $h, $h[ $p ], $p + 1 );
-                        $p = false === $e ? $n : $e + 1;
-                    } else {
-                        $p += strcspn( $h, " \t\n\r\f>", $p );
-                    }
-                }
+            $tag = self::tag( $h, $lh, $j, $n, $steps );
+            if ( is_string( $tag ) ) {
+                return $tag;
             }
-            $i = min( $n, $p + 1 );
+            [ $i, $name, $attrs, $selfClose ] = $tag;
+
             if ( $end ) {
-                if ( ! $stackOk || in_array( $name, [ 'html', 'head', 'body' ], true ) ) {
+                if ( $selfClose ) {
+                    return 'syntax';
+                }
+                if ( [] !== $foreign ) {
+                    if ( end( $foreign ) !== $name ) {
+                        return 'foreign';
+                    }
+                    array_pop( $foreign );
                     continue;
                 }
-                $top = end( $stack );
-                if ( $top === $name ) {
-                    $pop();
+                if ( 'html' === $name ) {
+                    $ended = true;
+                    continue;
+                }
+                if ( 'body' === $name || 'head' === $name ) {
+                    continue;
+                }
+                if ( end( $stack ) === $name ) {
+                    --$open[ array_pop( $stack ) ];
                     continue;
                 }
                 if ( in_array( $name, self::FORMATTING, true ) || ( $open[ $name ] ?? 0 ) < 1 ) {
-                    $flag( 'misnest' ); // the adoption agency, or an end tag that matches nothing open
-                    $stackOk = false;
-                    continue;
+                    return 'misnest';
                 }
-                while ( array() !== $stack && end( $stack ) !== $name && in_array( end( $stack ), self::IMPLIED, true ) ) {
-                    $pop();
+                while ( [] !== $stack && end( $stack ) !== $name && in_array( end( $stack ), self::IMPLIED, true ) ) {
+                    --$open[ array_pop( $stack ) ];
                 }
-                if ( end( $stack ) === $name ) {
-                    $pop();
-                } else {
-                    $flag( 'misnest' );
-                    $stackOk = false;
+                if ( end( $stack ) !== $name ) {
+                    return 'misnest';
+                }
+                --$open[ array_pop( $stack ) ];
+                continue;
+            }
+
+            // A start tag.
+            if ( $ended ) {
+                return 'after';
+            }
+            if ( isset( $attrs['shadowrootmode'] ) ) {
+                return 'shadow';
+            }
+            if ( isset( $attrs['popover'] ) ) {
+                return 'popover';
+            }
+            if ( [] !== $foreign ) {
+                if ( in_array( $name, self::BREAKOUT, true ) || ( 'font' === $name && ( isset( $attrs['color'] ) || isset( $attrs['face'] ) || isset( $attrs['size'] ) ) ) ) {
+                    return 'foreign';
+                }
+                if ( 'style' === $name && in_array( 'math', $foreign, true ) ) {
+                    return 'math';
+                }
+                if ( ! $selfClose ) {
+                    $foreign[] = $name;
+                    if ( count( $foreign ) > self::MAX_SCAN_DEPTH ) {
+                        return 'deep';
+                    }
                 }
                 continue;
             }
-            // A start tag.
-            if ( in_array( 'shadowrootmode', $attrs, true ) ) {
-                $flag( 'shadow' );
+            if ( in_array( $name, self::OBSOLETE, true ) ) {
+                return 'obsolete';
             }
-            if ( in_array( 'popover', $attrs, true ) ) {
-                $flag( 'popover' );
+            if ( $selfClose && ! in_array( $name, self::VOID, true ) && 'svg' !== $name && 'math' !== $name ) {
+                return 'selfclose'; // a browser ignores the slash, libxml2 closes the element
+            }
+            if ( 'svg' === $name || 'math' === $name ) {
+                $content = true;
+                if ( ! $selfClose ) {
+                    $foreign = [ $name ];
+                }
+                continue;
             }
             if ( 'html' === $name ) {
-                if ( ( $sawHtml || $content || array() !== $stack ) && array() !== $attrs ) {
-                    $flag( 'twice' );
+                if ( ( $sawHtml || $content || [] !== $stack ) && [] !== $attrs ) {
+                    return 'twice';
                 }
                 $sawHtml = true;
                 continue;
             }
             if ( 'body' === $name ) {
-                if ( ( $sawBody || $content ) && array() !== $attrs ) {
-                    $flag( 'twice' );
+                if ( ( $sawBody || $content ) && [] !== $attrs ) {
+                    return 'twice';
                 }
                 $sawBody = true;
                 $content = true;
                 continue;
             }
             if ( 'head' === $name ) {
+                if ( $content || $sawBody ) {
+                    return 'twice';
+                }
                 continue;
             }
             if ( ! in_array( $name, self::HEAD_TAGS, true ) ) {
                 $content = true;
             }
             if ( in_array( $name, self::RAW_TEXT, true ) ) {
-                $e = stripos( $h, '</' . $name, $i );
-                $e = false === $e ? false : strpos( $h, '>', $e );
-                $i = false === $e ? $n : $e + 1; // past its end tag
-                continue;
-            }
-            if ( 'plaintext' === $name ) {
-                break;
-            }
-            if ( 'math' === $name || 'svg' === $name ) {
-                // Foreign content: skipped to its matching end tag; a <style> inside math is not applied by a browser.
-                $depth = 1;
-                $p     = $i;
-                while ( $depth > 0 ) {
-                    $o = stripos( $h, '<' . $name, $p );
-                    $e = stripos( $h, '</' . $name, $p );
-                    if ( false === $e ) {
-                        $e = $n;
-                    }
-                    if ( false !== $o && $o < $e ) {
-                        ++$depth;
-                        $p = $o + 1;
-                    } else {
-                        --$depth;
-                        $p = min( $n, $e + 1 );
-                    }
-                    if ( $p >= $n ) {
-                        break;
-                    }
+                // The text runs to </name followed by a space, / or >. libxml2 2.9 may end it at any </letter, and a browser treats
+                // <!-- in a script specially: either is reported.
+                $e = strpos( $lh, '</' . $name, $i );
+                if ( false === $e ) {
+                    return 'rawtext';
                 }
-                if ( 'math' === $name && false !== ( $st = stripos( $h, '<style', $i ) ) && $st < $p ) {
-                    $flag( 'math' );
+                $after = $e + 2 + strlen( $name );
+                if ( $after >= $n || false === strpos( self::WS . '/>', $h[ $after ] ) ) {
+                    return 'rawtext';
                 }
-                $e = strpos( $h, '>', max( $i, $p - 1 ) );
-                $i = false === $e ? $n : $e + 1;
+                $text = substr( $h, $i, $e - $i );
+                if ( 1 === preg_match( '#</[A-Za-z]#', $text ) || ( 'script' === $name && false !== strpos( $text, '<!--' ) ) ) {
+                    return 'rawtext';
+                }
+                $steps += 1 + intdiv( $e - $i, 64 );
+                $close = strpos( $h, '>', $after );
+                if ( false === $close ) {
+                    return 'rawtext';
+                }
+                $i = $close + 1;
                 continue;
             }
-            if ( in_array( $name, self::VOID, true ) || ! $stackOk ) {
+            if ( in_array( $name, self::VOID, true ) ) {
                 continue;
             }
-            if ( 'button' === $name && ( $open['button'] ?? 0 ) > 0 ) {
-                $flag( 'button' );
-            }
-            if ( 'nobr' === $name && ( $open['nobr'] ?? 0 ) > 0 ) {
-                $flag( 'nobr' );
-            }
-            if ( 'a' === $name && ( $open['a'] ?? 0 ) > 0 ) {
-                $flag( 'a' );
+            if ( ( 'button' === $name || 'nobr' === $name || 'a' === $name ) && ( $open[ $name ] ?? 0 ) > 0 ) {
+                return $name;
             }
             if ( in_array( $name, [ 'li', 'dd', 'dt' ], true ) ) {
                 $match = 'li' === $name ? [ 'li' ] : [ 'dd', 'dt' ];
-                $steps = 0;
-                for ( $x = count( $stack ) - 1; $x >= 0 && $steps < 64; $x--, $steps++ ) {
+                for ( $x = count( $stack ) - 1, $walk = 0; $x >= 0; $x--, $walk++ ) {
+                    if ( $walk >= 64 ) {
+                        return 'deep';
+                    }
                     $t = $stack[ $x ];
                     if ( in_array( $t, $match, true ) ) {
                         for ( $y = count( $stack ) - 1; $y > $x; $y-- ) {
                             if ( 'p' !== $stack[ $y ] ) {
-                                $flag( 'list' ); // the browser closes the item through what is open inside it
-                                break;
+                                return 'list'; // the browser closes the item through what is open inside it
                             }
                         }
                         while ( count( $stack ) > $x ) {
-                            $pop();
+                            --$open[ array_pop( $stack ) ];
                         }
                         break;
                     }
@@ -604,27 +678,91 @@ final class HtmlSource
                         break;
                     }
                 }
-                if ( $steps >= 64 ) {
-                    $flag( 'deep' );
-                }
             } elseif ( in_array( $name, self::IMPLIED, true ) && end( $stack ) === $name ) {
-                $pop(); // a sibling closes the previous one (p, option, td ...)
+                --$open[ array_pop( $stack ) ]; // a sibling closes the previous one (p, option, td ...)
             }
-            $stack[]        = $name;
-            $open[ $name ]  = ( $open[ $name ] ?? 0 ) + 1;
+            $stack[]       = $name;
+            $open[ $name ] = ( $open[ $name ] ?? 0 ) + 1;
             if ( count( $stack ) > self::MAX_SCAN_DEPTH ) {
-                $flag( 'deep' );
-                $stackOk = false;
-            }
-        }
-        $out = [];
-        foreach ( self::REPAIRS as $key => $sentence ) {
-            if ( isset( $found[ $key ] ) ) {
-                $out[] = $sentence;
+                return 'deep';
             }
         }
 
-        return $out;
+        return null;
+    }
+
+    /**
+     * One tag from its name at $j: [index after it, lower-case name, attribute set, self-closing], or the REPAIRS key of what the scan
+     * does not model in it (an odd name, an attribute written twice, an unusual attribute, a character reference in a read attribute).
+     *
+     * @return array{0:int,1:string,2:array<string,true>,3:bool}|string
+     */
+    private static function tag( string $h, string $lh, int $j, int $n, int &$steps )
+    {
+        $k    = $j + strcspn( $h, self::WS . '/>', $j );
+        $name = substr( $lh, $j, $k - $j );
+        if ( 1 !== preg_match( '/^[a-z][a-z0-9-]*$/D', $name ) ) {
+            return 'syntax';
+        }
+        $attrs = [];
+        $p     = $k;
+        while ( true ) {
+            if ( ++$steps > self::MAX_SCAN_STEPS ) {
+                return 'deep';
+            }
+            $p += strspn( $h, self::WS, $p );
+            if ( $p >= $n ) {
+                return 'syntax'; // the tag never ends
+            }
+            $ch = $h[ $p ];
+            if ( '>' === $ch ) {
+                return [ $p + 1, $name, $attrs, false ];
+            }
+            if ( '/' === $ch ) {
+                if ( $p + 1 < $n && '>' === $h[ $p + 1 ] ) {
+                    return [ $p + 2, $name, $attrs, true ];
+                }
+                return 'syntax'; // a slash between attributes
+            }
+            $q     = $p + strcspn( $h, self::WS . '/>=', $p );
+            $aname = substr( $lh, $p, $q - $p );
+            if ( 1 !== preg_match( '/^[a-z_][a-z0-9_.:-]*$/D', $aname ) ) {
+                return 'syntax';
+            }
+            if ( isset( $attrs[ $aname ] ) ) {
+                return 'duplicate';
+            }
+            $attrs[ $aname ] = true;
+            $p               = $q + strspn( $h, self::WS, $q );
+            if ( $p < $n && '=' === $h[ $p ] ) {
+                ++$p;
+                $p += strspn( $h, self::WS, $p );
+                if ( $p >= $n ) {
+                    return 'syntax';
+                }
+                if ( '"' === $h[ $p ] || "'" === $h[ $p ] ) {
+                    $e = strpos( $h, $h[ $p ], $p + 1 );
+                    if ( false === $e ) {
+                        return 'syntax';
+                    }
+                    $value = substr( $h, $p + 1, $e - $p - 1 );
+                    $p     = $e + 1;
+                    if ( $p < $n && false === strpos( self::WS . '/>', $h[ $p ] ) ) {
+                        return 'syntax'; // no space between attributes
+                    }
+                } else {
+                    $q     = $p + strcspn( $h, self::WS . '>', $p );
+                    $value = substr( $h, $p, $q - $p );
+                    $p     = $q;
+                    if ( false !== strpbrk( $value, "\"'<=`" ) ) {
+                        return 'syntax';
+                    }
+                }
+                if ( in_array( $aname, self::READ_ATTRS, true ) && false !== strpos( $value, '&' ) && 1 === preg_match( '/&(?!(?:amp|lt|gt|quot|apos|nbsp);)/', $value ) ) {
+                    return 'entity'; // libxml2 2.9 does not know the HTML5 names (&colon; &sol; ...); numeric ones are reported too
+                }
+            }
+        }
     }
 
     /** A <meta name="color-scheme"> (anywhere that is not inert) that allows anything but light. */
