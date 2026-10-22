@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\DiviMarkup;
+use Divi5Validator\Tests\Support\HtmlStylesVocabulary;
 use PHPUnit\Framework\TestCase;
+
+require_once __DIR__ . '/Support/HtmlStylesVocabulary.php';
+require_once __DIR__ . '/../wp-plugin/src/DiviMarkup.php';
 
 /**
  * The html_to_divi styles vocabulary (plan 2026-10-22-html-to-divi-styles, Task 1): the probe candidates
@@ -178,6 +183,19 @@ final class HtmlStylesVocabularyTest extends TestCase
         $text = (string) file_get_contents( self::VOCABULARY );
         foreach ( $this->candidates() as $c ) {
             $this->assertStringContainsString( $c['id'], $text, $c['id'] . ' appears in the vocabulary' );
+        }
+    }
+
+    public function testStyleProvenMatchesTheVocabularyTable(): void
+    {
+        $rows = HtmlStylesVocabulary::rows();
+        $this->assertSame( self::KEYS, array_keys( DiviMarkup::STYLE_PROVEN ), 'STYLE_PROVEN has the thirteen decisions, in the table\'s order' );
+        $this->assertSame( array_keys( $rows ), array_keys( DiviMarkup::STYLE_PROVEN ) );
+        foreach ( DiviMarkup::STYLE_PROVEN as $decision => $on ) {
+            $this->assertIsBool( $on, $decision );
+            $verdict = $rows[ $decision ]['verdict'];
+            $this->assertContains( $verdict, [ 'PASS', 'FAIL', 'DEAD' ], $decision . ' is decided' );
+            $this->assertSame( 'PASS' === $verdict, $on, $decision . ': written exactly when the probe said PASS (' . $verdict . ')' );
         }
     }
 }
