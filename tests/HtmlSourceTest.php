@@ -371,4 +371,68 @@ final class HtmlSourceTest extends HtmlTestCase
         }
         $this->assertSame( [ 'color:red' ], array_values( $s['inline'] ) );
     }
+
+    // ── document facts for the cascade (html_to_divi styles, task 6) ───────
+
+    /** @return array<string,array{0:string,1:bool}> */
+    public static function doctypes(): array
+    {
+        return [
+            'html5'             => [ '<!DOCTYPE html><html><body><p>x</p></body></html>', true ],
+            'lower case, space' => [ "  \n<!doctype   html >\n<html><body><p>x</p></body></html>", true ],
+            'with a BOM'        => [ "\xEF\xBB\xBF<!DOCTYPE html><p>x</p>", true ],
+            'none'              => [ '<html><body><p>x</p></body></html>', false ],
+            'html 4 legacy'     => [ '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><p>x</p>', false ],
+            'after text'        => [ 'hello <!DOCTYPE html><p>x</p>', false ],
+            'after a comment'   => [ '<!-- a --!> b --><!DOCTYPE html><p>x</p>', false ],
+        ];
+    }
+
+    /** Without a standards-mode doctype a browser matches class and id selectors case-insensitively (quirks mode): the cascade must know. */
+    #[DataProvider('doctypes')]
+    public function testTheDoctypeIsReportedOnlyForStandardsMode( string $html, bool $standards ): void
+    {
+        $s = HtmlSource::parse( $html );
+        $this->assertNull( $s['error'] );
+        $this->assertSame( $standards, $s['doctype'] );
+    }
+
+    public function testAColorSchemeMetaIsReported(): void
+    {
+        $this->assertTrue( HtmlSource::parse( '<html><head><meta name="color-scheme" content="light dark"></head><body><p>x</p></body></html>' )['color_scheme'] );
+        $this->assertTrue( HtmlSource::parse( '<html><head><meta name="Color-Scheme" content="dark"></head><body><p>x</p></body></html>' )['color_scheme'] );
+        $this->assertFalse( HtmlSource::parse( '<html><head><meta name="color-scheme" content="light"></head><body><p>x</p></body></html>' )['color_scheme'] );
+        $this->assertFalse( HtmlSource::parse( '<html><head><meta name="color-scheme" content=" only light "></head><body><p>x</p></body></html>' )['color_scheme'] );
+        $this->assertFalse( HtmlSource::parse( '<html><head><meta name="viewport" content="width=device-width"></head><body><p>x</p></body></html>' )['color_scheme'] );
+        $this->assertFalse( $this->parse( '<p>x</p>' )['color_scheme'] );
+    }
+
+    /** The DOM keeps at most 300 characters of a class or id (phase 1); the cascade gets the whole value, by final path. */
+    public function testALongClassOrIdIsHandedOverWhole(): void
+    {
+        $long = trim( str_repeat( 'utility-class-name ', 20 ) ) . ' text-white';
+        $id   = str_repeat( 'i', 310 );
+        $s    = $this->parse( '<div class="' . $long . '" id="' . $id . '"><p class="short">x</p></div>' );
+        $this->assertSame( [ '/html/body/div' => [ 'class' => $long, 'id' => $id ] ], $s['cut_attrs'] );
+        $this->assertSame( 300, strlen( $s['body']->getElementsByTagName( 'div' )->item( 0 )->getAttribute( 'class' ) ), 'the DOM is unchanged (phase 1)' );
+        $this->assertSame( [], $this->parse( '<p class="short">x</p>' )['cut_attrs'] );
+    }
+
+    /** A <style media="(min-width:...)"> applies at some screen widths: it is not dropped silently but handed over to poison what it sets. */
+    public function testStyleBlocksForSomeScreensAreHandedOverApart(): void
+    {
+        $s = $this->parse( '<style media="(min-width:600px)">p{color:red}</style><style media="print">h1{color:blue}</style><style media="print, (min-width:1px)">h2{color:green}</style><p>x</p>' );
+        $this->assertSame( '', $s['css'] );
+        $this->assertSame( "p{color:red}\nh2{color:green}", $s['css_media'] );
+        $this->assertCount( 3, $s['style_flags'] );
+        $this->assertSame( '', $this->parse( '<style>p{}</style><p>x</p>' )['css_media'] );
+    }
+
+    public function testTheDocumentFactsDoNotChangeAnythingElse(): void
+    {
+        $s = $this->parse( '<p>x</p>' );
+        $this->assertSame( [ false, false, [], '' ], [ $s['doctype'], $s['color_scheme'], $s['cut_attrs'], $s['css_media'] ] );
+        $e = HtmlSource::parse( '' );
+        $this->assertSame( [ false, false, [], '' ], [ $e['doctype'], $e['color_scheme'], $e['cut_attrs'], $e['css_media'] ] );
+    }
 }

@@ -101,6 +101,17 @@ final class HtmlSource
      *   style_flags    list of flagged entries (type, reason, path) about CSS that was not read: the skipped <style> elements and, when
      *                  external_css > 0, one entry for the linked stylesheets. Kept apart from `flagged` so the styles=none report
      *                  stays byte-identical to phase 1; the styles=basic report merges them.
+     *   css_media      the text of the <style> elements skipped ONLY because of a media attribute that may match a screen (anything but a
+     *                  list of print/speech types, for example "(min-width:768px)"), same order, joining and cut as `css`. They apply at some
+     *                  window widths, so a reader must treat every rule in them as a poison of unknown rank, never as a value.
+     *   doctype        true only when the HTML starts (after whitespace and an optional byte order mark) with <!DOCTYPE html>: the page is
+     *                  then in standards mode. Without it a browser may be in quirks mode, where class and id selectors match ASCII
+     *                  case-insensitively and tables do not inherit fonts. Any other start (a legacy doctype, a comment first) is false,
+     *                  which is the conservative answer.
+     *   color_scheme   true when a <meta name="color-scheme"> asks for anything but light: the default canvas and text colours are then
+     *                  the visitor's choice, not white and black.
+     *   cut_attrs      getNodePath() => ['class' => whole value, 'id' => whole value] for the elements whose class or id the DOM keeps cut
+     *                  at 300 characters (phase 1 behaviour, unchanged), so a selector reader can match the classes beyond the cut.
      * The paths are computed after every removal and move, so they are the paths of the returned DOM. An element that was removed (or
      * sits inside a removed one) hands over nothing.
      *
@@ -108,11 +119,11 @@ final class HtmlSource
      * are removed, so attribute selectors and structural selectors (:nth-child, :first-child, sibling combinators) would be evaluated on a pruned
      * tree. A reader must treat them as unreadable (poison), not evaluate them.
      *
-     * @return array{error:?string, body:?\DOMElement, flagged:list<array{type:string,reason:string,path:string}>, title:string, h1s:list<string>, stats:array<string,int>, css:string, inline:array<string,string>, presentational:array<string,list<string>>, external_css:int, style_flags:list<array{type:string,reason:string,path:string}>}
+     * @return array{error:?string, body:?\DOMElement, flagged:list<array{type:string,reason:string,path:string}>, title:string, h1s:list<string>, stats:array<string,int>, css:string, inline:array<string,string>, presentational:array<string,list<string>>, external_css:int, style_flags:list<array{type:string,reason:string,path:string}>, css_media:string, doctype:bool, color_scheme:bool, cut_attrs:array<string,array<string,string>>}
      */
     public static function parse( string $html ): array
     {
-        $out = [ 'error' => null, 'body' => null, 'flagged' => [], 'title' => '', 'h1s' => [], 'stats' => [ 'elements' => 0, 'removed' => 0, 'urls_dropped' => 0 ], 'css' => '', 'inline' => [], 'presentational' => [], 'external_css' => 0, 'style_flags' => [] ];
+        $out = [ 'error' => null, 'body' => null, 'flagged' => [], 'title' => '', 'h1s' => [], 'stats' => [ 'elements' => 0, 'removed' => 0, 'urls_dropped' => 0 ], 'css' => '', 'inline' => [], 'presentational' => [], 'external_css' => 0, 'style_flags' => [], 'css_media' => '', 'doctype' => false, 'color_scheme' => false, 'cut_attrs' => [] ];
 
         if ( '' === trim( $html ) ) {
             $out['error'] = 'The HTML is empty.';
@@ -131,6 +142,8 @@ final class HtmlSource
         }
         // NUL bytes and other control characters have no place in a page; drop them before parsing.
         $html = (string) preg_replace( '/[\x00-\x08\x0b\x0c\x0e-\x1f]/', '', $html );
+        // Standards mode: <!DOCTYPE html> first. Nothing else is trusted (a comment first can hide text that a browser reads first).
+        $standards = 1 === preg_match( '/\A(?:\xEF\xBB\xBF)?[\t\n\f\r ]*<!doctype[\t\n\f\r ]+html[\t\n\f\r ]*>/i', $html );
 
         $doc  = new \DOMDocument();
         $prev = libxml_use_internal_errors( true );
@@ -167,16 +180,25 @@ final class HtmlSource
         $out['title'] = $titleNode instanceof \DOMNode ? self::collapse( $titleNode->textContent ) : '';
 
         self::collectCss( $doc, $out );
+        $out['doctype']      = $standards;
+        $out['color_scheme'] = self::darkCapable( $doc );
 
         // Style and presentational attributes are read from the node BEFORE they are removed; the paths are taken at the end.
         $handOver = [];
+        $cut      = [];
         $root     = $doc->documentElement;
         if ( $root instanceof \DOMElement && $root !== $body ) {
             self::takeStyleAttributes( $root, $handOver );
         }
         self::takeStyleAttributes( $body, $handOver );
-        self::cleanAttributes( $body, $out );
-        self::clean( $body, $out, $handOver );
+        self::cleanAttributes( $body, $out, $cut );
+        self::clean( $body, $out, $handOver, $cut );
+        foreach ( $cut as [ $el, $name, $whole ] ) {
+            $path = ( $el === $body || self::isInside( $el, $body ) ) ? $el->getNodePath() : null;
+            if ( null !== $path ) {
+                $out['cut_attrs'][ $path ][ $name ] = $whole;
+            }
+        }
         foreach ( $handOver as [ $el, $style, $presentational ] ) {
             if ( $el !== $root && $el !== $body && ! self::isInside( $el, $body ) ) {
                 continue;
@@ -256,11 +278,18 @@ final class HtmlSource
     {
         $parts = [];
         $bytes = 0;
+        $media = [];
+        $mediaBytes = 0;
         foreach ( iterator_to_array( $doc->getElementsByTagName( 'style' ) ) as $style ) {
             $why = self::whyStyleIsSkipped( $style );
             if ( null !== $why ) {
                 if ( count( $out['style_flags'] ) < 100 ) {
                     $out['style_flags'][] = [ 'type' => 'style', 'reason' => 'A CSS block was not read: ' . $why . '.', 'path' => self::path( $style ) ];
+                }
+                $text = trim( $style->textContent );
+                if ( self::forSomeScreens( $style ) && '' !== $text && $mediaBytes <= self::MAX_CSS_BYTES ) {
+                    $media[]     = $text;
+                    $mediaBytes += strlen( $text ) + 1;
                 }
                 continue;
             }
@@ -276,6 +305,8 @@ final class HtmlSource
         }
         $css = implode( "\n", $parts );
         $out['css'] = strlen( $css ) > self::MAX_CSS_BYTES + 1 ? substr( $css, 0, self::MAX_CSS_BYTES + 1 ) : $css;
+        $css = implode( "\n", $media );
+        $out['css_media'] = strlen( $css ) > self::MAX_CSS_BYTES + 1 ? substr( $css, 0, self::MAX_CSS_BYTES + 1 ) : $css;
 
         $links = 0;
         $first = null;
@@ -296,6 +327,44 @@ final class HtmlSource
         }
     }
 
+    /**
+     * A <style> that is skipped only because of its media attribute, and whose media list may match a screen: every item that is not
+     * exactly a print or speech type (with an optional "only") might, so it is handed over as css_media.
+     */
+    private static function forSomeScreens( \DOMElement $style ): bool
+    {
+        if ( null !== self::inertAncestor( $style ) || $style->hasAttribute( 'disabled' ) ) {
+            return false;
+        }
+        $type = strtolower( trim( $style->getAttribute( 'type' ) ) );
+        if ( '' !== $type && 'text/css' !== $type ) {
+            return false;
+        }
+        foreach ( explode( ',', strtolower( $style->getAttribute( 'media' ) ) ) as $item ) {
+            if ( 1 !== preg_match( '/^[\t\n\f\r ]*(?:only[\t\n\f\r ]+)?(?:print|speech)[\t\n\f\r ]*$/', $item ) ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** A <meta name="color-scheme"> (anywhere that is not inert) that allows anything but light. */
+    private static function darkCapable( \DOMDocument $doc ): bool
+    {
+        foreach ( iterator_to_array( $doc->getElementsByTagName( 'meta' ) ) as $meta ) {
+            if ( null !== self::inertAncestor( $meta ) || 'color-scheme' !== strtolower( trim( $meta->getAttribute( 'name' ) ) ) ) {
+                continue;
+            }
+            $content = strtolower( trim( (string) preg_replace( '/[\t\n\f\r ]+/', ' ', $meta->getAttribute( 'content' ) ) ) );
+            if ( ! in_array( $content, [ '', 'normal', 'light', 'only light' ], true ) ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /** Plain-English reason a <style> element is not read, or null when it is. */
     private static function whyStyleIsSkipped( \DOMElement $style ): ?string
     {
@@ -305,7 +374,7 @@ final class HtmlSource
         }
         $media = strtolower( trim( $style->getAttribute( 'media' ) ) );
         if ( ! in_array( $media, [ '', 'all', 'screen' ], true ) ) {
-            return 'it is only for media other than screens';
+            return 'its media attribute limits it to some devices or window sizes';
         }
         $type = strtolower( trim( $style->getAttribute( 'type' ) ) );
         if ( '' !== $type && 'text/css' !== $type ) {
@@ -364,8 +433,9 @@ final class HtmlSource
     /**
      * @param array<string,mixed>                                 $out
      * @param list<array{0:\DOMElement,1:string,2:list<string>}> $handOver
+     * @param list<array{0:\DOMElement,1:string,2:string}>        $cut
      */
-    private static function clean( \DOMElement $body, array &$out, array &$handOver ): void
+    private static function clean( \DOMElement $body, array &$out, array &$handOver, array &$cut ): void
     {
         // Collect first, change after: removing nodes while walking skips siblings.
         $remove  = [];
@@ -414,16 +484,17 @@ final class HtmlSource
                 continue; // inside something that was removed
             }
             self::takeStyleAttributes( $el, $handOver );
-            self::cleanAttributes( $el, $out );
+            self::cleanAttributes( $el, $out, $cut );
         }
     }
 
     /**
      * The style attributes must have been read (takeStyleAttributes) before this removes them.
      *
-     * @param array<string,mixed> $out
+     * @param array<string,mixed>                          $out
+     * @param list<array{0:\DOMElement,1:string,2:string}> $cut receives the whole class or id value before it is cut
      */
-    private static function cleanAttributes( \DOMElement $el, array &$out ): void
+    private static function cleanAttributes( \DOMElement $el, array &$out, array &$cut ): void
     {
         $tag   = strtolower( $el->tagName );
         $keep  = array_merge( self::ATTRS['*'], self::ATTRS[ $tag ] ?? [] );
@@ -452,6 +523,9 @@ final class HtmlSource
         }
         foreach ( [ 'class', 'id', 'role' ] as $meta ) {
             if ( $el->hasAttribute( $meta ) && strlen( $el->getAttribute( $meta ) ) > 300 ) {
+                if ( 'role' !== $meta ) {
+                    $cut[] = [ $el, $meta, $el->getAttribute( $meta ) ];
+                }
                 $el->setAttribute( $meta, substr( $el->getAttribute( $meta ), 0, 300 ) );
             }
         }
