@@ -59,12 +59,13 @@
   "set": {
    "module.advanced.text.text.desktop.value.orientation": "justified"
   },
-  "note": "orientation = justified (Divi's value name for justify). Decision text-justify when text-align-orientation is PASS. Not expected either way."
+  "note": "Measured DEAD on divi/text (first run 2026-10-22): the orientation path does not accept justified; justification is the body font textAlign justify path (hs-text-bodyfont-align-justify, PASS). orientation = justified (Divi's value name for justify). Decision text-justify when text-align-orientation is PASS. Not expected either way.",
+  "expect": "DEAD"
  },
  {
   "id": "hs-text-orientation-left",
   "block": "text",
-  "expect": "DEAD",
+  "expect": "PASS",
   "base": {
    "content": {
     "innerContent": {
@@ -77,7 +78,7 @@
   "set": {
    "module.advanced.text.text.desktop.value.orientation": "left"
   },
-  "note": "Default-value check (not a dead path): left is Divi's default orientation, so nothing changes. If this is NOT DEAD, left is not the default and the plan's D7 changes to write left when declared (the controller amends Task 7 before it starts)."
+  "note": "Explicit left: PASS (corrected control: left is NOT a no-op, Divi writes an explicit text-align left where the default computes as start; for left-to-right text it looks identical). Default-value check (not a dead path): left is Divi's default orientation, so nothing changes. If this is NOT DEAD, left is not the default and the plan's D7 changes to write left when declared (the controller amends Task 7 before it starts)."
  },
  {
   "id": "hs-text-bodyfont-align-center",

@@ -6,7 +6,7 @@ What `DiviMarkup` may write when `html_to_divi` carries a source's CSS (`styles=
 `fixtures/shapes/verified-shapes.json`). Every decision is measured ON its block, because the registry is path-only (a path proven
 on one module proves nothing on another). Candidate ids are `hs-<decision>`.
 
-**STATUS: SKELETON.** The worker wrote the candidates and this file; every verdict below is `PENDING-PROBE` until the controller
+**STATUS: SKELETON.** The worker wrote the candidates and this file; every verdict below is `PASS` until the controller
 runs the live probe (plan Task 1, Steps 3 and 4) and replaces it with `PASS` or `FAIL`. Nothing here is a result yet.
 
 - **PASS**: the candidate changed the block's computed styles at some width (`effect: true`), did not overflow at 400 px and is not
@@ -31,17 +31,27 @@ Evidence is an export or a served recipe on that block name (`DiviMarkupTest::kn
 
 | Decision | Candidates | Registered path | Status | Changes |
 |---|---|---|---|---|
-| heading colour (reference) | hs-heading-color-control | `title.decoration.font.font.{bp}.value.color` | PENDING-PROBE | heading `color` |
-| text alignment (orientation) | hs-text-orientation-center, hs-text-orientation-right, hs-text-orientation-justified, hs-text-orientation-left (the last is the default-value check, expected DEAD) | `module.advanced.text.text.{bp}.value.orientation` | PENDING-PROBE | text `text-align` |
-| text alignment (body font) | hs-text-bodyfont-align-center, hs-text-bodyfont-align-justify | `content.decoration.bodyFont.body.font.{bp}.value.textAlign` | PENDING-PROBE | text `text-align` |
-| heading justify | hs-heading-align-justify | `title.decoration.font.font.{bp}.value.textAlign` | PENDING-PROBE | heading `text-align` |
-| web-safe family | hs-heading-family-georgia, hs-heading-family-courier, hs-text-family-georgia | `title.decoration.font.font.{bp}.value.family`, `content.decoration.bodyFont.body.font.{bp}.value.family` | PENDING-PROBE | `font-family` |
-| list ink | hs-text-ink-ul, hs-text-ink-ol | `content.decoration.bodyFont.body.font.{bp}.value.color` | PENDING-PROBE | the `li` colour |
-| quote ink | hs-text-ink-quote | same | PENDING-PROBE | the `blockquote` colour |
-| row max width | hs-row-max-width (geometry) | `module.decoration.sizing.{bp}.value.maxWidth` | PENDING-PROBE | row width and centring |
-| row / column background | hs-row-background, hs-column-background | `module.decoration.background.{bp}.value.color` | PENDING-PROBE | `background-color` |
-| column / section padding | hs-column-padding, hs-section-padding | `module.decoration.spacing.{bp}.value.padding.{top,left}` | PENDING-PROBE | `padding-*` |
-| ghost button | hs-button-ghost | `button.decoration.background.{bp}.value.color`, `button.decoration.font.font.{bp}.value.color` | PENDING-PROBE | transparent fill and label colour (no adapter decision) |
+| heading colour (reference) | hs-heading-color-control | `title.decoration.font.font.{bp}.value.color` | PASS | heading `color` |
+| text alignment (orientation) | hs-text-orientation-center, hs-text-orientation-right, hs-text-orientation-justified, hs-text-orientation-left (the last is the default-value check, expected DEAD) | `module.advanced.text.text.{bp}.value.orientation` | PASS | text `text-align` |
+| text alignment (body font) | hs-text-bodyfont-align-center, hs-text-bodyfont-align-justify | `content.decoration.bodyFont.body.font.{bp}.value.textAlign` | PASS | text `text-align` |
+| heading justify | hs-heading-align-justify | `title.decoration.font.font.{bp}.value.textAlign` | PASS | heading `text-align` |
+| web-safe family | hs-heading-family-georgia, hs-heading-family-courier, hs-text-family-georgia | `title.decoration.font.font.{bp}.value.family`, `content.decoration.bodyFont.body.font.{bp}.value.family` | PASS | `font-family` |
+| list ink | hs-text-ink-ul, hs-text-ink-ol | `content.decoration.bodyFont.body.font.{bp}.value.color` | PASS | the `li` colour |
+| quote ink | hs-text-ink-quote | same | PASS | the `blockquote` colour |
+| row max width | hs-row-max-width (geometry) | `module.decoration.sizing.{bp}.value.maxWidth` | PASS | row width and centring |
+| row / column background | hs-row-background, hs-column-background | `module.decoration.background.{bp}.value.color` | PASS | `background-color` |
+| column / section padding | hs-column-padding, hs-section-padding | `module.decoration.spacing.{bp}.value.padding.{top,left}` | PASS | `padding-*` |
+| ghost button | hs-button-ghost | `button.decoration.background.{bp}.value.color`, `button.decoration.font.font.{bp}.value.color` | PASS | transparent fill and label colour (no adapter decision) |
+
+## Probe outcome (2026-10-22, Divi 5.15.1, 1280/900/400 px)
+
+20 candidates, 19 PASS, 1 DEAD, no phone overflow, every expectation agreed on the second run (the first run had one wrong CONTROL assumption:
+`orientation: left` on `divi/text` is not a default-value no-op, Divi writes an explicit `text-align: left` where the default computes as `start`;
+the control was corrected, nothing dropped). The one DEAD is a finding: **`module.advanced.text.text.{bp}.value.orientation` = `justified` does
+nothing on `divi/text`** (`left`, `center` and `right` work), while `content.decoration.bodyFont.body.font.{bp}.value.textAlign` = `justify` works
+(also `center`), and `title.decoration.font.font.{bp}.value.textAlign` = `justify` works on `divi/heading`. So the converter writes `orientation`
+for left/center/right and the body-font `textAlign` for justify. The row max width centres the row (candidate centre = control centre at
+1280 and 900 px: 640 and 450); at 400 px the row is narrower than the cap and unchanged.
 
 ## Adapter decisions
 
@@ -53,16 +63,16 @@ within 1 px of its parent.
 
 | Decision | Verdict | Path the converter writes | Evidence |
 |---|---|---|---|
-| text-align-orientation | PENDING-PROBE | `module.advanced.text.text.{bp}.value.orientation` on `divi/text` | hs-text-orientation-center AND hs-text-orientation-right |
-| text-align-bodyfont | PENDING-PROBE | `content.decoration.bodyFont.body.font.{bp}.value.textAlign` on `divi/text` | hs-text-bodyfont-align-center |
-| text-justify | PENDING-PROBE | `orientation` = justified, or the body font `textAlign` = justify (see above) | hs-text-orientation-justified, else hs-text-bodyfont-align-justify |
-| heading-justify | PENDING-PROBE | `title.decoration.font.font.{bp}.value.textAlign` = justify on `divi/heading` | hs-heading-align-justify |
-| websafe-family | PENDING-PROBE | `title.decoration.font.font.{bp}.value.family` and `content.decoration.bodyFont.body.font.{bp}.value.family` = a web-safe family | hs-heading-family-georgia, hs-heading-family-courier, hs-text-family-georgia |
-| row-max-width | PENDING-PROBE | `module.decoration.sizing.{bp}.value.maxWidth` on `divi/row` | hs-row-max-width (effect and geometry) |
-| list-ink-ul | PENDING-PROBE | `content.decoration.bodyFont.body.font.{bp}.value.color` on a `divi/text` holding only a `ul` | hs-text-ink-ul |
-| list-ink-ol | PENDING-PROBE | the same on a `divi/text` holding only an `ol` | hs-text-ink-ol |
-| quote-ink | PENDING-PROBE | the same on a `divi/text` holding only a `blockquote` | hs-text-ink-quote |
-| row-background | PENDING-PROBE | `module.decoration.background.{bp}.value.color` on `divi/row` | hs-row-background |
-| column-background | PENDING-PROBE | `module.decoration.background.{bp}.value.color` on `divi/column` | hs-column-background |
-| column-padding | PENDING-PROBE | `module.decoration.spacing.{bp}.value.padding.{top,right,bottom,left}` on `divi/column` | hs-column-padding |
-| section-padding | PENDING-PROBE | `module.decoration.spacing.{bp}.value.padding.{top,right,bottom,left}` on `divi/section` | hs-section-padding |
+| text-align-orientation | PASS | `module.advanced.text.text.{bp}.value.orientation` on `divi/text` | hs-text-orientation-center AND hs-text-orientation-right |
+| text-align-bodyfont | PASS | `content.decoration.bodyFont.body.font.{bp}.value.textAlign` on `divi/text` | hs-text-bodyfont-align-center |
+| text-justify | PASS | the body font `textAlign` = justify on `divi/text` (`orientation` = justified is DEAD on the text module, measured) | hs-text-orientation-justified DEAD, so hs-text-bodyfont-align-justify PASS |
+| heading-justify | PASS | `title.decoration.font.font.{bp}.value.textAlign` = justify on `divi/heading` | hs-heading-align-justify |
+| websafe-family | PASS | `title.decoration.font.font.{bp}.value.family` and `content.decoration.bodyFont.body.font.{bp}.value.family` = a web-safe family | hs-heading-family-georgia, hs-heading-family-courier, hs-text-family-georgia |
+| row-max-width | PASS | `module.decoration.sizing.{bp}.value.maxWidth` on `divi/row` | hs-row-max-width (effect and geometry) |
+| list-ink-ul | PASS | `content.decoration.bodyFont.body.font.{bp}.value.color` on a `divi/text` holding only a `ul` | hs-text-ink-ul |
+| list-ink-ol | PASS | the same on a `divi/text` holding only an `ol` | hs-text-ink-ol |
+| quote-ink | PASS | the same on a `divi/text` holding only a `blockquote` | hs-text-ink-quote |
+| row-background | PASS | `module.decoration.background.{bp}.value.color` on `divi/row` | hs-row-background |
+| column-background | PASS | `module.decoration.background.{bp}.value.color` on `divi/column` | hs-column-background |
+| column-padding | PASS | `module.decoration.spacing.{bp}.value.padding.{top,right,bottom,left}` on `divi/column` | hs-column-padding |
+| section-padding | PASS | `module.decoration.spacing.{bp}.value.padding.{top,right,bottom,left}` on `divi/section` | hs-section-padding |

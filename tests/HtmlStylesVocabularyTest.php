@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 final class HtmlStylesVocabularyTest extends TestCase
 {
     /** True once the live probe has decided every row: a PENDING-PROBE verdict then fails. */
-    private const REQUIRE_ALL_DECIDED = false;
+    private const REQUIRE_ALL_DECIDED = true;
 
     private const VOCABULARY = __DIR__ . '/../fixtures/shapes/html-styles-vocabulary.md';
     private const CANDIDATES = __DIR__ . '/../fixtures/shapes/candidates/html-styles.json';
