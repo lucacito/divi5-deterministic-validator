@@ -496,8 +496,31 @@ final class HtmlStylesReadabilityTest extends HtmlTestCase
         }
         $d = HtmlReadability::decide( self::blocks( [ self::sec( self::paint( '#ffffff' ), [ self::row( self::paint( null, 'none' ), [ self::col( self::paint( null, 'none' ), $mods ) ] ) ] ) ] ) );
         $this->assertCount( HtmlReadability::MAX_LISTED, $d['report']['dropped_unreadable'] );
+        $this->assertSame( 30, $d['report']['dropped_total'] );
         $this->assertSame( 30, $d['report']['ignored']['unreadable'] );
         $this->assertSame( '/p0', $d['report']['dropped_unreadable'][0]['path'] );
+    }
+
+    public function testAnInkThatIsNotARealClaimFailsClosed(): void
+    {
+        // Only `initial` means #000000; a `set` without a #rrggbb value or an unknown state is no claim: never inked #000000.
+        foreach ( [ [ 'state' => 'set', 'value' => 'red' ], [ 'state' => 'set', 'value' => null ], [ 'state' => 'weird', 'value' => '#123456' ], [ 'state' => 'initial', 'value' => '#000000' ] ] as $ink ) {
+            $d = HtmlReadability::decide( self::blocks( [ self::sec( self::paint( '#ffffff' ), [ self::row( self::paint( null, 'none' ), [ self::col( self::paint( null, 'none' ), [ self::mod( [ 'ink' => $ink ] ), self::mod( [ 'path' => '/b', 'ink' => [ 'state' => 'set', 'value' => '#111111' ] ] ) ] ) ] ) ] ) ] ) );
+            $styles = self::moduleStyles( $d['sections'][0] );
+            if ( 'initial' === $ink['state'] ) {
+                $this->assertSame( [ [ 'color' => '#000000' ], [ 'color' => '#111111' ] ], $styles );
+                $this->assertSame( '#ffffff', $d['sections'][0]['style']['background'] );
+                continue;
+            }
+            $this->assertSame( [ [], [] ], $styles, json_encode( $ink ) );
+            $this->assertSame( [], $d['sections'][0]['style'], json_encode( $ink ) );
+            $this->assertSame( 'paint_dropped', $d['report']['dropped_unreadable'][0]['reason'] );
+            $this->assertSame( 1, $d['report']['dropped_total'] );
+        }
+        // Without paint such an ink does not make a canvas either.
+        $d = HtmlReadability::decide( self::blocks( [ self::sec( self::paint( null, 'none' ), [ self::row( self::paint( null, 'none' ), [ self::col( self::paint( null, 'none' ), [ self::mod( [ 'ink' => [ 'state' => 'set', 'value' => 'red' ] ] ) ] ) ] ) ] ) ] ) );
+        $this->assertSame( [], $d['sections'][0]['style'] );
+        $this->assertSame( [ [] ], self::moduleStyles( $d['sections'][0] ) );
     }
 
     public function testAnUnprovenBackgroundIsNeverAPaint(): void

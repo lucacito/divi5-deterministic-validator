@@ -57,7 +57,7 @@ final class HtmlReadability
      *
      * @param array<string,mixed> $blocks HtmlStyleBlocks::build()
      * @return array{sections: list<array{style:array, rows: list<array{style:array, columns: list<array{style:array, modules: list<array>}>}>}>,
-     *               report: array{carried: array<string,int>, ignored: array<string,int>, dropped_unreadable: list<array>, clamped:int, notes: list<string>, external:int, passes:int}}
+     *               report: array{carried: array<string,int>, ignored: array<string,int>, dropped_unreadable: list<array>, dropped_total:int, clamped:int, notes: list<string>, external:int, passes:int}}
      *
      * Style records, exactly as DiviMarkup takes them: section {background?, padding?}; row {background?, padding?, max_width?};
      * column {background?, padding?}; heading and text {color?, size?, weight?, align?, family?}; button {color?, background?, radius?};
@@ -66,6 +66,7 @@ final class HtmlReadability
      * fixed sentences of a page whose styles were not carried at all; `external` the number of stylesheets that were not read (linked or
      * @import, from HtmlStyleBlocks) for Task 9's "N stylesheets not read" warning; `passes` (the largest pass count of a section) is internal and the
      * facade strips it.
+     * dropped_total = every dropped colour, also those beyond the MAX_LISTED entries of dropped_unreadable.
      * dropped_unreadable entry: {path, block, reason, color, background, ratio}: path the module's first source element, block heading|text|
      * button, reason one of unreadable, unknown_background, paint_dropped, unproven, button_ghosted, color the colour that was not written,
      * background the colour it was judged on (null when unknown), ratio that contrast rounded to 2 decimals as a string (null when unknown).
@@ -90,6 +91,7 @@ final class HtmlReadability
                 'carried'            => $self->carried,
                 'ignored'            => $ignored,
                 'dropped_unreadable' => $self->dropped,
+                'dropped_total'      => $self->droppedTotal,
                 'clamped'            => is_int( $blocks['clamped'] ?? null ) ? $blocks['clamped'] : 0,
                 'notes'              => array_values( array_filter( is_array( $blocks['notes'] ?? null ) ? $blocks['notes'] : [], 'is_string' ) ),
                 'external'           => is_int( $blocks['external'] ?? null ) ? $blocks['external'] : 0,
@@ -114,6 +116,9 @@ final class HtmlReadability
     private array $dropped = [];
 
     private int $passes = 0;
+
+    /** Every dropped colour, also those beyond MAX_LISTED. */
+    private int $droppedTotal = 0;
 
     // ---------------------------------------------------------------
     // One section
@@ -140,7 +145,7 @@ final class HtmlReadability
         // The canvas (D2), decided once.
         if ( 'none' === $levels['s']['paint']['state'] ) {
             foreach ( $mods as $x ) {
-                if ( in_array( $x['m']['type'] ?? null, [ 'heading', 'text' ], true ) && 'set' === ( $x['m']['ink']['state'] ?? null ) ) {
+                if ( in_array( $x['m']['type'] ?? null, [ 'heading', 'text' ], true ) && 'set' === ( $x['m']['ink']['state'] ?? null ) && self::isColour( $x['m']['ink']['value'] ?? null ) ) {
                     $levels['s']['paint']  = [ 'state' => 'set', 'value' => HtmlStyleBlocks::CANVAS ];
                     $levels['s']['canvas'] = true;
                     break;
@@ -191,6 +196,9 @@ final class HtmlReadability
         $sectionStyle = $this->box( $keep['s'] ? $levels['s']['paint']['value'] : null, $s['padding'] ?? [], DiviMarkup::STYLE_PROVEN['section-padding'] ?? false );
         $outRows      = [];
         foreach ( $rows as $r => $row ) {
+            // Row padding has no STYLE_PROVEN key on purpose: module.decoration.spacing.desktop.value.padding on divi/row is written by real
+            // exports and served recipes (fixtures/shapes/html-styles-vocabulary.md, "always proven" table; per block in
+            // HtmlToDiviGroundingTest via tests/Support/KnownBlockPaths.php), so it needs no probe. No key is invented here.
             $rowStyle = $this->box( $keep[ 'r' . $r ] ? $levels[ 'r' . $r ]['paint']['value'] : null, $row['padding'] ?? [], true );
             if ( is_int( $row['max_width'] ?? null ) ) {
                 if ( DiviMarkup::STYLE_PROVEN['row-max-width'] ?? false ) {
@@ -274,7 +282,11 @@ final class HtmlReadability
             return [ 'fail' => false, 'ink' => $ink, 'fill' => DiviMarkup::TRANSPARENT, 'reason' => null, 'background' => null, 'ratio' => null ];
         }
 
+        // Fail closed: only `initial` is the CSS initial #000000, only a `set` with a real #rrggbb is a claim; anything else is no claim.
         $inkState = $m['ink']['state'] ?? 'unresolved';
+        if ( ! ( 'initial' === $inkState || 'mixed' === $inkState || ( 'set' === $inkState && self::isColour( $m['ink']['value'] ?? null ) ) ) ) {
+            $inkState = 'unresolved';
+        }
         if ( null === $L ) {
             return $none + self::lost( $chain, $levels );
         }
@@ -284,7 +296,7 @@ final class HtmlReadability
 
             return $v['fail'] ? $v : [ 'fail' => true, 'ink' => null, 'fill' => null, 'reason' => $inkState, 'background' => null, 'ratio' => null ];
         }
-        $ink = 'set' === $inkState && self::isColour( $m['ink']['value'] ?? null ) ? $m['ink']['value'] : '#000000';
+        $ink = 'set' === $inkState ? (string) $m['ink']['value'] : '#000000'; // 'initial' here
 
         return self::onPaint( $m, $ink, $chain, $L, $levels, true );
     }
@@ -494,6 +506,7 @@ final class HtmlReadability
         if ( 'button_ghosted' !== $reason ) {
             $this->bump( $reason );
         }
+        ++$this->droppedTotal;
         if ( count( $this->dropped ) < self::MAX_LISTED ) {
             $this->dropped[] = [
                 'path'       => is_string( $m['path'] ?? null ) ? $m['path'] : null,
