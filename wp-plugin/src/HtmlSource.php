@@ -291,11 +291,7 @@ final class HtmlSource
         $repaired  = self::repairs( $html, LIBXML_VERSION );
         // NUL bytes and other control characters have no place in a page; drop them before parsing.
         $html = (string) preg_replace( '/[\x00-\x08\x0b\x0c\x0e-\x1f]/', '', $html );
-        // Where a browser starts the body but libxml2 would still be in head: an explicit <body> there (see bodyStart()).
-        $at = self::bodyStart( $html );
-        if ( null !== $at ) {
-            $html = substr( $html, 0, $at ) . '<body>' . substr( $html, $at );
-        }
+        $html = self::browserBody( $html );
 
         $doc  = new \DOMDocument();
         $prev = libxml_use_internal_errors( true );
@@ -399,6 +395,24 @@ final class HtmlSource
         }
 
         return $url;
+    }
+
+    /**
+     * The HTML with the body where a browser has it, for libxml2: an explicit <body> where a browser starts it but libxml2 would still be
+     * in head (bodyStart()), then without the </body> and </html> end tags that content follows (strayEndTags(), found on the HTML with
+     * that <body>). Each step leaves the HTML as given when it does not apply. Public so a test helper can parse the same way.
+     */
+    public static function browserBody( string $html ): string
+    {
+        $at = self::bodyStart( $html );
+        if ( null !== $at ) {
+            $html = substr( $html, 0, $at ) . '<body>' . substr( $html, $at );
+        }
+        foreach ( array_reverse( self::strayEndTags( $html ) ?? [] ) as [ $from, $length ] ) {
+            $html = substr( $html, 0, $from ) . substr( $html, $from + $length );
+        }
+
+        return $html;
     }
 
     /** Head elements whose content bodyStart() skips to their end tag (raw text, escapable raw text, or a template's content). */
@@ -508,6 +522,161 @@ final class HtmlSource
             }
             $i = $close + 1;
         }
+    }
+
+    /** Elements whose text strayEndTags() skips to their end tag: raw text and escapable raw text in a browser (noscript with scripting on). */
+    private const STRAY_RAW = [ 'script', 'style', 'textarea', 'title', 'iframe', 'noscript' ];
+
+    /** Elements strayEndTags() does not model (their text rules differ between the parsers, or a frameset replaces the body). */
+    private const STRAY_UNSURE = [ 'xmp', 'noembed', 'noframes', 'plaintext', 'frameset', 'frame' ];
+
+    /**
+     * The </body> and </html> end tags that page content follows, as [offset, length] pairs in document order, or null (none, or
+     * something this does not model). Public as a seam for tests.
+     *
+     * A browser never ends the body at these end tags: </body> only switches to "after body" (inside a table, a select or a template it
+     * is ignored), </html> to "after after body", and the next text or start tag there is processed again "in body" with the stack of
+     * open elements unchanged. So content after them is the body's content, inside whatever was still open, exactly as if the end tag
+     * were not there. libxml2 2.9 instead closes everything at the end tag and parses what follows outside the body; loose text there
+     * opens an IMPLIED <p> (htmlCheckParagraph, its parent is html) and an HTML5 element it does not know (section, header, main ...)
+     * does not close it, so the next section was swallowed into a paragraph. parse() removes these end tags, which gives libxml2 the
+     * browser's token stream. End tags with nothing but white space and comments after them are kept (the HTML then stays byte for byte
+     * as given): comments are the only thing a browser places differently after them, and the converter reads none.
+     *
+     * ONE forward pass that knows markup from text: comments, the doctype, attribute values (through tag()), raw text (script, style,
+     * textarea, title, iframe, noscript) and svg/math content. Anything the two parsers might tokenize differently gives null, which
+     * leaves the HTML exactly as given: an odd comment, CDATA, a bogus comment or processing instruction, a tag tag() rejects, a
+     * self-closing end tag or raw-text start tag, raw text holding a </letter run or <!--, xmp/noembed/noframes/plaintext/frameset, raw text or a breakout tag
+     * inside svg/math, a mismatched svg/math end tag, and a </body> or </html> inside svg/math.
+     *
+     * @return ?list<array{0:int,1:int}>
+     */
+    public static function strayEndTags( string $h ): ?array
+    {
+        $n       = strlen( $h );
+        $lh      = strtolower( $h );
+        $i       = 0 === strncmp( $h, "\xEF\xBB\xBF", 3 ) ? 3 : 0;
+        $steps   = 0;
+        $foreign = [];
+        $found   = []; // every </body> and </html> so far
+        $kept    = 0;  // how many of them content follows
+        while ( $i < $n ) {
+            if ( ++$steps > self::MAX_SCAN_STEPS ) {
+                return null;
+            }
+            $lt   = strpos( $h, '<', $i );
+            $stop = false === $lt ? $n : $lt;
+            if ( $stop > $i && strspn( $h, self::WS, $i, $stop - $i ) < $stop - $i ) {
+                $kept = count( $found ); // text
+            }
+            if ( false === $lt ) {
+                break;
+            }
+            $c = $lt + 1 < $n ? $h[ $lt + 1 ] : '';
+            if ( '!' === $c ) {
+                if ( 0 === substr_compare( $h, '<!--', $lt, 4 ) ) {
+                    $j = $lt + 4;
+                    $e = strpos( $h, '-->', $j );
+                    if ( ( $j < $n && '>' === $h[ $j ] ) || 0 === substr_compare( $h, '->', $j, 2 ) || false === $e || false !== strpos( substr( $h, $j, $e - $j ), '--!>' ) ) {
+                        return null;
+                    }
+                    $i = $e + 3;
+                    continue;
+                }
+                if ( 0 === substr_compare( $lh, '<!doctype', $lt, 9 ) && false !== ( $e = strpos( $h, '>', $lt ) ) ) {
+                    $i = $e + 1;
+                    continue;
+                }
+
+                return null;
+            }
+            if ( '?' === $c ) {
+                return null;
+            }
+            $end = '/' === $c;
+            $j   = $lt + ( $end ? 2 : 1 );
+            if ( $j >= $n || ! ctype_alpha( $h[ $j ] ) ) {
+                if ( $end ) {
+                    return null;
+                }
+                $kept = count( $found ); // a lone < is text
+                $i    = $lt + 1;
+                continue;
+            }
+            $tag = self::tag( $h, $lh, $j, $n, $steps );
+            if ( is_string( $tag ) ) {
+                return null;
+            }
+            [ $next, $name, , $selfClose ] = $tag;
+            $i = $next;
+            if ( in_array( $name, self::STRAY_UNSURE, true ) ) {
+                return null;
+            }
+            if ( $end ) {
+                if ( $selfClose ) {
+                    return null;
+                }
+                if ( [] !== $foreign ) {
+                    if ( end( $foreign ) !== $name ) {
+                        return null; // a </body> or </html> in svg/math included
+                    }
+                    array_pop( $foreign );
+                    continue;
+                }
+                if ( 'body' === $name || 'html' === $name ) {
+                    $found[] = [ $lt, $next - $lt ];
+                }
+                continue;
+            }
+            if ( ! in_array( $name, [ 'html', 'head', 'body' ], true ) ) {
+                $kept = count( $found ); // a start tag
+            }
+            if ( [] !== $foreign ) {
+                if ( in_array( $name, self::BREAKOUT, true ) || 'font' === $name || in_array( $name, self::STRAY_RAW, true ) ) {
+                    return null;
+                }
+                if ( ! $selfClose ) {
+                    $foreign[] = $name;
+                    if ( count( $foreign ) > self::MAX_SCAN_DEPTH ) {
+                        return null;
+                    }
+                }
+                continue;
+            }
+            if ( 'svg' === $name || 'math' === $name ) {
+                if ( ! $selfClose ) {
+                    $foreign = [ $name ];
+                }
+                continue;
+            }
+            if ( ! in_array( $name, self::STRAY_RAW, true ) ) {
+                continue;
+            }
+            if ( $selfClose ) {
+                return null; // a browser ignores the slash and reads raw text, libxml2 closes the element
+            }
+            $e = strpos( $lh, '</' . $name, $next );
+            if ( false === $e ) {
+                return null;
+            }
+            $after = $e + 2 + strlen( $name );
+            if ( $after >= $n || false === strpos( self::WS . '/>', $h[ $after ] ) ) {
+                return null;
+            }
+            $text = substr( $h, $next, $e - $next );
+            if ( 1 === preg_match( '#</[A-Za-z]#', $text ) || false !== strpos( $text, '<!--' ) ) {
+                return null;
+            }
+            $steps += 1 + intdiv( $e - $next, 64 );
+            $close  = strpos( $h, '>', $after );
+            if ( false === $close ) {
+                return null;
+            }
+            $i = $close + 1;
+        }
+        $stray = array_slice( $found, 0, $kept );
+
+        return array() === $stray ? null : $stray;
     }
 
     /** Elements that belong in <head>; anything else a parser finds there is page content (see relocateHeadContent). */
