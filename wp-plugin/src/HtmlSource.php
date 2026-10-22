@@ -304,6 +304,8 @@ final class HtmlSource
             return $out;
         }
 
+        self::relocateHeadContent( $doc );
+
         $total = $doc->getElementsByTagName( '*' )->length;
         if ( $total > self::MAX_ELEMENTS ) {
             $out['error'] = 'The HTML has more than ' . self::MAX_ELEMENTS . ' elements. Convert it in parts.';
@@ -391,6 +393,46 @@ final class HtmlSource
         }
 
         return $url;
+    }
+
+    /** Elements that belong in <head>; anything else a parser finds there is page content (see relocateHeadContent). */
+    private const HEAD_ELEMENTS = [ 'title', 'meta', 'link', 'style', 'script', 'base', 'noscript', 'template' ];
+
+    /**
+     * libxml2 (an HTML4 parser) keeps an element it does not know, such as the HTML5 section, header, nav, main, footer, article or aside,
+     * INSIDE <head> when it follows head content (a <style>, <link> or <meta>); a browser ends the head there and starts the body. Left
+     * alone the content was lost (or the page refused as having no content). Every direct child element of <head> that is not a head
+     * element moves, in document order, to the start of <body> (created when missing), which is the tree a browser builds. Nothing is
+     * dropped, so the text check counts the moved text; no repair note is needed because the result is the browser's tree.
+     */
+    private static function relocateHeadContent( \DOMDocument $doc ): void
+    {
+        $head = $doc->getElementsByTagName( 'head' )->item( 0 );
+        if ( ! $head instanceof \DOMElement ) {
+            return;
+        }
+        $moving = [];
+        foreach ( $head->childNodes as $child ) {
+            if ( $child instanceof \DOMElement && ! in_array( strtolower( $child->tagName ), self::HEAD_ELEMENTS, true ) ) {
+                $moving[] = $child;
+            }
+        }
+        if ( array() === $moving ) {
+            return;
+        }
+        $body = $doc->getElementsByTagName( 'body' )->item( 0 );
+        if ( ! $body instanceof \DOMElement ) {
+            $html = $head->parentNode;
+            if ( ! $html instanceof \DOMNode ) {
+                return;
+            }
+            $body = $doc->createElement( 'body' );
+            $html->insertBefore( $body, $head->nextSibling );
+        }
+        $first = $body->firstChild;
+        foreach ( $moving as $el ) {
+            $body->insertBefore( $el, $first );
+        }
     }
 
     /** Whitespace collapsed to single spaces, trimmed. */

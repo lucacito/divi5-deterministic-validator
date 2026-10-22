@@ -732,4 +732,54 @@ final class HtmlSourceTest extends HtmlTestCase
         $this->assertSame( 129, $pinned );
         $this->assertSame( 129, array_sum( array_map( 'count', $table ) ) );
     }
+    /** @return array<string,array{0:string,1:list<string>}> */
+    public static function html5AfterHeadContent(): array
+    {
+        return [
+            'style then section'  => [ '<style>a{}</style><section><h1>A</h1></section><div><p>B</p></div>', [ 'A', 'B' ] ],
+            'link then section'   => [ '<link rel="stylesheet" href="x.css"><section><h1>A</h1></section>', [ 'A' ] ],
+            'meta then header'    => [ '<meta charset="utf-8"><header>Top</header><main><p>Body</p></main>', [ 'Top', 'Body' ] ],
+            'title then nav'      => [ '<title>t</title><nav>N</nav><p>x</p>', [ 'N', 'x' ] ],
+            'explicit head'       => [ '<html><head><style>a{}</style><section>S</section></head><body><p>x</p></body></html>', [ 'S', 'x' ] ],
+        ];
+    }
+
+    /** libxml2 keeps an HTML5 element that follows head content inside <head>; a browser starts the body there. */
+    #[DataProvider('html5AfterHeadContent')]
+    public function testHtml5ElementsAfterHeadContentMoveIntoTheBody( string $html, array $texts ): void
+    {
+        $s = HtmlSource::parse( $html );
+        $this->assertNull( $s['error'], (string) $s['error'] );
+        $body = $this->bodyHtml( $s );
+        $last = -1;
+        foreach ( $texts as $t ) {
+            $pos = strpos( $body, $t );
+            $this->assertNotFalse( $pos, $t . ' is in the body' );
+            $this->assertGreaterThan( $last, $pos, 'document order is kept' );
+            $last = $pos;
+        }
+        $head = $s['body']->ownerDocument->getElementsByTagName( 'head' )->item( 0 );
+        foreach ( $head ? iterator_to_array( $head->childNodes ) : [] as $child ) {
+            if ( $child instanceof \DOMElement ) {
+                $this->assertContains( strtolower( $child->tagName ), [ 'title', 'meta', 'link', 'style', 'script', 'base', 'noscript', 'template' ], 'only head elements stay in head' );
+            }
+        }
+    }
+
+    public function testRelocatedElementsComeBeforeTheBodysOwnContent(): void
+    {
+        $s    = HtmlSource::parse( '<html><head><style>a{}</style><section>FIRST</section></head><body><p>SECOND</p></body></html>' );
+        $body = $this->bodyHtml( $s );
+        $this->assertLessThan( strpos( $body, 'SECOND' ), strpos( $body, 'FIRST' ) );
+    }
+
+    public function testANormalHeadIsLeftAlone(): void
+    {
+        $s = HtmlSource::parse( '<!DOCTYPE html><html><head><meta charset="utf-8"><title>T</title><link rel="stylesheet" href="x.css"><style>a{}</style><script>1</script></head><body><section><h1>A</h1></section></body></html>' );
+        $this->assertNull( $s['error'] );
+        $head = $s['body']->ownerDocument->getElementsByTagName( 'head' )->item( 0 );
+        $this->assertSame( [ 'meta', 'title', 'link', 'style', 'script' ], array_map( static fn( $n ) => $n->nodeName, array_values( array_filter( iterator_to_array( $head->childNodes ), static fn( $n ) => $n instanceof \DOMElement ) ) ) );
+        $this->assertSame( 'T', $s['title'] );
+        $this->assertSame( [], $s['repaired'], 'a relocation is what a browser does: no repair note' );
+    }
 }

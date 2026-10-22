@@ -211,6 +211,52 @@ final class HtmlToDiviTest extends HtmlTestCase
         $this->assertSame( $file, $this->convert( $html, [ 'styles' => 'none' ] )['layout'] );
     }
 
+    /** @return array<string,array{0:string,1:list<string>}> file => the words that must reach the layout */
+    public static function headShapes(): array
+    {
+        return [
+            '15-head-style-section.html' => [ '15-head-style-section.html', [ 'Fresh coffee', 'Roasted every morning', 'Visit us on Main Street' ] ],
+            '15-head-link-section.html'  => [ '15-head-link-section.html', [ 'Hello from the link page', 'Only a stylesheet link' ] ],
+            '15-head-meta-header.html'   => [ '15-head-meta-header.html', [ 'Top of the page', 'The main text', 'Footer words' ] ],
+        ];
+    }
+
+    /** HTML5 elements after head content used to be lost (or the page refused): every word must now be converted and counted. */
+    #[DataProvider('headShapes')]
+    public function testHtml5ElementsAfterHeadContentAreConverted( string $file, array $words ): void
+    {
+        foreach ( [ 'none', 'basic' ] as $styles ) {
+            $r = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => $styles ] );
+            $this->assertTrue( $r['ok'], $file . ' ' . $styles . ': ' . (string) ( $r['error'] ?? '' ) );
+            foreach ( $words as $w ) {
+                $this->assertStringContainsString( $w, $r['layout'], $file . ' ' . $styles );
+            }
+            $this->assertTrue( $r['report']['text_check']['equal'] );
+            $this->assertGreaterThanOrEqual( strlen( implode( '', $words ) ) - count( $words ) * 2, $r['report']['text_check']['source_chars'], 'the relocated text counts as source text' );
+        }
+    }
+
+    public function testASectionBeforeADivIsNoLongerLostAfterAStyleBlock(): void
+    {
+        $r = $this->convert( '<style>h1{color:red}</style><section><h1>AAA</h1><p>one</p></section><div><p>BBB</p></div>', [ 'styles' => 'none' ] );
+        $this->assertStringContainsString( 'AAA', $r['layout'] );
+        $this->assertStringContainsString( 'BBB', $r['layout'] );
+        $this->assertSame( 9, $r['report']['text_check']['source_chars'] );
+    }
+
+    #[DataProvider('headShapes')]
+    public function testHeadShapeGoldenLayout( string $file ): void
+    {
+        $name = basename( $file, '.html' );
+        $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => 'none' ] );
+        $gold = __DIR__ . '/golden/html-to-divi/' . $name . '.none.layout.txt';
+        if ( false !== getenv( 'AIED_UPDATE_GOLDEN' ) ) {
+            file_put_contents( $gold, $r['layout'] . "\n" );
+        }
+        $this->assertFileExists( $gold );
+        $this->assertSame( rtrim( (string) file_get_contents( $gold ), "\n" ), $r['layout'] );
+    }
+
     public function testEmptyInputIsRefusedWithAReason(): void
     {
         $r = $this->convert( (string) file_get_contents( self::FIXTURES . '/11-empty.html' ) );
