@@ -38,8 +38,8 @@ final class HtmlStylesVocabularyTest extends TestCase
         'hs-heading-color-control'       => [ 'heading', 'PASS', [ self::H . 'color' => '#dc2626' ] ],
         'hs-text-orientation-center'     => [ 'text', 'PASS', [ self::O => 'center' ] ],
         'hs-text-orientation-right'      => [ 'text', 'PASS', [ self::O => 'right' ] ],
-        'hs-text-orientation-justified'  => [ 'text', null, [ self::O => 'justified' ] ],
-        'hs-text-orientation-left'       => [ 'text', 'DEAD', [ self::O => 'left' ] ],
+        'hs-text-orientation-justified'  => [ 'text', 'DEAD', [ self::O => 'justified' ] ],
+        'hs-text-orientation-left'       => [ 'text', 'PASS', [ self::O => 'left' ] ],
         'hs-text-bodyfont-align-center'  => [ 'text', null, [ self::B . 'textAlign' => 'center' ] ],
         'hs-text-bodyfont-align-justify' => [ 'text', null, [ self::B . 'textAlign' => 'justify' ] ],
         'hs-heading-align-justify'       => [ 'heading', null, [ self::H . 'textAlign' => 'justify' ] ],
@@ -118,9 +118,10 @@ final class HtmlStylesVocabularyTest extends TestCase
         $ghost = $byId['hs-button-ghost']['base']['button']['decoration'];
         $this->assertNotSame( 'rgba(255,255,255,0)', $ghost['background']['desktop']['value']['color'] );
         $this->assertNotSame( '#e2e8f0', $ghost['font']['font']['desktop']['value']['color'] );
-        // Only the default-value check expects DEAD, and it starts from no orientation at all.
+        // Measured 2026-10-22: `justified` on the text orientation is DEAD (the only DEAD expectation); an explicit `left` is NOT a
+        // no-op (Divi writes text-align left where the default computes as start), so it is a PASS from no orientation at all.
         $dead = array_keys( array_filter( $byId, static fn ( array $c ): bool => 'DEAD' === ( $c['expect'] ?? null ) ) );
-        $this->assertSame( [ 'hs-text-orientation-left' ], $dead );
+        $this->assertSame( [ 'hs-text-orientation-justified' ], $dead );
         $this->assertArrayNotHasKey( 'module', $byId['hs-text-orientation-left']['base'], 'left is measured against no orientation' );
         // A control must PASS: the heading colour.
         $this->assertSame( 'PASS', $byId['hs-heading-color-control']['expect'] );
