@@ -75,6 +75,7 @@ require_once __DIR__ . '/HtmlSource.php';
 require_once __DIR__ . '/HtmlProse.php';
 require_once __DIR__ . '/HtmlCss.php';
 require_once __DIR__ . '/HtmlMapper.php';
+require_once __DIR__ . '/HtmlStyles.php';
 require_once __DIR__ . '/DiviMarkup.php';
 require_once __DIR__ . '/HtmlImages.php';
 require_once __DIR__ . '/HtmlFonts.php';

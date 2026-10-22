@@ -8,7 +8,7 @@ use AiEditorDivi5\WP\HtmlMapper;
 use AiEditorDivi5\WP\HtmlSource;
 use PHPUnit\Framework\TestCase;
 
-foreach ( [ 'HtmlSource', 'HtmlProse', 'HtmlCss', 'HtmlMapper', 'DiviMarkup', 'HtmlImages', 'HtmlFonts', 'HtmlToDivi', 'ImagePack', 'ImageTokens', 'CodePolicy', 'LayoutGate' ] as $htmlClass ) {
+foreach ( [ 'HtmlSource', 'HtmlProse', 'HtmlCss', 'HtmlMapper', 'HtmlStyles', 'DiviMarkup', 'HtmlImages', 'HtmlFonts', 'HtmlToDivi', 'ImagePack', 'ImageTokens', 'CodePolicy', 'LayoutGate' ] as $htmlClass ) {
     require_once __DIR__ . '/../wp-plugin/src/' . $htmlClass . '.php';
 }
 

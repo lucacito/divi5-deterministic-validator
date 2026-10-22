@@ -29,6 +29,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *   with families()); or "inherit". "inherit" on an inherited property (color, font-family, font-size, font-weight,
  *   text-align) is a real candidate: it wins like any value and then takes the parent's computed value. Every other entry is
  *   a POISON: value null, poison = a REASONS entry.
+ * - `scale` is a third PRESENCE marker (Task 6 review I3): any transform, rotate, translate, scale, perspective, zoom, font-size-adjust or
+ *   text-size-adjust (and their -webkit- spellings), whatever the value (none included), and an animation: the text and boxes of the
+ *   element and its subtree may render at another size than their computed values say.
  * - Two pseudo-properties are PRESENCE poisons (MARKERS), not values. `effect` (opacity, filter and its backdrop and -webkit spellings,
  *   mix-blend-mode, -webkit-text-fill-color, background-clip: text, color-scheme, animation and animation-name, the whole mask family,
  *   text-shadow and the text stroke properties; "none" or 0 emits nothing) means colours on the element AND ITS SUBTREE may look different
@@ -71,7 +74,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * an ordinary character, as in CSS); @import, @charset, @namespace statements are counted (external for @import, at_rule
  * otherwise); @font-face, the animation rule, @page, @property, @counter-style, @font-feature-values and any unknown block
  * at-rule are skipped and counted (at_rule); @media, @supports, @container, @layer, @scope, @document, @starting-style blocks:
- * the inner rules are parsed with poison_only = true and counted "media" per declaration, and inside @layer an important
+ * the inner rules are parsed with poison_only = true and counted "media" per declaration; every rule inside @scope has the sentinel
+ * specificity (scoping proximity ranks between specificity and order, so its rank is unknown), and inside @layer an important
  * declaration gets the sentinel specificity (it beats an unlayered important one); a block that is not closed at the end of the
  * text is read to the end (as a browser does) and counted "selector"; a stray "}" is part of the next prelude (as in CSS), so
  * that rule is not understood and poisons; an at-rule name with an escape could spell @media: it poisons everything (sentinel);
@@ -128,8 +132,16 @@ final class HtmlCss
         'padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'max-width',
         'border-top-left-radius', 'border-top-right-radius', 'border-bottom-right-radius', 'border-bottom-left-radius' ];
 
+    /** Properties whose mere presence emits the `scale` marker (rendered size may differ from the computed one). */
+    private const SCALES = [ 'transform', '-webkit-transform', 'rotate', 'translate', 'scale', 'perspective', '-webkit-perspective', 'zoom',
+        '-webkit-zoom', 'font-size-adjust', 'text-size-adjust', '-webkit-text-size-adjust' ];
+
+    /** Generic family keywords: a browser computes them in lower case (an unquoted one is the keyword, a quoted one a family name). */
+    private const GENERIC_FAMILIES = [ 'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui', 'ui-serif', 'ui-sans-serif',
+        'ui-monospace', 'ui-rounded', 'emoji', 'math', 'fangsong' ];
+
     /** Pseudo-properties: presence poisons (see the contract in the class docblock). */
-    public const MARKERS = [ 'effect', 'background-image' ];
+    public const MARKERS = [ 'effect', 'background-image', 'scale' ];
 
     /** Every property name a declaration entry can carry. */
     public const ALL = [ ...self::READ, ...self::MARKERS ];
@@ -370,7 +382,7 @@ final class HtmlCss
      */
     public static function stylesheet( string $css ): array
     {
-        $ctx    = [ 'rules' => [], 'ignored' => [], 'full' => false, 'limit' => self::MAX_RULES, 'visits' => 0, 'subjects' => 0, 'covered' => false ];
+        $ctx    = [ 'rules' => [], 'ignored' => [], 'full' => false, 'limit' => self::MAX_RULES, 'visits' => 0, 'subjects' => 0, 'covered' => false, 'scope' => 0 ];
         $capped = strlen( $css ) > self::MAX_CSS_BYTES;
         if ( $capped ) {
             // The last rule may be cut inside a value (#123456 read as #123): a final all-properties poison covers it and the unseen rest.
@@ -634,7 +646,10 @@ final class HtmlCss
         if ( $close >= $n ) {
             self::bump( $ctx['ignored'], 'selector' );
         }
+        // Inside @scope the scoping proximity ranks between specificity and order: every rule in it has an unknown rank (sentinel).
+        $ctx['scope'] += 'scope' === $name ? 1 : 0;
         self::ruleList( substr( $s, $end + 1, $close - $end - 1 ), $ctx, $depth + 1, true, $layer || 'layer' === $name );
+        $ctx['scope'] -= 'scope' === $name ? 1 : 0;
 
         return $close + 1;
     }
@@ -924,6 +939,10 @@ final class HtmlCss
             self::stop( $ctx );
 
             return;
+        }
+        if ( $ctx['scope'] > 0 ) {
+            $spec   = self::MAX_SPECIFICITY;
+            $poison = true;
         }
         self::push( $ctx, $subject, $simple, $spec, $poison, $decls );
     }
@@ -1738,6 +1757,10 @@ final class HtmlCss
             return self::poisons( $logical, 'property', $important );
         }
 
+        if ( in_array( $name, self::SCALES, true ) ) {
+            // Presence, whatever the value (none included): the text and boxes may render at another size than computed (review I3).
+            return [ self::entry( 'scale', null, $important, 'effect' ) ];
+        }
         if ( 1 === preg_match( '/^(?:-webkit-)?mask(?:-|$)/', $name ) || in_array( $name, [ 'text-shadow', 'text-stroke', '-webkit-text-stroke', '-webkit-text-stroke-width', '-webkit-text-stroke-color' ], true ) ) {
             // A mask can hide text, a text shadow or stroke can make light text unreadable: the colour is no longer what it looks like.
             return in_array( $lv, [ 'none', '0', '0px' ], true ) ? [] : [ self::entry( 'effect', null, $important, 'effect' ) ];
@@ -1754,9 +1777,11 @@ final class HtmlCss
             case '-webkit-filter':
             case 'backdrop-filter':
             case '-webkit-backdrop-filter':
+                return 'none' === $lv ? [] : [ self::entry( 'effect', null, $important, 'effect' ) ];
             case 'animation':
             case 'animation-name':
-                return 'none' === $lv ? [] : [ self::entry( 'effect', null, $important, 'effect' ) ];
+                // An animation may change colours and sizes (keyframes can scale or set font-size).
+                return 'none' === $lv ? [] : [ self::entry( 'effect', null, $important, 'effect' ), self::entry( 'scale', null, $important, 'effect' ) ];
             case 'mix-blend-mode':
                 return 'normal' === $lv ? [] : [ self::entry( 'effect', null, $important, 'effect' ) ];
             case '-webkit-text-fill-color':
@@ -1876,6 +1901,12 @@ final class HtmlCss
                 return [ 'font-size', 'font-weight', 'font-family' ];
             case 'all':
                 return self::ALL;
+            case 'animation':
+            case 'animation-name':
+                return [ 'effect', 'scale' ];
+        }
+        if ( in_array( $name, self::SCALES, true ) ) {
+            return [ 'scale' ];
         }
         if ( in_array( $name, self::READ, true ) ) {
             return [ $name ];
@@ -1995,7 +2026,7 @@ final class HtmlCss
                 if ( strlen( $part ) < 2 || substr( $part, -1 ) !== $part[0] || 1 !== preg_match( '/^[\p{L}\p{N}][\p{L}\p{N} _.+&-]{0,99}$/u', $inner ) ) {
                     return null;
                 }
-                $name = (string) preg_replace( '/ {2,}/', ' ', $inner );
+                $name = $inner; // a quoted name is kept as written: "Open  Sans" is not "Open Sans" for a browser
             } else {
                 $name = '';
                 foreach ( self::words( $part ) as $word ) {
@@ -2006,6 +2037,9 @@ final class HtmlCss
                 }
                 if ( '' === $name || strlen( $name ) > 100 || in_array( strtolower( $name ), [ 'inherit', 'initial', 'unset', 'revert', 'revert-layer', 'default' ], true ) ) {
                     return null;
+                }
+                if ( in_array( strtolower( $name ), self::GENERIC_FAMILIES, true ) ) {
+                    $name = strtolower( $name );
                 }
             }
             $out[] = $name;

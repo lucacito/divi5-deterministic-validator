@@ -620,8 +620,11 @@ final class HtmlCssTest extends HtmlTestCase
 
     public function testMoreEffectsAndAnimationsAreMarkers(): void
     {
-        foreach ( [ '-webkit-filter: blur(1px)', 'backdrop-filter: blur(4px)', '-webkit-backdrop-filter: blur(4px)', 'animation: f 1ms forwards', 'animation-name: f' ] as $css ) {
+        foreach ( [ '-webkit-filter: blur(1px)', 'backdrop-filter: blur(4px)', '-webkit-backdrop-filter: blur(4px)' ] as $css ) {
             $this->assertSame( [ $this->decl( 'effect', null, false, 'effect' ) ], $this->block( $css ), $css );
+        }
+        foreach ( [ 'animation: f 1ms forwards', 'animation-name: f' ] as $css ) { // review round 2: an animation may also scale
+            $this->assertSame( [ $this->decl( 'effect', null, false, 'effect' ), $this->decl( 'scale', null, false, 'effect' ) ], $this->block( $css ), $css );
         }
         foreach ( [ '-webkit-filter: none', 'backdrop-filter: none', 'animation: none', 'animation-name: none' ] as $css ) {
             $this->assertSame( [], $this->block( $css ), $css );
@@ -629,7 +632,7 @@ final class HtmlCssTest extends HtmlTestCase
         $css = '@keyframes f { to { color: red } } p { color: blue; animation: f 1ms forwards }';
         $r   = HtmlCss::stylesheet( $css );
         $this->assertCount( 1, $r['rules'] );
-        $this->assertSame( [ 'color', 'effect' ], array_column( $r['rules'][0]['declarations'], 'property' ) );
+        $this->assertSame( [ 'color', 'effect', 'scale' ], array_column( $r['rules'][0]['declarations'], 'property' ) );
         $this->assertSame( 'POISON:effect', $this->winner( $css, [ 'tag' => 'p' ], 'effect' ) );
         $this->assertSame( 1, $r['ignored']['at_rule'] );
     }
@@ -725,6 +728,44 @@ final class HtmlCssTest extends HtmlTestCase
         }
         $this->assertSame( [ $this->decl( 'effect', null, true, 'effect' ) ], $this->block( 'text-shadow: 0 0 1px red !important' ) );
         $this->assertSame( 'POISON:effect', $this->winner( 'p { color: #fff; text-shadow: 0 0 3px #000 }', [ 'tag' => 'p' ], 'effect' ) );
+    }
+
+    /** Task 6 review C2: scope proximity ranks between specificity and order, so every declaration inside @scope has an unknown rank. */
+    public function testScopedRulesHaveTheSentinelRank(): void
+    {
+        foreach ( [ '@scope (.card) { p { color: #f00 } } p { color: #00f }', '@scope (.a) to (.b) { p { color: #f00 } } p { color: #00f }', '@scope { p { color: #f00 } } p { color: #00f }' ] as $css ) {
+            $r = HtmlCss::stylesheet( $css );
+            $this->assertSame( HtmlCss::MAX_SPECIFICITY, $r['rules'][0]['specificity'], $css );
+            $this->assertTrue( $r['rules'][0]['poison_only'], $css );
+            $this->assertSame( 'p', $r['rules'][0]['subject']['tag'], $css );
+            $this->assertSame( [ 0, 0, 1 ], $r['rules'][1]['specificity'], 'the rule after @scope is unaffected' );
+            $this->assertStringStartsWith( 'POISON', $this->winner( $css, [ 'tag' => 'p' ], 'color' ), $css );
+        }
+        $this->assertSame( [ 0, 1, 0 ], HtmlCss::stylesheet( '@media (min-width:1px) { .x { color: red } }' )['rules'][0]['specificity'], '@media keeps its specificity' );
+    }
+
+    /** Task 6 review C9: a quoted family keeps its inner spaces (a browser does), and the generic keywords are lowercase (a browser serialises them so). */
+    public function testFamilyNamesAreKeptAsTheBrowserComputesThem(): void
+    {
+        $this->assertSame( [ 'Open  Sans' ], HtmlCss::families( '"Open  Sans"' ) );
+        $this->assertSame( [ 'Open Sans' ], HtmlCss::families( 'Open   Sans' ), 'unquoted words are joined by one space' );
+        $this->assertSame( [ 'Arial', 'sans-serif', 'monospace', 'system-ui' ], HtmlCss::families( 'Arial, SANS-SERIF, MonoSpace, System-UI' ) );
+        $this->assertSame( [ 'SANS-SERIF' ], HtmlCss::families( '"SANS-SERIF"' ), 'a quoted name is a family name, not the keyword' );
+    }
+
+    /** Task 6 review I3 (round 2): presence, whatever the value: no "safe" transform (rotateX, translateZ under a perspective ... scale). */
+    public function testZoomScaleAndTransformsAreScaleMarkers(): void
+    {
+        $this->assertContains( 'scale', HtmlCss::MARKERS );
+        foreach ( [ 'zoom: 1.5', 'zoom: 1', 'zoom: normal', 'scale: 2', 'scale: none', 'transform: scale(2)', 'transform: none', 'transform: translateY(-50%)',
+            'transform: rotateX(60deg)', 'transform: rotate3d(1,0,0,60deg)', 'transform: translateZ(50px)', 'transform: translate3d(0,0,50px)', 'rotate: x 60deg',
+            'translate: 0 0 50px', 'perspective: 100px', 'perspective: none', 'font-size-adjust: 1', 'font-size-adjust: none', '-webkit-transform: scale(2)',
+            '-webkit-zoom: 2', '-webkit-text-size-adjust: 200%', 'transform: var(--t)', 'zoom: inherit', 'TRANSFORM: SCALE(2)' ] as $css ) {
+            $this->assertSame( [ $this->decl( 'scale', null, false, 'effect' ) ], $this->block( $css ), $css );
+        }
+        $this->assertSame( [ $this->decl( 'scale', null, true, 'effect' ) ], $this->block( 'zoom: 2 !important' ) );
+        $this->assertSame( [ $this->decl( 'effect', null, false, 'effect' ), $this->decl( 'scale', null, false, 'effect' ) ], $this->block( 'animation: z 1s' ) );
+        $this->assertSame( [], $this->block( 'animation: none; transition: all 1s' ) );
     }
 
     // ---------------------------------------------------------------
