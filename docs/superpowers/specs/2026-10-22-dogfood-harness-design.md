@@ -6,7 +6,7 @@ validator and `wp-plugin/` are untouched (dev tooling only).
 
 ## Why
 
-During the 4.14.0 pre-release work, six fresh assistants (and one edit run) were given ONLY the served guide for a style kit and built
+During the guide rounds before the planned 4.14.0 release (the plugin is 4.13.0; 4.14.0 is unreleased), six fresh assistants (and one edit run) were given ONLY the served guide for a style kit and built
 Divi pages freehand. That "dogfood" found every real guide gap of the release (no worked shapes for rules and chips, an exact width rule
 missing, a top-edge path, a root-wrapper contradiction, a frame-keeping rule, band names) while 2,700 pure tests found none. It was done by
 hand with throwaway scripts. The routine is valuable and cheap to repeat, but each repeat today re-creates the scripts, and the judgement
@@ -31,7 +31,7 @@ Dev-only tooling in `scripts/` plus one doc, never shipped in `wp-plugin/`:
    horizontal overflow and console errors, deletes the page. Uses the same throwaway-page library as the other gates (dev site only).
 4. `docs/dogfood.md`: the routine, including the exact prompt to start a fresh assistant (Claude Code `Agent` tool, or pasting TASK.md into
    any assistant), how to read the score, what to do with a gap (guide wording, a probe, a pin), and the costs (tokens per run).
-5. A regression corpus: `fixtures/dogfood/` holds the pages the assistants produced in the 4.14.0 work (kept small: the final pages only),
+5. A regression corpus: `fixtures/dogfood/` holds the pages the assistants produced in those rounds (kept small: the final pages only),
    each with its kit and language and the SCORE the scorer gives today, pinned by a test, so scorer changes are visible and the corpus
    documents what a real assistant gets right and wrong.
 
@@ -141,12 +141,12 @@ underlined-label `chip.frame` x5 (1px against the kit's 3px) and `framed.frame` 
 
 ### Live render (Task 6)
 
-2026-10-22, run by the controller. `make dogfood-render` validated the page through the real `LayoutGate`, rendered it at 1280 and 400 px
+2026-10-21, run by the controller. `make dogfood-render` validated the page through the real `LayoutGate`, rendered it at 1280 and 400 px
 with 0 overflow and no console error, and deleted the throwaway draft; `--clean-orphans` found 0.
 
 ### Fresh run (Task 6)
 
-2026-10-22, controller. `make dogfood-prepare KIT=double-frame LANGUAGE=corporate-trust` (a kit not in the corpus) wrote the guide files and
+2026-10-21, controller. `make dogfood-prepare KIT=double-frame LANGUAGE=corporate-trust` (a kit not in the corpus) wrote the guide files and
 TASK.md. A fresh sonnet assistant given exactly the documented prompt built the page (7 sections, valid, one h1). `make dogfood-score` gave
 button 19/19, rule 15/15, chip 24/28, framed 20/20, item 4/4, form 7/7, image n/a, overall 89/93 (95.7%).
 

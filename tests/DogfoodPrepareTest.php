@@ -274,6 +274,42 @@ class DogfoodPrepareTest extends TestCase
         $this->assertSame( 'the assistant edit', file_get_contents( $edir . '/page-edited.html' ) );
     }
 
+    public function testRePreparingAnotherKitOrLanguageIntoTheSameDirIsRefused(): void
+    {
+        $dir = $this->tmpDir();
+        Prepare::write( Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', $dir ), $dir );
+        file_put_contents( $dir . '/page.html', 'the assistant page' );
+        $before = [];
+        foreach ( glob( $dir . '/*' ) ?: [] as $f ) {
+            $before[ basename( $f ) ] = hash_file( 'sha256', $f );
+        }
+        $root = dirname( __DIR__ );
+
+        foreach ( [ [ 'glass-edge', 'tech-mono' ], [ 'hairline-dashed', 'glass-dark' ] ] as [ $kit, $language ] ) {
+            try {
+                Prepare::write( Prepare::files( $kit, $language, 'freehand', $dir ), $dir );
+                $this->fail( 'another kit or language is refused' );
+            } catch ( \RuntimeException $e ) {
+                $this->assertStringContainsString( 'prepared for kit "hairline-dashed" and language "tech-mono"', $e->getMessage() );
+                $this->assertStringContainsString( 'another --out', $e->getMessage() );
+            }
+            [ $code, $out ] = $this->runScript( [ $kit, $language, '--out', $dir ], $root );
+            $this->assertSame( 2, $code, $out );
+            $this->assertStringContainsString( 'prepared for kit', $out );
+        }
+        $after = [];
+        foreach ( glob( $dir . '/*' ) ?: [] as $f ) {
+            $after[ basename( $f ) ] = hash_file( 'sha256', $f );
+        }
+        $this->assertSame( $before, $after, 'nothing was written' );
+
+        // the same kit and language still refreshes; the edit-into-freehand rule is unchanged
+        [ $code ] = $this->runScript( [ 'hairline-dashed', 'tech-mono', '--out', $dir ], $root );
+        $this->assertSame( 0, $code );
+        $this->assertSame( 'the assistant page', file_get_contents( $dir . '/page.html' ) );
+        $this->assertSame( 2, $this->runScript( [ 'hairline-dashed', 'tech-mono', '--task', 'edit', '--out', $dir ], $root )[0], 'an edit prepare still refuses the freehand page' );
+    }
+
     public function testAnEditPrepareIntoAFreehandDirRefusesToOverwriteTheAssistantsPage(): void
     {
         $dir = $this->tmpDir();

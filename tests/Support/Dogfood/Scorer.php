@@ -18,12 +18,17 @@ use AiEditorDivi5\WP\StyleKits;
  * - Every expected value is read from Expected::attrs(), the resolved output of the adapters, for the CANDIDATE roles of the
  *   block's class on the band it sits on (plan D2: the best-matching role is the one with the most passing checks, a tie goes
  *   to the first role in KitAdapters::APPLIED order, grounds after the plain card roles). Colours are role-set membership
- *   (D4); a band the role cannot take, or an unknown band, judges against the union of the role's bands (D3).
+ *   (D4). When the band is `unknown`, or is a known band the role does not take (a tag on an inverted panel), the checks are
+ *   judged against the union of the bands the role takes and pass if they pass against any; the report keeps the band the
+ *   block really sits on and adds a `note`. A button on a `surface` band is judged on `light` (the adapter's own
+ *   substitution) with no note.
  * - A check is only run when its subject exists, so one defect fails one check: a frame that is missing fails `frame`, and
  *   `frame-style` is simply not checked when there is no visible side.
  *
  * Lengths are compared numerically in px with tolerance 0 (`2px` equals `2.0px`); an absent value is "absent" and fails,
- * except where the check says otherwise (an absent border width is 0, an absent image radius is 0px).
+ * except where the check says otherwise: an absent border width is 0, an absent radius is 0px (a button's radius stays strict),
+ * and a BUTTON's border (and a form submit's) with no width written is Divi's own 2px solid (`.et_pb_button{border:2px solid}`).
+ * A button background that is a gradient is filled with a colour that cannot be judged (`gradient`).
  */
 final class Scorer
 {
@@ -136,7 +141,7 @@ final class Scorer
             if ( $row['pass'] ) {
                 ++$count[ $cat ]['passed'];
             } else {
-                $failures[] = [
+                $failure = [
                     'check'    => $row['check'],
                     'block'    => $row['block'],
                     'role'     => $row['role'],
@@ -144,6 +149,10 @@ final class Scorer
                     'expected' => $row['expected'],
                     'observed' => $row['observed'],
                 ];
+                if ( isset( $row['note'] ) ) {
+                    $failure['note'] = $row['note']; // only when the colours were judged against the union of the role's bands
+                }
+                $failures[] = $failure;
             }
         }
         $categories = [];
@@ -170,7 +179,7 @@ final class Scorer
     /**
      * Every check that was run, passed or not, in document order then check order (what score() counts).
      *
-     * @return list<array{check:string,block:string,role:string,band:string,pass:bool,expected:string,observed:string}>
+     * @return list<array{check:string,block:string,role:string,band:string,pass:bool,expected:string,observed:string,note?:string}>
      * @throws \InvalidArgumentException when the page does not parse
      */
     public function details( string $markup ): array
@@ -197,7 +206,7 @@ final class Scorer
         $o       = $report['overall'];
         $lines[] = sprintf( 'overall %d/%d %s', $o['passed'], $o['checked'], $score( $o['score'] ) );
         foreach ( $report['failures'] as $f ) {
-            $lines[] = sprintf( 'FAIL %s %s (%s on %s): expected %s, observed %s', $f['check'], $f['block'], $f['role'], $f['band'], $f['expected'], $f['observed'] );
+            $lines[] = sprintf( 'FAIL %s %s (%s on %s): expected %s, observed %s', $f['check'], $f['block'], $f['role'], $f['band'], $f['expected'], $f['observed'] ) . ( isset( $f['note'] ) ? ' [' . $f['note'] . ']' : '' );
         }
         foreach ( $report['unclassified'] as $u ) {
             $lines[] = sprintf( 'UNCLASSIFIED %s: %s', $u['block'], $u['reason'] );
@@ -244,7 +253,11 @@ final class Scorer
                 continue;
             }
             foreach ( $best['rows'] as [ $check, $pass, $exp, $obs ] ) {
-                $results[] = [ 'check' => $check, 'block' => $b['key'], 'role' => $best['role'], 'band' => $best['band'], 'pass' => $pass, 'expected' => self::cut( $exp ), 'observed' => self::cut( $obs ) ];
+                $row = [ 'check' => $check, 'block' => $b['key'], 'role' => $best['role'], 'band' => $best['band'], 'pass' => $pass, 'expected' => self::cut( $exp ), 'observed' => self::cut( $obs ) ];
+                if ( null !== $best['note'] ) {
+                    $row['note'] = $best['note'];
+                }
+                $results[] = $row;
             }
         }
 
@@ -256,7 +269,12 @@ final class Scorer
      *
      * @param array{key:string,name:string,attrs:array<string,mixed>,band:string,parentBand:string,hasContent:bool} $b
      *
-     * @return ?array{role:string,band:string,rows:list<array{0:string,1:bool,2:string,3:string}>}
+     * The band is the one the block really sits on. When the colour checks were judged against the UNION of the role's bands,
+     * `note` says so: that happens when the band is `unknown` (a colour outside the palette) or when the role does not take
+     * the band the block sits on (for example a chip on an inverted panel); a button on `surface` is NOT such a case (the
+     * adapter's own substitution, `light`). Otherwise `note` is null.
+     *
+     * @return ?array{role:string,band:string,rows:list<array{0:string,1:bool,2:string,3:string}>,note:?string}
      */
     private function best( string $class, array $b ): ?array
     {
@@ -297,11 +315,23 @@ final class Scorer
             }
             if ( $n > $bestN ) {
                 $bestN = $n;
-                $best  = [ 'role' => $label, 'band' => $union ? 'unknown' : $b['band'], 'rows' => $rows ];
+                $best  = [
+                    'role' => $label,
+                    'band' => $b['band'],
+                    'rows' => $rows,
+                    'note' => $union ? self::unionNote( $b['band'], $label, $bands ) : null,
+                ];
             }
         }
 
         return $best;
+    }
+
+    /** @param list<string> $bands */
+    private static function unionNote( string $band, string $role, array $bands ): string
+    {
+        return ( 'unknown' === $band ? 'the band is unknown' : "$role does not take the $band band" )
+            . ': colours judged against the union of its bands (' . implode( ', ', $bands ) . ')';
     }
 
     /**
@@ -478,11 +508,12 @@ final class Scorer
         $own = self::arr( self::at( $a, $B ) );
         $rows = [];
         $rows[] = self::radiusRow( 'button.radius', $own, $patches, $B, true );
-        $rows[] = self::edgeRow( 'button.edge', $own, $patches, $B );
-        if ( self::anyVisible( self::sides( $own ) ) ) {
-            $rows[] = self::styleRow( 'button.edge-style', $own, $patches, $B, self::SIDES );
+        // Divi draws `.et_pb_button{border:2px solid}`: a side with no width written is 2px, with no style it is solid.
+        $rows[] = self::edgeRow( 'button.edge', $own, $patches, $B, self::SIDES, true );
+        if ( self::anyVisible( self::sides( self::buttonBorder( $own ) ) ) ) {
+            $rows[] = self::styleRow( 'button.edge-style', $own, $patches, $B, self::SIDES, true );
         }
-        $colour = self::at( $a, $F );
+        $colour = self::buttonFill( $a, 'button.decoration.background.desktop.value' );
         $kind   = Page::isClear( $colour ) ? 'transparent' : 'filled';
         $rows[] = self::union( 'button.fill', $patches, static function ( array $p ) use ( $F, $kind ): array {
             $exp = Page::isClear( self::at( $p, $F ) ) ? 'transparent' : 'filled';
@@ -555,7 +586,7 @@ final class Scorer
         if ( self::anyVisible( self::sides( $own ) ) ) {
             $rows[] = self::styleRow( 'chip.frame-style', $own, $patches, $M, self::SIDES );
         }
-        $rows[] = self::colourRow( 'chip.frame-colour', self::at( $own, 'styles.all.color' ), $patches, $M . '.styles.all.color' );
+        $rows[] = self::frameColourRow( 'chip.frame-colour', $own, $patches, $M, self::SIDES );
 
         return $rows;
     }
@@ -596,16 +627,7 @@ final class Scorer
         }
         if ( $visible ) {
             $rows[] = self::styleRow( 'framed.frame-style', $own, $patches, $M, $subset );
-            $seen   = self::visibleValues( $own, $sides, $subset, 'colour' );
-            $rows[] = self::union( 'framed.frame-colour', $patches, static function ( array $p ) use ( $M, $seen, $subset ): array {
-                $pb  = self::arr( self::at( $p, $M ) );
-                $exp = self::visibleValues( $pb, self::sides( $pb ), $subset, 'colour' );
-                $ok  = [] !== $seen;
-                foreach ( $seen as $c ) {
-                    $ok = $ok && 'absent' !== $c && self::colourIn( $c, $exp );
-                }
-                return [ $ok, implode( '/', $exp ), implode( '/', $seen ) ];
-            } );
+            $rows[] = self::frameColourRow( 'framed.frame-colour', $own, $patches, $M, $subset );
         }
         $F      = 'module.decoration.background.desktop.value.color';
         $rows[] = self::colourRow( 'framed.fill-colour', self::at( $a, $F ), $patches, $F, $this->fillAliases );
@@ -679,17 +701,18 @@ final class Scorer
         }
         $rows[] = self::colourRow( 'form.field-fill-colour', self::at( $a, 'field.decoration.background.desktop.value.color' ), $patches, 'field.decoration.background.desktop.value.color', $this->fillAliases );
         $rows[] = self::radiusRow( 'form.button-radius', $bo, $patches, $BB, true );
-        $rows[] = self::edgeRow( 'form.button-edge', $bo, $patches, $BB );
-        if ( self::anyVisible( self::sides( $bo ) ) ) {
-            $rows[] = self::styleRow( 'form.button-edge-style', $bo, $patches, $BB, self::SIDES );
+        $rows[] = self::edgeRow( 'form.button-edge', $bo, $patches, $BB, self::SIDES, true );
+        if ( self::anyVisible( self::sides( self::buttonBorder( $bo ) ) ) ) {
+            $rows[] = self::styleRow( 'form.button-edge-style', $bo, $patches, $BB, self::SIDES, true );
         }
         $F     = 'button.decoration.background.desktop.value.color';
-        $fills = ! Page::isClear( self::at( $a, $F ) );
+        $subColour = self::buttonFill( $a, 'button.decoration.background.desktop.value' );
+        $fills     = ! Page::isClear( $subColour );
         foreach ( $patches as $p ) {
             $fills = $fills || ! Page::isClear( self::at( $p, $F ) ); // a transparent submit where the kit fills it fails here
         }
         if ( $fills ) {
-            $rows[] = self::colourRow( 'form.button-fill-colour', self::at( $a, $F ), $patches, $F );
+            $rows[] = self::colourRow( 'form.button-fill-colour', $subColour, $patches, $F );
         }
 
         return $rows;
@@ -779,12 +802,13 @@ final class Scorer
      *
      * @return array{0:string,1:bool,2:string,3:string}
      */
-    private static function edgeRow( string $check, array $own, array $patches, string $path, array $subset = self::SIDES ): array
+    private static function edgeRow( string $check, array $own, array $patches, string $path, array $subset = self::SIDES, bool $button = false ): array
     {
-        $o = self::sides( $own );
+        $o = self::sides( $button ? self::buttonBorder( $own ) : $own );
 
-        return self::union( $check, $patches, static function ( array $p ) use ( $o, $path, $subset ): array {
-            $e  = self::sides( self::arr( self::at( $p, $path ) ) );
+        return self::union( $check, $patches, static function ( array $p ) use ( $o, $path, $subset, $button ): array {
+            $pb = self::arr( self::at( $p, $path ) );
+            $e  = self::sides( $button ? self::buttonBorder( $pb ) : $pb );
             $ok = true;
             foreach ( $subset as $s ) {
                 $ok = $ok && self::lenEq( $o[ $s ], $e[ $s ] );
@@ -802,17 +826,45 @@ final class Scorer
      *
      * @return array{0:string,1:bool,2:string,3:string}
      */
-    private static function styleRow( string $check, array $own, array $patches, string $path, array $subset ): array
+    private static function styleRow( string $check, array $own, array $patches, string $path, array $subset, bool $button = false ): array
     {
-        $o = self::visibleValues( $own, self::sides( $own ), $subset, 'style' );
+        $own = $button ? self::buttonBorder( $own ) : $own;
+        $o   = self::visibleValues( $own, self::sides( $own ), $subset, 'style' );
 
-        return self::union( $check, $patches, static function ( array $p ) use ( $o, $path, $subset ): array {
+        return self::union( $check, $patches, static function ( array $p ) use ( $o, $path, $subset, $button ): array {
             $pb = self::arr( self::at( $p, $path ) );
+            $pb = $button ? self::buttonBorder( $pb ) : $pb;
             $e  = self::visibleValues( $pb, self::sides( $pb ), $subset, 'style' );
             if ( [] === $e ) {
                 $e = [ self::str( self::eff( self::arr( $pb['styles'] ?? null ), 'all', 'style' ) ) ?? 'absent' ];
             }
             return [ $o === $e, implode( '/', $e ), implode( '/', $o ) ];
+        } );
+    }
+
+    /**
+     * The colour of the visible sides among $subset (a side's own colour, else `styles.all.color`): every one must be a colour
+     * the role's patch draws on its visible sides (D4). One implementation for a tag's frame and a framed block's. With no
+     * visible side nothing can pass (the frame width check fails first).
+     *
+     * @param array<string,mixed>       $own
+     * @param list<array<string,mixed>> $patches
+     * @param list<string>              $subset
+     *
+     * @return array{0:string,1:bool,2:string,3:string}
+     */
+    private static function frameColourRow( string $check, array $own, array $patches, string $path, array $subset ): array
+    {
+        $seen = self::visibleValues( $own, self::sides( $own ), $subset, 'colour' );
+
+        return self::union( $check, $patches, static function ( array $p ) use ( $path, $seen, $subset ): array {
+            $pb  = self::arr( self::at( $p, $path ) );
+            $exp = self::visibleValues( $pb, self::sides( $pb ), $subset, 'colour' );
+            $ok  = [] !== $seen;
+            foreach ( $seen as $c ) {
+                $ok = $ok && 'absent' !== $c && self::colourIn( $c, $exp );
+            }
+            return [ $ok, implode( '/', $exp ), [] === $seen ? 'no visible side' : implode( '/', $seen ) ];
         } );
     }
 
@@ -1012,6 +1064,49 @@ final class Scorer
         }
 
         return $out;
+    }
+
+    /**
+     * A button's border with Divi's own defaults filled in: every side with no width written is 2px and every side with no
+     * style is solid (`.et_pb_button{border:2px solid}`, Divi 5.15.1; the contact form's submit is a `.et_pb_button` too).
+     * The adapters write `width: 0px` explicitly for a kit with no border, so a kit-built button is unchanged.
+     *
+     * @param array<string,mixed> $border
+     *
+     * @return array<string,mixed>
+     */
+    private static function buttonBorder( array $border ): array
+    {
+        $styles = self::arr( $border['styles'] ?? null );
+        foreach ( self::SIDES as $s ) {
+            if ( null === self::len( self::eff( $styles, $s, 'width' ) ) ) {
+                $styles[ $s ]          = self::arr( $styles[ $s ] ?? null );
+                $styles[ $s ]['width'] = '2px';
+            }
+            if ( null === self::str( self::eff( $styles, $s, 'style' ) ) ) {
+                $styles[ $s ]          = self::arr( $styles[ $s ] ?? null );
+                $styles[ $s ]['style'] = 'solid';
+            }
+        }
+        $border['styles'] = $styles;
+
+        return $border;
+    }
+
+    /**
+     * The fill colour of a button's background, or the word `gradient` when a gradient is enabled (it paints, but its colour
+     * cannot be judged: the button is filled and `fill-colour` fails).
+     *
+     * @param array<string,mixed> $a
+     */
+    private static function buttonFill( array $a, string $path ): mixed
+    {
+        $grad = self::at( $a, $path . '.gradient' );
+        if ( is_array( $grad ) && 'on' === ( $grad['enabled'] ?? null ) ) {
+            return 'gradient';
+        }
+
+        return self::at( $a, $path . '.color' );
     }
 
     private static function visible( float|string $w ): bool

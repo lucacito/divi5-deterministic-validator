@@ -266,7 +266,7 @@ The pinned numbers are **measured by running the scorer**, never invented: the i
   - `testTheCorpusScoresArePinned`: for each entry, `Scorer(kit, language)->score(page)` gives exactly the pinned `[checked, passed]` per category and overall, and the pinned `unclassified` count.
   - `testTheCorpusEditBaseIsPrepareOutput`: `edit-glass-edge/page.html === Prepare::editBase('glass-edge','glass-dark')`.
   - `testTheEditBaseScoresFullMarks`: the `edit-base` entry has `passed == checked` in every category with `checked > 0`.
-  - `testEveryCorpusPageIsValid`: `LayoutGate::check($page)->isValid()` for all 8 pages (they were validated live in the 4.14.0 rounds; a failure is a STOP-and-report, not a skip).
+  - `testEveryCorpusPageIsValid`: `LayoutGate::check($page)->isValid()` for all 8 pages (they were validated live in the guide rounds before the planned 4.14.0 release; a failure is a STOP-and-report, not a skip).
   - `testTheCorpusIsExactlyTheListedFiles`: the files under `fixtures/dogfood/` are exactly `corpus.json` and the 8 listed pages (so screenshots or guide dumps do not creep in); total size < 400 KB.
   - `testNothingOfTheHarnessIsShipped`: no file under `wp-plugin/` contains `dogfood` or `Dogfood` (case-sensitive grep over the tree), and `wp-plugin/src/autoload.php` names no class of `tests/Support/Dogfood/`.
 - [ ] **Step 3:** run the scorer, fill `corpus.json`, `vendor/bin/phpunit --filter DogfoodCorpus` PASS, `make test` green, diff check, commit (the 8 pages, `corpus.json`, the test).
